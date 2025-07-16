@@ -41,71 +41,78 @@ export function FamilyCalendar() {
     .sort((a, b) => a.date.getTime() - b.date.getTime())[0]
 
   return (
-    <Card className="shadow-soft">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <CalendarIcon className="h-5 w-5" />
-          Family Calendar
-        </CardTitle>
-        <CardDescription>
-          View upcoming family meetings and events
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              className="rounded-md border pointer-events-auto w-full flex justify-center [&>div]:w-full [&_table]:w-full [&_td]:w-16 [&_td]:h-16 [&_th]:w-16 [&_th]:h-16 [&_button]:w-full [&_button]:h-full [&_.rdp-caption]:text-xl [&_.rdp-caption]:font-semibold"
-              modifiers={{
-                meeting: meetingDates
-              }}
-              modifiersStyles={{
-                meeting: {
-                  backgroundColor: 'hsl(var(--primary))',
-                  color: 'hsl(var(--primary-foreground))',
-                  borderRadius: '4px'
-                }
-              }}
-            />
-          </div>
-          
-          {/* Upcoming Meetings */}
-          <div>
-            <h3 className="font-semibold text-primary mb-4">Upcoming Meetings</h3>
-            <div className="space-y-3">
-              {upcomingMeetings
-                .filter(meeting => meeting.date >= new Date())
-                .sort((a, b) => a.date.getTime() - b.date.getTime())
-                .map((meeting) => (
-                  <div key={meeting.id} className="p-3 border border-primary/20 bg-primary/5 rounded-lg">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="font-medium text-sm">{meeting.title}</p>
-                      <Badge variant="secondary" className="text-xs">
-                        {meeting.type}
-                      </Badge>
+    <>
+      <Card className="shadow-soft">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CalendarIcon className="h-5 w-5" />
+            Family Calendar
+          </CardTitle>
+          <CardDescription>
+            View upcoming family meetings and events
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={setSelectedDate}
+            className="rounded-md border pointer-events-auto w-full flex justify-center [&>div]:w-full [&_table]:w-full [&_td]:w-16 [&_td]:h-16 [&_th]:w-16 [&_th]:h-16 [&_button]:w-full [&_button]:h-full [&_.rdp-caption]:text-xl [&_.rdp-caption]:font-semibold"
+            modifiers={{
+              meeting: meetingDates
+            }}
+            modifiersStyles={{
+              meeting: {
+                backgroundColor: 'hsl(var(--primary))',
+                color: 'hsl(var(--primary-foreground))',
+                borderRadius: '4px'
+              }
+            }}
+          />
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-soft">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Upcoming Meetings
+          </CardTitle>
+          <CardDescription>
+            Your scheduled family meetings and events
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {upcomingMeetings
+              .filter(meeting => meeting.date >= new Date())
+              .sort((a, b) => a.date.getTime() - b.date.getTime())
+              .map((meeting) => (
+                <div key={meeting.id} className="p-3 border border-primary/20 bg-primary/5 rounded-lg">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="font-medium text-sm">{meeting.title}</p>
+                    <Badge variant="secondary" className="text-xs">
+                      {meeting.type}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <CalendarIcon className="h-3 w-3" />
+                      {meeting.date.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <CalendarIcon className="h-3 w-3" />
-                        {meeting.date.toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric' 
-                        })}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {meeting.time}
-                      </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {meeting.time}
                     </div>
                   </div>
-                ))}
-            </div>
+                </div>
+              ))}
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </>
   )
 }
