@@ -68,12 +68,12 @@ export function InvestmentChart() {
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
               <XAxis 
                 dataKey="month" 
-                className="text-muted-foreground"
-                tick={{ fontSize: 12 }}
+                className="text-foreground"
+                tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
               />
               <YAxis 
-                className="text-muted-foreground"
-                tick={{ fontSize: 12 }}
+                className="text-foreground"
+                tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
                 tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
               />
               <Tooltip content={<CustomTooltip />} />
