@@ -2,41 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* The Fampreneurs Design System - Premium Family Office Platform
+All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Brand Colors - Light Mode */
+    --background: 0 0% 98%;
+    --foreground: 262 86% 19%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 262 86% 19%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 262 86% 19%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary: Dark Purple (#290A52) */
+    --primary: 262 86% 19%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 262 86% 35%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary: Yellow (#FFB500) */
+    --secondary: 41 100% 50%;
+    --secondary-foreground: 262 86% 19%;
+    --secondary-glow: 41 100% 65%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Accent: Purple (#6215C8) */
+    --accent: 270 86% 43%;
+    --accent-foreground: 0 0% 100%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Supporting colors */
+    --muted: 220 13% 96%;
+    --muted-foreground: 215 20% 45%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 262 86% 19%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Custom gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(262 86% 19%) 0%, hsl(270 86% 43%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(41 100% 50%) 0%, hsl(41 100% 65%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(262 86% 19%) 0%, hsl(270 86% 43%) 50%, hsl(41 100% 50%) 100%);
+    
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -2px hsl(262 86% 19% / 0.1);
+    --shadow-medium: 0 8px 30px -4px hsl(262 86% 19% / 0.15);
+    --shadow-strong: 0 16px 40px -8px hsl(262 86% 19% / 0.2);
+    --shadow-glow: 0 0 40px hsl(262 86% 35% / 0.3);
 
     --sidebar-background: 0 0% 98%;
 
@@ -56,33 +74,50 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Dark Mode Colors */
+    --background: 262 86% 8%;
+    --foreground: 0 0% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 262 86% 12%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 262 86% 12%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Primary remains dark purple but adjusted for dark mode */
+    --primary: 262 86% 19%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 262 86% 35%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary: Yellow adjusted for dark mode */
+    --secondary: 41 100% 60%;
+    --secondary-foreground: 262 86% 8%;
+    --secondary-glow: 41 100% 75%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    /* Accent: Purple adjusted for dark mode */
+    --accent: 270 86% 50%;
+    --accent-foreground: 0 0% 100%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --muted: 262 50% 15%;
+    --muted-foreground: 215 20% 65%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 262 50% 20%;
+    --input: 262 50% 20%;
+    --ring: 41 100% 60%;
+
+    /* Dark mode gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(262 86% 19%) 0%, hsl(270 86% 50%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(41 100% 60%) 0%, hsl(41 100% 75%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(262 86% 8%) 0%, hsl(262 86% 19%) 50%, hsl(41 100% 60%) 100%);
+    
+    /* Dark mode shadows */
+    --shadow-soft: 0 4px 20px -2px hsl(0 0% 0% / 0.3);
+    --shadow-medium: 0 8px 30px -4px hsl(0 0% 0% / 0.4);
+    --shadow-strong: 0 16px 40px -8px hsl(0 0% 0% / 0.5);
+    --shadow-glow: 0 0 40px hsl(41 100% 60% / 0.2);
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -100,6 +135,49 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-montserrat;
+  }
+
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-montserrat font-semibold;
+  }
+
+  p, span, div {
+    @apply font-poppins;
+  }
+
+  /* Custom utilities */
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+
+  .gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
+  }
+
+  .shadow-strong {
+    box-shadow: var(--shadow-strong);
+  }
+
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
