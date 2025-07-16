@@ -28,11 +28,11 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           
           <div className="flex items-center gap-3">
             <div className="hidden sm:block">
-              <h1 className="text-xl font-oswald font-bold tracking-wide" style={{color: '#ffb500'}}>THE FAMPRENEUR</h1>
+              <h1 className="text-xl font-oswald font-bold tracking-wide" style={{color: '#ffb500'}}>THE FAMPRENEURS</h1>
               <p className="text-xs text-muted-foreground">BUILDING STRONG LEGACIES</p>
             </div>
             <div className="sm:hidden">
-              <h1 className="text-lg font-oswald font-bold tracking-wide" style={{color: '#ffb500'}}>THE FAMPRENEUR</h1>
+              <h1 className="text-lg font-oswald font-bold tracking-wide" style={{color: '#ffb500'}}>THE FAMPRENEURS</h1>
             </div>
           </div>
         </div>
