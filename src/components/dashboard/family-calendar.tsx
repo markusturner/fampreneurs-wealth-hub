@@ -41,7 +41,7 @@ export function FamilyCalendar() {
     .sort((a, b) => a.date.getTime() - b.date.getTime())[0]
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-2 gap-6">
       <Card className="shadow-soft">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -57,7 +57,7 @@ export function FamilyCalendar() {
             mode="single"
             selected={selectedDate}
             onSelect={setSelectedDate}
-            className="rounded-md border pointer-events-auto w-full flex justify-center [&>div]:w-full [&_table]:w-full [&_td]:w-16 [&_td]:h-16 [&_th]:w-16 [&_th]:h-16 [&_button]:w-full [&_button]:h-full [&_.rdp-caption]:text-xl [&_.rdp-caption]:font-semibold"
+            className="rounded-md border pointer-events-auto w-full flex justify-center [&>div]:w-full [&_table]:w-full [&_td]:w-16 [&_td]:h-16 [&_th]:w-16 [&_th]:h-16 [&_button]:w-full [&_button]:h-full [&_.rdp-caption]:text-xl [&_.rdp-caption]:font-semibold [&>div]:pr-2"
             modifiers={{
               meeting: meetingDates
             }}
