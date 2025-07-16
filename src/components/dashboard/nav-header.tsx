@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useState } from "react"
-import logo from "@/assets/logo.png"
+import fampreneur_logo from "@/assets/fampreneur-logo.png"
 
 interface NavHeaderProps {
   onMenuClick?: () => void
@@ -27,10 +27,12 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           </Button>
           
           <div className="flex items-center gap-3">
-            <img src={logo} alt="The Fampreneurs" className="h-8 w-auto" />
             <div className="hidden sm:block">
-              <h1 className="text-lg font-bold text-primary">The Fampreneurs</h1>
-              <p className="text-xs text-muted-foreground">Building Strong Legacies</p>
+              <h1 className="text-xl font-bold text-accent dark:text-accent">THE FAMPRENEUR</h1>
+              <p className="text-xs text-muted-foreground">BUILDING STRONG LEGACIES</p>
+            </div>
+            <div className="sm:hidden">
+              <h1 className="text-lg font-bold text-accent dark:text-accent">THE FAMPRENEUR</h1>
             </div>
           </div>
         </div>
