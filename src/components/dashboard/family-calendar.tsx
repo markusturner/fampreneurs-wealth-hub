@@ -52,55 +52,61 @@ export function FamilyCalendar() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={setSelectedDate}
-          className="rounded-md border pointer-events-auto w-full flex justify-center [&>div]:w-full [&_table]:w-full [&_td]:w-16 [&_td]:h-16 [&_th]:w-16 [&_th]:h-16 [&_button]:w-full [&_button]:h-full [&_.rdp-caption]:text-xl [&_.rdp-caption]:font-semibold"
-          modifiers={{
-            meeting: meetingDates
-          }}
-          modifiersStyles={{
-            meeting: {
-              backgroundColor: 'hsl(var(--primary))',
-              color: 'hsl(var(--primary-foreground))',
-              borderRadius: '4px'
-            }
-          }}
-        />
-        
-        {/* Next Meeting Info */}
-        {nextMeeting && (
-          <div className="mt-6 p-4 border border-primary/20 bg-primary/5 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-primary">Next Meeting</h3>
-              <Badge variant="default">
-                {nextMeeting.date.toLocaleDateString('en-US', { 
-                  month: 'short', 
-                  day: 'numeric' 
-                })}
-              </Badge>
-            </div>
-            <p className="font-medium mb-1">{nextMeeting.title}</p>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <CalendarIcon className="h-4 w-4" />
-                {nextMeeting.date.toLocaleDateString('en-US', { 
-                  weekday: 'long',
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                {nextMeeting.time}
-              </div>
-            </div>
-            <Badge variant="secondary" className="mt-2">
-              {nextMeeting.type}
-            </Badge>
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              className="rounded-md border pointer-events-auto w-full flex justify-center [&>div]:w-full [&_table]:w-full [&_td]:w-16 [&_td]:h-16 [&_th]:w-16 [&_th]:h-16 [&_button]:w-full [&_button]:h-full [&_.rdp-caption]:text-xl [&_.rdp-caption]:font-semibold"
+              modifiers={{
+                meeting: meetingDates
+              }}
+              modifiersStyles={{
+                meeting: {
+                  backgroundColor: 'hsl(var(--primary))',
+                  color: 'hsl(var(--primary-foreground))',
+                  borderRadius: '4px'
+                }
+              }}
+            />
           </div>
-        )}
+          
+          {/* Next Meeting Info */}
+          <div className="flex flex-col justify-center">
+            {nextMeeting && (
+              <div className="p-4 border border-primary/20 bg-primary/5 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-primary">Next Meeting</h3>
+                  <Badge variant="default">
+                    {nextMeeting.date.toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })}
+                  </Badge>
+                </div>
+                <p className="font-medium mb-1">{nextMeeting.title}</p>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <CalendarIcon className="h-4 w-4" />
+                    {nextMeeting.date.toLocaleDateString('en-US', { 
+                      weekday: 'long',
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    {nextMeeting.time}
+                  </div>
+                </div>
+                <Badge variant="secondary" className="mt-2">
+                  {nextMeeting.type}
+                </Badge>
+              </div>
+            )}
+          </div>
+        </div>
       </CardContent>
     </Card>
   )
