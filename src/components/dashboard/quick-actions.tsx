@@ -65,7 +65,7 @@ export function QuickActions() {
               <Button
                 key={action.title}
                 variant={action.variant}
-                className="h-auto p-3 pr-6 justify-start text-left flex-1 min-w-0"
+                className="h-auto p-3 pr-10 justify-start text-left flex-1 min-w-0"
                 onClick={action.action}
               >
                 <div className="flex items-start space-x-3">
