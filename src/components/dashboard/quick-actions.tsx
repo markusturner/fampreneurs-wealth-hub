@@ -74,7 +74,7 @@ export function QuickActions() {
                     <div className="font-medium text-xs truncate">
                       {action.title}
                     </div>
-                    <div className="text-xs opacity-80 mt-0.5 truncate">
+                    <div className="text-[10px] opacity-80 leading-tight truncate">
                       {action.description}
                     </div>
                   </div>
