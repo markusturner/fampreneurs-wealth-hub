@@ -3,6 +3,7 @@ import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { InvestmentChart } from "@/components/dashboard/investment-chart"
 import { RecentActivities } from "@/components/dashboard/recent-activities"
 import { QuickActions } from "@/components/dashboard/quick-actions"
+import { FamilyCalendar } from "@/components/dashboard/family-calendar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useState } from "react"
@@ -41,6 +42,9 @@ const Index = () => {
           {/* Quick Actions - Takes up 1 column */}
           <QuickActions />
         </div>
+
+        {/* Family Calendar */}
+        <FamilyCalendar />
 
         {/* Recent Activities */}
         <div className="grid gap-6 lg:grid-cols-4">
