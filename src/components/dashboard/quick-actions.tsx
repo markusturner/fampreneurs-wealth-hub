@@ -70,11 +70,11 @@ export function QuickActions() {
               >
                 <div className="flex items-start space-x-3">
                   <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1">
-                    <div className="font-medium text-sm">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-xs truncate">
                       {action.title}
                     </div>
-                    <div className="text-xs opacity-80 mt-1">
+                    <div className="text-xs opacity-80 mt-0.5 truncate">
                       {action.description}
                     </div>
                   </div>
