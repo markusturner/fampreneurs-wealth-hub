@@ -72,39 +72,37 @@ export function FamilyCalendar() {
             />
           </div>
           
-          {/* Next Meeting Info */}
-          <div className="flex flex-col justify-center">
-            {nextMeeting && (
-              <div className="p-4 border border-primary/20 bg-primary/5 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-primary">Next Meeting</h3>
-                  <Badge variant="default">
-                    {nextMeeting.date.toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric' 
-                    })}
-                  </Badge>
-                </div>
-                <p className="font-medium mb-1">{nextMeeting.title}</p>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <CalendarIcon className="h-4 w-4" />
-                    {nextMeeting.date.toLocaleDateString('en-US', { 
-                      weekday: 'long',
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
+          {/* Upcoming Meetings */}
+          <div>
+            <h3 className="font-semibold text-primary mb-4">Upcoming Meetings</h3>
+            <div className="space-y-3">
+              {upcomingMeetings
+                .filter(meeting => meeting.date >= new Date())
+                .sort((a, b) => a.date.getTime() - b.date.getTime())
+                .map((meeting) => (
+                  <div key={meeting.id} className="p-3 border border-primary/20 bg-primary/5 rounded-lg">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="font-medium text-sm">{meeting.title}</p>
+                      <Badge variant="secondary" className="text-xs">
+                        {meeting.type}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <CalendarIcon className="h-3 w-3" />
+                        {meeting.date.toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {meeting.time}
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {nextMeeting.time}
-                  </div>
-                </div>
-                <Badge variant="secondary" className="mt-2">
-                  {nextMeeting.type}
-                </Badge>
-              </div>
-            )}
+                ))}
+            </div>
           </div>
         </div>
       </CardContent>
