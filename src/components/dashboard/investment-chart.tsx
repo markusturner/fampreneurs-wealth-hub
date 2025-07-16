@@ -61,8 +61,8 @@ export function InvestmentChart() {
             <AreaChart data={portfolioData}>
               <defs>
                 <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.05}/>
+                  <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0.05}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
@@ -80,7 +80,7 @@ export function InvestmentChart() {
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="hsl(var(--primary))"
+                stroke="hsl(var(--accent))"
                 strokeWidth={3}
                 fill="url(#portfolioGradient)"
               />
