@@ -41,7 +41,7 @@ export function FamilyCalendar() {
     .sort((a, b) => a.date.getTime() - b.date.getTime())[0]
 
   return (
-    <div className="grid grid-cols-2 gap-6">
+    <div className="grid grid-cols-2 gap-4">
       <Card className="shadow-soft">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
