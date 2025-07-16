@@ -57,7 +57,7 @@ export function FamilyCalendar() {
             mode="single"
             selected={selectedDate}
             onSelect={setSelectedDate}
-            className="rounded-md border pointer-events-auto w-full flex justify-center [&>div]:w-full [&_table]:w-full [&_td]:w-16 [&_td]:h-16 [&_th]:w-16 [&_th]:h-16 [&_button]:w-full [&_button]:h-full [&_.rdp-caption]:text-xl [&_.rdp-caption]:font-semibold [&>div]:pr-2"
+            className="rounded-md border pointer-events-auto w-full flex justify-center [&>div]:w-full [&_table]:w-full [&_td]:w-16 [&_td]:h-16 [&_th]:w-16 [&_th]:h-16 [&_button]:w-full [&_button]:h-full [&_.rdp-caption]:text-xl [&_.rdp-caption]:font-semibold [&>div]:pr-0"
             modifiers={{
               meeting: meetingDates
             }}
