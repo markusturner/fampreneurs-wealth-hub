@@ -41,9 +41,9 @@ export function FamilyCalendar() {
     .sort((a, b) => a.date.getTime() - b.date.getTime())[0]
 
   return (
-    <div className="grid gap-6 lg:grid-cols-2">
+    <div className="grid gap-6 lg:grid-cols-3">
       {/* Calendar */}
-      <Card className="shadow-soft">
+      <Card className="shadow-soft lg:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5" />
@@ -58,7 +58,7 @@ export function FamilyCalendar() {
             mode="single"
             selected={selectedDate}
             onSelect={setSelectedDate}
-            className="rounded-md border pointer-events-auto"
+            className="rounded-md border pointer-events-auto w-full flex justify-center [&>div]:scale-125"
             modifiers={{
               meeting: meetingDates
             }}
