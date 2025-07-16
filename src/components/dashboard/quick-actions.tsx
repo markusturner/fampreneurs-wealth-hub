@@ -5,7 +5,7 @@ import { Plus, Upload, UserPlus, Banknote, FileText, Settings, TrendingUp, Shiel
 const quickActions = [
   {
     title: "Add Investment",
-    description: "Create new investment position",
+    description: "create to investment",
     icon: TrendingUp,
     variant: "premium" as const,
     action: () => console.log("Add investment")
