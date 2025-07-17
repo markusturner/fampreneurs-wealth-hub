@@ -6,13 +6,16 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Calendar } from "@/components/ui/calendar"
-import { Loader2, Calendar as CalendarIcon, Clock, User, Video, Phone, Users, Star, CheckCircle } from 'lucide-react'
-import { format } from 'date-fns'
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Loader2, Calendar as CalendarIcon, Clock, User, Video, Phone, Users, Star, CheckCircle, Plus } from 'lucide-react'
+import { format, isSameDay, parseISO } from 'date-fns'
+import { cn } from '@/lib/utils'
 
 const Coaching = () => {
   const { user, profile, loading } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [selectedDate, setSelectedDate] = useState<Date>()
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [showCalendar, setShowCalendar] = useState(true)
 
   if (loading) {
     return (
@@ -113,6 +116,21 @@ const Coaching = () => {
     }
   ]
 
+  // Get sessions for selected date
+  const getSessionsForDate = (date: Date) => {
+    return upcomingCalls.filter(call => 
+      isSameDay(parseISO(call.date), date)
+    )
+  }
+
+  // Get all dates that have sessions
+  const getSessionDates = () => {
+    return upcomingCalls.map(call => parseISO(call.date))
+  }
+
+  const sessionDates = getSessionDates()
+  const selectedDateSessions = getSessionsForDate(selectedDate)
+
   return (
     <div className="min-h-screen bg-background">
       <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
@@ -135,67 +153,102 @@ const Coaching = () => {
           </Button>
         </div>
 
-        {/* Upcoming Calls */}
-        <Card className="shadow-soft">
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Upcoming Coaching Calls
-            </CardTitle>
-            <CardDescription>
-              Your scheduled sessions with financial experts
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 space-y-4">
-            {upcomingCalls.map((call) => (
-              <div key={call.id} className="flex items-center justify-between p-3 sm:p-4 bg-muted/30 rounded-lg">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Avatar className="h-12 w-12 flex-shrink-0">
-                    <AvatarImage src={call.avatar} />
-                    <AvatarFallback>{call.coach.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm sm:text-base truncate">{call.title}</h3>
-                    <p className="text-sm text-muted-foreground">{call.coach}</p>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <CalendarIcon className="h-3 w-3" />
-                        {format(new Date(call.date), 'MMM d')}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {call.time}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {call.participants}/{call.maxParticipants} joined
-                      </span>
+        {/* Calendar View */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Calendar */}
+          <Card className="lg:col-span-2 shadow-soft">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <CalendarIcon className="h-5 w-5" />
+                Coaching Calendar
+              </CardTitle>
+              <CardDescription>
+                Click on a date to view scheduled coaching sessions
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => date && setSelectedDate(date)}
+                modifiers={{
+                  hasSession: sessionDates
+                }}
+                modifiersStyles={{
+                  hasSession: {
+                    backgroundColor: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                    fontWeight: 'bold'
+                  }
+                }}
+                className={cn("w-full pointer-events-auto")}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Selected Date Sessions */}
+          <Card className="shadow-soft">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg font-bold">
+                {format(selectedDate, 'MMMM d, yyyy')}
+              </CardTitle>
+              <CardDescription>
+                {selectedDateSessions.length > 0 
+                  ? `${selectedDateSessions.length} session${selectedDateSessions.length !== 1 ? 's' : ''} scheduled`
+                  : 'No sessions scheduled'
+                }
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 space-y-4">
+              {selectedDateSessions.length > 0 ? (
+                selectedDateSessions.map((session) => (
+                  <div key={session.id} className="p-3 bg-muted/30 rounded-lg space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={session.avatar} />
+                        <AvatarFallback>{session.coach.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm truncate">{session.title}</h4>
+                        <p className="text-xs text-muted-foreground">{session.coach}</p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Video className="h-3 w-3" />
-                        Zoom Meeting ID: {call.zoomMeetingId}
-                      </span>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      <span>{session.time}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Users className="h-3 w-3" />
+                      <span>{session.participants}/{session.maxParticipants} joined</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Badge variant={session.status === 'confirmed' ? 'default' : 'secondary'} className="text-xs">
+                        {session.status}
+                      </Badge>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-xs px-2"
+                        onClick={() => window.open(session.zoomMeetingUrl, '_blank')}
+                      >
+                        Join Zoom
+                      </Button>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <Badge variant={call.status === 'confirmed' ? 'default' : 'secondary'} className="text-xs">
-                    {call.status}
-                  </Badge>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="text-xs px-2 sm:px-3"
-                    onClick={() => window.open(call.zoomMeetingUrl, '_blank')}
-                  >
-                    Join Zoom
+                ))
+              ) : (
+                <div className="text-center py-6">
+                  <CalendarIcon className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                  <p className="text-sm text-muted-foreground">No coaching sessions scheduled for this date</p>
+                  <Button size="sm" variant="outline" className="mt-3 gap-2">
+                    <Plus className="h-4 w-4" />
+                    Schedule Session
                   </Button>
                 </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Available Coaches */}
         <div>
