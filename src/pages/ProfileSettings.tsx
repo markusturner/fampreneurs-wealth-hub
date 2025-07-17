@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AdminSettings } from '@/components/dashboard/admin-settings'
 import { AccountabilityDirectory } from '@/components/dashboard/accountability-directory'
 import { AffiliateProgram } from '@/components/dashboard/affiliate-program'
+import { FeedbackManagement } from '@/components/dashboard/feedback-management'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Settings, Crown, Heart, Users, ArrowLeft } from 'lucide-react'
@@ -49,7 +50,7 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="directory" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="directory" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Accountability Directory
@@ -57,6 +58,10 @@ export function ProfileSettings() {
           <TabsTrigger value="affiliate" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Affiliate Program
+          </TabsTrigger>
+          <TabsTrigger value="feedback" className="flex items-center gap-2">
+            <Heart className="h-4 w-4" />
+            Feedback
           </TabsTrigger>
           <TabsTrigger value="admin" className="flex items-center gap-2">
             <Crown className="h-4 w-4" />
@@ -70,6 +75,10 @@ export function ProfileSettings() {
 
         <TabsContent value="affiliate">
           <AffiliateProgram />
+        </TabsContent>
+
+        <TabsContent value="feedback">
+          <FeedbackManagement />
         </TabsContent>
 
         <TabsContent value="admin">
