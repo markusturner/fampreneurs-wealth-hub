@@ -53,6 +53,10 @@ interface Course {
   created_by: string
   created_at: string
   instructor: string | null
+  category: string | null
+  level: string | null
+  duration: string | null
+  price: string | null
 }
 
 interface PostProfile {
@@ -466,10 +470,15 @@ export default function AdminDashboard() {
           <TabsContent value="courses" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Course Management</CardTitle>
-                <CardDescription>
-                  Manage educational content and learning materials
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Course Management</CardTitle>
+                    <CardDescription>
+                      Manage educational content and learning materials
+                    </CardDescription>
+                  </div>
+                  <CreateCourseDialog onCourseCreated={loadAdminData} />
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -485,9 +494,10 @@ export default function AdminDashboard() {
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <EditCourseDialog 
+                          course={course} 
+                          onCourseUpdated={loadAdminData}
+                        />
                         <Button 
                           variant="destructive" 
                           size="sm"
@@ -573,6 +583,14 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
+          {/* Fulfillment Tab */}
+          <TabsContent value="fulfillment" className="space-y-6">
+            <FulfillmentManagement 
+              viewMode={fulfillmentViewMode}
+              onViewModeChange={setFulfillmentViewMode}
+            />
+          </TabsContent>
+
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-6">
             <Card>
@@ -589,12 +607,24 @@ export default function AdminDashboard() {
                       <h4 className="font-medium">Platform Settings</h4>
                       <div className="space-y-2">
                         <Label htmlFor="platform-name">Platform Name</Label>
-                        <Input id="platform-name" defaultValue="Fampreneurs" />
+                        <Input 
+                          id="platform-name" 
+                          value={platformSettings.platform_name}
+                          onChange={(e) => setPlatformSettings(prev => ({ ...prev, platform_name: e.target.value }))}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="admin-email">Admin Email</Label>
-                        <Input id="admin-email" defaultValue="admin@fampreneurs.com" />
+                        <Input 
+                          id="admin-email" 
+                          value={platformSettings.admin_email}
+                          onChange={(e) => setPlatformSettings(prev => ({ ...prev, admin_email: e.target.value }))}
+                        />
                       </div>
+                      <Button onClick={() => toast({ title: "Settings saved", description: "Platform settings have been updated." })}>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Settings
+                      </Button>
                     </div>
                     <div className="space-y-4">
                       <h4 className="font-medium">Security Settings</h4>
