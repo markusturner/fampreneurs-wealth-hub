@@ -398,6 +398,72 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_advisors: {
+        Row: {
+          added_by: string
+          bio: string | null
+          company: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string
+          hourly_rate: number | null
+          id: string
+          is_active: boolean | null
+          license_number: string | null
+          linkedin_url: string | null
+          notes: string | null
+          phone: string | null
+          preferred_contact_method: string | null
+          specialties: string[] | null
+          title: string | null
+          updated_at: string | null
+          website: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          added_by: string
+          bio?: string | null
+          company?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name: string
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean | null
+          license_number?: string | null
+          linkedin_url?: string | null
+          notes?: string | null
+          phone?: string | null
+          preferred_contact_method?: string | null
+          specialties?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          website?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          added_by?: string
+          bio?: string | null
+          company?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean | null
+          license_number?: string | null
+          linkedin_url?: string | null
+          notes?: string | null
+          phone?: string | null
+          preferred_contact_method?: string | null
+          specialties?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          website?: string | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       group_memberships: {
         Row: {
           group_id: string
