@@ -140,10 +140,10 @@ const Coaching = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Coaching Calls
+              Calendar
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Join group coaching sessions with wealth management experts
+              Manage your schedule and coaching sessions
             </p>
           </div>
           <Button className="gap-2">
@@ -151,103 +151,6 @@ const Coaching = () => {
             <span className="hidden sm:inline">Schedule New Call</span>
             <span className="sm:hidden">Schedule</span>
           </Button>
-        </div>
-
-        {/* Calendar View */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Calendar */}
-          <Card className="lg:col-span-2 shadow-soft">
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <CalendarIcon className="h-5 w-5" />
-                Coaching Calendar
-              </CardTitle>
-              <CardDescription>
-                Click on a date to view scheduled coaching sessions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
-                modifiers={{
-                  hasSession: sessionDates
-                }}
-                modifiersStyles={{
-                  hasSession: {
-                    backgroundColor: 'hsl(var(--primary))',
-                    color: 'hsl(var(--primary-foreground))',
-                    fontWeight: 'bold'
-                  }
-                }}
-                className={cn("w-full pointer-events-auto")}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Selected Date Sessions */}
-          <Card className="shadow-soft">
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="text-lg font-bold">
-                {format(selectedDate, 'MMMM d, yyyy')}
-              </CardTitle>
-              <CardDescription>
-                {selectedDateSessions.length > 0 
-                  ? `${selectedDateSessions.length} session${selectedDateSessions.length !== 1 ? 's' : ''} scheduled`
-                  : 'No sessions scheduled'
-                }
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6 space-y-4">
-              {selectedDateSessions.length > 0 ? (
-                selectedDateSessions.map((session) => (
-                  <div key={session.id} className="p-3 bg-muted/30 rounded-lg space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={session.avatar} />
-                        <AvatarFallback>{session.coach.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm truncate">{session.title}</h4>
-                        <p className="text-xs text-muted-foreground">{session.coach}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      <span>{session.time}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Users className="h-3 w-3" />
-                      <span>{session.participants}/{session.maxParticipants} joined</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Badge variant={session.status === 'confirmed' ? 'default' : 'secondary'} className="text-xs">
-                        {session.status}
-                      </Badge>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-xs px-2"
-                        onClick={() => window.open(session.zoomMeetingUrl, '_blank')}
-                      >
-                        Join Zoom
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-6">
-                  <CalendarIcon className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground">No coaching sessions scheduled for this date</p>
-                  <Button size="sm" variant="outline" className="mt-3 gap-2">
-                    <Plus className="h-4 w-4" />
-                    Schedule Session
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
 
         {/* Available Coaches */}
