@@ -5,17 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Loader2, Calendar as CalendarIcon, Clock, User, Video, Phone, Users, Star, CheckCircle, Plus } from 'lucide-react'
-import { format, isSameDay, parseISO } from 'date-fns'
+import { Loader2, Calendar as CalendarIcon, Clock, User, Video, Phone, Users, Star, CheckCircle, Plus, ChevronLeft, ChevronRight, List, Grid } from 'lucide-react'
+import { format, isSameDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, getDay } from 'date-fns'
 import { cn } from '@/lib/utils'
 
 const Coaching = () => {
   const { user, profile, loading } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
-  const [showCalendar, setShowCalendar] = useState(true)
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
+  const [viewType, setViewType] = useState<'month' | 'list'>('month')
 
   if (loading) {
     return (
@@ -34,14 +32,14 @@ const Coaching = () => {
 
   const displayName = profile?.display_name || profile?.first_name || 'Member'
 
-  // Sample group coaching data with Zoom integration
+  // Sample group coaching data with recurring events
   const upcomingCalls = [
     {
       id: 1,
-      title: "Group Wealth Strategy Session",
+      title: "Live Forex Trading",
       coach: "Sarah Johnson, CFP",
-      date: "2024-07-20",
-      time: "2:00 PM - 3:00 PM",
+      date: "2025-07-07",
+      time: "8am",
       type: "Group Coaching",
       status: "confirmed",
       avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
@@ -51,11 +49,11 @@ const Coaching = () => {
       zoomMeetingUrl: "https://zoom.us/j/123456789?pwd=example"
     },
     {
-      id: 2, 
-      title: "Investment Portfolio Masterclass",
+      id: 2,
+      title: "Q&A Accountability",
       coach: "Michael Chen, CFA",
-      date: "2024-07-22",
-      time: "10:00 AM - 11:30 AM", 
+      date: "2025-07-02",
+      time: "9pm",
       type: "Group Coaching",
       status: "confirmed",
       avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
@@ -66,17 +64,45 @@ const Coaching = () => {
     },
     {
       id: 3,
-      title: "Estate Planning Workshop", 
+      title: "Trust Coaching", 
       coach: "Elizabeth Davis, J.D.",
-      date: "2024-07-25",
-      time: "3:30 PM - 4:30 PM",
+      date: "2025-07-09",
+      time: "9pm",
       type: "Group Coaching",
-      status: "pending",
+      status: "confirmed",
       avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
       participants: 6,
       maxParticipants: 10,
       zoomMeetingId: "555-777-999",
       zoomMeetingUrl: "https://zoom.us/j/555777999?pwd=example"
+    },
+    {
+      id: 4,
+      title: "YouTube Live",
+      coach: "Tech Team",
+      date: "2025-07-04",
+      time: "9pm",
+      type: "Live Stream",
+      status: "confirmed",
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
+      participants: 50,
+      maxParticipants: 100,
+      zoomMeetingId: "888-999-000",
+      zoomMeetingUrl: "https://youtube.com/live/example"
+    },
+    {
+      id: 5,
+      title: "Family Functions",
+      coach: "Community Team",
+      date: "2025-07-06",
+      time: "7pm",
+      type: "Community Event",
+      status: "confirmed",
+      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
+      participants: 25,
+      maxParticipants: 30,
+      zoomMeetingId: "111-222-333",
+      zoomMeetingUrl: "https://zoom.us/j/111222333?pwd=example"
     }
   ]
 
@@ -116,20 +142,30 @@ const Coaching = () => {
     }
   ]
 
-  // Get sessions for selected date
+  // Get sessions for specific date
   const getSessionsForDate = (date: Date) => {
     return upcomingCalls.filter(call => 
       isSameDay(parseISO(call.date), date)
     )
   }
 
-  // Get all dates that have sessions
-  const getSessionDates = () => {
-    return upcomingCalls.map(call => parseISO(call.date))
-  }
+  // Generate calendar days
+  const monthStart = startOfMonth(currentMonth)
+  const monthEnd = endOfMonth(currentMonth)
+  const calendarDays = eachDayOfInterval({ start: monthStart, end: monthEnd })
+  
+  // Add padding days to start from Monday
+  const startDay = getDay(monthStart)
+  const paddingDays = startDay === 0 ? 6 : startDay - 1 // Convert Sunday (0) to 6, Monday (1) to 0, etc.
+  
+  const allDays = [
+    ...Array(paddingDays).fill(null),
+    ...calendarDays
+  ]
 
-  const sessionDates = getSessionDates()
-  const selectedDateSessions = getSessionsForDate(selectedDate)
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    setCurrentMonth(prev => direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1))
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -154,61 +190,133 @@ const Coaching = () => {
         </div>
 
         {/* Group Coaching Calendar */}
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Calendar */}
-          <Card className="lg:col-span-2 shadow-soft">
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
+        <Card className="shadow-soft">
+          <CardHeader className="p-4 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5" />
-                Group Coaching Calendar
-              </CardTitle>
-              <CardDescription>
-                Click on a date to view scheduled group coaching sessions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
-                modifiers={{
-                  hasSession: sessionDates
-                }}
-                modifiersStyles={{
-                  hasSession: {
-                    backgroundColor: 'hsl(var(--primary))',
-                    color: 'hsl(var(--primary-foreground))',
-                    fontWeight: 'bold',
-                    borderRadius: '6px'
-                  }
-                }}
-                className={cn("w-full pointer-events-auto")}
-              />
-              <div className="mt-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-primary rounded"></div>
-                  <span>Dates with coaching sessions</span>
+                <CardTitle className="text-lg font-bold">Group Coaching Calendar</CardTitle>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant={viewType === 'month' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => setViewType('month')}
+                  className="gap-2"
+                >
+                  <Grid className="h-4 w-4" />
+                  Month
+                </Button>
+                <Button 
+                  variant={viewType === 'list' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => setViewType('list')}
+                  className="gap-2"
+                >
+                  <List className="h-4 w-4" />
+                  List
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            {viewType === 'month' ? (
+              <div className="space-y-4">
+                {/* Calendar Header */}
+                <div className="flex items-center justify-between">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigateMonth('prev')}
+                    className="gap-2"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  
+                  <div className="text-center">
+                    <h2 className="text-xl font-semibold">
+                      {format(currentMonth, 'MMMM yyyy')}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                      {format(new Date(), 'h:mmaaa')} New York time
+                    </p>
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigateMonth('next')}
+                    className="gap-2"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Calendar Grid */}
+                <div className="border rounded-lg overflow-hidden bg-card">
+                  {/* Day Headers */}
+                  <div className="grid grid-cols-7 border-b bg-muted/30">
+                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                      <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground border-r last:border-r-0">
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Calendar Days */}
+                  <div className="grid grid-cols-7">
+                    {allDays.map((day, index) => {
+                      if (!day) {
+                        return <div key={index} className="h-24 border-r border-b last:border-r-0" />
+                      }
+                      
+                      const dayEvents = getSessionsForDate(day)
+                      const isCurrentMonth = isSameMonth(day, currentMonth)
+                      const isDayToday = isToday(day)
+                      
+                      return (
+                        <div 
+                          key={day.toISOString()} 
+                          className={cn(
+                            "h-24 border-r border-b last:border-r-0 p-2 relative overflow-hidden",
+                            !isCurrentMonth && "bg-muted/20",
+                            isDayToday && "bg-primary/5"
+                          )}
+                        >
+                          <div className={cn(
+                            "text-sm font-medium mb-1",
+                            !isCurrentMonth && "text-muted-foreground",
+                            isDayToday && "bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                          )}>
+                            {format(day, 'd')}
+                          </div>
+                          
+                          <div className="space-y-1">
+                            {dayEvents.slice(0, 2).map((event, eventIndex) => (
+                              <div 
+                                key={event.id}
+                                className="text-xs p-1 bg-primary/10 text-primary rounded truncate cursor-pointer hover:bg-primary/20 transition-colors"
+                                title={`${event.time} - ${event.title}`}
+                              >
+                                {event.time} - {event.title.length > 12 ? event.title.substring(0, 12) + '...' : event.title}
+                              </div>
+                            ))}
+                            {dayEvents.length > 2 && (
+                              <div className="text-xs text-muted-foreground">
+                                +{dayEvents.length - 2} more
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Selected Date Details */}
-          <Card className="shadow-soft">
-            <CardHeader className="p-4 sm:p-6">
-              <CardTitle className="text-lg font-bold">
-                {format(selectedDate, 'MMMM d, yyyy')}
-              </CardTitle>
-              <CardDescription>
-                {selectedDateSessions.length > 0 
-                  ? `${selectedDateSessions.length} group session${selectedDateSessions.length !== 1 ? 's' : ''} scheduled`
-                  : 'No group sessions scheduled'
-                }
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6 space-y-4">
-              {selectedDateSessions.length > 0 ? (
-                selectedDateSessions.map((session) => (
+            ) : (
+              /* List View */
+              <div className="space-y-4">
+                {upcomingCalls.map((session) => (
                   <div key={session.id} className="p-4 bg-muted/30 rounded-lg space-y-3 border">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10">
@@ -219,26 +327,12 @@ const Coaching = () => {
                         <h4 className="font-semibold text-sm truncate">{session.title}</h4>
                         <p className="text-xs text-muted-foreground">{session.coach}</p>
                       </div>
-                      <Badge variant={session.status === 'confirmed' ? 'default' : 'secondary'} className="text-xs">
-                        {session.status}
-                      </Badge>
+                      <div className="text-right">
+                        <div className="text-sm font-medium">{format(parseISO(session.date), 'MMM d, yyyy')}</div>
+                        <div className="text-xs text-muted-foreground">{session.time}</div>
+                      </div>
                     </div>
                     
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Clock className="h-4 w-4" />
-                        <span>{session.time}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Users className="h-4 w-4" />
-                        <span>{session.participants}/{session.maxParticipants} participants</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Video className="h-4 w-4" />
-                        <span className="text-xs">ID: {session.zoomMeetingId}</span>
-                      </div>
-                    </div>
-
                     <div className="flex gap-2">
                       <Button 
                         size="sm" 
@@ -257,20 +351,11 @@ const Coaching = () => {
                       </Button>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <CalendarIcon className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-                  <p className="text-sm text-muted-foreground mb-4">No group coaching sessions scheduled for this date</p>
-                  <Button size="sm" variant="outline" className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    Schedule Session
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Upcoming Sessions Summary */}
         <Card className="shadow-soft">
