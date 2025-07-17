@@ -487,9 +487,20 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
 
   const canDeleteGroup = (group: Group) => {
     // Only group creators, admins, or users with admin role in that specific group can delete
-    return group.created_by === user?.id || 
+    const canEdit = group.created_by === user?.id || 
            profile?.is_admin || 
            group.user_role === 'admin'
+    
+    console.log('Can edit group:', {
+      groupName: group.name,
+      groupCreatedBy: group.created_by,
+      currentUserId: user?.id,
+      userRole: group.user_role,
+      isProfileAdmin: profile?.is_admin,
+      canEdit
+    })
+    
+    return canEdit
   }
 
   const sensors = useSensors(
