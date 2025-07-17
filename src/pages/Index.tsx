@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useFeedbackNotification } from '@/hooks/useFeedbackNotification'
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { InvestmentChart } from "@/components/dashboard/investment-chart"
@@ -8,6 +9,7 @@ import { RecentActivities } from "@/components/dashboard/recent-activities"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { AssetAllocation } from "@/components/dashboard/asset-allocation"
 import { FamilyCalendar } from "@/components/dashboard/family-calendar"
+import { FeedbackDialog } from "@/components/dashboard/feedback-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from 'lucide-react'
@@ -17,12 +19,28 @@ const Index = () => {
   const { user, profile, loading } = useAuth()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { shouldShowFeedback, markFeedbackShown } = useFeedbackNotification()
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/auth')
     }
   }, [user, loading, navigate])
+
+  // Show feedback dialog when shouldShowFeedback becomes true
+  useEffect(() => {
+    if (shouldShowFeedback && !feedbackDialogOpen) {
+      setFeedbackDialogOpen(true)
+    }
+  }, [shouldShowFeedback, feedbackDialogOpen])
+
+  const handleFeedbackDialogClose = (open: boolean) => {
+    setFeedbackDialogOpen(open)
+    if (!open) {
+      markFeedbackShown()
+    }
+  }
 
   if (loading) {
     return (
@@ -90,6 +108,12 @@ const Index = () => {
           </div>
         </div>
       </main>
+
+      {/* Feedback Dialog */}
+      <FeedbackDialog 
+        open={feedbackDialogOpen} 
+        onOpenChange={handleFeedbackDialogClose}
+      />
     </div>
   );
 };

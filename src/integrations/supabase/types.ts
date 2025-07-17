@@ -401,6 +401,75 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          last_notification_sent: string
+          notification_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_notification_sent?: string
+          notification_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_notification_sent?: string
+          notification_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      feedback_responses: {
+        Row: {
+          additional_feedback: string | null
+          community_support: number | null
+          created_at: string
+          ease_of_use: number | null
+          feature_usefulness: number | null
+          id: string
+          improvement_suggestions: string | null
+          overall_satisfaction: number | null
+          program_effectiveness: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          additional_feedback?: string | null
+          community_support?: number | null
+          created_at?: string
+          ease_of_use?: number | null
+          feature_usefulness?: number | null
+          id?: string
+          improvement_suggestions?: string | null
+          overall_satisfaction?: number | null
+          program_effectiveness?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          additional_feedback?: string | null
+          community_support?: number | null
+          created_at?: string
+          ease_of_use?: number | null
+          feature_usefulness?: number | null
+          id?: string
+          improvement_suggestions?: string | null
+          overall_satisfaction?: number | null
+          program_effectiveness?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       financial_advisors: {
         Row: {
           added_by: string
@@ -778,6 +847,10 @@ export type Database = {
       }
       user_has_premium_subscription: {
         Args: { user_id: string }
+        Returns: boolean
+      }
+      user_needs_feedback_notification: {
+        Args: { target_user_id: string }
         Returns: boolean
       }
     }
