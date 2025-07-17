@@ -750,11 +750,11 @@ export default function Auth() {
             <TabsContent value="admin">
               <div className="space-y-4">
                 <div className="text-center mb-6">
-                  <div className="mx-auto w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
-                    <Shield className="h-8 w-8 text-red-500" />
+                  <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#ffb500' + '1A' }}>
+                    <Shield className="h-8 w-8" style={{ color: '#ffb500' }} />
                   </div>
-                  <h3 className="text-lg font-semibold text-red-500">Admin Access</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="text-lg font-semibold" style={{ color: '#ffb500' }}>Admin Access</h3>
+                  <p className="text-sm" style={{ color: '#ffb500' }}>
                     Restricted access for administrators only
                   </p>
                 </div>
@@ -788,7 +788,7 @@ export default function Auth() {
                   <Button 
                     type="submit" 
                     className="w-full"
-                    style={{ backgroundColor: '#dc2626', color: 'white' }}
+                    style={{ backgroundColor: '#ffb500', color: '#290a52' }}
                     disabled={isLoading}
                   >
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -796,12 +796,12 @@ export default function Auth() {
                   </Button>
                 </form>
                 
-                <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <div className="rounded-lg p-4" style={{ backgroundColor: '#ffb500' + '1A', borderColor: '#ffb500', borderWidth: '1px' }}>
                   <div className="flex items-start space-x-3">
-                    <Shield className="h-5 w-5 text-red-500 mt-0.5" />
+                    <Shield className="h-5 w-5 mt-0.5" style={{ color: '#ffb500' }} />
                     <div>
-                      <h4 className="text-sm font-medium text-red-800 dark:text-red-200">Security Notice</h4>
-                      <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                      <h4 className="text-sm font-medium" style={{ color: '#ffb500' }}>Security Notice</h4>
+                      <p className="text-xs mt-1" style={{ color: '#ffb500' }}>
                         This panel is for authorized administrators only. All access attempts are logged and monitored.
                       </p>
                     </div>
