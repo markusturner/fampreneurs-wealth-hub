@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AdminSettings } from '@/components/dashboard/admin-settings'
 import { AccountabilityDirectory } from '@/components/dashboard/accountability-directory'
+import { AffiliateProgram } from '@/components/dashboard/affiliate-program'
 import { Badge } from '@/components/ui/badge'
 import { Settings, Crown, Heart, Users } from 'lucide-react'
 
@@ -36,10 +37,14 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="directory" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="directory" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             Accountability Directory
+          </TabsTrigger>
+          <TabsTrigger value="affiliate" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Affiliate Program
           </TabsTrigger>
           <TabsTrigger value="admin" className="flex items-center gap-2">
             <Crown className="h-4 w-4" />
@@ -49,6 +54,10 @@ export function ProfileSettings() {
 
         <TabsContent value="directory">
           <AccountabilityDirectory />
+        </TabsContent>
+
+        <TabsContent value="affiliate">
+          <AffiliateProgram />
         </TabsContent>
 
         <TabsContent value="admin">
