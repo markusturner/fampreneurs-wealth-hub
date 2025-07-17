@@ -28,7 +28,7 @@ const stats = [
     description: "Financial advisors"
   },
   {
-    title: "Trust Documents",
+    title: "Family Documents",
     value: "234",
     change: "+5",
     trend: "up",
