@@ -3,15 +3,16 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Upload, UserPlus, Banknote, FileText, Settings, TrendingUp, Shield, Calendar } from "lucide-react"
 import { ScheduleMeetingDialog } from "./schedule-meeting-dialog"
+import { GoogleSheetsIntegration } from "./google-sheets-integration"
 
 
 const quickActions = [
   {
     title: "Add Investment",
-    description: "Create new investment",
+    description: "Sync with Google Sheets",
     icon: TrendingUp,
     variant: "premium" as const,
-    action: () => console.log("Add investment")
+    action: "google_sheets" as const
   },
   {
     title: "Upload Document",
@@ -45,14 +46,24 @@ const quickActions = [
 
 export function QuickActions() {
   const [meetingDialogOpen, setMeetingDialogOpen] = useState(false)
+  const [googleSheetsDialogOpen, setGoogleSheetsDialogOpen] = useState(false)
 
   const handleScheduleMeeting = () => {
     setMeetingDialogOpen(true)
   }
 
+  const handleAction = (action: string | (() => void)) => {
+    if (action === "google_sheets") {
+      setGoogleSheetsDialogOpen(true)
+    } else if (typeof action === "function") {
+      action()
+    }
+  }
+
   return (
     <>
       <ScheduleMeetingDialog open={meetingDialogOpen} onOpenChange={setMeetingDialogOpen} />
+      <GoogleSheetsIntegration open={googleSheetsDialogOpen} onOpenChange={setGoogleSheetsDialogOpen} />
     <Card className="col-span-4 lg:col-span-1 shadow-soft">
       <CardHeader>
         <CardTitle className="text-xl font-bold">Quick Actions</CardTitle>
@@ -73,7 +84,7 @@ export function QuickActions() {
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
-                  action.action()
+                  handleAction(action.action)
                 }}
               >
                 <div className="flex items-start space-x-3">
