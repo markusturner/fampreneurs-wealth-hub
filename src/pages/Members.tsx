@@ -192,6 +192,13 @@ const Members = () => {
   const handleQuickAccountabilityAssignment = async (member: MemberProfile) => {
     if (!user?.id) return
 
+    // Optimistic update - immediately update local state
+    setMembers(prev => prev.map(m => 
+      m.user_id === member.user_id 
+        ? { ...m, is_accountability_partner: true, accountability_specialties: ['general_support'] }
+        : m
+    ))
+
     try {
       const { error } = await supabase.rpc('assign_accountability_role', {
         target_user_id: member.user_id,
@@ -214,6 +221,8 @@ const Members = () => {
         description: "Failed to assign accountability partner role. Please try again.",
         variant: "destructive",
       })
+      // Revert optimistic update on error
+      fetchMembers()
     }
   }
 
