@@ -232,13 +232,38 @@ export default function AdminDashboard() {
       
       toast({
         title: "Admin role assigned",
-        description: "User has been granted admin privileges.",
+        description: "User has been granted admin privileges and can now access the admin panel.",
       })
       
       loadAdminData()
     } catch (error: any) {
       toast({
         title: "Error assigning admin role",
+        description: error.message,
+        variant: "destructive",
+      })
+    }
+  }
+
+  const makeAccountabilityPartner = async (userId: string) => {
+    try {
+      const { error } = await supabase.rpc('assign_accountability_role', {
+        target_user_id: userId,
+        assigner_user_id: user?.id,
+        specialties: ['general_support']
+      })
+      
+      if (error) throw error
+      
+      toast({
+        title: "Accountability partner role assigned",
+        description: "User has been granted accountability partner privileges.",
+      })
+      
+      loadAdminData()
+    } catch (error: any) {
+      toast({
+        title: "Error assigning accountability role",
         description: error.message,
         variant: "destructive",
       })
