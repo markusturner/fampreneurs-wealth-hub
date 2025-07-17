@@ -412,7 +412,7 @@ export default function Auth() {
                     disabled={isLoading}
                   />
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-center">
                   <RecoveryDialog />
                 </div>
                 
