@@ -11,7 +11,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from '@/hooks/use-toast'
-import { Hash, Lock, Plus, Users, Settings, Trash2, MoreVertical } from 'lucide-react'
+import { useSubscription } from '@/hooks/useSubscription'
+import { Hash, Lock, Plus, Users, Settings, Trash2, MoreVertical, Crown, Star } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog"
 
@@ -20,6 +21,7 @@ interface Group {
   name: string
   description: string | null
   is_private: boolean
+  is_premium: boolean
   created_by: string
   created_at: string
   member_count?: number
@@ -35,6 +37,7 @@ interface GroupSidebarProps {
 export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarProps) {
   const { user, profile } = useAuth()
   const { toast } = useToast()
+  const { subscriptionStatus, createCheckout } = useSubscription()
   const [publicGroups, setPublicGroups] = useState<Group[]>([])
   const [privateGroups, setPrivateGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)
@@ -42,6 +45,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
   const [newGroupName, setNewGroupName] = useState('')
   const [newGroupDescription, setNewGroupDescription] = useState('')
   const [newGroupPrivate, setNewGroupPrivate] = useState(false)
+  const [newGroupPremium, setNewGroupPremium] = useState(false)
   const [creating, setCreating] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
 
@@ -114,7 +118,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
       // Get all public groups
       const { data: publicGroups, error: groupsError } = await supabase
         .from('community_groups')
-        .select('id')
+        .select('id, is_premium')
         .eq('is_private', false)
 
       if (groupsError) throw groupsError
@@ -128,7 +132,10 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
       if (membershipError) throw membershipError
 
       const memberGroupIds = memberships?.map(m => m.group_id) || []
-      const groupsToJoin = publicGroups?.filter(g => !memberGroupIds.includes(g.id)) || []
+      const groupsToJoin = publicGroups?.filter(g => 
+        !memberGroupIds.includes(g.id) && 
+        (!g.is_premium || subscriptionStatus.subscribed)
+      ) || []
 
       // Auto-join public groups
       if (groupsToJoin.length > 0) {
@@ -168,6 +175,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
           name: newGroupName.trim(),
           description: newGroupDescription.trim() || null,
           is_private: newGroupPrivate,
+          is_premium: newGroupPremium,
           created_by: user?.id
         })
         .select()
@@ -195,6 +203,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
       setNewGroupName('')
       setNewGroupDescription('')
       setNewGroupPrivate(false)
+      setNewGroupPremium(false)
       setCreateDialogOpen(false)
 
       // Refresh groups
@@ -275,12 +284,27 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
            group.user_role === 'admin'
   }
 
+  const handleJoinPremiumGroup = (groupId: string) => {
+    toast({
+      title: "Premium Required",
+      description: "You need a premium subscription to join this group.",
+      variant: "destructive",
+    })
+    createCheckout()
+  }
+
   const GroupItem = ({ group }: { group: Group }) => (
     <div className="flex items-center gap-1">
       <Button
         variant={selectedGroupId === group.id ? "secondary" : "ghost"}
         className="flex-1 justify-start gap-2 h-auto py-2 px-3"
-        onClick={() => onGroupSelect(group.id)}
+        onClick={() => {
+          if (group.is_premium && !subscriptionStatus.subscribed) {
+            handleJoinPremiumGroup(group.id)
+            return
+          }
+          onGroupSelect(group.id)
+        }}
       >
         {group.is_private ? (
           <Lock className="h-4 w-4 text-muted-foreground" />
@@ -288,6 +312,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
           <Hash className="h-4 w-4 text-muted-foreground" />
         )}
         <span className="truncate">{group.name}</span>
+        {group.is_premium && <Crown className="h-3 w-3 text-secondary ml-1" />}
         {group.unread_count && group.unread_count > 0 && (
           <Badge variant="destructive" className="ml-auto text-xs h-5 w-5 p-0 flex items-center justify-center">
             {group.unread_count}
@@ -357,6 +382,12 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
       <div className="p-4 border-b">
         <h2 className="font-semibold text-lg">Family Community</h2>
         <p className="text-sm text-muted-foreground">Stay connected</p>
+        {subscriptionStatus.subscribed && (
+          <div className="flex items-center gap-1 mt-1">
+            <Star className="h-3 w-3 text-secondary" />
+            <span className="text-xs text-secondary font-medium">Premium Active</span>
+          </div>
+        )}
       </div>
 
       <ScrollArea className="flex-1">
@@ -404,6 +435,17 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
                         onCheckedChange={setNewGroupPrivate}
                       />
                       <Label htmlFor="private-group">Private Group</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="premium-group"
+                        checked={newGroupPremium}
+                        onCheckedChange={setNewGroupPremium}
+                      />
+                      <Label htmlFor="premium-group" className="flex items-center gap-2">
+                        <Crown className="h-4 w-4 text-secondary" />
+                        Premium Group (Requires subscription)
+                      </Label>
                     </div>
                     <div className="flex gap-2">
                       <Button

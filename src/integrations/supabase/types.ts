@@ -82,6 +82,7 @@ export type Database = {
           created_by: string
           description: string | null
           id: string
+          is_premium: boolean
           is_private: boolean
           name: string
           updated_at: string
@@ -91,6 +92,7 @@ export type Database = {
           created_by: string
           description?: string | null
           id?: string
+          is_premium?: boolean
           is_private?: boolean
           name: string
           updated_at?: string
@@ -100,6 +102,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           id?: string
+          is_premium?: boolean
           is_private?: boolean
           name?: string
           updated_at?: string
@@ -637,6 +640,42 @@ export type Database = {
         }
         Relationships: []
       }
+      subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          stripe_customer_id: string | null
+          subscribed: boolean
+          subscription_end: string | null
+          subscription_tier: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          stripe_customer_id?: string | null
+          subscribed?: boolean
+          subscription_end?: string | null
+          subscription_tier?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           assigned_at: string | null
@@ -736,6 +775,10 @@ export type Database = {
           meeting_details?: string
         }
         Returns: Json
+      }
+      user_has_premium_subscription: {
+        Args: { user_id: string }
+        Returns: boolean
       }
     }
     Enums: {
