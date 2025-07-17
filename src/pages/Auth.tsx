@@ -381,9 +381,10 @@ export default function Auth() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="admin">Admin Panel</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
@@ -741,6 +742,69 @@ export default function Auth() {
                       </svg>
                       Apple
                     </Button>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="admin">
+              <div className="space-y-4">
+                <div className="text-center mb-6">
+                  <div className="mx-auto w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4">
+                    <Shield className="h-8 w-8 text-red-500" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-red-500">Admin Access</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Restricted access for administrators only
+                  </p>
+                </div>
+                
+                <form onSubmit={handleSignIn} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="admin-email">Admin Email</Label>
+                    <Input
+                      id="admin-email"
+                      type="email"
+                      placeholder="Enter admin email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="admin-password">Admin Password</Label>
+                    <Input
+                      id="admin-password"
+                      type="password"
+                      placeholder="Enter admin password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    style={{ backgroundColor: '#dc2626', color: 'white' }}
+                    disabled={isLoading}
+                  >
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Admin Sign In
+                  </Button>
+                </form>
+                
+                <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                  <div className="flex items-start space-x-3">
+                    <Shield className="h-5 w-5 text-red-500 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-medium text-red-800 dark:text-red-200">Security Notice</h4>
+                      <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                        This panel is for authorized administrators only. All access attempts are logged and monitored.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
