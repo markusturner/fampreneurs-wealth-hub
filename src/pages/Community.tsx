@@ -31,14 +31,14 @@ const Community = () => {
     <div className="min-h-screen bg-background">
       <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
-      <main className="container mx-auto px-4 py-6 space-y-6 max-w-4xl">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-4xl">
         {/* Welcome Section */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
               Family Community
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
               Connect and share with your family members
             </p>
           </div>

@@ -124,7 +124,7 @@ export const CreatePost = ({ onPostCreated }: CreatePostProps) => {
         value={content}
         onChange={(e) => setContent(e.target.value)}
         rows={3}
-        className="resize-none"
+        className="resize-none text-base min-h-[100px]"
       />
       
       {imagePreview && (
@@ -149,7 +149,7 @@ export const CreatePost = ({ onPostCreated }: CreatePostProps) => {
         </div>
       )}
       
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Input
             type="file"
@@ -163,12 +163,12 @@ export const CreatePost = ({ onPostCreated }: CreatePostProps) => {
               type="button"
               variant="outline"
               size="sm"
-              className="cursor-pointer"
+              className="cursor-pointer gap-1 sm:gap-2 min-h-[40px] px-2 sm:px-3"
               asChild
             >
               <span>
-                <ImagePlus className="h-4 w-4 mr-2" />
-                Add Photo
+                <ImagePlus className="h-4 w-4" />
+                <span className="hidden sm:inline">Add Photo</span>
               </span>
             </Button>
           </label>
@@ -177,14 +177,15 @@ export const CreatePost = ({ onPostCreated }: CreatePostProps) => {
         <Button
           type="submit"
           disabled={isSubmitting || (!content.trim() && !image)}
-          className="gap-2"
+          className="gap-2 min-h-[40px] px-4 sm:px-6"
         >
           {isSubmitting ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Send className="h-4 w-4" />
           )}
-          Share
+          <span className="hidden sm:inline">Share</span>
+          <span className="sm:hidden">Post</span>
         </Button>
       </div>
     </form>

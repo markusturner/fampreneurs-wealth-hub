@@ -218,32 +218,32 @@ export const PostCard = ({ post, onUpdate }: PostCardProps) => {
 
   return (
     <Card className="shadow-soft">
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 p-4 sm:p-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <Avatar className="h-10 w-10 flex-shrink-0">
               <AvatarImage src={authorAvatar || ''} />
               <AvatarFallback>
                 {authorName.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div>
-              <p className="font-semibold text-sm">{authorName}</p>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-sm truncate">{authorName}</p>
               <p className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
               </p>
             </div>
           </div>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" className="flex-shrink-0">
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 p-4 sm:p-6">
         {/* Post Content */}
         {post.content && (
-          <p className="text-sm leading-relaxed">{post.content}</p>
+          <p className="text-sm sm:text-base leading-relaxed">{post.content}</p>
         )}
 
         {/* Post Image */}
@@ -272,24 +272,24 @@ export const PostCard = ({ post, onUpdate }: PostCardProps) => {
         )}
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2 pt-2 border-t">
+        <div className="flex items-center gap-1 sm:gap-2 pt-2 border-t">
           <Button
             variant={userReaction ? "default" : "ghost"}
             size="sm"
             onClick={() => handleReaction('like')}
-            className="flex-1"
+            className="flex-1 gap-1 min-h-[36px]"
           >
-            <ThumbsUp className="h-4 w-4 mr-1" />
-            Like
+            <ThumbsUp className="h-4 w-4" />
+            <span className="hidden sm:inline">Like</span>
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowComments(!showComments)}
-            className="flex-1"
+            className="flex-1 gap-1 min-h-[36px]"
           >
-            <MessageCircle className="h-4 w-4 mr-1" />
-            Comment
+            <MessageCircle className="h-4 w-4" />
+            <span className="hidden sm:inline">Comment</span>
           </Button>
         </div>
 
@@ -301,7 +301,7 @@ export const PostCard = ({ post, onUpdate }: PostCardProps) => {
               variant={userReaction?.reaction_type === type ? "default" : "outline"}
               size="sm"
               onClick={() => handleReaction(type)}
-              className="text-xs"
+              className="text-xs min-h-[32px] px-2"
             >
               {emoji}
             </Button>
@@ -318,12 +318,13 @@ export const PostCard = ({ post, onUpdate }: PostCardProps) => {
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 rows={2}
-                className="flex-1 resize-none"
+                className="flex-1 resize-none text-sm min-h-[60px]"
               />
               <Button
                 type="submit"
                 size="sm"
                 disabled={isSubmittingComment || !newComment.trim()}
+                className="min-h-[40px] px-3"
               >
                 <Send className="h-4 w-4" />
               </Button>
