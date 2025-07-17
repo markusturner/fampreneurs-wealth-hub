@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { MessageDialog } from "@/components/members/message-dialog"
-import { Loader2, Users, MessageCircle, Mail, Phone, User, Search, ArrowLeft, X } from 'lucide-react'
+import { EditMemberDialog } from "@/components/members/edit-member-dialog"
+import { Loader2, Users, MessageCircle, Mail, Phone, User, Search, ArrowLeft, X, Crown, Heart } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { MobileService } from '@/lib/mobile'
 import { ImpactStyle } from '@capacitor/haptics'
@@ -24,6 +25,8 @@ interface MemberProfile {
   family_role: string | null
   occupation: string | null
   phone: string | null
+  is_admin: boolean | null
+  is_accountability_partner: boolean | null
   created_at: string
 }
 
@@ -261,39 +264,66 @@ const Members = () => {
                   ) : (
                     <div className="space-y-1 p-2">
                       {filteredMembers.map((member) => (
-                        <button
+                        <div
                           key={member.id}
-                          onClick={() => handleSelectMember(member)}
-                          className={`w-full p-3 rounded-lg text-left hover:bg-muted/50 transition-colors active:bg-muted/70 ${
-                            selectedMember?.id === member.id ? 'bg-muted' : ''
+                          className={`w-full p-3 rounded-lg border hover:bg-muted/50 transition-colors ${
+                            selectedMember?.id === member.id ? 'bg-muted border-primary' : 'border-transparent'
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <div className="relative">
-                              <Avatar className={`${isMobileView ? 'h-10 w-10' : 'h-12 w-12'}`}>
-                                <AvatarImage src={member.avatar_url || "/placeholder.svg"} />
-                                <AvatarFallback className="bg-secondary text-secondary-foreground">
-                                  {getInitials(member)}
-                                </AvatarFallback>
-                              </Avatar>
-                              {unreadCounts[member.user_id] > 0 && (
-                                <span className="absolute -top-1 -right-1 h-5 w-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
-                                  {unreadCounts[member.user_id]}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className={`font-medium truncate ${isMobileView ? 'text-sm' : ''}`}>
-                                {getDisplayName(member)}
+                            <button
+                              onClick={() => handleSelectMember(member)}
+                              className="flex items-center gap-3 flex-1 text-left"
+                            >
+                              <div className="relative">
+                                <Avatar className={`${isMobileView ? 'h-10 w-10' : 'h-12 w-12'}`}>
+                                  <AvatarImage src={member.avatar_url || "/placeholder.svg"} />
+                                  <AvatarFallback className="bg-secondary text-secondary-foreground">
+                                    {getInitials(member)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                {unreadCounts[member.user_id] > 0 && (
+                                  <span className="absolute -top-1 -right-1 h-5 w-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
+                                    {unreadCounts[member.user_id]}
+                                  </span>
+                                )}
                               </div>
-                              {member.family_role && (
-                                <div className={`text-muted-foreground truncate ${isMobileView ? 'text-xs' : 'text-sm'}`}>
-                                  {member.family_role}
+                              <div className="flex-1 min-w-0">
+                                <div className={`font-medium truncate ${isMobileView ? 'text-sm' : ''}`}>
+                                  {getDisplayName(member)}
                                 </div>
-                              )}
-                            </div>
+                                {member.family_role && (
+                                  <div className={`text-muted-foreground truncate ${isMobileView ? 'text-xs' : 'text-sm'}`}>
+                                    {member.family_role}
+                                  </div>
+                                )}
+                                {/* Role Badges */}
+                                <div className="flex gap-1 mt-1">
+                                  {member.is_admin && (
+                                    <Badge variant="destructive" className="text-xs">
+                                      <Crown className="h-2 w-2 mr-1" />
+                                      Admin
+                                    </Badge>
+                                  )}
+                                  {member.is_accountability_partner && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      <Heart className="h-2 w-2 mr-1" />
+                                      Accountability
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </button>
+                            
+                            {/* Edit Button - Only visible to admins */}
+                            {profile?.is_admin && (
+                              <EditMemberDialog 
+                                member={member} 
+                                onMemberUpdated={fetchMembers}
+                              />
+                            )}
                           </div>
-                        </button>
+                        </div>
                       ))}
                     </div>
                   )}
