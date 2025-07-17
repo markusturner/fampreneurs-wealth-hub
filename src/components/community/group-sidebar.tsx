@@ -46,6 +46,9 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
   const [editingGroup, setEditingGroup] = useState<Group | null>(null)
   const [newGroupName, setNewGroupName] = useState('')
   const [editGroupName, setEditGroupName] = useState('')
+  const [editGroupDescription, setEditGroupDescription] = useState('')
+  const [editGroupPrivate, setEditGroupPrivate] = useState(false)
+  const [editGroupPremium, setEditGroupPremium] = useState(false)
   const [newGroupDescription, setNewGroupDescription] = useState('')
   const [newGroupPrivate, setNewGroupPrivate] = useState(false)
   const [newGroupPremium, setNewGroupPremium] = useState(false)
@@ -163,6 +166,9 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
   const startEditGroup = (group: Group) => {
     setEditingGroup(group)
     setEditGroupName(group.name)
+    setEditGroupDescription(group.description || '')
+    setEditGroupPrivate(group.is_private)
+    setEditGroupPremium(group.is_premium)
     setEditDialogOpen(true)
   }
 
@@ -180,18 +186,26 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
     try {
       const { error } = await supabase
         .from('community_groups')
-        .update({ name: editGroupName.trim() })
+        .update({ 
+          name: editGroupName.trim(),
+          description: editGroupDescription.trim() || null,
+          is_private: editGroupPrivate,
+          is_premium: editGroupPremium
+        })
         .eq('id', editingGroup.id)
 
       if (error) throw error
 
       toast({
         title: "Success",
-        description: `Group renamed to "${editGroupName}" successfully!`
+        description: `Group "${editGroupName}" updated successfully!`
       })
 
       // Reset form
       setEditGroupName('')
+      setEditGroupDescription('')
+      setEditGroupPrivate(false)
+      setEditGroupPremium(false)
       setEditingGroup(null)
       setEditDialogOpen(false)
 
@@ -201,7 +215,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
       console.error('Error updating group:', error)
       toast({
         title: "Error",
-        description: "Failed to update group name",
+        description: "Failed to update group",
         variant: "destructive"
       })
     } finally {
@@ -386,7 +400,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
               className="cursor-pointer"
             >
               <Settings className="h-4 w-4 mr-2" />
-              Edit Name
+              Edit Group
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <AlertDialog>
@@ -533,7 +547,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
             <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Edit Group Name</DialogTitle>
+                  <DialogTitle>Edit Group</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
@@ -542,8 +556,37 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
                       id="edit-group-name"
                       value={editGroupName}
                       onChange={(e) => setEditGroupName(e.target.value)}
-                      placeholder="Enter new group name"
+                      placeholder="Enter group name"
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-group-description">Description (Optional)</Label>
+                    <Textarea
+                      id="edit-group-description"
+                      value={editGroupDescription}
+                      onChange={(e) => setEditGroupDescription(e.target.value)}
+                      placeholder="Describe what this group is for"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="edit-private-group"
+                      checked={editGroupPrivate}
+                      onCheckedChange={setEditGroupPrivate}
+                    />
+                    <Label htmlFor="edit-private-group">Private Group</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="edit-premium-group"
+                      checked={editGroupPremium}
+                      onCheckedChange={setEditGroupPremium}
+                    />
+                    <Label htmlFor="edit-premium-group" className="flex items-center gap-2">
+                      <Crown className="h-4 w-4 text-secondary" />
+                      Premium Group (Requires subscription)
+                    </Label>
                   </div>
                   <div className="flex gap-2">
                     <Button
@@ -558,7 +601,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
                       disabled={updating}
                       className="flex-1"
                     >
-                      {updating ? "Updating..." : "Update"}
+                      {updating ? "Updating..." : "Update Group"}
                     </Button>
                   </div>
                 </div>

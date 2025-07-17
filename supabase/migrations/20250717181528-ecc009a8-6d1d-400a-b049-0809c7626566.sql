@@ -143,8 +143,4 @@ BEFORE UPDATE ON public.group_messages
 FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at_column();
 
--- Insert default groups
-INSERT INTO public.community_groups (name, description, is_private, created_by) VALUES
-('General', 'General discussion for all family members', false, '00000000-0000-0000-0000-000000000000'),
-('Announcements', 'Important family announcements and updates', false, '00000000-0000-0000-0000-000000000000'),
-('Random', 'Casual conversations and fun discussions', false, '00000000-0000-0000-0000-000000000000');
+-- Default groups have been removed - users can create their own groups
