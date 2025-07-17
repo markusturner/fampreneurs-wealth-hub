@@ -1,25 +1,48 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, TrendingDown, DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { TrendingUp, TrendingDown, DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, UserPlus } from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 
 
 export function DashboardStats() {
   const [documentCount, setDocumentCount] = useState(0)
+  const [financialAdvisorCount, setFinancialAdvisorCount] = useState(0)
+  const [familyMemberCount, setFamilyMemberCount] = useState(0)
 
   useEffect(() => {
-    const fetchDocumentCount = async () => {
-      const { count, error } = await supabase
+    const fetchCounts = async () => {
+      // Fetch document count
+      const { count: docCount, error: docError } = await supabase
         .from('family_documents')
         .select('*', { count: 'exact', head: true })
       
-      if (!error && count !== null) {
-        setDocumentCount(count)
+      if (!docError && docCount !== null) {
+        setDocumentCount(docCount)
+      }
+
+      // Fetch financial advisor count
+      const { count: advisorCount, error: advisorError } = await supabase
+        .from('financial_advisors')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true)
+      
+      if (!advisorError && advisorCount !== null) {
+        setFinancialAdvisorCount(advisorCount)
+      }
+
+      // Fetch family member count
+      const { count: familyCount, error: familyError } = await supabase
+        .from('family_members')
+        .select('*', { count: 'exact', head: true })
+        .neq('status', 'inactive')
+      
+      if (!familyError && familyCount !== null) {
+        setFamilyMemberCount(familyCount)
       }
     }
 
-    fetchDocumentCount()
+    fetchCounts()
   }, [])
 
   const stats = [
@@ -40,24 +63,32 @@ export function DashboardStats() {
       description: "New positions this week"
     },
     {
-      title: "Team Members",
-      value: "12",
-      change: "+1",
+      title: "Financial Advisors",
+      value: financialAdvisorCount.toString(),
+      change: financialAdvisorCount > 0 ? "+1" : "0",
       trend: "up",
       icon: Users,
-      description: "Financial advisors"
+      description: "Active team members"
+    },
+    {
+      title: "Family Members",
+      value: familyMemberCount.toString(),
+      change: familyMemberCount > 0 ? "+1" : "0",
+      trend: "up",
+      icon: UserPlus,
+      description: "Family network"
     },
     {
       title: "Family Documents",
       value: documentCount.toString(),
-      change: "+5",
+      change: documentCount > 0 ? "+5" : "0",
       trend: "up",
       icon: FileText,
       description: "Managed documents"
     }
   ]
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
       {stats.map((stat) => {
         const Icon = stat.icon
         const TrendIcon = stat.trend === "up" ? ArrowUpRight : ArrowDownRight
