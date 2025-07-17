@@ -94,9 +94,9 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     --secondary-foreground: 262 86% 8%;
     --secondary-glow: 41 100% 75%;
 
-    /* Accent: Purple adjusted for dark mode */
-    --accent: 270 86% 50%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent: Yellow (#ffb500) for dark mode */
+    --accent: 41 100% 50%;
+    --accent-foreground: 262 86% 8%;
 
     --muted: 262 50% 15%;
     --muted-foreground: 215 20% 65%;
