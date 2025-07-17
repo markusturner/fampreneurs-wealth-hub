@@ -1,9 +1,10 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Upload, UserPlus, Banknote, FileText, Settings, TrendingUp, Shield, Calendar } from "lucide-react"
+import { Plus, Upload, UserPlus, Users, FileText, Settings, TrendingUp, Shield, Calendar } from "lucide-react"
 import { ScheduleMeetingDialog } from "./schedule-meeting-dialog"
 import { GoogleSheetsIntegration } from "./google-sheets-integration"
+import { AddFamilyMemberDialog } from "./add-family-member-dialog"
 
 
 const quickActions = [
@@ -29,11 +30,11 @@ const quickActions = [
     action: () => console.log("Add team member")
   },
   {
-    title: "Record Transaction",
-    description: "Log financial transaction",
-    icon: Banknote,
+    title: "Add Family Member",
+    description: "Invite for meeting notifications",
+    icon: Users,
     variant: "default" as const,
-    action: () => console.log("Record transaction")
+    action: "add_family_member" as const
   },
   {
     title: "Generate Report",
@@ -47,6 +48,7 @@ const quickActions = [
 export function QuickActions() {
   const [meetingDialogOpen, setMeetingDialogOpen] = useState(false)
   const [googleSheetsDialogOpen, setGoogleSheetsDialogOpen] = useState(false)
+  const [addFamilyMemberDialogOpen, setAddFamilyMemberDialogOpen] = useState(false)
 
   const handleScheduleMeeting = () => {
     setMeetingDialogOpen(true)
@@ -55,6 +57,8 @@ export function QuickActions() {
   const handleAction = (action: string | (() => void)) => {
     if (action === "google_sheets") {
       setGoogleSheetsDialogOpen(true)
+    } else if (action === "add_family_member") {
+      setAddFamilyMemberDialogOpen(true)
     } else if (typeof action === "function") {
       action()
     }
@@ -64,6 +68,7 @@ export function QuickActions() {
     <>
       <ScheduleMeetingDialog open={meetingDialogOpen} onOpenChange={setMeetingDialogOpen} />
       <GoogleSheetsIntegration open={googleSheetsDialogOpen} onOpenChange={setGoogleSheetsDialogOpen} />
+      <AddFamilyMemberDialog open={addFamilyMemberDialogOpen} onOpenChange={setAddFamilyMemberDialogOpen} />
     <Card className="col-span-4 lg:col-span-1 shadow-soft">
       <CardHeader>
         <CardTitle className="text-xl font-bold">Quick Actions</CardTitle>

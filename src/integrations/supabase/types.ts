@@ -344,6 +344,60 @@ export type Database = {
         }
         Relationships: []
       }
+      family_members: {
+        Row: {
+          added_by: string
+          created_at: string | null
+          email: string | null
+          family_position: string
+          full_name: string
+          id: string
+          invitation_sent_at: string | null
+          is_invited: boolean | null
+          joined_at: string | null
+          notes: string | null
+          phone: string | null
+          relationship_to_family: string | null
+          status: string | null
+          trust_positions: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          added_by: string
+          created_at?: string | null
+          email?: string | null
+          family_position: string
+          full_name: string
+          id?: string
+          invitation_sent_at?: string | null
+          is_invited?: boolean | null
+          joined_at?: string | null
+          notes?: string | null
+          phone?: string | null
+          relationship_to_family?: string | null
+          status?: string | null
+          trust_positions?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          added_by?: string
+          created_at?: string | null
+          email?: string | null
+          family_position?: string
+          full_name?: string
+          id?: string
+          invitation_sent_at?: string | null
+          is_invited?: boolean | null
+          joined_at?: string | null
+          notes?: string | null
+          phone?: string | null
+          relationship_to_family?: string | null
+          status?: string | null
+          trust_positions?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       group_memberships: {
         Row: {
           group_id: string
@@ -608,6 +662,14 @@ export type Database = {
       is_user_admin: {
         Args: { user_id: string }
         Returns: boolean
+      }
+      notify_family_about_meeting: {
+        Args: {
+          meeting_title: string
+          meeting_date: string
+          meeting_details?: string
+        }
+        Returns: Json
       }
     }
     Enums: {

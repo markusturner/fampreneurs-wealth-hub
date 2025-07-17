@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/popover"
 import { toast } from "@/hooks/use-toast"
 import { useMeetings } from "@/contexts/MeetingsContext"
+import { supabase } from "@/integrations/supabase/client"
 
 const formSchema = z.object({
   name: z.string().min(1, "Meeting name is required"),
@@ -55,6 +56,7 @@ interface ScheduleMeetingDialogProps {
 
 export function ScheduleMeetingDialog({ open, onOpenChange }: ScheduleMeetingDialogProps) {
   const { addMeeting } = useMeetings()
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -65,21 +67,62 @@ export function ScheduleMeetingDialog({ open, onOpenChange }: ScheduleMeetingDia
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    addMeeting({
-      title: values.name,
-      date: format(values.date, "yyyy-MM-dd"),
-      time: values.time,
-      type: values.type,
-      notes: values.notes,
-    })
-    
-    toast({
-      title: "Meeting Scheduled",
-      description: `${values.name} has been scheduled for ${format(values.date, "PPP")} at ${values.time}. Family members will be notified.`,
-    })
-    onOpenChange(false)
-    form.reset()
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true)
+    try {
+      // Add meeting to local context
+      addMeeting({
+        title: values.name,
+        date: format(values.date, "yyyy-MM-dd"),
+        time: values.time,
+        type: values.type,
+        notes: values.notes,
+      })
+
+      // Create the meeting datetime for notifications
+      const meetingDateTime = new Date(`${format(values.date, "yyyy-MM-dd")}T${values.time}`)
+      
+      // Notify family members
+      try {
+        const { data: notificationResult, error: notificationError } = await supabase
+          .rpc('notify_family_about_meeting', {
+            meeting_title: values.name,
+            meeting_date: meetingDateTime.toISOString(),
+            meeting_details: values.notes || null
+          })
+
+        if (notificationError) {
+          console.error('Error sending notifications:', notificationError)
+        }
+
+        const notificationCount = typeof notificationResult === 'object' && notificationResult && 'notifications_sent' in notificationResult 
+          ? (notificationResult as any).notifications_sent 
+          : 0
+        
+        toast({
+          title: "Meeting Scheduled",
+          description: `${values.name} has been scheduled for ${format(values.date, "PPP")} at ${values.time}.${notificationCount > 0 ? ` ${notificationCount} family members will be notified.` : ' No family members to notify yet.'}`,
+        })
+      } catch (error) {
+        console.error('Notification error:', error)
+        toast({
+          title: "Meeting Scheduled",
+          description: `${values.name} has been scheduled for ${format(values.date, "PPP")} at ${values.time}. Note: Unable to send notifications at this time.`,
+        })
+      }
+      
+      onOpenChange(false)
+      form.reset()
+    } catch (error) {
+      console.error('Error scheduling meeting:', error)
+      toast({
+        title: "Error",
+        description: "Failed to schedule meeting. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -208,7 +251,9 @@ export function ScheduleMeetingDialog({ open, onOpenChange }: ScheduleMeetingDia
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
                 Cancel
               </Button>
-              <Button type="submit" className="w-full sm:w-auto">Schedule Meeting</Button>
+              <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+                {isSubmitting ? "Scheduling..." : "Schedule Meeting"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
