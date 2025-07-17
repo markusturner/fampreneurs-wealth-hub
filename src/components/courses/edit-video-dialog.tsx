@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -12,11 +12,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from '@/hooks/use-toast'
 import { Upload, Link, Loader2, FileText, X } from 'lucide-react'
 
-interface AddVideoDialogProps {
+interface EditVideoDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  courseId: string
-  onVideoAdded: () => void
+  video: {
+    id: string
+    title: string
+    description: string | null
+    video_url: string
+    video_type: 'upload' | 'youtube' | 'vimeo'
+    duration_seconds: number | null
+  } | null
+  onVideoUpdated: () => void
 }
 
 type VideoType = 'upload' | 'youtube' | 'vimeo'
@@ -48,7 +55,7 @@ const getEmbedUrl = (url: string, type: VideoType): string => {
   }
 }
 
-export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: AddVideoDialogProps) {
+export function EditVideoDialog({ open, onOpenChange, video, onVideoUpdated }: EditVideoDialogProps) {
   const { user } = useAuth()
   const { toast } = useToast()
   const [title, setTitle] = useState('')
@@ -61,14 +68,33 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState<'upload' | 'url'>('url')
   const [documents, setDocuments] = useState<File[]>([])
-  const [createdVideoId, setCreatedVideoId] = useState<string | null>(null)
-  const [showDocumentUpload, setShowDocumentUpload] = useState(false)
+
+  useEffect(() => {
+    if (video && open) {
+      setTitle(video.title)
+      setDescription(video.description || '')
+      setVideoUrl(video.video_url)
+      setVideoType(video.video_type)
+      setDuration(video.duration_seconds ? Math.floor(video.duration_seconds / 60).toString() : '')
+      setActiveTab(video.video_type === 'upload' ? 'upload' : 'url')
+      setDocuments([])
+    }
+  }, [video, open])
 
   const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       setVideoFile(file)
     }
+  }
+
+  const handleDocumentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    setDocuments(prev => [...prev, ...files])
+  }
+
+  const removeDocument = (index: number) => {
+    setDocuments(prev => prev.filter((_, i) => i !== index))
   }
 
   const uploadVideoFile = async (file: File): Promise<string | null> => {
@@ -89,15 +115,6 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
       .getPublicUrl(fileName)
     
     return publicUrl
-  }
-
-  const handleDocumentFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    setDocuments(prev => [...prev, ...files])
-  }
-
-  const removeDocument = (index: number) => {
-    setDocuments(prev => prev.filter((_, i) => i !== index))
   }
 
   const uploadDocument = async (file: File, videoId: string): Promise<boolean> => {
@@ -153,7 +170,7 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!title.trim()) {
+    if (!video || !title.trim()) {
       toast({
         title: "Error",
         description: "Please enter a video title",
@@ -162,7 +179,7 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
       return
     }
 
-    if (activeTab === 'upload' && !videoFile) {
+    if (activeTab === 'upload' && !videoFile && video.video_type !== 'upload') {
       toast({
         title: "Error", 
         description: "Please select a video file to upload",
@@ -183,8 +200,8 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
     setIsSubmitting(true)
 
     try {
-      let finalVideoUrl = ''
-      let finalVideoType: VideoType = 'upload'
+      let finalVideoUrl = videoUrl
+      let finalVideoType: VideoType = videoType
 
       if (activeTab === 'upload' && videoFile) {
         const uploadedUrl = await uploadVideoFile(videoFile)
@@ -198,38 +215,33 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
         }
         finalVideoUrl = uploadedUrl
         finalVideoType = 'upload'
-      } else {
+      } else if (activeTab === 'url') {
         finalVideoUrl = getEmbedUrl(videoUrl, videoType)
         finalVideoType = videoType
       }
 
-      const { data: videoData, error } = await supabase
+      const { error } = await supabase
         .from('course_videos')
-        .insert({
-          course_id: courseId,
+        .update({
           title: title.trim(),
           description: description.trim() || null,
           video_url: finalVideoUrl,
           video_type: finalVideoType,
           duration_seconds: duration ? parseInt(duration) * 60 : null,
-          created_by: user?.id
         })
-        .select()
+        .eq('id', video.id)
 
       if (error) {
         throw error
       }
 
-      const newVideoId = videoData[0].id
-      setCreatedVideoId(newVideoId)
-
-      // Upload documents if any
+      // Upload new documents if any
       if (documents.length > 0) {
-        const documentsUploaded = await uploadAllDocuments(newVideoId)
+        const documentsUploaded = await uploadAllDocuments(video.id)
         if (!documentsUploaded) {
           toast({
             title: "Warning",
-            description: "Video created successfully, but some documents failed to upload.",
+            description: "Video updated successfully, but some documents failed to upload.",
             variant: "destructive"
           })
         }
@@ -238,35 +250,22 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
       toast({
         title: "Success",
         description: documents.length > 0 
-          ? "Video and documents have been added to the course!"
-          : "Video has been added to the course!"
+          ? "Video and documents have been updated!"
+          : "Video has been updated!"
       })
 
-      // Show document upload option
-      if (documents.length === 0) {
-        setShowDocumentUpload(true)
-        return
-      }
-
       // Reset form
-      setTitle('')
-      setDescription('')
       setVideoFile(null)
-      setVideoUrl('')
-      setDuration('')
-      setCategory('')
       setDocuments([])
-      setCreatedVideoId(null)
-      setShowDocumentUpload(false)
       
-      onVideoAdded()
+      onVideoUpdated()
       onOpenChange(false)
       
     } catch (error) {
-      console.error('Error adding video:', error)
+      console.error('Error updating video:', error)
       toast({
         title: "Error",
-        description: "Failed to add video. Please try again.",
+        description: "Failed to update video. Please try again.",
         variant: "destructive"
       })
     } finally {
@@ -274,55 +273,15 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
     }
   }
 
-  const handleCompleteVideo = () => {
-    // Reset form
-    setTitle('')
-    setDescription('')
-    setVideoFile(null)
-    setVideoUrl('')
-    setDuration('')
-    setCategory('')
-    setDocuments([])
-    setCreatedVideoId(null)
-    setShowDocumentUpload(false)
-    
-    onVideoAdded()
-    onOpenChange(false)
-  }
-
-  const handleAddDocumentsLater = async () => {
-    if (!createdVideoId || documents.length === 0) {
-      handleCompleteVideo()
-      return
-    }
-
-    setIsSubmitting(true)
-    const documentsUploaded = await uploadAllDocuments(createdVideoId)
-    setIsSubmitting(false)
-
-    if (documentsUploaded) {
-      toast({
-        title: "Success",
-        description: "Documents have been added to the video!"
-      })
-    } else {
-      toast({
-        title: "Error",
-        description: "Some documents failed to upload.",
-        variant: "destructive"
-      })
-    }
-
-    handleCompleteVideo()
-  }
+  if (!video) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] mx-4 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Video to Course</DialogTitle>
+          <DialogTitle>Edit Video</DialogTitle>
           <DialogDescription>
-            Upload a video file or add a video from YouTube or Vimeo
+            Update video details, URL, or upload a new video file
           </DialogDescription>
         </DialogHeader>
 
@@ -357,7 +316,7 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
               </TabsTrigger>
               <TabsTrigger value="upload" className="gap-2">
                 <Upload className="h-4 w-4" />
-                Upload File
+                Upload New File
               </TabsTrigger>
             </TabsList>
 
@@ -389,17 +348,21 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
 
             <TabsContent value="upload" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="video-file">Video File *</Label>
+                <Label htmlFor="video-file">Upload New Video File</Label>
                 <Input
                   id="video-file"
                   type="file"
                   accept="video/*"
                   onChange={handleVideoFileChange}
-                  required={activeTab === 'upload'}
                 />
                 {videoFile && (
                   <p className="text-sm text-muted-foreground">
                     Selected: {videoFile.name} ({(videoFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </p>
+                )}
+                {video.video_type === 'upload' && (
+                  <p className="text-sm text-muted-foreground">
+                    Leave empty to keep current video file
                   </p>
                 )}
               </div>
@@ -433,7 +396,7 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
           <div className="space-y-4 border-t pt-4">
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              <Label className="text-sm font-medium">Supporting Documents (Optional)</Label>
+              <Label className="text-sm font-medium">Add New Documents (Optional)</Label>
             </div>
             <div className="space-y-2">
               <Input
@@ -467,97 +430,30 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
             )}
           </div>
 
-          {!showDocumentUpload && (
-            <DialogFooter className="flex-col sm:flex-row gap-3 sm:gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => onOpenChange(false)}
-                className="w-full sm:w-auto"
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full sm:w-auto gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Adding Video...
-                  </>
-                ) : (
-                  'Add Video'
-                )}
-              </Button>
-            </DialogFooter>
-          )}
-
-          {showDocumentUpload && (
-            <div className="space-y-4 border-t pt-4">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-green-600">Video Created Successfully!</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Would you like to add supporting documents to this video?
-                </p>
-              </div>
-              
-              <div className="space-y-2">
-                <Input
-                  type="file"
-                  multiple
-                  accept=".pdf,.doc,.docx,.txt,.ppt,.pptx,.xls,.xlsx"
-                  onChange={handleDocumentFileChange}
-                  className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                />
-                {documents.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium">Selected Documents:</p>
-                    {documents.map((doc, index) => (
-                      <div key={index} className="flex items-center justify-between bg-muted p-2 rounded">
-                        <span className="text-sm truncate">{doc.name}</span>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeDocument(index)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <DialogFooter className="flex-col sm:flex-row gap-3 sm:gap-2">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={handleCompleteVideo}
-                  className="w-full sm:w-auto"
-                >
-                  Skip Documents
-                </Button>
-                <Button 
-                  type="button"
-                  onClick={handleAddDocumentsLater}
-                  disabled={isSubmitting || documents.length === 0}
-                  className="w-full sm:w-auto gap-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Uploading Documents...
-                    </>
-                  ) : (
-                    `Add ${documents.length} Document${documents.length !== 1 ? 's' : ''}`
-                  )}
-                </Button>
-              </DialogFooter>
-            </div>
-          )}
+          <DialogFooter className="flex-col sm:flex-row gap-3 sm:gap-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="w-full sm:w-auto gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Updating Video...
+                </>
+              ) : (
+                'Update Video'
+              )}
+            </Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
