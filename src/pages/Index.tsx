@@ -21,8 +21,10 @@ const Index = () => {
   useEffect(() => {
     if (!loading && !user) {
       navigate('/auth')
+    } else if (!loading && user && profile?.is_admin) {
+      navigate('/admin')
     }
-  }, [user, loading, navigate])
+  }, [user, loading, navigate, profile])
 
   if (loading) {
     return (

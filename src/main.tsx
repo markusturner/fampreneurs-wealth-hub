@@ -8,6 +8,7 @@ import { MeetingsProvider } from "@/contexts/MeetingsContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import AdminDashboard from "./pages/AdminDashboard";
 import Documents from "./pages/Documents";
 import Community from "./pages/Community";
 import Courses from "./pages/Courses";
@@ -33,6 +34,7 @@ createRoot(document.getElementById("root")!).render(
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/documents" element={<Documents />} />
                   <Route path="/community" element={<Community />} />
                   <Route path="/courses" element={<Courses />} />
