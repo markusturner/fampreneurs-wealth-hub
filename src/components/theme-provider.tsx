@@ -26,9 +26,19 @@ export function ThemeProvider({
   storageKey = "fampreneurs-ui-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  )
+  const [theme, setTheme] = useState<Theme>(defaultTheme)
+
+  // Initialize theme from localStorage after component mounts
+  useEffect(() => {
+    try {
+      const storedTheme = localStorage.getItem(storageKey) as Theme
+      if (storedTheme && (storedTheme === "dark" || storedTheme === "light" || storedTheme === "system")) {
+        setTheme(storedTheme)
+      }
+    } catch (error) {
+      console.warn("Error reading theme from localStorage:", error)
+    }
+  }, [storageKey])
 
   useEffect(() => {
     const root = window.document.documentElement
@@ -50,9 +60,14 @@ export function ThemeProvider({
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
+    setTheme: (newTheme: Theme) => {
+      try {
+        localStorage.setItem(storageKey, newTheme)
+        setTheme(newTheme)
+      } catch (error) {
+        console.warn("Error saving theme to localStorage:", error)
+        setTheme(newTheme)
+      }
     },
   }
 
