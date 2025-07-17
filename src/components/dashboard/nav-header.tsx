@@ -1,4 +1,4 @@
-import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, FileText, X } from "lucide-react"
+import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -75,14 +75,6 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                     <Users className="h-4 w-4" />
                     Community
                   </Button>
-                  <Button
-                    variant={location.pathname === '/documents' ? "default" : "ghost"}
-                    className="w-full justify-start gap-3"
-                    onClick={() => handleNavigation('/documents')}
-                  >
-                    <FileText className="h-4 w-4" />
-                    Documents
-                  </Button>
                 </nav>
               </div>
             </SheetContent>
@@ -118,15 +110,6 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           >
             <Users className="h-4 w-4" />
             Community
-          </Button>
-          <Button
-            variant={location.pathname === '/documents' ? "default" : "ghost"}
-            size="sm"
-            onClick={() => navigate('/documents')}
-            className="gap-2"
-          >
-            <FileText className="h-4 w-4" />
-            Documents
           </Button>
         </div>
 
