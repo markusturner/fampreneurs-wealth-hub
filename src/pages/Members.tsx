@@ -217,6 +217,36 @@ const Members = () => {
     }
   }
 
+  const handleRemoveAccountabilityPartner = async (member: MemberProfile) => {
+    if (!user?.id) return
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          is_accountability_partner: false,
+          accountability_specialties: null
+        })
+        .eq('user_id', member.user_id)
+
+      if (error) throw error
+
+      toast({
+        title: "Accountability Partner Removed",
+        description: `${getDisplayName(member)} is no longer an accountability partner.`,
+      })
+
+      fetchMembers()
+    } catch (error) {
+      console.error('Error removing accountability role:', error)
+      toast({
+        title: "Error",
+        description: "Failed to remove accountability partner role. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const currentUserMembers = members.filter(member => member.user_id !== user.id)
   
   const filteredMembers = currentUserMembers.filter(member =>
@@ -365,7 +395,7 @@ const Members = () => {
                                    member={member} 
                                    onMemberUpdated={fetchMembers}
                                  />
-                                  {!member.is_accountability_partner && (
+                                  {!member.is_accountability_partner ? (
                                     <Button
                                       variant="ghost"
                                       size="sm"
@@ -377,7 +407,19 @@ const Members = () => {
                                     >
                                       <Heart className="h-3 w-3" />
                                     </Button>
-                                 )}
+                                  ) : (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        // Quick action to remove accountability partner
+                                        handleRemoveAccountabilityPartner(member)
+                                      }}
+                                      className="text-xs p-1 h-auto text-destructive hover:text-destructive"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </Button>
+                                  )}
                                </div>
                              )}
                           </div>
