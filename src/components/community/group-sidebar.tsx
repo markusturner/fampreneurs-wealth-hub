@@ -1,0 +1,353 @@
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/integrations/supabase/client'
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { useToast } from '@/hooks/use-toast'
+import { Hash, Lock, Plus, Users, Settings } from 'lucide-react'
+
+interface Group {
+  id: string
+  name: string
+  description: string | null
+  is_private: boolean
+  created_by: string
+  created_at: string
+  member_count?: number
+  unread_count?: number
+}
+
+interface GroupSidebarProps {
+  selectedGroupId: string | null
+  onGroupSelect: (groupId: string) => void
+}
+
+export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarProps) {
+  const { user } = useAuth()
+  const { toast } = useToast()
+  const [publicGroups, setPublicGroups] = useState<Group[]>([])
+  const [privateGroups, setPrivateGroups] = useState<Group[]>([])
+  const [loading, setLoading] = useState(true)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [newGroupName, setNewGroupName] = useState('')
+  const [newGroupDescription, setNewGroupDescription] = useState('')
+  const [newGroupPrivate, setNewGroupPrivate] = useState(false)
+  const [creating, setCreating] = useState(false)
+
+  useEffect(() => {
+    fetchGroups()
+    // Auto-join public groups for new users
+    autoJoinPublicGroups()
+  }, [user])
+
+  const fetchGroups = async () => {
+    try {
+      // Fetch public groups
+      const { data: publicData, error: publicError } = await supabase
+        .from('community_groups')
+        .select(`
+          *,
+          group_memberships!inner(user_id)
+        `)
+        .eq('is_private', false)
+        .eq('group_memberships.user_id', user?.id)
+
+      if (publicError) throw publicError
+
+      // Fetch private groups
+      const { data: privateData, error: privateError } = await supabase
+        .from('community_groups')
+        .select(`
+          *,
+          group_memberships!inner(user_id)
+        `)
+        .eq('is_private', true)
+        .eq('group_memberships.user_id', user?.id)
+
+      if (privateError) throw privateError
+
+      setPublicGroups(publicData || [])
+      setPrivateGroups(privateData || [])
+
+      // Auto-select first group if none selected
+      if (!selectedGroupId && publicData && publicData.length > 0) {
+        onGroupSelect(publicData[0].id)
+      }
+    } catch (error) {
+      console.error('Error fetching groups:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load groups",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const autoJoinPublicGroups = async () => {
+    if (!user) return
+
+    try {
+      // Get all public groups
+      const { data: publicGroups, error: groupsError } = await supabase
+        .from('community_groups')
+        .select('id')
+        .eq('is_private', false)
+
+      if (groupsError) throw groupsError
+
+      // Check which groups user is not a member of
+      const { data: memberships, error: membershipError } = await supabase
+        .from('group_memberships')
+        .select('group_id')
+        .eq('user_id', user.id)
+
+      if (membershipError) throw membershipError
+
+      const memberGroupIds = memberships?.map(m => m.group_id) || []
+      const groupsToJoin = publicGroups?.filter(g => !memberGroupIds.includes(g.id)) || []
+
+      // Auto-join public groups
+      if (groupsToJoin.length > 0) {
+        const membershipInserts = groupsToJoin.map(group => ({
+          group_id: group.id,
+          user_id: user.id,
+          role: 'member'
+        }))
+
+        const { error: insertError } = await supabase
+          .from('group_memberships')
+          .insert(membershipInserts)
+
+        if (insertError) throw insertError
+      }
+    } catch (error) {
+      console.error('Error auto-joining groups:', error)
+    }
+  }
+
+  const createGroup = async () => {
+    if (!newGroupName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a group name",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setCreating(true)
+    try {
+      // Create group
+      const { data: groupData, error: groupError } = await supabase
+        .from('community_groups')
+        .insert({
+          name: newGroupName.trim(),
+          description: newGroupDescription.trim() || null,
+          is_private: newGroupPrivate,
+          created_by: user?.id
+        })
+        .select()
+        .single()
+
+      if (groupError) throw groupError
+
+      // Join the group as admin
+      const { error: membershipError } = await supabase
+        .from('group_memberships')
+        .insert({
+          group_id: groupData.id,
+          user_id: user?.id,
+          role: 'admin'
+        })
+
+      if (membershipError) throw membershipError
+
+      toast({
+        title: "Success",
+        description: `Group "${newGroupName}" created successfully!`
+      })
+
+      // Reset form
+      setNewGroupName('')
+      setNewGroupDescription('')
+      setNewGroupPrivate(false)
+      setCreateDialogOpen(false)
+
+      // Refresh groups
+      fetchGroups()
+      onGroupSelect(groupData.id)
+    } catch (error) {
+      console.error('Error creating group:', error)
+      toast({
+        title: "Error",
+        description: "Failed to create group",
+        variant: "destructive"
+      })
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const GroupItem = ({ group }: { group: Group }) => (
+    <Button
+      variant={selectedGroupId === group.id ? "secondary" : "ghost"}
+      className="w-full justify-start gap-2 h-auto py-2 px-3"
+      onClick={() => onGroupSelect(group.id)}
+    >
+      {group.is_private ? (
+        <Lock className="h-4 w-4 text-muted-foreground" />
+      ) : (
+        <Hash className="h-4 w-4 text-muted-foreground" />
+      )}
+      <span className="truncate">{group.name}</span>
+      {group.unread_count && group.unread_count > 0 && (
+        <Badge variant="destructive" className="ml-auto text-xs h-5 w-5 p-0 flex items-center justify-center">
+          {group.unread_count}
+        </Badge>
+      )}
+    </Button>
+  )
+
+  if (loading) {
+    return (
+      <div className="w-64 border-r bg-muted/20 p-4">
+        <div className="animate-pulse space-y-2">
+          {[1, 2, 3, 4, 5].map(i => (
+            <div key={i} className="h-8 bg-muted rounded"></div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="w-64 border-r bg-muted/20 flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b">
+        <h2 className="font-semibold text-lg">Family Community</h2>
+        <p className="text-sm text-muted-foreground">Stay connected</p>
+      </div>
+
+      <ScrollArea className="flex-1">
+        <div className="p-2 space-y-4">
+          {/* Public Groups */}
+          <div>
+            <div className="flex items-center justify-between px-2 mb-2">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                Public Groups
+              </h3>
+              <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Group</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="group-name">Group Name</Label>
+                      <Input
+                        id="group-name"
+                        value={newGroupName}
+                        onChange={(e) => setNewGroupName(e.target.value)}
+                        placeholder="Enter group name"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="group-description">Description (Optional)</Label>
+                      <Textarea
+                        id="group-description"
+                        value={newGroupDescription}
+                        onChange={(e) => setNewGroupDescription(e.target.value)}
+                        placeholder="Describe what this group is for"
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="private-group"
+                        checked={newGroupPrivate}
+                        onCheckedChange={setNewGroupPrivate}
+                      />
+                      <Label htmlFor="private-group">Private Group</Label>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setCreateDialogOpen(false)}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={createGroup}
+                        disabled={creating}
+                        className="flex-1"
+                      >
+                        {creating ? "Creating..." : "Create Group"}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+            <div className="space-y-1">
+              {publicGroups.map(group => (
+                <GroupItem key={group.id} group={group} />
+              ))}
+            </div>
+          </div>
+
+          {/* Private Groups */}
+          {privateGroups.length > 0 && (
+            <div>
+              <div className="flex items-center px-2 mb-2">
+                <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                  Private Groups
+                </h3>
+              </div>
+              <div className="space-y-1">
+                {privateGroups.map(group => (
+                  <GroupItem key={group.id} group={group} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+
+      {/* User Info */}
+      <div className="p-4 border-t">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={user?.user_metadata?.avatar_url} />
+            <AvatarFallback className="text-xs">
+              {user?.email?.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">
+              {user?.user_metadata?.display_name || user?.email}
+            </p>
+            <p className="text-xs text-muted-foreground">Online</p>
+          </div>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <Settings className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
