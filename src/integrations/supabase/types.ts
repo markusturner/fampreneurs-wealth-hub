@@ -536,6 +536,39 @@ export type Database = {
         }
         Relationships: []
       }
+      fulfillment_stages: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          stage_order: number
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          stage_order?: number
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          stage_order?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       group_coaching_sessions: {
         Row: {
           coach_avatar_url: string | null
@@ -763,6 +796,36 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_settings: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           accountability_specialties: string[] | null
@@ -891,13 +954,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_fulfillment_progress: {
+        Row: {
+          created_at: string | null
+          id: string
+          moved_by: string | null
+          moved_to_stage_at: string | null
+          notes: string | null
+          stage_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          moved_by?: string | null
+          moved_to_stage_at?: string | null
+          notes?: string | null
+          stage_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          moved_by?: string | null
+          moved_to_stage_at?: string | null
+          notes?: string | null
+          stage_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_fulfillment_progress_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "fulfillment_stages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           assigned_at: string | null
           assigned_by: string | null
           created_at: string | null
           id: string
-          role: string
+          role: Database["public"]["Enums"]["member_role"]
           user_id: string
         }
         Insert: {
@@ -905,7 +1009,7 @@ export type Database = {
           assigned_by?: string | null
           created_at?: string | null
           id?: string
-          role: string
+          role?: Database["public"]["Enums"]["member_role"]
           user_id: string
         }
         Update: {
@@ -913,7 +1017,7 @@ export type Database = {
           assigned_by?: string | null
           created_at?: string | null
           id?: string
-          role?: string
+          role?: Database["public"]["Enums"]["member_role"]
           user_id?: string
         }
         Relationships: []
@@ -975,6 +1079,14 @@ export type Database = {
         Args: { target_user_id: string; assigner_user_id: string }
         Returns: undefined
       }
+      assign_user_role: {
+        Args: {
+          target_user_id: string
+          new_role: Database["public"]["Enums"]["member_role"]
+          assigner_user_id: string
+        }
+        Returns: undefined
+      }
       can_join_group: {
         Args: { group_id: string; user_id: string }
         Returns: boolean
@@ -995,6 +1107,14 @@ export type Database = {
         }
         Returns: Json
       }
+      remove_user_role: {
+        Args: {
+          target_user_id: string
+          role_to_remove: Database["public"]["Enums"]["member_role"]
+          remover_user_id: string
+        }
+        Returns: undefined
+      }
       user_has_premium_subscription: {
         Args: { user_id: string }
         Returns: boolean
@@ -1005,7 +1125,12 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      member_role:
+        | "member"
+        | "billing_manager"
+        | "admin"
+        | "moderator"
+        | "group_owner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1132,6 +1257,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      member_role: [
+        "member",
+        "billing_manager",
+        "admin",
+        "moderator",
+        "group_owner",
+      ],
+    },
   },
 } as const
