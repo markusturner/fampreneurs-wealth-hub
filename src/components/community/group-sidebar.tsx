@@ -557,13 +557,13 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
         <div
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+          className="cursor-grab active:cursor-grabbing p-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
         >
           <GripVertical className="h-4 w-4 text-muted-foreground" />
         </div>
         <Button
           variant={selectedGroupId === group.id ? "secondary" : "ghost"}
-          className="flex-1 justify-start gap-2 h-auto py-2 px-3"
+          className="flex-1 justify-start gap-2 h-auto py-2 px-3 min-w-0"
           onClick={() => {
             if (group.is_premium && !subscriptionStatus.subscribed) {
               handleJoinPremiumGroup(group.id)
@@ -572,68 +572,74 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
             onGroupSelect(group.id)
           }}
         >
-          {group.is_private ? (
-            <Lock className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <Hash className="h-4 w-4 text-muted-foreground" />
-          )}
-          <span className="truncate">{group.name}</span>
-          {group.is_premium && <Crown className="h-3 w-3 text-secondary ml-1" />}
-          {group.unread_count && group.unread_count > 0 && (
-            <Badge variant="destructive" className="ml-auto text-xs h-5 w-5 p-0 flex items-center justify-center">
-              {group.unread_count}
-            </Badge>
-          )}
+          <div className="shrink-0">
+            {group.is_private ? (
+              <Lock className="h-4 w-4 text-muted-foreground" />
+            ) : (
+              <Hash className="h-4 w-4 text-muted-foreground" />
+            )}
+          </div>
+          <span className="truncate flex-1 text-left">{group.name}</span>
+          <div className="flex items-center gap-1 shrink-0">
+            {group.is_premium && <Crown className="h-3 w-3 text-secondary" />}
+            {group.unread_count && group.unread_count > 0 && (
+              <Badge variant="destructive" className="text-xs h-5 w-5 p-0 flex items-center justify-center">
+                {group.unread_count}
+              </Badge>
+            )}
+          </div>
         </Button>
         
         {canDeleteGroup(group) && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                <MoreVertical className="h-3 w-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => startEditGroup(group)}
-                className="cursor-pointer"
-              >
-                <Settings className="h-4 w-4 mr-2" />
-                Edit Group
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive cursor-pointer"
-                    onSelect={(e) => e.preventDefault()}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Group
-                  </DropdownMenuItem>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Group</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete "{group.name}"? This action cannot be undone.
-                      All messages in this group will be permanently lost.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => deleteGroup(group.id, group.name)}
-                      disabled={deleting === group.id}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          <div className="shrink-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <MoreVertical className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => startEditGroup(group)}
+                  className="cursor-pointer"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Edit Group
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive cursor-pointer"
+                      onSelect={(e) => e.preventDefault()}
                     >
-                      {deleting === group.id ? "Deleting..." : "Delete"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Group
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Group</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete "{group.name}"? This action cannot be undone.
+                        All messages in this group will be permanently lost.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => deleteGroup(group.id, group.name)}
+                        disabled={deleting === group.id}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {deleting === group.id ? "Deleting..." : "Delete"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
       </div>
     )
