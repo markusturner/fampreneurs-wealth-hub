@@ -9,8 +9,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
-// Drag and drop functionality to be implemented later
 import { Kanban, List, Plus, Edit, Trash2, GripVertical } from 'lucide-react'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface FulfillmentStage {
   id: string
@@ -38,10 +54,36 @@ interface FulfillmentManagementProps {
   onViewModeChange: (mode: 'kanban' | 'list') => void
 }
 
-function StageItem({ stage, onEdit, onDelete }: { stage: FulfillmentStage, onEdit: (stage: FulfillmentStage) => void, onDelete: (id: string) => void }) {
+function SortableStageItem({ stage, onEdit, onDelete }: { stage: FulfillmentStage, onEdit: (stage: FulfillmentStage) => void, onDelete: (id: string) => void }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: stage.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
   return (
-    <div className="flex items-center justify-between p-3 border rounded-lg bg-card">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between p-3 border rounded-lg bg-card"
+    >
       <div className="flex items-center space-x-3">
+        <div
+          className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
         <div className="flex items-center space-x-3">
           <div
             className="w-4 h-4 rounded"
@@ -80,6 +122,13 @@ export function FulfillmentManagement({ viewMode, onViewModeChange }: Fulfillmen
   })
   const { toast } = useToast()
   const { user } = useAuth()
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   useEffect(() => {
     loadFulfillmentData()
@@ -222,6 +271,46 @@ export function FulfillmentManagement({ viewMode, onViewModeChange }: Fulfillmen
     }
   }
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (active.id !== over?.id) {
+      const oldIndex = stages.findIndex((stage) => stage.id === active.id)
+      const newIndex = stages.findIndex((stage) => stage.id === over?.id)
+
+      const reorderedStages = arrayMove(stages, oldIndex, newIndex)
+      setStages(reorderedStages)
+
+      // Update stage_order in database
+      try {
+        const updates = reorderedStages.map((stage, index) => ({
+          id: stage.id,
+          stage_order: index
+        }))
+
+        for (const update of updates) {
+          await supabase
+            .from('fulfillment_stages')
+            .update({ stage_order: update.stage_order })
+            .eq('id', update.id)
+        }
+
+        toast({
+          title: "Stages reordered",
+          description: "Stage order has been updated successfully.",
+        })
+      } catch (error: any) {
+        toast({
+          title: "Error reordering stages",
+          description: error.message,
+          variant: "destructive",
+        })
+        // Revert the changes if database update fails
+        loadFulfillmentData()
+      }
+    }
+  }
+
   const getUsersInStage = (stageId: string) => {
     return userProgress.filter(progress => progress.stage_id === stageId)
   }
@@ -305,20 +394,31 @@ export function FulfillmentManagement({ viewMode, onViewModeChange }: Fulfillmen
           <CardHeader>
             <CardTitle>Stage Management</CardTitle>
             <CardDescription>
-              Reorder stages and manage the fulfillment pipeline
+              Drag and drop to reorder stages and manage the fulfillment pipeline
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {stages.map(stage => (
-                <StageItem
-                  key={stage.id}
-                  stage={stage}
-                  onEdit={setEditingStage}
-                  onDelete={handleDeleteStage}
-                />
-              ))}
-            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={stages.map(stage => stage.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-3">
+                  {stages.map(stage => (
+                    <SortableStageItem
+                      key={stage.id}
+                      stage={stage}
+                      onEdit={setEditingStage}
+                      onDelete={handleDeleteStage}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           </CardContent>
         </Card>
       )}

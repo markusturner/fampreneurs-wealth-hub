@@ -447,11 +447,6 @@ export default function AdminDashboard() {
                           </p>
                           <p className="text-sm text-muted-foreground">{user.email}</p>
                         </div>
-                        {user.is_admin && (
-                          <Badge style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
-                            Admin
-                          </Badge>
-                        )}
                       </div>
                        <div className="flex items-center space-x-2">
                         <UserRoleManagement 
