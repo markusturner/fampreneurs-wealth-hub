@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Documents from "./pages/Documents";
+import Community from "./pages/Community";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ createRoot(document.getElementById("root")!).render(
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/documents" element={<Documents />} />
+                  <Route path="/community" element={<Community />} />
                 </Routes>
               <Toaster />
             </MeetingsProvider>

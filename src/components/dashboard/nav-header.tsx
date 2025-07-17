@@ -1,4 +1,4 @@
-import { Bell, Menu, Search, User, LogOut, Settings } from "lucide-react"
+import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/contexts/AuthContext"
 import { useState } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
 import fampreneur_logo from "@/assets/fampreneur-logo.png"
 
 interface NavHeaderProps {
@@ -15,6 +16,8 @@ interface NavHeaderProps {
 export function NavHeader({ onMenuClick }: NavHeaderProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const { profile, signOut } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const getInitials = () => {
     if (profile?.first_name && profile?.last_name) {
@@ -51,6 +54,37 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
               <h1 className="text-lg font-oswald font-bold tracking-wide" style={{color: '#ffb500'}}>THE FAMPRENEURS</h1>
             </div>
           </div>
+        </div>
+
+        {/* Navigation Links */}
+        <div className="hidden md:flex items-center gap-2 mx-6">
+          <Button
+            variant={location.pathname === '/' ? "default" : "ghost"}
+            size="sm"
+            onClick={() => navigate('/')}
+            className="gap-2"
+          >
+            <Home className="h-4 w-4" />
+            Dashboard
+          </Button>
+          <Button
+            variant={location.pathname === '/community' ? "default" : "ghost"}
+            size="sm"
+            onClick={() => navigate('/community')}
+            className="gap-2"
+          >
+            <Users className="h-4 w-4" />
+            Community
+          </Button>
+          <Button
+            variant={location.pathname === '/documents' ? "default" : "ghost"}
+            size="sm"
+            onClick={() => navigate('/documents')}
+            className="gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Documents
+          </Button>
         </div>
 
         <div className="flex-1 max-w-lg mx-4">
