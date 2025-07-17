@@ -102,6 +102,25 @@ export default function AdminDashboard() {
     try {
       setLoading(true)
       
+      // Load platform settings
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('platform_settings')
+        .select('setting_key, setting_value')
+        .in('setting_key', ['platform_name', 'admin_email'])
+
+      if (settingsError) throw settingsError
+
+      // Convert settings array to object
+      const settings = settingsData?.reduce((acc, setting) => {
+        acc[setting.setting_key] = setting.setting_value
+        return acc
+      }, {} as any) || {}
+
+      setPlatformSettings({
+        platform_name: settings.platform_name || 'Fampreneurs',
+        admin_email: settings.admin_email || 'admin@fampreneurs.com'
+      })
+      
       // Load users with auth data
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
@@ -286,6 +305,40 @@ export default function AdminDashboard() {
     } catch (error: any) {
       toast({
         title: "Error assigning accountability role",
+        description: error.message,
+        variant: "destructive",
+      })
+    }
+  }
+
+  const savePlatformSettings = async () => {
+    try {
+      // Update or insert platform settings
+      const settingsToUpdate = [
+        { setting_key: 'platform_name', setting_value: platformSettings.platform_name },
+        { setting_key: 'admin_email', setting_value: platformSettings.admin_email }
+      ]
+
+      for (const setting of settingsToUpdate) {
+        const { error } = await supabase
+          .from('platform_settings')
+          .upsert({
+            setting_key: setting.setting_key,
+            setting_value: setting.setting_value,
+            updated_by: user?.id,
+            description: setting.setting_key === 'platform_name' ? 'Platform display name' : 'Administrator email address'
+          })
+
+        if (error) throw error
+      }
+
+      toast({
+        title: "Settings saved",
+        description: "Platform settings have been updated successfully.",
+      })
+    } catch (error: any) {
+      toast({
+        title: "Error saving settings",
         description: error.message,
         variant: "destructive",
       })
@@ -625,7 +678,7 @@ export default function AdminDashboard() {
                           onChange={(e) => setPlatformSettings(prev => ({ ...prev, admin_email: e.target.value }))}
                         />
                       </div>
-                      <Button onClick={() => toast({ title: "Settings saved", description: "Platform settings have been updated." })}>
+                      <Button onClick={savePlatformSettings}>
                         <Save className="h-4 w-4 mr-2" />
                         Save Settings
                       </Button>
