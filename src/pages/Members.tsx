@@ -226,9 +226,22 @@ const Members = () => {
               Connect and chat with your family members
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" />
-            <span className="text-sm font-medium">{members.length} Total Members</span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              <span className="text-sm font-medium">{members.length} Total Members</span>
+            </div>
+            {profile?.is_admin && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.open('/profile-settings', '_blank')}
+                className="flex items-center gap-2"
+              >
+                <Heart className="h-4 w-4" />
+                Accountability Directory
+              </Button>
+            )}
           </div>
         </div>
 
@@ -315,12 +328,14 @@ const Members = () => {
                               </div>
                             </button>
                             
-                            {/* Edit Button - Only visible to admins */}
+                            {/* Admin Actions - Only visible to admins */}
                             {profile?.is_admin && (
-                              <EditMemberDialog 
-                                member={member} 
-                                onMemberUpdated={fetchMembers}
-                              />
+                              <div className="flex gap-1">
+                                <EditMemberDialog 
+                                  member={member} 
+                                  onMemberUpdated={fetchMembers}
+                                />
+                              </div>
                             )}
                           </div>
                         </div>

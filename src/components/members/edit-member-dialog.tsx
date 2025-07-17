@@ -172,35 +172,43 @@ export function EditMemberDialog({ member, onMemberUpdated }: EditMemberDialogPr
 
           {/* Role Assignment */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="admin"
-                checked={isAdmin}
-                onCheckedChange={(checked) => setIsAdmin(checked as boolean)}
-              />
-              <Label htmlFor="admin" className="flex items-center gap-2">
-                <Crown className="h-4 w-4 text-destructive" />
-                Administrator
-              </Label>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="admin"
+                  checked={isAdmin}
+                  onCheckedChange={(checked) => setIsAdmin(checked as boolean)}
+                />
+                <Label htmlFor="admin" className="flex items-center gap-2">
+                  <Crown className="h-4 w-4 text-destructive" />
+                  Administrator
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground ml-6">
+                Can manage all family members, settings, and admin functions
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground ml-6">
-              Can manage all family members, settings, and admin functions
-            </p>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="accountability"
-                checked={isAccountabilityPartner}
-                onCheckedChange={(checked) => setIsAccountabilityPartner(checked as boolean)}
-              />
-              <Label htmlFor="accountability" className="flex items-center gap-2">
-                <Heart className="h-4 w-4 text-primary" />
-                Accountability Partner
-              </Label>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="accountability"
+                  checked={isAccountabilityPartner}
+                  onCheckedChange={(checked) => setIsAccountabilityPartner(checked as boolean)}
+                />
+                <Label htmlFor="accountability" className="flex items-center gap-2">
+                  <Heart className="h-4 w-4 text-primary" />
+                  Accountability Partner
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground ml-6">
+                Can provide accountability support and coaching to family members.{' '}
+                <span className="text-primary font-medium cursor-pointer hover:underline" 
+                      onClick={() => window.open('/profile-settings', '_blank')}>
+                  View directory →
+                </span>
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground ml-6">
-              Can provide accountability support and coaching to family members
-            </p>
           </div>
 
           {/* Action Buttons */}
