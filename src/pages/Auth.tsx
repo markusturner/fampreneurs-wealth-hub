@@ -418,8 +418,8 @@ export default function Auth() {
                 
                 <Button 
                   type="submit" 
-                  className="w-full"
-                  style={{ backgroundColor: '#ffb500', color: 'purple' }}
+                  className="w-full text-purple-900"
+                  style={{ backgroundColor: '#ffb500' }}
                   disabled={isLoading}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
