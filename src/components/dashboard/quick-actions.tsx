@@ -69,8 +69,12 @@ export function QuickActions() {
               <Button
                 key={action.title}
                 variant={action.variant}
-                className="h-auto p-3 pr-10 justify-start text-left flex-1 min-w-0"
-                onClick={action.action}
+                className="h-auto p-3 pr-10 justify-start text-left flex-1 min-w-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  action.action()
+                }}
               >
                 <div className="flex items-start space-x-3">
                   <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
@@ -88,8 +92,12 @@ export function QuickActions() {
           })}
           <Button
             variant="secondary"
-            className="h-auto p-3 pr-10 justify-start text-left flex-1 min-w-0"
-            onClick={handleScheduleMeeting}
+            className="h-auto p-3 pr-10 justify-start text-left flex-1 min-w-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              handleScheduleMeeting()
+            }}
           >
             <div className="flex items-start space-x-3">
               <Calendar className="h-5 w-5 mt-0.5 flex-shrink-0" />
