@@ -91,6 +91,14 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                     <Calendar className="h-4 w-4" />
                     Coaching Calls
                   </Button>
+                  <Button
+                    variant={location.pathname === '/members' ? "default" : "ghost"}
+                    className="w-full justify-start gap-3"
+                    onClick={() => handleNavigation('/members')}
+                  >
+                    <Users className="h-4 w-4" />
+                    Members
+                  </Button>
                 </nav>
               </div>
             </SheetContent>
@@ -144,6 +152,15 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           >
             <Calendar className="h-4 w-4" />
             Coaching Calls
+          </Button>
+          <Button
+            variant={location.pathname === '/members' ? "default" : "ghost"}
+            size="sm"
+            onClick={() => navigate('/members')}
+            className="gap-2"
+          >
+            <Users className="h-4 w-4" />
+            Members
           </Button>
         </div>
 

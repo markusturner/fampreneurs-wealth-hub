@@ -12,6 +12,7 @@ import Documents from "./pages/Documents";
 import Community from "./pages/Community";
 import Courses from "./pages/Courses";
 import Coaching from "./pages/Coaching";
+import Members from "./pages/Members";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ createRoot(document.getElementById("root")!).render(
                   <Route path="/community" element={<Community />} />
                   <Route path="/courses" element={<Courses />} />
                   <Route path="/coaching" element={<Coaching />} />
+                  <Route path="/members" element={<Members />} />
                 </Routes>
               <Toaster />
             </MeetingsProvider>
