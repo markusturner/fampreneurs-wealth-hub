@@ -796,12 +796,12 @@ export default function Auth() {
                   </Button>
                 </form>
                 
-                <div className="rounded-lg p-4" style={{ backgroundColor: '#ffb500' + '1A', borderColor: '#ffb500', borderWidth: '1px' }}>
+                <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
                   <div className="flex items-start space-x-3">
-                    <Shield className="h-5 w-5 mt-0.5" style={{ color: '#ffb500' }} />
+                    <Shield className="h-5 w-5 text-red-500 mt-0.5" />
                     <div>
-                      <h4 className="text-sm font-medium" style={{ color: '#ffb500' }}>Security Notice</h4>
-                      <p className="text-xs mt-1" style={{ color: '#ffb500' }}>
+                      <h4 className="text-sm font-medium text-red-800 dark:text-red-200">Security Notice</h4>
+                      <p className="text-xs text-red-700 dark:text-red-300 mt-1">
                         This panel is for authorized administrators only. All access attempts are logged and monitored.
                       </p>
                     </div>
