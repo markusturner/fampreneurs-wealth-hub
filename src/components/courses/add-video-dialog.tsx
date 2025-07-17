@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { CategorySelector } from "@/components/ui/category-selector"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from '@/hooks/use-toast'
 import { Upload, Link, Loader2 } from 'lucide-react'
@@ -61,6 +62,7 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
   const [videoUrl, setVideoUrl] = useState('')
   const [videoType, setVideoType] = useState<VideoType>('youtube')
   const [duration, setDuration] = useState('')
+  const [category, setCategory] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [activeTab, setActiveTab] = useState<'upload' | 'url'>('url')
 
@@ -171,6 +173,7 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
       setVideoFile(null)
       setVideoUrl('')
       setDuration('')
+      setCategory('')
       
       onVideoAdded()
       onOpenChange(false)
@@ -278,15 +281,26 @@ export function AddVideoDialog({ open, onOpenChange, courseId, onVideoAdded }: A
             </TabsContent>
           </Tabs>
 
-          <div className="space-y-2">
-            <Label htmlFor="duration">Duration (minutes)</Label>
-            <Input
-              id="duration"
-              type="number"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              placeholder="Enter video duration in minutes"
-              min="1"
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="duration">Duration (minutes)</Label>
+              <Input
+                id="duration"
+                type="number"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                placeholder="Enter video duration in minutes"
+                min="1"
+              />
+            </div>
+            
+            <CategorySelector
+              value={category}
+              onValueChange={setCategory}
+              type="video"
+              label="Category"
+              placeholder="Select or create category"
+              required={false}
             />
           </div>
 

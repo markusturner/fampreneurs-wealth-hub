@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { CategorySelector } from "@/components/ui/category-selector"
 import { useToast } from '@/hooks/use-toast'
 import { Loader2 } from 'lucide-react'
 
@@ -16,14 +17,6 @@ interface CreateCourseDialogProps {
   onCourseCreated: () => void
 }
 
-const categories = [
-  'Wealth Management',
-  'Investment',
-  'Estate Planning',
-  'Tax Strategy',
-  'Business Growth',
-  'Family Governance'
-]
 
 const levels = [
   'Beginner',
@@ -192,21 +185,14 @@ export function CreateCourseDialog({ open, onOpenChange, onCourseCreated }: Crea
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="category">Category *</Label>
-            <Select value={category} onValueChange={setCategory} required>
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <CategorySelector
+            value={category}
+            onValueChange={setCategory}
+            type="course"
+            label="Category"
+            placeholder="Select or create category"
+            required
+          />
 
           <div className="space-y-2">
             <Label htmlFor="image-url">Course Image URL</Label>
