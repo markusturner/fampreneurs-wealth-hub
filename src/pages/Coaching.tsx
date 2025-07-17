@@ -153,6 +153,158 @@ const Coaching = () => {
           </Button>
         </div>
 
+        {/* Group Coaching Calendar */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Calendar */}
+          <Card className="lg:col-span-2 shadow-soft">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <CalendarIcon className="h-5 w-5" />
+                Group Coaching Calendar
+              </CardTitle>
+              <CardDescription>
+                Click on a date to view scheduled group coaching sessions
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => date && setSelectedDate(date)}
+                modifiers={{
+                  hasSession: sessionDates
+                }}
+                modifiersStyles={{
+                  hasSession: {
+                    backgroundColor: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                    fontWeight: 'bold',
+                    borderRadius: '6px'
+                  }
+                }}
+                className={cn("w-full pointer-events-auto")}
+              />
+              <div className="mt-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-primary rounded"></div>
+                  <span>Dates with coaching sessions</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Selected Date Details */}
+          <Card className="shadow-soft">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg font-bold">
+                {format(selectedDate, 'MMMM d, yyyy')}
+              </CardTitle>
+              <CardDescription>
+                {selectedDateSessions.length > 0 
+                  ? `${selectedDateSessions.length} group session${selectedDateSessions.length !== 1 ? 's' : ''} scheduled`
+                  : 'No group sessions scheduled'
+                }
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 sm:p-6 space-y-4">
+              {selectedDateSessions.length > 0 ? (
+                selectedDateSessions.map((session) => (
+                  <div key={session.id} className="p-4 bg-muted/30 rounded-lg space-y-3 border">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={session.avatar} />
+                        <AvatarFallback>{session.coach.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm truncate">{session.title}</h4>
+                        <p className="text-xs text-muted-foreground">{session.coach}</p>
+                      </div>
+                      <Badge variant={session.status === 'confirmed' ? 'default' : 'secondary'} className="text-xs">
+                        {session.status}
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        <span>{session.time}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Users className="h-4 w-4" />
+                        <span>{session.participants}/{session.maxParticipants} participants</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Video className="h-4 w-4" />
+                        <span className="text-xs">ID: {session.zoomMeetingId}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        className="flex-1 text-xs"
+                        onClick={() => window.open(session.zoomMeetingUrl, '_blank')}
+                      >
+                        <Video className="h-3 w-3 mr-1" />
+                        Join Session
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="text-xs"
+                      >
+                        Details
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <CalendarIcon className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
+                  <p className="text-sm text-muted-foreground mb-4">No group coaching sessions scheduled for this date</p>
+                  <Button size="sm" variant="outline" className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Schedule Session
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Upcoming Sessions Summary */}
+        <Card className="shadow-soft">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              Upcoming Group Sessions
+            </CardTitle>
+            <CardDescription>
+              Next 3 scheduled group coaching sessions
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            <div className="grid gap-4 md:grid-cols-3">
+              {upcomingCalls.slice(0, 3).map((session) => (
+                <div key={session.id} className="p-3 bg-muted/20 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={session.avatar} />
+                      <AvatarFallback className="text-xs">{session.coach.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium text-sm truncate">{session.title}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <div>{format(new Date(session.date), 'MMM d, yyyy')}</div>
+                    <div>{session.time}</div>
+                    <div>{session.participants}/{session.maxParticipants} joined</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Available Coaches */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Available Coaches</h2>
