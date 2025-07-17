@@ -112,6 +112,30 @@ export function InvestmentChart() {
             </Badge>
           </div>
         </div>
+        
+        {/* Legend */}
+        <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-border">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--primary))' }}></div>
+            <span className="text-sm font-medium">Stocks</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--accent))' }}></div>
+            <span className="text-sm font-medium">ETFs</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--secondary))' }}></div>
+            <span className="text-sm font-medium">Crypto</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(270 50% 60%)' }}></div>
+            <span className="text-sm font-medium">House Equity</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(0 70% 50%)' }}></div>
+            <span className="text-sm font-medium">Business</span>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="h-[350px]">
