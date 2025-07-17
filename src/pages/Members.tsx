@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { MessageDialog } from "@/components/members/message-dialog"
 import { EditMemberDialog } from "@/components/members/edit-member-dialog"
+import { useToast } from "@/hooks/use-toast"
 import { Loader2, Users, MessageCircle, Mail, Phone, User, Search, ArrowLeft, X, Crown, Heart } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { MobileService } from '@/lib/mobile'
@@ -32,6 +33,7 @@ interface MemberProfile {
 
 const Members = () => {
   const { user, profile, loading } = useAuth()
+  const { toast } = useToast()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [members, setMembers] = useState<MemberProfile[]>([])
   const [membersLoading, setMembersLoading] = useState(true)
@@ -187,6 +189,34 @@ const Members = () => {
     setSelectedMember(null)
   }
 
+  const handleQuickAccountabilityAssignment = async (member: MemberProfile) => {
+    if (!user?.id) return
+
+    try {
+      const { error } = await supabase.rpc('assign_accountability_role', {
+        target_user_id: member.user_id,
+        assigner_user_id: user.id,
+        specialties: ['general_support']
+      })
+
+      if (error) throw error
+
+      toast({
+        title: "Accountability Partner Assigned",
+        description: `${getDisplayName(member)} is now an accountability partner.`,
+      })
+
+      fetchMembers()
+    } catch (error) {
+      console.error('Error assigning accountability role:', error)
+      toast({
+        title: "Error",
+        description: "Failed to assign accountability partner role. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const currentUserMembers = members.filter(member => member.user_id !== user.id)
   
   const filteredMembers = currentUserMembers.filter(member =>
@@ -327,16 +357,30 @@ const Members = () => {
                                 </div>
                               </div>
                             </button>
-                            
-                            {/* Admin Actions - Only visible to admins */}
-                            {profile?.is_admin && (
-                              <div className="flex gap-1">
-                                <EditMemberDialog 
-                                  member={member} 
-                                  onMemberUpdated={fetchMembers}
-                                />
-                              </div>
-                            )}
+                             
+                             {/* Admin Actions - Only visible to admins */}
+                             {profile?.is_admin && (
+                               <div className="flex flex-col gap-1">
+                                 <EditMemberDialog 
+                                   member={member} 
+                                   onMemberUpdated={fetchMembers}
+                                 />
+                                 {!member.is_accountability_partner && (
+                                   <Button
+                                     variant="ghost"
+                                     size="sm"
+                                     onClick={() => {
+                                       // Quick action to make someone an accountability partner
+                                       handleQuickAccountabilityAssignment(member)
+                                     }}
+                                     className="text-xs p-1 h-auto"
+                                   >
+                                     <Heart className="h-3 w-3 mr-1" />
+                                     Make Partner
+                                   </Button>
+                                 )}
+                               </div>
+                             )}
                           </div>
                         </div>
                       ))}
