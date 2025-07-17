@@ -374,7 +374,7 @@ export default function Auth() {
           <div className="mx-auto w-12 h-12 bg-[#ffb500]/10 rounded-full flex items-center justify-center mb-4">
             <Shield className="h-6 w-6" style={{ color: '#ffb500' }} />
           </div>
-          <CardTitle className="text-2xl font-bold">Family Dashboard</CardTitle>
+          <CardTitle className="text-2xl font-bold">The Fampreneurs Dashboard</CardTitle>
           <CardDescription>
             Access your family's financial and investment dashboard
           </CardDescription>
