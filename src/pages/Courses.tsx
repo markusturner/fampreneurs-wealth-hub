@@ -46,23 +46,6 @@ const Courses = () => {
   const [courseDetailOpen, setCourseDetailOpen] = useState(false)
   const [addVideoOpen, setAddVideoOpen] = useState(false)
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Loading courses...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null
-  }
-
-  const displayName = profile?.display_name || profile?.first_name || 'Member'
-
   const fetchCourses = async () => {
     try {
       const { data: coursesData, error: coursesError } = await supabase
@@ -89,9 +72,28 @@ const Courses = () => {
   }
 
   useEffect(() => {
-    fetchCourses()
+    if (user?.id) {
+      fetchCourses()
+    }
   }, [user?.id])
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading courses...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
+
+  const displayName = profile?.display_name || profile?.first_name || 'Member'
+  
   const categories = [
     "All Courses",
     "Wealth Management", 
