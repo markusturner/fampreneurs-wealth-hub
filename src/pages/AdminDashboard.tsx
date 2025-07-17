@@ -43,6 +43,7 @@ interface Profile {
   email?: string
   is_admin: boolean
   created_at: string
+  roles?: string[]
 }
 
 interface Course {
@@ -102,18 +103,23 @@ export default function AdminDashboard() {
 
       if (profilesError) throw profilesError
 
-      // Get auth users to get email addresses
-      const usersWithEmails = await Promise.all(
+      // Load user roles for each profile
+      const usersWithRoles = await Promise.all(
         profilesData.map(async (profile) => {
-          const { data: authUser } = await supabase.auth.admin.getUserById(profile.user_id)
+          const { data: userRoles } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', profile.user_id)
+          
           return {
             ...profile,
-            email: authUser.user?.email || 'N/A'
+            email: 'Protected', // Email hidden for privacy
+            roles: userRoles?.map(r => r.role) || ['member']
           }
         })
       )
 
-      setUsers(usersWithEmails)
+      setUsers(usersWithRoles)
 
       // Load courses
       const { data: coursesData, error: coursesError } = await supabase
@@ -443,26 +449,11 @@ export default function AdminDashboard() {
                           </Badge>
                         )}
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {!user.is_admin && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => makeAdmin(user.user_id)}
-                          >
-                            <UserPlus className="h-4 w-4" />
-                          </Button>
-                        )}
-                        <Button 
-                          variant="destructive" 
-                          size="sm"
-                          onClick={() => deleteUser(user.user_id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                       <div className="flex items-center space-x-2">
+                        <UserRoleManagement 
+                          user={user} 
+                          onRolesUpdated={loadAdminData}
+                        />
                       </div>
                     </div>
                   ))}
