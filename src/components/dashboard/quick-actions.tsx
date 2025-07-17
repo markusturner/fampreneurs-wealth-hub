@@ -93,7 +93,7 @@ export function QuickActions() {
             )
           })}
           <Button
-            variant="default"
+            variant="secondary"
             className="h-auto p-3 pr-10 justify-start text-left flex-1 min-w-0"
             onClick={handleScheduleMeeting}
           >
