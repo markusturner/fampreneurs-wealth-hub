@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Loader2, Shield } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { useNavigate } from 'react-router-dom'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false)
@@ -209,7 +210,10 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-soft">
+      <Card className="w-full max-w-md shadow-soft relative">
+        <div className="absolute top-4 right-4 z-10">
+          <ThemeToggle />
+        </div>
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
             <Shield className="h-6 w-6 text-primary" />
