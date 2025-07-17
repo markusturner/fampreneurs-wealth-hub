@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Play, Clock, ExternalLink } from 'lucide-react'
+import { Play, Clock } from 'lucide-react'
+import { VideoDocuments } from './video-documents'
 
 interface Video {
   id: string
@@ -47,6 +48,7 @@ const VideoPlayer = ({ video }: VideoPlayerProps) => {
           controls
           className="w-full h-full"
           poster="/placeholder.svg"
+          controlsList="nodownload"
         >
           <source src={video.video_url} type="video/mp4" />
           Your browser does not support the video tag.
@@ -63,6 +65,7 @@ const VideoPlayer = ({ video }: VideoPlayerProps) => {
         className="w-full h-full"
         allowFullScreen
         allow="autoplay; encrypted-media"
+        sandbox="allow-scripts allow-same-origin allow-presentation"
       />
     </div>
   )
@@ -172,6 +175,7 @@ export function CourseVideoList({ courseId }: CourseVideoListProps) {
                 <p className="text-muted-foreground">{selectedVideo.description}</p>
               )}
             </div>
+            <VideoDocuments videoId={selectedVideo.id} />
           </>
         )}
       </div>
