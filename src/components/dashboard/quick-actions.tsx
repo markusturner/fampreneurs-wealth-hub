@@ -6,15 +6,16 @@ import { ScheduleMeetingDialog } from "./schedule-meeting-dialog"
 import { GoogleSheetsIntegration } from "./google-sheets-integration"
 import { AddFamilyMemberDialog } from "./add-family-member-dialog"
 import { BusinessStructureDialog } from "./business-structure-dialog"
+import { InvestmentIntegrationDialog } from "./investment-integration-dialog"
 
 
 const quickActions = [
   {
     title: "Add Investment",
-    description: "Sync with Google Sheets",
+    description: "Connect financial accounts",
     icon: TrendingUp,
     variant: "premium" as const,
-    action: "google_sheets" as const
+    action: "investment_integration" as const
   },
   {
     title: "Upload Document",
@@ -51,6 +52,7 @@ export function QuickActions() {
   const [googleSheetsDialogOpen, setGoogleSheetsDialogOpen] = useState(false)
   const [addFamilyMemberDialogOpen, setAddFamilyMemberDialogOpen] = useState(false)
   const [businessStructureDialogOpen, setBusinessStructureDialogOpen] = useState(false)
+  const [investmentIntegrationOpen, setInvestmentIntegrationOpen] = useState(false)
 
   const handleScheduleMeeting = () => {
     setMeetingDialogOpen(true)
@@ -63,6 +65,8 @@ export function QuickActions() {
       setAddFamilyMemberDialogOpen(true)
     } else if (action === "business_structure") {
       setBusinessStructureDialogOpen(true)
+    } else if (action === "investment_integration") {
+      setInvestmentIntegrationOpen(true)
     } else if (typeof action === "function") {
       action()
     }
@@ -74,6 +78,7 @@ export function QuickActions() {
       <GoogleSheetsIntegration open={googleSheetsDialogOpen} onOpenChange={setGoogleSheetsDialogOpen} />
       <AddFamilyMemberDialog open={addFamilyMemberDialogOpen} onOpenChange={setAddFamilyMemberDialogOpen} />
       <BusinessStructureDialog open={businessStructureDialogOpen} onOpenChange={setBusinessStructureDialogOpen} />
+      <InvestmentIntegrationDialog open={investmentIntegrationOpen} onOpenChange={setInvestmentIntegrationOpen} />
     <Card className="col-span-4 lg:col-span-1 shadow-soft">
       <CardHeader>
         <CardTitle className="text-xl font-bold">Quick Actions</CardTitle>
