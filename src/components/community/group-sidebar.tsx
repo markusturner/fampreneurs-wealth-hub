@@ -12,9 +12,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from '@/hooks/use-toast'
 import { useSubscription } from '@/hooks/useSubscription'
-import { Hash, Lock, Plus, Users, Settings, Trash2, MoreVertical, Crown, Star } from 'lucide-react'
+import { Hash, Lock, Plus, Users, Settings, Trash2, MoreVertical, Crown, Star, BookOpen } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Group {
   id: string
@@ -27,6 +28,7 @@ interface Group {
   member_count?: number
   unread_count?: number
   user_role?: string
+  courses?: string[]
 }
 
 interface GroupSidebarProps {
@@ -40,6 +42,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
   const { subscriptionStatus, createCheckout } = useSubscription()
   const [publicGroups, setPublicGroups] = useState<Group[]>([])
   const [privateGroups, setPrivateGroups] = useState<Group[]>([])
+  const [availableCourses, setAvailableCourses] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -49,15 +52,18 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
   const [editGroupDescription, setEditGroupDescription] = useState('')
   const [editGroupPrivate, setEditGroupPrivate] = useState(false)
   const [editGroupPremium, setEditGroupPremium] = useState(false)
+  const [editGroupCourses, setEditGroupCourses] = useState<string[]>([])
   const [newGroupDescription, setNewGroupDescription] = useState('')
   const [newGroupPrivate, setNewGroupPrivate] = useState(false)
   const [newGroupPremium, setNewGroupPremium] = useState(false)
+  const [newGroupCourses, setNewGroupCourses] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
   const [updating, setUpdating] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
     fetchGroups()
+    fetchCourses()
     // Auto-join public groups for new users
     autoJoinPublicGroups()
   }, [user])
@@ -118,6 +124,35 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
     }
   }
 
+  const fetchCourses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('id, title')
+        .order('title')
+
+      if (error) throw error
+      setAvailableCourses(data || [])
+    } catch (error) {
+      console.error('Error fetching courses:', error)
+    }
+  }
+
+  const fetchGroupCourses = async (groupId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('group_courses')
+        .select('course_id')
+        .eq('group_id', groupId)
+
+      if (error) throw error
+      return data?.map(gc => gc.course_id) || []
+    } catch (error) {
+      console.error('Error fetching group courses:', error)
+      return []
+    }
+  }
+
   const autoJoinPublicGroups = async () => {
     if (!user) return
 
@@ -163,12 +198,17 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
     }
   }
 
-  const startEditGroup = (group: Group) => {
+  const startEditGroup = async (group: Group) => {
     setEditingGroup(group)
     setEditGroupName(group.name)
     setEditGroupDescription(group.description || '')
     setEditGroupPrivate(group.is_private)
     setEditGroupPremium(group.is_premium)
+    
+    // Fetch current group courses
+    const groupCourses = await fetchGroupCourses(group.id)
+    setEditGroupCourses(groupCourses)
+    
     setEditDialogOpen(true)
   }
 
@@ -184,7 +224,8 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
 
     setUpdating(true)
     try {
-      const { error } = await supabase
+      // Update group details
+      const { error: groupError } = await supabase
         .from('community_groups')
         .update({ 
           name: editGroupName.trim(),
@@ -194,7 +235,57 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
         })
         .eq('id', editingGroup.id)
 
-      if (error) throw error
+      if (groupError) throw groupError
+
+      // Update group courses
+      // First delete existing courses
+      const { error: deleteError } = await supabase
+        .from('group_courses')
+        .delete()
+        .eq('group_id', editingGroup.id)
+
+      if (deleteError) throw deleteError
+
+      // Then insert new courses
+      if (editGroupCourses.length > 0) {
+        const courseInserts = editGroupCourses.map(courseId => ({
+          group_id: editingGroup.id,
+          course_id: courseId
+        }))
+
+        const { error: insertError } = await supabase
+          .from('group_courses')
+          .insert(courseInserts)
+
+        if (insertError) throw insertError
+
+        // Auto-enroll existing group members in new courses
+        const { data: members, error: membersError } = await supabase
+          .from('group_memberships')
+          .select('user_id')
+          .eq('group_id', editingGroup.id)
+
+        if (membersError) throw membersError
+
+        if (members && members.length > 0) {
+          const enrollmentInserts = members.flatMap(member => 
+            editGroupCourses.map(courseId => ({
+              user_id: member.user_id,
+              course_id: courseId
+            }))
+          )
+
+          // Use upsert to avoid conflicts with existing enrollments
+          const { error: enrollError } = await supabase
+            .from('course_enrollments')
+            .upsert(enrollmentInserts, { 
+              onConflict: 'user_id,course_id',
+              ignoreDuplicates: true 
+            })
+
+          if (enrollError) console.warn('Some enrollments may have failed:', enrollError)
+        }
+      }
 
       toast({
         title: "Success",
@@ -206,6 +297,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
       setEditGroupDescription('')
       setEditGroupPrivate(false)
       setEditGroupPremium(false)
+      setEditGroupCourses([])
       setEditingGroup(null)
       setEditDialogOpen(false)
 
@@ -316,6 +408,35 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
 
       if (membershipError) throw membershipError
 
+      // Add courses to group if selected
+      if (newGroupCourses.length > 0) {
+        const courseInserts = newGroupCourses.map(courseId => ({
+          group_id: groupData.id,
+          course_id: courseId
+        }))
+
+        const { error: coursesError } = await supabase
+          .from('group_courses')
+          .insert(courseInserts)
+
+        if (coursesError) throw coursesError
+
+        // Auto-enroll the creator in the courses
+        const enrollmentInserts = newGroupCourses.map(courseId => ({
+          user_id: user?.id,
+          course_id: courseId
+        }))
+
+        const { error: enrollError } = await supabase
+          .from('course_enrollments')
+          .upsert(enrollmentInserts, { 
+            onConflict: 'user_id,course_id',
+            ignoreDuplicates: true 
+          })
+
+        if (enrollError) console.warn('Creator enrollment may have failed:', enrollError)
+      }
+
       toast({
         title: "Success",
         description: `Group "${newGroupName}" created successfully!`
@@ -326,6 +447,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
       setNewGroupDescription('')
       setNewGroupPrivate(false)
       setNewGroupPremium(false)
+      setNewGroupCourses([])
       setCreateDialogOpen(false)
 
       // Refresh groups
@@ -530,6 +652,46 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
                         Premium Group (Requires subscription)
                       </Label>
                     </div>
+                    <div>
+                      <Label htmlFor="group-courses">Courses (Optional)</Label>
+                      <Select onValueChange={(value) => {
+                        if (value && !newGroupCourses.includes(value)) {
+                          setNewGroupCourses([...newGroupCourses, value])
+                        }
+                      }}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Add courses to group" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableCourses
+                            .filter(course => !newGroupCourses.includes(course.id))
+                            .map(course => (
+                            <SelectItem key={course.id} value={course.id}>
+                              {course.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {newGroupCourses.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {newGroupCourses.map(courseId => {
+                            const course = availableCourses.find(c => c.id === courseId)
+                            return (
+                              <Badge key={courseId} variant="secondary" className="text-xs">
+                                <BookOpen className="h-3 w-3 mr-1" />
+                                {course?.title}
+                                <button
+                                  onClick={() => setNewGroupCourses(newGroupCourses.filter(id => id !== courseId))}
+                                  className="ml-1 hover:bg-destructive hover:text-destructive-foreground rounded-full w-3 h-3 flex items-center justify-center text-xs"
+                                >
+                                  ×
+                                </button>
+                              </Badge>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
@@ -603,6 +765,46 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
                       <Crown className="h-4 w-4 text-secondary" />
                       Premium Group (Requires subscription)
                     </Label>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-group-courses">Courses (Optional)</Label>
+                    <Select onValueChange={(value) => {
+                      if (value && !editGroupCourses.includes(value)) {
+                        setEditGroupCourses([...editGroupCourses, value])
+                      }
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Add courses to group" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableCourses
+                          .filter(course => !editGroupCourses.includes(course.id))
+                          .map(course => (
+                          <SelectItem key={course.id} value={course.id}>
+                            {course.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {editGroupCourses.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {editGroupCourses.map(courseId => {
+                          const course = availableCourses.find(c => c.id === courseId)
+                          return (
+                            <Badge key={courseId} variant="secondary" className="text-xs">
+                              <BookOpen className="h-3 w-3 mr-1" />
+                              {course?.title}
+                              <button
+                                onClick={() => setEditGroupCourses(editGroupCourses.filter(id => id !== courseId))}
+                                className="ml-1 hover:bg-destructive hover:text-destructive-foreground rounded-full w-3 h-3 flex items-center justify-center text-xs"
+                              >
+                                ×
+                              </button>
+                            </Badge>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <Button
