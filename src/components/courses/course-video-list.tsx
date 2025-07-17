@@ -171,17 +171,6 @@ export function CourseVideoList({ courseId }: CourseVideoListProps) {
               {selectedVideo.description && (
                 <p className="text-muted-foreground">{selectedVideo.description}</p>
               )}
-              {selectedVideo.video_type !== 'upload' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2 gap-2"
-                  onClick={() => window.open(selectedVideo.video_url, '_blank')}
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Open in {getPlatformName(selectedVideo.video_type)}
-                </Button>
-              )}
             </div>
           </>
         )}
