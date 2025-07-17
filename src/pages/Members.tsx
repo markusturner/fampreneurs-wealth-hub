@@ -89,12 +89,12 @@ const Members = () => {
     }
   }, [user?.id])
 
-  // Real-time subscription for new messages
+  // Real-time subscription for new messages and profile updates
   useEffect(() => {
     if (!user?.id) return
 
     const channel = supabase
-      .channel('new_messages')
+      .channel('members_updates')
       .on(
         'postgres_changes',
         {
@@ -117,6 +117,22 @@ const Members = () => {
         },
         () => {
           fetchUnreadCounts()
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles'
+        },
+        (payload) => {
+          // Update the specific member in local state when profile changes
+          setMembers(prev => prev.map(member => 
+            member.user_id === payload.new.user_id 
+              ? { ...member, ...payload.new }
+              : member
+          ))
         }
       )
       .subscribe()
