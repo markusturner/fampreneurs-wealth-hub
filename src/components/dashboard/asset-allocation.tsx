@@ -9,7 +9,7 @@ const assetData = [
 
 export function AssetAllocation() {
   return (
-    <Card className="shadow-soft lg:col-span-1">
+    <Card className="shadow-soft lg:col-span-1 h-full">
       <CardHeader className="p-4 lg:p-6">
         <CardTitle className="text-lg font-bold">Asset Allocation</CardTitle>
         <CardDescription>
