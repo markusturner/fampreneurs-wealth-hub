@@ -220,6 +220,13 @@ const Members = () => {
   const handleRemoveAccountabilityPartner = async (member: MemberProfile) => {
     if (!user?.id) return
 
+    // Optimistic update - immediately update local state
+    setMembers(prev => prev.map(m => 
+      m.user_id === member.user_id 
+        ? { ...m, is_accountability_partner: false, accountability_specialties: null }
+        : m
+    ))
+
     try {
       const { error } = await supabase
         .from('profiles')
@@ -244,6 +251,8 @@ const Members = () => {
         description: "Failed to remove accountability partner role. Please try again.",
         variant: "destructive",
       })
+      // Revert optimistic update on error
+      fetchMembers()
     }
   }
 
