@@ -1,11 +1,13 @@
-import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar, Crown } from "lucide-react"
+import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar, Crown, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { FeedbackDialog } from "@/components/dashboard/feedback-dialog"
 import { useAuth } from "@/contexts/AuthContext"
+import { useFeedbackNotification } from "@/hooks/useFeedbackNotification"
 import { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 
@@ -16,9 +18,16 @@ interface NavHeaderProps {
 export function NavHeader({ onMenuClick }: NavHeaderProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
   const { profile, signOut } = useAuth()
+  const { shouldShowFeedback, markFeedbackShown } = useFeedbackNotification()
   const navigate = useNavigate()
   const location = useLocation()
+
+  const handleFeedbackClick = () => {
+    setFeedbackDialogOpen(true)
+    markFeedbackShown()
+  }
 
   const handleNavigation = (path: string) => {
     navigate(path)
@@ -188,12 +197,43 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-4 w-4" />
-            <span className="absolute -top-1 -right-1 h-3 w-3 bg-secondary rounded-full flex items-center justify-center">
-              <span className="text-[10px] font-bold text-secondary-foreground">3</span>
-            </span>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-4 w-4" />
+                {shouldShowFeedback && (
+                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full flex items-center justify-center">
+                    <span className="text-[10px] font-bold text-destructive-foreground">1</span>
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-80" align="end">
+              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {shouldShowFeedback ? (
+                <DropdownMenuItem onClick={handleFeedbackClick} className="p-4">
+                  <div className="flex items-start gap-3 w-full">
+                    <MessageSquare className="h-5 w-5 text-primary mt-0.5" />
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">Program Feedback Request</div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Help us improve! Share your thoughts about the program and your experience.
+                      </div>
+                      <div className="text-xs text-primary mt-2 font-medium">
+                        Click to provide feedback →
+                      </div>
+                    </div>
+                  </div>
+                </DropdownMenuItem>
+              ) : (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>No new notifications</p>
+                </div>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -237,6 +277,12 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Feedback Dialog */}
+      <FeedbackDialog 
+        open={feedbackDialogOpen} 
+        onOpenChange={setFeedbackDialogOpen}
+      />
     </header>
   )
 }
