@@ -175,11 +175,9 @@ export function ScheduleMeetingDialog({ open, onOpenChange }: ScheduleMeetingDia
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="quarterly-review">Quarterly Review</SelectItem>
-                      <SelectItem value="investment-planning">Investment Planning</SelectItem>
-                      <SelectItem value="budget-discussion">Budget Discussion</SelectItem>
-                      <SelectItem value="trust-meeting">Trust Meeting</SelectItem>
-                      <SelectItem value="emergency">Emergency Meeting</SelectItem>
+                      <SelectItem value="annual-meeting">Annual Meetings</SelectItem>
+                      <SelectItem value="quarterly-review">Quarterly Reviews</SelectItem>
+                      <SelectItem value="family-legacy">Family Legacy Meetings</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>

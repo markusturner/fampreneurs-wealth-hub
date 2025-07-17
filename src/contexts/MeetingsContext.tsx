@@ -22,21 +22,21 @@ const initialMeetings: Meeting[] = [
     title: 'Family Investment Review',
     date: '2024-12-20',
     time: '10:00',
-    type: 'Investment Review'
+    type: 'Quarterly Reviews'
   },
   {
     id: '2',
     title: 'Estate Planning Discussion',
     date: '2024-12-22',
     time: '14:30',
-    type: 'Estate Planning'
+    type: 'Family Legacy Meetings'
   },
   {
     id: '3',
-    title: 'Quarterly Family Meeting',
+    title: 'Annual Family Meeting',
     date: '2024-12-28',
     time: '16:00',
-    type: 'General Meeting'
+    type: 'Annual Meetings'
   }
 ]
 
