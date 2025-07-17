@@ -35,13 +35,6 @@ const quickActions = [
     icon: Users,
     variant: "default" as const,
     action: "add_family_member" as const
-  },
-  {
-    title: "Generate Report",
-    description: "Create performance report",
-    icon: FileText,
-    variant: "secondary" as const,
-    action: () => console.log("Generate report")
   }
 ]
 
