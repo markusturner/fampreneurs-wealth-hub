@@ -3,27 +3,82 @@ import { Badge } from "@/components/ui/badge"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
 
 const portfolioData = [
-  { month: "Jan", value: 10200000, growth: 2.1 },
-  { month: "Feb", value: 10450000, growth: 2.5 },
-  { month: "Mar", value: 10180000, growth: -2.6 },
-  { month: "Apr", value: 10820000, growth: 6.3 },
-  { month: "May", value: 11200000, growth: 3.5 },
-  { month: "Jun", value: 11680000, growth: 4.3 },
-  { month: "Jul", value: 12100000, growth: 3.6 },
-  { month: "Aug", value: 12450000, growth: 2.9 },
+  { 
+    month: "Jan", 
+    crypto: 850000, 
+    stocks: 4200000, 
+    etfs: 2800000, 
+    houseEquity: 1900000, 
+    business: 450000 
+  },
+  { 
+    month: "Feb", 
+    crypto: 920000, 
+    stocks: 4380000, 
+    etfs: 2950000, 
+    houseEquity: 1920000, 
+    business: 480000 
+  },
+  { 
+    month: "Mar", 
+    crypto: 780000, 
+    stocks: 4150000, 
+    etfs: 2880000, 
+    houseEquity: 1940000, 
+    business: 430000 
+  },
+  { 
+    month: "Apr", 
+    crypto: 1120000, 
+    stocks: 4650000, 
+    etfs: 3100000, 
+    houseEquity: 1960000, 
+    business: 490000 
+  },
+  { 
+    month: "May", 
+    crypto: 1180000, 
+    stocks: 4890000, 
+    etfs: 3250000, 
+    houseEquity: 1980000, 
+    business: 500000 
+  },
+  { 
+    month: "Jun", 
+    crypto: 1350000, 
+    stocks: 5150000, 
+    etfs: 3380000, 
+    houseEquity: 2000000, 
+    business: 520000 
+  },
+  { 
+    month: "Jul", 
+    crypto: 1480000, 
+    stocks: 5420000, 
+    etfs: 3550000, 
+    houseEquity: 2020000, 
+    business: 530000 
+  },
+  { 
+    month: "Aug", 
+    crypto: 1620000, 
+    stocks: 5680000, 
+    etfs: 3720000, 
+    houseEquity: 2040000, 
+    business: 540000 
+  },
 ]
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-card border border-border rounded-lg p-3 shadow-medium">
-        <p className="font-medium text-foreground">{`${label} 2024`}</p>
-        <p className="text-primary font-semibold">
-          {`Portfolio: $${payload[0].value.toLocaleString()}`}
-        </p>
-        <p className={`text-sm ${payload[0].payload.growth > 0 ? 'text-accent' : 'text-destructive'}`}>
-          {`Growth: ${payload[0].payload.growth > 0 ? '+' : ''}${payload[0].payload.growth}%`}
-        </p>
+      <div className="bg-card border border-border rounded-lg p-3 shadow-medium min-w-[200px]">
+        <p className="font-medium text-foreground mb-2">{`${label} 2024`}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} className="text-sm font-medium" style={{ color: entry.color }}>
+            {`${entry.name}: $${entry.value.toLocaleString()}`}
+          </p>
+        ))}
       </div>
     )
   }
@@ -31,9 +86,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export function InvestmentChart() {
-  const currentValue = portfolioData[portfolioData.length - 1].value
-  const previousValue = portfolioData[portfolioData.length - 2].value
-  const growth = ((currentValue - previousValue) / previousValue) * 100
+  const currentData = portfolioData[portfolioData.length - 1]
+  const previousData = portfolioData[portfolioData.length - 2]
+  
+  const currentTotal = currentData.crypto + currentData.stocks + currentData.etfs + currentData.houseEquity + currentData.business
+  const previousTotal = previousData.crypto + previousData.stocks + previousData.etfs + previousData.houseEquity + previousData.business
+  const growth = ((currentTotal - previousTotal) / previousTotal) * 100
 
   return (
     <Card className="col-span-4 shadow-soft">
@@ -47,7 +105,7 @@ export function InvestmentChart() {
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-foreground">
-              ${currentValue.toLocaleString()}
+              ${currentTotal.toLocaleString()}
             </div>
             <Badge variant="default" className="bg-accent text-accent-foreground">
               +{growth.toFixed(1)}% this month
@@ -58,13 +116,7 @@ export function InvestmentChart() {
       <CardContent className="pt-0">
         <div className="h-[350px]">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={portfolioData}>
-              <defs>
-                <linearGradient id="portfolioGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0.05}/>
-                </linearGradient>
-              </defs>
+            <LineChart data={portfolioData}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
               <XAxis 
                 dataKey="month" 
@@ -77,14 +129,57 @@ export function InvestmentChart() {
                 tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Area
+              
+              {/* Stocks Line */}
+              <Line
                 type="monotone"
-                dataKey="value"
+                dataKey="stocks"
+                stroke="hsl(var(--primary))"
+                strokeWidth={3}
+                dot={false}
+                name="Stocks"
+              />
+              
+              {/* ETFs Line */}
+              <Line
+                type="monotone"
+                dataKey="etfs"
                 stroke="hsl(var(--accent))"
                 strokeWidth={3}
-                fill="url(#portfolioGradient)"
+                dot={false}
+                name="ETFs"
               />
-            </AreaChart>
+              
+              {/* Crypto Line */}
+              <Line
+                type="monotone"
+                dataKey="crypto"
+                stroke="hsl(var(--secondary))"
+                strokeWidth={3}
+                dot={false}
+                name="Crypto"
+              />
+              
+              {/* House Equity Line */}
+              <Line
+                type="monotone"
+                dataKey="houseEquity"
+                stroke="hsl(270 50% 60%)"
+                strokeWidth={3}
+                dot={false}
+                name="House Equity"
+              />
+              
+              {/* Business Line */}
+              <Line
+                type="monotone"
+                dataKey="business"
+                stroke="hsl(0 70% 50%)"
+                strokeWidth={3}
+                dot={false}
+                name="Business"
+              />
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
