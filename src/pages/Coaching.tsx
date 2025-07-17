@@ -38,12 +38,6 @@ interface GroupSession {
 
 const Coaching = () => {
   const { user, profile, loading } = useAuth()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
-  const [viewType, setViewType] = useState<'month' | 'list'>('month')
-  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
-  const [sessions, setSessions] = useState<GroupSession[]>([])
-  const [loadingSessions, setLoadingSessions] = useState(true)
 
   if (loading) {
     return (
@@ -59,6 +53,13 @@ const Coaching = () => {
   if (!user) {
     return null
   }
+
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
+  const [viewType, setViewType] = useState<'month' | 'list'>('month')
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
+  const [sessions, setSessions] = useState<GroupSession[]>([])
+  const [loadingSessions, setLoadingSessions] = useState(true)
 
   const displayName = profile?.display_name || profile?.first_name || 'Member'
 
