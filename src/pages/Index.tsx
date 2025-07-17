@@ -1,3 +1,6 @@
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { InvestmentChart } from "@/components/dashboard/investment-chart"
@@ -6,10 +9,36 @@ import { QuickActions } from "@/components/dashboard/quick-actions"
 import { FamilyCalendar } from "@/components/dashboard/family-calendar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Loader2 } from 'lucide-react'
 import { useState } from "react"
 
 const Index = () => {
+  const { user, profile, loading } = useAuth()
+  const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth')
+    }
+  }, [user, loading, navigate])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading your dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null // Will redirect to auth
+  }
+
+  const displayName = profile?.display_name || profile?.first_name || 'Family'
 
   return (
     <div className="min-h-screen bg-background">
@@ -20,7 +49,7 @@ const Index = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              Welcome back, Rodriguez Family
+              Welcome back, {displayName}
             </h1>
             <p className="text-muted-foreground mt-1">
               Here's what's happening with your family office today
