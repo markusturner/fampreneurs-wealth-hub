@@ -21,6 +21,7 @@ export default function Auth() {
   const [occupation, setOccupation] = useState('')
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>('')
+  const [adminCode, setAdminCode] = useState('')
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -361,6 +362,89 @@ export default function Auth() {
         description: "Please try again later.",
         variant: "destructive",
       })
+    }
+  }
+
+  const handleQuickAdminAccess = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    try {
+      // Check if the admin code is correct
+      if (adminCode !== 'ADMIN2025') {
+        toast({
+          title: "Invalid admin code",
+          description: "Please enter the correct admin access code.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Create a temporary admin account or sign in with predefined admin credentials
+      cleanupAuthState()
+      
+      try {
+        await supabase.auth.signOut({ scope: 'global' })
+      } catch (err) {
+        // Continue even if this fails
+      }
+
+      // Try to sign in with admin credentials first
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: 'admin@fampreneurs.com',
+        password: 'Admin@2025!',
+      })
+
+      if (signInError && signInError.message.includes('Invalid login credentials')) {
+        // If admin account doesn't exist, create it
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: 'admin@fampreneurs.com',
+          password: 'Admin@2025!',
+          options: {
+            data: {
+              first_name: 'Admin',
+              last_name: 'User',
+              display_name: 'Admin User',
+              occupation: 'System Administrator',
+            }
+          }
+        })
+
+        if (signUpError) throw signUpError
+
+        if (signUpData.user) {
+          // Manually assign admin role via RPC
+          await supabase.rpc('assign_admin_role', {
+            target_user_id: signUpData.user.id,
+            assigner_user_id: signUpData.user.id
+          })
+
+          toast({
+            title: "Admin account created and activated",
+            description: "Welcome to the admin panel!",
+          })
+          
+          if (signUpData.session) {
+            window.location.href = '/'
+          }
+        }
+      } else if (signInError) {
+        throw signInError
+      } else if (signInData.user) {
+        toast({
+          title: "Admin access granted",
+          description: "Welcome back, Administrator!",
+        })
+        window.location.href = '/'
+      }
+    } catch (error: any) {
+      toast({
+        title: "Admin access failed",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -793,6 +877,42 @@ export default function Auth() {
                   >
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Admin Sign In
+                  </Button>
+                </form>
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <Separator className="w-full" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or use quick access
+                    </span>
+                  </div>
+                </div>
+                
+                <form onSubmit={handleQuickAdminAccess} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="admin-code">Quick Admin Code</Label>
+                    <Input
+                      id="admin-code"
+                      type="password"
+                      placeholder="Enter admin access code"
+                      value={adminCode}
+                      onChange={(e) => setAdminCode(e.target.value)}
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                    disabled={isLoading}
+                  >
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Quick Admin Access
                   </Button>
                 </form>
                 
