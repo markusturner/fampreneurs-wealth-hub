@@ -213,7 +213,7 @@ const Members = () => {
         description: `${getDisplayName(member)} is now an accountability partner.`,
       })
 
-      fetchMembers()
+      // Don't call fetchMembers() since optimistic update already handled it
     } catch (error) {
       console.error('Error assigning accountability role:', error)
       toast({
@@ -222,7 +222,11 @@ const Members = () => {
         variant: "destructive",
       })
       // Revert optimistic update on error
-      fetchMembers()
+      setMembers(prev => prev.map(m => 
+        m.user_id === member.user_id 
+          ? { ...m, is_accountability_partner: false }
+          : m
+      ))
     }
   }
 
@@ -245,14 +249,24 @@ const Members = () => {
         })
         .eq('user_id', member.user_id)
 
-      if (error) throw error
+      if (error) {
+        console.error('Database error:', error)
+        throw error
+      }
+
+      // Delete from user_roles table as well
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', member.user_id)
+        .eq('role', 'accountability_partner')
 
       toast({
         title: "Accountability Partner Removed",
         description: `${getDisplayName(member)} is no longer an accountability partner.`,
       })
 
-      fetchMembers()
+      // Don't call fetchMembers() since optimistic update already handled it
     } catch (error) {
       console.error('Error removing accountability role:', error)
       toast({
@@ -261,7 +275,11 @@ const Members = () => {
         variant: "destructive",
       })
       // Revert optimistic update on error
-      fetchMembers()
+      setMembers(prev => prev.map(m => 
+        m.user_id === member.user_id 
+          ? { ...m, is_accountability_partner: true }
+          : m
+      ))
     }
   }
 
