@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Shield } from 'lucide-react'
+import { Loader2, Shield, Upload, User } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { useNavigate } from 'react-router-dom'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -17,6 +17,9 @@ export default function Auth() {
   const [password, setPassword] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const [occupation, setOccupation] = useState('')
+  const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>('')
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -89,8 +92,71 @@ export default function Auth() {
     }
   }
 
+  const uploadProfilePhoto = async (file: File, userId: string): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${userId}/avatar.${fileExt}`
+      
+      const { error: uploadError } = await supabase.storage
+        .from('profile-photos')
+        .upload(fileName, file, { upsert: true })
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError)
+        return null
+      }
+
+      const { data } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(fileName)
+
+      return data.publicUrl
+    } catch (error) {
+      console.error('Upload failed:', error)
+      return null
+    }
+  }
+
+  const handleProfilePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "File too large",
+          description: "Please select a photo under 5MB.",
+          variant: "destructive",
+        })
+        return
+      }
+      
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please select an image file.",
+          variant: "destructive",
+        })
+        return
+      }
+      
+      setProfilePhoto(file)
+      const url = URL.createObjectURL(file)
+      setProfilePhotoUrl(url)
+    }
+  }
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate required fields
+    if (!firstName || !lastName || !occupation || !profilePhoto) {
+      toast({
+        title: "Missing required fields",
+        description: "Please fill in your full name, occupation, and upload a profile photo.",
+        variant: "destructive",
+      })
+      return
+    }
+    
     setIsLoading(true)
 
     try {
@@ -113,6 +179,7 @@ export default function Auth() {
             first_name: firstName,
             last_name: lastName,
             display_name: `${firstName} ${lastName}`.trim(),
+            occupation: occupation,
           }
         }
       })
@@ -135,6 +202,16 @@ export default function Auth() {
       }
 
       if (data.user) {
+        // Upload profile photo
+        const photoUrl = await uploadProfilePhoto(profilePhoto, data.user.id)
+        
+        if (photoUrl) {
+          // Update the user's metadata with the photo URL
+          await supabase.auth.updateUser({
+            data: { avatar_url: photoUrl }
+          })
+        }
+
         toast({
           title: "Account created!",
           description: "Please check your email to verify your account, or you can continue if email confirmation is disabled.",
@@ -326,7 +403,7 @@ export default function Auth() {
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
+                    <Label htmlFor="firstName">First Name *</Label>
                     <Input
                       id="firstName"
                       type="text"
@@ -338,7 +415,7 @@ export default function Auth() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
+                    <Label htmlFor="lastName">Last Name *</Label>
                     <Input
                       id="lastName"
                       type="text"
@@ -350,8 +427,64 @@ export default function Auth() {
                     />
                   </div>
                 </div>
+                
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="occupation">Occupation *</Label>
+                  <Input
+                    id="occupation"
+                    type="text"
+                    placeholder="Enter your occupation"
+                    value={occupation}
+                    onChange={(e) => setOccupation(e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profilePhoto">Profile Photo *</Label>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-shrink-0">
+                      {profilePhotoUrl ? (
+                        <img 
+                          src={profilePhotoUrl} 
+                          alt="Profile preview" 
+                          className="w-16 h-16 rounded-full object-cover border-2 border-border"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-muted border-2 border-border flex items-center justify-center">
+                          <User className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        id="profilePhoto"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProfilePhotoChange}
+                        disabled={isLoading}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('profilePhoto')?.click()}
+                        disabled={isLoading}
+                        className="w-full"
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        {profilePhoto ? 'Change Photo' : 'Upload Photo'}
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Maximum file size: 5MB. Supported formats: JPG, PNG, GIF
+                  </p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email *</Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -363,11 +496,11 @@ export default function Auth() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password">Password *</Label>
                   <Input
                     id="signup-password"
                     type="password"
-                    placeholder="Create a password"
+                    placeholder="Create a password (min. 6 characters)"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -375,14 +508,19 @@ export default function Auth() {
                     minLength={6}
                   />
                 </div>
+                
                 <Button 
                   type="submit" 
                   className="w-full" 
-                  disabled={isLoading}
+                  disabled={isLoading || !firstName || !lastName || !occupation || !profilePhoto}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Create Account
                 </Button>
+                
+                <p className="text-xs text-muted-foreground text-center">
+                  * Required fields - All information must be completed before account creation
+                </p>
               </form>
               
               <div className="space-y-4 mt-6">
