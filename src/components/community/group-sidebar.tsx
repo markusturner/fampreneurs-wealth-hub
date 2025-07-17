@@ -12,10 +12,29 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from '@/hooks/use-toast'
 import { useSubscription } from '@/hooks/useSubscription'
-import { Hash, Lock, Plus, Users, Settings, Trash2, MoreVertical, Crown, Star, BookOpen } from 'lucide-react'
+import { Hash, Lock, Plus, Users, Settings, Trash2, MoreVertical, Crown, Star, BookOpen, GripVertical } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import {
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface Group {
   id: string
@@ -473,6 +492,26 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
            group.user_role === 'admin'
   }
 
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (active.id !== over?.id) {
+      setPublicGroups((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over?.id)
+
+        return arrayMove(items, oldIndex, newIndex)
+      })
+    }
+  }
+
   const handleJoinPremiumGroup = (groupId: string) => {
     toast({
       title: "Premium Required",
@@ -482,84 +521,112 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
     createCheckout()
   }
 
-  const GroupItem = ({ group }: { group: Group }) => (
-    <div className="flex items-center gap-1">
-      <Button
-        variant={selectedGroupId === group.id ? "secondary" : "ghost"}
-        className="flex-1 justify-start gap-2 h-auto py-2 px-3"
-        onClick={() => {
-          if (group.is_premium && !subscriptionStatus.subscribed) {
-            handleJoinPremiumGroup(group.id)
-            return
-          }
-          onGroupSelect(group.id)
-        }}
+  const SortableGroupItem = ({ group }: { group: Group }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: group.id })
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    }
+
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="flex items-center gap-1 group"
       >
-        {group.is_private ? (
-          <Lock className="h-4 w-4 text-muted-foreground" />
-        ) : (
-          <Hash className="h-4 w-4 text-muted-foreground" />
-        )}
-        <span className="truncate">{group.name}</span>
-        {group.is_premium && <Crown className="h-3 w-3 text-secondary ml-1" />}
-        {group.unread_count && group.unread_count > 0 && (
-          <Badge variant="destructive" className="ml-auto text-xs h-5 w-5 p-0 flex items-center justify-center">
-            {group.unread_count}
-          </Badge>
-        )}
-      </Button>
-      
-      {canDeleteGroup(group) && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              <MoreVertical className="h-3 w-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => startEditGroup(group)}
-              className="cursor-pointer"
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Edit Group
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive cursor-pointer"
-                  onSelect={(e) => e.preventDefault()}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Group
-                </DropdownMenuItem>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Group</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete "{group.name}"? This action cannot be undone.
-                    All messages in this group will be permanently lost.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => deleteGroup(group.id, group.name)}
-                    disabled={deleting === group.id}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <Button
+          variant={selectedGroupId === group.id ? "secondary" : "ghost"}
+          className="flex-1 justify-start gap-2 h-auto py-2 px-3"
+          onClick={() => {
+            if (group.is_premium && !subscriptionStatus.subscribed) {
+              handleJoinPremiumGroup(group.id)
+              return
+            }
+            onGroupSelect(group.id)
+          }}
+        >
+          {group.is_private ? (
+            <Lock className="h-4 w-4 text-muted-foreground" />
+          ) : (
+            <Hash className="h-4 w-4 text-muted-foreground" />
+          )}
+          <span className="truncate">{group.name}</span>
+          {group.is_premium && <Crown className="h-3 w-3 text-secondary ml-1" />}
+          {group.unread_count && group.unread_count > 0 && (
+            <Badge variant="destructive" className="ml-auto text-xs h-5 w-5 p-0 flex items-center justify-center">
+              {group.unread_count}
+            </Badge>
+          )}
+        </Button>
+        
+        {canDeleteGroup(group) && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                <MoreVertical className="h-3 w-3" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => startEditGroup(group)}
+                className="cursor-pointer"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Edit Group
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive cursor-pointer"
+                    onSelect={(e) => e.preventDefault()}
                   >
-                    {deleting === group.id ? "Deleting..." : "Delete"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-    </div>
-  )
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Group
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Group</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete "{group.name}"? This action cannot be undone.
+                      All messages in this group will be permanently lost.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => deleteGroup(group.id, group.name)}
+                      disabled={deleting === group.id}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {deleting === group.id ? "Deleting..." : "Delete"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+    )
+  }
 
   if (loading) {
     return (
@@ -826,13 +893,19 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
               </DialogContent>
             </Dialog>
             
-            <div className="space-y-1">
-              {publicGroups.map(group => (
-                <div key={group.id} className="group">
-                  <GroupItem group={group} />
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext items={publicGroups.map(g => g.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-1">
+                  {publicGroups.map(group => (
+                    <SortableGroupItem key={group.id} group={group} />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </SortableContext>
+            </DndContext>
           </div>
 
           {/* Private Groups */}
@@ -846,7 +919,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
               <div className="space-y-1">
                 {privateGroups.map(group => (
                   <div key={group.id} className="group">
-                    <GroupItem group={group} />
+                    <SortableGroupItem group={group} />
                   </div>
                 ))}
               </div>
