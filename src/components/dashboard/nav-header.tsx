@@ -1,4 +1,4 @@
-import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X } from "lucide-react"
+import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -75,6 +75,22 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                     <Users className="h-4 w-4" />
                     Community
                   </Button>
+                  <Button
+                    variant={location.pathname === '/courses' ? "default" : "ghost"}
+                    className="w-full justify-start gap-3"
+                    onClick={() => handleNavigation('/courses')}
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    Courses
+                  </Button>
+                  <Button
+                    variant={location.pathname === '/coaching' ? "default" : "ghost"}
+                    className="w-full justify-start gap-3"
+                    onClick={() => handleNavigation('/coaching')}
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Coaching Calls
+                  </Button>
                 </nav>
               </div>
             </SheetContent>
@@ -110,6 +126,24 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           >
             <Users className="h-4 w-4" />
             Community
+          </Button>
+          <Button
+            variant={location.pathname === '/courses' ? "default" : "ghost"}
+            size="sm"
+            onClick={() => navigate('/courses')}
+            className="gap-2"
+          >
+            <BookOpen className="h-4 w-4" />
+            Courses
+          </Button>
+          <Button
+            variant={location.pathname === '/coaching' ? "default" : "ghost"}
+            size="sm"
+            onClick={() => navigate('/coaching')}
+            className="gap-2"
+          >
+            <Calendar className="h-4 w-4" />
+            Coaching Calls
           </Button>
         </div>
 
