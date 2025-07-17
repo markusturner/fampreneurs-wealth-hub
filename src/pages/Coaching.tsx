@@ -236,6 +236,15 @@ const Coaching = () => {
                   <List className="h-4 w-4" />
                   List
                 </Button>
+                <Button 
+                  size="sm"
+                  onClick={() => setScheduleDialogOpen(true)}
+                  className="gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden lg:inline">Add Coach & Call</span>
+                  <span className="lg:hidden">Add Call</span>
+                </Button>
               </div>
             </div>
           </CardHeader>
