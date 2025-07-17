@@ -14,10 +14,10 @@ const quickActions = [
   },
   {
     title: "Upload Document",
-    description: "Add trust or legal documents",
+    description: "Add trust or family documents",
     icon: Upload,
     variant: "default" as const,
-    action: () => console.log("Upload document")
+    action: () => window.location.href = "/documents"
   },
   {
     title: "Add Team Member",

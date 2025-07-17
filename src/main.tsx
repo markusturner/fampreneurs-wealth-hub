@@ -8,6 +8,7 @@ import { MeetingsProvider } from "@/contexts/MeetingsContext";
 import { ThemeProvider } from "@/components/theme-provider";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Documents from "./pages/Documents";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -19,10 +20,11 @@ createRoot(document.getElementById("root")!).render(
         <ThemeProvider defaultTheme="light" storageKey="family-dashboard-theme">
           <AuthProvider>
             <MeetingsProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-              </Routes>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/documents" element={<Documents />} />
+                </Routes>
               <Toaster />
             </MeetingsProvider>
           </AuthProvider>
