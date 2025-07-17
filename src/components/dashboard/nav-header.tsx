@@ -20,7 +20,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
   const { profile, signOut } = useAuth()
-  const { shouldShowFeedback, markFeedbackShown } = useFeedbackNotification()
+  const { shouldShowFeedback, markFeedbackShown, temporarilyHideNotification } = useFeedbackNotification()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -197,7 +197,11 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
         <div className="flex items-center gap-2">
           <ThemeToggle />
           
-          <DropdownMenu>
+          <DropdownMenu onOpenChange={(open) => {
+            if (open && shouldShowFeedback) {
+              temporarilyHideNotification()
+            }
+          }}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-4 w-4" />

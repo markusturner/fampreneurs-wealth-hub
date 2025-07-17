@@ -6,6 +6,7 @@ export function useFeedbackNotification() {
   const { user } = useAuth()
   const [shouldShowFeedback, setShouldShowFeedback] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [timerRef, setTimerRef] = useState<NodeJS.Timeout | null>(null)
 
   const checkFeedbackStatus = async () => {
     if (!user?.id) return
@@ -31,6 +32,27 @@ export function useFeedbackNotification() {
 
   const markFeedbackShown = () => {
     setShouldShowFeedback(false)
+    // Clear any existing timer
+    if (timerRef) {
+      clearTimeout(timerRef)
+      setTimerRef(null)
+    }
+  }
+
+  const temporarilyHideNotification = () => {
+    setShouldShowFeedback(false)
+    // Clear any existing timer
+    if (timerRef) {
+      clearTimeout(timerRef)
+    }
+    
+    // Set a new timer to bring the notification back after 10 minutes
+    const newTimer = setTimeout(() => {
+      setShouldShowFeedback(true)
+      setTimerRef(null)
+    }, 10 * 60 * 1000) // 10 minutes
+    
+    setTimerRef(newTimer)
   }
 
   useEffect(() => {
@@ -41,14 +63,21 @@ export function useFeedbackNotification() {
       // Set up a timer to check periodically (every hour)
       const interval = setInterval(checkFeedbackStatus, 60 * 60 * 1000)
 
-      return () => clearInterval(interval)
+      return () => {
+        clearInterval(interval)
+        // Clean up timer on unmount
+        if (timerRef) {
+          clearTimeout(timerRef)
+        }
+      }
     }
-  }, [user?.id])
+  }, [user?.id, timerRef])
 
   return {
     shouldShowFeedback,
     loading,
     checkFeedbackStatus,
-    markFeedbackShown
+    markFeedbackShown,
+    temporarilyHideNotification
   }
 }
