@@ -42,11 +42,15 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
   const [privateGroups, setPrivateGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editingGroup, setEditingGroup] = useState<Group | null>(null)
   const [newGroupName, setNewGroupName] = useState('')
+  const [editGroupName, setEditGroupName] = useState('')
   const [newGroupDescription, setNewGroupDescription] = useState('')
   const [newGroupPrivate, setNewGroupPrivate] = useState(false)
   const [newGroupPremium, setNewGroupPremium] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [updating, setUpdating] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
@@ -156,6 +160,110 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
     }
   }
 
+  const startEditGroup = (group: Group) => {
+    setEditingGroup(group)
+    setEditGroupName(group.name)
+    setEditDialogOpen(true)
+  }
+
+  const updateGroup = async () => {
+    if (!editingGroup || !editGroupName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a group name",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setUpdating(true)
+    try {
+      const { error } = await supabase
+        .from('community_groups')
+        .update({ name: editGroupName.trim() })
+        .eq('id', editingGroup.id)
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: `Group renamed to "${editGroupName}" successfully!`
+      })
+
+      // Reset form
+      setEditGroupName('')
+      setEditingGroup(null)
+      setEditDialogOpen(false)
+
+      // Refresh groups
+      fetchGroups()
+    } catch (error) {
+      console.error('Error updating group:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update group name",
+        variant: "destructive"
+      })
+    } finally {
+      setUpdating(false)
+    }
+  }
+  const deleteGroup = async (groupId: string, groupName: string) => {
+    setDeleting(groupId)
+    try {
+      // First delete all group memberships
+      const { error: membershipError } = await supabase
+        .from('group_memberships')
+        .delete()
+        .eq('group_id', groupId)
+
+      if (membershipError) throw membershipError
+
+      // Then delete all group messages
+      const { error: messagesError } = await supabase
+        .from('group_messages')
+        .delete()
+        .eq('group_id', groupId)
+
+      if (messagesError) throw messagesError
+
+      // Finally delete the group
+      const { error: groupError } = await supabase
+        .from('community_groups')
+        .delete()
+        .eq('id', groupId)
+
+      if (groupError) throw groupError
+
+      toast({
+        title: "Success",
+        description: `Group "${groupName}" deleted successfully!`
+      })
+
+      // If deleted group was selected, clear selection
+      if (selectedGroupId === groupId) {
+        const remainingGroups = [...publicGroups, ...privateGroups].filter(g => g.id !== groupId)
+        if (remainingGroups.length > 0) {
+          onGroupSelect(remainingGroups[0].id)
+        } else {
+          onGroupSelect('')
+        }
+      }
+
+      // Refresh groups
+      fetchGroups()
+    } catch (error) {
+      console.error('Error deleting group:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete group",
+        variant: "destructive"
+      })
+    } finally {
+      setDeleting(null)
+    }
+  }
+
   const createGroup = async () => {
     if (!newGroupName.trim()) {
       toast({
@@ -221,61 +329,6 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
     }
   }
 
-  const deleteGroup = async (groupId: string, groupName: string) => {
-    setDeleting(groupId)
-    try {
-      // First delete all group memberships
-      const { error: membershipError } = await supabase
-        .from('group_memberships')
-        .delete()
-        .eq('group_id', groupId)
-
-      if (membershipError) throw membershipError
-
-      // Then delete all group messages
-      const { error: messagesError } = await supabase
-        .from('group_messages')
-        .delete()
-        .eq('group_id', groupId)
-
-      if (messagesError) throw messagesError
-
-      // Finally delete the group
-      const { error: groupError } = await supabase
-        .from('community_groups')
-        .delete()
-        .eq('id', groupId)
-
-      if (groupError) throw groupError
-
-      toast({
-        title: "Success",
-        description: `Group "${groupName}" deleted successfully!`
-      })
-
-      // If deleted group was selected, clear selection
-      if (selectedGroupId === groupId) {
-        const remainingGroups = [...publicGroups, ...privateGroups].filter(g => g.id !== groupId)
-        if (remainingGroups.length > 0) {
-          onGroupSelect(remainingGroups[0].id)
-        } else {
-          onGroupSelect('')
-        }
-      }
-
-      // Refresh groups
-      fetchGroups()
-    } catch (error) {
-      console.error('Error deleting group:', error)
-      toast({
-        title: "Error",
-        description: "Failed to delete group",
-        variant: "destructive"
-      })
-    } finally {
-      setDeleting(null)
-    }
-  }
 
   const canDeleteGroup = (group: Group) => {
     // Only group creators, admins, or users with admin role in that specific group can delete
@@ -328,6 +381,14 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={() => startEditGroup(group)}
+              className="cursor-pointer"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Edit Name
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <DropdownMenuItem
@@ -467,6 +528,43 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
                 </DialogContent>
               </Dialog>
             </div>
+            
+            {/* Edit Group Dialog */}
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Group Name</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="edit-group-name">Group Name</Label>
+                    <Input
+                      id="edit-group-name"
+                      value={editGroupName}
+                      onChange={(e) => setEditGroupName(e.target.value)}
+                      placeholder="Enter new group name"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setEditDialogOpen(false)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={updateGroup}
+                      disabled={updating}
+                      className="flex-1"
+                    >
+                      {updating ? "Updating..." : "Update"}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            
             <div className="space-y-1">
               {publicGroups.map(group => (
                 <div key={group.id} className="group">
