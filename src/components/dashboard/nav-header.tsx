@@ -89,7 +89,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                     onClick={() => handleNavigation('/coaching')}
                   >
                     <Calendar className="h-4 w-4" />
-                    Coaching Calls
+                    Calendar
                   </Button>
                   <Button
                     variant={location.pathname === '/members' ? "default" : "ghost"}
@@ -151,7 +151,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             className="gap-2"
           >
             <Calendar className="h-4 w-4" />
-            Coaching Calls
+            Calendar
           </Button>
           <Button
             variant={location.pathname === '/members' ? "default" : "ghost"}
