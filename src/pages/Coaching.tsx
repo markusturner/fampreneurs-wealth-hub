@@ -376,39 +376,6 @@ const Coaching = () => {
           </CardContent>
         </Card>
 
-        {/* Upcoming Sessions Summary */}
-        <Card className="shadow-soft">
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Upcoming Group Sessions
-            </CardTitle>
-            <CardDescription>
-              Next 3 scheduled group coaching sessions
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            <div className="grid gap-4 md:grid-cols-3">
-              {upcomingCalls.slice(0, 3).map((session) => (
-                <div key={session.id} className="p-3 bg-muted/20 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={session.avatar} />
-                      <AvatarFallback className="text-xs">{session.coach.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <span className="font-medium text-sm truncate">{session.title}</span>
-                  </div>
-                  <div className="text-xs text-muted-foreground space-y-1">
-                    <div>{format(new Date(session.date), 'MMM d, yyyy')}</div>
-                    <div>{session.time}</div>
-                    <div>{session.participants}/{session.maxParticipants} joined</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Available Coaches */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Available Coaches</h2>
