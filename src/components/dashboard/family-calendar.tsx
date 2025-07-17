@@ -34,15 +34,16 @@ export function FamilyCalendar() {
             mode="single"
             selected={selectedDate}
             onSelect={setSelectedDate}
-            className="rounded-md border pointer-events-auto w-full flex justify-center [&>div]:w-full [&_table]:w-full [&_td]:w-16 [&_td]:h-16 [&_th]:w-16 [&_th]:h-16 [&_button]:w-full [&_button]:h-full [&_.rdp-caption]:text-xl [&_.rdp-caption]:font-semibold [&_.rdp-caption]:text-center [&_.rdp-caption]:flex [&_.rdp-caption]:items-center [&_.rdp-caption]:justify-center [&>div]:pr-0 [&_.rdp-nav]:flex [&_.rdp-nav]:items-center [&_.rdp-nav]:justify-between [&_.rdp-nav]:w-full [&_.rdp-nav_button]:text-primary [&_.rdp-nav_button]:hover:text-primary/80 [&_.rdp-nav_button]:opacity-70 [&_.rdp-nav_button]:hover:opacity-100"
+            className="rounded-md border pointer-events-auto w-full flex justify-center [&>div]:w-full [&_table]:w-full [&_td]:w-12 [&_td]:h-12 [&_th]:w-12 [&_th]:h-12 [&_button]:w-full [&_button]:h-full [&_button]:text-xs [&_.rdp-caption]:text-lg [&_.rdp-caption]:font-semibold [&_.rdp-caption]:text-center [&_.rdp-caption]:flex [&_.rdp-caption]:items-center [&_.rdp-caption]:justify-center [&>div]:pr-0 [&_.rdp-nav]:flex [&_.rdp-nav]:items-center [&_.rdp-nav]:justify-between [&_.rdp-nav]:w-full [&_.rdp-nav_button]:text-primary [&_.rdp-nav_button]:hover:text-primary/80 [&_.rdp-nav_button]:opacity-70 [&_.rdp-nav_button]:hover:opacity-100"
             modifiers={{
               meeting: meetingDates
             }}
             modifiersStyles={{
               meeting: {
-                backgroundColor: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                borderRadius: '4px'
+                backgroundColor: 'hsl(270 50% 60%)',
+                color: 'white',
+                borderRadius: '4px',
+                fontWeight: 'bold'
               }
             }}
           />
@@ -59,20 +60,20 @@ export function FamilyCalendar() {
             Your scheduled family meetings and events
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
+        <CardContent className="p-4">
+          <div className="space-y-2">
             {meetings
               .filter(meeting => new Date(meeting.date) >= new Date())
               .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
               .map((meeting) => (
-                <div key={meeting.id} className="p-3 border border-primary/20 bg-primary/5 rounded-lg">
+                <div key={meeting.id} className="p-2 border border-primary/20 bg-primary/5 rounded-lg">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="font-medium text-sm">{meeting.title}</p>
-                    <Badge variant="secondary" className="text-xs">
+                    <p className="font-medium text-xs">{meeting.title}</p>
+                    <Badge variant="secondary" className="text-xs px-1 py-0">
                       {meeting.type}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <CalendarIcon className="h-3 w-3" />
                       {new Date(meeting.date).toLocaleDateString('en-US', { 
