@@ -38,6 +38,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { toast } from "@/hooks/use-toast"
+import { useMeetings } from "@/contexts/MeetingsContext"
 
 const formSchema = z.object({
   name: z.string().min(1, "Meeting name is required"),
@@ -53,6 +54,7 @@ interface ScheduleMeetingDialogProps {
 }
 
 export function ScheduleMeetingDialog({ open, onOpenChange }: ScheduleMeetingDialogProps) {
+  const { addMeeting } = useMeetings()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -64,7 +66,14 @@ export function ScheduleMeetingDialog({ open, onOpenChange }: ScheduleMeetingDia
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("Meeting scheduled:", values)
+    addMeeting({
+      title: values.name,
+      date: format(values.date, "yyyy-MM-dd"),
+      time: values.time,
+      type: values.type,
+      notes: values.notes,
+    })
+    
     toast({
       title: "Meeting Scheduled",
       description: `${values.name} has been scheduled for ${format(values.date, "PPP")} at ${values.time}. Family members will be notified.`,

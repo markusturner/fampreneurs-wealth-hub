@@ -3,42 +3,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { CalendarIcon, Clock } from "lucide-react"
 import { useState } from "react"
-
-// Mock data for upcoming meetings
-const upcomingMeetings = [
-  {
-    id: 1,
-    title: "Investment Review",
-    date: new Date(2025, 6, 18), // July 18, 2025
-    time: "2:00 PM",
-    type: "Quarterly Review"
-  },
-  {
-    id: 2,
-    title: "Estate Planning Discussion",
-    date: new Date(2025, 6, 22), // July 22, 2025
-    time: "10:00 AM",
-    type: "Planning"
-  },
-  {
-    id: 3,
-    title: "Family Business Meeting",
-    date: new Date(2025, 6, 25), // July 25, 2025
-    time: "3:30 PM",
-    type: "Business"
-  }
-]
+import { useMeetings } from "@/contexts/MeetingsContext"
 
 export function FamilyCalendar() {
+  const { meetings } = useMeetings()
   const [selectedDate, setSelectedDate] = useState<Date>()
   
   // Get dates that have meetings
-  const meetingDates = upcomingMeetings.map(meeting => meeting.date)
+  const meetingDates = meetings.map(meeting => new Date(meeting.date))
   
   // Get the next upcoming meeting
-  const nextMeeting = upcomingMeetings
-    .filter(meeting => meeting.date >= new Date())
-    .sort((a, b) => a.date.getTime() - b.date.getTime())[0]
+  const nextMeeting = meetings
+    .filter(meeting => new Date(meeting.date) >= new Date())
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0]
 
   return (
     <div className="grid grid-cols-2 gap-6">
@@ -84,9 +61,9 @@ export function FamilyCalendar() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {upcomingMeetings
-              .filter(meeting => meeting.date >= new Date())
-              .sort((a, b) => a.date.getTime() - b.date.getTime())
+            {meetings
+              .filter(meeting => new Date(meeting.date) >= new Date())
+              .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
               .map((meeting) => (
                 <div key={meeting.id} className="p-3 border border-primary/20 bg-primary/5 rounded-lg">
                   <div className="flex items-center justify-between mb-1">
@@ -98,7 +75,7 @@ export function FamilyCalendar() {
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <CalendarIcon className="h-3 w-3" />
-                      {meeting.date.toLocaleDateString('en-US', { 
+                      {new Date(meeting.date).toLocaleDateString('en-US', { 
                         month: 'short', 
                         day: 'numeric' 
                       })}
