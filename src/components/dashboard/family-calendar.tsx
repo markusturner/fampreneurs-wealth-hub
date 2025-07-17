@@ -29,12 +29,12 @@ export function FamilyCalendar() {
             View upcoming family meetings and events
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 flex justify-center">
           <Calendar
             mode="single"
             selected={selectedDate}
             onSelect={setSelectedDate}
-            className="rounded-md border pointer-events-auto w-full flex justify-center [&>div]:w-full [&_table]:w-full [&_td]:w-12 [&_td]:h-12 [&_th]:w-12 [&_th]:h-12 [&_button]:w-full [&_button]:h-full [&_button]:text-xs [&_.rdp-caption]:text-lg [&_.rdp-caption]:font-semibold [&_.rdp-caption]:text-center [&_.rdp-caption]:flex [&_.rdp-caption]:items-center [&_.rdp-caption]:justify-center [&>div]:pr-0 [&_.rdp-nav]:flex [&_.rdp-nav]:items-center [&_.rdp-nav]:justify-between [&_.rdp-nav]:w-full [&_.rdp-nav_button]:text-primary [&_.rdp-nav_button]:hover:text-primary/80 [&_.rdp-nav_button]:opacity-70 [&_.rdp-nav_button]:hover:opacity-100"
+            className="rounded-md border pointer-events-auto max-w-fit [&>div]:w-auto [&_table]:w-auto [&_td]:w-10 [&_td]:h-10 [&_th]:w-10 [&_th]:h-8 [&_button]:w-full [&_button]:h-full [&_button]:text-xs [&_.rdp-caption]:text-base [&_.rdp-caption]:font-semibold [&_.rdp-caption]:text-center [&_.rdp-caption]:flex [&_.rdp-caption]:items-center [&_.rdp-caption]:justify-center [&_.rdp-nav]:flex [&_.rdp-nav]:items-center [&_.rdp-nav]:justify-between [&_.rdp-nav]:w-full [&_.rdp-nav_button]:text-primary [&_.rdp-nav_button]:hover:text-primary/80 [&_.rdp-nav_button]:opacity-70 [&_.rdp-nav_button]:hover:opacity-100"
             modifiers={{
               meeting: meetingDates
             }}
