@@ -31,37 +31,49 @@ const Coaching = () => {
 
   const displayName = profile?.display_name || profile?.first_name || 'Member'
 
-  // Sample coaching data
+  // Sample group coaching data with Zoom integration
   const upcomingCalls = [
     {
       id: 1,
-      title: "Wealth Strategy Review",
+      title: "Group Wealth Strategy Session",
       coach: "Sarah Johnson, CFP",
       date: "2024-07-20",
       time: "2:00 PM - 3:00 PM",
-      type: "Video Call",
+      type: "Group Coaching",
       status: "confirmed",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face"
+      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
+      participants: 8,
+      maxParticipants: 12,
+      zoomMeetingId: "123-456-789",
+      zoomMeetingUrl: "https://zoom.us/j/123456789?pwd=example"
     },
     {
       id: 2, 
-      title: "Investment Portfolio Deep Dive",
+      title: "Investment Portfolio Masterclass",
       coach: "Michael Chen, CFA",
       date: "2024-07-22",
       time: "10:00 AM - 11:30 AM", 
-      type: "Video Call",
+      type: "Group Coaching",
       status: "confirmed",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
+      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
+      participants: 15,
+      maxParticipants: 20,
+      zoomMeetingId: "987-654-321",
+      zoomMeetingUrl: "https://zoom.us/j/987654321?pwd=example"
     },
     {
       id: 3,
-      title: "Estate Planning Consultation", 
+      title: "Estate Planning Workshop", 
       coach: "Elizabeth Davis, J.D.",
       date: "2024-07-25",
       time: "3:30 PM - 4:30 PM",
-      type: "Phone Call",
+      type: "Group Coaching",
       status: "pending",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face"
+      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
+      participants: 6,
+      maxParticipants: 10,
+      zoomMeetingId: "555-777-999",
+      zoomMeetingUrl: "https://zoom.us/j/555777999?pwd=example"
     }
   ]
 
@@ -113,7 +125,7 @@ const Coaching = () => {
               Coaching Calls
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Schedule 1-on-1 sessions with wealth management experts
+              Join group coaching sessions with wealth management experts
             </p>
           </div>
           <Button className="gap-2">
@@ -155,8 +167,14 @@ const Coaching = () => {
                         {call.time}
                       </span>
                       <span className="flex items-center gap-1">
-                        {call.type === "Video Call" ? <Video className="h-3 w-3" /> : <Phone className="h-3 w-3" />}
-                        {call.type}
+                        <Users className="h-3 w-3" />
+                        {call.participants}/{call.maxParticipants} joined
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Video className="h-3 w-3" />
+                        Zoom Meeting ID: {call.zoomMeetingId}
                       </span>
                     </div>
                   </div>
@@ -165,8 +183,13 @@ const Coaching = () => {
                   <Badge variant={call.status === 'confirmed' ? 'default' : 'secondary'} className="text-xs">
                     {call.status}
                   </Badge>
-                  <Button size="sm" variant="outline" className="text-xs px-2 sm:px-3">
-                    Join
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="text-xs px-2 sm:px-3"
+                    onClick={() => window.open(call.zoomMeetingUrl, '_blank')}
+                  >
+                    Join Zoom
                   </Button>
                 </div>
               </div>
