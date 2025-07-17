@@ -1,13 +1,13 @@
-import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, FileText } from "lucide-react"
+import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, FileText, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useAuth } from "@/contexts/AuthContext"
 import { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import fampreneur_logo from "@/assets/fampreneur-logo.png"
 
 interface NavHeaderProps {
   onMenuClick?: () => void
@@ -15,9 +15,15 @@ interface NavHeaderProps {
 
 export function NavHeader({ onMenuClick }: NavHeaderProps) {
   const [searchQuery, setSearchQuery] = useState("")
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { profile, signOut } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+
+  const handleNavigation = (path: string) => {
+    navigate(path)
+    setMobileMenuOpen(false)
+  }
 
   const getInitials = () => {
     if (profile?.first_name && profile?.last_name) {
@@ -36,14 +42,51 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-soft">
       <div className="container flex h-16 items-center px-4">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onMenuClick}
-            className="md:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
+          {/* Mobile Menu Button */}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-64 p-0">
+              <div className="flex flex-col h-full">
+                <div className="p-6 border-b">
+                  <h2 className="text-lg font-semibold text-foreground">Navigation</h2>
+                </div>
+                <nav className="flex-1 p-4 space-y-2">
+                  <Button
+                    variant={location.pathname === '/' ? "default" : "ghost"}
+                    className="w-full justify-start gap-3"
+                    onClick={() => handleNavigation('/')}
+                  >
+                    <Home className="h-4 w-4" />
+                    Dashboard
+                  </Button>
+                  <Button
+                    variant={location.pathname === '/community' ? "default" : "ghost"}
+                    className="w-full justify-start gap-3"
+                    onClick={() => handleNavigation('/community')}
+                  >
+                    <Users className="h-4 w-4" />
+                    Community
+                  </Button>
+                  <Button
+                    variant={location.pathname === '/documents' ? "default" : "ghost"}
+                    className="w-full justify-start gap-3"
+                    onClick={() => handleNavigation('/documents')}
+                  >
+                    <FileText className="h-4 w-4" />
+                    Documents
+                  </Button>
+                </nav>
+              </div>
+            </SheetContent>
+          </Sheet>
           
           <div className="flex items-center gap-3">
             <div className="hidden sm:block">
