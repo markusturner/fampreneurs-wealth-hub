@@ -215,8 +215,8 @@ export default function Auth() {
           <ThemeToggle />
         </div>
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <Shield className="h-6 w-6 text-primary" />
+          <div className="mx-auto w-12 h-12 bg-[#ffb500]/10 rounded-full flex items-center justify-center mb-4">
+            <Shield className="h-6 w-6" style={{ color: '#ffb500' }} />
           </div>
           <CardTitle className="text-2xl font-bold">Family Dashboard</CardTitle>
           <CardDescription>
@@ -258,7 +258,8 @@ export default function Auth() {
                 </div>
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full"
+                  style={{ backgroundColor: '#ffb500', color: 'white' }}
                   disabled={isLoading}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
