@@ -41,7 +41,7 @@ import { toast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
   name: z.string().min(1, "Meeting name is required"),
-  date: z.date({ required_error: "Date is required" }),
+  date: z.date(),
   time: z.string().min(1, "Time is required"),
   type: z.string().min(1, "Meeting type is required"),
   notes: z.string().optional(),
