@@ -1,43 +1,61 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, TrendingDown, DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { useEffect, useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
 
-const stats = [
-  {
-    title: "Total Portfolio Value",
-    value: "$12,450,000",
-    change: "+8.2%",
-    trend: "up",
-    icon: DollarSign,
-    description: "Since yesterday"
-  },
-  {
-    title: "Active Investments",
-    value: "47",
-    change: "+2",
-    trend: "up", 
-    icon: PieChart,
-    description: "New positions this week"
-  },
-  {
-    title: "Team Members",
-    value: "12",
-    change: "+1",
-    trend: "up",
-    icon: Users,
-    description: "Financial advisors"
-  },
-  {
-    title: "Family Documents",
-    value: "234",
-    change: "+5",
-    trend: "up",
-    icon: FileText,
-    description: "Managed documents"
-  }
-]
 
 export function DashboardStats() {
+  const [documentCount, setDocumentCount] = useState(0)
+
+  useEffect(() => {
+    const fetchDocumentCount = async () => {
+      const { count, error } = await supabase
+        .from('family_documents')
+        .select('*', { count: 'exact', head: true })
+      
+      if (!error && count !== null) {
+        setDocumentCount(count)
+      }
+    }
+
+    fetchDocumentCount()
+  }, [])
+
+  const stats = [
+    {
+      title: "Total Portfolio Value",
+      value: "$12,450,000",
+      change: "+8.2%",
+      trend: "up",
+      icon: DollarSign,
+      description: "Since yesterday"
+    },
+    {
+      title: "Active Investments",
+      value: "47",
+      change: "+2",
+      trend: "up", 
+      icon: PieChart,
+      description: "New positions this week"
+    },
+    {
+      title: "Team Members",
+      value: "12",
+      change: "+1",
+      trend: "up",
+      icon: Users,
+      description: "Financial advisors"
+    },
+    {
+      title: "Family Documents",
+      value: documentCount.toString(),
+      change: "+5",
+      trend: "up",
+      icon: FileText,
+      description: "Managed documents"
+    }
+  ]
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {stats.map((stat) => {
