@@ -30,6 +30,7 @@ const Members = () => {
   const [membersLoading, setMembersLoading] = useState(true)
   const [selectedMember, setSelectedMember] = useState<MemberProfile | null>(null)
   const [messageDialogOpen, setMessageDialogOpen] = useState(false)
+  const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({})
 
   const fetchMembers = async () => {
     try {
@@ -48,9 +49,69 @@ const Members = () => {
     }
   }
 
+  const fetchUnreadCounts = async () => {
+    if (!user?.id) return
+
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('sender_id')
+        .eq('recipient_id', user.id)
+        .is('read_at', null)
+
+      if (error) throw error
+
+      const counts: Record<string, number> = {}
+      data?.forEach(message => {
+        counts[message.sender_id] = (counts[message.sender_id] || 0) + 1
+      })
+      setUnreadCounts(counts)
+    } catch (error) {
+      console.error('Error fetching unread counts:', error)
+    }
+  }
+
   useEffect(() => {
     if (user?.id) {
       fetchMembers()
+      fetchUnreadCounts()
+    }
+  }, [user?.id])
+
+  // Real-time subscription for new messages
+  useEffect(() => {
+    if (!user?.id) return
+
+    const channel = supabase
+      .channel('new_messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `recipient_id=eq.${user.id}`
+        },
+        () => {
+          fetchUnreadCounts()
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `recipient_id=eq.${user.id}`
+        },
+        () => {
+          fetchUnreadCounts()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
     }
   }, [user?.id])
 
@@ -236,12 +297,17 @@ const Members = () => {
                     </div>
 
                     <Button 
-                      className="w-full gap-2" 
+                      className="w-full gap-2 relative" 
                       size="sm"
                       onClick={() => handleSendMessage(member)}
                     >
                       <MessageCircle className="h-4 w-4" />
-                      Send Message
+                      Chat
+                      {unreadCounts[member.user_id] > 0 && (
+                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
+                          {unreadCounts[member.user_id]}
+                        </span>
+                      )}
                     </Button>
                   </CardContent>
                 </Card>
@@ -294,6 +360,7 @@ const Members = () => {
           onMessageSent={() => {
             setMessageDialogOpen(false)
             setSelectedMember(null)
+            fetchUnreadCounts() // Refresh unread counts
           }}
         />
       )}
