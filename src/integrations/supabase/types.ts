@@ -536,6 +536,81 @@ export type Database = {
         }
         Relationships: []
       }
+      group_coaching_sessions: {
+        Row: {
+          coach_avatar_url: string | null
+          coach_name: string
+          created_at: string
+          created_by: string
+          current_participants: number | null
+          description: string | null
+          duration_minutes: number
+          id: string
+          image_url: string | null
+          is_recurring: boolean | null
+          max_participants: number | null
+          meeting_id: string | null
+          meeting_password: string | null
+          meeting_type: string
+          meeting_url: string
+          recurrence_end_date: string | null
+          recurrence_pattern: string | null
+          session_date: string
+          session_time: string
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          coach_avatar_url?: string | null
+          coach_name: string
+          created_at?: string
+          created_by: string
+          current_participants?: number | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          image_url?: string | null
+          is_recurring?: boolean | null
+          max_participants?: number | null
+          meeting_id?: string | null
+          meeting_password?: string | null
+          meeting_type?: string
+          meeting_url: string
+          recurrence_end_date?: string | null
+          recurrence_pattern?: string | null
+          session_date: string
+          session_time: string
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          coach_avatar_url?: string | null
+          coach_name?: string
+          created_at?: string
+          created_by?: string
+          current_participants?: number | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          image_url?: string | null
+          is_recurring?: boolean | null
+          max_participants?: number | null
+          meeting_id?: string | null
+          meeting_password?: string | null
+          meeting_type?: string
+          meeting_url?: string
+          recurrence_end_date?: string | null
+          recurrence_pattern?: string | null
+          session_date?: string
+          session_time?: string
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       group_courses: {
         Row: {
           course_id: string
@@ -744,6 +819,38 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      session_enrollments: {
+        Row: {
+          enrolled_at: string
+          id: string
+          session_id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          enrolled_at?: string
+          id?: string
+          session_id: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          enrolled_at?: string
+          id?: string
+          session_id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_enrollments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "group_coaching_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscribers: {
         Row: {

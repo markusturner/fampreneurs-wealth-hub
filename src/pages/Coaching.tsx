@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,12 +8,42 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Loader2, Calendar as CalendarIcon, Clock, User, Video, Phone, Users, Star, CheckCircle, Plus, ChevronLeft, ChevronRight, List, Grid } from 'lucide-react'
 import { format, isSameDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, getDay } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { supabase } from '@/integrations/supabase/client'
+import { ScheduleSessionDialog } from '@/components/coaching/schedule-session-dialog'
+
+interface GroupSession {
+  id: string
+  title: string
+  description?: string
+  coach_name: string
+  coach_avatar_url?: string
+  session_date: string
+  session_time: string
+  duration_minutes: number
+  meeting_type: string
+  meeting_url: string
+  meeting_id?: string
+  meeting_password?: string
+  image_url?: string
+  max_participants: number
+  current_participants: number
+  is_recurring: boolean
+  recurrence_pattern?: string
+  recurrence_end_date?: string
+  status: string
+  created_by: string
+  created_at: string
+  updated_at: string
+}
 
 const Coaching = () => {
   const { user, profile, loading } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
   const [viewType, setViewType] = useState<'month' | 'list'>('month')
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
+  const [sessions, setSessions] = useState<GroupSession[]>([])
+  const [loadingSessions, setLoadingSessions] = useState(true)
 
   if (loading) {
     return (
@@ -32,79 +62,68 @@ const Coaching = () => {
 
   const displayName = profile?.display_name || profile?.first_name || 'Member'
 
-  // Sample group coaching data with recurring events
-  const upcomingCalls = [
-    {
-      id: 1,
-      title: "Live Forex Trading",
-      coach: "Sarah Johnson, CFP",
-      date: "2025-07-07",
-      time: "8am",
-      type: "Group Coaching",
-      status: "confirmed",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
-      participants: 8,
-      maxParticipants: 12,
-      zoomMeetingId: "123-456-789",
-      zoomMeetingUrl: "https://zoom.us/j/123456789?pwd=example"
-    },
-    {
-      id: 2,
-      title: "Q&A Accountability",
-      coach: "Michael Chen, CFA",
-      date: "2025-07-02",
-      time: "9pm",
-      type: "Group Coaching",
-      status: "confirmed",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-      participants: 15,
-      maxParticipants: 20,
-      zoomMeetingId: "987-654-321",
-      zoomMeetingUrl: "https://zoom.us/j/987654321?pwd=example"
-    },
-    {
-      id: 3,
-      title: "Trust Coaching", 
-      coach: "Elizabeth Davis, J.D.",
-      date: "2025-07-09",
-      time: "9pm",
-      type: "Group Coaching",
-      status: "confirmed",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-      participants: 6,
-      maxParticipants: 10,
-      zoomMeetingId: "555-777-999",
-      zoomMeetingUrl: "https://zoom.us/j/555777999?pwd=example"
-    },
-    {
-      id: 4,
-      title: "YouTube Live",
-      coach: "Tech Team",
-      date: "2025-07-04",
-      time: "9pm",
-      type: "Live Stream",
-      status: "confirmed",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-      participants: 50,
-      maxParticipants: 100,
-      zoomMeetingId: "888-999-000",
-      zoomMeetingUrl: "https://youtube.com/live/example"
-    },
-    {
-      id: 5,
-      title: "Family Functions",
-      coach: "Community Team",
-      date: "2025-07-06",
-      time: "7pm",
-      type: "Community Event",
-      status: "confirmed",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-      participants: 25,
-      maxParticipants: 30,
-      zoomMeetingId: "111-222-333",
-      zoomMeetingUrl: "https://zoom.us/j/111222333?pwd=example"
+  // Fetch sessions from database
+  const fetchSessions = async () => {
+    setLoadingSessions(true)
+    try {
+      const { data, error } = await supabase
+        .from('group_coaching_sessions')
+        .select('*')
+        .eq('status', 'scheduled')
+        .order('session_date', { ascending: true })
+        .order('session_time', { ascending: true })
+
+      if (error) throw error
+      setSessions(data || [])
+    } catch (error) {
+      console.error('Error fetching sessions:', error)
+    } finally {
+      setLoadingSessions(false)
     }
-  ]
+  }
+
+  useEffect(() => {
+    fetchSessions()
+  }, [])
+
+  // Convert database sessions to format compatible with existing UI
+  const upcomingCalls = sessions.map(session => {
+    // Handle time formatting safely
+    let formattedTime = 'TBD'
+    try {
+      const timeParts = session.session_time.split(':')
+      const hours = parseInt(timeParts[0])
+      const minutes = parseInt(timeParts[1])
+      const date = new Date()
+      date.setHours(hours, minutes, 0, 0)
+      formattedTime = format(date, 'h:mmaaa')
+    } catch (error) {
+      console.error('Error formatting time:', error)
+    }
+
+    return {
+      id: session.id,
+      title: session.title,
+      coach: session.coach_name,
+      date: session.session_date,
+      time: formattedTime,
+      type: "Group Coaching",
+      status: "confirmed",
+      avatar: session.coach_avatar_url || "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
+      participants: session.current_participants,
+      maxParticipants: session.max_participants,
+      zoomMeetingId: session.meeting_id || "",
+      zoomMeetingUrl: session.meeting_url,
+      description: session.description,
+      duration: session.duration_minutes,
+      meetingType: session.meeting_type,
+      image: session.image_url,
+      isRecurring: session.is_recurring,
+      recurrencePattern: session.recurrence_pattern
+    }
+  })
+
+  // Sample coaches data - keep for now
 
   const availableCoaches = [
     {
@@ -182,7 +201,7 @@ const Coaching = () => {
               Manage your schedule and coaching sessions
             </p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setScheduleDialogOpen(true)}>
             <CalendarIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Schedule New Call</span>
             <span className="sm:hidden">Schedule</span>
@@ -464,6 +483,13 @@ const Coaching = () => {
           </Card>
         </div>
       </main>
+
+      {/* Schedule Session Dialog */}
+      <ScheduleSessionDialog
+        open={scheduleDialogOpen}
+        onOpenChange={setScheduleDialogOpen}
+        onSessionCreated={fetchSessions}
+      />
     </div>
   )
 }
