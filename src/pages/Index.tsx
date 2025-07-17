@@ -55,9 +55,6 @@ const Index = () => {
               Here's what's happening with your family office today
             </p>
           </div>
-          <Button variant="premium" size="lg" className="hidden md:flex">
-            Schedule Meeting
-          </Button>
         </div>
 
         {/* Key Metrics */}
