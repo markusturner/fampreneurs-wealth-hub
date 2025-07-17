@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { Kanban, List, Plus, Edit, Trash2, GripVertical } from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   DndContext,
   closestCenter,
@@ -18,6 +19,7 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
+  DragOverEvent,
 } from '@dnd-kit/core'
 import {
   arrayMove,
@@ -115,6 +117,7 @@ export function FulfillmentManagement({ viewMode, onViewModeChange }: Fulfillmen
   const [loading, setLoading] = useState(true)
   const [showAddStage, setShowAddStage] = useState(false)
   const [editingStage, setEditingStage] = useState<FulfillmentStage | null>(null)
+  const [showEditDialog, setShowEditDialog] = useState(false)
   const [newStage, setNewStage] = useState({
     name: '',
     description: '',
@@ -237,6 +240,7 @@ export function FulfillmentManagement({ viewMode, onViewModeChange }: Fulfillmen
       })
 
       setEditingStage(null)
+      setShowEditDialog(false)
       loadFulfillmentData()
     } catch (error: any) {
       toast({
@@ -244,6 +248,59 @@ export function FulfillmentManagement({ viewMode, onViewModeChange }: Fulfillmen
         description: error.message,
         variant: "destructive",
       })
+    }
+  }
+
+  const openEditDialog = (stage: FulfillmentStage) => {
+    setEditingStage(stage)
+    setShowEditDialog(true)
+  }
+
+  const handleDragOver = async (event: DragOverEvent) => {
+    const { active, over } = event
+
+    if (!over) return
+
+    // Handle user card drops between stages
+    const activeId = active.id.toString()
+    const overId = over.id.toString()
+
+    // Check if we're dropping a user card onto a stage
+    if (activeId.startsWith('user-') && stages.find(s => s.id === overId)) {
+      const userId = activeId.replace('user-', '')
+      const newStageId = overId
+
+      try {
+        // Update user progress in database
+        const { error } = await supabase
+          .from('user_fulfillment_progress')
+          .update({
+            stage_id: newStageId,
+            moved_to_stage_at: new Date().toISOString(),
+            moved_by: user?.id
+          })
+          .eq('user_id', userId)
+
+        if (error) throw error
+
+        // Update local state
+        setUserProgress(prev => prev.map(progress => 
+          progress.user_id === userId 
+            ? { ...progress, stage_id: newStageId, moved_to_stage_at: new Date().toISOString() }
+            : progress
+        ))
+
+        toast({
+          title: "User moved",
+          description: "User has been moved to the new stage.",
+        })
+      } catch (error: any) {
+        toast({
+          title: "Error moving user",
+          description: error.message,
+          variant: "destructive",
+        })
+      }
     }
   }
 
@@ -355,40 +412,64 @@ export function FulfillmentManagement({ viewMode, onViewModeChange }: Fulfillmen
 
       {/* View Content */}
       {viewMode === 'kanban' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {stages.map(stage => (
-            <Card key={stage.id} className="min-h-[300px]">
-              <CardHeader className="pb-2">
-                <div className="flex items-center space-x-2">
-                  <div
-                    className="w-3 h-3 rounded"
-                    style={{ backgroundColor: stage.color }}
-                  />
-                  <CardTitle className="text-sm">{stage.name}</CardTitle>
-                </div>
-                {stage.description && (
-                  <CardDescription className="text-xs">
-                    {stage.description}
-                  </CardDescription>
-                )}
-                <Badge variant="secondary" className="w-fit">
-                  {getUsersInStage(stage.id).length} users
-                </Badge>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {getUsersInStage(stage.id).map(progress => (
-                    <div key={progress.id} className="p-2 bg-muted rounded text-xs">
-                      {progress.profiles?.display_name ||
-                       `${progress.profiles?.first_name} ${progress.profiles?.last_name}` ||
-                       'Unknown User'}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+          onDragOver={handleDragOver}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {stages.map(stage => (
+              <Card key={stage.id} className="min-h-[300px]">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div
+                        className="w-3 h-3 rounded"
+                        style={{ backgroundColor: stage.color }}
+                      />
+                      <CardTitle className="text-sm">{stage.name}</CardTitle>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openEditDialog(stage)}
+                      className="h-6 w-6 p-0"
+                    >
+                      <Edit className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  {stage.description && (
+                    <CardDescription className="text-xs">
+                      {stage.description}
+                    </CardDescription>
+                  )}
+                  <Badge variant="secondary" className="w-fit">
+                    {getUsersInStage(stage.id).length} users
+                  </Badge>
+                </CardHeader>
+                <CardContent>
+                  <SortableContext items={[stage.id]}>
+                    <div className="space-y-2 min-h-[200px] p-2 border-2 border-dashed border-muted-foreground/20 rounded">
+                      {getUsersInStage(stage.id).map(progress => (
+                        <div 
+                          key={`user-${progress.user_id}`}
+                          id={`user-${progress.user_id}`}
+                          className="p-2 bg-card border rounded text-xs cursor-move hover:shadow-sm transition-shadow"
+                          draggable
+                        >
+                          {progress.profiles?.display_name ||
+                           `${progress.profiles?.first_name} ${progress.profiles?.last_name}` ||
+                           'Unknown User'}
+                        </div>
+                      ))}
+                    </div>
+                  </SortableContext>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </DndContext>
       ) : (
         <Card>
           <CardHeader>
@@ -412,7 +493,7 @@ export function FulfillmentManagement({ viewMode, onViewModeChange }: Fulfillmen
                     <SortableStageItem
                       key={stage.id}
                       stage={stage}
-                      onEdit={setEditingStage}
+                      onEdit={openEditDialog}
                       onDelete={handleDeleteStage}
                     />
                   ))}
@@ -468,46 +549,51 @@ export function FulfillmentManagement({ viewMode, onViewModeChange }: Fulfillmen
       )}
 
       {/* Edit Stage Dialog */}
-      {editingStage && (
-        <Card className="border-primary">
-          <CardHeader>
-            <CardTitle className="text-sm">Edit Stage</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Stage Name</Label>
-                <Input
-                  value={editingStage.name}
-                  onChange={(e) => setEditingStage(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
-                />
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Stage</DialogTitle>
+            <DialogDescription>
+              Update the stage details
+            </DialogDescription>
+          </DialogHeader>
+          {editingStage && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Stage Name</Label>
+                  <Input
+                    value={editingStage.name}
+                    onChange={(e) => setEditingStage(prev => prev ? ({ ...prev, name: e.target.value }) : null)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Color</Label>
+                  <Input
+                    type="color"
+                    value={editingStage.color}
+                    onChange={(e) => setEditingStage(prev => prev ? ({ ...prev, color: e.target.value }) : null)}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label>Color</Label>
-                <Input
-                  type="color"
-                  value={editingStage.color}
-                  onChange={(e) => setEditingStage(prev => prev ? ({ ...prev, color: e.target.value }) : null)}
+                <Label>Description</Label>
+                <Textarea
+                  value={editingStage.description || ''}
+                  onChange={(e) => setEditingStage(prev => prev ? ({ ...prev, description: e.target.value }) : null)}
+                  rows={2}
                 />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Description</Label>
-              <Textarea
-                value={editingStage.description || ''}
-                onChange={(e) => setEditingStage(prev => prev ? ({ ...prev, description: e.target.value }) : null)}
-                rows={2}
-              />
-            </div>
-            <div className="flex space-x-2">
-              <Button onClick={handleEditStage}>Update Stage</Button>
-              <Button variant="outline" onClick={() => setEditingStage(null)}>
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditStage}>Update Stage</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

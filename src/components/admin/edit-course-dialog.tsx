@@ -19,6 +19,7 @@ interface Course {
   level: string | null
   duration: string | null
   price: string | null
+  image_url: string | null
 }
 
 interface EditCourseDialogProps {

@@ -33,6 +33,7 @@ import { CreateCourseDialog } from '@/components/admin/create-course-dialog'
 import { EditCourseDialog } from '@/components/admin/edit-course-dialog'
 import { UserRoleManagement } from '@/components/admin/user-role-management'
 import { FulfillmentManagement } from '@/components/admin/fulfillment-management'
+import { UserCard } from '@/components/admin/user-card'
 
 interface Profile {
   id: string
@@ -44,6 +45,7 @@ interface Profile {
   is_admin: boolean
   created_at: string
   roles?: string[]
+  avatar_url: string | null
 }
 
 interface Course {
@@ -57,6 +59,7 @@ interface Course {
   level: string | null
   duration: string | null
   price: string | null
+  image_url: string | null
 }
 
 interface PostProfile {
@@ -436,25 +439,7 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="space-y-4">
                   {filteredUsers.map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center">
-                          {user.display_name?.[0] || user.first_name?.[0] || 'U'}
-                        </div>
-                        <div>
-                          <p className="font-medium">
-                            {user.display_name || `${user.first_name} ${user.last_name}` || 'Unnamed User'}
-                          </p>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
-                        </div>
-                      </div>
-                       <div className="flex items-center space-x-2">
-                        <UserRoleManagement 
-                          user={user} 
-                          onRolesUpdated={loadAdminData}
-                        />
-                      </div>
-                    </div>
+                    <UserCard key={user.id} user={user} onRolesUpdated={loadAdminData} />
                   ))}
                 </div>
               </CardContent>
@@ -469,39 +454,63 @@ export default function AdminDashboard() {
                   <div>
                     <CardTitle>Course Management</CardTitle>
                     <CardDescription>
-                      Manage educational content and learning materials
+                      Picture-based courses with video content management
                     </CardDescription>
                   </div>
                   <CreateCourseDialog onCourseCreated={loadAdminData} />
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {courses.map((course) => (
-                    <div key={course.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">{course.title}</h4>
-                        <p className="text-sm text-muted-foreground">
+                    <Card key={course.id} className="overflow-hidden">
+                      <div className="aspect-video bg-muted relative">
+                        {course.image_url ? (
+                          <img 
+                            src={course.image_url} 
+                            alt={course.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <BookOpen className="h-12 w-12 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <CardContent className="p-4">
+                        <h4 className="font-medium truncate">{course.title}</h4>
+                        <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
                           {course.description || 'No description'}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Created: {new Date(course.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <EditCourseDialog 
-                          course={course} 
-                          onCourseUpdated={loadAdminData}
-                        />
-                        <Button 
-                          variant="destructive" 
-                          size="sm"
-                          onClick={() => deleteCourse(course.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
+                        <div className="flex items-center justify-between mt-3">
+                          <Badge variant="secondary">{course.category || 'General'}</Badge>
+                          <div className="text-xs text-muted-foreground">
+                            {course.level || 'Beginner'}
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2 mt-3">
+                          <EditCourseDialog 
+                            course={course} 
+                            onCourseUpdated={loadAdminData}
+                          />
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => navigate(`/courses?course=${course.id}`)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Videos
+                          </Button>
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={() => deleteCourse(course.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               </CardContent>
