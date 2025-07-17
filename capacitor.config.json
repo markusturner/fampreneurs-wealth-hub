@@ -1,0 +1,20 @@
+{
+  "appId": "app.lovable.27136ee712594a9a98641109582fab4d",
+  "appName": "fampreneurs-wealth-hub",
+  "webDir": "dist",
+  "server": {
+    "url": "https://27136ee7-1259-4a9a-9864-1109582fab4d.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#ffffff"
+    },
+    "Keyboard": {
+      "resize": "body",
+      "style": "dark",
+      "resizeOnFullScreen": true
+    }
+  }
+}

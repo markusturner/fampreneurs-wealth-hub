@@ -9,6 +9,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, Send } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { MobileService } from '@/lib/mobile'
+import { ImpactStyle } from '@capacitor/haptics'
 
 interface MessageDialogProfile {
   id: string
@@ -35,9 +37,10 @@ interface MessageDialogProps {
   recipient: MessageDialogProfile
   onMessageSent: () => void
   embedded?: boolean
+  mobile?: boolean
 }
 
-export function MessageDialog({ open, onOpenChange, recipient, onMessageSent, embedded = false }: MessageDialogProps) {
+export function MessageDialog({ open, onOpenChange, recipient, onMessageSent, embedded = false, mobile = false }: MessageDialogProps) {
   const { user } = useAuth()
   const { toast } = useToast()
   const [newMessage, setNewMessage] = useState('')
@@ -161,6 +164,11 @@ export function MessageDialog({ open, onOpenChange, recipient, onMessageSent, em
 
       if (error) throw error
 
+      // Trigger haptic feedback on mobile
+      if (MobileService.isNative()) {
+        await MobileService.triggerHaptic(ImpactStyle.Light)
+      }
+
       setNewMessage('')
       
     } catch (error) {
@@ -210,21 +218,21 @@ export function MessageDialog({ open, onOpenChange, recipient, onMessageSent, em
                     className={`flex gap-2 ${isFromUser ? 'flex-row-reverse' : 'flex-row'} animate-fade-in`}
                   >
                     {showAvatar ? (
-                      <Avatar className="h-8 w-8">
+                      <Avatar className={`${mobile ? 'h-6 w-6' : 'h-8 w-8'}`}>
                         <AvatarImage 
                           src={isFromUser ? user?.user_metadata?.avatar_url : recipient.avatar_url || "/placeholder.svg"} 
                         />
-                        <AvatarFallback className="text-xs">
+                        <AvatarFallback className={`${mobile ? 'text-xs' : 'text-xs'}`}>
                           {isFromUser ? 'You' : getInitials(recipient)}
                         </AvatarFallback>
                       </Avatar>
                     ) : (
-                      <div className="w-8" />
+                      <div className={`${mobile ? 'w-6' : 'w-8'}`} />
                     )}
                     
                     <div className={`max-w-[70%] ${isFromUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                       <div
-                        className={`px-3 py-2 rounded-lg text-sm ${
+                        className={`px-3 py-2 rounded-lg ${mobile ? 'text-sm' : 'text-sm'} ${
                           isFromUser
                             ? 'bg-primary text-primary-foreground ml-auto'
                             : 'bg-muted text-foreground'
@@ -232,7 +240,7 @@ export function MessageDialog({ open, onOpenChange, recipient, onMessageSent, em
                       >
                         {message.content}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className={`${mobile ? 'text-xs' : 'text-xs'} text-muted-foreground`}>
                         {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                         {!message.read_at && !isFromUser && (
                           <span className="ml-1 text-primary">• New</span>
@@ -248,19 +256,19 @@ export function MessageDialog({ open, onOpenChange, recipient, onMessageSent, em
         </ScrollArea>
 
         {/* Message Input */}
-        <form onSubmit={handleSubmit} className="p-4 border-t">
+        <form onSubmit={handleSubmit} className={`${mobile ? 'p-3' : 'p-4'} border-t`}>
           <div className="flex gap-2">
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder={`Message ${getDisplayName(recipient)}...`}
-              className="flex-1"
+              className={`flex-1 ${mobile ? 'text-base' : ''}`}
               disabled={isSubmitting}
             />
             <Button 
               type="submit" 
-              size="sm"
+              size={mobile ? "default" : "sm"}
               disabled={isSubmitting || !newMessage.trim()}
               className="gap-2"
             >

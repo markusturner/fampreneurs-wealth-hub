@@ -13,9 +13,13 @@ import Community from "./pages/Community";
 import Courses from "./pages/Courses";
 import Coaching from "./pages/Coaching";
 import Members from "./pages/Members";
+import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
 
 const queryClient = new QueryClient();
+
+// Initialize mobile services
+initializeMobileServices();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

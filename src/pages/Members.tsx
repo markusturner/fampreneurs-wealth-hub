@@ -8,7 +8,10 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { MessageDialog } from "@/components/members/message-dialog"
-import { Loader2, Users, MessageCircle, Mail, Phone, User, Search } from 'lucide-react'
+import { Loader2, Users, MessageCircle, Mail, Phone, User, Search, ArrowLeft, X } from 'lucide-react'
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { MobileService } from '@/lib/mobile'
+import { ImpactStyle } from '@capacitor/haptics'
 
 interface MemberProfile {
   id: string
@@ -32,6 +35,8 @@ const Members = () => {
   const [selectedMember, setSelectedMember] = useState<MemberProfile | null>(null)
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({})
   const [searchQuery, setSearchQuery] = useState('')
+  const [isMobileView, setIsMobileView] = useState(false)
+  const [showMobileChat, setShowMobileChat] = useState(false)
 
   const fetchMembers = async () => {
     try {
@@ -116,6 +121,18 @@ const Members = () => {
     }
   }, [user?.id])
 
+  // Handle mobile view detection
+  useEffect(() => {
+    const checkMobileView = () => {
+      setIsMobileView(window.innerWidth < 768)
+    }
+    
+    checkMobileView()
+    window.addEventListener('resize', checkMobileView)
+    
+    return () => window.removeEventListener('resize', checkMobileView)
+  }, [])
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
@@ -150,8 +167,21 @@ const Members = () => {
            member.first_name || 'Family Member')
   }
 
-  const handleSelectMember = (member: MemberProfile) => {
+  const handleSelectMember = async (member: MemberProfile) => {
+    // Trigger haptic feedback on mobile
+    if (MobileService.isNative()) {
+      await MobileService.triggerHaptic(ImpactStyle.Light)
+    }
+    
     setSelectedMember(member)
+    if (isMobileView) {
+      setShowMobileChat(true)
+    }
+  }
+
+  const handleCloseMobileChat = () => {
+    setShowMobileChat(false)
+    setSelectedMember(null)
   }
 
   const currentUserMembers = members.filter(member => member.user_id !== user.id)
@@ -199,11 +229,11 @@ const Members = () => {
           </div>
         </div>
 
-        {/* Split Layout */}
-        <div className="flex gap-4 h-[600px]">
+        {/* Split Layout - Desktop */}
+        <div className={`${isMobileView ? 'block' : 'flex gap-4 h-[600px]'}`}>
           {/* Left Sidebar - Members List */}
-          <div className="w-80 flex flex-col">
-            <Card className="shadow-soft h-full flex flex-col">
+          <div className={`${isMobileView ? 'w-full' : 'w-80'} flex flex-col ${isMobileView && showMobileChat ? 'hidden' : ''}`}>
+            <Card className={`shadow-soft ${isMobileView ? 'h-[500px]' : 'h-full'} flex flex-col`}>
               <CardHeader className="p-4 border-b">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <MessageCircle className="h-5 w-5" />
@@ -234,13 +264,13 @@ const Members = () => {
                         <button
                           key={member.id}
                           onClick={() => handleSelectMember(member)}
-                          className={`w-full p-3 rounded-lg text-left hover:bg-muted/50 transition-colors ${
+                          className={`w-full p-3 rounded-lg text-left hover:bg-muted/50 transition-colors active:bg-muted/70 ${
                             selectedMember?.id === member.id ? 'bg-muted' : ''
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             <div className="relative">
-                              <Avatar className="h-12 w-12">
+                              <Avatar className={`${isMobileView ? 'h-10 w-10' : 'h-12 w-12'}`}>
                                 <AvatarImage src={member.avatar_url || "/placeholder.svg"} />
                                 <AvatarFallback className="bg-secondary text-secondary-foreground">
                                   {getInitials(member)}
@@ -253,9 +283,13 @@ const Members = () => {
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <div className="font-medium truncate">{getDisplayName(member)}</div>
+                              <div className={`font-medium truncate ${isMobileView ? 'text-sm' : ''}`}>
+                                {getDisplayName(member)}
+                              </div>
                               {member.family_role && (
-                                <div className="text-sm text-muted-foreground truncate">{member.family_role}</div>
+                                <div className={`text-muted-foreground truncate ${isMobileView ? 'text-xs' : 'text-sm'}`}>
+                                  {member.family_role}
+                                </div>
                               )}
                             </div>
                           </div>
@@ -269,49 +303,99 @@ const Members = () => {
           </div>
 
           {/* Right Side - Chat Area */}
-          <div className="flex-1">
-            <Card className="shadow-soft h-full">
-              {selectedMember ? (
-                <div className="h-full flex flex-col">
-                  {/* Chat Header */}
-                  <div className="p-4 border-b">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
+          <div className={`${isMobileView ? 'w-full' : 'flex-1'} ${isMobileView && !showMobileChat ? 'hidden' : ''}`}>
+            {isMobileView && showMobileChat ? (
+              // Mobile Chat Full Screen
+              <div className="fixed inset-0 bg-background z-50 flex flex-col">
+                {/* Mobile Chat Header */}
+                <div className="p-4 border-b bg-background flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCloseMobileChat}
+                    className="p-2"
+                  >
+                    <ArrowLeft className="h-5 w-5" />
+                  </Button>
+                  {selectedMember && (
+                    <>
+                      <Avatar className="h-8 w-8">
                         <AvatarImage src={selectedMember.avatar_url || "/placeholder.svg"} />
                         <AvatarFallback className="bg-secondary text-secondary-foreground">
                           {getInitials(selectedMember)}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <div className="font-semibold">{getDisplayName(selectedMember)}</div>
+                      <div className="flex-1">
+                        <div className="font-semibold text-sm">{getDisplayName(selectedMember)}</div>
                         {selectedMember.family_role && (
-                          <div className="text-sm text-muted-foreground">{selectedMember.family_role}</div>
+                          <div className="text-xs text-muted-foreground">{selectedMember.family_role}</div>
                         )}
                       </div>
+                    </>
+                  )}
+                </div>
+                
+                {/* Mobile Chat Content */}
+                <div className="flex-1 flex flex-col">
+                  {selectedMember && (
+                    <MessageDialog
+                      open={true}
+                      onOpenChange={() => {}}
+                      recipient={selectedMember}
+                      onMessageSent={() => {
+                        fetchUnreadCounts()
+                      }}
+                      embedded={true}
+                      mobile={true}
+                    />
+                  )}
+                </div>
+              </div>
+            ) : (
+              // Desktop Chat
+              <Card className="shadow-soft h-full">
+                {selectedMember ? (
+                  <div className="h-full flex flex-col">
+                    {/* Chat Header */}
+                    <div className="p-4 border-b">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={selectedMember.avatar_url || "/placeholder.svg"} />
+                          <AvatarFallback className="bg-secondary text-secondary-foreground">
+                            {getInitials(selectedMember)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-semibold">{getDisplayName(selectedMember)}</div>
+                          {selectedMember.family_role && (
+                            <div className="text-sm text-muted-foreground">{selectedMember.family_role}</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Embed the MessageDialog content directly */}
+                    <MessageDialog
+                      open={true}
+                      onOpenChange={() => {}}
+                      recipient={selectedMember}
+                      onMessageSent={() => {
+                        fetchUnreadCounts()
+                      }}
+                      embedded={true}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-muted-foreground">
+                    <div className="text-center">
+                      <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                      <h3 className="text-lg font-medium mb-2">Welcome to Family Messages</h3>
+                      <p>Select a family member from the list to start chatting</p>
                     </div>
                   </div>
-                  
-                  {/* Embed the MessageDialog content directly */}
-                  <MessageDialog
-                    open={true}
-                    onOpenChange={() => {}}
-                    recipient={selectedMember}
-                    onMessageSent={() => {
-                      fetchUnreadCounts()
-                    }}
-                    embedded={true}
-                  />
-                </div>
-              ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground">
-                  <div className="text-center">
-                    <MessageCircle className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <h3 className="text-lg font-medium mb-2">Welcome to Family Messages</h3>
-                    <p>Select a family member from the list to start chatting</p>
-                  </div>
-                </div>
-              )}
-            </Card>
+                )}
+              </Card>
+            )}
           </div>
         </div>
       </main>
