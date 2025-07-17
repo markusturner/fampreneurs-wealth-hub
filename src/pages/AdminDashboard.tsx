@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
 import { 
   Users, 
   Settings, 
@@ -21,11 +22,17 @@ import {
   Trash2,
   Edit,
   Eye,
-  Search
+  Search,
+  Plus,
+  Save
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
 import { Separator } from '@/components/ui/separator'
+import { CreateCourseDialog } from '@/components/admin/create-course-dialog'
+import { EditCourseDialog } from '@/components/admin/edit-course-dialog'
+import { UserRoleManagement } from '@/components/admin/user-role-management'
+import { FulfillmentManagement } from '@/components/admin/fulfillment-management'
 
 interface Profile {
   id: string
@@ -71,6 +78,8 @@ export default function AdminDashboard() {
   const [posts, setPosts] = useState<Post[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
+  const [platformSettings, setPlatformSettings] = useState({ platform_name: 'Fampreneurs', admin_email: 'admin@fampreneurs.com' })
+  const [fulfillmentViewMode, setFulfillmentViewMode] = useState<'kanban' | 'list'>('kanban')
 
   // Check admin access
   useEffect(() => {
