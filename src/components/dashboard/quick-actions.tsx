@@ -1,10 +1,11 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Upload, UserPlus, Users, FileText, Settings, TrendingUp, Shield, Calendar } from "lucide-react"
+import { Plus, Upload, UserPlus, Users, FileText, Settings, TrendingUp, Shield, Calendar, Building2 } from "lucide-react"
 import { ScheduleMeetingDialog } from "./schedule-meeting-dialog"
 import { GoogleSheetsIntegration } from "./google-sheets-integration"
 import { AddFamilyMemberDialog } from "./add-family-member-dialog"
+import { BusinessStructureDialog } from "./business-structure-dialog"
 
 
 const quickActions = [
@@ -35,6 +36,13 @@ const quickActions = [
     icon: Users,
     variant: "default" as const,
     action: "add_family_member" as const
+  },
+  {
+    title: "Business Structure",
+    description: "Entity structure analysis",
+    icon: Building2,
+    variant: "default" as const,
+    action: "business_structure" as const
   }
 ]
 
@@ -42,6 +50,7 @@ export function QuickActions() {
   const [meetingDialogOpen, setMeetingDialogOpen] = useState(false)
   const [googleSheetsDialogOpen, setGoogleSheetsDialogOpen] = useState(false)
   const [addFamilyMemberDialogOpen, setAddFamilyMemberDialogOpen] = useState(false)
+  const [businessStructureDialogOpen, setBusinessStructureDialogOpen] = useState(false)
 
   const handleScheduleMeeting = () => {
     setMeetingDialogOpen(true)
@@ -52,6 +61,8 @@ export function QuickActions() {
       setGoogleSheetsDialogOpen(true)
     } else if (action === "add_family_member") {
       setAddFamilyMemberDialogOpen(true)
+    } else if (action === "business_structure") {
+      setBusinessStructureDialogOpen(true)
     } else if (typeof action === "function") {
       action()
     }
@@ -62,6 +73,7 @@ export function QuickActions() {
       <ScheduleMeetingDialog open={meetingDialogOpen} onOpenChange={setMeetingDialogOpen} />
       <GoogleSheetsIntegration open={googleSheetsDialogOpen} onOpenChange={setGoogleSheetsDialogOpen} />
       <AddFamilyMemberDialog open={addFamilyMemberDialogOpen} onOpenChange={setAddFamilyMemberDialogOpen} />
+      <BusinessStructureDialog open={businessStructureDialogOpen} onOpenChange={setBusinessStructureDialogOpen} />
     <Card className="col-span-4 lg:col-span-1 shadow-soft">
       <CardHeader>
         <CardTitle className="text-xl font-bold">Quick Actions</CardTitle>
