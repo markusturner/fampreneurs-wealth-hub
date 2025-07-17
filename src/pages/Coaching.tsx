@@ -10,6 +10,7 @@ import { format, isSameDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterva
 import { cn } from '@/lib/utils'
 import { supabase } from '@/integrations/supabase/client'
 import { ScheduleSessionDialog } from '@/components/coaching/schedule-session-dialog'
+import { AddCoachDialog } from '@/components/coaching/add-coach-dialog'
 
 interface GroupSession {
   id: string
@@ -58,6 +59,7 @@ const Coaching = () => {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
   const [viewType, setViewType] = useState<'month' | 'list'>('month')
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
+  const [addCoachDialogOpen, setAddCoachDialogOpen] = useState(false)
   const [sessions, setSessions] = useState<GroupSession[]>([])
   const [loadingSessions, setLoadingSessions] = useState(true)
 
@@ -383,7 +385,7 @@ const Coaching = () => {
             <h2 className="text-xl font-semibold">Available Coaches</h2>
             <Button 
               size="sm"
-              onClick={() => setScheduleDialogOpen(true)}
+              onClick={() => setAddCoachDialogOpen(true)}
               className="gap-2"
             >
               <Plus className="h-4 w-4" />
@@ -468,6 +470,13 @@ const Coaching = () => {
         open={scheduleDialogOpen}
         onOpenChange={setScheduleDialogOpen}
         onSessionCreated={fetchSessions}
+      />
+
+      {/* Add Coach Dialog */}
+      <AddCoachDialog
+        open={addCoachDialogOpen}
+        onOpenChange={setAddCoachDialogOpen}
+        onCoachAdded={fetchSessions}
       />
     </div>
   )
