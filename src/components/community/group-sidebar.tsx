@@ -11,7 +11,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from '@/hooks/use-toast'
-import { Hash, Lock, Plus, Users, Settings } from 'lucide-react'
+import { Hash, Lock, Plus, Users, Settings, Trash2, MoreVertical } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog"
 
 interface Group {
   id: string
@@ -22,6 +24,7 @@ interface Group {
   created_at: string
   member_count?: number
   unread_count?: number
+  user_role?: string
 }
 
 interface GroupSidebarProps {
@@ -40,6 +43,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
   const [newGroupDescription, setNewGroupDescription] = useState('')
   const [newGroupPrivate, setNewGroupPrivate] = useState(false)
   const [creating, setCreating] = useState(false)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
     fetchGroups()
@@ -54,7 +58,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
         .from('community_groups')
         .select(`
           *,
-          group_memberships!inner(user_id)
+          group_memberships!inner(user_id, role)
         `)
         .eq('is_private', false)
         .eq('group_memberships.user_id', user?.id)
@@ -66,19 +70,30 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
         .from('community_groups')
         .select(`
           *,
-          group_memberships!inner(user_id)
+          group_memberships!inner(user_id, role)
         `)
         .eq('is_private', true)
         .eq('group_memberships.user_id', user?.id)
 
       if (privateError) throw privateError
 
-      setPublicGroups(publicData || [])
-      setPrivateGroups(privateData || [])
+      // Add user role to group data
+      const publicGroupsWithRole = (publicData || []).map(group => ({
+        ...group,
+        user_role: group.group_memberships?.[0]?.role
+      }))
+      
+      const privateGroupsWithRole = (privateData || []).map(group => ({
+        ...group,
+        user_role: group.group_memberships?.[0]?.role
+      }))
+
+      setPublicGroups(publicGroupsWithRole)
+      setPrivateGroups(privateGroupsWithRole)
 
       // Auto-select first group if none selected
-      if (!selectedGroupId && publicData && publicData.length > 0) {
-        onGroupSelect(publicData[0].id)
+      if (!selectedGroupId && publicGroupsWithRole && publicGroupsWithRole.length > 0) {
+        onGroupSelect(publicGroupsWithRole[0].id)
       }
     } catch (error) {
       console.error('Error fetching groups:', error)
@@ -197,24 +212,128 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
     }
   }
 
+  const deleteGroup = async (groupId: string, groupName: string) => {
+    setDeleting(groupId)
+    try {
+      // First delete all group memberships
+      const { error: membershipError } = await supabase
+        .from('group_memberships')
+        .delete()
+        .eq('group_id', groupId)
+
+      if (membershipError) throw membershipError
+
+      // Then delete all group messages
+      const { error: messagesError } = await supabase
+        .from('group_messages')
+        .delete()
+        .eq('group_id', groupId)
+
+      if (messagesError) throw messagesError
+
+      // Finally delete the group
+      const { error: groupError } = await supabase
+        .from('community_groups')
+        .delete()
+        .eq('id', groupId)
+
+      if (groupError) throw groupError
+
+      toast({
+        title: "Success",
+        description: `Group "${groupName}" deleted successfully!`
+      })
+
+      // If deleted group was selected, clear selection
+      if (selectedGroupId === groupId) {
+        const remainingGroups = [...publicGroups, ...privateGroups].filter(g => g.id !== groupId)
+        if (remainingGroups.length > 0) {
+          onGroupSelect(remainingGroups[0].id)
+        } else {
+          onGroupSelect('')
+        }
+      }
+
+      // Refresh groups
+      fetchGroups()
+    } catch (error) {
+      console.error('Error deleting group:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete group",
+        variant: "destructive"
+      })
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  const canDeleteGroup = (group: Group) => {
+    return group.created_by === user?.id || group.user_role === 'admin'
+  }
+
   const GroupItem = ({ group }: { group: Group }) => (
-    <Button
-      variant={selectedGroupId === group.id ? "secondary" : "ghost"}
-      className="w-full justify-start gap-2 h-auto py-2 px-3"
-      onClick={() => onGroupSelect(group.id)}
-    >
-      {group.is_private ? (
-        <Lock className="h-4 w-4 text-muted-foreground" />
-      ) : (
-        <Hash className="h-4 w-4 text-muted-foreground" />
+    <div className="flex items-center gap-1">
+      <Button
+        variant={selectedGroupId === group.id ? "secondary" : "ghost"}
+        className="flex-1 justify-start gap-2 h-auto py-2 px-3"
+        onClick={() => onGroupSelect(group.id)}
+      >
+        {group.is_private ? (
+          <Lock className="h-4 w-4 text-muted-foreground" />
+        ) : (
+          <Hash className="h-4 w-4 text-muted-foreground" />
+        )}
+        <span className="truncate">{group.name}</span>
+        {group.unread_count && group.unread_count > 0 && (
+          <Badge variant="destructive" className="ml-auto text-xs h-5 w-5 p-0 flex items-center justify-center">
+            {group.unread_count}
+          </Badge>
+        )}
+      </Button>
+      
+      {canDeleteGroup(group) && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <MoreVertical className="h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive cursor-pointer"
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Group
+                </DropdownMenuItem>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Group</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete "{group.name}"? This action cannot be undone.
+                    All messages in this group will be permanently lost.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => deleteGroup(group.id, group.name)}
+                    disabled={deleting === group.id}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {deleting === group.id ? "Deleting..." : "Delete"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
-      <span className="truncate">{group.name}</span>
-      {group.unread_count && group.unread_count > 0 && (
-        <Badge variant="destructive" className="ml-auto text-xs h-5 w-5 p-0 flex items-center justify-center">
-          {group.unread_count}
-        </Badge>
-      )}
-    </Button>
+    </div>
   )
 
   if (loading) {
@@ -305,7 +424,9 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
             </div>
             <div className="space-y-1">
               {publicGroups.map(group => (
-                <GroupItem key={group.id} group={group} />
+                <div key={group.id} className="group">
+                  <GroupItem group={group} />
+                </div>
               ))}
             </div>
           </div>
@@ -320,7 +441,9 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
               </div>
               <div className="space-y-1">
                 {privateGroups.map(group => (
-                  <GroupItem key={group.id} group={group} />
+                  <div key={group.id} className="group">
+                    <GroupItem group={group} />
+                  </div>
                 ))}
               </div>
             </div>
