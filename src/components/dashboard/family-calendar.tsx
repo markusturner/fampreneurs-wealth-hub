@@ -29,7 +29,7 @@ export function FamilyCalendar() {
             View upcoming family meetings and events
           </CardDescription>
         </CardHeader>
-        <CardContent className="py-4 px-2 flex justify-center">
+        <CardContent className="py-4 flex justify-center">
           <Calendar
             mode="single"
             selected={selectedDate}
