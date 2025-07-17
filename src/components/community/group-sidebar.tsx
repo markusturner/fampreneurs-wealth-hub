@@ -508,6 +508,10 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
                         id="private-group"
                         checked={newGroupPrivate}
                         onCheckedChange={setNewGroupPrivate}
+                        style={{
+                          backgroundColor: newGroupPrivate ? '#ffb500' : undefined,
+                        }}
+                        className={newGroupPrivate ? '[&>span]:bg-white' : ''}
                       />
                       <Label htmlFor="private-group">Private Group</Label>
                     </div>
@@ -516,6 +520,10 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
                         id="premium-group"
                         checked={newGroupPremium}
                         onCheckedChange={setNewGroupPremium}
+                        style={{
+                          backgroundColor: newGroupPremium ? '#ffb500' : undefined,
+                        }}
+                        className={newGroupPremium ? '[&>span]:bg-white' : ''}
                       />
                       <Label htmlFor="premium-group" className="flex items-center gap-2">
                         <Crown className="h-4 w-4 text-secondary" />
@@ -574,6 +582,10 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
                       id="edit-private-group"
                       checked={editGroupPrivate}
                       onCheckedChange={setEditGroupPrivate}
+                      style={{
+                        backgroundColor: editGroupPrivate ? '#ffb500' : undefined,
+                      }}
+                      className={editGroupPrivate ? '[&>span]:bg-white' : ''}
                     />
                     <Label htmlFor="edit-private-group">Private Group</Label>
                   </div>
@@ -582,6 +594,10 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
                       id="edit-premium-group"
                       checked={editGroupPremium}
                       onCheckedChange={setEditGroupPremium}
+                      style={{
+                        backgroundColor: editGroupPremium ? '#ffb500' : undefined,
+                      }}
+                      className={editGroupPremium ? '[&>span]:bg-white' : ''}
                     />
                     <Label htmlFor="edit-premium-group" className="flex items-center gap-2">
                       <Crown className="h-4 w-4 text-secondary" />
