@@ -338,9 +338,9 @@ export default function AdminDashboard() {
               <MessageSquare className="h-4 w-4 mr-2" />
               Community
             </TabsTrigger>
-            <TabsTrigger value="content">
+            <TabsTrigger value="fulfillment">
               <FileText className="h-4 w-4 mr-2" />
-              Content
+              Fulfillment
             </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="h-4 w-4 mr-2" />
