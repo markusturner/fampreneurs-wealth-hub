@@ -365,19 +365,18 @@ const Members = () => {
                                    member={member} 
                                    onMemberUpdated={fetchMembers}
                                  />
-                                 {!member.is_accountability_partner && (
-                                   <Button
-                                     variant="ghost"
-                                     size="sm"
-                                     onClick={() => {
-                                       // Quick action to make someone an accountability partner
-                                       handleQuickAccountabilityAssignment(member)
-                                     }}
-                                     className="text-xs p-1 h-auto"
-                                   >
-                                     <Heart className="h-3 w-3 mr-1" />
-                                     Make Partner
-                                   </Button>
+                                  {!member.is_accountability_partner && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        // Quick action to make someone an accountability partner
+                                        handleQuickAccountabilityAssignment(member)
+                                      }}
+                                      className="text-xs p-1 h-auto"
+                                    >
+                                      <Heart className="h-3 w-3" />
+                                    </Button>
                                  )}
                                </div>
                              )}
