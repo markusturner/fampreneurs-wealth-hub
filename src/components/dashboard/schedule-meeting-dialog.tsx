@@ -84,7 +84,7 @@ export function ScheduleMeetingDialog({ open, onOpenChange }: ScheduleMeetingDia
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Schedule Family Meeting</DialogTitle>
           <DialogDescription>
@@ -139,7 +139,7 @@ export function ScheduleMeetingDialog({ open, onOpenChange }: ScheduleMeetingDia
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date()}
                         initialFocus
-                        className="pointer-events-auto"
+                        className={cn("p-3 pointer-events-auto")}
                       />
                     </PopoverContent>
                   </Popover>
@@ -204,11 +204,11 @@ export function ScheduleMeetingDialog({ open, onOpenChange }: ScheduleMeetingDia
               )}
             />
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <DialogFooter className="flex-col sm:flex-row gap-3 sm:gap-2">
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
                 Cancel
               </Button>
-              <Button type="submit">Schedule Meeting</Button>
+              <Button type="submit" className="w-full sm:w-auto">Schedule Meeting</Button>
             </DialogFooter>
           </form>
         </Form>
