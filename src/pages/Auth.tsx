@@ -10,6 +10,7 @@ import { Loader2, Shield, Upload, User } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { useNavigate } from 'react-router-dom'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { RecoveryDialog } from '@/components/auth/recovery-dialog'
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false)
@@ -411,6 +412,10 @@ export default function Auth() {
                     disabled={isLoading}
                   />
                 </div>
+                <div className="flex justify-end">
+                  <RecoveryDialog />
+                </div>
+                
                 <Button 
                   type="submit" 
                   className="w-full"
