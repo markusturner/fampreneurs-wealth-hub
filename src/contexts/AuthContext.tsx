@@ -14,6 +14,7 @@ interface Profile {
   family_role: string | null
   is_admin: boolean
   is_accountability_partner: boolean
+  is_moderator: boolean
   accountability_specialties: string[] | null
   admin_permissions: string[] | null
   created_at: string

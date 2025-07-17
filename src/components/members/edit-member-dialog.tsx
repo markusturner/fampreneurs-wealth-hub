@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Settings, Crown, Heart, Loader2 } from 'lucide-react'
+import { Settings, Crown, Heart, Shield, Loader2 } from 'lucide-react'
 
 interface MemberProfile {
   id: string
@@ -29,6 +29,7 @@ interface MemberProfile {
   phone: string | null
   is_admin: boolean | null
   is_accountability_partner: boolean | null
+  is_moderator?: boolean | null
   created_at: string
 }
 
@@ -44,6 +45,7 @@ export function EditMemberDialog({ member, onMemberUpdated }: EditMemberDialogPr
   const [loading, setLoading] = useState(false)
   const [isAdmin, setIsAdmin] = useState(member.is_admin || false)
   const [isAccountabilityPartner, setIsAccountabilityPartner] = useState(member.is_accountability_partner || false)
+  const [isModerator, setIsModerator] = useState(member.is_moderator || false)
 
   const getDisplayName = () => {
     return member.display_name || 
@@ -71,6 +73,15 @@ export function EditMemberDialog({ member, onMemberUpdated }: EditMemberDialogPr
           target_user_id: member.user_id,
           assigner_user_id: user.id,
           specialties: ['general_support']
+        })
+        if (error) throw error
+      }
+
+      // Handle moderator role assignment/removal
+      if (isModerator && !member.is_moderator) {
+        const { error } = await supabase.rpc('assign_moderator_role', {
+          target_user_id: member.user_id,
+          assigner_user_id: user.id
         })
         if (error) throw error
       }
@@ -105,6 +116,22 @@ export function EditMemberDialog({ member, onMemberUpdated }: EditMemberDialogPr
           .delete()
           .eq('user_id', member.user_id)
           .eq('role', 'accountability_partner')
+        if (roleError) throw roleError
+      }
+
+      if (!isModerator && member.is_moderator) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ is_moderator: false })
+          .eq('user_id', member.user_id)
+        if (error) throw error
+
+        // Also remove from user_roles table
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', member.user_id)
+          .eq('role', 'moderator')
         if (roleError) throw roleError
       }
 
@@ -164,7 +191,13 @@ export function EditMemberDialog({ member, onMemberUpdated }: EditMemberDialogPr
                   Accountability Partner
                 </Badge>
               )}
-              {!member.is_admin && !member.is_accountability_partner && (
+              {member.is_moderator && (
+                <Badge variant="outline" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
+                  <Shield className="h-3 w-3 mr-1" />
+                  Moderator
+                </Badge>
+              )}
+              {!member.is_admin && !member.is_accountability_partner && !member.is_moderator && (
                 <Badge variant="outline">Member</Badge>
               )}
             </div>
@@ -207,6 +240,23 @@ export function EditMemberDialog({ member, onMemberUpdated }: EditMemberDialogPr
                       onClick={() => window.open('/profile-settings', '_blank')}>
                   View directory →
                 </span>
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="moderator"
+                  checked={isModerator}
+                  onCheckedChange={(checked) => setIsModerator(checked as boolean)}
+                />
+                <Label htmlFor="moderator" className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" style={{ color: '#ffb500' }} />
+                  Moderator
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground ml-6">
+                Can moderate community discussions and manage group content.
               </p>
             </div>
           </div>

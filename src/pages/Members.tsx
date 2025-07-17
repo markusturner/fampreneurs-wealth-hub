@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { MessageDialog } from "@/components/members/message-dialog"
 import { EditMemberDialog } from "@/components/members/edit-member-dialog"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, Users, MessageCircle, Mail, Phone, User, Search, ArrowLeft, X, Crown, Heart } from 'lucide-react'
+import { Loader2, Users, MessageCircle, Mail, Phone, User, Search, ArrowLeft, X, Crown, Heart, Shield } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { MobileService } from '@/lib/mobile'
 import { ImpactStyle } from '@capacitor/haptics'
@@ -28,6 +28,7 @@ interface MemberProfile {
   phone: string | null
   is_admin: boolean | null
   is_accountability_partner: boolean | null
+  is_moderator?: boolean | null
   created_at: string
 }
 
@@ -430,13 +431,19 @@ const Members = () => {
                                       Admin
                                     </Badge>
                                   )}
-                                  {member.is_accountability_partner && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      <Heart className="h-2 w-2 mr-1" />
-                                      Accountability
-                                    </Badge>
-                                  )}
-                                </div>
+                                   {member.is_accountability_partner && (
+                                     <Badge variant="secondary" className="text-xs">
+                                       <Heart className="h-2 w-2 mr-1" />
+                                       Accountability
+                                     </Badge>
+                                   )}
+                                   {member.is_moderator && (
+                                     <Badge variant="outline" className="text-xs" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
+                                       <Shield className="h-2 w-2 mr-1" />
+                                       Moderator
+                                     </Badge>
+                                   )}
+                                 </div>
                               </div>
                             </button>
                              

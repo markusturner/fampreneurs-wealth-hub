@@ -776,6 +776,7 @@ export type Database = {
           id: string
           is_accountability_partner: boolean | null
           is_admin: boolean | null
+          is_moderator: boolean | null
           last_name: string | null
           occupation: string | null
           phone: string | null
@@ -794,6 +795,7 @@ export type Database = {
           id?: string
           is_accountability_partner?: boolean | null
           is_admin?: boolean | null
+          is_moderator?: boolean | null
           last_name?: string | null
           occupation?: string | null
           phone?: string | null
@@ -812,6 +814,7 @@ export type Database = {
           id?: string
           is_accountability_partner?: boolean | null
           is_admin?: boolean | null
+          is_moderator?: boolean | null
           last_name?: string | null
           occupation?: string | null
           phone?: string | null
@@ -965,6 +968,10 @@ export type Database = {
         Returns: undefined
       }
       assign_admin_role: {
+        Args: { target_user_id: string; assigner_user_id: string }
+        Returns: undefined
+      }
+      assign_moderator_role: {
         Args: { target_user_id: string; assigner_user_id: string }
         Returns: undefined
       }
