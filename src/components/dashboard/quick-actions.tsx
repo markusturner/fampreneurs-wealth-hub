@@ -41,7 +41,7 @@ const quickActions = [
     title: "Business Structure",
     description: "Entity structure analysis",
     icon: Building2,
-    variant: "default" as const,
+    variant: "secondary" as const,
     action: "business_structure" as const
   }
 ]
