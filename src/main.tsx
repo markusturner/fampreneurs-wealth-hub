@@ -13,6 +13,7 @@ import Community from "./pages/Community";
 import Courses from "./pages/Courses";
 import Coaching from "./pages/Coaching";
 import Members from "./pages/Members";
+import ProfileSettings from "./pages/ProfileSettings";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
 
@@ -36,6 +37,7 @@ createRoot(document.getElementById("root")!).render(
                   <Route path="/courses" element={<Courses />} />
                   <Route path="/coaching" element={<Coaching />} />
                   <Route path="/members" element={<Members />} />
+                  <Route path="/profile-settings" element={<ProfileSettings />} />
                 </Routes>
               <Toaster />
             </MeetingsProvider>

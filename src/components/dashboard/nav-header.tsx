@@ -1,4 +1,4 @@
-import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar } from "lucide-react"
+import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar, Crown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -98,6 +98,14 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                   >
                     <Users className="h-4 w-4" />
                     Members
+                  </Button>
+                  <Button
+                    variant={location.pathname === '/profile-settings' ? "default" : "ghost"}
+                    className="w-full justify-start gap-3"
+                    onClick={() => handleNavigation('/profile-settings')}
+                  >
+                    <Settings className="h-4 w-4" />
+                    Profile Settings
                   </Button>
                 </nav>
               </div>
@@ -210,10 +218,16 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/profile-settings')}>
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
+                <span>Profile Settings</span>
               </DropdownMenuItem>
+              {profile?.is_admin && (
+                <DropdownMenuItem onClick={() => navigate('/profile-settings')}>
+                  <Crown className="mr-2 h-4 w-4" />
+                  <span>Admin Panel</span>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut}>
                 <LogOut className="mr-2 h-4 w-4" />

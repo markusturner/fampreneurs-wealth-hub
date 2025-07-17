@@ -462,6 +462,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accountability_specialties: string[] | null
+          admin_permissions: string[] | null
           avatar_url: string | null
           bio: string | null
           created_at: string
@@ -469,6 +471,8 @@ export type Database = {
           family_role: string | null
           first_name: string | null
           id: string
+          is_accountability_partner: boolean | null
+          is_admin: boolean | null
           last_name: string | null
           occupation: string | null
           phone: string | null
@@ -476,6 +480,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          accountability_specialties?: string[] | null
+          admin_permissions?: string[] | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -483,6 +489,8 @@ export type Database = {
           family_role?: string | null
           first_name?: string | null
           id?: string
+          is_accountability_partner?: boolean | null
+          is_admin?: boolean | null
           last_name?: string | null
           occupation?: string | null
           phone?: string | null
@@ -490,6 +498,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          accountability_specialties?: string[] | null
+          admin_permissions?: string[] | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
@@ -497,10 +507,39 @@ export type Database = {
           family_role?: string | null
           first_name?: string | null
           id?: string
+          is_accountability_partner?: boolean | null
+          is_admin?: boolean | null
           last_name?: string | null
           occupation?: string | null
           phone?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          created_at: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          created_at?: string | null
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          created_at?: string | null
+          id?: string
+          role?: string
           user_id?: string
         }
         Relationships: []
@@ -546,12 +585,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_accountability_role: {
+        Args: {
+          target_user_id: string
+          assigner_user_id: string
+          specialties?: string[]
+        }
+        Returns: undefined
+      }
+      assign_admin_role: {
+        Args: { target_user_id: string; assigner_user_id: string }
+        Returns: undefined
+      }
       can_join_group: {
         Args: { group_id: string; user_id: string }
         Returns: boolean
       }
       is_group_member: {
         Args: { group_id: string; user_id: string }
+        Returns: boolean
+      }
+      is_user_admin: {
+        Args: { user_id: string }
         Returns: boolean
       }
     }

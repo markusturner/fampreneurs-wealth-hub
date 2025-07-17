@@ -12,6 +12,10 @@ interface Profile {
   bio: string | null
   phone: string | null
   family_role: string | null
+  is_admin: boolean
+  is_accountability_partner: boolean
+  accountability_specialties: string[] | null
+  admin_permissions: string[] | null
   created_at: string
   updated_at: string
 }

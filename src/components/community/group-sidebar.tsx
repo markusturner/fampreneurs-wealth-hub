@@ -33,7 +33,7 @@ interface GroupSidebarProps {
 }
 
 export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarProps) {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { toast } = useToast()
   const [publicGroups, setPublicGroups] = useState<Group[]>([])
   const [privateGroups, setPrivateGroups] = useState<Group[]>([])
@@ -269,7 +269,10 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
   }
 
   const canDeleteGroup = (group: Group) => {
-    return group.created_by === user?.id || group.user_role === 'admin'
+    // Only group creators, admins, or users with admin role in that specific group can delete
+    return group.created_by === user?.id || 
+           profile?.is_admin || 
+           group.user_role === 'admin'
   }
 
   const GroupItem = ({ group }: { group: Group }) => (
