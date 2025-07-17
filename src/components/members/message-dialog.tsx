@@ -34,9 +34,10 @@ interface MessageDialogProps {
   onOpenChange: (open: boolean) => void
   recipient: MessageDialogProfile
   onMessageSent: () => void
+  embedded?: boolean
 }
 
-export function MessageDialog({ open, onOpenChange, recipient, onMessageSent }: MessageDialogProps) {
+export function MessageDialog({ open, onOpenChange, recipient, onMessageSent, embedded = false }: MessageDialogProps) {
   const { user } = useAuth()
   const { toast } = useToast()
   const [newMessage, setNewMessage] = useState('')
@@ -179,6 +180,100 @@ export function MessageDialog({ open, onOpenChange, recipient, onMessageSent }: 
       e.preventDefault()
       handleSubmit(e as any)
     }
+  }
+
+  if (embedded) {
+    return (
+      <div className="flex-1 flex flex-col h-full">
+        {/* Messages Area */}
+        <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-muted-foreground">
+              <div className="text-center">
+                <div className="text-4xl mb-2">👋</div>
+                <p>Start a conversation with {getDisplayName(recipient)}</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {messages.map((message, index) => {
+                const isFromUser = message.sender_id === user?.id
+                const showAvatar = index === 0 || messages[index - 1].sender_id !== message.sender_id
+                
+                return (
+                  <div
+                    key={message.id}
+                    className={`flex gap-2 ${isFromUser ? 'flex-row-reverse' : 'flex-row'} animate-fade-in`}
+                  >
+                    {showAvatar ? (
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage 
+                          src={isFromUser ? user?.user_metadata?.avatar_url : recipient.avatar_url || "/placeholder.svg"} 
+                        />
+                        <AvatarFallback className="text-xs">
+                          {isFromUser ? 'You' : getInitials(recipient)}
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <div className="w-8" />
+                    )}
+                    
+                    <div className={`max-w-[70%] ${isFromUser ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+                      <div
+                        className={`px-3 py-2 rounded-lg text-sm ${
+                          isFromUser
+                            ? 'bg-primary text-primary-foreground ml-auto'
+                            : 'bg-muted text-foreground'
+                        }`}
+                      >
+                        {message.content}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                        {!message.read_at && !isFromUser && (
+                          <span className="ml-1 text-primary">• New</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </ScrollArea>
+
+        {/* Message Input */}
+        <form onSubmit={handleSubmit} className="p-4 border-t">
+          <div className="flex gap-2">
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder={`Message ${getDisplayName(recipient)}...`}
+              className="flex-1"
+              disabled={isSubmitting}
+            />
+            <Button 
+              type="submit" 
+              size="sm"
+              disabled={isSubmitting || !newMessage.trim()}
+              className="gap-2"
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </form>
+      </div>
+    )
   }
 
   return (
