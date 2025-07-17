@@ -440,7 +440,7 @@ const Coaching = () => {
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
           <Card className="shadow-soft text-center">
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-primary">12</div>
+              <div className="text-2xl font-bold" style={{ color: '#ffb500' }}>12</div>
               <div className="text-sm text-muted-foreground">Total Sessions</div>
             </CardContent>
           </Card>
