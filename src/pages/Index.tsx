@@ -6,6 +6,7 @@ import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { InvestmentChart } from "@/components/dashboard/investment-chart"
 import { RecentActivities } from "@/components/dashboard/recent-activities"
 import { QuickActions } from "@/components/dashboard/quick-actions"
+import { AssetAllocation } from "@/components/dashboard/asset-allocation"
 import { FamilyCalendar } from "@/components/dashboard/family-calendar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -61,65 +62,32 @@ const Index = () => {
         <DashboardStats />
 
         {/* Main Dashboard Grid */}
-        <div className="grid gap-6 lg:grid-cols-5">
-          {/* Investment Chart - Takes up 4 columns */}
-          <InvestmentChart />
+        <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-5">
+          {/* Investment Chart - Takes up 4 columns on desktop, full width on mobile */}
+          <div className="lg:col-span-4">
+            <InvestmentChart />
+          </div>
           
-          {/* Quick Actions - Takes up 1 column */}
-          <QuickActions />
+          {/* Quick Actions - Takes up 1 column on desktop, full width on mobile */}
+          <div className="lg:col-span-1">
+            <QuickActions />
+          </div>
         </div>
 
         {/* Family Calendar */}
         <FamilyCalendar />
 
-        {/* Recent Activities */}
-        <div className="grid gap-6 lg:grid-cols-4">
-          <RecentActivities />
+        {/* Recent Activities and Asset Allocation */}
+        <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-4">
+          {/* Recent Activities - Takes up 3 columns on desktop, full width on mobile */}
+          <div className="lg:col-span-3">
+            <RecentActivities />
+          </div>
           
-          {/* Asset Allocation Card */}
-          <Card className="shadow-soft">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold">Asset Allocation</CardTitle>
-              <CardDescription>
-                Current portfolio distribution
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Equities</span>
-                  <span className="text-sm text-muted-foreground">65%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-primary h-2 rounded-full" style={{ width: "65%" }}></div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Bonds</span>
-                  <span className="text-sm text-muted-foreground">20%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-accent h-2 rounded-full" style={{ width: "20%" }}></div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Real Estate</span>
-                  <span className="text-sm text-muted-foreground">10%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-secondary h-2 rounded-full" style={{ width: "10%" }}></div>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Alternatives</span>
-                  <span className="text-sm text-muted-foreground">5%</span>
-                </div>
-                <div className="w-full bg-muted rounded-full h-2">
-                  <div className="bg-muted-foreground h-2 rounded-full" style={{ width: "5%" }}></div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Asset Allocation - Takes up 1 column on desktop, full width on mobile */}
+          <div className="lg:col-span-1">
+            <AssetAllocation />
+          </div>
         </div>
       </main>
     </div>

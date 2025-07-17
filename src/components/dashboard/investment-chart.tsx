@@ -94,7 +94,7 @@ export function InvestmentChart() {
   const growth = ((currentTotal - previousTotal) / previousTotal) * 100
 
   return (
-    <Card className="col-span-4 shadow-soft">
+    <Card className="shadow-soft w-full">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
