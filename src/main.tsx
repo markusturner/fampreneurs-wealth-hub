@@ -19,6 +19,8 @@ import TeamMembers from "./pages/TeamMembers";
 import FamilyMembers from "./pages/FamilyMembers";
 import Investments from "./pages/Investments";
 import ProfileSettings from "./pages/ProfileSettings";
+import Help from "./pages/Help";
+import Contact from "./pages/Contact";
 import { MobileNavigation } from "@/components/ui/mobile-navigation";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
@@ -44,6 +46,8 @@ function AppWithNotifications() {
       <Route path="/family-members" element={<FamilyMembers />} />
       <Route path="/investments" element={<Investments />} />
       <Route path="/profile-settings" element={<ProfileSettings />} />
+      <Route path="/help" element={<Help />} />
+      <Route path="/contact" element={<Contact />} />
     </Routes>
   )
 }

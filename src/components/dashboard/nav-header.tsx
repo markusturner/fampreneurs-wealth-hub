@@ -278,6 +278,10 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Profile Settings</span>
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/help')}>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                <span>Help</span>
+              </DropdownMenuItem>
               {profile?.is_admin && (
                 <DropdownMenuItem onClick={() => navigate('/admin')}>
                   <Crown className="mr-2 h-4 w-4" />

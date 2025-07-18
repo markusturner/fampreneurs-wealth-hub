@@ -85,6 +85,7 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
   const [loading, setLoading] = useState(true)
   const [editVideoOpen, setEditVideoOpen] = useState(false)
   const [videoToEdit, setVideoToEdit] = useState<Video | null>(null)
+  const [watchedVideos, setWatchedVideos] = useState<Set<string>>(new Set())
 
   const getPlatformName = (type: string) => {
     switch (type) {
@@ -119,12 +120,28 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
       setVideos(typedData)
       if (typedData && typedData.length > 0 && !selectedVideo) {
         setSelectedVideo(typedData[0])
+        // Mark first video as watched by default
+        setWatchedVideos(new Set([typedData[0].id]))
       }
     } catch (error) {
       console.error('Error fetching videos:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleVideoSelect = (video: Video) => {
+    setSelectedVideo(video)
+    // Mark video as watched when selected
+    setWatchedVideos(prev => new Set([...prev, video.id]))
+  }
+
+  const isVideoUnlocked = (video: Video, index: number) => {
+    if (index === 0) return true // First video is always unlocked
+    
+    // Check if previous video has been watched
+    const previousVideo = videos[index - 1]
+    return watchedVideos.has(previousVideo.id)
   }
 
   const handleEditVideo = (video: Video, e: React.MouseEvent) => {
@@ -201,90 +218,119 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      {/* Video Player */}
-      <div className="lg:col-span-2 space-y-4">
-        {selectedVideo && (
-          <>
-            <VideoPlayer video={selectedVideo} />
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <h2 className="text-xl font-semibold">{selectedVideo.title}</h2>
-                <Badge className={`text-white ${getPlatformColor(selectedVideo.video_type)}`}>
-                  {getPlatformName(selectedVideo.video_type)}
-                </Badge>
-                {selectedVideo.duration_seconds && (
-                  <Badge variant="outline" className="gap-1">
-                    <Clock className="h-3 w-3" />
-                    {Math.floor(selectedVideo.duration_seconds / 60)} min
-                  </Badge>
-                )}
-              </div>
-              {selectedVideo.description && (
-                <p className="text-muted-foreground">{selectedVideo.description}</p>
-              )}
-            </div>
-            <VideoDocuments videoId={selectedVideo.id} />
-          </>
-        )}
-      </div>
-
-      {/* Video List */}
-      <div className="space-y-2">
-        <h3 className="font-semibold mb-4">Course Videos ({videos.length})</h3>
-        {videos.map((video, index) => (
-          <Card
-            key={video.id}
-            className={`cursor-pointer transition-all hover:shadow-md ${
-              selectedVideo?.id === video.id ? 'ring-2 ring-primary' : ''
-            }`}
-            onClick={() => setSelectedVideo(video)}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/10 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-medium">{index + 1}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm leading-tight truncate">{video.title}</h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge 
-                      variant="secondary" 
-                      className={`text-xs ${getPlatformColor(video.video_type)} text-white`}
-                    >
-                      {getPlatformName(video.video_type)}
+    <div className="bg-black text-white min-h-screen">
+      <div className="grid gap-6 lg:grid-cols-3 p-6">
+        {/* Video Player - Netflix Style */}
+        <div className="lg:col-span-2 space-y-4">
+          {selectedVideo && (
+            <>
+              <div className="aspect-video bg-black rounded-lg overflow-hidden relative group">
+                <VideoPlayer video={selectedVideo} />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h2 className="text-2xl font-bold">{selectedVideo.title}</h2>
+                    <Badge className={`text-white ${getPlatformColor(selectedVideo.video_type)}`}>
+                      {getPlatformName(selectedVideo.video_type)}
                     </Badge>
-                    {video.duration_seconds && (
-                      <span className="text-xs text-muted-foreground">
-                        {Math.floor(video.duration_seconds / 60)} min
-                      </span>
+                    {selectedVideo.duration_seconds && (
+                      <Badge variant="outline" className="gap-1 bg-black/50 border-white/20 text-white">
+                        <Clock className="h-3 w-3" />
+                        {Math.floor(selectedVideo.duration_seconds / 60)} min
+                      </Badge>
                     )}
                   </div>
+                  {selectedVideo.description && (
+                    <p className="text-gray-300 text-sm max-w-2xl">{selectedVideo.description}</p>
+                  )}
                 </div>
-                {isCreator && (
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => handleEditVideo(video, e)}
-                      className="h-6 w-6 p-0"
-                    >
-                      <Edit className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => handleDeleteVideo(video.id, e)}
-                      className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                )}
               </div>
-            </CardContent>
-          </Card>
-        ))}
+              <VideoDocuments videoId={selectedVideo.id} />
+            </>
+          )}
+        </div>
+
+        {/* Video List - Netflix Style */}
+        <div className="space-y-3">
+          <h3 className="font-bold text-xl mb-6 text-white">Episodes ({videos.length})</h3>
+          <div className="space-y-2">
+            {videos.map((video, index) => {
+              const isUnlocked = isVideoUnlocked(video, index)
+              const isWatched = watchedVideos.has(video.id)
+              
+              return (
+                <Card
+                  key={video.id}
+                  className={`transition-all duration-300 border-gray-800 ${
+                    isUnlocked 
+                      ? `cursor-pointer hover:bg-gray-800/50 ${selectedVideo?.id === video.id ? 'ring-2 ring-red-600 bg-gray-800/30' : 'bg-gray-900/50'}` 
+                      : 'cursor-not-allowed opacity-50 bg-gray-900/20'
+                  }`}
+                  onClick={() => isUnlocked && handleVideoSelect(video)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-4">
+                      <div className={`rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0 font-bold ${
+                        isWatched ? 'bg-red-600 text-white' : isUnlocked ? 'bg-gray-700 text-white' : 'bg-gray-800 text-gray-500'
+                      }`}>
+                        {index + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className={`font-medium leading-tight ${
+                          isUnlocked ? 'text-white' : 'text-gray-500'
+                        }`}>
+                          {video.title}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge 
+                            variant="secondary" 
+                            className={`text-xs ${getPlatformColor(video.video_type)} text-white`}
+                          >
+                            {getPlatformName(video.video_type)}
+                          </Badge>
+                          {video.duration_seconds && (
+                            <span className="text-xs text-gray-400">
+                              {Math.floor(video.duration_seconds / 60)} min
+                            </span>
+                          )}
+                          {isWatched && (
+                            <Badge variant="outline" className="text-xs bg-red-600/20 border-red-600 text-red-400">
+                              Watched
+                            </Badge>
+                          )}
+                          {!isUnlocked && (
+                            <Badge variant="outline" className="text-xs bg-gray-800 border-gray-600 text-gray-400">
+                              Locked
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      {isCreator && (
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => handleEditVideo(video, e)}
+                            className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => handleDeleteVideo(video.id, e)}
+                            className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Edit Video Dialog */}

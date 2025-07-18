@@ -49,15 +49,65 @@ const Courses = () => {
   const [addVideoOpen, setAddVideoOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('courses')
   const [recordingsCount, setRecordingsCount] = useState(0)
+  const [userGroups, setUserGroups] = useState<string[]>([])
 
   const fetchCourses = async () => {
     try {
-      const { data: coursesData, error: coursesError } = await supabase
+      // First fetch user's group memberships
+      const { data: groupMemberships, error: groupError } = await supabase
+        .from('group_memberships')
+        .select('group_id')
+        .eq('user_id', user?.id)
+
+      if (groupError) throw groupError
+
+      const groupIds = (groupMemberships || []).map(membership => membership.group_id)
+      setUserGroups(groupIds)
+
+      // Fetch courses associated with user's groups
+      let coursesData: Course[] = []
+      
+      if (groupIds.length > 0) {
+        const { data: groupCourses, error: groupCoursesError } = await supabase
+          .from('group_courses')
+          .select(`
+            course_id,
+            courses (*)
+          `)
+          .in('group_id', groupIds)
+
+        if (groupCoursesError) throw groupCoursesError
+
+        // Extract unique courses from group courses
+        const uniqueCourseIds = new Set()
+        coursesData = (groupCourses || [])
+          .filter(gc => {
+            if (uniqueCourseIds.has(gc.course_id)) {
+              return false
+            }
+            uniqueCourseIds.add(gc.course_id)
+            return true
+          })
+          .map(gc => gc.courses as Course)
+          .filter(course => course !== null)
+      }
+
+      // Also fetch courses created by the user
+      const { data: userCreatedCourses, error: userCoursesError } = await supabase
         .from('courses')
         .select('*')
+        .eq('created_by', user?.id)
         .order('created_at', { ascending: false })
 
-      if (coursesError) throw coursesError
+      if (userCoursesError) throw userCoursesError
+
+      // Combine group courses with user-created courses (remove duplicates)
+      const allCourses = [...coursesData]
+      userCreatedCourses?.forEach(course => {
+        if (!allCourses.find(c => c.id === course.id)) {
+          allCourses.push(course)
+        }
+      })
 
       const { data: enrollmentsData, error: enrollmentsError } = await supabase
         .from('course_enrollments')
@@ -77,7 +127,7 @@ const Courses = () => {
         setRecordingsCount(recordingsData?.length || 0)
       }
 
-      setCourses(coursesData || [])
+      setCourses(allCourses)
       setEnrollments(enrollmentsData || [])
     } catch (error) {
       console.error('Error fetching courses:', error)
