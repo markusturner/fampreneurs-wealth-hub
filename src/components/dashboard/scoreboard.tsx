@@ -142,133 +142,206 @@ export function Scoreboard() {
   return (
     <div className="space-y-6">
       {/* Scoreboard Header */}
-      <Card className="bg-gradient-to-r from-primary/10 to-secondary/10">
+      <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-2">
         <CardHeader className="text-center">
           <CardTitle className="flex items-center justify-center gap-2 text-2xl">
             <Trophy className="h-6 w-6 text-yellow-500" />
-            Family Office Scoreboard
+            Family Office Badge System
           </CardTitle>
           <CardDescription>
-            Earn badges and points by completing courses and attending calls
+            Track your progress and earn badges through course completion and call participation
           </CardDescription>
         </CardHeader>
       </Card>
 
-      {/* Top 3 Leaderboard */}
+      {/* Badge Progress Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {members.slice(0, 3).map((member, index) => (
-          <Card key={member.id} className={`relative ${index === 0 ? 'ring-2 ring-yellow-500' : ''}`}>
-            <CardContent className="p-6 text-center">
-              <div className="flex justify-center mb-3">
-                {getRankIcon(index)}
+        <Card className="border-2 border-green-200 dark:border-green-800">
+          <CardHeader className="text-center pb-2">
+            <BookOpen className="h-8 w-8 mx-auto text-green-600" />
+            <CardTitle className="text-lg">Course Progress</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <div className="text-3xl font-bold text-green-600">
+              {members.length > 0 ? Math.round(members.reduce((sum, m) => sum + m.course_progress, 0) / members.length) : 0}%
+            </div>
+            <p className="text-sm text-muted-foreground">Average Completion</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-2 border-purple-200 dark:border-purple-800">
+          <CardHeader className="text-center pb-2">
+            <Users className="h-8 w-8 mx-auto text-purple-600" />
+            <CardTitle className="text-lg">Group Sessions</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <div className="text-3xl font-bold text-purple-600">
+              {members.length > 0 ? Math.round(members.reduce((sum, m) => sum + m.group_calls_attended, 0) / members.length) : 0}
+            </div>
+            <p className="text-sm text-muted-foreground">Average Attended</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-2 border-red-200 dark:border-red-800">
+          <CardHeader className="text-center pb-2">
+            <Video className="h-8 w-8 mx-auto text-red-600" />
+            <CardTitle className="text-lg">1-on-1 Sessions</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <div className="text-3xl font-bold text-red-600">
+              {members.length > 0 ? Math.round(members.reduce((sum, m) => sum + m.individual_calls_attended, 0) / members.length) : 0}
+            </div>
+            <p className="text-sm text-muted-foreground">Average Attended</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Member Cards with Badge Focus */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {members.map((member, index) => (
+          <Card key={member.id} className={`relative ${index < 3 ? 'ring-2 ring-primary/30' : ''} hover:shadow-lg transition-all duration-300`}>
+            <CardContent className="p-6">
+              {/* Rank Badge */}
+              {index < 3 && (
+                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold">
+                  #{index + 1}
+                </div>
+              )}
+              
+              {/* Member Info */}
+              <div className="text-center mb-4">
+                <Avatar className="h-16 w-16 mx-auto mb-3 ring-2 ring-primary/20">
+                  <AvatarImage src={member.avatar_url || ''} />
+                  <AvatarFallback className="text-lg">{getInitials(member)}</AvatarFallback>
+                </Avatar>
+                <h3 className="font-semibold text-lg">{getDisplayName(member)}</h3>
+                <div className="text-sm text-muted-foreground">Rank #{index + 1}</div>
               </div>
-              <Avatar className="h-16 w-16 mx-auto mb-3">
-                <AvatarImage src={member.avatar_url || ''} />
-                <AvatarFallback className="text-lg">{getInitials(member)}</AvatarFallback>
-              </Avatar>
-              <h3 className="font-semibold mb-1">{getDisplayName(member)}</h3>
-              <div className="text-2xl font-bold text-primary mb-2">{member.total_score} pts</div>
-              <div className="flex justify-center gap-1">
-                {member.badges.slice(0, 2).map((badge, badgeIndex) => (
-                  <div key={badgeIndex} className={`w-3 h-3 rounded-full ${getBadgeColor(badge)}`} />
-                ))}
+
+              {/* Progress Indicators */}
+              <div className="space-y-3 mb-4">
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm font-medium flex items-center gap-1">
+                      <BookOpen className="h-3 w-3" />
+                      Courses
+                    </span>
+                    <span className="text-sm text-green-600 font-semibold">{member.course_progress}%</span>
+                  </div>
+                  <Progress value={member.course_progress} className="h-2" />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-2">
+                    <div className="text-lg font-bold text-purple-600">{member.group_calls_attended}</div>
+                    <div className="text-xs text-muted-foreground">Group Calls</div>
+                  </div>
+                  <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-2">
+                    <div className="text-lg font-bold text-red-600">{member.individual_calls_attended}</div>
+                    <div className="text-xs text-muted-foreground">1-on-1 Calls</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Badges Display */}
+              <div className="mb-4">
+                <div className="text-sm font-medium mb-2 flex items-center gap-1">
+                  <Award className="h-3 w-3" />
+                  Badges Earned ({member.badges.length})
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {member.badges.map((badge, badgeIndex) => (
+                    <Badge 
+                      key={badgeIndex}
+                      variant="outline"
+                      className={`text-xs px-2 py-1 ${getBadgeColor(badge)} text-white border-none`}
+                      title={badge}
+                    >
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      {badge.replace(' ', '')}
+                    </Badge>
+                  ))}
+                  {member.badges.length === 0 && (
+                    <span className="text-xs text-muted-foreground italic">No badges yet</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Total Score */}
+              <div className="text-center pt-3 border-t">
+                <div className="text-2xl font-bold" style={{ color: '#ffb500' }}>
+                  {member.total_score}
+                </div>
+                <div className="text-sm text-muted-foreground">Total Points</div>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Full Leaderboard */}
-      <Card>
+      {/* Badge Achievement System */}
+      <Card className="border-2 border-primary/20">
         <CardHeader>
-          <CardTitle>Complete Rankings</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {members.map((member, index) => (
-            <div key={member.id} className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-muted/30 transition-colors">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 w-8">
-                  <span className="text-lg font-bold text-muted-foreground">#{index + 1}</span>
-                </div>
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={member.avatar_url || ''} />
-                  <AvatarFallback>{getInitials(member)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <h4 className="font-medium">{getDisplayName(member)}</h4>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <BookOpen className="h-3 w-3" />
-                    <span>{member.course_progress}% courses</span>
-                    <Users className="h-3 w-3 ml-2" />
-                    <span>{member.group_calls_attended} group calls</span>
-                    <Video className="h-3 w-3 ml-2" />
-                    <span>{member.individual_calls_attended} 1-on-1s</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <div className="flex gap-1">
-                  {member.badges.map((badge, badgeIndex) => (
-                    <div 
-                      key={badgeIndex}
-                      className={`w-2 h-2 rounded-full ${getBadgeColor(badge)}`}
-                      title={badge}
-                    />
-                  ))}
-                </div>
-                <div className="text-right">
-                  <div className="text-lg font-bold" style={{ color: '#ffb500' }}>
-                    {member.total_score}
-                  </div>
-                  <div className="text-xs text-muted-foreground">points</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Badge Legend */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Badge System</CardTitle>
+          <CardTitle className="text-xl flex items-center gap-2">
+            <Award className="h-5 w-5" />
+            Badge Achievement System
+          </CardTitle>
+          <CardDescription>
+            Complete these activities to earn badges and climb the leaderboard
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-full bg-green-500"></div>
-              <div>
-                <div className="font-medium">Course Completed</div>
-                <div className="text-sm text-muted-foreground">Complete 100% of courses</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h4 className="font-semibold text-green-600 flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                Course Badges
+              </h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                  <div>
+                    <div className="font-medium">Halfway There</div>
+                    <div className="text-sm text-muted-foreground">Complete 50% of available courses</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                  <div>
+                    <div className="font-medium">Course Master</div>
+                    <div className="text-sm text-muted-foreground">Complete 100% of available courses</div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-              <div>
-                <div className="font-medium">Halfway There</div>
-                <div className="text-sm text-muted-foreground">Complete 50% of courses</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-full bg-purple-500"></div>
-              <div>
-                <div className="font-medium">Group Participant</div>
-                <div className="text-sm text-muted-foreground">Attend 10+ group calls</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-full bg-red-500"></div>
-              <div>
-                <div className="font-medium">1-on-1 Champion</div>
-                <div className="text-sm text-muted-foreground">Attend 5+ individual calls</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
-              <div>
-                <div className="font-medium">Engaged Learner</div>
-                <div className="text-sm text-muted-foreground">75% courses + 5+ group calls</div>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold text-purple-600 flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Participation Badges
+              </h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <div className="w-4 h-4 rounded-full bg-purple-500"></div>
+                  <div>
+                    <div className="font-medium">Group Participant</div>
+                    <div className="text-sm text-muted-foreground">Attend 10+ group coaching calls</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                  <div className="w-4 h-4 rounded-full bg-red-500"></div>
+                  <div>
+                    <div className="font-medium">1-on-1 Champion</div>
+                    <div className="text-sm text-muted-foreground">Attend 5+ individual coaching sessions</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                  <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
+                  <div>
+                    <div className="font-medium">Engaged Learner</div>
+                    <div className="text-sm text-muted-foreground">75% course completion + 5+ group calls</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
