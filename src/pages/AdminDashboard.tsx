@@ -291,15 +291,7 @@ export default function AdminDashboard() {
       // Load users with fulfillment progress
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          user_fulfillment_progress (
-            stage_id,
-            fulfillment_stages (
-              name
-            )
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
       if (profilesError) throw profilesError
@@ -312,6 +304,19 @@ export default function AdminDashboard() {
             .from('user_roles')
             .select('role')
             .eq('user_id', profile.user_id)
+          
+          // Get fulfillment progress
+          const { data: fulfillmentProgress } = await supabase
+            .from('user_fulfillment_progress')
+            .select(`
+              stage_id,
+              fulfillment_stages (
+                name
+              )
+            `)
+            .eq('user_id', profile.user_id)
+            .order('moved_to_stage_at', { ascending: false })
+            .limit(1)
           
           // Get course progress
           const { data: enrollments } = await supabase
@@ -338,7 +343,7 @@ export default function AdminDashboard() {
             ...profile,
             email: 'Protected',
             roles: userRoles?.map(r => r.role) || ['member'],
-            fulfillment_stage: (profile as any).user_fulfillment_progress?.[0]?.fulfillment_stages?.name || null,
+            fulfillment_stage: fulfillmentProgress?.[0]?.fulfillment_stages?.name || null,
             course_progress: Math.round(avgProgress),
             group_calls_attended: groupSessions?.length || 0,
             one_on_one_calls_attended: oneOnOneSessions?.length || 0
