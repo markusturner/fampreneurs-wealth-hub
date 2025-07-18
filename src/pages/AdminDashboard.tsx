@@ -600,6 +600,8 @@ export default function AdminDashboard() {
             setting_value: setting.setting_value,
             updated_by: user?.id,
             description: setting.setting_key === 'platform_name' ? 'Platform display name' : 'Administrator email address'
+          }, {
+            onConflict: 'setting_key'
           })
 
         if (error) throw error
