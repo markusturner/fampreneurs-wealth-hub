@@ -91,11 +91,11 @@ export function AddCoachingSessionDialog({ onSessionAdded, type }: AddCoachingSe
             duration_minutes: parseInt(formData.duration_minutes),
             max_participants: parseInt(formData.max_participants),
             meeting_url: formData.meeting_url,
-            meeting_password: formData.meeting_password,
+            meeting_password: formData.meeting_password || null,
             meeting_type: 'zoom',
             is_recurring: formData.is_recurring,
-            recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : null,
-            recurrence_end_date: formData.is_recurring ? formData.recurrence_end_date : null,
+            recurrence_pattern: formData.is_recurring && formData.recurrence_pattern ? formData.recurrence_pattern : null,
+            recurrence_end_date: formData.is_recurring && formData.recurrence_end_date ? formData.recurrence_end_date : null,
             created_by: (await supabase.auth.getUser()).data.user?.id
           })
         
@@ -112,7 +112,7 @@ export function AddCoachingSessionDialog({ onSessionAdded, type }: AddCoachingSe
             session_time: formData.session_time,
             duration_minutes: parseInt(formData.duration_minutes),
             meeting_url: formData.meeting_url,
-            meeting_password: formData.meeting_password,
+            meeting_password: formData.meeting_password || null,
             meeting_type: 'zoom',
             created_by: (await supabase.auth.getUser()).data.user?.id
           })
