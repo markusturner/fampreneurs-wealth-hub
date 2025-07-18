@@ -365,9 +365,12 @@ const Courses = () => {
                     backgroundPosition: 'center'
                   }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/40 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 pb-6 sm:p-6 lg:p-8">
                     <div className="max-w-lg">
+                      <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground mb-2">
+                        {filteredCourses[0].title}
+                      </h2>
                       <div className="flex items-center gap-2 mb-3">
                         <Badge 
                           className="text-xs font-medium px-2 py-1"
@@ -382,9 +385,6 @@ const Courses = () => {
                           {filteredCourses[0].level}
                         </Badge>
                       </div>
-                      <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground mb-3">
-                        {filteredCourses[0].title}
-                      </h2>
                       <p className="text-xs sm:text-sm lg:text-base text-muted-foreground mb-4 line-clamp-2">
                         {filteredCourses[0].description || "Master essential business skills with this comprehensive course."}
                       </p>
