@@ -516,6 +516,13 @@ export default function AdminDashboard() {
 
   const loadCoachData = async () => {
     try {
+      // Get all coaches first
+      const { data: allCoaches } = await supabase
+        .from('coaches')
+        .select('id, full_name')
+        .eq('is_active', true)
+
+      // Get coach assignments
       const { data: coachAssignments } = await supabase
         .from('coach_assignments')
         .select(`
@@ -533,14 +540,19 @@ export default function AdminDashboard() {
         return acc
       }, {} as Record<string, number>) || {}
 
-      const coachDataArray = Object.entries(coachCounts).map(([name, clients]) => ({
-        name,
-        clients
+      // Include coaches with 0 assignments
+      const coachDataArray = (allCoaches || []).map(coach => ({
+        name: coach.full_name,
+        clients: coachCounts[coach.full_name] || 0
       }))
 
       setCoachData(coachDataArray)
     } catch (error) {
       console.error('Error loading coach data:', error)
+      // Fallback with sample data if there's an error
+      setCoachData([
+        { name: 'No coaches', clients: 0 }
+      ])
     }
   }
 
@@ -977,18 +989,18 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="space-y-4">
                   {filteredUsers.map(user => (
-                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg gap-4">
                       <UserCard 
                         user={user} 
                         onRolesUpdated={loadAdminData}
                       />
-                      <div className="flex items-end gap-4 ml-4">
+                      <div className="flex items-end gap-4 flex-shrink-0">
                         <div>
                           <Label className="text-sm font-medium">Assigned Coach</Label>
                           <div className="mt-1">
                             {user.assigned_coach ? (
                               <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium">{user.assigned_coach.full_name}</span>
+                                <span className="text-sm font-medium text-green-600">✓ {user.assigned_coach.full_name}</span>
                                 <AssignCoachDialog
                                   userId={user.user_id}
                                   userName={user.display_name || `${user.first_name} ${user.last_name}` || 'User'}

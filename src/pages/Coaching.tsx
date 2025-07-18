@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 import { Loader2, Calendar as CalendarIcon, Clock, User, Video, Phone, Users, Star, CheckCircle, Plus, ChevronLeft, ChevronRight, List, Grid } from 'lucide-react'
 import { format, isSameDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, getDay } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -83,7 +84,7 @@ const Coaching = () => {
   const fetchSessions = async () => {
     setLoadingSessions(true)
     try {
-      // Fetch group sessions
+      // Fetch group sessions including recurring ones
       const { data: groupData, error: groupError } = await supabase
         .from('group_coaching_sessions')
         .select('*')
@@ -92,7 +93,10 @@ const Coaching = () => {
         .order('session_time', { ascending: true })
 
       if (groupError) throw groupError
-      setSessions(groupData || [])
+      
+      // Expand recurring sessions
+      const expandedSessions = expandRecurringSessions(groupData || [])
+      setSessions(expandedSessions)
 
       // Fetch individual sessions (only for current user)
       const { data: individualData, error: individualError } = await supabase
@@ -271,6 +275,43 @@ const Coaching = () => {
     ...calendarDays
   ]
 
+  // Expand recurring sessions to show individual instances
+  const expandRecurringSessions = (sessions: GroupSession[]) => {
+    const expanded: GroupSession[] = []
+    
+    sessions.forEach(session => {
+      if (session.is_recurring && session.recurrence_pattern) {
+        // For now, create instances for the next 12 weeks (can be improved)
+        const baseDate = new Date(session.session_date)
+        const endDate = session.recurrence_end_date ? new Date(session.recurrence_end_date) : new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days from now
+        
+        let currentDate = new Date(baseDate)
+        let instanceCount = 0
+        
+        while (currentDate <= endDate && instanceCount < 52) { // Max 52 instances
+          expanded.push({
+            ...session,
+            id: `${session.id}_${instanceCount}`,
+            session_date: currentDate.toISOString().split('T')[0],
+            title: `${session.title}${instanceCount > 0 ? ` (Week ${instanceCount + 1})` : ''}`
+          })
+          
+          // Add weekly recurrence (can be extended for other patterns)
+          if (session.recurrence_pattern === 'weekly') {
+            currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000)
+          } else {
+            break // Only weekly supported for now
+          }
+          instanceCount++
+        }
+      } else {
+        expanded.push(session)
+      }
+    })
+    
+    return expanded
+  }
+
   const navigateMonth = (direction: 'prev' | 'next') => {
     setCurrentMonth(prev => direction === 'prev' ? subMonths(prev, 1) : addMonths(prev, 1))
   }
@@ -419,7 +460,7 @@ const Coaching = () => {
                                 className="text-xs p-1 rounded truncate cursor-pointer transition-colors"
                                 style={{ 
                                   backgroundColor: calendarMode === 'group' ? '#ffb500' : '#3b82f6', 
-                                  color: '#ffffff' 
+                                  color: calendarMode === 'group' ? '#290a52' : '#ffffff' 
                                 }}
                                 title={`${event.time} - ${event.title}`}
                                 onClick={() => setSelectedSessionDialog(event)}
@@ -540,7 +581,11 @@ const Coaching = () => {
                       <span className="text-lg font-bold" style={{ color: '#ffb500' }}>
                         ${coach.hourly_rate || '300'}/hr
                       </span>
-                      <Button size="sm" className="gap-2">
+                      <Button 
+                        size="sm" 
+                        className="gap-2" 
+                        onClick={() => coach.calendar_link ? window.open(coach.calendar_link, '_blank') : setScheduleDialogOpen(true)}
+                      >
                         <CalendarIcon className="h-4 w-4" />
                         Book Session
                       </Button>
@@ -590,6 +635,69 @@ const Coaching = () => {
           setScheduleDialogOpen(false)
         }}
       />
+
+      {/* Session Details Dialog */}
+      <Dialog open={!!selectedSessionDialog} onOpenChange={() => setSelectedSessionDialog(null)}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5" />
+              Session Details
+            </DialogTitle>
+          </DialogHeader>
+          {selectedSessionDialog && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold text-lg">{selectedSessionDialog.title}</h3>
+                <p className="text-muted-foreground">{selectedSessionDialog.coach}</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Date</Label>
+                  <p className="text-sm">{format(parseISO(selectedSessionDialog.date), 'MMMM d, yyyy')}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Time</Label>
+                  <p className="text-sm">{selectedSessionDialog.time}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Duration</Label>
+                  <p className="text-sm">{selectedSessionDialog.duration} minutes</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Type</Label>
+                  <p className="text-sm">{selectedSessionDialog.type}</p>
+                </div>
+              </div>
+
+              {selectedSessionDialog.description && (
+                <div>
+                  <Label className="text-sm font-medium">Description</Label>
+                  <p className="text-sm text-muted-foreground">{selectedSessionDialog.description}</p>
+                </div>
+              )}
+
+              {selectedSessionDialog.type === "Group Coaching" && (
+                <div>
+                  <Label className="text-sm font-medium">Participants</Label>
+                  <p className="text-sm">{selectedSessionDialog.participants} / {selectedSessionDialog.maxParticipants}</p>
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  onClick={() => window.open(selectedSessionDialog.zoomMeetingUrl, '_blank')} 
+                  className="flex-1"
+                >
+                  <Video className="h-4 w-4 mr-2" />
+                  Join Session
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -170,6 +170,7 @@ export function MessageDialog({ open, onOpenChange, recipient, onMessageSent, em
       }
 
       setNewMessage('')
+      onMessageSent()
       
     } catch (error) {
       console.error('Error sending message:', error)
@@ -265,6 +266,8 @@ export function MessageDialog({ open, onOpenChange, recipient, onMessageSent, em
               placeholder={`Message ${getDisplayName(recipient)}...`}
               className={`flex-1 ${mobile ? 'text-base' : ''}`}
               disabled={isSubmitting}
+              autoCapitalize="sentences"
+              spellCheck="true"
             />
             <Button 
               type="submit" 
@@ -376,6 +379,8 @@ export function MessageDialog({ open, onOpenChange, recipient, onMessageSent, em
               placeholder={`Message ${getDisplayName(recipient)}...`}
               className="flex-1"
               disabled={isSubmitting}
+              autoCapitalize="sentences"
+              spellCheck="true"
             />
             <Button 
               type="submit" 

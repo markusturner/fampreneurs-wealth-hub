@@ -793,6 +793,8 @@ export function GroupChat({ groupId }: GroupChatProps) {
             placeholder={`Message #${group?.name}`}
             disabled={sending}
             className="flex-1 text-sm"
+            autoCapitalize="sentences"
+            spellCheck="true"
           />
           <Button 
             onClick={sendMessage} 
