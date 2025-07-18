@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { 
   Users, 
   Settings, 
@@ -77,6 +78,7 @@ import {
 } from '@dnd-kit/sortable'
 import { GripVertical } from 'lucide-react'
 import { ResponsiveContainer, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+import { format } from 'date-fns'
 
 function DroppableStage({ id, children }: { id: string; children: React.ReactNode }) {
   const { setNodeRef } = useDroppable({ id })
@@ -997,25 +999,50 @@ export default function AdminDashboard() {
                       <div className="flex items-end gap-4 flex-shrink-0">
                         <div>
                           <Label className="text-sm font-medium">Assigned Coach</Label>
-                          <div className="mt-1">
-                            {user.assigned_coach ? (
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-green-600">✓ {user.assigned_coach.full_name}</span>
-                                <AssignCoachDialog
-                                  userId={user.user_id}
-                                  userName={user.display_name || `${user.first_name} ${user.last_name}` || 'User'}
-                                  currentCoachId={user.assigned_coach.id}
-                                  onAssignmentUpdated={loadAdminData}
-                                />
-                              </div>
-                            ) : (
-                              <AssignCoachDialog
-                                userId={user.user_id}
-                                userName={user.display_name || `${user.first_name} ${user.last_name}` || 'User'}
-                                onAssignmentUpdated={loadAdminData}
-                              />
-                            )}
-                          </div>
+                          <Select 
+                            value={user.assigned_coach?.id || 'no-coach'}
+                            onValueChange={async (value) => {
+                              if (value === 'no-coach') return
+                              
+                              try {
+                                const { error } = await supabase
+                                  .from('coach_assignments')
+                                  .insert({
+                                    user_id: user.user_id,
+                                    coach_id: value,
+                                    status: 'active'
+                                  })
+                                
+                                if (error) throw error
+                                
+                                toast({
+                                  title: "Coach Assigned",
+                                  description: "Coach has been successfully assigned to the user.",
+                                })
+                                
+                                loadAdminData()
+                              } catch (error) {
+                                console.error('Error assigning coach:', error)
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to assign coach. Please try again.",
+                                  variant: "destructive",
+                                })
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="w-[200px] mt-1">
+                              <SelectValue placeholder="Select coach" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="no-coach">No Coach</SelectItem>
+                              {coaches.map((coach) => (
+                                <SelectItem key={coach.id} value={coach.id}>
+                                  {coach.full_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div>
                           <Label className="text-sm font-medium">Activation Status</Label>
@@ -1277,7 +1304,11 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setSelectedSessionForPreview(session)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
                           <EditCoachingSessionDialog 
@@ -1373,6 +1404,69 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Session Preview Dialog */}
+        <Dialog open={!!selectedSessionForPreview} onOpenChange={() => setSelectedSessionForPreview(null)}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Session Preview
+              </DialogTitle>
+            </DialogHeader>
+            {selectedSessionForPreview && (
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg">{selectedSessionForPreview.title}</h3>
+                  <p className="text-muted-foreground">{selectedSessionForPreview.coach_name}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">Date</Label>
+                    <p className="text-sm">{format(new Date(selectedSessionForPreview.session_date), 'MMMM d, yyyy')}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Time</Label>
+                    <p className="text-sm">{selectedSessionForPreview.session_time}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Duration</Label>
+                    <p className="text-sm">{selectedSessionForPreview.duration_minutes} minutes</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Type</Label>
+                    <p className="text-sm">{selectedSessionForPreview.session_type === 'group' ? 'Group Session' : '1-on-1 Session'}</p>
+                  </div>
+                </div>
+
+                {selectedSessionForPreview.description && (
+                  <div>
+                    <Label className="text-sm font-medium">Description</Label>
+                    <p className="text-sm text-muted-foreground">{selectedSessionForPreview.description}</p>
+                  </div>
+                )}
+
+                {selectedSessionForPreview.session_type === 'group' && (
+                  <div>
+                    <Label className="text-sm font-medium">Participants</Label>
+                    <p className="text-sm">{selectedSessionForPreview.current_participants || 0} / {selectedSessionForPreview.max_participants}</p>
+                  </div>
+                )}
+
+                <div className="flex gap-2 pt-4">
+                  <Button 
+                    onClick={() => window.open(selectedSessionForPreview.meeting_url, '_blank')} 
+                    className="flex-1"
+                  >
+                    <Video className="h-4 w-4 mr-2" />
+                    Join Session
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )

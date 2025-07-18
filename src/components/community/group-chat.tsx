@@ -252,11 +252,20 @@ export function GroupChat({ groupId }: GroupChatProps) {
         attachment_size: attachmentData?.size || null
       }
 
-      const { error } = await supabase
+      // Insert message and immediately fetch with profile data for real-time display
+      const { data: messageResponse, error } = await supabase
         .from('group_messages')
         .insert(messageData)
+        .select()
+        .single()
 
       if (error) throw error
+
+      // Immediately fetch the message with profile data and add to local state
+      const messageWithProfile = await fetchMessageWithProfile(messageResponse.id)
+      if (messageWithProfile) {
+        setMessages(prev => [...prev, messageWithProfile])
+      }
 
       setNewMessage('')
       setReplyTo(null)

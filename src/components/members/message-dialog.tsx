@@ -154,15 +154,21 @@ export function MessageDialog({ open, onOpenChange, recipient, onMessageSent, em
     setIsSubmitting(true)
 
     try {
-      const { error } = await supabase
+      // Insert message and get response for immediate display
+      const { data: messageResponse, error } = await supabase
         .from('messages')
         .insert({
           sender_id: user?.id,
           recipient_id: recipient.user_id,
           content: newMessage.trim()
         })
+        .select()
+        .single()
 
       if (error) throw error
+
+      // Immediately add to local state for instant display
+      setMessages(prev => [...prev, messageResponse])
 
       // Trigger haptic feedback on mobile
       if (MobileService.isNative()) {
