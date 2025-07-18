@@ -289,13 +289,13 @@ export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIn
   if (selectedPlatform && selectedPlatform.connectionType === "api") {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <selectedPlatform.icon className="h-5 w-5" />
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <selectedPlatform.icon className="h-4 w-4 sm:h-5 sm:w-5" />
               Connect {selectedPlatform.name} API
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm">
               Enter your API credentials to connect your {selectedPlatform.name} account.
             </DialogDescription>
           </DialogHeader>
@@ -365,18 +365,18 @@ export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIn
               </div>
             </div>
 
-            <div className="flex gap-2 pt-4">
+            <div className="flex flex-col sm:flex-row gap-2 pt-4">
               <Button
                 variant="outline"
                 onClick={() => setSelectedPlatform(null)}
-                className="flex-1"
+                className="flex-1 order-2 sm:order-1"
               >
                 Back
               </Button>
               <Button
                 onClick={handleApiKeySubmit}
                 disabled={!apiKeyData.accountName || !apiKeyData.apiKey || !apiKeyData.apiSecret || isConnecting}
-                className="flex-1"
+                className="flex-1 order-1 sm:order-2"
               >
                 {isConnecting ? "Connecting..." : "Connect API"}
               </Button>
@@ -391,13 +391,13 @@ export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIn
   if (selectedPlatform) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <selectedPlatform.icon className="h-5 w-5" />
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <selectedPlatform.icon className="h-4 w-4 sm:h-5 sm:w-5" />
               Connect {selectedPlatform.name}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm">
               Enter your account details to track this investment account.
             </DialogDescription>
           </DialogHeader>
@@ -451,18 +451,18 @@ export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIn
               </p>
             </div>
 
-            <div className="flex gap-2 pt-4">
+            <div className="flex flex-col sm:flex-row gap-2 pt-4">
               <Button
                 variant="outline"
                 onClick={() => setSelectedPlatform(null)}
-                className="flex-1"
+                className="flex-1 order-2 sm:order-1"
               >
                 Back
               </Button>
               <Button
                 onClick={handleManualSubmit}
                 disabled={!manualData.accountName || !manualData.currentBalance || isConnecting}
-                className="flex-1"
+                className="flex-1 order-1 sm:order-2"
               >
                 {isConnecting ? "Connecting..." : "Connect Account"}
               </Button>
@@ -475,10 +475,10 @@ export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIn
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Connect Investment Accounts</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-base sm:text-lg">Connect Investment Accounts</DialogTitle>
+          <DialogDescription className="text-sm">
             Connect your investment and banking accounts to track your portfolio.
           </DialogDescription>
         </DialogHeader>
@@ -486,11 +486,11 @@ export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIn
         <div className="space-y-4">
           {/* Popular Platforms */}
           <div>
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
+            <h3 className="font-semibold mb-3 flex items-center gap-2 text-sm sm:text-base">
               <TrendingUp className="h-4 w-4" />
               Popular Platforms
             </h3>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2">
               {investmentPlatforms.filter(p => p.isPopular).map((platform) => {
                 const Icon = platform.icon
                 return (

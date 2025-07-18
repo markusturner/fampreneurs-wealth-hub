@@ -88,35 +88,35 @@ export function DashboardStats() {
     }
   ]
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
       {stats.map((stat) => {
         const Icon = stat.icon
         const TrendIcon = stat.trend === "up" ? ArrowUpRight : ArrowDownRight
         
         return (
           <Card key={stat.title} className="shadow-soft hover:shadow-medium transition-smooth">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                 {stat.title}
               </CardTitle>
-              <Icon className="h-4 w-4 text-primary" />
+              <Icon className="h-4 w-4 text-primary flex-shrink-0" />
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 sm:p-6 pt-0">
               <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-foreground">
+                <div className="flex-1 min-w-0">
+                  <div className="text-xl sm:text-2xl font-bold text-foreground truncate">
                     {stat.value}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-1 leading-tight">
                     {stat.description}
                   </p>
                 </div>
                 <Badge 
                   variant={stat.trend === "up" ? "default" : "destructive"} 
-                  className={stat.trend === "up" ? "bg-accent text-accent-foreground" : ""}
+                  className={`ml-2 flex-shrink-0 ${stat.trend === "up" ? "bg-accent text-accent-foreground" : ""}`}
                 >
                   <TrendIcon className="h-3 w-3 mr-1" />
-                  {stat.change}
+                  <span className="text-xs">{stat.change}</span>
                 </Badge>
               </div>
             </CardContent>

@@ -114,43 +114,45 @@ export function InvestmentChart() {
         </div>
         
         {/* Legend */}
-        <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-border">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--primary))' }}></div>
-            <span className="text-sm font-medium">Stocks</span>
+        <div className="flex flex-wrap gap-2 sm:gap-4 mt-4 pt-4 border-t border-border">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--primary))' }}></div>
+            <span className="text-xs sm:text-sm font-medium">Stocks</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--accent))' }}></div>
-            <span className="text-sm font-medium">ETFs</span>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--accent))' }}></div>
+            <span className="text-xs sm:text-sm font-medium">ETFs</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--secondary))' }}></div>
-            <span className="text-sm font-medium">Crypto</span>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--secondary))' }}></div>
+            <span className="text-xs sm:text-sm font-medium">Crypto</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(270 50% 60%)' }}></div>
-            <span className="text-sm font-medium">House Equity</span>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(270 50% 60%)' }}></div>
+            <span className="text-xs sm:text-sm font-medium">House Equity</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(0 70% 50%)' }}></div>
-            <span className="text-sm font-medium">Business</span>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(0 70% 50%)' }}></div>
+            <span className="text-xs sm:text-sm font-medium">Business</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
-        <div className="h-[350px]">
+      <CardContent className="pt-0 p-2 sm:p-6">
+        <div className="h-[250px] sm:h-[350px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={portfolioData}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
               <XAxis 
                 dataKey="month" 
                 className="text-foreground"
-                tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
+                tick={{ fontSize: 10, fill: 'hsl(var(--foreground))' }}
+                interval={0}
               />
               <YAxis 
                 className="text-foreground"
-                tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
+                tick={{ fontSize: 10, fill: 'hsl(var(--foreground))' }}
                 tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+                width={50}
               />
               <Tooltip content={<CustomTooltip />} />
               

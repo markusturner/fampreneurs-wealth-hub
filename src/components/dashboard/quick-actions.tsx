@@ -80,14 +80,14 @@ export function QuickActions() {
       <BusinessStructureDialog open={businessStructureDialogOpen} onOpenChange={setBusinessStructureDialogOpen} />
       <InvestmentIntegrationDialog open={investmentIntegrationOpen} onOpenChange={setInvestmentIntegrationOpen} />
     <Card className="col-span-4 lg:col-span-1 shadow-soft">
-      <CardHeader>
-        <CardTitle className="text-xl font-bold">Quick Actions</CardTitle>
-        <CardDescription>
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="text-lg sm:text-xl font-bold">Quick Actions</CardTitle>
+        <CardDescription className="text-sm">
           Common tasks for your family office
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="grid gap-3">
+      <CardContent className="p-4 sm:p-6">
+        <div className="grid gap-2 sm:gap-3">
           {quickActions.map((action) => {
             const Icon = action.icon
             
@@ -95,20 +95,20 @@ export function QuickActions() {
               <Button
                 key={action.title}
                 variant={action.variant}
-                className="h-auto p-3 pr-10 justify-start text-left flex-1 min-w-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="h-auto p-3 sm:pr-10 justify-start text-left flex-1 min-w-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
                   handleAction(action.action)
                 }}
               >
-                <div className="flex items-start space-x-3">
-                  <Icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                <div className="flex items-start space-x-2 sm:space-x-3 w-full">
+                  <Icon className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-xs truncate">
+                    <div className="font-medium text-xs sm:text-sm truncate">
                       {action.title}
                     </div>
-                    <div className="text-[10px] opacity-80 leading-tight truncate">
+                    <div className="text-[10px] sm:text-xs opacity-80 leading-tight truncate">
                       {action.description}
                     </div>
                   </div>
@@ -118,20 +118,20 @@ export function QuickActions() {
           })}
           <Button
             variant="secondary"
-            className="h-auto p-3 pr-10 justify-start text-left flex-1 min-w-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            className="h-auto p-3 sm:pr-10 justify-start text-left flex-1 min-w-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
               handleScheduleMeeting()
             }}
           >
-            <div className="flex items-start space-x-3">
-              <Calendar className="h-5 w-5 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start space-x-2 sm:space-x-3 w-full">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-xs truncate">
+                <div className="font-medium text-xs sm:text-sm truncate">
                   Schedule Meeting
                 </div>
-                <div className="text-[10px] opacity-80 leading-tight truncate">
+                <div className="text-[10px] sm:text-xs opacity-80 leading-tight truncate">
                   Plan family discussions
                 </div>
               </div>

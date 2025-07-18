@@ -181,13 +181,13 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           </Button>
         </div>
 
-        <div className="flex-1 max-w-lg mx-4">
+        <div className="flex-1 max-w-lg mx-2 sm:mx-4 hidden sm:block">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search investments, documents, team..."
-              className="pl-10 bg-muted/50 border-none focus:bg-background"
+              className="pl-10 bg-muted/50 border-none focus:bg-background text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
