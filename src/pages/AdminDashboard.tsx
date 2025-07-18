@@ -42,7 +42,7 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
-import { useTheme } from 'next-themes'
+import { useTheme } from '@/components/theme-provider'
 import { Separator } from '@/components/ui/separator'
 import { CreateCourseDialog } from '@/components/admin/create-course-dialog'
 import { EditCourseDialog } from '@/components/admin/edit-course-dialog'
