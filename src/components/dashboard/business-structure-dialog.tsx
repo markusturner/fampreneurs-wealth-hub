@@ -374,7 +374,7 @@ export function BusinessStructureDialog({ open, onOpenChange }: BusinessStructur
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
+            <Building2 className="h-5 w-5" style={{ color: '#290a52' }} />
               Business Structure Recommendations
             </DialogTitle>
             <DialogDescription>

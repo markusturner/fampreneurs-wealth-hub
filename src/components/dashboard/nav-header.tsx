@@ -106,7 +106,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                     onClick={() => handleNavigation('/members')}
                   >
                     <Users className="h-4 w-4" />
-                    Members
+                    Scoreboard
                   </Button>
                   <Button
                     variant={location.pathname === '/profile-settings' ? "default" : "ghost"}
@@ -177,7 +177,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             className="gap-2 h-9"
           >
             <Users className="h-4 w-4" />
-            Members
+            Scoreboard
           </Button>
         </div>
 

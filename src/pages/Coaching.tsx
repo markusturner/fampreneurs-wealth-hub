@@ -354,6 +354,7 @@ const Coaching = () => {
                   size="sm"
                   onClick={() => setCalendarMode('group')}
                   className="gap-2"
+                  style={calendarMode === 'group' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
                 >
                   <Users className="h-4 w-4" />
                   Group Calls
@@ -363,6 +364,7 @@ const Coaching = () => {
                   size="sm"
                   onClick={() => setCalendarMode('individual')}
                   className="gap-2"
+                  style={calendarMode === 'individual' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
                 >
                   <User className="h-4 w-4" />
                   1-on-1 Calls
@@ -423,22 +425,22 @@ const Coaching = () => {
                     </Button>
                   </div>
 
-                    {/* Calendar Grid */}
-                   <div className="border rounded-lg overflow-hidden bg-card dark:bg-card">
-                     {/* Day Headers */}
-                     <div className="grid grid-cols-7 border-b bg-muted/30 dark:bg-muted/20">
-                       {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                         <div key={day} className="p-2 sm:p-3 text-center text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground border-r last:border-r-0 dark:border-border">
-                           {day}
-                         </div>
-                       ))}
-                     </div>
+                     {/* Calendar Grid */}
+                    <div className="border border-border dark:border-border rounded-lg overflow-hidden bg-card dark:bg-card">
+                      {/* Day Headers */}
+                      <div className="grid grid-cols-7 border-b border-border dark:border-border bg-muted/30 dark:bg-muted/10">
+                        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                          <div key={day} className="p-2 sm:p-3 text-center text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground border-r border-border dark:border-border last:border-r-0">
+                            {day}
+                          </div>
+                        ))}
+                      </div>
                     
                     {/* Calendar Days */}
                     <div className="grid grid-cols-7">
                       {allDays.map((day, index) => {
                         if (!day) {
-                          return <div key={index} className="h-16 sm:h-24 border-r border-b last:border-r-0" />
+                          return <div key={index} className="h-16 sm:h-24 border-r border-border dark:border-border border-b border-border dark:border-border last:border-r-0" />
                         }
                         
                         const dayEvents = getSessionsForDate(day)
