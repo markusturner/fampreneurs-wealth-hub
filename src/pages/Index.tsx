@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { QuickActions } from "@/components/dashboard/quick-actions"
-import { FamilyCalendar } from "@/components/dashboard/family-calendar"
+import { UpcomingMeetings } from "@/components/dashboard/upcoming-meetings"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from 'lucide-react'
@@ -67,7 +67,7 @@ const Index = () => {
 
           {/* Upcoming Meetings */}
           <div className="order-2">
-            <FamilyCalendar />
+            <UpcomingMeetings />
           </div>
         </div>
       </main>
