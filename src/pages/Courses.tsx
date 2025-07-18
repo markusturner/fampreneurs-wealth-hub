@@ -250,8 +250,8 @@ const Courses = () => {
         {/* Mobile Netflix-like Layout */}
         <div className="block lg:hidden">
           {/* Header Section - Netflix Style */}
-          <div className="px-4 pt-4 pb-6">
-            <div className="flex items-center justify-between mb-4">
+          <div className="px-4 pt-2 pb-2">
+            <div className="flex items-center justify-between mb-3">
               <h1 className="text-2xl font-bold text-foreground">
                 For {displayName}
               </h1>
@@ -266,17 +266,17 @@ const Courses = () => {
             </div>
 
             {/* Category Pills - Netflix Style */}
-            <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
               {[
                 "Courses",
                 "Weekly Meetings",
-                "Categories ⌄"
+                "Categories"
               ].map((item, index) => (
                 <Button
                   key={item}
                   variant={index === (activeTab === 'courses' ? 0 : 1) ? "default" : "outline"}
                   size="sm"
-                  className={`flex-shrink-0 rounded-full px-4 py-2 text-sm ${
+                  className={`flex-shrink-0 rounded-full px-4 py-2 text-sm whitespace-nowrap ${
                     index === (activeTab === 'courses' ? 0 : 1)
                       ? 'bg-white text-black' 
                       : 'bg-black/80 text-white border-white/20'
@@ -356,7 +356,7 @@ const Courses = () => {
           <TabsContent value="courses" className="mt-6">
             {/* Featured Course - Netflix Style Hero */}
             {filteredCourses.length > 0 && (
-              <div className="relative mb-8 mx-4 sm:mx-6 lg:mx-8">
+              <div className="relative mb-6 mx-4 sm:mx-6 lg:mx-8 mt-2 lg:mt-6">
                 <div 
                   className="relative aspect-[16/9] sm:aspect-[21/9] lg:aspect-[2.4/1] rounded-lg overflow-hidden bg-gradient-to-r from-primary/20 to-accent/20"
                   style={{
