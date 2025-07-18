@@ -97,12 +97,7 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
   }
 
   const getPlatformColor = (type: string) => {
-    switch (type) {
-      case 'youtube': return 'bg-red-500'
-      case 'vimeo': return 'bg-blue-500'
-      case 'upload': return 'bg-green-500'
-      default: return 'bg-gray-500'
-    }
+    return '#2eb2ff'
   }
 
   const fetchVideos = async () => {
@@ -229,7 +224,7 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent p-6">
                   <div className="flex items-center gap-3 mb-2">
                     <h2 className="text-2xl font-bold text-foreground">{selectedVideo.title}</h2>
-                    <Badge className={`${getPlatformColor(selectedVideo.video_type)} text-white`}>
+                    <Badge className="text-white" style={{ backgroundColor: getPlatformColor(selectedVideo.video_type) }}>
                       {getPlatformName(selectedVideo.video_type)}
                     </Badge>
                     {selectedVideo.duration_seconds && (
@@ -283,7 +278,8 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
                         <div className="flex items-center gap-2 mt-2">
                           <Badge 
                             variant="secondary" 
-                            className={`text-xs ${getPlatformColor(video.video_type)} text-white`}
+                            className="text-xs text-white"
+                            style={{ backgroundColor: getPlatformColor(video.video_type) }}
                           >
                             {getPlatformName(video.video_type)}
                           </Badge>
@@ -293,7 +289,7 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
                             </span>
                           )}
                           {isWatched && (
-                            <Badge variant="outline" className="text-xs bg-primary/20 border-primary text-primary">
+                            <Badge variant="outline" className="text-xs border-primary" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
                               Watched
                             </Badge>
                           )}

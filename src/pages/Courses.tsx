@@ -308,7 +308,7 @@ const Courses = () => {
                                   course.level === 'Beginner' ? 'bg-secondary text-secondary-foreground' : 
                                   course.level === 'Advanced' ? 'text-white' : 'bg-accent text-accent-foreground'
                                 }`}
-                                style={course.level === 'Advanced' ? { backgroundColor: '#ffb500' } : {}}
+                                style={course.level === 'Advanced' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
                               >
                                 {course.level}
                               </Badge>
@@ -330,8 +330,8 @@ const Courses = () => {
                             <div className="flex gap-2">
                               <Button 
                                 size="sm" 
-                                className="text-white hover:opacity-90 text-xs px-3 py-1"
-                                style={{ backgroundColor: '#ffb500' }}
+                                className="hover:opacity-90 text-xs px-3 py-1"
+                                style={{ backgroundColor: '#ffb500', color: '#290a52' }}
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleOpenCourseDetail(course)
@@ -373,7 +373,7 @@ const Courses = () => {
                               course.level === 'Beginner' ? 'bg-secondary text-secondary-foreground' : 
                               course.level === 'Advanced' ? 'text-white' : 'bg-accent text-accent-foreground'
                             }`}
-                            style={course.level === 'Advanced' ? { backgroundColor: '#ffb500' } : {}}
+                            style={course.level === 'Advanced' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
                           >
                             {course.level}
                           </Badge>
