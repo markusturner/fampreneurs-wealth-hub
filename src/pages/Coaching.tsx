@@ -12,6 +12,7 @@ import { format, isSameDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterva
 import { cn } from '@/lib/utils'
 import { supabase } from '@/integrations/supabase/client'
 import { ScheduleSessionDialog } from '@/components/coaching/schedule-session-dialog'
+import { AttendanceTracker } from '@/components/coaching/attendance-tracker'
 
 interface GroupSession {
   id: string
@@ -810,14 +811,25 @@ const Coaching = () => {
                 </div>
               )}
 
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  onClick={() => window.open(selectedSessionDialog.zoomMeetingUrl, '_blank')} 
-                  className="flex-1"
-                >
-                  <Video className="h-4 w-4 mr-2" />
-                  Join Session
-                </Button>
+              <div className="grid lg:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Button 
+                    onClick={() => window.open(selectedSessionDialog.zoomMeetingUrl, '_blank')} 
+                    className="w-full"
+                  >
+                    <Video className="h-4 w-4 mr-2" />
+                    Join Session
+                  </Button>
+                </div>
+                
+                <div>
+                  <AttendanceTracker
+                    sessionId={selectedSessionDialog.id}
+                    sessionType={selectedSessionDialog.type === "Group Coaching" ? "group" : "individual"}
+                    sessionTitle={selectedSessionDialog.title}
+                    onAttendanceUpdate={fetchSessions}
+                  />
+                </div>
               </div>
             </div>
           )}

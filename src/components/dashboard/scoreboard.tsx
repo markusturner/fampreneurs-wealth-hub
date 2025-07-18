@@ -32,48 +32,56 @@ export function Scoreboard() {
 
   const fetchMemberScores = async () => {
     try {
-      // Get all profiles first
-      const { data: profiles, error: profilesError } = await supabase
+      // Get all profiles with user details  
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('user_id, display_name, first_name, avatar_url')
+        .order('display_name', { ascending: true })
 
       if (profilesError) throw profilesError
 
-      // Calculate scores for each member
+      // Calculate scores and attendance for each member
       const membersWithScores = await Promise.all(
-        (profiles || []).map(async (profile) => {
-          // Get course completion data
+        (profilesData || []).map(async (profile) => {
+          // Get course enrollments
           const { data: enrollments } = await supabase
             .from('course_enrollments')
-            .select('progress')
+            .select('progress, completed_at')
             .eq('user_id', profile.user_id)
 
-          const courseProgress = enrollments?.length 
-            ? Math.round(enrollments.reduce((sum, e) => sum + e.progress, 0) / enrollments.length)
-            : 0
+          // Get attendance data
+          const { data: attendance } = await supabase
+            .from('session_attendance')
+            .select('session_type, attended')
+            .eq('user_id', profile.user_id)
+            .eq('attended', true)
 
-          // Get group calls attended (mock data for now)
-          const groupCallsAttended = Math.floor(Math.random() * 15)
+          const courseProgress = enrollments?.length ? 
+            Math.round(enrollments.reduce((acc, e) => acc + e.progress, 0) / enrollments.length) : 0
           
-          // Get individual calls attended (mock data for now)
-          const individualCallsAttended = Math.floor(Math.random() * 8)
+          const completedCourses = enrollments?.filter(e => e.completed_at)?.length || 0
+          
+          const groupCallsAttended = attendance?.filter(a => a.session_type === 'group')?.length || 0
+          const individualCallsAttended = attendance?.filter(a => a.session_type === 'individual')?.length || 0
+          
+          // Calculate total score using the database function logic
+          const courseScore = Math.round(courseProgress * 0.4)
+          const attendanceScore = Math.min((groupCallsAttended * 5) + (individualCallsAttended * 10), 60)
+          const totalScore = courseScore + attendanceScore
 
-          // Calculate badges
+          // Generate badges based on performance
           const badges = []
-          if (courseProgress >= 100) badges.push('Course Completed')
-          if (courseProgress >= 50) badges.push('Halfway There')
-          if (groupCallsAttended >= 10) badges.push('Group Participant')
-          if (individualCallsAttended >= 5) badges.push('1-on-1 Champion')
-          if (courseProgress >= 75 && groupCallsAttended >= 5) badges.push('Engaged Learner')
-
-          // Calculate total score
-          const totalScore = courseProgress + (groupCallsAttended * 5) + (individualCallsAttended * 10)
+          if (completedCourses > 0) badges.push('Course Completer')
+          if (groupCallsAttended >= 5) badges.push('Group Participant')
+          if (individualCallsAttended >= 3) badges.push('1-on-1 Expert')
+          if (totalScore >= 80) badges.push('Top Performer')
+          if (courseProgress >= 90) badges.push('Knowledge Master')
 
           return {
-            id: profile.id,
+            id: profile.user_id,
             user_id: profile.user_id,
             first_name: profile.first_name,
-            last_name: profile.last_name,
+            last_name: null,
             display_name: profile.display_name,
             avatar_url: profile.avatar_url,
             course_progress: courseProgress,
@@ -85,9 +93,9 @@ export function Scoreboard() {
         })
       )
 
-      // Sort by total score
-      membersWithScores.sort((a, b) => b.total_score - a.total_score)
-      setMembers(membersWithScores)
+      // Sort by total score descending
+      const sortedMembers = membersWithScores.sort((a, b) => b.total_score - a.total_score)
+      setMembers(sortedMembers)
     } catch (error) {
       console.error('Error fetching member scores:', error)
     } finally {
@@ -152,6 +160,34 @@ export function Scoreboard() {
             Track your progress and earn badges through course completion and call participation
           </CardDescription>
         </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold text-primary">
+                {members.reduce((acc, m) => acc + m.group_calls_attended, 0)}
+              </div>
+              <div className="text-sm text-muted-foreground">Total Group Calls</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-secondary">
+                {members.reduce((acc, m) => acc + m.individual_calls_attended, 0)}
+              </div>
+              <div className="text-sm text-muted-foreground">Total 1-on-1 Calls</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold" style={{ color: '#ffb500' }}>
+                {members.length > 0 ? Math.round(members.reduce((acc, m) => acc + m.course_progress, 0) / members.length) : 0}%
+              </div>
+              <div className="text-sm text-muted-foreground">Avg Course Progress</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-accent">
+                {members.reduce((acc, m) => acc + m.badges.length, 0)}
+              </div>
+              <div className="text-sm text-muted-foreground">Total Badges Earned</div>
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
       {/* Badge Progress Overview */}

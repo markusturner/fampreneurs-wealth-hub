@@ -1669,6 +1669,45 @@ export type Database = {
         }
         Relationships: []
       }
+      session_attendance: {
+        Row: {
+          attendance_duration_minutes: number | null
+          attended: boolean
+          created_at: string
+          id: string
+          joined_at: string | null
+          left_at: string | null
+          session_id: string
+          session_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attendance_duration_minutes?: number | null
+          attended?: boolean
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          session_id: string
+          session_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attendance_duration_minutes?: number | null
+          attended?: boolean
+          created_at?: string
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          session_id?: string
+          session_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       session_enrollments: {
         Row: {
           enrolled_at: string
@@ -1905,6 +1944,10 @@ export type Database = {
           assigner_user_id: string
         }
         Returns: undefined
+      }
+      calculate_member_score: {
+        Args: { target_user_id: string }
+        Returns: number
       }
       can_join_group: {
         Args: { group_id: string; user_id: string }

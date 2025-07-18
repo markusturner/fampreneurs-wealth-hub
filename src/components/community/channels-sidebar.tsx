@@ -373,8 +373,11 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
                     id="channel-private"
                     checked={isPrivateChannel}
                     onCheckedChange={setIsPrivateChannel}
+                    style={isPrivateChannel ? { backgroundColor: '#ffb500' } : {}}
                   />
-                  <Label htmlFor="channel-private">Private Channel</Label>
+                  <Label htmlFor="channel-private" style={isPrivateChannel ? { color: '#ffb500' } : {}}>
+                    Private Channel
+                  </Label>
                 </div>
                 <div className="flex gap-2">
                   <Button

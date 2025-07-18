@@ -8,6 +8,7 @@ import { Megaphone } from 'lucide-react'
 import { EnhancedPostCard } from './enhanced-post-card'
 import { EnhancedCreatePost } from './enhanced-create-post'
 import { ChannelsSidebar } from './channels-sidebar'
+import { CreateAnnouncement } from './create-announcement'
 
 interface Post {
   id: string
@@ -177,9 +178,12 @@ export function CommunityFeed() {
           <div className="sticky top-6">
             <Card>
               <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <Megaphone className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">Announcements</h3>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Megaphone className="h-5 w-5 text-primary" />
+                    <h3 className="font-semibold">Announcements</h3>
+                  </div>
+                  <CreateAnnouncement onAnnouncementCreated={fetchAnnouncements} />
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
