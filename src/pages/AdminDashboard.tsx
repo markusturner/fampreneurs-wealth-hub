@@ -60,6 +60,7 @@ import { AddCoachingSessionDialog } from '@/components/admin/add-coaching-sessio
 import { EditCoachingSessionDialog } from '@/components/admin/edit-coaching-session-dialog'
 import { UserSessionQuotaDialog } from '@/components/admin/user-session-quota-dialog'
 import { AssignCoachDialog } from '@/components/admin/assign-coach-dialog'
+import { ZapierIntegration } from '@/components/admin/zapier-integration'
 import { 
   DndContext, 
   DragEndEvent, 
@@ -1000,11 +1001,19 @@ export default function AdminDashboard() {
                         <div>
                           <Label className="text-sm font-medium">Assigned Coach</Label>
                           <Select 
-                            value={user.assigned_coach?.id || 'no-coach'}
+                            value={user.assigned_coach?.id || ''}
                             onValueChange={async (value) => {
-                              if (value === 'no-coach') return
+                              if (!value) return
                               
                               try {
+                                // First, deactivate any existing assignments
+                                await supabase
+                                  .from('coach_assignments')
+                                  .update({ status: 'inactive' })
+                                  .eq('user_id', user.user_id)
+                                  .eq('status', 'active')
+
+                                // Then create new assignment
                                 const { error } = await supabase
                                   .from('coach_assignments')
                                   .insert({
@@ -1035,7 +1044,7 @@ export default function AdminDashboard() {
                               <SelectValue placeholder="Select coach" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="no-coach">No Coach</SelectItem>
+                              <SelectItem value="">No Coach</SelectItem>
                               {coaches.map((coach) => (
                                 <SelectItem key={coach.id} value={coach.id}>
                                   {coach.full_name}

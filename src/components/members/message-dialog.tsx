@@ -137,7 +137,11 @@ export function MessageDialog({ open, onOpenChange, recipient, onMessageSent, em
           filter: `or(and(sender_id.eq.${user.id},recipient_id.eq.${recipient.user_id}),and(sender_id.eq.${recipient.user_id},recipient_id.eq.${user.id}))`
         },
         (payload) => {
-          setMessages(prev => [...prev, payload.new as Message])
+          const newMessage = payload.new as Message
+          // Only add to local state if it's not from the current user (to prevent duplicates)
+          if (newMessage.sender_id !== user?.id) {
+            setMessages(prev => [...prev, newMessage])
+          }
         }
       )
       .subscribe()

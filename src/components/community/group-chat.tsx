@@ -164,10 +164,12 @@ export function GroupChat({ groupId }: GroupChatProps) {
         },
         async (payload) => {
           const newMessage = payload.new as Message
-          // Fetch the message with profile data
-          const messageWithProfile = await fetchMessageWithProfile(newMessage.id)
-          if (messageWithProfile) {
-            setMessages(prev => [...prev, messageWithProfile])
+          // Only add to local state if it's not from the current user (to prevent duplicates)
+          if (newMessage.user_id !== user?.id) {
+            const messageWithProfile = await fetchMessageWithProfile(newMessage.id)
+            if (messageWithProfile) {
+              setMessages(prev => [...prev, messageWithProfile])
+            }
           }
         }
       )

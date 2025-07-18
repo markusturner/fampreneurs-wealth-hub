@@ -281,7 +281,7 @@ const Coaching = () => {
     
     sessions.forEach(session => {
       if (session.is_recurring && session.recurrence_pattern) {
-        // For now, create instances for the next 12 weeks (can be improved)
+        // Generate instances for recurring sessions
         const baseDate = new Date(session.session_date)
         const endDate = session.recurrence_end_date ? new Date(session.recurrence_end_date) : new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days from now
         
@@ -289,22 +289,29 @@ const Coaching = () => {
         let instanceCount = 0
         
         while (currentDate <= endDate && instanceCount < 52) { // Max 52 instances
+          // Add the recurring instance
           expanded.push({
             ...session,
             id: `${session.id}_${instanceCount}`,
             session_date: currentDate.toISOString().split('T')[0],
-            title: `${session.title}${instanceCount > 0 ? ` (Week ${instanceCount + 1})` : ''}`
+            title: instanceCount === 0 ? session.title : `${session.title} (Instance ${instanceCount + 1})`
           })
           
-          // Add weekly recurrence (can be extended for other patterns)
+          // Calculate next occurrence based on recurrence pattern
           if (session.recurrence_pattern === 'weekly') {
             currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000)
+          } else if (session.recurrence_pattern === 'daily') {
+            currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000)
+          } else if (session.recurrence_pattern === 'monthly') {
+            currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate())
           } else {
-            break // Only weekly supported for now
+            // Default to weekly if pattern is not recognized
+            currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000)
           }
           instanceCount++
         }
       } else {
+        // Non-recurring session, add as-is
         expanded.push(session)
       }
     })
