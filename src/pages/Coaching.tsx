@@ -62,9 +62,8 @@ interface IndividualSession {
 }
 
 const Coaching = () => {
+  // All hooks must be declared first, unconditionally
   const { user, profile, loading } = useAuth()
-  
-  // All hooks must be at the top - before any early returns
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
   const [viewType, setViewType] = useState<'month' | 'list'>('month')
@@ -76,21 +75,6 @@ const Coaching = () => {
   const [loadingCoaches, setLoadingCoaches] = useState(true)
 
   const displayName = profile?.display_name || profile?.first_name || 'Member'
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Loading coaching calendar...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null
-  }
 
   // Fetch sessions from database
   const fetchSessions = async () => {
@@ -148,10 +132,29 @@ const Coaching = () => {
     }
   }
 
+  // Single useEffect for all data fetching
   useEffect(() => {
-    fetchSessions()
-    fetchCoaches()
-  }, [])
+    if (user) {
+      fetchSessions()
+      fetchCoaches()
+    }
+  }, [user])
+
+  // Early returns after all hooks
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading coaching calendar...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
 
   // Convert database sessions to format compatible with existing UI
   const upcomingCalls = sessions.map(session => {
@@ -189,7 +192,6 @@ const Coaching = () => {
       recurrencePattern: session.recurrence_pattern
     }
   })
-
 
   // Get sessions for specific date
   const getSessionsForDate = (date: Date) => {
@@ -407,16 +409,16 @@ const Coaching = () => {
             <h2 className="text-xl font-semibold">Available Coaches</h2>
           </div>
           {loadingCoaches ? (
-            <div className="col-span-full flex items-center justify-center py-8">
+            <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
               <span className="ml-2 text-muted-foreground">Loading coaches...</span>
             </div>
           ) : availableCoaches.length === 0 ? (
-            <div className="col-span-full text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 text-muted-foreground">
               No coaches available. Add coaches through the admin dashboard.
             </div>
           ) : (
-            <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 col-span-full">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
               {availableCoaches.map((coach) => (
                 <Card key={coach.id} className="shadow-soft hover:shadow-medium transition-smooth">
                   <CardHeader className="p-4 sm:p-6">
@@ -497,7 +499,10 @@ const Coaching = () => {
       <ScheduleSessionDialog
         open={scheduleDialogOpen}
         onOpenChange={setScheduleDialogOpen}
-        onSessionCreated={fetchSessions}
+        onSessionCreated={() => {
+          fetchSessions()
+          setScheduleDialogOpen(false)
+        }}
       />
     </div>
   )
