@@ -1,16 +1,31 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
-import { useToast } from '@/hooks/use-toast'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { NavHeader } from '@/components/dashboard/nav-header'
-import { TrendingUp, TrendingDown, DollarSign, Plus, Edit, Trash2, PieChart, Wallet, BarChart3 } from 'lucide-react'
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  DollarSign, 
+  PieChart, 
+  Wallet, 
+  BarChart3,
+  Building2,
+  Shield,
+  Target,
+  AlertTriangle,
+  BrainCircuit,
+  CreditCard,
+  Home,
+  Briefcase,
+  Bitcoin,
+  FileText,
+  Users,
+  Lock
+} from 'lucide-react'
+import { InvestmentChart } from '@/components/dashboard/investment-chart'
+import { AssetAllocation } from '@/components/dashboard/asset-allocation'
 
 interface Investment {
   id: string
@@ -26,42 +41,16 @@ interface Investment {
   updated_at: string
 }
 
-const platformOptions = [
-  'Fidelity',
-  'Charles Schwab',
-  'Vanguard',
-  'E*TRADE',
-  'TD Ameritrade',
-  'Interactive Brokers',
-  'Robinhood',
-  'Merrill Lynch',
-  'Morgan Stanley',
-  'UBS',
-  'Goldman Sachs',
-  'JPMorgan Chase',
-  'Wells Fargo',
-  'Bank of America',
-  'Ally Invest',
-  'Webull',
-  'Other'
-]
+interface AssetAllocationData {
+  name: string
+  value: number
+  color: string
+}
 
-export default function Investments() {
+export default function FamilyOffice() {
   const { user, profile } = useAuth()
-  const { toast } = useToast()
   const [investments, setInvestments] = useState<Investment[]>([])
   const [loading, setLoading] = useState(true)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null)
-  const [submitting, setSubmitting] = useState(false)
-  
-  const [formData, setFormData] = useState({
-    platformId: '',
-    totalValue: '',
-    cashBalance: '',
-    dayChange: '',
-    dayChangePercent: ''
-  })
 
   useEffect(() => {
     fetchInvestments()
@@ -84,133 +73,8 @@ export default function Investments() {
       setInvestments(data || [])
     } catch (error) {
       console.error('Error fetching investments:', error)
-      toast({
-        title: "Error",
-        description: "Failed to load investments",
-        variant: "destructive"
-      })
     } finally {
       setLoading(false)
-    }
-  }
-
-  const resetForm = () => {
-    setFormData({
-      platformId: '',
-      totalValue: '',
-      cashBalance: '',
-      dayChange: '',
-      dayChangePercent: ''
-    })
-    setEditingInvestment(null)
-  }
-
-  const openEditDialog = (investment: Investment) => {
-    setEditingInvestment(investment)
-    setFormData({
-      platformId: investment.platform_id,
-      totalValue: investment.total_value.toString(),
-      cashBalance: investment.cash_balance?.toString() || '',
-      dayChange: investment.day_change?.toString() || '',
-      dayChangePercent: investment.day_change_percent?.toString() || ''
-    })
-    setDialogOpen(true)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!formData.platformId || !formData.totalValue) {
-      toast({
-        title: "Missing Information",
-        description: "Please provide platform and total value.",
-        variant: "destructive"
-      })
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      const investmentData = {
-        platform_id: formData.platformId,
-        total_value: parseFloat(formData.totalValue),
-        cash_balance: formData.cashBalance ? parseFloat(formData.cashBalance) : null,
-        day_change: formData.dayChange ? parseFloat(formData.dayChange) : null,
-        day_change_percent: formData.dayChangePercent ? parseFloat(formData.dayChangePercent) : null,
-        last_updated: new Date().toISOString()
-      }
-
-      if (editingInvestment) {
-        // Update existing investment
-        const { error } = await supabase
-          .from('investment_portfolios')
-          .update(investmentData)
-          .eq('id', editingInvestment.id)
-
-        if (error) throw error
-
-        toast({
-          title: "Investment Updated",
-          description: `${formData.platformId} portfolio has been updated successfully.`
-        })
-      } else {
-        // Add new investment
-        const { error } = await supabase
-          .from('investment_portfolios')
-          .insert({
-            ...investmentData,
-            user_id: user?.id
-          })
-
-        if (error) throw error
-
-        toast({
-          title: "Investment Added",
-          description: `${formData.platformId} portfolio has been added successfully.`
-        })
-      }
-
-      resetForm()
-      setDialogOpen(false)
-      fetchInvestments()
-    } catch (error) {
-      console.error('Error saving investment:', error)
-      toast({
-        title: "Error",
-        description: "Failed to save investment. Please try again.",
-        variant: "destructive"
-      })
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const deleteInvestment = async (investment: Investment) => {
-    if (!confirm(`Are you sure you want to remove the ${investment.platform_id} portfolio?`)) {
-      return
-    }
-
-    try {
-      const { error } = await supabase
-        .from('investment_portfolios')
-        .delete()
-        .eq('id', investment.id)
-
-      if (error) throw error
-
-      toast({
-        title: "Investment Removed",
-        description: `${investment.platform_id} portfolio has been removed.`
-      })
-
-      fetchInvestments()
-    } catch (error) {
-      console.error('Error deleting investment:', error)
-      toast({
-        title: "Error",
-        description: "Failed to remove investment. Please try again.",
-        variant: "destructive"
-      })
     }
   }
 
@@ -239,6 +103,37 @@ export default function Investments() {
     return investments.reduce((sum, inv) => sum + (inv.cash_balance || 0), 0)
   }
 
+  // Mock data for demonstration
+  const mockNetWorth = 2500000
+  const mockMonthlyIncome = 45000
+  const mockMonthlyExpenses = 28000
+  const mockCashFlow = mockMonthlyIncome - mockMonthlyExpenses
+
+  const assetAllocationData: AssetAllocationData[] = [
+    { name: 'Stocks', value: 45, color: '#3b82f6' },
+    { name: 'Bonds', value: 25, color: '#10b981' },
+    { name: 'Real Estate', value: 20, color: '#f59e0b' },
+    { name: 'Cash', value: 10, color: '#8b5cf6' }
+  ]
+
+  const aiInsights = [
+    {
+      type: 'opportunity',
+      message: 'Consider rebalancing: Your tech stock allocation is 8% above target',
+      priority: 'medium'
+    },
+    {
+      type: 'alert',
+      message: 'Emergency fund is below recommended 6-month expenses',
+      priority: 'high'
+    },
+    {
+      type: 'tip',
+      message: 'Tax-loss harvesting opportunity available in your taxable account',
+      priority: 'low'
+    }
+  ]
+
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
@@ -246,265 +141,628 @@ export default function Investments() {
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Investment Portfolio</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Digital Family Office</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Track and manage your investment accounts across platforms
+              Complete financial ecosystem management and wealth tracking
             </p>
           </div>
-          
-          <Dialog open={dialogOpen} onOpenChange={(open) => {
-            setDialogOpen(open)
-            if (!open) resetForm()
-          }}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 w-full sm:w-auto">
-                <Plus className="h-4 w-4" />
-                <span className="hidden sm:inline">Add Investment Account</span>
-                <span className="sm:hidden">Add Account</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto mx-3 sm:mx-0 max-w-[calc(100vw-24px)]">
-              <DialogHeader>
-                <DialogTitle className="text-lg sm:text-xl">
-                  {editingInvestment ? 'Edit Investment Account' : 'Add Investment Account'}
-                </DialogTitle>
-                <DialogDescription className="text-sm">
-                  {editingInvestment ? 'Update investment account information' : 'Add a new investment account to your portfolio'}
-                </DialogDescription>
-              </DialogHeader>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="platformId">Platform/Broker *</Label>
-                  <Select value={formData.platformId} onValueChange={(value) => setFormData(prev => ({ ...prev, platformId: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select platform" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {platformOptions.map((platform) => (
-                        <SelectItem key={platform} value={platform}>
-                          {platform}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label htmlFor="totalValue">Total Portfolio Value ($) *</Label>
-                  <Input
-                    id="totalValue"
-                    type="number"
-                    step="0.01"
-                    value={formData.totalValue}
-                    onChange={(e) => setFormData(prev => ({ ...prev, totalValue: e.target.value }))}
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="cashBalance">Cash Balance ($)</Label>
-                  <Input
-                    id="cashBalance"
-                    type="number"
-                    step="0.01"
-                    value={formData.cashBalance}
-                    onChange={(e) => setFormData(prev => ({ ...prev, cashBalance: e.target.value }))}
-                    placeholder="0.00"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="dayChange">Today's Change ($)</Label>
-                    <Input
-                      id="dayChange"
-                      type="number"
-                      step="0.01"
-                      value={formData.dayChange}
-                      onChange={(e) => setFormData(prev => ({ ...prev, dayChange: e.target.value }))}
-                      placeholder="0.00"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="dayChangePercent">Today's Change (%)</Label>
-                    <Input
-                      id="dayChangePercent"
-                      type="number"
-                      step="0.01"
-                      value={formData.dayChangePercent}
-                      onChange={(e) => setFormData(prev => ({ ...prev, dayChangePercent: e.target.value }))}
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={submitting}>
-                    {submitting ? 'Saving...' : editingInvestment ? 'Update Account' : 'Add Account'}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
         </div>
 
-        {/* Portfolio Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Wallet className="h-4 w-4" />
-                Total Portfolio
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(getTotalPortfolioValue())}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                Cash Balance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(getTotalCashBalance())}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                {getTotalDayChange() >= 0 ? (
-                  <TrendingUp className="h-4 w-4 text-green-600" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 text-red-600" />
-                )}
-                Today's Change
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatCurrency(getTotalDayChange())}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" />
-                Accounts
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{investments.length}</div>
-            </CardContent>
-          </Card>
-        </div>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="assets">Assets</TabsTrigger>
+            <TabsTrigger value="budget">Budget</TabsTrigger>
+            <TabsTrigger value="trusts">Trusts</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
+            <TabsTrigger value="access">Access</TabsTrigger>
+          </TabsList>
 
-        {/* Investment Accounts */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-5 w-5" />
-              Investment Accounts
-            </CardTitle>
-            <CardDescription>
-              Your connected investment platforms and account balances
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="animate-pulse flex items-center space-x-4 p-4 border rounded-lg">
-                    <div className="w-12 h-12 bg-muted rounded-lg"></div>
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-muted rounded w-1/4"></div>
-                      <div className="h-3 bg-muted rounded w-1/3"></div>
-                    </div>
+          <TabsContent value="overview" className="space-y-6">
+            {/* Executive Summary */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Wallet className="h-4 w-4" />
+                    Net Worth
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(mockNetWorth)}</div>
+                  <div className="text-sm text-green-600 flex items-center gap-1">
+                    <TrendingUp className="h-3 w-3" />
+                    +2.3% this month
                   </div>
-                ))}
-              </div>
-            ) : investments.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <PieChart className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>No investment accounts found</p>
-                <p className="text-sm">Add your first investment account to get started</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {investments.map((investment) => (
-                  <div key={investment.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <DollarSign className="h-6 w-6 text-primary" />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Monthly Cash Flow
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-green-600">{formatCurrency(mockCashFlow)}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Income: {formatCurrency(mockMonthlyIncome)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Expenses: {formatCurrency(mockMonthlyExpenses)}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <PieChart className="h-4 w-4" />
+                    Portfolio Value
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(getTotalPortfolioValue())}</div>
+                  <div className={`text-sm flex items-center gap-1 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {getTotalDayChange() >= 0 ? (
+                      <TrendingUp className="h-3 w-3" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3" />
+                    )}
+                    {formatCurrency(getTotalDayChange())} today
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Active Accounts
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{investments.length + 8}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {investments.length} Investment • 8 Other
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* AI Insights */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BrainCircuit className="h-5 w-5" />
+                  AI Financial Insights
+                </CardTitle>
+                <CardDescription>
+                  Personalized recommendations and alerts based on your financial data
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {aiInsights.map((insight, index) => (
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
+                      <div className={`p-1 rounded-full ${
+                        insight.priority === 'high' ? 'bg-red-100 text-red-600' :
+                        insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                        'bg-blue-100 text-blue-600'
+                      }`}>
+                        {insight.priority === 'high' ? (
+                          <AlertTriangle className="h-4 w-4" />
+                        ) : insight.type === 'opportunity' ? (
+                          <Target className="h-4 w-4" />
+                        ) : (
+                          <BrainCircuit className="h-4 w-4" />
+                        )}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-base">{investment.platform_id}</h3>
-                          <Badge variant="outline" className="text-xs">
-                            Portfolio
-                          </Badge>
+                      <div className="flex-1">
+                        <p className="text-sm">{insight.message}</p>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          insight.priority === 'high' ? 'bg-red-100 text-red-600' :
+                          insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                          'bg-blue-100 text-blue-600'
+                        }`}>
+                          {insight.priority} priority
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Portfolio Performance</CardTitle>
+                  <CardDescription>12-month investment growth</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <InvestmentChart />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Asset Allocation</CardTitle>
+                  <CardDescription>Current portfolio distribution</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <AssetAllocation data={assetAllocationData} />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="assets" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Asset Type Cards */}
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    Bank Accounts
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xl font-bold">{formatCurrency(350000)}</div>
+                  <div className="text-xs text-muted-foreground">5 accounts connected</div>
+                </CardContent>
+              </Card>
+
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Brokerage
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xl font-bold">{formatCurrency(getTotalPortfolioValue())}</div>
+                  <div className="text-xs text-muted-foreground">{investments.length} accounts</div>
+                </CardContent>
+              </Card>
+
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Bitcoin className="h-4 w-4" />
+                    Cryptocurrency
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xl font-bold">{formatCurrency(125000)}</div>
+                  <div className="text-xs text-muted-foreground">3 wallets</div>
+                </CardContent>
+              </Card>
+
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Home className="h-4 w-4" />
+                    Real Estate
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xl font-bold">{formatCurrency(850000)}</div>
+                  <div className="text-xs text-muted-foreground">2 properties</div>
+                </CardContent>
+              </Card>
+
+              <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Briefcase className="h-4 w-4" />
+                    Private Business
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-xl font-bold">{formatCurrency(450000)}</div>
+                  <div className="text-xs text-muted-foreground">2 businesses</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Detailed Asset View */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Connected Accounts</CardTitle>
+                <CardDescription>All linked financial accounts and their current balances</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {investments.map((investment) => (
+                    <div key={investment.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                          <BarChart3 className="h-5 w-5 text-primary" />
                         </div>
-                        <p className="text-lg font-medium">{formatCurrency(investment.total_value)}</p>
-                        <div className="flex items-center gap-4 mt-1">
-                          {investment.cash_balance && (
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <DollarSign className="h-3 w-3" />
-                              Cash: {formatCurrency(investment.cash_balance)}
-                            </div>
-                          )}
-                          {investment.day_change !== null && (
-                            <div className={`flex items-center gap-1 text-xs ${investment.day_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {investment.day_change >= 0 ? (
-                                <TrendingUp className="h-3 w-3" />
-                              ) : (
-                                <TrendingDown className="h-3 w-3" />
-                              )}
-                              {formatCurrency(investment.day_change)}
-                              {investment.day_change_percent && ` (${formatPercent(investment.day_change_percent)})`}
-                            </div>
-                          )}
+                        <div>
+                          <h3 className="font-medium">{investment.platform_id}</h3>
+                          <p className="text-sm text-muted-foreground">Investment Account</p>
                         </div>
-                        {investment.last_updated && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Last updated: {new Date(investment.last_updated).toLocaleDateString()}
-                          </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium">{formatCurrency(investment.total_value)}</div>
+                        {investment.day_change !== null && (
+                          <div className={`text-sm ${investment.day_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {formatCurrency(investment.day_change)} ({formatPercent(investment.day_change_percent || 0)})
+                          </div>
                         )}
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => openEditDialog(investment)}
-                        className="gap-1"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteInvestment(investment)}
-                        className="gap-1 text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                  ))}
+                  
+                  {/* Mock additional accounts */}
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <CreditCard className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Chase Business Checking</h3>
+                        <p className="text-sm text-muted-foreground">Bank Account</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">{formatCurrency(125000)}</div>
+                      <div className="text-sm text-muted-foreground">Available balance</div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <Bitcoin className="h-5 w-5 text-orange-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium">Coinbase Pro</h3>
+                        <p className="text-sm text-muted-foreground">Crypto Exchange</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">{formatCurrency(85000)}</div>
+                      <div className="text-sm text-green-600">+$2,150 (+2.6%)</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="budget" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Monthly Budget Overview</CardTitle>
+                  <CardDescription>Income vs expenses breakdown</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Total Income</span>
+                      <span className="text-lg font-bold text-green-600">{formatCurrency(mockMonthlyIncome)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Total Expenses</span>
+                      <span className="text-lg font-bold text-red-600">{formatCurrency(mockMonthlyExpenses)}</span>
+                    </div>
+                    <div className="pt-3 border-t">
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">Net Cash Flow</span>
+                        <span className="text-xl font-bold text-green-600">{formatCurrency(mockCashFlow)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Financial Goals</CardTitle>
+                  <CardDescription>Progress toward key objectives</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Emergency Fund</span>
+                        <span>75%</span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '75%' }}></div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">$150K of $200K target</p>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Retirement Savings</span>
+                        <span>92%</span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '92%' }}></div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">On track for target</p>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Children's Education</span>
+                        <span>45%</span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div className="bg-blue-500 h-2 rounded-full" style={{ width: '45%' }}></div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">$225K of $500K target</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Budget Categories */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Expense Categories</CardTitle>
+                <CardDescription>Monthly spending breakdown by category</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    { category: 'Housing', amount: 8500, budget: 9000, color: 'bg-blue-500' },
+                    { category: 'Transportation', amount: 2200, budget: 2500, color: 'bg-green-500' },
+                    { category: 'Food & Dining', amount: 1800, budget: 2000, color: 'bg-yellow-500' },
+                    { category: 'Healthcare', amount: 1200, budget: 1500, color: 'bg-red-500' },
+                    { category: 'Education', amount: 3000, budget: 3000, color: 'bg-purple-500' },
+                    { category: 'Entertainment', amount: 900, budget: 1000, color: 'bg-pink-500' }
+                  ].map((item) => (
+                    <div key={item.category} className="p-4 border rounded-lg">
+                      <div className="flex justify-between items-center mb-2">
+                        <h4 className="font-medium text-sm">{item.category}</h4>
+                        <span className="text-xs text-muted-foreground">
+                          {Math.round((item.amount / item.budget) * 100)}%
+                        </span>
+                      </div>
+                      <div className="text-lg font-bold mb-1">{formatCurrency(item.amount)}</div>
+                      <div className="w-full bg-muted rounded-full h-1.5">
+                        <div 
+                          className={`${item.color} h-1.5 rounded-full`}
+                          style={{ width: `${(item.amount / item.budget) * 100}%` }}
+                        ></div>
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        of {formatCurrency(item.budget)} budgeted
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="trusts" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Trust Structure Overview
+                </CardTitle>
+                <CardDescription>
+                  Family trust entities and their asset allocations
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">Family Revocable Trust</CardTitle>
+                      <CardDescription className="text-sm">Primary family trust</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-lg font-bold">{formatCurrency(1200000)}</div>
+                      <div className="text-sm text-muted-foreground">Assets under management</div>
+                      <div className="mt-2 text-xs">
+                        <div>• Real estate holdings</div>
+                        <div>• Investment portfolios</div>
+                        <div>• Business interests</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">Education Trust</CardTitle>
+                      <CardDescription className="text-sm">Children's education fund</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-lg font-bold">{formatCurrency(350000)}</div>
+                      <div className="text-sm text-muted-foreground">3 beneficiaries</div>
+                      <div className="mt-2 text-xs">
+                        <div>• College tuition funds</div>
+                        <div>• Graduate school provision</div>
+                        <div>• Educational expenses</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">Charitable Trust</CardTitle>
+                      <CardDescription className="text-sm">508(c)(1)(a) entity</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-lg font-bold">{formatCurrency(75000)}</div>
+                      <div className="text-sm text-muted-foreground">Annual giving budget</div>
+                      <div className="mt-2 text-xs">
+                        <div>• Community programs</div>
+                        <div>• Educational initiatives</div>
+                        <div>• Healthcare support</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Trust Performance & Distributions</CardTitle>
+                <CardDescription>Income, expenses, and distribution tracking</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center p-4 border rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">{formatCurrency(45000)}</div>
+                      <div className="text-sm text-muted-foreground">YTD Trust Income</div>
+                    </div>
+                    <div className="text-center p-4 border rounded-lg">
+                      <div className="text-2xl font-bold text-red-600">{formatCurrency(12000)}</div>
+                      <div className="text-sm text-muted-foreground">YTD Trust Expenses</div>
+                    </div>
+                    <div className="text-center p-4 border rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{formatCurrency(28000)}</div>
+                      <div className="text-sm text-muted-foreground">YTD Distributions</div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="documents" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Document Vault
+                </CardTitle>
+                <CardDescription>
+                  Secure storage for legal documents, trust deeds, and financial records
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    { name: 'Family Trust Agreement', type: 'Legal', date: '2024-01-15', size: '2.3 MB' },
+                    { name: 'Property Deed - Main Residence', type: 'Real Estate', date: '2023-06-20', size: '1.8 MB' },
+                    { name: 'Business Partnership Agreement', type: 'Business', date: '2023-11-08', size: '3.1 MB' },
+                    { name: 'Insurance Policy - Life', type: 'Insurance', date: '2024-02-01', size: '2.7 MB' },
+                    { name: 'Tax Returns 2023', type: 'Tax', date: '2024-03-15', size: '4.2 MB' },
+                    { name: 'Investment Account Statements', type: 'Financial', date: '2024-07-01', size: '1.5 MB' }
+                  ].map((doc, index) => (
+                    <div key={index} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <FileText className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm truncate">{doc.name}</h4>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>{doc.type}</span>
+                            <span>•</span>
+                            <span>{doc.date}</span>
+                            <span>•</span>
+                            <span>{doc.size}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="access" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Access Control & Permissions
+                </CardTitle>
+                <CardDescription>
+                  Manage user roles and access permissions for family members and advisors
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[
+                    { name: 'John Smith', role: 'Primary Account Holder', access: 'Full Access', status: 'Active' },
+                    { name: 'Jane Smith', role: 'Spouse', access: 'Full Access', status: 'Active' },
+                    { name: 'Michael Johnson', role: 'Financial Advisor', access: 'Investment Data Only', status: 'Active' },
+                    { name: 'Sarah Davis', role: 'Accountant', access: 'Tax & Financial Records', status: 'Active' },
+                    { name: 'Robert Wilson', role: 'Attorney', access: 'Legal Documents Only', status: 'Active' },
+                    { name: 'Emma Smith', role: 'Adult Child', access: 'View Only', status: 'Pending' }
+                  ].map((user, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                          <Users className="h-5 w-5 text-gray-600" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{user.name}</h4>
+                          <p className="text-sm text-muted-foreground">{user.role}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium text-sm">{user.access}</div>
+                        <div className={`text-xs px-2 py-1 rounded-full ${
+                          user.status === 'Active' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'
+                        }`}>
+                          {user.status}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lock className="h-5 w-5" />
+                  Security Settings
+                </CardTitle>
+                <CardDescription>
+                  Two-factor authentication and security audit logs
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Two-Factor Authentication</h4>
+                      <p className="text-sm text-muted-foreground">Enhanced security for all account access</p>
+                    </div>
+                    <div className="text-green-600 font-medium">Enabled</div>
+                  </div>
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Session Monitoring</h4>
+                      <p className="text-sm text-muted-foreground">Track all login sessions and activities</p>
+                    </div>
+                    <div className="text-green-600 font-medium">Active</div>
+                  </div>
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Data Encryption</h4>
+                      <p className="text-sm text-muted-foreground">End-to-end encryption for all sensitive data</p>
+                    </div>
+                    <div className="text-green-600 font-medium">AES-256</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )
