@@ -7,7 +7,7 @@ import { SubscriptionBanner } from '@/components/community/subscription-banner'
 import { useSubscription } from '@/hooks/useSubscription'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from "@/components/ui/button"
-import { Loader2 } from 'lucide-react'
+import { Loader2, Hash } from 'lucide-react'
 
 const Community = () => {
   const { user, profile, loading } = useAuth()
@@ -72,7 +72,7 @@ const Community = () => {
       <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
       <div className="flex h-[calc(100vh-4rem)] relative">
-        {/* Mobile: Hide sidebar when chat is open */}
+        {/* Sidebar */}
         <div className={`${sidebarOpen ? 'fixed inset-0 z-50 bg-background md:relative md:z-auto md:h-full' : 'hidden md:block md:h-full'}`}>
           <GroupSidebar 
             selectedGroupId={selectedGroupId}
@@ -105,20 +105,52 @@ const Community = () => {
           </div>
           
           {/* Chat Area */}
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 flex flex-col">
             {selectedGroupId ? (
-              // Only show group content if user has access
-              (selectedGroup?.is_premium && !subscriptionStatus.subscribed) ? (
-                <div className="flex items-center justify-center h-full p-4">
-                  <div className="text-center py-8 sm:py-12">
-                    <p className="text-muted-foreground mb-4 text-sm sm:text-base">
-                      This premium group content is only available to subscribers.
-                    </p>
+              <>
+                {/* Mobile Group Header */}
+                <div className="md:hidden border-b bg-card p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSidebarOpen(true)}
+                      className="p-2"
+                    >
+                      <Hash className="h-4 w-4" />
+                    </Button>
+                    <div>
+                      <h3 className="font-semibold text-sm">{selectedGroup?.name || 'Loading...'}</h3>
+                      {selectedGroup?.description && (
+                        <p className="text-xs text-muted-foreground">{selectedGroup.description}</p>
+                      )}
+                    </div>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSidebarOpen(true)}
+                    className="text-xs px-2 py-1 h-auto"
+                  >
+                    Browse Groups
+                  </Button>
                 </div>
-              ) : (
-                <GroupChat groupId={selectedGroupId} />
-              )
+                
+                {/* Chat Content */}
+                <div className="flex-1 min-h-0">
+                  {(selectedGroup?.is_premium && !subscriptionStatus.subscribed) ? (
+                    <div className="flex items-center justify-center h-full p-4">
+                      <div className="text-center py-8 sm:py-12">
+                        <p className="text-muted-foreground mb-4 text-sm sm:text-base">
+                          This premium group content is only available to subscribers.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <GroupChat groupId={selectedGroupId} />
+                  )}
+                </div>
+              </>
             ) : (
               <div className="flex items-center justify-center h-full p-4">
                 <div className="text-center">
