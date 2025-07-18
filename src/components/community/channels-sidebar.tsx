@@ -56,11 +56,6 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
   const [selectedCourses, setSelectedCourses] = useState<string[]>([])
   const [isCreating, setIsCreating] = useState(false)
 
-  useEffect(() => {
-    fetchChannels()
-    fetchGroupCalls()
-    fetchCourses()
-  }, [])
 
   const fetchChannels = async () => {
     try {
@@ -259,6 +254,13 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
       setIsCreating(false)
     }
   }
+
+  // Move useEffect after all function definitions
+  useEffect(() => {
+    fetchChannels()
+    fetchGroupCalls()
+    fetchCourses()
+  }, [])
 
   return (
     <Card className="w-full h-fit">
