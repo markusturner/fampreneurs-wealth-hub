@@ -468,7 +468,12 @@ const Coaching = () => {
                               {dayEvents.slice(0, 1).map((event, eventIndex) => (
                                 <div
                                   key={eventIndex}
-                                  className="text-xs p-1 rounded bg-primary/10 text-primary truncate cursor-pointer hover:bg-primary/20"
+                                  className="text-xs p-1 rounded cursor-pointer hover:opacity-80"
+                                  style={{ 
+                                    backgroundColor: '#ffb500', 
+                                    color: '#290a52',
+                                    fontWeight: '500'
+                                  }}
                                   onClick={() => setSelectedSessionDialog(event)}
                                 >
                                   {event.title}
@@ -515,25 +520,29 @@ const Coaching = () => {
                           <p className="text-sm text-muted-foreground">No coaches available</p>
                         </div>
                       ) : (
-                        <div className="space-y-4 max-h-96 overflow-y-auto">
+                        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
                           {availableCoaches.map((coach, index) => (
-                            <Card key={index} className="shadow-sm hover:shadow-md transition-shadow">
+                            <Card key={`${coach.id || coach.email || index}`} className="shadow-sm hover:shadow-md transition-shadow">
                               <CardContent className="p-3 space-y-3">
                                 <div className="flex items-center gap-3">
-                                  <Avatar className="h-10 w-10">
+                                  <Avatar className="h-10 w-10 flex-shrink-0">
                                     <AvatarImage src={coach.avatar_url || coach.coach_avatar_url} />
                                     <AvatarFallback className="bg-primary text-primary-foreground">
-                                      {coach.full_name.charAt(0)}
+                                      {coach.full_name?.charAt(0) || 'C'}
                                     </AvatarFallback>
                                   </Avatar>
                                   <div className="flex-1 min-w-0">
-                                    <h4 className="font-semibold truncate text-sm">{coach.full_name}</h4>
-                                    <p className="text-xs text-muted-foreground truncate">{coach.title || coach.specialties?.[0] || 'Financial Coach'}</p>
+                                    <h4 className="font-semibold text-sm leading-tight">{coach.full_name}</h4>
+                                    <p className="text-xs text-muted-foreground line-clamp-1">
+                                      {coach.title || coach.specialties?.[0] || 'Financial Coach'}
+                                    </p>
                                   </div>
                                 </div>
                                 
                                 {coach.bio && (
-                                  <p className="text-xs text-muted-foreground line-clamp-2">{coach.bio}</p>
+                                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                                    {coach.bio}
+                                  </p>
                                 )}
                                 
                                 <div className="flex items-center justify-between text-xs">
@@ -547,7 +556,7 @@ const Coaching = () => {
                                   </span>
                                   <Button 
                                     size="sm" 
-                                    className="gap-2 text-xs" 
+                                    className="gap-2 text-xs flex-shrink-0" 
                                     onClick={() => coach.calendar_link ? window.open(coach.calendar_link, '_blank') : setScheduleDialogOpen(true)}
                                   >
                                     <CalendarIcon className="h-3 w-3" />

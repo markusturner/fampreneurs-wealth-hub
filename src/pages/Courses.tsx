@@ -178,7 +178,7 @@ const Courses = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Family Wealth Learning
+              Family Business University
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1">
               Access courses and coaching call recordings
