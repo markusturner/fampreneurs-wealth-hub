@@ -253,35 +253,55 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
   }
 
   const handleDeleteChannel = async () => {
-    if (!editingChannel || !user || !profile?.is_admin) {
+    if (!editingChannel || !user) {
       toast({
         title: "Error",
-        description: "Only administrators can delete channels",
+        description: "No channel selected for deletion",
         variant: "destructive"
       })
       return
     }
 
-    if (!confirm(`Are you sure you want to delete the channel "${editingChannel.name}"? This action cannot be undone.`)) {
+    if (!profile?.is_admin) {
+      toast({
+        title: "Permission Denied",
+        description: "Only administrators can delete channels. Please contact an admin.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!confirm(`Are you sure you want to delete the channel "${editingChannel.name}"? This action cannot be undone and will remove all posts and members from this channel.`)) {
       return
     }
 
     setIsCreating(true)
     try {
+      console.log('Deleting channel:', editingChannel.name, editingChannel.id)
+      
       // First delete all channel members
-      await supabase
+      const { error: membersError } = await supabase
         .from('channel_members')
         .delete()
         .eq('channel_id', editingChannel.id)
 
+      if (membersError) {
+        console.error('Error deleting channel members:', membersError)
+        throw membersError
+      }
+
       // Then delete the channel
-      const { error } = await supabase
+      const { error: channelError } = await supabase
         .from('channels')
         .delete()
         .eq('id', editingChannel.id)
 
-      if (error) throw error
+      if (channelError) {
+        console.error('Error deleting channel:', channelError)
+        throw channelError
+      }
 
+      console.log('Channel deleted successfully')
       resetForm()
       setShowEditDialog(false)
       setEditingChannel(null)
@@ -295,13 +315,13 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
       
       toast({
         title: "Success",
-        description: "Channel deleted successfully!"
+        description: `Channel "${editingChannel.name}" has been deleted successfully!`
       })
     } catch (error) {
       console.error('Error deleting channel:', error)
       toast({
         title: "Error",
-        description: "Failed to delete channel",
+        description: `Failed to delete channel: ${error.message || 'Unknown error'}`,
         variant: "destructive"
       })
     } finally {
@@ -675,12 +695,23 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
                   >
                     {isCreating ? 'Updating...' : 'Update'}
                   </Button>
-                  {!editingAllPosts && editingChannel && (
+                  {!editingAllPosts && editingChannel && profile?.is_admin && (
                     <Button
                       variant="destructive"
                       onClick={handleDeleteChannel}
                       disabled={isCreating}
                       className="px-3"
+                      title="Delete Channel"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {!editingAllPosts && editingChannel && !profile?.is_admin && (
+                    <Button
+                      variant="destructive"
+                      disabled
+                      className="px-3 opacity-50"
+                      title="Only administrators can delete channels"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
