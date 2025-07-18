@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
-import { InvestmentChart } from "@/components/dashboard/investment-chart"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { FamilyCalendar } from "@/components/dashboard/family-calendar"
 import { Button } from "@/components/ui/button"
@@ -60,19 +59,14 @@ const Index = () => {
         <DashboardStats />
 
         {/* Main Dashboard Grid */}
-        <div className="grid gap-4 lg:gap-6 grid-cols-1 xl:grid-cols-5">
-          {/* Investment Chart - Takes up 3 columns on xl screens, full width on smaller */}
-          <div className="xl:col-span-3 order-1">
-            <InvestmentChart />
-          </div>
-          
-          {/* Quick Actions - Takes up 1 column on xl screens, full width on smaller */}
-          <div className="xl:col-span-1 order-2">
+        <div className="grid gap-4 lg:gap-6 grid-cols-1 xl:grid-cols-2">
+          {/* Quick Actions */}
+          <div className="order-1">
             <QuickActions />
           </div>
 
-          {/* Upcoming Meetings - Takes up 1 column on xl screens, full width on smaller */}
-          <div className="xl:col-span-1 order-3">
+          {/* Upcoming Meetings */}
+          <div className="order-2">
             <FamilyCalendar />
           </div>
         </div>
