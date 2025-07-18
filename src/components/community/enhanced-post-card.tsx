@@ -19,6 +19,7 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { CommentWithMentions } from './comment-with-mentions'
+import { CommentThread } from './comment-thread'
 
 interface Post {
   id: string
@@ -455,7 +456,23 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
           </div>
         )}
 
-        {/* Comment Form */}
+        {/* Comments Section */}
+        {showComments && comments.length > 0 && !isComment && (
+          <div className="space-y-3 pt-4 border-t">
+            {comments.map((comment) => (
+              <CommentThread
+                key={comment.id}
+                comment={comment}
+                postId={post.id}
+                channelId={post.channel_id}
+                onUpdate={fetchComments}
+                depth={0}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Comment Form at bottom */}
         {showComments && !isComment && (
           <div className="pt-4 border-t space-y-4">
             <CommentWithMentions
@@ -463,21 +480,6 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
               channelId={post.channel_id}
               onCommentAdded={fetchComments}
             />
-          </div>
-        )}
-
-        {/* Comments Section */}
-        {showComments && comments.length > 0 && !isComment && (
-          <div className="space-y-3 pt-4">
-            {comments.map((comment) => (
-              <EnhancedPostCard
-                key={comment.id}
-                post={comment}
-                onUpdate={fetchComments}
-                isComment={true}
-                depth={depth + 1}
-              />
-            ))}
           </div>
         )}
       </CardContent>

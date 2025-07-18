@@ -91,7 +91,7 @@ export function QuickActions() {
               <Button
                 key={action.title}
                 variant={action.variant}
-                className="h-auto p-3 sm:pr-10 justify-start text-left flex-1 min-w-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="h-auto p-3 sm:pr-10 justify-start text-left flex-1 min-w-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200 hover:shadow-glow hover:scale-[1.02]"
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
@@ -117,7 +117,7 @@ export function QuickActions() {
           })}
           <Button
             variant="secondary"
-            className="h-auto p-3 sm:pr-10 justify-start text-left flex-1 min-w-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            className="h-auto p-3 sm:pr-10 justify-start text-left flex-1 min-w-0 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200 hover:shadow-glow hover:scale-[1.02]"
             onClick={(e) => {
               e.preventDefault()
               e.stopPropagation()
