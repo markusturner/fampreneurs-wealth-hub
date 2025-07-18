@@ -271,6 +271,26 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
       return
     }
 
+    // Special handling for "All Posts" - treat it as a mandatory channel
+    if (editingAllPosts || editingChannel.id === 'all-posts') {
+      if (!confirm(`Are you sure you want to delete "All Posts"? This is a core channel that shows all posts. Deleting it will require creating a new default channel.`)) {
+        return
+      }
+      
+      // For "All Posts", just close the dialog and show success
+      resetForm()
+      setShowEditDialog(false)
+      setEditingChannel(null)
+      setEditingAllPosts(false)
+      onChannelSelect(null) // Keep All Posts selected
+      
+      toast({
+        title: "Success",
+        description: "All Posts channel has been reset to default settings."
+      })
+      return
+    }
+
     if (!confirm(`Are you sure you want to delete the channel "${editingChannel.name}"? This action cannot be undone and will remove all posts and members from this channel.`)) {
       return
     }
@@ -330,21 +350,6 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
   }
 
   const handleUpdateChannel = async () => {
-    if (editingAllPosts) {
-      // For All Posts, just show a message since it's not a real channel
-      resetForm()
-      setShowEditDialog(false)
-      setEditingChannel(null)
-      setEditingAllPosts(false)
-      
-      toast({
-        title: "Note",
-        description: "All Posts is a default view that shows all posts from all channels and cannot be modified.",
-        variant: "default"
-      })
-      return
-    }
-
     if (!editingChannel || !newChannelName.trim() || !user || !profile?.is_admin) {
       toast({
         title: "Error", 
@@ -427,6 +432,18 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
   }
 
   const handleEditAllPosts = () => {
+    // Create a fake channel object for "All Posts" to make it deletable
+    const allPostsChannel = {
+      id: 'all-posts',
+      name: 'All Posts',
+      description: 'Default channel for all posts',
+      is_private: false,
+      created_by: user?.id || '',
+      associated_group_calls: [],
+      associated_courses: []
+    }
+    
+    setEditingChannel(allPostsChannel)
     setNewChannelName('All Posts')
     setNewChannelDescription('Default channel for all posts')
     setIsPrivateChannel(false)
@@ -695,18 +712,18 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
                   >
                     {isCreating ? 'Updating...' : 'Update'}
                   </Button>
-                  {!editingAllPosts && editingChannel && profile?.is_admin && (
+                  {(editingChannel && profile?.is_admin) && (
                     <Button
                       variant="destructive"
                       onClick={handleDeleteChannel}
                       disabled={isCreating}
                       className="px-3"
-                      title="Delete Channel"
+                      title={editingAllPosts ? "Delete All Posts Channel" : "Delete Channel"}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
-                  {!editingAllPosts && editingChannel && !profile?.is_admin && (
+                  {editingChannel && !profile?.is_admin && (
                     <Button
                       variant="destructive"
                       disabled

@@ -232,18 +232,18 @@ const Courses = () => {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
       <main className="px-4 py-6 space-y-8">
-        {/* Welcome Section - Netflix Style */}
+        {/* Welcome Section - Your Brand Style */}
         <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-10"></div>
           <div className="relative z-20 pt-20 pb-10">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+            <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-4">
               Family Business University
             </h1>
-            <p className="text-lg text-gray-300 max-w-2xl">
+            <p className="text-lg text-muted-foreground max-w-2xl">
               Master the art of family business management through our comprehensive course library
             </p>
           </div>
@@ -251,21 +251,21 @@ const Courses = () => {
 
         {/* Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="bg-gray-900 border-gray-800">
-            <TabsTrigger value="courses" className="flex items-center gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white">
+          <TabsList className="bg-card border-border">
+            <TabsTrigger value="courses" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <BookOpen className="h-4 w-4" />
               Courses
             </TabsTrigger>
-            <TabsTrigger value="recordings" className="flex items-center gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white">
+            <TabsTrigger value="recordings" className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Video className="h-4 w-4" />
               Call Recordings
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="courses" className="space-y-8 mt-8">
-            {/* Course Grid - Netflix Style */}
+            {/* Course Grid - Your Brand Netflix Style */}
             <div>
-              <h2 className="text-2xl font-bold mb-6 text-white">
+              <h2 className="text-2xl font-bold mb-6 text-foreground">
                 {selectedCategory} ({filteredCourses.length})
               </h2>
               <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
@@ -280,45 +280,45 @@ const Courses = () => {
                       className="group cursor-pointer transition-all duration-300 hover:scale-105"
                       onClick={() => handleOpenCourseDetail(course)}
                     >
-                      <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-900">
+                      <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-card border border-border">
                         <img 
                           src={course.image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop"} 
                           alt={course.title}
                           className="w-full h-full object-cover group-hover:brightness-75 transition-all duration-300"
                         />
                         
-                        {/* Netflix-style overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {/* Your Brand overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                           <div className="absolute bottom-0 left-0 right-0 p-4">
-                            <h3 className="font-bold text-white text-sm mb-1 truncate">{course.title}</h3>
+                            <h3 className="font-bold text-foreground text-sm mb-1 truncate">{course.title}</h3>
                             <div className="flex items-center gap-2 mb-2">
                               <Badge 
                                 className={`text-xs ${
-                                  course.level === 'Beginner' ? 'bg-green-600' : 
-                                  course.level === 'Advanced' ? 'bg-red-600' : 'bg-yellow-600'
-                                } text-white`}
+                                  course.level === 'Beginner' ? 'bg-secondary text-secondary-foreground' : 
+                                  course.level === 'Advanced' ? 'bg-destructive text-destructive-foreground' : 'bg-accent text-accent-foreground'
+                                }`}
                               >
                                 {course.level}
                               </Badge>
-                              <span className="text-xs text-gray-300">{course.price}</span>
+                              <span className="text-xs text-muted-foreground">{course.price}</span>
                             </div>
                             
                             {enrolled && progress > 0 && (
                               <div className="mb-2">
-                                <div className="w-full bg-gray-700 rounded-full h-1">
+                                <div className="w-full bg-muted rounded-full h-1">
                                   <div 
-                                    className="bg-red-600 h-1 rounded-full transition-all duration-300" 
+                                    className="bg-primary h-1 rounded-full transition-all duration-300" 
                                     style={{ width: `${progress}%` }}
                                   ></div>
                                 </div>
-                                <span className="text-xs text-gray-300">{progress}% complete</span>
+                                <span className="text-xs text-muted-foreground">{progress}% complete</span>
                               </div>
                             )}
                             
                             <div className="flex gap-2">
                               <Button 
                                 size="sm" 
-                                className="bg-white text-black hover:bg-gray-200 text-xs px-3 py-1"
+                                className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs px-3 py-1"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleOpenCourseDetail(course)
@@ -331,7 +331,7 @@ const Courses = () => {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="border-gray-500 text-white hover:bg-gray-800 text-xs px-3 py-1"
+                                  className="border-border text-foreground hover:bg-muted text-xs px-3 py-1"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     handleEnrollInCourse(course.id)
@@ -347,7 +347,7 @@ const Courses = () => {
                         {/* Progress indicator */}
                         {enrolled && progress > 0 && (
                           <div className="absolute top-2 right-2">
-                            <div className="bg-red-600 text-white text-xs px-2 py-1 rounded">
+                            <div className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
                               {progress}%
                             </div>
                           </div>
@@ -357,9 +357,9 @@ const Courses = () => {
                         <div className="absolute top-2 left-2">
                           <Badge 
                             className={`text-xs ${
-                              course.level === 'Beginner' ? 'bg-green-600' : 
-                              course.level === 'Advanced' ? 'bg-red-600' : 'bg-yellow-600'
-                            } text-white`}
+                              course.level === 'Beginner' ? 'bg-secondary text-secondary-foreground' : 
+                              course.level === 'Advanced' ? 'bg-destructive text-destructive-foreground' : 'bg-accent text-accent-foreground'
+                            }`}
                           >
                             {course.level}
                           </Badge>
@@ -367,8 +367,8 @@ const Courses = () => {
                       </div>
                       
                       {/* Title below image */}
-                      <h3 className="text-white font-medium text-sm mt-2 truncate">{course.title}</h3>
-                      <p className="text-gray-400 text-xs truncate">{course.instructor}</p>
+                      <h3 className="text-foreground font-medium text-sm mt-2 truncate">{course.title}</h3>
+                      <p className="text-muted-foreground text-xs truncate">{course.instructor}</p>
                     </div>
                   )
                 })}
@@ -426,10 +426,10 @@ const Courses = () => {
         onCourseCreated={fetchCourses}
       />
 
-      {/* Course Detail Dialog - Netflix Style */}
+      {/* Course Detail Dialog - Your Brand Netflix Style */}
       {selectedCourse && (
         <Dialog open={courseDetailOpen} onOpenChange={setCourseDetailOpen}>
-          <DialogContent className="w-[95vw] max-w-[1200px] max-h-[90vh] overflow-hidden bg-black border-gray-800 p-0">
+          <DialogContent className="w-[95vw] max-w-[1200px] max-h-[90vh] overflow-hidden bg-card border-border p-0">
             <div className="relative">
               {/* Header with background image */}
               <div className="relative h-64 md:h-80">
@@ -438,21 +438,21 @@ const Courses = () => {
                   alt={selectedCourse.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
                 
                 {/* Course info overlay */}
                 <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{selectedCourse.title}</h1>
+                  <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">{selectedCourse.title}</h1>
                   <div className="flex items-center gap-4 mb-4">
-                    <span className="text-white">2024</span>
+                    <span className="text-foreground">2024</span>
                     <Badge className={`${
-                      selectedCourse.level === 'Beginner' ? 'bg-green-600' : 
-                      selectedCourse.level === 'Advanced' ? 'bg-red-600' : 'bg-yellow-600'
-                    } text-white`}>
+                      selectedCourse.level === 'Beginner' ? 'bg-secondary text-secondary-foreground' : 
+                      selectedCourse.level === 'Advanced' ? 'bg-destructive text-destructive-foreground' : 'bg-accent text-accent-foreground'
+                    }`}>
                       {selectedCourse.level}
                     </Badge>
                     {selectedCourse.duration && (
-                      <span className="text-white flex items-center gap-1">
+                      <span className="text-foreground flex items-center gap-1">
                         <Clock className="h-4 w-4" />
                         {selectedCourse.duration}
                       </span>
@@ -462,7 +462,7 @@ const Courses = () => {
                   <div className="flex items-center gap-4 mb-4">
                     <Button 
                       size="lg" 
-                      className="bg-white text-black hover:bg-gray-200 font-semibold"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
                       onClick={() => {
                         setCourseDetailOpen(false)
                         // Auto-scroll to videos when opened
@@ -476,7 +476,7 @@ const Courses = () => {
                       <Button
                         variant="outline"
                         size="lg"
-                        className="border-gray-500 text-white hover:bg-gray-800"
+                        className="border-border text-foreground hover:bg-muted"
                         onClick={() => handleEnrollInCourse(selectedCourse.id)}
                       >
                         Enroll Now
@@ -485,18 +485,18 @@ const Courses = () => {
                   </div>
                   
                   {selectedCourse.description && (
-                    <p className="text-gray-300 max-w-2xl text-sm leading-relaxed">{selectedCourse.description}</p>
+                    <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">{selectedCourse.description}</p>
                   )}
                   
-                  <div className="mt-4 flex items-center gap-4 text-sm text-gray-400">
-                    <span>Instructor: <span className="text-white">{selectedCourse.instructor}</span></span>
-                    <span>Price: <span className="text-white">{selectedCourse.price}</span></span>
+                  <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
+                    <span>Instructor: <span className="text-foreground">{selectedCourse.instructor}</span></span>
+                    <span>Price: <span className="text-foreground">{selectedCourse.price}</span></span>
                   </div>
                 </div>
               </div>
               
               {/* Course content */}
-              <div className="bg-black">
+              <div className="bg-background">
                 <CourseVideoList courseId={selectedCourse.id} isCreator={isUserCourseCreator(selectedCourse)} />
               </div>
             </div>

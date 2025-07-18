@@ -218,29 +218,29 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
   }
 
   return (
-    <div className="bg-black text-white min-h-screen">
+    <div className="bg-background text-foreground min-h-screen">
       <div className="grid gap-6 lg:grid-cols-3 p-6">
-        {/* Video Player - Netflix Style */}
+        {/* Video Player - Your Brand Style */}
         <div className="lg:col-span-2 space-y-4">
           {selectedVideo && (
             <>
-              <div className="aspect-video bg-black rounded-lg overflow-hidden relative group">
+              <div className="aspect-video bg-card rounded-lg overflow-hidden relative group border border-border">
                 <VideoPlayer video={selectedVideo} />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent p-6">
                   <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-bold">{selectedVideo.title}</h2>
-                    <Badge className={`text-white ${getPlatformColor(selectedVideo.video_type)}`}>
+                    <h2 className="text-2xl font-bold text-foreground">{selectedVideo.title}</h2>
+                    <Badge className={`${getPlatformColor(selectedVideo.video_type)} text-white`}>
                       {getPlatformName(selectedVideo.video_type)}
                     </Badge>
                     {selectedVideo.duration_seconds && (
-                      <Badge variant="outline" className="gap-1 bg-black/50 border-white/20 text-white">
+                      <Badge variant="outline" className="gap-1 bg-card/50 border-border text-foreground">
                         <Clock className="h-3 w-3" />
                         {Math.floor(selectedVideo.duration_seconds / 60)} min
                       </Badge>
                     )}
                   </div>
                   {selectedVideo.description && (
-                    <p className="text-gray-300 text-sm max-w-2xl">{selectedVideo.description}</p>
+                    <p className="text-muted-foreground text-sm max-w-2xl">{selectedVideo.description}</p>
                   )}
                 </div>
               </div>
@@ -249,9 +249,9 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
           )}
         </div>
 
-        {/* Video List - Netflix Style */}
+        {/* Video List - Your Brand Style */}
         <div className="space-y-3">
-          <h3 className="font-bold text-xl mb-6 text-white">Episodes ({videos.length})</h3>
+          <h3 className="font-bold text-xl mb-6 text-foreground">Episodes ({videos.length})</h3>
           <div className="space-y-2">
             {videos.map((video, index) => {
               const isUnlocked = isVideoUnlocked(video, index)
@@ -260,23 +260,23 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
               return (
                 <Card
                   key={video.id}
-                  className={`transition-all duration-300 border-gray-800 ${
+                  className={`transition-all duration-300 border-border ${
                     isUnlocked 
-                      ? `cursor-pointer hover:bg-gray-800/50 ${selectedVideo?.id === video.id ? 'ring-2 ring-red-600 bg-gray-800/30' : 'bg-gray-900/50'}` 
-                      : 'cursor-not-allowed opacity-50 bg-gray-900/20'
+                      ? `cursor-pointer hover:bg-muted/50 ${selectedVideo?.id === video.id ? 'ring-2 ring-primary bg-muted/30' : 'bg-card'}` 
+                      : 'cursor-not-allowed opacity-50 bg-card/50'
                   }`}
                   onClick={() => isUnlocked && handleVideoSelect(video)}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start gap-4">
                       <div className={`rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0 font-bold ${
-                        isWatched ? 'bg-red-600 text-white' : isUnlocked ? 'bg-gray-700 text-white' : 'bg-gray-800 text-gray-500'
+                        isWatched ? 'bg-primary text-primary-foreground' : isUnlocked ? 'bg-muted text-foreground' : 'bg-muted/50 text-muted-foreground'
                       }`}>
                         {index + 1}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className={`font-medium leading-tight ${
-                          isUnlocked ? 'text-white' : 'text-gray-500'
+                          isUnlocked ? 'text-foreground' : 'text-muted-foreground'
                         }`}>
                           {video.title}
                         </h4>
@@ -288,17 +288,17 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
                             {getPlatformName(video.video_type)}
                           </Badge>
                           {video.duration_seconds && (
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-muted-foreground">
                               {Math.floor(video.duration_seconds / 60)} min
                             </span>
                           )}
                           {isWatched && (
-                            <Badge variant="outline" className="text-xs bg-red-600/20 border-red-600 text-red-400">
+                            <Badge variant="outline" className="text-xs bg-primary/20 border-primary text-primary">
                               Watched
                             </Badge>
                           )}
                           {!isUnlocked && (
-                            <Badge variant="outline" className="text-xs bg-gray-800 border-gray-600 text-gray-400">
+                            <Badge variant="outline" className="text-xs bg-muted border-border text-muted-foreground">
                               Locked
                             </Badge>
                           )}
@@ -310,7 +310,7 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
                             variant="ghost"
                             size="sm"
                             onClick={(e) => handleEditVideo(video, e)}
-                            className="h-6 w-6 p-0 text-gray-400 hover:text-white"
+                            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
@@ -318,7 +318,7 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
                             variant="ghost"
                             size="sm"
                             onClick={(e) => handleDeleteVideo(video.id, e)}
-                            className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
+                            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
