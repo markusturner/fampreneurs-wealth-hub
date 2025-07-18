@@ -63,6 +63,19 @@ interface IndividualSession {
 
 const Coaching = () => {
   const { user, profile, loading } = useAuth()
+  
+  // All hooks must be at the top - before any early returns
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
+  const [viewType, setViewType] = useState<'month' | 'list'>('month')
+  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
+  const [sessions, setSessions] = useState<GroupSession[]>([])
+  const [individualSessions, setIndividualSessions] = useState<IndividualSession[]>([])
+  const [loadingSessions, setLoadingSessions] = useState(true)
+  const [availableCoaches, setAvailableCoaches] = useState<any[]>([])
+  const [loadingCoaches, setLoadingCoaches] = useState(true)
+
+  const displayName = profile?.display_name || profile?.first_name || 'Member'
 
   if (loading) {
     return (
@@ -78,18 +91,6 @@ const Coaching = () => {
   if (!user) {
     return null
   }
-
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
-  const [viewType, setViewType] = useState<'month' | 'list'>('month')
-  const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
-  const [sessions, setSessions] = useState<GroupSession[]>([])
-  const [individualSessions, setIndividualSessions] = useState<IndividualSession[]>([])
-  const [loadingSessions, setLoadingSessions] = useState(true)
-  const [availableCoaches, setAvailableCoaches] = useState<any[]>([])
-  const [loadingCoaches, setLoadingCoaches] = useState(true)
-
-  const displayName = profile?.display_name || profile?.first_name || 'Member'
 
   // Fetch sessions from database
   const fetchSessions = async () => {
