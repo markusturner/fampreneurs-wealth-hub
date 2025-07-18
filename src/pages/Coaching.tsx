@@ -451,7 +451,7 @@ const Coaching = () => {
                     </div>
                     
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-primary">
+                      <span className="text-lg font-bold" style={{ color: '#ffb500' }}>
                         ${coach.hourly_rate || '300'}/hr
                       </span>
                       <Button size="sm" className="gap-2">
