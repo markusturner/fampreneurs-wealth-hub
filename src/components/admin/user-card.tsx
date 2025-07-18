@@ -18,6 +18,8 @@ interface Profile {
   created_at: string
   roles?: string[]
   avatar_url: string | null
+  program_name: string | null
+  membership_type: string | null
 }
 
 interface UserCardProps {
@@ -126,14 +128,24 @@ export function UserCard({ user, onRolesUpdated }: UserCardProps) {
             </AvatarFallback>
           </Avatar>
 
-          {/* User Info */}
-          <div className="flex-1 space-y-3">
-            <div>
-              <div className="flex items-center space-x-2">
-                <h4 className="font-medium">{getDisplayName(user)}</h4>
+            {/* User Info */}
+            <div className="flex-1 space-y-3">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h4 className="font-medium">{getDisplayName(user)}</h4>
+                  {user.membership_type === 'paid' && (
+                    <Badge variant="secondary" className="text-xs">
+                      Paid
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
+                {user.program_name && (
+                  <p className="text-xs text-muted-foreground">
+                    Program: {user.program_name}
+                  </p>
+                )}
               </div>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
-            </div>
 
             {/* Course Progress */}
             <div className="space-y-2">

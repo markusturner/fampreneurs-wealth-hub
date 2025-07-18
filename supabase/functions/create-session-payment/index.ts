@@ -7,112 +7,90 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[CREATE-SESSION-PAYMENT] ${step}${detailsStr}`);
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    logStep("Function started");
+    const { amount, program_name, user_id } = await req.json();
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-    logStep("Stripe key verified");
+    if (!amount || !program_name || !user_id) {
+      throw new Error("Missing required fields: amount, program_name, user_id");
+    }
 
-    // Create Supabase client for user authentication
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      apiVersion: "2023-10-16",
+    });
+
+    // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
-    logStep("Authorization header found");
+    // Get user email for customer creation
+    const { data: profile } = await supabaseClient
+      .from('profiles')
+      .select('email')
+      .eq('user_id', user_id)
+      .single();
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    const customerEmail = profile?.email || `${user_id}@temp.com`;
 
-    const { sessionPrice = 150 } = await req.json(); // Default $150 per session
-    logStep("Session price", { sessionPrice });
+    // Check if customer exists
+    const customers = await stripe.customers.list({ 
+      email: customerEmail, 
+      limit: 1 
+    });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-
-    // Check if customer exists, create if not
-    let customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
-    
-    if (customers.data.length === 0) {
+    if (customers.data.length > 0) {
+      customerId = customers.data[0].id;
+    } else {
       const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: { user_id: user.id }
+        email: customerEmail,
+        metadata: {
+          user_id: user_id,
+          program_name: program_name
+        }
       });
       customerId = customer.id;
-      logStep("Created new customer", { customerId });
-    } else {
-      customerId = customers.data[0].id;
-      logStep("Found existing customer", { customerId });
     }
 
-    // Create payment session for 1-on-1 coaching session
+    // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
         {
           price_data: {
             currency: "usd",
-            product_data: { 
-              name: "1-on-1 Coaching Session",
-              description: "Additional 1-on-1 coaching session beyond complimentary quota"
+            product_data: {
+              name: `${program_name} - Custom Payment`,
+              description: `Payment for ${program_name} program`
             },
-            unit_amount: sessionPrice * 100, // Convert to cents
+            unit_amount: amount,
           },
           quantity: 1,
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/coaching?payment=success`,
-      cancel_url: `${req.headers.get("origin")}/coaching?payment=cancelled`,
+      success_url: `${req.headers.get("origin")}/auth?payment=success`,
+      cancel_url: `${req.headers.get("origin")}/auth?payment=cancelled`,
       metadata: {
-        user_id: user.id,
-        session_type: "one_on_one"
+        user_id: user_id,
+        program_name: program_name
       }
     });
-
-    logStep("Payment session created", { sessionId: session.id, url: session.url });
-
-    // Record the payment intent in our database
-    const supabaseService = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
-    );
-
-    await supabaseService.from("paid_session_transactions").insert({
-      user_id: user.id,
-      amount: sessionPrice,
-      stripe_payment_intent_id: session.payment_intent,
-      status: "pending"
-    });
-
-    logStep("Transaction recorded in database");
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in create-session-payment", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+
+  } catch (error: any) {
+    console.error("Error creating payment session:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

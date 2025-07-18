@@ -128,6 +128,8 @@ interface Profile {
     id: string
     full_name: string
   } | null
+  program_name: string | null
+  membership_type: string | null
 }
 
 interface Course {

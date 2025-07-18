@@ -6,9 +6,10 @@ import { AdminSettings } from '@/components/dashboard/admin-settings'
 import { AccountabilityDirectory } from '@/components/dashboard/accountability-directory'
 import { AffiliateProgram } from '@/components/dashboard/affiliate-program'
 import { FeedbackManagement } from '@/components/dashboard/feedback-management'
+import { AccountSettings } from '@/components/dashboard/account-settings'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Settings, Crown, Heart, Users, ArrowLeft } from 'lucide-react'
+import { Settings, Crown, Heart, Users, ArrowLeft, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 
@@ -57,7 +58,7 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="directory" className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2 h-auto' : 'grid-cols-4'}`}>
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2 h-auto' : 'grid-cols-5'}`}>
           <TabsTrigger 
             value="directory" 
             className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
@@ -65,6 +66,15 @@ export function ProfileSettings() {
             <Users className="h-4 w-4 shrink-0" />
             <span className={isMobile ? "text-center leading-tight" : ""}>
               {isMobile ? "Directory" : "Accountability Directory"}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger 
+            value="account" 
+            className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
+          >
+            <User className="h-4 w-4 shrink-0" />
+            <span className={isMobile ? "text-center leading-tight" : ""}>
+              {isMobile ? "Account" : "Account Settings"}
             </span>
           </TabsTrigger>
           <TabsTrigger 
@@ -96,6 +106,10 @@ export function ProfileSettings() {
 
         <TabsContent value="directory">
           <AccountabilityDirectory />
+        </TabsContent>
+
+        <TabsContent value="account">
+          <AccountSettings />
         </TabsContent>
 
         <TabsContent value="affiliate">

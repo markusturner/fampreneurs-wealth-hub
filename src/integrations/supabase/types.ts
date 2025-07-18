@@ -1519,8 +1519,10 @@ export type Database = {
           is_admin: boolean | null
           is_moderator: boolean | null
           last_name: string | null
+          membership_type: string | null
           occupation: string | null
           phone: string | null
+          program_name: string | null
           updated_at: string
           user_id: string
         }
@@ -1538,8 +1540,10 @@ export type Database = {
           is_admin?: boolean | null
           is_moderator?: boolean | null
           last_name?: string | null
+          membership_type?: string | null
           occupation?: string | null
           phone?: string | null
+          program_name?: string | null
           updated_at?: string
           user_id: string
         }
@@ -1557,8 +1561,10 @@ export type Database = {
           is_admin?: boolean | null
           is_moderator?: boolean | null
           last_name?: string | null
+          membership_type?: string | null
           occupation?: string | null
           phone?: string | null
+          program_name?: string | null
           updated_at?: string
           user_id?: string
         }

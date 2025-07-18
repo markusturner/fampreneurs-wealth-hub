@@ -6,8 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Shield, Upload, User } from 'lucide-react'
+import { Loader2, Shield, Upload, User, CreditCard } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNavigate } from 'react-router-dom'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
@@ -21,6 +22,9 @@ export default function Auth() {
   const [occupation, setOccupation] = useState('')
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>('')
+  const [membershipType, setMembershipType] = useState('free')
+  const [customPrice, setCustomPrice] = useState('')
+  const [selectedProgram, setSelectedProgram] = useState('')
   
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -158,6 +162,18 @@ export default function Auth() {
       })
       return
     }
+
+    // Validate paid membership fields
+    if (membershipType === 'paid') {
+      if (!customPrice || !selectedProgram) {
+        toast({
+          title: "Missing paid membership fields",
+          description: "Please enter the price and select a program for paid membership.",
+          variant: "destructive",
+        })
+        return
+      }
+    }
     
     setIsLoading(true)
 
@@ -182,6 +198,9 @@ export default function Auth() {
             last_name: lastName,
             display_name: `${firstName} ${lastName}`.trim(),
             occupation: occupation,
+            membership_type: membershipType,
+            program_name: selectedProgram,
+            custom_price: customPrice
           }
         }
       })
@@ -214,9 +233,46 @@ export default function Auth() {
           })
         }
 
+        // Update profile with program and membership info
+        await supabase
+          .from('profiles')
+          .update({
+            program_name: selectedProgram,
+            membership_type: membershipType
+          })
+          .eq('user_id', data.user.id)
+
+        // Handle Stripe payment for paid membership
+        if (membershipType === 'paid' && customPrice) {
+          try {
+            const { data: stripeData, error: stripeError } = await supabase.functions.invoke('create-session-payment', {
+              body: {
+                amount: parseFloat(customPrice) * 100, // Convert to cents
+                program_name: selectedProgram,
+                user_id: data.user.id
+              }
+            })
+
+            if (stripeError) throw stripeError
+
+            if (stripeData?.url) {
+              window.open(stripeData.url, '_blank')
+            }
+          } catch (stripeError: any) {
+            console.error('Stripe payment error:', stripeError)
+            toast({
+              title: "Payment setup failed",
+              description: "Account created but payment setup failed. You can set up payment later.",
+              variant: "destructive",
+            })
+          }
+        }
+
         toast({
           title: "Account created!",
-          description: "Please check your email to verify your account, or you can continue if email confirmation is disabled.",
+          description: membershipType === 'paid' ? 
+            "Please complete payment in the opened window, then check your email to verify your account." :
+            "Please check your email to verify your account, or you can continue if email confirmation is disabled.",
         })
         
         // If user is immediately confirmed, redirect
@@ -622,29 +678,84 @@ export default function Auth() {
                     disabled={isLoading}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password *</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="Create a password (min. 6 characters)"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    disabled={isLoading}
-                    minLength={6}
-                  />
-                </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="signup-password">Password *</Label>
+                   <Input
+                     id="signup-password"
+                     type="password"
+                     placeholder="Create a password (min. 6 characters)"
+                     value={password}
+                     onChange={(e) => setPassword(e.target.value)}
+                     required
+                     disabled={isLoading}
+                     minLength={6}
+                   />
+                 </div>
+
+                 {/* Membership Type */}
+                 <div className="space-y-2">
+                   <Label htmlFor="membershipType">Membership Type *</Label>
+                   <Select value={membershipType} onValueChange={setMembershipType}>
+                     <SelectTrigger>
+                       <SelectValue placeholder="Select membership type" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       <SelectItem value="free">Free</SelectItem>
+                       <SelectItem value="paid">Paid</SelectItem>
+                     </SelectContent>
+                   </Select>
+                 </div>
+
+                 {/* Custom Price (only for paid) */}
+                 {membershipType === 'paid' && (
+                   <div className="space-y-2">
+                     <Label htmlFor="customPrice">Custom Price (USD) *</Label>
+                     <div className="relative">
+                       <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                       <Input
+                         id="customPrice"
+                         type="number"
+                         placeholder="Enter price (e.g., 99.99)"
+                         value={customPrice}
+                         onChange={(e) => setCustomPrice(e.target.value)}
+                         className="pl-10"
+                         min="0"
+                         step="0.01"
+                         required={membershipType === 'paid'}
+                         disabled={isLoading}
+                       />
+                     </div>
+                   </div>
+                 )}
+
+                 {/* Program Selection (only for paid) */}
+                 {membershipType === 'paid' && (
+                   <div className="space-y-2">
+                     <Label htmlFor="programSelect">Select Program *</Label>
+                     <Select value={selectedProgram} onValueChange={setSelectedProgram}>
+                       <SelectTrigger>
+                         <SelectValue placeholder="Choose your program" />
+                       </SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="The Family Business University">The Family Business University</SelectItem>
+                         <SelectItem value="The Family Vault">The Family Vault</SelectItem>
+                         <SelectItem value="The Family Business Accelerator">The Family Business Accelerator</SelectItem>
+                         <SelectItem value="The Family Legacy: VIP Weekend">The Family Legacy: VIP Weekend</SelectItem>
+                         <SelectItem value="The Family Fortune Mastermind">The Family Fortune Mastermind</SelectItem>
+                       </SelectContent>
+                     </Select>
+                   </div>
+                 )}
                 
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                  disabled={isLoading || !firstName || !lastName || !occupation || !profilePhoto}
-                >
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create Account
-                </Button>
+                 <Button 
+                   type="submit" 
+                   className="w-full" 
+                   style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                   disabled={isLoading || !firstName || !lastName || !occupation || !profilePhoto || (membershipType === 'paid' && (!customPrice || !selectedProgram))}
+                 >
+                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                   {membershipType === 'paid' ? 'Create Account & Pay' : 'Create Account'}
+                 </Button>
                 
                 <p className="text-xs text-muted-foreground text-center">
                   * Required fields - All information must be completed before account creation
