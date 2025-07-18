@@ -130,17 +130,17 @@ export function CommunityFeed() {
   }
 
   return (
-    <div className="flex gap-6">
-      {/* Channels Sidebar - Made bigger */}
-      <div className="w-80 flex-shrink-0">
+    <div className="grid grid-cols-12 gap-6">
+      {/* Channels Sidebar - Left side, 3 columns */}
+      <div className="col-span-3">
         <ChannelsSidebar 
           selectedChannelId={selectedChannelId}
           onChannelSelect={setSelectedChannelId}
         />
       </div>
 
-      {/* Main Feed */}
-      <div className="flex-1 space-y-6">
+      {/* Main Feed - Center, 6 columns */}
+      <div className="col-span-6 space-y-6">
         {/* Create Post */}
         <Card>
           <CardContent className="p-4">
@@ -157,8 +157,8 @@ export function CommunityFeed() {
         ))}
       </div>
 
-      {/* Announcements Panel */}
-      <div className="w-80 space-y-4">
+      {/* Announcements Panel - Right side, 3 columns */}
+      <div className="col-span-3">
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
