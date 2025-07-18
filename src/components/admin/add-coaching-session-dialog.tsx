@@ -79,26 +79,46 @@ export function AddCoachingSessionDialog({ onSessionAdded, type }: AddCoachingSe
     try {
       const selectedCoach = coaches.find(c => c.id === formData.coach_id)
       
-      const { error } = await supabase
-        .from('group_coaching_sessions')
-        .insert({
-          title: formData.title,
-          description: formData.description,
-          coach_name: selectedCoach?.full_name || 'Unknown Coach',
-          session_date: formData.session_date,
-          session_time: formData.session_time,
-          duration_minutes: parseInt(formData.duration_minutes),
-          max_participants: parseInt(formData.max_participants),
-          meeting_url: formData.meeting_url,
-          meeting_password: formData.meeting_password,
-          meeting_type: 'zoom',
-          is_recurring: formData.is_recurring,
-          recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : null,
-          recurrence_end_date: formData.is_recurring ? formData.recurrence_end_date : null,
-          created_by: (await supabase.auth.getUser()).data.user?.id
-        })
-
-      if (error) throw error
+      if (type === 'group') {
+        const { error } = await supabase
+          .from('group_coaching_sessions')
+          .insert({
+            title: formData.title,
+            description: formData.description,
+            coach_name: selectedCoach?.full_name || 'Unknown Coach',
+            session_date: formData.session_date,
+            session_time: formData.session_time,
+            duration_minutes: parseInt(formData.duration_minutes),
+            max_participants: parseInt(formData.max_participants),
+            meeting_url: formData.meeting_url,
+            meeting_password: formData.meeting_password,
+            meeting_type: 'zoom',
+            is_recurring: formData.is_recurring,
+            recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : null,
+            recurrence_end_date: formData.is_recurring ? formData.recurrence_end_date : null,
+            created_by: (await supabase.auth.getUser()).data.user?.id
+          })
+        
+        if (error) throw error
+      } else {
+        // 1-on-1 session - insert into individual_coaching_sessions table
+        const { error } = await supabase
+          .from('individual_coaching_sessions')
+          .insert({
+            title: formData.title,
+            description: formData.description,
+            coach_id: formData.coach_id,
+            session_date: formData.session_date,
+            session_time: formData.session_time,
+            duration_minutes: parseInt(formData.duration_minutes),
+            meeting_url: formData.meeting_url,
+            meeting_password: formData.meeting_password,
+            meeting_type: 'zoom',
+            created_by: (await supabase.auth.getUser()).data.user?.id
+          })
+        
+        if (error) throw error
+      }
 
       toast({
         title: "Session created successfully",
