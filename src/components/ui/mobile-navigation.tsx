@@ -33,7 +33,6 @@ export function MobileNavigation() {
               )}
             >
               <Icon className={cn("h-5 w-5", isActive && "text-[#ffb500]")} />
-              <span className="truncate">{item.name}</span>
             </NavLink>
           )
         })}
