@@ -273,9 +273,9 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                 <span>Profile Settings</span>
               </DropdownMenuItem>
               {profile?.is_admin && (
-                <DropdownMenuItem onClick={() => navigate('/profile-settings')}>
+                <DropdownMenuItem onClick={() => navigate('/admin')}>
                   <Crown className="mr-2 h-4 w-4" />
-                  <span>Admin Panel</span>
+                  <span>Admin Dashboard</span>
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
