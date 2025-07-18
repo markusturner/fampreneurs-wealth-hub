@@ -2,32 +2,12 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
-import EmojiPicker from 'emoji-picker-react'
-import { 
-  Heart, 
-  MessageCircle, 
-  Send, 
-  MoreHorizontal,
-  Smile,
-  ImagePlus,
-  Mic,
-  MicOff,
-  Play,
-  Pause,
-  Volume2,
-  Reply,
-  ThumbsUp,
-  Megaphone
-} from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { PostCard } from './post-card'
-import { CreatePost } from './create-post'
+import { Megaphone } from 'lucide-react'
+import { EnhancedPostCard } from './enhanced-post-card'
+import { EnhancedCreatePost } from './enhanced-create-post'
+import { ChannelsSidebar } from './channels-sidebar'
 
 interface Post {
   id: string
@@ -35,8 +15,10 @@ interface Post {
   content: string
   image_url: string | null
   audio_url: string | null
+  video_url: string | null
   created_at: string
   parent_id: string | null
+  channel_id: string | null
   profiles: {
     display_name: string | null
     first_name: string | null
@@ -62,19 +44,27 @@ export function CommunityFeed() {
   const { toast } = useToast()
   const [posts, setPosts] = useState<Post[]>([])
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
+  const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchPosts()
     fetchAnnouncements()
-  }, [])
+  }, [selectedChannelId])
 
   const fetchPosts = async () => {
     try {
-      const { data: postsData, error: postsError } = await supabase
+      let query = supabase
         .from('community_posts')
         .select('*')
         .is('parent_id', null)
         .order('created_at', { ascending: false })
+
+      // Filter by channel if selected
+      if (selectedChannelId) {
+        query = query.eq('channel_id', selectedChannelId)
+      }
+
+      const { data: postsData, error: postsError } = await query
 
       if (postsError) throw postsError
 
@@ -141,18 +131,27 @@ export function CommunityFeed() {
 
   return (
     <div className="flex gap-6">
+      {/* Channels Sidebar */}
+      <ChannelsSidebar 
+        selectedChannelId={selectedChannelId}
+        onChannelSelect={setSelectedChannelId}
+      />
+
       {/* Main Feed */}
       <div className="flex-1 space-y-6">
         {/* Create Post */}
         <Card>
           <CardContent className="p-4">
-            <CreatePost onPostCreated={fetchPosts} />
+            <EnhancedCreatePost 
+              onPostCreated={fetchPosts} 
+              channelId={selectedChannelId}
+            />
           </CardContent>
         </Card>
 
         {/* Posts */}
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} onUpdate={fetchPosts} />
+          <EnhancedPostCard key={post.id} post={post} onUpdate={fetchPosts} />
         ))}
       </div>
 
