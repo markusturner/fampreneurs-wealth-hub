@@ -38,7 +38,9 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Target
+  Target,
+  ArrowLeft,
+  Home
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
@@ -687,6 +689,15 @@ export default function AdminDashboard() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/')}
+                className="text-white hover:bg-white/10 transition-colors"
+                title="Back to Dashboard"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
               <Shield className="h-8 w-8" style={{ color: '#ffb500' }} />
               <div>
                 <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
