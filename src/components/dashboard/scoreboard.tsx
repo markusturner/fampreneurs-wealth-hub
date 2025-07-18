@@ -163,7 +163,7 @@ export function Scoreboard() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-primary">
+              <div className="text-2xl font-bold" style={{ color: '#ffb500' }}>
                 {members.reduce((acc, m) => acc + m.group_calls_attended, 0)}
               </div>
               <div className="text-sm text-muted-foreground">Total Group Calls</div>
