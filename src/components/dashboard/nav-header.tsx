@@ -49,28 +49,28 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-soft">
-      <div className="container flex h-16 items-center px-4">
-        <div className="flex items-center gap-4">
+      <div className="container flex h-14 sm:h-16 items-center px-3 sm:px-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {/* Mobile Menu Button */}
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden"
+                className="lg:hidden h-9 w-9"
               >
-                <Menu className="h-5 w-5" />
+                <Menu className="h-4 w-4" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-64 p-0">
               <div className="flex flex-col h-full">
-                <div className="p-6 border-b">
+                <div className="p-4 sm:p-6 border-b">
                   <h2 className="text-lg font-semibold text-foreground">Navigation</h2>
                 </div>
-                <nav className="flex-1 p-4 space-y-2">
+                <nav className="flex-1 p-3 sm:p-4 space-y-1 sm:space-y-2">
                   <Button
                     variant={location.pathname === '/' ? "default" : "ghost"}
-                    className="w-full justify-start gap-3"
+                    className="w-full justify-start gap-3 h-10"
                     onClick={() => handleNavigation('/')}
                   >
                     <Home className="h-4 w-4" />
@@ -78,7 +78,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                   </Button>
                   <Button
                     variant={location.pathname === '/community' ? "default" : "ghost"}
-                    className="w-full justify-start gap-3"
+                    className="w-full justify-start gap-3 h-10"
                     onClick={() => handleNavigation('/community')}
                   >
                     <Users className="h-4 w-4" />
@@ -86,7 +86,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                   </Button>
                   <Button
                     variant={location.pathname === '/courses' ? "default" : "ghost"}
-                    className="w-full justify-start gap-3"
+                    className="w-full justify-start gap-3 h-10"
                     onClick={() => handleNavigation('/courses')}
                   >
                     <BookOpen className="h-4 w-4" />
@@ -94,7 +94,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                   </Button>
                   <Button
                     variant={location.pathname === '/coaching' ? "default" : "ghost"}
-                    className="w-full justify-start gap-3"
+                    className="w-full justify-start gap-3 h-10"
                     onClick={() => handleNavigation('/coaching')}
                   >
                     <Calendar className="h-4 w-4" />
@@ -102,7 +102,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                   </Button>
                   <Button
                     variant={location.pathname === '/members' ? "default" : "ghost"}
-                    className="w-full justify-start gap-3"
+                    className="w-full justify-start gap-3 h-10"
                     onClick={() => handleNavigation('/members')}
                   >
                     <Users className="h-4 w-4" />
@@ -110,7 +110,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                   </Button>
                   <Button
                     variant={location.pathname === '/profile-settings' ? "default" : "ghost"}
-                    className="w-full justify-start gap-3"
+                    className="w-full justify-start gap-3 h-10"
                     onClick={() => handleNavigation('/profile-settings')}
                   >
                     <Settings className="h-4 w-4" />
@@ -121,24 +121,24 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             </SheetContent>
           </Sheet>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden sm:block">
-              <h1 className="text-xl font-oswald font-bold tracking-wide" style={{color: '#ffb500'}}>THE FAMPRENEURS</h1>
+              <h1 className="text-lg sm:text-xl font-oswald font-bold tracking-wide" style={{color: '#ffb500'}}>THE FAMPRENEURS</h1>
               <p className="text-xs text-muted-foreground">BUILDING STRONG LEGACIES</p>
             </div>
             <div className="sm:hidden">
-              <h1 className="text-lg font-oswald font-bold tracking-wide" style={{color: '#ffb500'}}>THE FAMPRENEURS</h1>
+              <h1 className="text-base font-oswald font-bold tracking-wide" style={{color: '#ffb500'}}>FAMPRENEURS</h1>
             </div>
           </div>
         </div>
 
-        {/* Navigation Links */}
-        <div className="hidden md:flex items-center gap-2 mx-6">
+        {/* Navigation Links - Desktop */}
+        <div className="hidden lg:flex items-center gap-1 mx-4 xl:mx-6">
           <Button
             variant={location.pathname === '/' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/')}
-            className="gap-2"
+            className="gap-2 h-9"
           >
             <Home className="h-4 w-4" />
             Dashboard
@@ -147,7 +147,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             variant={location.pathname === '/community' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/community')}
-            className="gap-2"
+            className="gap-2 h-9"
           >
             <Users className="h-4 w-4" />
             Community
@@ -156,7 +156,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             variant={location.pathname === '/courses' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/courses')}
-            className="gap-2"
+            className="gap-2 h-9"
           >
             <BookOpen className="h-4 w-4" />
             Courses
@@ -165,7 +165,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             variant={location.pathname === '/coaching' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/coaching')}
-            className="gap-2"
+            className="gap-2 h-9"
           >
             <Calendar className="h-4 w-4" />
             Calendar
@@ -174,28 +174,34 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             variant={location.pathname === '/members' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/members')}
-            className="gap-2"
+            className="gap-2 h-9"
           >
             <Users className="h-4 w-4" />
             Members
           </Button>
         </div>
 
-        <div className="flex-1 max-w-lg mx-2 sm:mx-4 hidden sm:block">
+        {/* Search Bar - Hidden on mobile, shows on tablet+ */}
+        <div className="flex-1 max-w-lg mx-2 sm:mx-3 xl:mx-4 hidden md:block">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search investments, documents, team..."
-              className="pl-10 bg-muted/50 border-none focus:bg-background text-sm"
+              className="pl-10 bg-muted/50 border-none focus:bg-background text-sm h-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <ThemeToggle />
+          
+          {/* Mobile Search Button */}
+          <Button variant="ghost" size="icon" className="md:hidden h-9 w-9">
+            <Search className="h-4 w-4" />
+          </Button>
           
           <DropdownMenu onOpenChange={(open) => {
             if (open && shouldShowFeedback) {
@@ -203,7 +209,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             }
           }}>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative h-9 w-9">
                 <Bell className="h-4 w-4" />
                 {shouldShowFeedback && (
                   <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full flex items-center justify-center">
@@ -212,11 +218,11 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                 )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-80" align="end">
+            <DropdownMenuContent className="w-72 sm:w-80" align="end">
               <DropdownMenuLabel>Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {shouldShowFeedback ? (
-                <DropdownMenuItem onClick={handleFeedbackClick} className="p-4">
+                <DropdownMenuItem onClick={handleFeedbackClick} className="p-3 sm:p-4">
                   <div className="flex items-start gap-3 w-full">
                     <MessageSquare className="h-5 w-5 text-primary mt-0.5" />
                     <div className="flex-1">
@@ -242,7 +248,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8 ring-2 ring-primary/20">
+                <Avatar className="h-7 w-7 sm:h-8 sm:w-8 ring-2 ring-primary/20">
                   <AvatarImage src={profile?.avatar_url || "/placeholder.svg"} />
                   <AvatarFallback className="text-xs bg-primary text-primary-foreground">
                     {getInitials()}

@@ -47,11 +47,11 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
-      <main className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
+      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full overflow-hidden">
         {/* Welcome Section */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
               Welcome back, {displayName}
             </h1>
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">
@@ -64,30 +64,32 @@ const Index = () => {
         <DashboardStats />
 
         {/* Main Dashboard Grid */}
-        <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-5">
-          {/* Investment Chart - Takes up 4 columns on desktop, full width on mobile */}
-          <div className="lg:col-span-4">
+        <div className="grid gap-4 lg:gap-6 grid-cols-1 xl:grid-cols-5">
+          {/* Investment Chart - Takes up 4 columns on xl screens, full width on smaller */}
+          <div className="xl:col-span-4 order-1">
             <InvestmentChart />
           </div>
           
-          {/* Quick Actions - Takes up 1 column on desktop, full width on mobile */}
-          <div className="lg:col-span-1">
+          {/* Quick Actions - Takes up 1 column on xl screens, full width on smaller */}
+          <div className="xl:col-span-1 order-2">
             <QuickActions />
           </div>
         </div>
 
         {/* Family Calendar */}
-        <FamilyCalendar />
+        <div className="order-3">
+          <FamilyCalendar />
+        </div>
 
         {/* Recent Activities and Asset Allocation */}
-        <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-4">
-          {/* Recent Activities - Takes up 3 columns on desktop, full width on mobile */}
-          <div className="lg:col-span-3">
+        <div className="grid gap-4 lg:gap-6 grid-cols-1 xl:grid-cols-4 order-4">
+          {/* Recent Activities - Takes up 3 columns on xl screens, full width on smaller */}
+          <div className="xl:col-span-3 order-1 xl:order-1">
             <RecentActivities />
           </div>
           
-          {/* Asset Allocation - Takes up 1 column on desktop, full width on mobile */}
-          <div className="lg:col-span-1">
+          {/* Asset Allocation - Takes up 1 column on xl screens, full width on smaller */}
+          <div className="xl:col-span-1 order-2 xl:order-2">
             <AssetAllocation />
           </div>
         </div>

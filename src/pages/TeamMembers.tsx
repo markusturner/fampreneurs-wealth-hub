@@ -277,11 +277,11 @@ export default function TeamMembers() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <div className="container mx-auto py-6 space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Team Members</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl font-bold">Team Members</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Manage your financial advisors and team members
             </p>
           </div>
@@ -291,17 +291,18 @@ export default function TeamMembers() {
             if (!open) resetForm()
           }}>
             <DialogTrigger asChild>
-              <Button className="gap-2">
+              <Button className="gap-2 w-full sm:w-auto">
                 <UserPlus className="h-4 w-4" />
-                Add Financial Advisor
+                <span className="hidden sm:inline">Add Financial Advisor</span>
+                <span className="sm:hidden">Add Advisor</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto mx-3 sm:mx-0 max-w-[calc(100vw-24px)]">
               <DialogHeader>
-                <DialogTitle>
+                <DialogTitle className="text-lg sm:text-xl">
                   {editingAdvisor ? 'Edit Financial Advisor' : 'Add Financial Advisor'}
                 </DialogTitle>
-                <DialogDescription>
+                <DialogDescription className="text-sm">
                   {editingAdvisor ? 'Update advisor information' : 'Add a new financial advisor to your team'}
                 </DialogDescription>
               </DialogHeader>
