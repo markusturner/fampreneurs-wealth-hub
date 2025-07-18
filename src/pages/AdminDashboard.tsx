@@ -51,6 +51,7 @@ import { CommunicationManagement } from '@/components/admin/communication-manage
 import { AdminThemeToggle } from '@/components/admin/admin-theme-toggle'
 import { ThemeSettings } from '@/components/admin/theme-settings'
 import { AddCoachDialog } from '@/components/admin/add-coach-dialog'
+import { EditCoachDialog } from '@/components/admin/edit-coach-dialog'
 import { AddCoachingSessionDialog } from '@/components/admin/add-coaching-session-dialog'
 import { 
   DndContext, 
@@ -890,41 +891,22 @@ export default function AdminDashboard() {
                             <SelectValue placeholder="Select activation point" />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="admin-onboarding">Admin Onboarding</SelectItem>
+                            <SelectItem value="onboarding-call">Onboarding Call</SelectItem>
+                            <SelectItem value="credit-repair">Credit Repair</SelectItem>
+                            <SelectItem value="credit-funding">Credit Funding</SelectItem>
+                            <SelectItem value="pending-account">Pending Account</SelectItem>
                             <SelectItem value="3-trusts-approved">3 Trusts Approved</SelectItem>
-                            <SelectItem value="first-asset-funded">First Asset Funded</SelectItem>
-                            <SelectItem value="digital-office-online">Digital Family Office Online</SelectItem>
-                            <SelectItem value="scheduled-legacy-meeting">Scheduled 1st Family Legacy Meeting</SelectItem>
+                            <SelectItem value="first-trust-funded">First Trust Funded</SelectItem>
+                            <SelectItem value="digital-family-office-online">Digital Family Office Online</SelectItem>
+                            <SelectItem value="scheduled-1st-family-legacy-meeting">Scheduled 1st Family Legacy Meeting</SelectItem>
+                            <SelectItem value="graduated">Graduated</SelectItem>
+                            <SelectItem value="upsell-renewals">Upsell/Renewals</SelectItem>
+                            <SelectItem value="paused">Paused</SelectItem>
+                            <SelectItem value="mentee-lost">Mentee Lost</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Onboarding Email Tracking</CardTitle>
-                <CardDescription>
-                  Track automated onboarding emails sent to new users
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {onboardingEmails.slice(0, 10).map((email) => (
-                    <div key={email.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <Mail className="h-4 w-4 text-blue-600" />
-                        <div>
-                          <div className="font-medium text-sm">{email.email_subject}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {email.email_type} • {new Date(email.sent_at).toLocaleDateString()}
-                          </div>
-                        </div>
-                      </div>
-                      <Badge variant={email.email_status === 'sent' ? 'default' : 'destructive'}>
-                        {email.email_status}
-                      </Badge>
                     </div>
                   ))}
                 </div>
@@ -1080,10 +1062,10 @@ export default function AdminDashboard() {
                             <Badge variant={coach.is_active ? "default" : "secondary"}>
                               {coach.is_active ? "Active" : "Inactive"}
                             </Badge>
-                            <Button variant="outline" size="sm">
-                              <Edit className="h-4 w-4 mr-1" />
-                              Edit
-                            </Button>
+                            <EditCoachDialog 
+                              coach={coach} 
+                              onCoachUpdated={loadAdminData}
+                            />
                           </div>
                         </div>
                       </CardContent>
