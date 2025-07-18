@@ -67,7 +67,7 @@ interface IndividualSession {
 const Coaching = () => {
   // All hooks must be declared first, unconditionally
   const { user, profile, loading } = useAuth()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
   const [viewType, setViewType] = useState<'month' | 'list'>('month')
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
@@ -333,7 +333,7 @@ const Coaching = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      <NavHeader />
       
       <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-6xl">
         {/* Welcome Section */}
@@ -351,50 +351,63 @@ const Coaching = () => {
         {/* Group Coaching Calendar */}
         <Card className="shadow-soft">
           <CardHeader className="p-4 sm:p-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5" />
                 <CardTitle className="text-lg font-bold">Coaching Calendar</CardTitle>
               </div>
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant={calendarMode === 'group' ? 'default' : 'outline'} 
-                  size="sm"
-                  onClick={() => setCalendarMode('group')}
-                  className="gap-2"
-                  style={calendarMode === 'group' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
-                >
-                  <Users className="h-4 w-4" />
-                  Group Calls
-                </Button>
-                <Button 
-                  variant={calendarMode === 'individual' ? 'default' : 'outline'} 
-                  size="sm"
-                  onClick={() => setCalendarMode('individual')}
-                  className="gap-2"
-                  style={calendarMode === 'individual' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
-                >
-                  <User className="h-4 w-4" />
-                  1-on-1 Calls
-                </Button>
-                <Button 
-                  variant={viewType === 'month' ? 'default' : 'outline'} 
-                  size="sm"
-                  onClick={() => setViewType('month')}
-                  className="gap-2"
-                >
-                  <Grid className="h-4 w-4" />
-                  Month
-                </Button>
-                <Button 
-                  variant={viewType === 'list' ? 'default' : 'outline'} 
-                  size="sm"
-                  onClick={() => setViewType('list')}
-                  className="gap-2"
-                >
-                  <List className="h-4 w-4" />
-                  List
-                </Button>
+              
+              {/* Mobile-optimized controls */}
+              <div className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:space-x-2">
+                {/* Calendar Mode Toggle */}
+                <div className="flex gap-1 sm:gap-2">
+                  <Button 
+                    variant={calendarMode === 'group' ? 'default' : 'outline'} 
+                    size="sm"
+                    onClick={() => setCalendarMode('group')}
+                    className="flex-1 sm:flex-initial gap-1 text-xs sm:text-sm px-2 sm:px-3"
+                    style={calendarMode === 'group' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
+                  >
+                    <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden xs:inline">Group</span>
+                    <span className="xs:hidden">G</span>
+                  </Button>
+                  <Button 
+                    variant={calendarMode === 'individual' ? 'default' : 'outline'} 
+                    size="sm"
+                    onClick={() => setCalendarMode('individual')}
+                    className="flex-1 sm:flex-initial gap-1 text-xs sm:text-sm px-2 sm:px-3"
+                    style={calendarMode === 'individual' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
+                  >
+                    <User className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden xs:inline">1-on-1</span>
+                    <span className="xs:hidden">1:1</span>
+                  </Button>
+                </div>
+                
+                {/* View Type Toggle */}
+                <div className="flex gap-1 sm:gap-2">
+                  <Button 
+                    variant={viewType === 'month' ? 'default' : 'outline'} 
+                    size="sm"
+                    onClick={() => setViewType('month')}
+                    className="flex-1 sm:flex-initial gap-1 text-xs sm:text-sm px-2 sm:px-3"
+                  >
+                    <Grid className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden xs:inline">Month</span>
+                    <span className="xs:hidden">M</span>
+                  </Button>
+                  <Button 
+                    variant={viewType === 'list' ? 'default' : 'outline'} 
+                    size="sm"
+                    onClick={() => setViewType('list')}
+                    className="flex-1 sm:flex-initial gap-1 text-xs sm:text-sm px-2 sm:px-3"
+                  >
+                    <List className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden xs:inline">List</span>
+                    <span className="xs:hidden">L</span>
+                  </Button>
+                </div>
               </div>
             </div>
           </CardHeader>
