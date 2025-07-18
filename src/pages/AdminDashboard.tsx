@@ -631,7 +631,11 @@ export default function AdminDashboard() {
                 variant="outline" 
                 onClick={signOut}
                 className="border-white/20 hover:bg-white/10"
-                style={{ color: theme === 'light' ? '#290a52' : '#ffb500' }}
+                style={{ 
+                  color: '#290a52',
+                  backgroundColor: theme === 'light' ? 'transparent' : '#ffb500',
+                  borderColor: theme === 'light' ? 'rgba(255, 255, 255, 0.2)' : '#ffb500'
+                }}
               >
                 Sign Out
               </Button>
