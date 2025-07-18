@@ -26,6 +26,10 @@ import {
 } from 'lucide-react'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
 import { AssetAllocation } from '@/components/dashboard/asset-allocation'
+import { AccountIntegration } from '@/components/dashboard/account-integration'
+import { TransactionMonitoring } from '@/components/dashboard/transaction-monitoring'
+import { BudgetingAnalytics } from '@/components/dashboard/budgeting-analytics'
+import { FamilyMemberManagement } from '@/components/dashboard/family-member-management'
 
 interface Investment {
   id: string
@@ -151,11 +155,11 @@ export default function FamilyOffice() {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="assets">Assets</TabsTrigger>
+            <TabsTrigger value="accounts">Accounts</TabsTrigger>
+            <TabsTrigger value="transactions">Transactions</TabsTrigger>
             <TabsTrigger value="budget">Budget</TabsTrigger>
-            <TabsTrigger value="trusts">Trusts</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
-            <TabsTrigger value="access">Access</TabsTrigger>
+            <TabsTrigger value="members">Members</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -299,7 +303,23 @@ export default function FamilyOffice() {
             </div>
           </TabsContent>
 
-          <TabsContent value="assets" className="space-y-6">
+          <TabsContent value="accounts" className="space-y-6">
+            <AccountIntegration />
+          </TabsContent>
+
+          <TabsContent value="transactions" className="space-y-6">
+            <TransactionMonitoring />
+          </TabsContent>
+
+          <TabsContent value="budget" className="space-y-6">
+            <BudgetingAnalytics />
+          </TabsContent>
+
+          <TabsContent value="members" className="space-y-6">
+            <FamilyMemberManagement />
+          </TabsContent>
+
+          <TabsContent value="reports" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Asset Type Cards */}
               <Card className="cursor-pointer hover:shadow-md transition-shadow">
