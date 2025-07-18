@@ -458,7 +458,15 @@ export function GroupChat({ groupId }: GroupChatProps) {
 
   // Edit Group functions - Updated to match sidebar permissions
   const canEditGroup = () => {
-    return group && (group.created_by === user?.id || profile?.is_admin)
+    const canEdit = group && (group.created_by === user?.id || profile?.is_admin)
+    console.log('Can edit group check:', {
+      group: group?.name,
+      groupCreatedBy: group?.created_by,
+      currentUserId: user?.id,
+      isProfileAdmin: profile?.is_admin,
+      canEdit
+    })
+    return canEdit
   }
 
   const startEditGroup = () => {
