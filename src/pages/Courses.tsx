@@ -382,29 +382,29 @@ const Courses = () => {
                           {filteredCourses[0].level}
                         </Badge>
                       </div>
-                      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">
+                      <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground mb-2">
                         {filteredCourses[0].title}
                       </h2>
-                      <p className="text-sm sm:text-base text-muted-foreground mb-4 line-clamp-2">
+                      <p className="text-xs sm:text-sm lg:text-base text-muted-foreground mb-4 line-clamp-2">
                         {filteredCourses[0].description || "Master essential business skills with this comprehensive course."}
                       </p>
-                      <div className="flex gap-3">
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                         <Button 
-                          size="lg" 
-                          className="hover:opacity-90 font-semibold"
+                          size="sm"
+                          className="hover:opacity-90 font-semibold text-xs sm:text-sm px-4 py-2 sm:px-6 sm:py-3"
                           style={{ backgroundColor: '#ffb500', color: '#290a52' }}
                           onClick={() => handleOpenCourseDetail(filteredCourses[0])}
                         >
-                          <Play className="h-4 w-4 mr-2" />
+                          <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                           {isUserEnrolled(filteredCourses[0].id) ? 'Continue' : 'Start Course'}
                         </Button>
                         <Button 
                           variant="outline" 
-                          size="lg"
-                          className="bg-background/20 border-foreground/20 text-foreground hover:bg-background/40"
+                          size="sm"
+                          className="bg-background/20 border-foreground/20 text-foreground hover:bg-background/40 text-xs sm:text-sm px-4 py-2 sm:px-6 sm:py-3"
                           onClick={() => handleOpenCourseDetail(filteredCourses[0])}
                         >
-                          <Plus className="h-4 w-4 mr-2" />
+                          <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                           My List
                         </Button>
                       </div>

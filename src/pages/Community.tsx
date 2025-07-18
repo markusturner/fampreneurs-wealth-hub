@@ -142,7 +142,7 @@ const Community = () => {
             </div>
           ) : (
             <div className="px-4 py-6 border-b bg-background/80 backdrop-blur-sm">
-              <div className="flex items-center justify-between">
+              <div className="space-y-4">
                 <div>
                   <h1 className="text-2xl font-bold text-foreground">
                     Community Feed
@@ -155,7 +155,7 @@ const Community = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowChannels(true)}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 w-fit"
                 >
                   <Hash className="h-4 w-4" />
                   Channels
