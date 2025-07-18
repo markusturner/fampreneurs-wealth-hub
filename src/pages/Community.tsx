@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { GroupSidebar } from '@/components/community/group-sidebar'
 import { GroupChat } from '@/components/community/group-chat'
-import { SubscriptionBanner } from '@/components/community/subscription-banner'
+
 import { useSubscription } from '@/hooks/useSubscription'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from "@/components/ui/button"
@@ -96,13 +96,6 @@ const Community = () => {
         
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Show subscription banner */}
-          <div className="p-2 sm:p-4">
-            <SubscriptionBanner 
-              isPremiumGroup={selectedGroup?.is_premium}
-              onUpgrade={createCheckout}
-            />
-          </div>
           
           {/* Chat Area */}
           <div className="flex-1 min-h-0 flex flex-col">
