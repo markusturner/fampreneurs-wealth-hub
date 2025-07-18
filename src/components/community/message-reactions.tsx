@@ -7,10 +7,9 @@ import { useToast } from '@/hooks/use-toast'
 import { ThumbsUp, Heart, Laugh, Angry, Frown, Plus } from 'lucide-react'
 
 interface Reaction {
-  id: string
   reaction_type: string
-  user_id: string
   user_count: number
+  users: string[]
 }
 
 interface MessageReactionsProps {
@@ -81,7 +80,7 @@ export function MessageReactions({ messageId, reactions, onReactionUpdate }: Mes
   }
 
   const getUserReaction = (reactionType: string) => {
-    return reactions.find(r => r.reaction_type === reactionType && r.user_id === user?.id)
+    return reactions.find(r => r.reaction_type === reactionType && r.users.includes(user?.id || ''))
   }
 
   const getReactionCount = (reactionType: string) => {

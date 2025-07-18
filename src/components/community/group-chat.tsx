@@ -43,10 +43,9 @@ interface Message {
 }
 
 interface Reaction {
-  id: string
   reaction_type: string
-  user_id: string
   user_count: number
+  users: string[]
 }
 
 interface Poll {
@@ -114,7 +113,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
   useEffect(() => {
     if (groupId) {
       fetchGroup()
-      fetchMessages()
+      fetchMessagesWithReactions()
       const cleanup = subscribeToMessages()
       
       // Return cleanup function
@@ -150,39 +149,6 @@ export function GroupChat({ groupId }: GroupChatProps) {
     }
   }
 
-  const fetchMessages = async () => {
-    if (!groupId) return
-
-    setLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from('group_messages')
-        .select('*')
-        .eq('group_id', groupId)
-        .order('created_at', { ascending: true })
-
-      if (error) throw error
-      
-      // Fetch profile data for all unique users
-      const userIds = [...new Set(data?.map(msg => msg.user_id) || [])]
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, first_name, avatar_url')
-        .in('user_id', userIds)
-      
-      // Map profiles to messages
-      const messagesWithProfiles = data?.map(msg => ({
-        ...msg,
-        profiles: profiles?.find(p => p.user_id === msg.user_id) || null
-      })) || []
-      
-      setMessages(messagesWithProfiles)
-    } catch (error) {
-      console.error('Error fetching messages:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const subscribeToMessages = () => {
     if (!groupId) return
@@ -356,33 +322,71 @@ export function GroupChat({ groupId }: GroupChatProps) {
     }
   }
 
-  const fetchMessageReactions = async (messageId: string) => {
+  const fetchMessagesWithReactions = async () => {
+    if (!groupId) return
+
+    setLoading(true)
     try {
-      const { data, error } = await supabase
-        .from('message_reactions')
-        .select('reaction_type, user_id, id')
-        .eq('message_id', messageId)
+      // Fetch messages
+      const { data: messagesData, error: messagesError } = await supabase
+        .from('group_messages')
+        .select('*')
+        .eq('group_id', groupId)
+        .order('created_at', { ascending: true })
 
-      if (error) throw error
+      if (messagesError) throw messagesError
+      
+      // Fetch profile data for all unique users
+      const userIds = [...new Set(messagesData?.map(msg => msg.user_id) || [])]
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, first_name, avatar_url')
+        .in('user_id', userIds)
 
-      // Group reactions by type and count users
-      const reactionGroups = data?.reduce((acc, reaction) => {
-        if (!acc[reaction.reaction_type]) {
-          acc[reaction.reaction_type] = {
-            id: reaction.id,
+      // Fetch reactions for all messages
+      const messageIds = messagesData?.map(msg => msg.id) || []
+      let reactionsData = []
+      
+      if (messageIds.length > 0) {
+        const { data: reactions, error: reactionsError } = await supabase
+          .from('message_reactions')
+          .select('message_id, reaction_type, user_id')
+          .in('message_id', messageIds)
+
+        if (!reactionsError) {
+          reactionsData = reactions || []
+        }
+      }
+
+      // Group reactions by message and type
+      const reactionsByMessage = reactionsData.reduce((acc, reaction) => {
+        if (!acc[reaction.message_id]) {
+          acc[reaction.message_id] = {}
+        }
+        if (!acc[reaction.message_id][reaction.reaction_type]) {
+          acc[reaction.message_id][reaction.reaction_type] = {
             reaction_type: reaction.reaction_type,
-            user_id: reaction.user_id,
-            user_count: 0
+            user_count: 0,
+            users: []
           }
         }
-        acc[reaction.reaction_type].user_count++
+        acc[reaction.message_id][reaction.reaction_type].user_count++
+        acc[reaction.message_id][reaction.reaction_type].users.push(reaction.user_id)
         return acc
-      }, {} as Record<string, any>) || {}
+      }, {} as any)
 
-      return Object.values(reactionGroups)
+      // Map profiles and reactions to messages
+      const messagesWithData = messagesData?.map(msg => ({
+        ...msg,
+        profiles: profiles?.find(p => p.user_id === msg.user_id) || null,
+        reactions: Object.values(reactionsByMessage[msg.id] || {}) as Reaction[]
+      })) || []
+      
+      setMessages(messagesWithData)
     } catch (error) {
-      console.error('Error fetching reactions:', error)
-      return []
+      console.error('Error fetching messages:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -668,12 +672,12 @@ export function GroupChat({ groupId }: GroupChatProps) {
                            <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                          </Card>
                          
-                         {/* Message Reactions */}
-                         <MessageReactions 
-                           messageId={message.id}
-                           reactions={message.reactions || []}
-                           onReactionUpdate={() => fetchMessages()}
-                         />
+                          {/* Message Reactions */}
+                          <MessageReactions 
+                            messageId={message.id}
+                            reactions={message.reactions || []}
+                            onReactionUpdate={() => fetchMessagesWithReactions()}
+                          />
                         
                         {/* Message actions */}
                         {isOwn && (
