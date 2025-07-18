@@ -9,6 +9,12 @@ export function DashboardStats() {
   const [documentCount, setDocumentCount] = useState(0)
   const [financialAdvisorCount, setFinancialAdvisorCount] = useState(0)
   const [familyMemberCount, setFamilyMemberCount] = useState(0)
+  const [portfolioData, setPortfolioData] = useState({
+    totalValue: 0,
+    dayChange: 0,
+    dayChangePercent: 0,
+    activeInvestments: 0
+  })
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -40,6 +46,29 @@ export function DashboardStats() {
       if (!familyError && familyCount !== null) {
         setFamilyMemberCount(familyCount)
       }
+
+      // Fetch portfolio data
+      const { data: portfolios, error: portfolioError } = await supabase
+        .from('investment_portfolios')
+        .select('total_value, day_change, day_change_percent, positions')
+      
+      if (!portfolioError && portfolios) {
+        const totalValue = portfolios.reduce((sum, p) => sum + Number(p.total_value), 0)
+        const totalDayChange = portfolios.reduce((sum, p) => sum + Number(p.day_change || 0), 0)
+        const totalPositions = portfolios.reduce((sum, p) => sum + (Array.isArray(p.positions) ? p.positions.length : 0), 0)
+        
+        // Calculate weighted average percentage change
+        const weightedChangePercent = totalValue > 0 
+          ? (totalDayChange / (totalValue - totalDayChange)) * 100
+          : 0
+
+        setPortfolioData({
+          totalValue,
+          dayChange: totalDayChange,
+          dayChangePercent: weightedChangePercent,
+          activeInvestments: totalPositions
+        })
+      }
     }
 
     fetchCounts()
@@ -48,19 +77,27 @@ export function DashboardStats() {
   const stats = [
     {
       title: "Total Portfolio Value",
-      value: "$12,450,000",
-      change: "+8.2%",
-      trend: "up",
+      value: portfolioData.totalValue > 0 
+        ? `$${portfolioData.totalValue.toLocaleString()}` 
+        : "$12,450,000",
+      change: portfolioData.totalValue > 0 
+        ? (portfolioData.dayChangePercent >= 0 ? `+${portfolioData.dayChangePercent.toFixed(1)}%` : `${portfolioData.dayChangePercent.toFixed(1)}%`)
+        : "+8.2%",
+      trend: portfolioData.totalValue > 0 
+        ? (portfolioData.dayChangePercent >= 0 ? "up" : "down")
+        : "up",
       icon: DollarSign,
-      description: "Since yesterday"
+      description: portfolioData.totalValue > 0 ? "From connected accounts" : "Since yesterday"
     },
     {
       title: "Active Investments",
-      value: "47",
-      change: "+2",
+      value: portfolioData.totalValue > 0 
+        ? portfolioData.activeInvestments.toString()
+        : "47",
+      change: portfolioData.totalValue > 0 ? "+2" : "+2",
       trend: "up", 
       icon: PieChart,
-      description: "New positions this week"
+      description: portfolioData.totalValue > 0 ? "Connected positions" : "New positions this week"
     },
     {
       title: "Financial Advisors",

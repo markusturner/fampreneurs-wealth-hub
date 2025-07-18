@@ -861,6 +861,48 @@ export type Database = {
           },
         ]
       }
+      investment_portfolios: {
+        Row: {
+          cash_balance: number | null
+          created_at: string
+          day_change: number | null
+          day_change_percent: number | null
+          id: string
+          last_updated: string | null
+          platform_id: string
+          positions: Json | null
+          total_value: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cash_balance?: number | null
+          created_at?: string
+          day_change?: number | null
+          day_change_percent?: number | null
+          id?: string
+          last_updated?: string | null
+          platform_id: string
+          positions?: Json | null
+          total_value?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cash_balance?: number | null
+          created_at?: string
+          day_change?: number | null
+          day_change_percent?: number | null
+          id?: string
+          last_updated?: string | null
+          platform_id?: string
+          positions?: Json | null
+          total_value?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string

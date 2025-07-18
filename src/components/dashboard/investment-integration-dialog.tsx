@@ -218,10 +218,34 @@ export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIn
 
       if (error) throw error
 
-      toast({
-        title: "API Connected",
-        description: `Successfully connected to ${selectedPlatform.name} via API.`,
-      })
+      // Call the investment sync function to fetch portfolio data
+      try {
+        const { data: syncData, error: syncError } = await supabase.functions.invoke('investment-data-sync', {
+          body: {
+            userId: user.id,
+            platformId: selectedPlatform.id
+          }
+        })
+
+        if (syncError) {
+          console.error('Sync error:', syncError)
+          toast({
+            title: "API Connected with Warning",
+            description: `${selectedPlatform.name} connected but portfolio sync failed. Data will sync on next refresh.`,
+          })
+        } else {
+          toast({
+            title: "API Connected & Synced",
+            description: `Successfully connected to ${selectedPlatform.name} and synced portfolio data.`,
+          })
+        }
+      } catch (syncError) {
+        console.error('Portfolio sync failed:', syncError)
+        toast({
+          title: "API Connected",
+          description: `Connected to ${selectedPlatform.name}. Portfolio will sync shortly.`,
+        })
+      }
 
       // Reset form and close
       setApiKeyData({ apiKey: "", apiSecret: "", accountName: "", environment: "sandbox" })
@@ -263,6 +287,22 @@ export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIn
         })
 
       if (error) throw error
+
+      // Call the investment sync function for manual accounts too
+      try {
+        const { data: syncData, error: syncError } = await supabase.functions.invoke('investment-data-sync', {
+          body: {
+            userId: user.id,
+            platformId: selectedPlatform.id
+          }
+        })
+
+        if (syncError) {
+          console.error('Sync error:', syncError)
+        }
+      } catch (syncError) {
+        console.error('Portfolio sync failed:', syncError)
+      }
 
       toast({
         title: "Account Connected",
