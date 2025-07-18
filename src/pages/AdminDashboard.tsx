@@ -611,6 +611,24 @@ export default function AdminDashboard() {
         title: "Settings saved",
         description: "Platform settings have been updated successfully.",
       })
+      
+      // Reload only the platform settings to reflect the saved changes
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('platform_settings')
+        .select('setting_key, setting_value')
+        .in('setting_key', ['platform_name', 'admin_email'])
+
+      if (!settingsError && settingsData) {
+        const settings = settingsData.reduce((acc, setting) => {
+          acc[setting.setting_key] = setting.setting_value
+          return acc
+        }, {} as any)
+
+        setPlatformSettings({
+          platform_name: settings.platform_name || 'Fampreneurs',
+          admin_email: settings.admin_email || 'admin@fampreneurs.com'
+        })
+      }
     } catch (error: any) {
       toast({
         title: "Error saving settings",
