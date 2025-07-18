@@ -623,7 +623,29 @@ const Coaching = () => {
                                 <Button 
                                   size="sm" 
                                   className="flex-1 text-xs gap-1"
-                                  onClick={() => window.open(session.zoomMeetingUrl, '_blank')}
+                                  onClick={async () => {
+                                    // Record attendance and open Zoom
+                                    if (user) {
+                                      try {
+                                        await supabase
+                                          .from('session_attendance')
+                                          .upsert({
+                                            user_id: user.id,
+                                            session_id: session.id,
+                                            session_type: session.type === "Group Coaching" ? "group" : "individual",
+                                            attended: true,
+                                            joined_at: new Date().toISOString()
+                                          })
+                                        
+                                        window.open(session.zoomMeetingUrl, '_blank')
+                                      } catch (error) {
+                                        console.error('Error recording attendance:', error)
+                                        window.open(session.zoomMeetingUrl, '_blank')
+                                      }
+                                    } else {
+                                      window.open(session.zoomMeetingUrl, '_blank')
+                                    }
+                                  }}
                                 >
                                   <Video className="h-3 w-3" />
                                   Join Session
@@ -813,23 +835,14 @@ const Coaching = () => {
                 </div>
               )}
 
-              <div className="grid lg:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Button 
-                    onClick={() => window.open(selectedSessionDialog.zoomMeetingUrl, '_blank')} 
-                    className="w-full"
-                  >
-                    <Video className="h-4 w-4 mr-2" />
-                    Join Session
-                  </Button>
-                </div>
-                
+              <div className="grid lg:grid-cols-1 gap-4">
                 <div>
                   <AttendanceTracker
                     sessionId={selectedSessionDialog.id}
                     sessionType={selectedSessionDialog.type === "Group Coaching" ? "group" : "individual"}
                     sessionTitle={selectedSessionDialog.title}
                     onAttendanceUpdate={fetchSessions}
+                    meetingUrl={selectedSessionDialog.zoomMeetingUrl}
                   />
                 </div>
               </div>

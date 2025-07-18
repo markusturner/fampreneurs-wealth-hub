@@ -226,9 +226,9 @@ export default function FamilyOffice() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{investments.length + 8}</div>
+                  <div className="text-2xl font-bold">{investments.length + 3}</div>
                   <div className="text-xs text-muted-foreground">
-                    {investments.length} Investment • 8 Other
+                    {investments.length} Investment • 3 Other
                   </div>
                 </CardContent>
               </Card>

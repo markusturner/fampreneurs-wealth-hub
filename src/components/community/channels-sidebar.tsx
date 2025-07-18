@@ -254,15 +254,16 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
 
   const handleUpdateChannel = async () => {
     if (editingAllPosts) {
-      // Just close the dialog for All Posts editing (no actual update needed)
+      // For All Posts, just show a message since it's not a real channel
       resetForm()
       setShowEditDialog(false)
       setEditingChannel(null)
       setEditingAllPosts(false)
       
       toast({
-        title: "Settings saved",
-        description: "All Posts settings updated!"
+        title: "Note",
+        description: "All Posts is a default view that shows all posts from all channels and cannot be modified.",
+        variant: "default"
       })
       return
     }

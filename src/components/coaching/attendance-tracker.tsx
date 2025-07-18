@@ -12,13 +12,15 @@ interface AttendanceTrackerProps {
   sessionType: 'group' | 'individual'
   sessionTitle: string
   onAttendanceUpdate?: () => void
+  meetingUrl?: string
 }
 
 export const AttendanceTracker = ({ 
   sessionId, 
   sessionType, 
   sessionTitle, 
-  onAttendanceUpdate 
+  onAttendanceUpdate,
+  meetingUrl 
 }: AttendanceTrackerProps) => {
   const { user } = useAuth()
   const { toast } = useToast()
@@ -225,7 +227,12 @@ export const AttendanceTracker = ({
               Track your attendance for this session
             </div>
             <Button
-              onClick={handleJoinSession}
+              onClick={() => {
+                handleJoinSession()
+                if (meetingUrl) {
+                  window.open(meetingUrl, '_blank')
+                }
+              }}
               disabled={isJoining}
               size="sm"
               className="w-full"
