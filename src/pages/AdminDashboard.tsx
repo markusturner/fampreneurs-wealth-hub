@@ -49,7 +49,8 @@ import { UserRoleManagement } from '@/components/admin/user-role-management'
 import { UserCard } from '@/components/admin/user-card'
 import { CommunicationManagement } from '@/components/admin/communication-management'
 import { ThemeSettings } from '@/components/admin/theme-settings'
-import { StageManagement } from '@/components/admin/stage-management'
+import { AddCoachDialog } from '@/components/admin/add-coach-dialog'
+import { AddCoachingSessionDialog } from '@/components/admin/add-coaching-session-dialog'
 import { 
   DndContext, 
   DragEndEvent, 
@@ -216,7 +217,8 @@ export default function AdminDashboard() {
   
   const [users, setUsers] = useState<Profile[]>([])
   const [courses, setCourses] = useState<Course[]>([])
-  const [posts, setPosts] = useState<Post[]>([])
+  const [coaches, setCoaches] = useState<any[]>([])
+  const [coachingSessions, setCoachingSessions] = useState<any[]>([])
   const [fulfillmentStages, setFulfillmentStages] = useState<FulfillmentStage[]>([])
   const [onboardingEmails, setOnboardingEmails] = useState<OnboardingEmail[]>([])
   const [metrics, setMetrics] = useState<Metrics>({
@@ -364,37 +366,23 @@ export default function AdminDashboard() {
       if (coursesError) throw coursesError
       setCourses(coursesData || [])
 
-      // Load community posts with reactions and comments
-      const { data: postsData, error: postsError } = await supabase
-        .from('community_posts')
-        .select(`
-          *,
-          community_reactions (id),
-          community_comments (id)
-        `)
+      // Load coaches
+      const { data: coachesData, error: coachesError } = await supabase
+        .from('financial_advisors')
+        .select('*')
         .order('created_at', { ascending: false })
-        .limit(20)
 
-      if (postsError) throw postsError
+      if (coachesError) throw coachesError
+      setCoaches(coachesData || [])
 
-      const postsWithProfiles = await Promise.all(
-        (postsData || []).map(async (post) => {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('first_name, last_name, display_name')
-            .eq('user_id', post.user_id)
-            .single()
-          
-          return {
-            ...post,
-            profiles: profileData,
-            reactions_count: (post as any).community_reactions?.length || 0,
-            comments_count: (post as any).community_comments?.length || 0
-          }
-        })
-      )
+      // Load coaching sessions
+      const { data: sessionsData, error: sessionsError } = await supabase
+        .from('group_coaching_sessions')
+        .select('*')
+        .order('session_date', { ascending: false })
 
-      setPosts(postsWithProfiles)
+      if (sessionsError) throw sessionsError
+      setCoachingSessions(sessionsData || [])
 
       // Load onboarding emails
       const { data: emailsData, error: emailsError } = await supabase
@@ -674,10 +662,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="courses">
               <BookOpen className="h-4 w-4 mr-2" />
               Courses
-            </TabsTrigger>
-            <TabsTrigger value="community">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Community
+             </TabsTrigger>
+            <TabsTrigger value="coaching">
+              <Calendar className="h-4 w-4 mr-2" />
+              Coaching
             </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="h-4 w-4 mr-2" />
@@ -897,11 +885,31 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="space-y-4">
                   {filteredUsers.map(user => (
-                    <UserCard 
-                      key={user.id} 
-                      user={user} 
-                      onRolesUpdated={loadAdminData}
-                    />
+                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <UserCard 
+                        user={user} 
+                        onRolesUpdated={loadAdminData}
+                      />
+                      <div className="ml-4">
+                        <Label className="text-sm font-medium">Activation Status</Label>
+                        <Select onValueChange={(value) => {
+                          toast({
+                            title: "Activation Point Updated",
+                            description: `User moved to: ${value}`,
+                          })
+                        }}>
+                          <SelectTrigger className="w-[250px] mt-1">
+                            <SelectValue placeholder="Select activation point" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="3-trusts-approved">3 Trusts Approved</SelectItem>
+                            <SelectItem value="first-asset-funded">First Asset Funded</SelectItem>
+                            <SelectItem value="digital-office-online">Digital Family Office Online</SelectItem>
+                            <SelectItem value="scheduled-legacy-meeting">Scheduled 1st Family Legacy Meeting</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </CardContent>
@@ -1012,87 +1020,153 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          {/* Community Tab */}
-          <TabsContent value="community" className="space-y-6">
+          {/* Coaching Tab */}
+          <TabsContent value="coaching" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{posts.length}</div>
-                  <p className="text-xs text-muted-foreground">Last 20 posts shown</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Active Groups</CardTitle>
+                  <CardTitle className="text-sm font-medium">Total Coaches</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">12</div>
-                  <p className="text-xs text-muted-foreground">Community groups</p>
+                  <div className="text-2xl font-bold">{coaches.length}</div>
+                  <p className="text-xs text-muted-foreground">Active coaches</p>
                 </CardContent>
               </Card>
               
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Engagement Rate</CardTitle>
+                  <CardTitle className="text-sm font-medium">Coaching Sessions</CardTitle>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{coachingSessions.length}</div>
+                  <p className="text-xs text-muted-foreground">Scheduled sessions</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Booking Rate</CardTitle>
                   <Activity className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">78%</div>
-                  <p className="text-xs text-green-600">High engagement</p>
+                  <div className="text-2xl font-bold">85%</div>
+                  <p className="text-xs text-green-600">High booking rate</p>
                 </CardContent>
               </Card>
             </div>
 
+            {/* Coaches Management */}
             <Card>
               <CardHeader>
-                <CardTitle>Community Posts Management</CardTitle>
-                <CardDescription>
-                  Monitor and moderate community posts, reactions, and engagement
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Coaches Management</CardTitle>
+                    <CardDescription>
+                      Manage coaches and their availability for 1-on-1 sessions
+                    </CardDescription>
+                  </div>
+                  <AddCoachDialog onCoachAdded={loadAdminData} />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {coaches.map((coach) => (
+                    <Card key={coach.id}>
+                      <CardHeader>
+                        <CardTitle className="text-sm">{coach.full_name}</CardTitle>
+                        <CardDescription>{coach.email}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Rate:</span>
+                            <span>${coach.hourly_rate || 'N/A'}/hr</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span>Experience:</span>
+                            <span>{coach.years_experience || 'N/A'} years</span>
+                          </div>
+                          <div className="flex items-center justify-between mt-3">
+                            <Badge variant={coach.is_active ? "default" : "secondary"}>
+                              {coach.is_active ? "Active" : "Inactive"}
+                            </Badge>
+                            <Button variant="outline" size="sm">
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Coaching Sessions */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Coaching Sessions</CardTitle>
+                    <CardDescription>
+                      Schedule and manage group and 1-on-1 coaching sessions
+                    </CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <AddCoachingSessionDialog 
+                      type="group" 
+                      onSessionAdded={loadAdminData} 
+                    />
+                    <AddCoachingSessionDialog 
+                      type="one-on-one" 
+                      onSessionAdded={loadAdminData} 
+                    />
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {posts.map((post) => (
-                    <div key={post.id} className="p-4 border rounded-lg">
+                  {coachingSessions.map((session) => (
+                    <div key={session.id} className="p-4 border rounded-lg">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-2">
-                            <span className="font-medium">
-                              {post.profiles?.display_name || 
-                               `${post.profiles?.first_name} ${post.profiles?.last_name}` ||
-                               'Anonymous User'}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(post.created_at).toLocaleDateString()}
-                            </span>
-                            <div className="flex items-center space-x-3 text-xs text-muted-foreground">
-                              <span>❤️ {(post as any).reactions_count || 0}</span>
-                              <span>💬 {(post as any).comments_count || 0}</span>
-                            </div>
+                            <h4 className="font-medium">{session.title}</h4>
+                            <Badge variant={session.max_participants > 1 ? "default" : "secondary"}>
+                              {session.max_participants > 1 ? "Group" : "1-on-1"}
+                            </Badge>
                           </div>
-                          <p className="text-sm">{post.content}</p>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Coach: {session.coach_name}
+                          </p>
+                          <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                            <span>📅 {new Date(session.session_date).toLocaleDateString()}</span>
+                            <span>🕐 {session.session_time}</span>
+                            <span>⏱️ {session.duration_minutes} min</span>
+                            <span>👥 {session.current_participants || 0}/{session.max_participants}</span>
+                          </div>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Button variant="outline" size="sm">
                             <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Edit className="h-4 w-4" />
                           </Button>
                           <Button 
                             variant="destructive" 
                             size="sm"
                             onClick={async () => {
                               const { error } = await supabase
-                                .from('community_posts')
+                                .from('group_coaching_sessions')
                                 .delete()
-                                .eq('id', post.id)
+                                .eq('id', session.id)
                               
                               if (!error) {
-                                toast({ title: "Post deleted" })
+                                toast({ title: "Session deleted" })
                                 loadAdminData()
                               }
                             }}
@@ -1103,51 +1177,6 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Community Groups Management</CardTitle>
-                <CardDescription>
-                  Manage private groups, premium access, and member permissions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create New Group
-                  </Button>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm">Premium Members Group</CardTitle>
-                        <CardDescription>Exclusive group for premium subscribers</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center justify-between">
-                          <Badge variant="secondary">24 members</Badge>
-                          <Button variant="outline" size="sm">Manage</Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm">General Discussion</CardTitle>
-                        <CardDescription>Public group for all members</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center justify-between">
-                          <Badge variant="secondary">156 members</Badge>
-                          <Button variant="outline" size="sm">Manage</Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
                 </div>
               </CardContent>
             </Card>
