@@ -232,132 +232,144 @@ const Courses = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-black text-white">
       <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
-      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-6xl">
-        {/* Welcome Section */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+      <main className="px-4 py-6 space-y-8">
+        {/* Welcome Section - Netflix Style */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-10"></div>
+          <div className="relative z-20 pt-20 pb-10">
+            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
               Family Business University
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Access courses and coaching call recordings
+            <p className="text-lg text-gray-300 max-w-2xl">
+              Master the art of family business management through our comprehensive course library
             </p>
           </div>
         </div>
 
         {/* Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="courses" className="flex items-center gap-2">
+          <TabsList className="bg-gray-900 border-gray-800">
+            <TabsTrigger value="courses" className="flex items-center gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white">
               <BookOpen className="h-4 w-4" />
               Courses
             </TabsTrigger>
-            <TabsTrigger value="recordings" className="flex items-center gap-2">
+            <TabsTrigger value="recordings" className="flex items-center gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white">
               <Video className="h-4 w-4" />
               Call Recordings
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="courses" className="space-y-6 mt-6">
-            {/* Course Grid */}
+          <TabsContent value="courses" className="space-y-8 mt-8">
+            {/* Course Grid - Netflix Style */}
             <div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
+              <h2 className="text-2xl font-bold mb-6 text-white">
                 {selectedCategory} ({filteredCourses.length})
               </h2>
-              <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
                 {filteredCourses.map((course) => {
                   const progress = getUserProgress(course.id)
                   const enrolled = isUserEnrolled(course.id)
                   const isCreator = isUserCourseCreator(course)
                   
                   return (
-                    <Card key={course.id} className="shadow-soft hover:shadow-medium transition-smooth overflow-hidden">
-                      <div className="aspect-video overflow-hidden">
+                    <div
+                      key={course.id}
+                      className="group cursor-pointer transition-all duration-300 hover:scale-105"
+                      onClick={() => handleOpenCourseDetail(course)}
+                    >
+                      <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-900">
                         <img 
-                          src={course.image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=200&fit=crop"} 
+                          src={course.image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=600&fit=crop"} 
                           alt={course.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:brightness-75 transition-all duration-300"
                         />
-                      </div>
-                      <CardHeader className="p-3 sm:p-4">
-                        <div className="flex items-start justify-between mb-2">
-                          <Badge variant={course.level === 'Beginner' ? 'secondary' : course.level === 'Advanced' ? 'destructive' : 'default'} className="text-xs">
-                            {course.level}
-                          </Badge>
-                          <span className="text-xs sm:text-sm font-semibold text-primary">{course.price}</span>
-                        </div>
-                        <CardTitle className="text-sm sm:text-base leading-tight">{course.title}</CardTitle>
-                        <CardDescription className="text-xs sm:text-sm line-clamp-2">
-                          {course.description}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-3 sm:p-4 space-y-3">
-                        <div className="text-xs sm:text-sm text-muted-foreground">
-                          <p className="font-medium truncate">{course.instructor}</p>
-                          {course.duration && (
-                            <p className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {course.duration}
-                            </p>
-                          )}
+                        
+                        {/* Netflix-style overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="absolute bottom-0 left-0 right-0 p-4">
+                            <h3 className="font-bold text-white text-sm mb-1 truncate">{course.title}</h3>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge 
+                                className={`text-xs ${
+                                  course.level === 'Beginner' ? 'bg-green-600' : 
+                                  course.level === 'Advanced' ? 'bg-red-600' : 'bg-yellow-600'
+                                } text-white`}
+                              >
+                                {course.level}
+                              </Badge>
+                              <span className="text-xs text-gray-300">{course.price}</span>
+                            </div>
+                            
+                            {enrolled && progress > 0 && (
+                              <div className="mb-2">
+                                <div className="w-full bg-gray-700 rounded-full h-1">
+                                  <div 
+                                    className="bg-red-600 h-1 rounded-full transition-all duration-300" 
+                                    style={{ width: `${progress}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-xs text-gray-300">{progress}% complete</span>
+                              </div>
+                            )}
+                            
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                className="bg-white text-black hover:bg-gray-200 text-xs px-3 py-1"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleOpenCourseDetail(course)
+                                }}
+                              >
+                                <Play className="h-3 w-3 mr-1" />
+                                {enrolled ? 'Continue' : 'Start'}
+                              </Button>
+                              {!enrolled && !isCreator && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-gray-500 text-white hover:bg-gray-800 text-xs px-3 py-1"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleEnrollInCourse(course.id)
+                                  }}
+                                >
+                                  Enroll
+                                </Button>
+                              )}
+                            </div>
+                          </div>
                         </div>
 
+                        {/* Progress indicator */}
                         {enrolled && progress > 0 && (
-                          <div className="space-y-1">
-                            <div className="flex justify-between text-xs">
-                              <span>Progress</span>
-                              <span>{progress}%</span>
+                          <div className="absolute top-2 right-2">
+                            <div className="bg-red-600 text-white text-xs px-2 py-1 rounded">
+                              {progress}%
                             </div>
-                            <Progress value={progress} className="h-2" />
                           </div>
                         )}
 
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          <Button 
-                            className="flex-1 gap-1 sm:gap-2 text-sm py-2 h-auto" 
-                            size="default"
-                            onClick={() => handleOpenCourseDetail(course)}
+                        {/* Course level indicator */}
+                        <div className="absolute top-2 left-2">
+                          <Badge 
+                            className={`text-xs ${
+                              course.level === 'Beginner' ? 'bg-green-600' : 
+                              course.level === 'Advanced' ? 'bg-red-600' : 'bg-yellow-600'
+                            } text-white`}
                           >
-                            {enrolled && progress === 0 ? (
-                              <>
-                                <Play className="h-3 w-3 sm:h-4 sm:w-4" />
-                                Start Course
-                              </>
-                            ) : enrolled && progress === 100 ? (
-                              <>
-                                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                                Completed
-                              </>
-                            ) : enrolled ? (
-                              <>
-                                <Play className="h-3 w-3 sm:h-4 sm:w-4" />
-                                Continue
-                              </>
-                            ) : (
-                              <>
-                                <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
-                                View Course
-                              </>
-                            )}
-                          </Button>
-                          
+                            {course.level}
+                          </Badge>
                         </div>
-
-                        {!enrolled && !isCreator && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full text-xs sm:text-sm"
-                            onClick={() => handleEnrollInCourse(course.id)}
-                          >
-                            Enroll Now
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
+                      </div>
+                      
+                      {/* Title below image */}
+                      <h3 className="text-white font-medium text-sm mt-2 truncate">{course.title}</h3>
+                      <p className="text-gray-400 text-xs truncate">{course.instructor}</p>
+                    </div>
                   )
                 })}
               </div>
@@ -414,23 +426,79 @@ const Courses = () => {
         onCourseCreated={fetchCourses}
       />
 
-      {/* Course Detail Dialog */}
+      {/* Course Detail Dialog - Netflix Style */}
       {selectedCourse && (
         <Dialog open={courseDetailOpen} onOpenChange={setCourseDetailOpen}>
-          <DialogContent className="w-[95vw] max-w-[900px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-base sm:text-lg">{selectedCourse.title}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
-                <span>Instructor: {selectedCourse.instructor}</span>
-                {selectedCourse.duration && <span>Duration: {selectedCourse.duration}</span>}
-                <Badge variant="outline" className="w-fit">{selectedCourse.level}</Badge>
+          <DialogContent className="w-[95vw] max-w-[1200px] max-h-[90vh] overflow-hidden bg-black border-gray-800 p-0">
+            <div className="relative">
+              {/* Header with background image */}
+              <div className="relative h-64 md:h-80">
+                <img 
+                  src={selectedCourse.image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&h=400&fit=crop"} 
+                  alt={selectedCourse.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+                
+                {/* Course info overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{selectedCourse.title}</h1>
+                  <div className="flex items-center gap-4 mb-4">
+                    <span className="text-white">2024</span>
+                    <Badge className={`${
+                      selectedCourse.level === 'Beginner' ? 'bg-green-600' : 
+                      selectedCourse.level === 'Advanced' ? 'bg-red-600' : 'bg-yellow-600'
+                    } text-white`}>
+                      {selectedCourse.level}
+                    </Badge>
+                    {selectedCourse.duration && (
+                      <span className="text-white flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        {selectedCourse.duration}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-4 mb-4">
+                    <Button 
+                      size="lg" 
+                      className="bg-white text-black hover:bg-gray-200 font-semibold"
+                      onClick={() => {
+                        setCourseDetailOpen(false)
+                        // Auto-scroll to videos when opened
+                      }}
+                    >
+                      <Play className="h-5 w-5 mr-2" />
+                      {isUserEnrolled(selectedCourse.id) ? 'Continue Watching' : 'Start Course'}
+                    </Button>
+                    
+                    {!isUserEnrolled(selectedCourse.id) && !isUserCourseCreator(selectedCourse) && (
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="border-gray-500 text-white hover:bg-gray-800"
+                        onClick={() => handleEnrollInCourse(selectedCourse.id)}
+                      >
+                        Enroll Now
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {selectedCourse.description && (
+                    <p className="text-gray-300 max-w-2xl text-sm leading-relaxed">{selectedCourse.description}</p>
+                  )}
+                  
+                  <div className="mt-4 flex items-center gap-4 text-sm text-gray-400">
+                    <span>Instructor: <span className="text-white">{selectedCourse.instructor}</span></span>
+                    <span>Price: <span className="text-white">{selectedCourse.price}</span></span>
+                  </div>
+                </div>
               </div>
-              {selectedCourse.description && (
-                <p className="text-sm text-muted-foreground">{selectedCourse.description}</p>
-              )}
-              <CourseVideoList courseId={selectedCourse.id} />
+              
+              {/* Course content */}
+              <div className="bg-black">
+                <CourseVideoList courseId={selectedCourse.id} isCreator={isUserCourseCreator(selectedCourse)} />
+              </div>
             </div>
           </DialogContent>
         </Dialog>

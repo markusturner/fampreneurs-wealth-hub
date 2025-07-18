@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, Hash, Lock, Users, Edit, Calendar, BookOpen, GripVertical } from 'lucide-react'
+import { Plus, Hash, Lock, Users, Edit, Calendar, BookOpen, GripVertical, Trash2 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -249,6 +249,63 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
         description: "Failed to join channel",
         variant: "destructive"
       })
+    }
+  }
+
+  const handleDeleteChannel = async () => {
+    if (!editingChannel || !user || !profile?.is_admin) {
+      toast({
+        title: "Error",
+        description: "Only administrators can delete channels",
+        variant: "destructive"
+      })
+      return
+    }
+
+    if (!confirm(`Are you sure you want to delete the channel "${editingChannel.name}"? This action cannot be undone.`)) {
+      return
+    }
+
+    setIsCreating(true)
+    try {
+      // First delete all channel members
+      await supabase
+        .from('channel_members')
+        .delete()
+        .eq('channel_id', editingChannel.id)
+
+      // Then delete the channel
+      const { error } = await supabase
+        .from('channels')
+        .delete()
+        .eq('id', editingChannel.id)
+
+      if (error) throw error
+
+      resetForm()
+      setShowEditDialog(false)
+      setEditingChannel(null)
+      setEditingAllPosts(false)
+      fetchChannels()
+      
+      // If the deleted channel was selected, switch to All Posts
+      if (selectedChannelId === editingChannel.id) {
+        onChannelSelect(null)
+      }
+      
+      toast({
+        title: "Success",
+        description: "Channel deleted successfully!"
+      })
+    } catch (error) {
+      console.error('Error deleting channel:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete channel",
+        variant: "destructive"
+      })
+    } finally {
+      setIsCreating(false)
     }
   }
 
@@ -618,6 +675,16 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
                   >
                     {isCreating ? 'Updating...' : 'Update'}
                   </Button>
+                  {!editingAllPosts && editingChannel && (
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteChannel}
+                      disabled={isCreating}
+                      className="px-3"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     onClick={() => {
