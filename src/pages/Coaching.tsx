@@ -530,7 +530,7 @@ const Coaching = () => {
                           <p className="text-sm text-muted-foreground">No coaches available</p>
                         </div>
                       ) : (
-                        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 flex flex-col items-center">
                           {availableCoaches.map((coach, index) => (
                             <Card key={`${coach.id || coach.email || index}`} className="shadow-sm hover:shadow-md transition-shadow">
                               <CardContent className="p-3 space-y-3">
@@ -835,8 +835,8 @@ const Coaching = () => {
                 </div>
               )}
 
-              <div className="grid lg:grid-cols-1 gap-4">
-                <div>
+              <div className="flex justify-center">
+                <div className="w-full max-w-md">
                   <AttendanceTracker
                     sessionId={selectedSessionDialog.id}
                     sessionType={selectedSessionDialog.type === "Group Coaching" ? "group" : "individual"}
