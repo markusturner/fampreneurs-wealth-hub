@@ -1001,7 +1001,7 @@ export default function AdminDashboard() {
                         <div>
                           <Label className="text-sm font-medium">Assigned Coach</Label>
                           <Select 
-                            value={user.assigned_coach?.id || ''}
+                            value={user.assigned_coach?.id || 'none'}
                             onValueChange={async (value) => {
                               if (!value) return
                               
@@ -1013,21 +1013,29 @@ export default function AdminDashboard() {
                                   .eq('user_id', user.user_id)
                                   .eq('status', 'active')
 
-                                // Then create new assignment
-                                const { error } = await supabase
-                                  .from('coach_assignments')
-                                  .insert({
-                                    user_id: user.user_id,
-                                    coach_id: value,
-                                    status: 'active'
+                                // If value is "none", just deactivate and don't create new assignment
+                                if (value === 'none') {
+                                  toast({
+                                    title: "Coach Unassigned",
+                                    description: "Coach has been removed from the user.",
                                   })
-                                
-                                if (error) throw error
-                                
-                                toast({
-                                  title: "Coach Assigned",
-                                  description: "Coach has been successfully assigned to the user.",
-                                })
+                                } else {
+                                  // Then create new assignment
+                                  const { error } = await supabase
+                                    .from('coach_assignments')
+                                    .insert({
+                                      user_id: user.user_id,
+                                      coach_id: value,
+                                      status: 'active'
+                                    })
+                                  
+                                  if (error) throw error
+                                  
+                                  toast({
+                                    title: "Coach Assigned",
+                                    description: "Coach has been successfully assigned to the user.",
+                                  })
+                                }
                                 
                                 loadAdminData()
                               } catch (error) {
@@ -1044,7 +1052,7 @@ export default function AdminDashboard() {
                               <SelectValue placeholder="Select coach" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">No Coach</SelectItem>
+                              <SelectItem value="none">No Coach</SelectItem>
                               {coaches.map((coach) => (
                                 <SelectItem key={coach.id} value={coach.id}>
                                   {coach.full_name}
