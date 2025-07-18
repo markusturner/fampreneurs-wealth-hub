@@ -39,7 +39,7 @@ function AppWithNotifications() {
       <Route path="/community" element={<Community />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/coaching" element={<Coaching />} />
-      <Route path="/members" element={<Members />} />
+      <Route path="/members" element={<TeamMembers />} />
       <Route path="/team-members" element={<TeamMembers />} />
       <Route path="/family-members" element={<FamilyMembers />} />
       <Route path="/investments" element={<Investments />} />
