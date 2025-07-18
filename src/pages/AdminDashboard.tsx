@@ -56,6 +56,7 @@ import { EditCoachDialog } from '@/components/admin/edit-coach-dialog'
 import { AddCoachingSessionDialog } from '@/components/admin/add-coaching-session-dialog'
 import { EditCoachingSessionDialog } from '@/components/admin/edit-coaching-session-dialog'
 import { UserSessionQuotaDialog } from '@/components/admin/user-session-quota-dialog'
+import { AssignCoachDialog } from '@/components/admin/assign-coach-dialog'
 import { 
   DndContext, 
   DragEndEvent, 
@@ -96,6 +97,10 @@ interface Profile {
   course_progress?: number
   group_calls_attended?: number
   one_on_one_calls_attended?: number
+  assigned_coach?: {
+    id: string
+    full_name: string
+  } | null
 }
 
 interface Course {
@@ -334,6 +339,20 @@ export default function AdminDashboard() {
             .from('session_enrollments')
             .select('session_id')
             .eq('user_id', profile.user_id)
+
+          // Get coach assignment
+          const { data: coachAssignment } = await supabase
+            .from('coach_assignments')
+            .select(`
+              coach_id,
+              coaches!coach_assignments_coach_id_fkey (
+                id,
+                full_name
+              )
+            `)
+            .eq('user_id', profile.user_id)
+            .eq('status', 'active')
+            .maybeSingle()
           
           return {
             ...profile,
@@ -342,7 +361,8 @@ export default function AdminDashboard() {
             fulfillment_stage: fulfillmentProgress?.[0]?.fulfillment_stages?.name || null,
             course_progress: Math.round(avgProgress),
             group_calls_attended: groupSessions?.length || 0,
-            one_on_one_calls_attended: oneOnOneSessions?.length || 0
+            one_on_one_calls_attended: oneOnOneSessions?.length || 0,
+            assigned_coach: coachAssignment ? (coachAssignment as any).coaches : null
           }
         })
       )
@@ -497,17 +517,15 @@ export default function AdminDashboard() {
         .from('coach_assignments')
         .select(`
           coach_id,
-          profiles!coach_assignments_coach_id_fkey (
-            first_name,
-            last_name,
-            display_name
+          coaches!coach_assignments_coach_id_fkey (
+            id,
+            full_name
           )
         `)
         .eq('status', 'active')
 
       const coachCounts = coachAssignments?.reduce((acc, assignment) => {
-        const coachName = (assignment as any).profiles?.display_name || 
-          `${(assignment as any).profiles?.first_name} ${(assignment as any).profiles?.last_name}`
+        const coachName = (assignment as any).coaches?.full_name || 'Unknown Coach'
         acc[coachName] = (acc[coachName] || 0) + 1
         return acc
       }, {} as Record<string, number>) || {}
@@ -939,33 +957,57 @@ export default function AdminDashboard() {
                         user={user} 
                         onRolesUpdated={loadAdminData}
                       />
-                      <div className="ml-4">
-                        <Label className="text-sm font-medium">Activation Status</Label>
-                        <Select onValueChange={(value) => {
-                          toast({
-                            title: "Activation Point Updated",
-                            description: `User moved to: ${value}`,
-                          })
-                        }}>
-                          <SelectTrigger className="w-[250px] mt-1">
-                            <SelectValue placeholder="Select activation point" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin-onboarding">Admin Onboarding</SelectItem>
-                            <SelectItem value="onboarding-call">Onboarding Call</SelectItem>
-                            <SelectItem value="credit-repair">Credit Repair</SelectItem>
-                            <SelectItem value="credit-funding">Credit Funding</SelectItem>
-                            <SelectItem value="pending-account">Pending Account</SelectItem>
-                            <SelectItem value="3-trusts-approved">3 Trusts Approved</SelectItem>
-                            <SelectItem value="first-trust-funded">First Trust Funded</SelectItem>
-                            <SelectItem value="digital-family-office-online">Digital Family Office Online</SelectItem>
-                            <SelectItem value="scheduled-1st-family-legacy-meeting">Scheduled 1st Family Legacy Meeting</SelectItem>
-                            <SelectItem value="graduated">Graduated</SelectItem>
-                            <SelectItem value="upsell-renewals">Upsell/Renewals</SelectItem>
-                            <SelectItem value="paused">Paused</SelectItem>
-                            <SelectItem value="mentee-lost">Mentee Lost</SelectItem>
-                          </SelectContent>
-                        </Select>
+                      <div className="flex items-end gap-4 ml-4">
+                        <div>
+                          <Label className="text-sm font-medium">Assigned Coach</Label>
+                          <div className="mt-1">
+                            {user.assigned_coach ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium">{user.assigned_coach.full_name}</span>
+                                <AssignCoachDialog
+                                  userId={user.user_id}
+                                  userName={user.display_name || `${user.first_name} ${user.last_name}` || 'User'}
+                                  currentCoachId={user.assigned_coach.id}
+                                  onAssignmentUpdated={loadAdminData}
+                                />
+                              </div>
+                            ) : (
+                              <AssignCoachDialog
+                                userId={user.user_id}
+                                userName={user.display_name || `${user.first_name} ${user.last_name}` || 'User'}
+                                onAssignmentUpdated={loadAdminData}
+                              />
+                            )}
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">Activation Status</Label>
+                          <Select onValueChange={(value) => {
+                            toast({
+                              title: "Activation Point Updated",
+                              description: `User moved to: ${value}`,
+                            })
+                          }}>
+                            <SelectTrigger className="w-[250px] mt-1">
+                              <SelectValue placeholder="Select activation point" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="admin-onboarding">Admin Onboarding</SelectItem>
+                              <SelectItem value="onboarding-call">Onboarding Call</SelectItem>
+                              <SelectItem value="credit-repair">Credit Repair</SelectItem>
+                              <SelectItem value="credit-funding">Credit Funding</SelectItem>
+                              <SelectItem value="pending-account">Pending Account</SelectItem>
+                              <SelectItem value="3-trusts-approved">3 Trusts Approved</SelectItem>
+                              <SelectItem value="first-trust-funded">First Trust Funded</SelectItem>
+                              <SelectItem value="digital-family-office-online">Digital Family Office Online</SelectItem>
+                              <SelectItem value="scheduled-1st-family-legacy-meeting">Scheduled 1st Family Legacy Meeting</SelectItem>
+                              <SelectItem value="graduated">Graduated</SelectItem>
+                              <SelectItem value="upsell-renewals">Upsell/Renewals</SelectItem>
+                              <SelectItem value="paused">Paused</SelectItem>
+                              <SelectItem value="mentee-lost">Mentee Lost</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
                   ))}
