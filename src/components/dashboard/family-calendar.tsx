@@ -11,6 +11,12 @@ export function FamilyCalendar() {
   
   // Get dates that have meetings
   const meetingDates = meetings.map(meeting => new Date(meeting.date))
+  const groupCoachingDates = meetings
+    .filter(meeting => meeting.type.toLowerCase().includes('group coaching') || meeting.type.toLowerCase().includes('coaching'))
+    .map(meeting => new Date(meeting.date))
+  const otherMeetingDates = meetings
+    .filter(meeting => !meeting.type.toLowerCase().includes('group coaching') && !meeting.type.toLowerCase().includes('coaching'))
+    .map(meeting => new Date(meeting.date))
   
   // Get the next upcoming meeting
   const nextMeeting = meetings
@@ -36,10 +42,17 @@ export function FamilyCalendar() {
             onSelect={setSelectedDate}
             className="rounded-md border pointer-events-auto w-full max-w-sm lg:max-w-fit"
             modifiers={{
-              meeting: meetingDates
+              groupCoaching: groupCoachingDates,
+              otherMeeting: otherMeetingDates
             }}
             modifiersStyles={{
-              meeting: {
+              groupCoaching: {
+                backgroundColor: 'hsl(43 100% 50%)',
+                color: 'white',
+                borderRadius: '4px',
+                fontWeight: 'bold'
+              },
+              otherMeeting: {
                 backgroundColor: 'hsl(270 50% 60%)',
                 color: 'white',
                 borderRadius: '4px',
