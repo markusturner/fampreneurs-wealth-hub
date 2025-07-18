@@ -130,7 +130,7 @@ export function UserSessionQuotaDialog({ onQuotaUpdated }: UserSessionQuotaDialo
         .from('user_session_quotas')
         .upsert({
           user_id: formData.user_id,
-          program_id: formData.program_id || null,
+          program_id: formData.program_id === 'none' ? null : formData.program_id,
           monthly_complimentary_sessions: parseInt(formData.monthly_complimentary_sessions),
           complimentary_sessions_used: 0,
           period_start: startOfMonth.toISOString().split('T')[0],
@@ -215,7 +215,7 @@ export function UserSessionQuotaDialog({ onQuotaUpdated }: UserSessionQuotaDialo
                       <SelectValue placeholder="Select a program (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No specific program</SelectItem>
+                      <SelectItem value="none">No specific program</SelectItem>
                       {programs.map((program) => (
                         <SelectItem key={program.id} value={program.id}>
                           {program.name} ({program.monthly_individual_calls || 0} sessions/month)
