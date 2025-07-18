@@ -49,6 +49,7 @@ import { UserRoleManagement } from '@/components/admin/user-role-management'
 import { UserCard } from '@/components/admin/user-card'
 import { CommunicationManagement } from '@/components/admin/communication-management'
 import { ThemeSettings } from '@/components/admin/theme-settings'
+import { StageManagement } from '@/components/admin/stage-management'
 import { 
   DndContext, 
   DragEndEvent, 
@@ -242,6 +243,7 @@ export default function AdminDashboard() {
     admin_email: 'admin@fampreneurs.com' 
   })
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban')
 
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -538,18 +540,31 @@ export default function AdminDashboard() {
           .insert({
             user_id: userId,
             stage_id: newStageId,
-            moved_by: user?.id
+            moved_by: user?.id,
+            moved_to_stage_at: new Date().toISOString()
           })
 
         if (error) throw error
       }
+
+      // Update local state immediately for better UX
+      setUsers(prevUsers => prevUsers.map(u => {
+        if (u.user_id === userId) {
+          const stageName = newStageId === 'unassigned' 
+            ? null 
+            : fulfillmentStages.find(s => s.id === newStageId)?.name || null
+          return { ...u, fulfillment_stage: stageName }
+        }
+        return u
+      }))
 
       toast({
         title: "User moved",
         description: "User has been moved to the new stage successfully.",
       })
 
-      loadAdminData()
+      // Reload data to ensure consistency
+      setTimeout(() => loadAdminData(), 500)
     } catch (error: any) {
       toast({
         title: "Error moving user",
@@ -829,10 +844,30 @@ export default function AdminDashboard() {
           <TabsContent value="users" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Users & Fulfillment Pipeline</CardTitle>
-                <CardDescription>
-                  Drag and drop users between fulfillment stages
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Users & Fulfillment Pipeline</CardTitle>
+                    <CardDescription>
+                      Drag and drop users between fulfillment stages
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant={viewMode === 'kanban' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setViewMode('kanban')}
+                    >
+                      Kanban
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setViewMode('list')}
+                    >
+                      List
+                    </Button>
+                  </div>
+                </div>
                 <div className="flex items-center space-x-2">
                   <Search className="h-4 w-4 text-muted-foreground" />
                   <Input
@@ -844,90 +879,173 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                 <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragStart={handleDragStart}
-                  onDragEnd={handleDragEnd}
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                    {/* Unassigned Users Column */}
-                    <DroppableStage id="unassigned">
-                      <Card className="min-h-[300px]">
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-sm flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded-full bg-gray-400" />
-                            <span>Unassigned</span>
-                            <Badge variant="secondary">{getUsersWithoutStage().length}</Badge>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                          <SortableContext 
-                            items={getUsersWithoutStage().map(u => u.id)} 
-                            strategy={verticalListSortingStrategy}
-                          >
-                            {getUsersWithoutStage().map((user) => (
-                              <SortableUser key={user.id} user={user} stage={{ id: 'unassigned', name: 'Unassigned', description: null, stage_order: 0, color: '#6b7280', created_by: '', created_at: '' }} />
-                            ))}
-                          </SortableContext>
-                        </CardContent>
-                      </Card>
-                    </DroppableStage>
+                {viewMode === 'kanban' ? (
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragStart={handleDragStart}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                      {/* Unassigned Users Column */}
+                      <DroppableStage id="unassigned">
+                        <Card className="min-h-[300px]">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm flex items-center space-x-2">
+                              <div className="w-3 h-3 rounded-full bg-gray-400" />
+                              <span>Unassigned</span>
+                              <Badge variant="secondary">{getUsersWithoutStage().length}</Badge>
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <SortableContext 
+                              items={getUsersWithoutStage().map(u => u.id)} 
+                              strategy={verticalListSortingStrategy}
+                            >
+                              {getUsersWithoutStage().map((user) => (
+                                <SortableUser key={user.id} user={user} stage={{ id: 'unassigned', name: 'Unassigned', description: null, stage_order: 0, color: '#6b7280', created_by: '', created_at: '' }} />
+                              ))}
+                            </SortableContext>
+                          </CardContent>
+                        </Card>
+                      </DroppableStage>
 
-                    {/* Fulfillment Stages */}
+                      {/* Fulfillment Stages */}
+                      {fulfillmentStages.map((stage) => {
+                        const stageUsers = getUsersInStage(stage.id)
+                        return (
+                          <DroppableStage key={stage.id} id={stage.id}>
+                            <Card className="min-h-[300px]">
+                              <CardHeader className="pb-3">
+                                <CardTitle className="text-sm flex items-center space-x-2">
+                                  <div 
+                                    className="w-3 h-3 rounded-full" 
+                                    style={{ backgroundColor: stage.color || '#3b82f6' }}
+                                  />
+                                  <span>{stage.name}</span>
+                                  <Badge variant="secondary">{stageUsers.length}</Badge>
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="space-y-3">
+                                <SortableContext 
+                                  items={stageUsers.map(u => u.id)} 
+                                  strategy={verticalListSortingStrategy}
+                                >
+                                  {stageUsers.map((user) => (
+                                    <SortableUser key={user.id} user={user} stage={stage} />
+                                  ))}
+                                </SortableContext>
+                              </CardContent>
+                            </Card>
+                          </DroppableStage>
+                        )
+                      })}
+                    </div>
+                    <DragOverlay>
+                      {activeUser && (
+                        <div className="p-3 bg-card border rounded-lg opacity-75">
+                          <div className="flex items-center space-x-3">
+                            {activeUser.avatar_url && (
+                              <img 
+                                src={activeUser.avatar_url} 
+                                alt={activeUser.display_name || 'User'} 
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                            )}
+                            <div className="font-medium text-sm">
+                              {activeUser.display_name || `${activeUser.first_name} ${activeUser.last_name}`}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </DragOverlay>
+                  </DndContext>
+                ) : (
+                  <div className="space-y-4">
                     {fulfillmentStages.map((stage) => {
                       const stageUsers = getUsersInStage(stage.id)
                       return (
-                        <DroppableStage key={stage.id} id={stage.id}>
-                          <Card className="min-h-[300px]">
-                            <CardHeader className="pb-3">
-                              <CardTitle className="text-sm flex items-center space-x-2">
-                                <div 
-                                  className="w-3 h-3 rounded-full" 
-                                  style={{ backgroundColor: stage.color || '#3b82f6' }}
-                                />
-                                <span>{stage.name}</span>
-                                <Badge variant="secondary">{stageUsers.length}</Badge>
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
-                              <SortableContext 
-                                items={stageUsers.map(u => u.id)} 
-                                strategy={verticalListSortingStrategy}
-                              >
-                                {stageUsers.map((user) => (
-                                  <SortableUser key={user.id} user={user} stage={stage} />
-                                ))}
-                              </SortableContext>
-                            </CardContent>
-                          </Card>
-                        </DroppableStage>
+                        <Card key={stage.id}>
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm flex items-center space-x-2">
+                              <div 
+                                className="w-3 h-3 rounded-full" 
+                                style={{ backgroundColor: stage.color || '#3b82f6' }}
+                              />
+                              <span>{stage.name}</span>
+                              <Badge variant="secondary">{stageUsers.length}</Badge>
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                              {stageUsers.map((user) => (
+                                <div key={user.id} className="p-3 bg-muted rounded-lg">
+                                  <div className="flex items-center space-x-3">
+                                    {user.avatar_url && (
+                                      <img 
+                                        src={user.avatar_url} 
+                                        alt={user.display_name || 'User'} 
+                                        className="w-8 h-8 rounded-full object-cover"
+                                      />
+                                    )}
+                                    <div className="flex-1">
+                                      <div className="font-medium text-sm">
+                                        {user.display_name || `${user.first_name} ${user.last_name}`}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">
+                                        Progress: {user.course_progress || 0}%
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </CardContent>
+                        </Card>
                       )
                     })}
                   </div>
-                  <DragOverlay>
-                    {activeUser && (
-                      <div className="p-3 bg-card border rounded-lg opacity-75">
-                        <div className="flex items-center space-x-3">
-                          {activeUser.avatar_url && (
-                            <img 
-                              src={activeUser.avatar_url} 
-                              alt={activeUser.display_name || 'User'} 
-                              className="w-8 h-8 rounded-full object-cover"
-                            />
-                          )}
-                          <div className="font-medium text-sm">
-                            {activeUser.display_name || `${activeUser.first_name} ${activeUser.last_name}`}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </DragOverlay>
-                </DndContext>
+                )}
               </CardContent>
             </Card>
 
+            {/* Stage Management */}
+            <StageManagement 
+              stages={fulfillmentStages} 
+              onStagesUpdated={loadAdminData}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
+
             {/* Onboarding Emails */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Onboarding Email Tracking</CardTitle>
+                <CardDescription>
+                  Track automated onboarding emails sent to new users
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {onboardingEmails.slice(0, 10).map((email) => (
+                    <div key={email.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Mail className="h-4 w-4 text-blue-600" />
+                        <div>
+                          <div className="font-medium text-sm">{email.email_subject}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {email.email_type} • {new Date(email.sent_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge variant={email.email_status === 'sent' ? 'default' : 'destructive'}>
+                        {email.email_status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
             <Card>
               <CardHeader>
                 <CardTitle>Onboarding Email Tracking</CardTitle>
