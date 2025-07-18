@@ -112,8 +112,7 @@ const Coaching = () => {
         .select(`
           *,
           financial_advisors (
-            full_name,
-            avatar_url
+            full_name
           )
         `)
         .eq('status', 'scheduled')
