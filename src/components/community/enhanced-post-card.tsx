@@ -9,17 +9,16 @@ import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
 import { 
   MessageCircle, 
-  Send, 
   MoreHorizontal,
   Play,
   Pause,
   ThumbsUp,
   Edit,
-  Trash2,
-  Video
+  Trash2
 } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { CommentWithMentions } from './comment-with-mentions'
 
 interface Post {
   id: string
@@ -69,10 +68,7 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
   const { toast } = useToast()
   const [comments, setComments] = useState<Comment[]>([])
   const [commentReactions, setCommentReactions] = useState<CommentReaction[]>([])
-  const [newComment, setNewComment] = useState('')
   const [showComments, setShowComments] = useState(false)
-  const [showReplyForm, setShowReplyForm] = useState(false)
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
   const [video, setVideo] = useState<HTMLVideoElement | null>(null)
@@ -190,44 +186,6 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
     }
   }
 
-  const handleComment = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!newComment.trim() || !user) return
-
-    setIsSubmittingComment(true)
-
-    try {
-      const { error } = await supabase
-        .from('community_posts')
-        .insert({
-          parent_id: post.id,
-          user_id: user.id,
-          content: newComment.trim(),
-          channel_id: post.channel_id
-        })
-
-      if (error) throw error
-
-      setNewComment('')
-      setShowReplyForm(false)
-      fetchComments()
-      
-      toast({
-        title: "Success",
-        description: "Comment added!"
-      })
-    } catch (error) {
-      console.error('Error adding comment:', error)
-      toast({
-        title: "Error",
-        description: "Failed to add comment",
-        variant: "destructive"
-      })
-    } finally {
-      setIsSubmittingComment(false)
-    }
-  }
 
   const handleEdit = async () => {
     if (!editContent.trim()) return
@@ -457,26 +415,15 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
               Like
             </Button>
           ) : (
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowComments(!showComments)}
-                className="flex-1 gap-1"
-              >
-                <MessageCircle className="h-4 w-4" />
-                Comment
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowReplyForm(!showReplyForm)}
-                className="flex-1 gap-1"
-              >
-                <MessageCircle className="h-4 w-4" />
-                Reply
-              </Button>
-            </>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowComments(!showComments)}
+              className="flex-1 gap-1"
+            >
+              <MessageCircle className="h-4 w-4" />
+              Comment ({comments.length})
+            </Button>
           )}
         </div>
 
@@ -508,29 +455,20 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
           </div>
         )}
 
-        {/* Reply Form */}
-        {showReplyForm && !isComment && (
-          <form onSubmit={handleComment} className="flex gap-2 pt-4 border-t">
-            <Textarea
-              placeholder="Write a reply..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              rows={2}
-              className="flex-1 resize-none text-sm"
+        {/* Comment Form */}
+        {showComments && !isComment && (
+          <div className="pt-4 border-t space-y-4">
+            <CommentWithMentions
+              postId={post.id}
+              channelId={post.channel_id}
+              onCommentAdded={fetchComments}
             />
-            <Button
-              type="submit"
-              size="sm"
-              disabled={isSubmittingComment || !newComment.trim()}
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </form>
+          </div>
         )}
 
         {/* Comments Section */}
         {showComments && comments.length > 0 && !isComment && (
-          <div className="space-y-3 pt-4 border-t">
+          <div className="space-y-3 pt-4">
             {comments.map((comment) => (
               <EnhancedPostCard
                 key={comment.id}

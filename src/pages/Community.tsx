@@ -77,7 +77,7 @@ const Community = () => {
               Community Feed
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Connect with your family office community
+              Connect with other like minded first generation wealth builders
             </p>
           </div>
         </div>
