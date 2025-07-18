@@ -130,67 +130,73 @@ export function CommunityFeed() {
   }
 
   return (
-    <div className="grid grid-cols-12 gap-6">
-      {/* Channels Sidebar - Left side, 3 columns */}
-      <div className="col-span-3">
-        <ChannelsSidebar 
-          selectedChannelId={selectedChannelId}
-          onChannelSelect={setSelectedChannelId}
-        />
-      </div>
-
-      {/* Main Feed - Center, 6 columns */}
-      <div className="col-span-6 space-y-6">
-        {/* Create Post */}
-        <Card>
-          <CardContent className="p-4">
-            <EnhancedCreatePost 
-              onPostCreated={fetchPosts} 
-              channelId={selectedChannelId}
+    <div className="max-w-7xl mx-auto px-4">
+      <div className="grid grid-cols-12 gap-4 lg:gap-6">
+        {/* Channels Sidebar - Left side, 2.5 columns */}
+        <div className="col-span-12 lg:col-span-3 xl:col-span-2">
+          <div className="sticky top-4">
+            <ChannelsSidebar 
+              selectedChannelId={selectedChannelId}
+              onChannelSelect={setSelectedChannelId}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Posts */}
-        {posts.map((post) => (
-          <EnhancedPostCard key={post.id} post={post} onUpdate={fetchPosts} />
-        ))}
-      </div>
+        {/* Main Feed - Center, 7 columns */}
+        <div className="col-span-12 lg:col-span-6 xl:col-span-8 space-y-4">
+          {/* Create Post */}
+          <Card>
+            <CardContent className="p-4">
+              <EnhancedCreatePost 
+                onPostCreated={fetchPosts} 
+                channelId={selectedChannelId}
+              />
+            </CardContent>
+          </Card>
 
-      {/* Announcements Panel - Right side, 3 columns */}
-      <div className="col-span-3">
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <Megaphone className="h-5 w-5 text-primary" />
-              <h3 className="font-semibold">Announcements</h3>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {announcements.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No announcements yet
-              </p>
-            ) : (
-              announcements.map((announcement) => (
-                <div key={announcement.id} className="p-3 bg-muted rounded-lg">
-                  <h4 className="font-medium text-sm mb-1">{announcement.title}</h4>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    {announcement.content}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">
-                      by {getDisplayName(announcement.profiles)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(announcement.created_at), { addSuffix: true })}
-                    </span>
-                  </div>
+          {/* Posts */}
+          {posts.map((post) => (
+            <EnhancedPostCard key={post.id} post={post} onUpdate={fetchPosts} />
+          ))}
+        </div>
+
+        {/* Announcements Panel - Right side, 2.5 columns */}
+        <div className="col-span-12 lg:col-span-3 xl:col-span-2">
+          <div className="sticky top-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  <Megaphone className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold">Announcements</h3>
                 </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {announcements.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No announcements yet
+                  </p>
+                ) : (
+                  announcements.map((announcement) => (
+                    <div key={announcement.id} className="p-3 bg-muted rounded-lg">
+                      <h4 className="font-medium text-sm mb-1">{announcement.title}</h4>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {announcement.content}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">
+                          by {getDisplayName(announcement.profiles)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(announcement.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   )
