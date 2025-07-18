@@ -79,28 +79,8 @@ export function RecentActivities() {
         })
       })
 
-      // Fetch recent financial advisors
-      const { data: advisors } = await supabase
-        .from('financial_advisors')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(2)
-
-      advisors?.forEach((advisor) => {
-        activitiesData.push({
-          id: `advisor-${advisor.id}`,
-          type: "team",
-          title: "Financial Advisor Added",
-          description: `${advisor.full_name} - ${advisor.specialties?.[0] || 'Financial Planning'}`,
-          amount: undefined,
-          time: formatTimeAgo(advisor.created_at),
-          icon: Users,
-          user: "Admin",
-          userInitials: "AD",
-          trend: "positive",
-          created_at: advisor.created_at
-        })
-      })
+      // Note: Financial advisors are available in the coaching calendar section
+      // Recent activities only reflect actions from the Quick Actions section
 
       // Add some investment progress activities when API key is configured
       activitiesData.push({
