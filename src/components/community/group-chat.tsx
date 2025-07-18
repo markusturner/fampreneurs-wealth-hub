@@ -100,17 +100,11 @@ export function GroupChat({ groupId }: GroupChatProps) {
         .select('*')
         .eq('group_id', groupId)
         .order('created_at', { ascending: true })
-        .limit(100)
 
       if (error) throw error
-      setMessages((data as any[]) || [])
+      setMessages(data || [])
     } catch (error) {
       console.error('Error fetching messages:', error)
-      toast({
-        title: "Error",
-        description: "Failed to load messages",
-        variant: "destructive"
-      })
     } finally {
       setLoading(false)
     }
@@ -119,37 +113,63 @@ export function GroupChat({ groupId }: GroupChatProps) {
   const subscribeToMessages = () => {
     if (!groupId) return
 
-    const subscription = supabase
-      .channel(`group-messages-${groupId}`)
+    const channel = supabase.channel(`group_${groupId}`)
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
+          schema: 'public',
+          table: 'group_messages',
+          filter: `group_id=eq.${groupId}`
+        },
+        async (payload) => {
+          const newMessage = payload.new as Message
+          // Fetch the message with profile data
+          const messageWithProfile = await fetchMessageWithProfile(newMessage.id)
+          if (messageWithProfile) {
+            setMessages(prev => [...prev, messageWithProfile])
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'group_messages',
+          filter: `group_id=eq.${groupId}`
+        },
+        async (payload) => {
+          const updatedMessage = payload.new as Message
+          const messageWithProfile = await fetchMessageWithProfile(updatedMessage.id)
+          if (messageWithProfile) {
+            setMessages(prev => prev.map(msg => 
+              msg.id === updatedMessage.id ? messageWithProfile : msg
+            ))
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
           schema: 'public',
           table: 'group_messages',
           filter: `group_id=eq.${groupId}`
         },
         (payload) => {
-          if (payload.eventType === 'INSERT') {
-            // Fetch the new message with profile data
-            fetchMessageWithProfile(payload.new.id)
-          } else if (payload.eventType === 'UPDATE') {
-            setMessages(prev => prev.map(msg => 
-              msg.id === payload.new.id ? { ...msg, ...payload.new } : msg
-            ))
-          } else if (payload.eventType === 'DELETE') {
-            setMessages(prev => prev.filter(msg => msg.id !== payload.old.id))
-          }
+          const deletedMessage = payload.old as Message
+          setMessages(prev => prev.filter(msg => msg.id !== deletedMessage.id))
         }
       )
       .subscribe()
 
     return () => {
-      subscription.unsubscribe()
+      channel.unsubscribe()
     }
   }
 
-  const fetchMessageWithProfile = async (messageId: string) => {
+  const fetchMessageWithProfile = async (messageId: string): Promise<Message | null> => {
     try {
       const { data, error } = await supabase
         .from('group_messages')
@@ -158,11 +178,10 @@ export function GroupChat({ groupId }: GroupChatProps) {
         .single()
 
       if (error) throw error
-      if (data) {
-        setMessages(prev => [...prev, data as any])
-      }
+      return data as Message
     } catch (error) {
       console.error('Error fetching message with profile:', error)
+      return null
     }
   }
 
@@ -171,20 +190,14 @@ export function GroupChat({ groupId }: GroupChatProps) {
 
     setSending(true)
     try {
-      const messageData: any = {
-        group_id: groupId,
-        user_id: user.id,
-        content: newMessage.trim(),
-        message_type: 'text'
-      }
-
-      if (replyTo) {
-        messageData.reply_to = replyTo.id
-      }
-
       const { error } = await supabase
         .from('group_messages')
-        .insert(messageData)
+        .insert({
+          content: newMessage.trim(),
+          group_id: groupId,
+          user_id: user.id,
+          reply_to: replyTo?.id || null
+        })
 
       if (error) throw error
 
@@ -281,7 +294,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div className="flex-1 flex flex-col min-h-0 relative">
       {/* Group Header */}
       {group && (
         <div className="p-3 sm:p-4 border-b bg-background flex-shrink-0">
@@ -311,7 +324,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
       )}
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-2 sm:p-4 min-h-0">
+      <ScrollArea className="flex-1 p-2 sm:p-4 min-h-0 pb-24">
         <div className="space-y-3 sm:space-y-4">
           {messages.map((message, index) => {
             const isOwn = message.user_id === user?.id
@@ -349,53 +362,51 @@ export function GroupChat({ groupId }: GroupChatProps) {
                           className="flex-1"
                         />
                         <Button size="sm" onClick={saveEdit}>Save</Button>
-                        <Button size="sm" variant="outline" onClick={() => setEditingMessage(null)}>
-                          Cancel
-                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingMessage(null)}>Cancel</Button>
                       </div>
                     ) : (
                       <>
-                        <Card className={`p-3 ${isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                        <Card className={`p-2 sm:p-3 ${isOwn ? 'bg-primary text-primary-foreground ml-auto' : 'bg-muted'}`}>
                           {message.reply_to && (
-                            <div className="text-xs opacity-75 border-l-2 pl-2 mb-2">
-                              Replying to message...
+                            <div className="text-xs opacity-75 mb-1 pb-1 border-b border-current/20">
+                              Replying to message
                             </div>
                           )}
-                          <p className="text-sm">{message.content}</p>
-                          {message.updated_at !== message.created_at && (
-                            <span className="text-xs opacity-75">(edited)</span>
-                          )}
+                          <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                         </Card>
                         
+                        {/* Message actions */}
                         {isOwn && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="opacity-0 group-hover:opacity-100 absolute top-0 right-0 h-8 w-8 p-0"
-                              >
-                                <MoreVertical className="h-3 w-3" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => setReplyTo(message)}>
-                                <Reply className="h-4 w-4 mr-2" />
-                                Reply
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => startEdit(message)}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => deleteMessage(message.id)}
-                                className="text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 absolute -top-2 right-0"
+                                >
+                                  <MoreVertical className="h-3 w-3" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setReplyTo(message)}>
+                                  <Reply className="h-3 w-3 mr-2" />
+                                  Reply
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => startEdit(message)}>
+                                  <Edit className="h-3 w-3 mr-2" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => deleteMessage(message.id)}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="h-3 w-3 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </>
                         )}
                       </>
                     )}
@@ -408,10 +419,10 @@ export function GroupChat({ groupId }: GroupChatProps) {
         </div>
       </ScrollArea>
 
-      {/* Message Input */}
-      <div className="p-2 sm:p-4 border-t flex-shrink-0">
+      {/* Message Input - Fixed at bottom of screen */}
+      <div className="fixed bottom-0 left-0 right-0 p-2 sm:p-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
         {replyTo && (
-          <div className="mb-2 p-2 bg-muted rounded text-sm">
+          <div className="mb-2 p-2 bg-muted rounded text-sm max-w-4xl mx-auto">
             <div className="flex items-center justify-between">
               <span className="truncate">Replying to {getDisplayName(replyTo)}</span>
               <Button variant="ghost" size="sm" onClick={() => setReplyTo(null)}>
@@ -422,7 +433,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
           </div>
         )}
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 max-w-4xl mx-auto">
           <Input
             ref={inputRef}
             value={newMessage}
