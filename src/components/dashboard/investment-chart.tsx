@@ -142,7 +142,7 @@ export function InvestmentChart() {
         {/* Legend */}
         <div className="flex flex-wrap gap-2 sm:gap-4 mt-4 pt-4 border-t border-border">
           <div className="flex items-center gap-1 sm:gap-2">
-            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--primary))' }}></div>
+            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: '#2eb2ff' }}></div>
             <span className="text-xs sm:text-sm font-medium">Stocks</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
@@ -186,7 +186,7 @@ export function InvestmentChart() {
               <Line
                 type="monotone"
                 dataKey="stocks"
-                stroke="hsl(var(--primary))"
+                stroke="#2eb2ff"
                 strokeWidth={3}
                 dot={false}
                 name="Stocks"
