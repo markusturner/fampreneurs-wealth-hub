@@ -1416,6 +1416,11 @@ export default function AdminDashboard() {
                       </Button>
                     </div>
                   </div>
+                  
+                  {/* Zapier Integration Section */}
+                  <div className="pt-6 border-t">
+                    <ZapierIntegration />
+                  </div>
                 </div>
               </CardContent>
             </Card>

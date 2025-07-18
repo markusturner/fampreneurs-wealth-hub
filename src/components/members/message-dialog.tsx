@@ -127,19 +127,21 @@ export function MessageDialog({ open, onOpenChange, recipient, onMessageSent, em
     if (!open || !user?.id) return
 
     const channel = supabase
-      .channel('messages')
+      .channel(`messages_${user.id}_${recipient.user_id}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'messages',
-          filter: `or(and(sender_id.eq.${user.id},recipient_id.eq.${recipient.user_id}),and(sender_id.eq.${recipient.user_id},recipient_id.eq.${user.id}))`
+          table: 'messages'
         },
         (payload) => {
           const newMessage = payload.new as Message
-          // Only add to local state if it's not from the current user (to prevent duplicates)
-          if (newMessage.sender_id !== user?.id) {
+          // Check if message is relevant to this conversation
+          const isRelevant = (newMessage.sender_id === user.id && newMessage.recipient_id === recipient.user_id) ||
+                           (newMessage.sender_id === recipient.user_id && newMessage.recipient_id === user.id)
+          
+          if (isRelevant && newMessage.sender_id !== user?.id) {
             setMessages(prev => [...prev, newMessage])
           }
         }

@@ -5,8 +5,8 @@ import { cn } from '@/lib/utils'
 const navigationItems = [
   { name: 'Community', href: '/community', icon: MessageSquare },
   { name: 'Calendar', href: '/coaching', icon: Calendar },
-  { name: 'Courses', href: '/courses', icon: BookOpen },
   { name: 'Dashboard', href: '/', icon: Home },
+  { name: 'Courses', href: '/courses', icon: BookOpen },
   { name: 'Members', href: '/members', icon: Users },
 ]
 

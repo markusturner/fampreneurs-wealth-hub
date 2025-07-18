@@ -122,11 +122,16 @@ export function GroupChat({ groupId }: GroupChatProps) {
   }, [groupId])
 
   useEffect(() => {
-    scrollToBottom()
+    const timer = setTimeout(() => {
+      scrollToBottom()
+    }, 100)
+    return () => clearTimeout(timer)
   }, [messages])
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }, 50)
   }
 
   const fetchGroup = async () => {
