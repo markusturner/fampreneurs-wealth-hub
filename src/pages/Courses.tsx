@@ -478,8 +478,8 @@ const Courses = () => {
                   <div className="flex items-center gap-4 mb-4">
                     <Button 
                       size="lg" 
-                      className="text-white hover:opacity-90 font-semibold"
-                      style={{ backgroundColor: '#ffb500' }}
+                      className="hover:opacity-90 font-semibold"
+                      style={{ backgroundColor: '#ffb500', color: '#290a52' }}
                       onClick={() => {
                         setCourseDetailOpen(false)
                         // Auto-scroll to videos when opened
