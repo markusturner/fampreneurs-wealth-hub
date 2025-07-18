@@ -53,7 +53,7 @@ export function AddCoachingSessionDialog({ onSessionAdded, type }: AddCoachingSe
   const loadCoaches = async () => {
     try {
       const { data, error } = await supabase
-        .from('financial_advisors')
+        .from('coaches')
         .select('id, full_name, email')
         .eq('is_active', true)
 

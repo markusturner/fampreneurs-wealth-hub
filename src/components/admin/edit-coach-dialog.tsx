@@ -53,7 +53,7 @@ export function EditCoachDialog({ coach, onCoachUpdated }: EditCoachDialogProps)
 
     try {
       const { error } = await supabase
-        .from('financial_advisors')
+        .from('coaches')
         .update({
           full_name: formData.full_name,
           email: formData.email || null,

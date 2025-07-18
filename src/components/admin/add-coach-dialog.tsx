@@ -39,7 +39,7 @@ export function AddCoachDialog({ onCoachAdded }: AddCoachDialogProps) {
 
     try {
       const { error } = await supabase
-        .from('financial_advisors')
+        .from('coaches')
         .insert({
           full_name: formData.full_name,
           email: formData.email,

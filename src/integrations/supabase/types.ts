@@ -71,6 +71,51 @@ export type Database = {
         }
         Relationships: []
       }
+      coaches: {
+        Row: {
+          added_by: string
+          bio: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          hourly_rate: number | null
+          id: string
+          is_active: boolean | null
+          phone: string | null
+          specialties: string[] | null
+          updated_at: string
+          years_experience: number | null
+        }
+        Insert: {
+          added_by: string
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean | null
+          phone?: string | null
+          specialties?: string[] | null
+          updated_at?: string
+          years_experience?: number | null
+        }
+        Update: {
+          added_by?: string
+          bio?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          hourly_rate?: number | null
+          id?: string
+          is_active?: boolean | null
+          phone?: string | null
+          specialties?: string[] | null
+          updated_at?: string
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       community_comments: {
         Row: {
           content: string
