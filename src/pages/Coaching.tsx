@@ -458,7 +458,7 @@ const Coaching = () => {
           </Card>
           <Card className="shadow-soft text-center">
             <CardContent className="p-4">
-              <div className="text-2xl font-bold text-muted-foreground">4.9</div>
+              <div className="text-2xl font-bold" style={{ color: '#ffb500' }}>4.9</div>
               <div className="text-sm text-muted-foreground">Avg Rating</div>
             </CardContent>
           </Card>
