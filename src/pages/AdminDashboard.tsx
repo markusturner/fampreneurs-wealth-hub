@@ -62,6 +62,7 @@ import { UserSessionQuotaDialog } from '@/components/admin/user-session-quota-di
 import { AssignCoachDialog } from '@/components/admin/assign-coach-dialog'
 import { ZapierIntegration } from '@/components/admin/zapier-integration'
 import { CoachingRecordings } from '@/components/admin/coaching-recordings'
+import { EnhancedAddVideoDialog } from '@/components/courses/enhanced-add-video-dialog'
 import { 
   DndContext, 
   DragEndEvent, 
@@ -81,6 +82,26 @@ import {
 import { GripVertical } from 'lucide-react'
 import { ResponsiveContainer, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
 import { format } from 'date-fns'
+
+// Video Dialog Wrapper Component
+function VideoDialogWrapper({ courseId, onVideoAdded }: { courseId: string; onVideoAdded: () => void }) {
+  const [open, setOpen] = useState(false)
+  
+  return (
+    <>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+        <Plus className="h-4 w-4 mr-2" />
+        Add Video
+      </Button>
+      <EnhancedAddVideoDialog 
+        open={open}
+        onOpenChange={setOpen}
+        courseId={courseId}
+        onVideoAdded={onVideoAdded}
+      />
+    </>
+  )
+}
 
 function DroppableStage({ id, children }: { id: string; children: React.ReactNode }) {
   const { setNodeRef } = useDroppable({ id })
@@ -532,28 +553,22 @@ export default function AdminDashboard() {
         .select('id, full_name')
         .eq('is_active', true)
 
-      // Get coach assignments
+      // Get coach assignments with coach data
       const { data: coachAssignments } = await supabase
         .from('coach_assignments')
-        .select(`
-          coach_id,
-          coaches!coach_assignments_coach_id_fkey (
-            id,
-            full_name
-          )
-        `)
+        .select('coach_id')
         .eq('status', 'active')
 
+      // Count assignments per coach
       const coachCounts = coachAssignments?.reduce((acc, assignment) => {
-        const coachName = (assignment as any).coaches?.full_name || 'Unknown Coach'
-        acc[coachName] = (acc[coachName] || 0) + 1
+        acc[assignment.coach_id] = (acc[assignment.coach_id] || 0) + 1
         return acc
       }, {} as Record<string, number>) || {}
 
       // Include coaches with 0 assignments
       const coachDataArray = (allCoaches || []).map(coach => ({
         name: coach.full_name,
-        clients: coachCounts[coach.full_name] || 0
+        clients: coachCounts[coach.id] || 0
       }))
 
       setCoachData(coachDataArray)
@@ -1147,11 +1162,15 @@ export default function AdminDashboard() {
                           </div>
                         </div>
                         <div className="flex items-center space-x-2 mt-3">
+                          <VideoDialogWrapper 
+                            courseId={course.id}
+                            onVideoAdded={loadAdminData}
+                          />
                           <EditCourseDialog 
                             course={course} 
                             onCourseUpdated={loadAdminData}
                           />
-                          <Button 
+                          <Button
                             variant="outline" 
                             size="sm"
                             onClick={() => navigate(`/courses?course=${course.id}`)}
@@ -1373,6 +1392,9 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Coaching Call Recordings */}
+            <CoachingRecordings />
           </TabsContent>
 
           {/* Settings Tab */}
