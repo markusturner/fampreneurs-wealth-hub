@@ -10,62 +10,87 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Settings, Crown, Heart, Users, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 export function ProfileSettings() {
   const { profile } = useAuth()
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
 
   const handleBackToDashboard = () => {
     navigate('/')
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={handleBackToDashboard}>
+    <div className="container mx-auto py-3 md:py-6 px-4 space-y-4 md:space-y-6">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
+          <Button 
+            variant="ghost" 
+            size={isMobile ? "sm" : "icon"} 
+            onClick={handleBackToDashboard}
+            className="shrink-0"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Profile Settings</h1>
-            <p className="text-muted-foreground">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl md:text-3xl font-bold truncate">Profile Settings</h1>
+            <p className="text-sm md:text-base text-muted-foreground hidden sm:block">
               Manage your roles and community settings
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 shrink-0">
           {profile?.is_admin && (
-            <Badge variant="destructive">
+            <Badge variant="destructive" className="text-xs">
               <Crown className="h-3 w-3 mr-1" />
-              Admin
+              {isMobile ? "Admin" : "Admin"}
             </Badge>
           )}
           {profile?.is_accountability_partner && (
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="text-xs">
               <Heart className="h-3 w-3 mr-1" />
-              Accountability Partner
+              {isMobile ? "Partner" : "Accountability Partner"}
             </Badge>
           )}
         </div>
       </div>
 
-      <Tabs defaultValue="directory" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="directory" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Accountability Directory
+      <Tabs defaultValue="directory" className="space-y-4 md:space-y-6">
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2 h-auto' : 'grid-cols-4'}`}>
+          <TabsTrigger 
+            value="directory" 
+            className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
+          >
+            <Users className="h-4 w-4 shrink-0" />
+            <span className={isMobile ? "text-center leading-tight" : ""}>
+              {isMobile ? "Directory" : "Accountability Directory"}
+            </span>
           </TabsTrigger>
-          <TabsTrigger value="affiliate" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Affiliate Program
+          <TabsTrigger 
+            value="affiliate" 
+            className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
+          >
+            <Settings className="h-4 w-4 shrink-0" />
+            <span className={isMobile ? "text-center leading-tight" : ""}>
+              {isMobile ? "Affiliate" : "Affiliate Program"}
+            </span>
           </TabsTrigger>
-          <TabsTrigger value="feedback" className="flex items-center gap-2">
-            <Heart className="h-4 w-4" />
-            Feedback
+          <TabsTrigger 
+            value="feedback" 
+            className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
+          >
+            <Heart className="h-4 w-4 shrink-0" />
+            <span className={isMobile ? "text-center leading-tight" : ""}>Feedback</span>
           </TabsTrigger>
-          <TabsTrigger value="admin" className="flex items-center gap-2">
-            <Crown className="h-4 w-4" />
-            Admin Panel
+          <TabsTrigger 
+            value="admin" 
+            className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
+          >
+            <Crown className="h-4 w-4 shrink-0" />
+            <span className={isMobile ? "text-center leading-tight" : ""}>
+              {isMobile ? "Admin" : "Admin Panel"}
+            </span>
           </TabsTrigger>
         </TabsList>
 
