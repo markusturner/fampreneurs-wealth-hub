@@ -89,7 +89,7 @@ const investmentPlatforms: InvestmentPlatform[] = [
     icon: TrendingUp,
     description: "Full-service brokerage and retirement",
     isPopular: true,
-    connectionType: "manual",
+    connectionType: "api",
     website: "https://www.fidelity.com"
   },
   {
@@ -99,7 +99,7 @@ const investmentPlatforms: InvestmentPlatform[] = [
     icon: Building2,
     description: "Investment management and trading",
     isPopular: true,
-    connectionType: "manual",
+    connectionType: "api",
     website: "https://www.schwab.com"
   },
   {
@@ -109,7 +109,7 @@ const investmentPlatforms: InvestmentPlatform[] = [
     icon: Building2,
     description: "Low-cost index funds and ETFs",
     isPopular: false,
-    connectionType: "manual",
+    connectionType: "api",
     website: "https://investor.vanguard.com"
   },
   {
