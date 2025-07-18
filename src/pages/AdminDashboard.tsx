@@ -107,20 +107,6 @@ interface Course {
   image_url: string | null
 }
 
-interface PostProfile {
-  first_name: string | null
-  last_name: string | null
-  display_name: string | null
-}
-
-interface Post {
-  id: string
-  content: string
-  user_id: string
-  created_at: string
-  profiles?: PostProfile | null
-}
-
 interface FulfillmentStage {
   id: string
   name: string
