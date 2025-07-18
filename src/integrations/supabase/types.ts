@@ -1779,6 +1779,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_course_lists: {
+        Row: {
+          added_at: string
+          course_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          course_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          course_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_fulfillment_progress: {
         Row: {
           created_at: string | null

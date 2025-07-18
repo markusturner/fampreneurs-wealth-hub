@@ -50,6 +50,8 @@ const Courses = () => {
   const [activeTab, setActiveTab] = useState('courses')
   const [recordingsCount, setRecordingsCount] = useState(0)
   const [userGroups, setUserGroups] = useState<string[]>([])
+  const [myListCourses, setMyListCourses] = useState<string[]>([])
+  const [loadingMyList, setLoadingMyList] = useState(false)
 
   const fetchCourses = async () => {
     try {
@@ -127,12 +129,29 @@ const Courses = () => {
         setRecordingsCount(recordingsData?.length || 0)
       }
 
+      // Fetch user's course list
+      await fetchMyList()
+
       setCourses(allCourses)
       setEnrollments(enrollmentsData || [])
     } catch (error) {
       console.error('Error fetching courses:', error)
     } finally {
       setCoursesLoading(false)
+    }
+  }
+
+  const fetchMyList = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_course_lists')
+        .select('course_id')
+        .eq('user_id', user?.id)
+
+      if (error) throw error
+      setMyListCourses((data || []).map(item => item.course_id))
+    } catch (error) {
+      console.error('Error fetching my list:', error)
     }
   }
 
@@ -186,6 +205,10 @@ const Courses = () => {
     return course.created_by === user?.id
   }
 
+  const isInMyList = (courseId: string) => {
+    return myListCourses.includes(courseId)
+  }
+
   const handleEnrollInCourse = async (courseId: string) => {
     try {
       const { error } = await supabase
@@ -211,6 +234,39 @@ const Courses = () => {
   const handleAddVideo = (course: Course) => {
     setSelectedCourse(course)
     setAddVideoOpen(true)
+  }
+
+  const handleToggleMyList = async (course: Course) => {
+    if (!user?.id) return
+    
+    setLoadingMyList(true)
+    try {
+      const isInList = myListCourses.includes(course.id)
+      
+      if (isInList) {
+        // Remove from list
+        const { error } = await supabase
+          .from('user_course_lists')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('course_id', course.id)
+        
+        if (error) throw error
+        setMyListCourses(prev => prev.filter(id => id !== course.id))
+      } else {
+        // Add to list
+        const { error } = await supabase
+          .from('user_course_lists')
+          .insert({ user_id: user.id, course_id: course.id })
+        
+        if (error) throw error
+        setMyListCourses(prev => [...prev, course.id])
+      }
+    } catch (error) {
+      console.error('Error toggling my list:', error)
+    } finally {
+      setLoadingMyList(false)
+    }
   }
 
   if (coursesLoading) {
@@ -368,7 +424,7 @@ const Courses = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/40 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-4 pb-6 sm:p-6 lg:p-8">
                     <div className="max-w-lg">
-                      <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground mb-2">
+                      <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground mb-2 line-clamp-2">
                         {filteredCourses[0].title}
                       </h2>
                       <div className="flex items-center gap-2 mb-3">
@@ -402,10 +458,11 @@ const Courses = () => {
                           variant="outline" 
                           size="sm"
                           className="bg-background/20 border-foreground/20 text-foreground hover:bg-background/40 text-xs sm:text-sm px-4 py-2 sm:px-6 sm:py-3"
-                          onClick={() => handleOpenCourseDetail(filteredCourses[0])}
+                          onClick={() => handleToggleMyList(filteredCourses[0])}
+                          disabled={loadingMyList}
                         >
                           <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                          My List
+                          {isInMyList(filteredCourses[0].id) ? 'Remove from List' : 'My List'}
                         </Button>
                       </div>
                     </div>
@@ -457,32 +514,31 @@ const Courses = () => {
                 </div>
               )}
 
-              {/* All Courses */}
-              <div className="px-4 sm:px-6 lg:px-8">
-                <h3 className="text-lg sm:text-xl font-bold mb-4 text-foreground">
-                  {selectedCategory} ({filteredCourses.length})
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4">
-                  {filteredCourses.map((course) => {
-                    const progress = getUserProgress(course.id)
-                    const enrolled = isUserEnrolled(course.id)
-                    const isCreator = isUserCourseCreator(course)
-                    
-                    return (
-                      <div
-                        key={course.id}
-                        className="cursor-pointer group"
-                        onClick={() => handleOpenCourseDetail(course)}
-                      >
-                        <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-2">
-                          <img 
-                            src={course.image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300&h=450&fit=crop"} 
-                            alt={course.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                          
-                          {/* Course level indicator */}
-                          <div className="absolute top-2 left-2">
+              {/* My List Section */}
+              {myListCourses.length > 0 && (
+                <div className="px-4 sm:px-6 lg:px-8 mb-8">
+                  <h3 className="text-lg sm:text-xl font-bold mb-4 text-foreground">My List</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4">
+                    {courses.filter(course => myListCourses.includes(course.id)).map((course) => {
+                      const progress = getUserProgress(course.id)
+                      const enrolled = isUserEnrolled(course.id)
+                      const isCreator = isUserCourseCreator(course)
+                      
+                      return (
+                        <div
+                          key={course.id}
+                          className="cursor-pointer group"
+                          onClick={() => handleOpenCourseDetail(course)}
+                        >
+                          <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-2">
+                            <img 
+                              src={course.image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300&h=450&fit=crop"} 
+                              alt={course.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            
+                            {/* Course level indicator */}
+                            <div className="absolute top-2 left-2">
                             <Badge 
                               className="text-xs"
                               style={course.level === 'Advanced' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
@@ -519,51 +575,96 @@ const Courses = () => {
                               {enrolled ? 'Continue' : 'Start'}
                             </Button>
                           </div>
+                          </div>
+                          
+                          <h4 className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 mb-1">{course.title}</h4>
+                          <p className="text-xs text-muted-foreground line-clamp-1">{course.instructor}</p>
                         </div>
-                        
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* All Courses */}
+              <div className="px-4 sm:px-6 lg:px-8">
+                <h3 className="text-lg sm:text-xl font-bold mb-4 text-foreground">
+                  {selectedCategory} ({filteredCourses.length})
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4">
+                  {filteredCourses.map((course) => {
+                    const progress = getUserProgress(course.id)
+                    const enrolled = isUserEnrolled(course.id)
+                    const isCreator = isUserCourseCreator(course)
+                    
+                    return (
+                      <div
+                        key={course.id}
+                        className="cursor-pointer group"
+                        onClick={() => handleOpenCourseDetail(course)}
+                      >
+                        <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-2">
+                          <img 
+                            src={course.image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300&h=450&fit=crop"} 
+                            alt={course.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                          
+                          {/* Course level indicator */}
+                          <div className="absolute top-2 left-2">
+                            <Badge 
+                              className="text-xs"
+                              style={course.level === 'Advanced' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
+                            >
+                              {course.level}
+                            </Badge>
+                          </div>
+
+                          {/* Creator controls */}
+                          {isCreator && (
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                className="h-8 w-8 p-0 bg-background/80 hover:bg-background"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleAddVideo(course)
+                                }}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+
+                          {/* Progress indicator */}
+                          {enrolled && progress > 0 && (
+                            <div className="absolute bottom-2 left-2 right-2">
+                              <Progress value={progress} className="h-1" />
+                            </div>
+                          )}
+
+                          {/* Enrollment status */}
+                          {enrolled && (
+                            <div className="absolute bottom-2 right-2">
+                              <Badge variant="secondary" className="text-xs bg-background/80">
+                                {progress === 100 ? (
+                                  <CheckCircle className="h-3 w-3" />
+                                ) : (
+                                  <Clock className="h-3 w-3" />
+                                )}
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
                         <h4 className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 mb-1">{course.title}</h4>
-                        <p className="text-xs text-muted-foreground line-clamp-1">{course.instructor}</p>
+                        <p className="text-xs text-muted-foreground">{course.instructor || 'Self-paced'}</p>
+                        {enrolled && (
+                          <p className="text-xs text-primary mt-1">{progress}% complete</p>
+                        )}
                       </div>
                     )
                   })}
-                </div>
-              </div>
-
-              {/* Learning Stats - Mobile Optimized */}
-              <div className="px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                  <Card className="shadow-soft text-center bg-card/50 backdrop-blur-sm">
-                    <CardContent className="p-3 sm:p-4">
-                      <div className="text-lg sm:text-xl lg:text-2xl font-bold" style={{ color: '#ffb500' }}>
-                        {recordingsCount}
-                      </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">Weekly Meetings</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="shadow-soft text-center bg-card/50 backdrop-blur-sm">
-                    <CardContent className="p-3 sm:p-4">
-                      <div className="text-lg sm:text-xl lg:text-2xl font-bold text-accent">
-                        {enrollments.filter(e => e.completed_at).length}
-                      </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">Completed</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="shadow-soft text-center bg-card/50 backdrop-blur-sm">
-                    <CardContent className="p-3 sm:p-4">
-                      <div className="text-lg sm:text-xl lg:text-2xl font-bold text-secondary">
-                        {courses.length}
-                      </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">Total Courses</div>
-                    </CardContent>
-                  </Card>
-                  <Card className="shadow-soft text-center bg-card/50 backdrop-blur-sm">
-                    <CardContent className="p-3 sm:p-4">
-                      <div className="text-lg sm:text-xl lg:text-2xl font-bold" style={{ color: '#ffb500' }}>
-                        {enrollments.length > 0 ? Math.round(enrollments.reduce((acc, e) => acc + e.progress, 0) / enrollments.length) : 0}%
-                      </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">Avg Progress</div>
-                    </CardContent>
-                  </Card>
                 </div>
               </div>
             </div>
