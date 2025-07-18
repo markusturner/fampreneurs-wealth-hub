@@ -349,16 +349,22 @@ export default function AdminDashboard() {
           // Get coach assignment
           const { data: coachAssignment } = await supabase
             .from('coach_assignments')
-            .select(`
-              coach_id,
-              coaches!coach_assignments_coach_id_fkey (
-                id,
-                full_name
-              )
-            `)
+            .select('coach_id')
             .eq('user_id', profile.user_id)
             .eq('status', 'active')
             .maybeSingle()
+
+          // Get coach details if assignment exists
+          let assignedCoach = null
+          if (coachAssignment?.coach_id) {
+            const { data: coachData } = await supabase
+              .from('coaches')
+              .select('id, full_name')
+              .eq('id', coachAssignment.coach_id)
+              .maybeSingle()
+            
+            assignedCoach = coachData
+          }
           
           return {
             ...profile,
@@ -368,7 +374,7 @@ export default function AdminDashboard() {
             course_progress: Math.round(avgProgress),
             group_calls_attended: groupSessions?.length || 0,
             one_on_one_calls_attended: oneOnOneSessions?.length || 0,
-            assigned_coach: coachAssignment ? (coachAssignment as any).coaches : null
+            assigned_coach: assignedCoach
           }
         })
       )

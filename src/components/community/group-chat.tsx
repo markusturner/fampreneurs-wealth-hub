@@ -158,7 +158,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
   const subscribeToMessages = () => {
     if (!groupId) return
 
-    const channel = supabase.channel(`group_${groupId}`)
+    const channel = supabase.channel(`group_${groupId}_messages`)
       .on(
         'postgres_changes',
         {

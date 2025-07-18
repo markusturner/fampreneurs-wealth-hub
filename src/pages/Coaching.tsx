@@ -463,21 +463,11 @@ const Coaching = () => {
                           <div className="space-y-1">
                             {dayEvents.slice(0, 1).map((event, eventIndex) => (
                               <div 
-                                key={event.id}
-                                className="text-xs p-1 rounded truncate cursor-pointer transition-colors"
-                                style={{ 
-                                  backgroundColor: calendarMode === 'group' ? '#ffb500' : '#3b82f6', 
-                                  color: calendarMode === 'group' ? '#290a52' : '#ffffff' 
-                                }}
-                                title={`${event.time} - ${event.title}`}
+                                key={eventIndex}
+                                className="text-xs p-1 rounded bg-primary/10 text-primary truncate cursor-pointer hover:bg-primary/20"
                                 onClick={() => setSelectedSessionDialog(event)}
                               >
-                                <div className="hidden sm:block">
-                                  {event.time} - {event.title.length > 8 ? event.title.substring(0, 8) + '...' : event.title}
-                                </div>
-                                <div className="sm:hidden">
-                                  {event.title.length > 6 ? event.title.substring(0, 6) + '...' : event.title}
-                                </div>
+                                {event.title}
                               </div>
                             ))}
                             {dayEvents.length > 1 && (
@@ -493,116 +483,147 @@ const Coaching = () => {
                 </div>
               </div>
             ) : (
-              /* List View */
-              <div className="space-y-3 sm:space-y-4">
-                {currentCalls.map((session) => (
-                  <div key={session.id} className="p-3 sm:p-4 bg-muted/30 rounded-lg space-y-3 border">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
-                        <AvatarImage src={session.avatar} />
-                        <AvatarFallback>{session.coach.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm truncate">{session.title}</h4>
-                        <p className="text-xs text-muted-foreground truncate">{session.coach}</p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <div className="text-xs sm:text-sm font-medium">{format(parseISO(session.date), 'MMM d, yyyy')}</div>
-                        <div className="text-xs text-muted-foreground">{session.time}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Button 
-                        size="sm" 
-                        className="flex-1 text-xs gap-1"
-                        onClick={() => window.open(session.zoomMeetingUrl, '_blank')}
-                      >
-                        <Video className="h-3 w-3" />
-                        Join Session
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        className="text-xs sm:flex-initial"
-                        onClick={() => setSelectedSessionDialog(session)}
-                      >
-                        Details
+              <div className="grid lg:grid-cols-4 gap-6">
+                {/* Calendar/List View - Takes up 3 columns */}
+                <div className="lg:col-span-3">
+                  {currentCalls.length === 0 ? (
+                    <div className="text-center py-12">
+                      <CalendarIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No Sessions Scheduled</h3>
+                      <p className="text-muted-foreground mb-4">
+                        You don't have any {calendarMode === 'group' ? 'group coaching' : '1-on-1'} sessions scheduled.
+                      </p>
+                      <Button onClick={() => setScheduleDialogOpen(true)} className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        Schedule Session
                       </Button>
                     </div>
-                  </div>
-                ))}
+                  ) : (
+                    <div className="space-y-4">
+                      {currentCalls.map((session) => (
+                        <Card key={session.id} className="shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedSessionDialog(session)}>
+                          <CardContent className="p-4">
+                            <div className="flex flex-col sm:flex-row gap-4">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
+                                  <AvatarImage src={session.avatar} />
+                                  <AvatarFallback>{session.coach.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold text-sm truncate">{session.title}</h4>
+                                  <p className="text-xs text-muted-foreground truncate">{session.coach}</p>
+                                </div>
+                                <div className="text-right flex-shrink-0">
+                                  <div className="text-xs sm:text-sm font-medium">{format(parseISO(session.date), 'MMM d, yyyy')}</div>
+                                  <div className="text-xs text-muted-foreground">{session.time}</div>
+                                </div>
+                              </div>
+                              
+                              <div className="flex flex-col sm:flex-row gap-2">
+                                <Button 
+                                  size="sm" 
+                                  className="flex-1 text-xs gap-1"
+                                  onClick={() => window.open(session.zoomMeetingUrl, '_blank')}
+                                >
+                                  <Video className="h-3 w-3" />
+                                  Join Session
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  className="text-xs sm:flex-initial"
+                                  onClick={() => setSelectedSessionDialog(session)}
+                                >
+                                  Details
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Available Coaches - Takes up 1 column on the right */}
+                <div className="lg:col-span-1">
+                  <Card className="shadow-soft sticky top-4">
+                    <CardHeader className="p-4">
+                      <CardTitle className="flex items-center gap-2 text-lg font-bold">
+                        <Star className="h-5 w-5" />
+                        Available Coaches
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      {loadingCoaches ? (
+                        <div className="space-y-4">
+                          {[...Array(3)].map((_, i) => (
+                            <Card key={i} className="animate-pulse">
+                              <CardContent className="p-4">
+                                <div className="h-4 bg-muted rounded mb-2"></div>
+                                <div className="h-3 bg-muted rounded mb-1"></div>
+                                <div className="h-3 bg-muted rounded"></div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : availableCoaches.length === 0 ? (
+                        <div className="text-center py-6">
+                          <User className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">No coaches available</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4 max-h-96 overflow-y-auto">
+                          {availableCoaches.map((coach, index) => (
+                            <Card key={index} className="shadow-sm hover:shadow-md transition-shadow">
+                              <CardContent className="p-3 space-y-3">
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-10 w-10">
+                                    <AvatarImage src={coach.avatar_url || coach.coach_avatar_url} />
+                                    <AvatarFallback className="bg-primary text-primary-foreground">
+                                      {coach.full_name.charAt(0)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="font-semibold truncate text-sm">{coach.full_name}</h4>
+                                    <p className="text-xs text-muted-foreground truncate">{coach.title || coach.specialties?.[0] || 'Financial Coach'}</p>
+                                  </div>
+                                </div>
+                                
+                                {coach.bio && (
+                                  <p className="text-xs text-muted-foreground line-clamp-2">{coach.bio}</p>
+                                )}
+                                
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="text-muted-foreground">Experience:</span>
+                                  <span className="font-medium">{coach.years_experience || 'N/A'} years</span>
+                                </div>
+                                
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-bold" style={{ color: '#ffb500' }}>
+                                    ${coach.hourly_rate || '300'}/hr
+                                  </span>
+                                  <Button 
+                                    size="sm" 
+                                    className="gap-2 text-xs" 
+                                    onClick={() => coach.calendar_link ? window.open(coach.calendar_link, '_blank') : setScheduleDialogOpen(true)}
+                                  >
+                                    <CalendarIcon className="h-3 w-3" />
+                                    Book
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
-
-        {/* Available Coaches */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Available Coaches</h2>
-          </div>
-          {loadingCoaches ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <span className="ml-2 text-muted-foreground">Loading coaches...</span>
-            </div>
-          ) : availableCoaches.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No coaches available. Add coaches through the admin dashboard.
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {availableCoaches.map((coach) => (
-                <Card key={coach.id} className="shadow-soft hover:shadow-medium transition-smooth">
-                  <CardHeader className="p-4 sm:p-6">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={`https://ui-avatars.com/api/?name=${encodeURIComponent(coach.full_name)}&background=random`} />
-                        <AvatarFallback>{coach.full_name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base leading-tight">{coach.full_name}</h3>
-                        <p className="text-sm text-muted-foreground">{coach.title || 'Financial Advisor'}</p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          <span className="text-xs">4.8 (New)</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-6 space-y-3">
-                    <div>
-                      <p className="text-sm font-medium">Specialties</p>
-                      <p className="text-sm text-muted-foreground">
-                        {coach.specialties?.join(', ') || 'General Financial Planning'}
-                      </p>
-                    </div>
-                    
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Experience:</span>
-                      <span className="font-medium">{coach.years_experience || 'N/A'} years</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold" style={{ color: '#ffb500' }}>
-                        ${coach.hourly_rate || '300'}/hr
-                      </span>
-                      <Button 
-                        size="sm" 
-                        className="gap-2" 
-                        onClick={() => coach.calendar_link ? window.open(coach.calendar_link, '_blank') : setScheduleDialogOpen(true)}
-                      >
-                        <CalendarIcon className="h-4 w-4" />
-                        Book Session
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
 
         {/* Stats */}
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
