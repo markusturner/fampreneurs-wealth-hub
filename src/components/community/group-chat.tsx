@@ -7,9 +7,13 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { useToast } from '@/hooks/use-toast'
-import { Send, Hash, Lock, Users, MoreVertical, Reply, Edit, Trash2 } from 'lucide-react'
+import { Send, Hash, Lock, Users, Edit, Reply, Trash2, Settings, MoreVertical } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
 
 interface Message {
   id: string
@@ -51,6 +55,13 @@ export function GroupChat({ groupId }: GroupChatProps) {
   const [replyTo, setReplyTo] = useState<Message | null>(null)
   const [editingMessage, setEditingMessage] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
+  
+  // Edit Group states
+  const [editGroupOpen, setEditGroupOpen] = useState(false)
+  const [editGroupName, setEditGroupName] = useState('')
+  const [editGroupDescription, setEditGroupDescription] = useState('')
+  const [editGroupPrivate, setEditGroupPrivate] = useState(false)
+  
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -301,6 +312,65 @@ export function GroupChat({ groupId }: GroupChatProps) {
     return 'Family Member'
   }
 
+  // Edit Group functions
+  const canEditGroup = () => {
+    return group && (group.created_by === user?.id)
+  }
+
+  const startEditGroup = () => {
+    if (!group) return
+    setEditGroupName(group.name)
+    setEditGroupDescription(group.description || '')
+    setEditGroupPrivate(group.is_private)
+    setEditGroupOpen(true)
+  }
+
+  const updateGroup = async () => {
+    if (!group || !editGroupName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a group name",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('community_groups')
+        .update({
+          name: editGroupName.trim(),
+          description: editGroupDescription.trim() || null,
+          is_private: editGroupPrivate
+        })
+        .eq('id', group.id)
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: `Group "${editGroupName}" updated successfully!`,
+      })
+
+      // Update local group state
+      setGroup({
+        ...group,
+        name: editGroupName.trim(),
+        description: editGroupDescription.trim() || null,
+        is_private: editGroupPrivate
+      })
+
+      setEditGroupOpen(false)
+    } catch (error) {
+      console.error('Error updating group:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update group",
+        variant: "destructive"
+      })
+    }
+  }
+
   if (!groupId) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -343,9 +413,17 @@ export function GroupChat({ groupId }: GroupChatProps) {
                 <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{group.member_count || 0}</span>
               </Button>
-              <Button variant="ghost" size="sm">
-                <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Button>
+              {canEditGroup() && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={startEditGroup}
+                  className="gap-1 sm:gap-2 text-xs sm:text-sm hover:bg-muted"
+                >
+                  <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Edit Group</span>
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -481,6 +559,59 @@ export function GroupChat({ groupId }: GroupChatProps) {
           </Button>
         </div>
       </div>
+
+      {/* Edit Group Dialog */}
+      <Dialog open={editGroupOpen} onOpenChange={setEditGroupOpen}>
+        <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Group</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-group-name">Group Name</Label>
+              <Input
+                id="edit-group-name"
+                value={editGroupName}
+                onChange={(e) => setEditGroupName(e.target.value)}
+                placeholder="Enter group name"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="edit-group-description">Description (Optional)</Label>
+              <Textarea
+                id="edit-group-description"
+                value={editGroupDescription}
+                onChange={(e) => setEditGroupDescription(e.target.value)}
+                placeholder="Enter group description"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="edit-private-group"
+                checked={editGroupPrivate}
+                onCheckedChange={setEditGroupPrivate}
+              />
+              <Label htmlFor="edit-private-group">Private Group</Label>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button onClick={updateGroup} className="flex-1">
+                Update Group
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setEditGroupOpen(false)}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
