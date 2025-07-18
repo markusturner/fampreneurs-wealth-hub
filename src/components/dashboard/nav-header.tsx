@@ -74,7 +74,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                     onClick={() => handleNavigation('/')}
                   >
                     <Home className="h-4 w-4" />
-                    Dashboard
+                    Family Office
                   </Button>
                   <Button
                     variant={location.pathname === '/community' ? "default" : "ghost"}
@@ -141,7 +141,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             className="gap-2 h-9"
           >
             <Home className="h-4 w-4" />
-            Dashboard
+            Family Office
           </Button>
           <Button
             variant={location.pathname === '/community' ? "default" : "ghost"}
