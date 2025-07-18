@@ -48,6 +48,7 @@ import { EditCourseDialog } from '@/components/admin/edit-course-dialog'
 import { UserRoleManagement } from '@/components/admin/user-role-management'
 import { UserCard } from '@/components/admin/user-card'
 import { CommunicationManagement } from '@/components/admin/communication-management'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { ThemeSettings } from '@/components/admin/theme-settings'
 import { AddCoachDialog } from '@/components/admin/add-coach-dialog'
 import { AddCoachingSessionDialog } from '@/components/admin/add-coaching-session-dialog'
@@ -619,6 +620,7 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <ThemeToggle />
               <Badge variant="secondary" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
                 Admin
               </Badge>
