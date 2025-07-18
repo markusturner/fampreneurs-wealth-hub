@@ -98,8 +98,14 @@ export function CallRecordingsList() {
   }, [])
 
   const handleWatchRecording = (recording: CoachingRecording) => {
-    setSelectedRecording(recording)
-    setVideoDialogOpen(true)
+    // Handle Fathom URLs for better viewing experience
+    let viewUrl = recording.recording_url
+    if (recording.platform?.toLowerCase().includes('fathom') || 
+        recording.recording_url.includes('fathom.video')) {
+      // Ensure we open the full Fathom viewer instead of embed
+      viewUrl = recording.recording_url.replace('/embed', '')
+    }
+    window.open(viewUrl, '_blank')
   }
 
   const getVideoEmbedUrl = (url: string, type: string) => {
@@ -206,13 +212,6 @@ export function CallRecordingsList() {
                 >
                   <Play className="h-4 w-4" />
                   Watch Recording
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleWatchRecording(recording)}
-                >
-                  <Eye className="h-4 w-4" />
                 </Button>
               </div>
             </CardContent>
