@@ -50,11 +50,21 @@ export const CoachingRecordings = () => {
 
   const fetchRecordings = async () => {
     try {
-      // Temporarily disabled until types are regenerated
-      console.log('Coaching recordings feature temporarily disabled until database types are updated')
-      setRecordings([])
+      const { data, error } = await supabase
+        .from('coaching_call_recordings')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      setRecordings((data || []) as CoachingRecording[])
     } catch (error) {
       console.error('Error fetching recordings:', error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch coaching recordings",
+        variant: "destructive"
+      })
       setRecordings([])
     }
   }
@@ -98,19 +108,32 @@ export const CoachingRecordings = () => {
         finalRecordingUrl = uploadedUrl
       }
 
-      // Temporarily disabled until types are regenerated
-      console.log('Insert functionality temporarily disabled until database types are updated')
-      
+      const recordingData = {
+        title: title.trim(),
+        description: description.trim() || null,
+        recording_url: finalRecordingUrl,
+        recording_type: uploadType,
+        platform: platform.trim() || null,
+        duration_minutes: durationMinutes ? parseInt(durationMinutes) : null,
+        recorded_at: recordedAt || new Date().toISOString(),
+        created_by: user.id,
+        category: category.trim() || null
+      }
+
+      const { error } = await supabase
+        .from('coaching_call_recordings')
+        .insert([recordingData])
+
+      if (error) throw error
+
       toast({
-        title: "Feature Temporarily Unavailable",
-        description: "Coaching recordings will be available once database types are updated.",
-        variant: "destructive"
+        title: "Success",
+        description: "Coaching recording added successfully",
       })
 
       resetForm()
       setIsDialogOpen(false)
-      
-      // Note: Feature temporarily disabled until database types are updated
+      fetchRecordings()
     } catch (error) {
       console.error('Error adding recording:', error)
       toast({
@@ -125,15 +148,19 @@ export const CoachingRecordings = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      // Temporarily disabled until types are regenerated  
-      console.log('Delete functionality temporarily disabled until database types are updated')
-      
+      const { error } = await supabase
+        .from('coaching_call_recordings')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
       toast({
-        title: "Feature Temporarily Unavailable",
-        description: "Coaching recordings will be available once database types are updated.",
-        variant: "destructive"
+        title: "Success",
+        description: "Recording deleted successfully",
       })
-      // Note: Feature temporarily disabled until database types are updated
+
+      fetchRecordings()
     } catch (error) {
       console.error('Error deleting recording:', error)
       toast({
