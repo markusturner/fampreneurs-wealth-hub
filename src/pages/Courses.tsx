@@ -463,7 +463,7 @@ const Courses = () => {
                       selectedCourse.level === 'Beginner' ? 'bg-secondary text-secondary-foreground' : 
                       selectedCourse.level === 'Advanced' ? 'text-white' : 'bg-accent text-accent-foreground'
                     }`}
-                    style={selectedCourse.level === 'Advanced' ? { backgroundColor: '#ffb500' } : {}}
+                    style={selectedCourse.level === 'Advanced' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
                     >
                       {selectedCourse.level}
                     </Badge>
