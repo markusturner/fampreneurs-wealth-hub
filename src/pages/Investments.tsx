@@ -68,11 +68,16 @@ export default function Investments() {
   }, [])
 
   const fetchInvestments = async () => {
+    if (!user?.id) {
+      setLoading(false)
+      return
+    }
+    
     try {
       const { data, error } = await supabase
         .from('investment_portfolios')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error
