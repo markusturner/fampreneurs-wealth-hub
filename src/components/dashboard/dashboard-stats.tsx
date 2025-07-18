@@ -13,7 +13,8 @@ export function DashboardStats() {
     totalValue: 0,
     dayChange: 0,
     dayChangePercent: 0,
-    activeInvestments: 0
+    activeInvestments: 0,
+    connectedAccounts: 0
   })
 
   useEffect(() => {
@@ -66,7 +67,8 @@ export function DashboardStats() {
           totalValue,
           dayChange: totalDayChange,
           dayChangePercent: weightedChangePercent,
-          activeInvestments: totalPositions
+          activeInvestments: totalPositions,
+          connectedAccounts: portfolios.length
         })
       }
     }
@@ -92,12 +94,16 @@ export function DashboardStats() {
     {
       title: "Active Investments",
       value: portfolioData.totalValue > 0 
-        ? portfolioData.activeInvestments.toString()
+        ? `${portfolioData.activeInvestments}`
         : "47",
-      change: portfolioData.totalValue > 0 ? "+2" : "+2",
+      change: portfolioData.totalValue > 0 
+        ? `${portfolioData.activeInvestments > 0 ? `+${portfolioData.activeInvestments}` : "0"}`
+        : "+2",
       trend: "up", 
       icon: PieChart,
-      description: portfolioData.totalValue > 0 ? "Connected positions" : "New positions this week"
+      description: portfolioData.totalValue > 0 
+        ? `From ${portfolioData.connectedAccounts} connected account${portfolioData.connectedAccounts !== 1 ? 's' : ''}`
+        : "New positions this week"
     },
     {
       title: "Financial Advisors",
