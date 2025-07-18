@@ -160,8 +160,8 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     background: var(--gradient-hero);
   }
 
-  .shadow-soft {
-    box-shadow: var(--shadow-soft);
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
   }
 
   .shadow-medium {
@@ -172,9 +172,6 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     box-shadow: var(--shadow-strong);
   }
 
-  .shadow-glow {
-    box-shadow: var(--shadow-glow);
-  }
 
   /* Smooth transitions */
   .transition-smooth {

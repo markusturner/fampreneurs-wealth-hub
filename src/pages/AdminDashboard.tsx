@@ -61,6 +61,7 @@ import { EditCoachingSessionDialog } from '@/components/admin/edit-coaching-sess
 import { UserSessionQuotaDialog } from '@/components/admin/user-session-quota-dialog'
 import { AssignCoachDialog } from '@/components/admin/assign-coach-dialog'
 import { ZapierIntegration } from '@/components/admin/zapier-integration'
+import { CoachingRecordings } from '@/components/admin/coaching-recordings'
 import { 
   DndContext, 
   DragEndEvent, 

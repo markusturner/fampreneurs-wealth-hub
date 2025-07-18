@@ -214,6 +214,51 @@ export type Database = {
         }
         Relationships: []
       }
+      coaching_call_recordings: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          platform: string | null
+          recorded_at: string
+          recording_type: string
+          recording_url: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          platform?: string | null
+          recorded_at?: string
+          recording_type?: string
+          recording_url: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          platform?: string | null
+          recorded_at?: string
+          recording_type?: string
+          recording_url?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       community_comment_reactions: {
         Row: {
           comment_id: string

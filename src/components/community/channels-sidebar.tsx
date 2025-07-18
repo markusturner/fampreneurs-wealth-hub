@@ -31,7 +31,7 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [newChannelName, setNewChannelName] = useState('')
   const [newChannelDescription, setNewChannelDescription] = useState('')
-  const [newChannelPrivate, setNewChannelPrivate] = useState(false)
+  const [isPrivateChannel, setIsPrivateChannel] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
 
   useEffect(() => {
@@ -73,13 +73,13 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
 
     setIsCreating(true)
     try {
-      const { data: channel, error } = await supabase
+      const { data: channelData, error } = await supabase
         .from('channels')
         .insert({
           name: newChannelName.trim(),
           description: newChannelDescription.trim() || null,
-          is_private: newChannelPrivate,
-          created_by: user.id
+          created_by: user.id,
+          is_private: isPrivateChannel
         })
         .select()
         .single()
@@ -87,24 +87,31 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
       if (error) throw error
 
       // Auto-join the creator to the channel
-      await supabase
-        .from('channel_members')
-        .insert({
-          channel_id: channel.id,
-          user_id: user.id,
-          role: 'admin'
-        })
+      if (channelData) {
+        await supabase
+          .from('channel_members')
+          .insert({
+            channel_id: channelData.id,
+            user_id: user.id,
+            role: 'admin'
+          })
+      }
 
+      setNewChannelName('')
+      setNewChannelDescription('')
+      setIsPrivateChannel(false)
+      setShowCreateDialog(false)
+      fetchChannels()
+      
+      // Set the new channel as selected to show its feed
+      if (channelData) {
+        onChannelSelect(channelData.id)
+      }
+      
       toast({
         title: "Success",
         description: "Channel created successfully!"
       })
-
-      setNewChannelName('')
-      setNewChannelDescription('')
-      setNewChannelPrivate(false)
-      setShowCreateDialog(false)
-      fetchChannels()
     } catch (error) {
       console.error('Error creating channel:', error)
       toast({
@@ -181,8 +188,8 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="channel-private"
-                    checked={newChannelPrivate}
-                    onCheckedChange={setNewChannelPrivate}
+                    checked={isPrivateChannel}
+                    onCheckedChange={setIsPrivateChannel}
                   />
                   <Label htmlFor="channel-private">Private Channel</Label>
                 </div>
