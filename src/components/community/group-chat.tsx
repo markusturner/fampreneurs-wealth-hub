@@ -76,7 +76,7 @@ interface GroupChatProps {
 }
 
 export function GroupChat({ groupId }: GroupChatProps) {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { toast } = useToast()
   const [group, setGroup] = useState<Group | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -456,9 +456,9 @@ export function GroupChat({ groupId }: GroupChatProps) {
     return 'Family Member'
   }
 
-  // Edit Group functions
+  // Edit Group functions - Updated to match sidebar permissions
   const canEditGroup = () => {
-    return group && (group.created_by === user?.id)
+    return group && (group.created_by === user?.id || profile?.is_admin)
   }
 
   const startEditGroup = () => {
@@ -574,7 +574,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
       )}
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-2 sm:p-4 min-h-0 pb-24">
+      <ScrollArea className="flex-1 p-2 sm:p-4 min-h-0 pb-32">{/* Increased bottom padding */}
         <div className="space-y-3 sm:space-y-4">
           {messages.map((message, index) => {
             const isOwn = message.user_id === user?.id
@@ -723,8 +723,8 @@ export function GroupChat({ groupId }: GroupChatProps) {
         </div>
       </ScrollArea>
 
-      {/* Message Input - Fixed at bottom of screen */}
-      <div className="fixed bottom-0 left-0 right-0 p-2 sm:p-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10">
+      {/* Message Input - Fixed at bottom with proper spacing */}
+      <div className="fixed bottom-0 left-0 right-0 p-2 sm:p-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-10 max-h-40 overflow-y-auto">{/* Added max-height and overflow */}
         {replyTo && (
           <div className="mb-2 p-2 bg-muted rounded text-sm max-w-4xl mx-auto">
             <div className="flex items-center justify-between">
