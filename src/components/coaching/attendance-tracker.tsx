@@ -157,14 +157,14 @@ export const AttendanceTracker = ({
 
   return (
     <Card className="w-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm flex items-center gap-2">
+      <CardHeader className="pb-3 text-center">
+        <CardTitle className="text-sm flex items-center justify-center gap-2">
           <Timer className="h-4 w-4" />
           Session Attendance
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs text-muted-foreground text-center">
           {sessionTitle}
         </div>
         
