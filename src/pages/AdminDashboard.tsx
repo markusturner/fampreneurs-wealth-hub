@@ -245,6 +245,7 @@ export default function AdminDashboard() {
   })
   const [activeId, setActiveId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban')
+  const [selectedSessionForPreview, setSelectedSessionForPreview] = useState<any>(null)
 
   const sensors = useSensors(
     useSensor(MouseSensor),

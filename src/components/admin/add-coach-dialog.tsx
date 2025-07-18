@@ -32,7 +32,8 @@ export function AddCoachDialog({ onCoachAdded }: AddCoachDialogProps) {
     bio: '',
     specialties: '',
     hourly_rate: '',
-    years_experience: ''
+    years_experience: '',
+    calendar_link: ''
   })
   const { toast } = useToast()
 
@@ -104,6 +105,7 @@ export function AddCoachDialog({ onCoachAdded }: AddCoachDialogProps) {
           specialties: formData.specialties.split(',').map(s => s.trim()),
           hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
           years_experience: formData.years_experience ? parseInt(formData.years_experience) : null,
+          calendar_link: formData.calendar_link || null,
           added_by: (await supabase.auth.getUser()).data.user?.id
         })
 
@@ -121,7 +123,8 @@ export function AddCoachDialog({ onCoachAdded }: AddCoachDialogProps) {
         bio: '',
         specialties: '',
         hourly_rate: '',
-        years_experience: ''
+        years_experience: '',
+        calendar_link: ''
       })
       setAvatarFile(null)
       setAvatarPreview('')
@@ -273,6 +276,20 @@ export function AddCoachDialog({ onCoachAdded }: AddCoachDialogProps) {
                 onChange={(e) => setFormData({ ...formData, years_experience: e.target.value })}
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="calendar_link">Calendar Booking Link</Label>
+            <Input
+              id="calendar_link"
+              type="url"
+              value={formData.calendar_link}
+              onChange={(e) => setFormData({ ...formData, calendar_link: e.target.value })}
+              placeholder="https://calendly.com/your-link or https://cal.com/your-link"
+            />
+            <p className="text-xs text-muted-foreground">
+              Link to your calendar booking system (Calendly, Cal.com, etc.)
+            </p>
           </div>
 
           <div className="flex justify-end space-x-2">

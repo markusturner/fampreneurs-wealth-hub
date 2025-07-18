@@ -25,6 +25,7 @@ interface Coach {
   hourly_rate: number | null
   years_experience: number | null
   is_active: boolean | null
+  calendar_link: string | null
 }
 
 interface EditCoachDialogProps {
@@ -43,7 +44,8 @@ export function EditCoachDialog({ coach, onCoachUpdated }: EditCoachDialogProps)
     specialties: coach.specialties?.join(', ') || '',
     hourly_rate: coach.hourly_rate?.toString() || '',
     years_experience: coach.years_experience?.toString() || '',
-    is_active: coach.is_active ?? true
+    is_active: coach.is_active ?? true,
+    calendar_link: coach.calendar_link || ''
   })
   const { toast } = useToast()
 
@@ -62,7 +64,8 @@ export function EditCoachDialog({ coach, onCoachUpdated }: EditCoachDialogProps)
           specialties: formData.specialties ? formData.specialties.split(',').map(s => s.trim()) : null,
           hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
           years_experience: formData.years_experience ? parseInt(formData.years_experience) : null,
-          is_active: formData.is_active
+          is_active: formData.is_active,
+          calendar_link: formData.calendar_link || null
         })
         .eq('id', coach.id)
 
@@ -171,6 +174,20 @@ export function EditCoachDialog({ coach, onCoachUpdated }: EditCoachDialogProps)
                 onChange={(e) => setFormData({ ...formData, years_experience: e.target.value })}
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="calendar_link">Calendar Booking Link</Label>
+            <Input
+              id="calendar_link"
+              type="url"
+              value={formData.calendar_link}
+              onChange={(e) => setFormData({ ...formData, calendar_link: e.target.value })}
+              placeholder="https://calendly.com/your-link or https://cal.com/your-link"
+            />
+            <p className="text-xs text-muted-foreground">
+              Link to your calendar booking system (Calendly, Cal.com, etc.)
+            </p>
           </div>
 
           <div className="flex items-center space-x-2">

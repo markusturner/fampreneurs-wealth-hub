@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Loader2, Calendar as CalendarIcon, Clock, User, Video, Phone, Users, Star, CheckCircle, Plus, ChevronLeft, ChevronRight, List, Grid } from 'lucide-react'
 import { format, isSameDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, getDay } from 'date-fns'
 import { cn } from '@/lib/utils'
@@ -73,6 +74,8 @@ const Coaching = () => {
   const [loadingSessions, setLoadingSessions] = useState(true)
   const [availableCoaches, setAvailableCoaches] = useState<any[]>([])
   const [loadingCoaches, setLoadingCoaches] = useState(true)
+  const [calendarMode, setCalendarMode] = useState<'group' | 'individual'>('group')
+  const [selectedSessionDialog, setSelectedSessionDialog] = useState<any>(null)
 
   const displayName = profile?.display_name || profile?.first_name || 'Member'
 
@@ -91,7 +94,7 @@ const Coaching = () => {
       if (groupError) throw groupError
       setSessions(groupData || [])
 
-      // Fetch individual sessions 
+      // Fetch individual sessions (only for current user)
       const { data: individualData, error: individualError } = await supabase
         .from('individual_coaching_sessions')
         .select(`
@@ -101,6 +104,7 @@ const Coaching = () => {
           )
         `)
         .eq('status', 'scheduled')
+        .eq('client_id', user?.id)
         .order('session_date', { ascending: true })
         .order('session_time', { ascending: true })
 
@@ -174,7 +178,7 @@ const Coaching = () => {
   }
 
   // Convert database sessions to format compatible with existing UI
-  const upcomingCalls = sessions.map(session => {
+  const upcomingGroupCalls = sessions.map(session => {
     // Handle time formatting safely
     let formattedTime = 'TBD'
     try {
@@ -210,9 +214,45 @@ const Coaching = () => {
     }
   })
 
+  // Convert individual sessions to format compatible with existing UI
+  const upcomingIndividualCalls = individualSessions.map(session => {
+    let formattedTime = 'TBD'
+    try {
+      const timeParts = session.session_time.split(':')
+      const hours = parseInt(timeParts[0])
+      const minutes = parseInt(timeParts[1])
+      const date = new Date()
+      date.setHours(hours, minutes, 0, 0)
+      formattedTime = format(date, 'h:mmaaa')
+    } catch (error) {
+      console.error('Error formatting time:', error)
+    }
+
+    return {
+      id: session.id,
+      title: session.title,
+      coach: session.financial_advisors?.full_name || 'Unknown Coach',
+      date: session.session_date,
+      time: formattedTime,
+      type: "1-on-1 Session",
+      status: "confirmed",
+      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
+      participants: 1,
+      maxParticipants: 1,
+      zoomMeetingId: session.meeting_id || "",
+      zoomMeetingUrl: session.meeting_url,
+      description: session.description,
+      duration: session.duration_minutes,
+      meetingType: session.meeting_type,
+      notes: session.notes
+    }
+  })
+
+  const currentCalls = calendarMode === 'group' ? upcomingGroupCalls : upcomingIndividualCalls
+
   // Get sessions for specific date
   const getSessionsForDate = (date: Date) => {
-    return upcomingCalls.filter(call => 
+    return currentCalls.filter(call => 
       isSameDay(parseISO(call.date), date)
     )
   }
@@ -261,6 +301,24 @@ const Coaching = () => {
                 <CardTitle className="text-lg font-bold">Coaching Calendar</CardTitle>
               </div>
               <div className="flex items-center gap-2">
+                <Button 
+                  variant={calendarMode === 'group' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => setCalendarMode('group')}
+                  className="gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Group Calls
+                </Button>
+                <Button 
+                  variant={calendarMode === 'individual' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => setCalendarMode('individual')}
+                  className="gap-2"
+                >
+                  <User className="h-4 w-4" />
+                  1-on-1 Calls
+                </Button>
                 <Button 
                   variant={viewType === 'month' ? 'default' : 'outline'} 
                   size="sm"
@@ -359,8 +417,12 @@ const Coaching = () => {
                               <div 
                                 key={event.id}
                                 className="text-xs p-1 rounded truncate cursor-pointer transition-colors"
-                                style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                                style={{ 
+                                  backgroundColor: calendarMode === 'group' ? '#ffb500' : '#3b82f6', 
+                                  color: '#ffffff' 
+                                }}
                                 title={`${event.time} - ${event.title}`}
+                                onClick={() => setSelectedSessionDialog(event)}
                               >
                                 <div className="hidden sm:block">
                                   {event.time} - {event.title.length > 8 ? event.title.substring(0, 8) + '...' : event.title}
@@ -385,7 +447,7 @@ const Coaching = () => {
             ) : (
               /* List View */
               <div className="space-y-3 sm:space-y-4">
-                {upcomingCalls.map((session) => (
+                {currentCalls.map((session) => (
                   <div key={session.id} className="p-3 sm:p-4 bg-muted/30 rounded-lg space-y-3 border">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
@@ -415,6 +477,7 @@ const Coaching = () => {
                         size="sm" 
                         variant="outline"
                         className="text-xs sm:flex-initial"
+                        onClick={() => setSelectedSessionDialog(session)}
                       >
                         Details
                       </Button>

@@ -89,7 +89,8 @@ export function DashboardStats() {
         ? (portfolioData.dayChangePercent >= 0 ? "up" : "down")
         : "up",
       icon: DollarSign,
-      description: portfolioData.totalValue > 0 ? "From connected accounts" : "Since yesterday"
+      description: portfolioData.totalValue > 0 ? "From connected accounts" : "Since yesterday",
+      useRealData: portfolioData.totalValue > 0
     },
     {
       title: "Active Investments",
@@ -147,7 +148,11 @@ export function DashboardStats() {
             <CardContent className="p-3 sm:p-6 pt-0">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className="text-xl sm:text-2xl font-bold text-foreground truncate">
+                  <div className={`text-xl sm:text-2xl font-bold truncate ${
+                    stat.title === "Total Portfolio Value" && stat.useRealData ? "" : "text-foreground"
+                  }`} style={{
+                    color: stat.title === "Total Portfolio Value" && stat.useRealData ? '#ffb500' : undefined
+                  }}>
                     {stat.value}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 leading-tight">

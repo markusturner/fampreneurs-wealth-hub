@@ -698,7 +698,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
           <div>
             <div className="flex items-center justify-between px-2 mb-2">
               <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                Public Groups
+                Groups
               </h3>
               <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
                 <DialogTrigger asChild>

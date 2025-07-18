@@ -181,11 +181,6 @@ const Courses = () => {
               Enhance your financial knowledge with expert-led courses
             </p>
           </div>
-          <Button onClick={() => setCreateCourseOpen(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Create Course</span>
-            <span className="sm:hidden">Create</span>
-          </Button>
         </div>
 
 
@@ -305,7 +300,7 @@ const Courses = () => {
         <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           <Card className="shadow-soft text-center">
             <CardContent className="p-3 sm:p-4">
-              <div className="text-xl sm:text-2xl font-bold text-primary">{enrollments.length}</div>
+              <div className="text-xl sm:text-2xl font-bold" style={{ color: '#ffb500' }}>{enrollments.length}</div>
               <div className="text-xs sm:text-sm text-muted-foreground">Enrolled Courses</div>
             </CardContent>
           </Card>
@@ -325,7 +320,7 @@ const Courses = () => {
           </Card>
           <Card className="shadow-soft text-center">
             <CardContent className="p-3 sm:p-4">
-              <div className="text-xl sm:text-2xl font-bold text-muted-foreground">
+              <div className="text-xl sm:text-2xl font-bold" style={{ color: '#ffb500' }}>
                 {enrollments.length > 0 ? Math.round(enrollments.reduce((acc, e) => acc + e.progress, 0) / enrollments.length) : 0}%
               </div>
               <div className="text-xs sm:text-sm text-muted-foreground">Avg Progress</div>
