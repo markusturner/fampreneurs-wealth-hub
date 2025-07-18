@@ -366,14 +366,45 @@ export default function AdminDashboard() {
       if (coachesError) throw coachesError
       setCoaches(coachesData || [])
 
-      // Load coaching sessions
-      const { data: sessionsData, error: sessionsError } = await supabase
-        .from('group_coaching_sessions')
-        .select('*')
-        .order('session_date', { ascending: false })
+      // Load coaching sessions (both group and individual)
+      const [groupSessionsResult, individualSessionsResult] = await Promise.all([
+        supabase
+          .from('group_coaching_sessions')
+          .select('*, coaches:coach_name')
+          .order('session_date', { ascending: false }),
+        supabase
+          .from('individual_coaching_sessions')
+          .select(`
+            *,
+            coaches:coach_id (
+              full_name
+            )
+          `)
+          .order('session_date', { ascending: false })
+      ])
 
-      if (sessionsError) throw sessionsError
-      setCoachingSessions(sessionsData || [])
+      if (groupSessionsResult.error) throw groupSessionsResult.error
+      if (individualSessionsResult.error) throw individualSessionsResult.error
+
+      // Merge and normalize both types of sessions
+      const groupSessions = (groupSessionsResult.data || []).map(session => ({
+        ...session,
+        session_type: 'group',
+        coach_name: session.coach_name,
+        max_participants: session.max_participants || 1
+      }))
+
+      const individualSessions = (individualSessionsResult.data || []).map(session => ({
+        ...session,
+        session_type: 'individual',
+        coach_name: (session as any).coaches?.full_name || 'Unknown Coach',
+        max_participants: 1
+      }))
+
+      const allSessions = [...groupSessions, ...individualSessions]
+        .sort((a, b) => new Date(b.session_date).getTime() - new Date(a.session_date).getTime())
+
+      setCoachingSessions(allSessions)
 
       // Load onboarding emails
       const { data: emailsData, error: emailsError } = await supabase
@@ -1139,14 +1170,24 @@ export default function AdminDashboard() {
                             variant="destructive" 
                             size="sm"
                             onClick={async () => {
+                              const sessionTable = session.session_type === 'group' || (session.max_participants || 1) > 1 
+                                ? 'group_coaching_sessions' 
+                                : 'individual_coaching_sessions'
+                              
                               const { error } = await supabase
-                                .from('group_coaching_sessions')
+                                .from(sessionTable)
                                 .delete()
                                 .eq('id', session.id)
                               
                               if (!error) {
                                 toast({ title: "Session deleted" })
                                 loadAdminData()
+                              } else {
+                                toast({ 
+                                  title: "Error deleting session", 
+                                  description: error.message,
+                                  variant: "destructive" 
+                                })
                               }
                             }}
                           >

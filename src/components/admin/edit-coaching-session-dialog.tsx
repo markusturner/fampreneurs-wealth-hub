@@ -34,9 +34,14 @@ interface Session {
   max_participants: number | null
   meeting_url: string
   meeting_password: string | null
-  is_recurring: boolean | null
-  recurrence_pattern: string | null
-  recurrence_end_date: string | null
+  is_recurring?: boolean | null
+  recurrence_pattern?: string | null
+  recurrence_end_date?: string | null
+  session_type?: 'group' | 'individual'
+  coach_id?: string | null
+  client_id?: string | null
+  status?: string
+  notes?: string | null
 }
 
 interface EditCoachingSessionDialogProps {
@@ -64,7 +69,7 @@ export function EditCoachingSessionDialog({ session, onSessionUpdated }: EditCoa
   })
   const { toast } = useToast()
 
-  const isGroupSession = (session.max_participants || 1) > 1
+  const isGroupSession = session.session_type === 'group' || (session.max_participants || 1) > 1
 
   useEffect(() => {
     if (open) {
@@ -95,22 +100,39 @@ export function EditCoachingSessionDialog({ session, onSessionUpdated }: EditCoa
     setLoading(true)
 
     try {
+      // Determine if this is a group session or individual session
+      const sessionTable = isGroupSession ? 'group_coaching_sessions' : 'individual_coaching_sessions'
+      
+      const updateData: any = {
+        title: formData.title,
+        description: formData.description,
+        session_date: formData.session_date,
+        session_time: formData.session_time,
+        duration_minutes: parseInt(formData.duration_minutes),
+        meeting_url: formData.meeting_url,
+        meeting_password: formData.meeting_password || null
+      }
+
+      // Add fields specific to each session type
+      if (isGroupSession) {
+        updateData.coach_name = formData.coach_name
+        updateData.max_participants = parseInt(formData.max_participants)
+        updateData.is_recurring = formData.is_recurring
+        updateData.recurrence_pattern = formData.is_recurring ? formData.recurrence_pattern : null
+        updateData.recurrence_end_date = formData.is_recurring && formData.recurrence_end_date ? formData.recurrence_end_date : null
+      } else {
+        // For individual sessions
+        updateData.notes = formData.description
+        // Find coach by name and set coach_id
+        const selectedCoach = coaches.find(c => c.full_name === formData.coach_name)
+        if (selectedCoach) {
+          updateData.coach_id = selectedCoach.id
+        }
+      }
+
       const { error } = await supabase
-        .from('group_coaching_sessions')
-        .update({
-          title: formData.title,
-          description: formData.description,
-          coach_name: formData.coach_name,
-          session_date: formData.session_date,
-          session_time: formData.session_time,
-          duration_minutes: parseInt(formData.duration_minutes),
-          max_participants: parseInt(formData.max_participants),
-          meeting_url: formData.meeting_url,
-          meeting_password: formData.meeting_password,
-          is_recurring: formData.is_recurring,
-          recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : null,
-          recurrence_end_date: formData.is_recurring ? formData.recurrence_end_date : null
-        })
+        .from(sessionTable)
+        .update(updateData)
         .eq('id', session.id)
 
       if (error) throw error
