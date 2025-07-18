@@ -5,12 +5,31 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, Hash, Lock, Users, Edit, Calendar, BookOpen } from 'lucide-react'
+import { Plus, Hash, Lock, Users, Edit, Calendar, BookOpen, GripVertical } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import {
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface Channel {
   id: string
@@ -21,6 +40,7 @@ interface Channel {
   member_count?: number
   associated_group_calls?: string[]
   associated_courses?: string[]
+  order_index?: number
 }
 
 interface GroupCall {
@@ -55,6 +75,14 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
   const [selectedGroupCalls, setSelectedGroupCalls] = useState<string[]>([])
   const [selectedCourses, setSelectedCourses] = useState<string[]>([])
   const [isCreating, setIsCreating] = useState(false)
+  const [editingAllPosts, setEditingAllPosts] = useState(false)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
 
   const fetchChannels = async () => {
@@ -62,6 +90,7 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
       const { data: channelsData, error } = await supabase
         .from('channels')
         .select('*')
+        .order('order_index', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: true })
 
       if (error) throw error
@@ -224,6 +253,20 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
   }
 
   const handleUpdateChannel = async () => {
+    if (editingAllPosts) {
+      // Just close the dialog for All Posts editing (no actual update needed)
+      resetForm()
+      setShowEditDialog(false)
+      setEditingChannel(null)
+      setEditingAllPosts(false)
+      
+      toast({
+        title: "Settings saved",
+        description: "All Posts settings updated!"
+      })
+      return
+    }
+
     if (!editingChannel || !newChannelName.trim() || !user || !profile?.is_admin) {
       toast({
         title: "Error", 
@@ -251,6 +294,7 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
       resetForm()
       setShowEditDialog(false)
       setEditingChannel(null)
+      setEditingAllPosts(false)
       fetchChannels()
       
       toast({
@@ -267,6 +311,51 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
     } finally {
       setIsCreating(false)
     }
+  }
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (!over || active.id === over.id) {
+      return
+    }
+
+    const oldIndex = channels.findIndex((channel) => channel.id === active.id)
+    const newIndex = channels.findIndex((channel) => channel.id === over.id)
+
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const newChannels = arrayMove(channels, oldIndex, newIndex)
+      setChannels(newChannels)
+
+      // Update order in database
+      try {
+        const updates = newChannels.map((channel, index) => ({
+          id: channel.id,
+          order_index: index
+        }))
+
+        for (const update of updates) {
+          await supabase
+            .from('channels')
+            .update({ order_index: update.order_index })
+            .eq('id', update.id)
+        }
+      } catch (error) {
+        console.error('Error updating channel order:', error)
+        // Revert optimistic update
+        fetchChannels()
+      }
+    }
+  }
+
+  const handleEditAllPosts = () => {
+    setNewChannelName('All Posts')
+    setNewChannelDescription('Default channel for all posts')
+    setIsPrivateChannel(false)
+    setSelectedGroupCalls([])
+    setSelectedCourses([])
+    setEditingAllPosts(true)
+    setShowEditDialog(true)
   }
 
   // Move useEffect after all function definitions
@@ -417,7 +506,7 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
           <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Edit Channel</DialogTitle>
+                <DialogTitle>{editingAllPosts ? 'Edit All Posts Settings' : 'Edit Channel'}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
@@ -534,6 +623,7 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
                       setShowEditDialog(false)
                       resetForm()
                       setEditingChannel(null)
+                      setEditingAllPosts(false)
                     }}
                     className="flex-1"
                   >
@@ -547,47 +637,47 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
       </CardHeader>
       <CardContent className="space-y-1">
         {/* All Posts option */}
-        <Button
-          variant={selectedChannelId === null ? "secondary" : "ghost"}
-          size="sm"
-          onClick={() => onChannelSelect(null)}
-          className="w-full justify-start gap-2 h-8 text-xs"
-        >
-          <Users className="h-3 w-3" />
-          All Posts
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button
+            variant={selectedChannelId === null ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => onChannelSelect(null)}
+            className="flex-1 justify-start gap-2 h-8 text-xs"
+          >
+            <Users className="h-3 w-3" />
+            All Posts
+          </Button>
+          {profile?.is_admin && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0 flex-shrink-0"
+              onClick={handleEditAllPosts}
+            >
+              <Edit className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
 
         {/* Channels list */}
-        {channels.map((channel) => (
-          <div key={channel.id} className="flex items-center gap-1">
-            <Button
-              variant={selectedChannelId === channel.id ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => onChannelSelect(channel.id)}
-              className="flex-1 justify-start gap-2 h-8 text-xs"
-            >
-              {channel.is_private ? (
-                <Lock className="h-3 w-3" />
-              ) : (
-                <Hash className="h-3 w-3" />
-              )}
-              <span className="truncate flex-1 text-left">{channel.name}</span>
-              <span className="text-xs text-muted-foreground">
-                {channel.member_count}
-              </span>
-            </Button>
-            {(channel.created_by === user?.id || profile?.is_admin) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0 flex-shrink-0"
-                onClick={() => handleEditChannel(channel)}
-              >
-                <Edit className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
-        ))}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={channels.map(c => c.id)} strategy={verticalListSortingStrategy}>
+            {channels.map((channel) => (
+              <SortableChannelItem
+                key={channel.id}
+                channel={channel}
+                selectedChannelId={selectedChannelId}
+                onChannelSelect={onChannelSelect}
+                onEditChannel={handleEditChannel}
+                canEdit={channel.created_by === user?.id || profile?.is_admin}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
 
         {channels.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-4">
@@ -596,5 +686,71 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
         )}
       </CardContent>
     </Card>
+  )
+}
+
+// Sortable Channel Item Component
+interface SortableChannelItemProps {
+  channel: Channel
+  selectedChannelId: string | null
+  onChannelSelect: (channelId: string) => void
+  onEditChannel: (channel: Channel) => void
+  canEdit: boolean
+}
+
+function SortableChannelItem({
+  channel,
+  selectedChannelId,
+  onChannelSelect,
+  onEditChannel,
+  canEdit
+}: SortableChannelItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: channel.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.8 : 1,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center gap-1">
+      <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+        <GripVertical className="h-3 w-3 text-muted-foreground" />
+      </div>
+      <Button
+        variant={selectedChannelId === channel.id ? "secondary" : "ghost"}
+        size="sm"
+        onClick={() => onChannelSelect(channel.id)}
+        className="flex-1 justify-start gap-2 h-8 text-xs"
+      >
+        {channel.is_private ? (
+          <Lock className="h-3 w-3" />
+        ) : (
+          <Hash className="h-3 w-3" />
+        )}
+        <span className="truncate flex-1 text-left">{channel.name}</span>
+        <span className="text-xs text-muted-foreground">
+          {channel.member_count}
+        </span>
+      </Button>
+      {canEdit && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0 flex-shrink-0"
+          onClick={() => onEditChannel(channel)}
+        >
+          <Edit className="h-3 w-3" />
+        </Button>
+      )}
+    </div>
   )
 }
