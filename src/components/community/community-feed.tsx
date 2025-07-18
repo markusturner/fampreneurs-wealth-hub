@@ -130,11 +130,11 @@ export function CommunityFeed() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto">
+    <div className="w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-4 py-6">
         {/* Channels Sidebar - Hidden on mobile, 3 columns on large screens */}
         <div className="hidden lg:block lg:col-span-3">
-          <div className="sticky top-6">
+          <div className="sticky top-24">
             <ChannelsSidebar 
               selectedChannelId={selectedChannelId}
               onChannelSelect={setSelectedChannelId}

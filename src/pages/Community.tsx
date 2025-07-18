@@ -70,15 +70,19 @@ const Community = () => {
     <div className="min-h-screen bg-background relative">
       <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
-      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-4xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Community Feed
-            </h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Connect with other like minded first generation wealth builders
-            </p>
+      <main className="w-full">
+        <div className="px-4 py-6 border-b bg-background/80 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+                  Community Feed
+                </h1>
+                <p className="text-sm sm:text-base text-muted-foreground mt-1">
+                  Connect with other like minded first generation wealth builders
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
