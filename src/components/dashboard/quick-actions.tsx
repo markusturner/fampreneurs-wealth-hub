@@ -99,7 +99,10 @@ export function QuickActions() {
                 }}
               >
                 <div className="flex items-start space-x-2 sm:space-x-3 w-full">
-                  <Icon className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 flex-shrink-0 text-primary dark:text-primary-foreground" />
+                  <Icon 
+                    className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 flex-shrink-0 text-primary dark:text-primary-foreground" 
+                    style={action.title === "Business Structure" ? { color: '#290a52' } : {}}
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-xs sm:text-sm truncate">
                       {action.title}
