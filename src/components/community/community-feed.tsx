@@ -193,12 +193,12 @@ export function CommunityFeed() {
                   </p>
                 ) : (
                   announcements.map((announcement) => (
-                    <div key={announcement.id} className="p-3 bg-muted rounded-lg space-y-2">
-                      <h4 className="font-medium text-sm line-clamp-2">{announcement.title}</h4>
-                      <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                    <div key={announcement.id} className="p-3 rounded-lg space-y-2" style={{ backgroundColor: '#ffb500' }}>
+                      <h4 className="font-medium text-sm line-clamp-2" style={{ color: '#290a52' }}>{announcement.title}</h4>
+                      <p className="text-xs line-clamp-3 leading-relaxed" style={{ color: '#290a52' }}>
                         {announcement.content}
                       </p>
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center justify-between text-xs" style={{ color: '#290a52' }}>
                         <span className="truncate">
                           by {getDisplayName(announcement.profiles)}
                         </span>
