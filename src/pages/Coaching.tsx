@@ -10,7 +10,8 @@ import { format, isSameDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterva
 import { cn } from '@/lib/utils'
 import { supabase } from '@/integrations/supabase/client'
 import { ScheduleSessionDialog } from '@/components/coaching/schedule-session-dialog'
-import { AddCoachDialog } from '@/components/coaching/add-coach-dialog'
+import { CoachButton } from '@/components/coaching/coach-button'
+import { CallButton } from '@/components/coaching/call-button'
 
 interface GroupSession {
   id: string
@@ -37,6 +38,31 @@ interface GroupSession {
   updated_at: string
 }
 
+interface IndividualSession {
+  id: string
+  title: string
+  description?: string
+  coach_id: string
+  client_id: string
+  session_date: string
+  session_time: string
+  duration_minutes: number
+  meeting_type: string
+  meeting_url: string
+  meeting_id?: string
+  meeting_password?: string
+  status: string
+  notes?: string
+  created_by: string
+  created_at: string
+  updated_at: string
+  // Join with financial_advisors table
+  financial_advisors?: {
+    full_name: string
+    avatar_url?: string
+  } | null
+}
+
 const Coaching = () => {
   const { user, profile, loading } = useAuth()
 
@@ -59,8 +85,8 @@ const Coaching = () => {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date())
   const [viewType, setViewType] = useState<'month' | 'list'>('month')
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false)
-  const [addCoachDialogOpen, setAddCoachDialogOpen] = useState(false)
   const [sessions, setSessions] = useState<GroupSession[]>([])
+  const [individualSessions, setIndividualSessions] = useState<IndividualSession[]>([])
   const [loadingSessions, setLoadingSessions] = useState(true)
 
   const displayName = profile?.display_name || profile?.first_name || 'Member'
@@ -69,15 +95,33 @@ const Coaching = () => {
   const fetchSessions = async () => {
     setLoadingSessions(true)
     try {
-      const { data, error } = await supabase
+      // Fetch group sessions
+      const { data: groupData, error: groupError } = await supabase
         .from('group_coaching_sessions')
         .select('*')
         .eq('status', 'scheduled')
         .order('session_date', { ascending: true })
         .order('session_time', { ascending: true })
 
-      if (error) throw error
-      setSessions(data || [])
+      if (groupError) throw groupError
+      setSessions(groupData || [])
+
+      // Fetch individual sessions 
+      const { data: individualData, error: individualError } = await supabase
+        .from('individual_coaching_sessions')
+        .select(`
+          *,
+          financial_advisors (
+            full_name,
+            avatar_url
+          )
+        `)
+        .eq('status', 'scheduled')
+        .order('session_date', { ascending: true })
+        .order('session_time', { ascending: true })
+
+      if (individualError) throw individualError
+      setIndividualSessions((individualData as any) || [])
     } catch (error) {
       console.error('Error fetching sessions:', error)
     } finally {
@@ -204,11 +248,10 @@ const Coaching = () => {
               Manage your schedule and coaching sessions
             </p>
           </div>
-          <Button className="gap-2" onClick={() => setScheduleDialogOpen(true)}>
-            <CalendarIcon className="h-4 w-4" />
-            <span className="hidden sm:inline">Schedule New Call</span>
-            <span className="sm:hidden">Schedule</span>
-          </Button>
+          <div className="flex gap-2">
+            <CoachButton onCoachAdded={fetchSessions} />
+            <CallButton onCallAdded={fetchSessions} />
+          </div>
         </div>
 
         {/* Group Coaching Calendar */}
@@ -217,7 +260,7 @@ const Coaching = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5" />
-                <CardTitle className="text-lg font-bold">Group Coaching Calendar</CardTitle>
+                <CardTitle className="text-lg font-bold">Coaching Calendar</CardTitle>
               </div>
               <div className="flex items-center gap-2">
                 <Button 
@@ -383,15 +426,6 @@ const Coaching = () => {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Available Coaches</h2>
-            <Button 
-              size="sm"
-              onClick={() => setAddCoachDialogOpen(true)}
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="hidden lg:inline">Add Coach & Call</span>
-              <span className="lg:hidden">Add Call</span>
-            </Button>
           </div>
           <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {availableCoaches.map((coach) => (
@@ -470,13 +504,6 @@ const Coaching = () => {
         open={scheduleDialogOpen}
         onOpenChange={setScheduleDialogOpen}
         onSessionCreated={fetchSessions}
-      />
-
-      {/* Add Coach Dialog */}
-      <AddCoachDialog
-        open={addCoachDialogOpen}
-        onOpenChange={setAddCoachDialogOpen}
-        onCoachAdded={fetchSessions}
       />
     </div>
   )

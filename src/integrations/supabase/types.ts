@@ -793,6 +793,74 @@ export type Database = {
           },
         ]
       }
+      individual_coaching_sessions: {
+        Row: {
+          client_id: string | null
+          coach_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_minutes: number
+          id: string
+          meeting_id: string | null
+          meeting_password: string | null
+          meeting_type: string
+          meeting_url: string
+          notes: string | null
+          session_date: string
+          session_time: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          coach_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          meeting_id?: string | null
+          meeting_password?: string | null
+          meeting_type?: string
+          meeting_url: string
+          notes?: string | null
+          session_date: string
+          session_time: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          coach_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          meeting_id?: string | null
+          meeting_password?: string | null
+          meeting_type?: string
+          meeting_url?: string
+          notes?: string | null
+          session_date?: string
+          session_time?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "individual_coaching_sessions_coach_id_fkey"
+            columns: ["coach_id"]
+            isOneToOne: false
+            referencedRelation: "financial_advisors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
