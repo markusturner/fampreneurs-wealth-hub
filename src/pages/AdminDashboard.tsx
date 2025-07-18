@@ -58,7 +58,8 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
-  closestCenter
+  closestCenter,
+  useDroppable
 } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { 
@@ -66,6 +67,12 @@ import {
 } from '@dnd-kit/sortable'
 import { GripVertical } from 'lucide-react'
 import { ResponsiveContainer, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+
+function DroppableStage({ id, children }: { id: string; children: React.ReactNode }) {
+  const { setNodeRef } = useDroppable({ id })
+  
+  return <div ref={setNodeRef}>{children}</div>
+}
 
 interface Profile {
   id: string
@@ -840,52 +847,56 @@ export default function AdminDashboard() {
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                     {/* Unassigned Users Column */}
-                    <Card className="min-h-[300px]">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm flex items-center space-x-2">
-                          <div className="w-3 h-3 rounded-full bg-gray-400" />
-                          <span>Unassigned</span>
-                          <Badge variant="secondary">{getUsersWithoutStage().length}</Badge>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <SortableContext 
-                          items={getUsersWithoutStage().map(u => u.id)} 
-                          strategy={verticalListSortingStrategy}
-                        >
-                          {getUsersWithoutStage().map((user) => (
-                            <SortableUser key={user.id} user={user} stage={{ id: 'unassigned', name: 'Unassigned', description: null, stage_order: 0, color: '#6b7280', created_by: '', created_at: '' }} />
-                          ))}
-                        </SortableContext>
-                      </CardContent>
-                    </Card>
+                    <DroppableStage id="unassigned">
+                      <Card className="min-h-[300px]">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-sm flex items-center space-x-2">
+                            <div className="w-3 h-3 rounded-full bg-gray-400" />
+                            <span>Unassigned</span>
+                            <Badge variant="secondary">{getUsersWithoutStage().length}</Badge>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <SortableContext 
+                            items={getUsersWithoutStage().map(u => u.id)} 
+                            strategy={verticalListSortingStrategy}
+                          >
+                            {getUsersWithoutStage().map((user) => (
+                              <SortableUser key={user.id} user={user} stage={{ id: 'unassigned', name: 'Unassigned', description: null, stage_order: 0, color: '#6b7280', created_by: '', created_at: '' }} />
+                            ))}
+                          </SortableContext>
+                        </CardContent>
+                      </Card>
+                    </DroppableStage>
 
                     {/* Fulfillment Stages */}
                     {fulfillmentStages.map((stage) => {
                       const stageUsers = getUsersInStage(stage.id)
                       return (
-                        <Card key={stage.id} className="min-h-[300px]">
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-sm flex items-center space-x-2">
-                              <div 
-                                className="w-3 h-3 rounded-full" 
-                                style={{ backgroundColor: stage.color || '#3b82f6' }}
-                              />
-                              <span>{stage.name}</span>
-                              <Badge variant="secondary">{stageUsers.length}</Badge>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-3">
-                            <SortableContext 
-                              items={stageUsers.map(u => u.id)} 
-                              strategy={verticalListSortingStrategy}
-                            >
-                              {stageUsers.map((user) => (
-                                <SortableUser key={user.id} user={user} stage={stage} />
-                              ))}
-                            </SortableContext>
-                          </CardContent>
-                        </Card>
+                        <DroppableStage key={stage.id} id={stage.id}>
+                          <Card className="min-h-[300px]">
+                            <CardHeader className="pb-3">
+                              <CardTitle className="text-sm flex items-center space-x-2">
+                                <div 
+                                  className="w-3 h-3 rounded-full" 
+                                  style={{ backgroundColor: stage.color || '#3b82f6' }}
+                                />
+                                <span>{stage.name}</span>
+                                <Badge variant="secondary">{stageUsers.length}</Badge>
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                              <SortableContext 
+                                items={stageUsers.map(u => u.id)} 
+                                strategy={verticalListSortingStrategy}
+                              >
+                                {stageUsers.map((user) => (
+                                  <SortableUser key={user.id} user={user} stage={stage} />
+                                ))}
+                              </SortableContext>
+                            </CardContent>
+                          </Card>
+                        </DroppableStage>
                       )
                     })}
                   </div>
