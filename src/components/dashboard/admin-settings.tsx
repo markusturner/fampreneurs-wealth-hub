@@ -10,9 +10,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Separator } from '@/components/ui/separator'
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Shield, Users, UserCheck, Settings, Crown, Heart } from 'lucide-react'
+import { Shield, Users, UserCheck, Settings, Crown, Heart, Loader2 } from 'lucide-react'
 
 interface UserRole {
   id: string
@@ -44,6 +45,8 @@ export function AdminSettings() {
   const [selectedUser, setSelectedUser] = useState<ProfileWithRoles | null>(null)
   const [newSpecialty, setNewSpecialty] = useState('')
   const [specialties, setSpecialties] = useState<string[]>([])
+  const [adminCode, setAdminCode] = useState('')
+  const [isAdminLoading, setIsAdminLoading] = useState(false)
 
   // Don't render if user is not admin
   if (!profile?.is_admin) {
@@ -188,6 +191,80 @@ export function AdminSettings() {
     setSelectedUser(user)
     setSpecialties(user.accountability_specialties || [])
     setDialogOpen(true)
+  }
+
+  const handleQuickAdminAccess = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsAdminLoading(true)
+
+    try {
+      // Check if the admin code is correct
+      if (adminCode !== 'ADMIN2025') {
+        toast({
+          title: "Invalid admin code",
+          description: "Please enter the correct admin access code.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Try to sign in with admin credentials first
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: 'admin@fampreneurs.com',
+        password: 'Admin@2025!',
+      })
+
+      if (signInError && signInError.message.includes('Invalid login credentials')) {
+        // If admin account doesn't exist, create it
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: 'admin@fampreneurs.com',
+          password: 'Admin@2025!',
+          options: {
+            data: {
+              first_name: 'Admin',
+              last_name: 'User',
+              display_name: 'Admin User',
+              occupation: 'System Administrator',
+            }
+          }
+        })
+
+        if (signUpError) throw signUpError
+
+        if (signUpData.user) {
+          // Manually assign admin role via RPC
+          await supabase.rpc('assign_admin_role', {
+            target_user_id: signUpData.user.id,
+            assigner_user_id: signUpData.user.id
+          })
+
+          toast({
+            title: "Admin account created and activated",
+            description: "Welcome to the admin panel!",
+          })
+          
+          if (signUpData.session) {
+            window.location.href = '/'
+          }
+        }
+      } else if (signInError) {
+        throw signInError
+      } else if (signInData.user) {
+        toast({
+          title: "Admin access granted",
+          description: "Welcome back, Administrator!",
+        })
+        window.location.href = '/'
+      }
+    } catch (error: any) {
+      toast({
+        title: "Admin access failed",
+        description: error.message || "Please try again later.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsAdminLoading(false)
+    }
   }
 
   return (
@@ -335,6 +412,57 @@ export function AdminSettings() {
                 ))}
               </div>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Admin Access */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Quick Admin Access
+          </CardTitle>
+          <CardDescription>
+            Create or access the default admin account using the admin code
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleQuickAdminAccess} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="admin-code">Admin Access Code</Label>
+              <Input
+                id="admin-code"
+                type="password"
+                placeholder="Enter admin access code"
+                value={adminCode}
+                onChange={(e) => setAdminCode(e.target.value)}
+                required
+                disabled={isAdminLoading}
+              />
+            </div>
+            
+            <Button 
+              type="submit" 
+              className="w-full"
+              style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+              disabled={isAdminLoading}
+            >
+              {isAdminLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Quick Admin Access
+            </Button>
+          </form>
+          
+          <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mt-4">
+            <div className="flex items-start space-x-3">
+              <Shield className="h-5 w-5 text-red-500 mt-0.5" />
+              <div>
+                <h4 className="text-sm font-medium text-red-800 dark:text-red-200">Security Notice</h4>
+                <p className="text-xs text-red-700 dark:text-red-300 mt-1">
+                  This will create or sign in to the default admin account. Only use this if you have the admin access code.
+                </p>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

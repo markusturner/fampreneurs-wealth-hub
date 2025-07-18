@@ -21,7 +21,7 @@ export default function Auth() {
   const [occupation, setOccupation] = useState('')
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
   const [profilePhotoUrl, setProfilePhotoUrl] = useState<string>('')
-  const [adminCode, setAdminCode] = useState('')
+  
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -365,88 +365,6 @@ export default function Auth() {
     }
   }
 
-  const handleQuickAdminAccess = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-
-    try {
-      // Check if the admin code is correct
-      if (adminCode !== 'ADMIN2025') {
-        toast({
-          title: "Invalid admin code",
-          description: "Please enter the correct admin access code.",
-          variant: "destructive",
-        })
-        return
-      }
-
-      // Create a temporary admin account or sign in with predefined admin credentials
-      cleanupAuthState()
-      
-      try {
-        await supabase.auth.signOut({ scope: 'global' })
-      } catch (err) {
-        // Continue even if this fails
-      }
-
-      // Try to sign in with admin credentials first
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email: 'admin@fampreneurs.com',
-        password: 'Admin@2025!',
-      })
-
-      if (signInError && signInError.message.includes('Invalid login credentials')) {
-        // If admin account doesn't exist, create it
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: 'admin@fampreneurs.com',
-          password: 'Admin@2025!',
-          options: {
-            data: {
-              first_name: 'Admin',
-              last_name: 'User',
-              display_name: 'Admin User',
-              occupation: 'System Administrator',
-            }
-          }
-        })
-
-        if (signUpError) throw signUpError
-
-        if (signUpData.user) {
-          // Manually assign admin role via RPC
-          await supabase.rpc('assign_admin_role', {
-            target_user_id: signUpData.user.id,
-            assigner_user_id: signUpData.user.id
-          })
-
-          toast({
-            title: "Admin account created and activated",
-            description: "Welcome to the admin panel!",
-          })
-          
-          if (signUpData.session) {
-            window.location.href = '/'
-          }
-        }
-      } else if (signInError) {
-        throw signInError
-      } else if (signInData.user) {
-        toast({
-          title: "Admin access granted",
-          description: "Welcome back, Administrator!",
-        })
-        window.location.href = '/'
-      }
-    } catch (error: any) {
-      toast({
-        title: "Admin access failed",
-        description: error.message || "Please try again later.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
@@ -465,10 +383,9 @@ export default function Auth() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              <TabsTrigger value="admin">Admin Panel</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
@@ -831,104 +748,6 @@ export default function Auth() {
               </div>
             </TabsContent>
 
-            <TabsContent value="admin">
-              <div className="space-y-4">
-                <div className="text-center mb-6">
-                  <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: '#ffb500' + '1A' }}>
-                    <Shield className="h-8 w-8" style={{ color: '#ffb500' }} />
-                  </div>
-                  <h3 className="text-lg font-semibold" style={{ color: '#ffb500' }}>Admin Access</h3>
-                  <p className="text-sm" style={{ color: '#ffb500' }}>
-                    Restricted access for administrators only
-                  </p>
-                </div>
-                
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="admin-email">Admin Email</Label>
-                    <Input
-                      id="admin-email"
-                      type="email"
-                      placeholder="Enter admin email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="admin-password">Admin Password</Label>
-                    <Input
-                      id="admin-password"
-                      type="password"
-                      placeholder="Enter admin password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full"
-                    style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                    disabled={isLoading}
-                  >
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Admin Sign In
-                  </Button>
-                </form>
-                
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <Separator className="w-full" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      Or use quick access
-                    </span>
-                  </div>
-                </div>
-                
-                <form onSubmit={handleQuickAdminAccess} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="admin-code">Quick Admin Code</Label>
-                    <Input
-                      id="admin-code"
-                      type="password"
-                      placeholder="Enter admin access code"
-                      value={adminCode}
-                      onChange={(e) => setAdminCode(e.target.value)}
-                      required
-                      disabled={isLoading}
-                    />
-                  </div>
-                  
-                  <Button 
-                    type="submit" 
-                    className="w-full"
-                    style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                    disabled={isLoading}
-                  >
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Quick Admin Access
-                  </Button>
-                </form>
-                
-                <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                  <div className="flex items-start space-x-3">
-                    <Shield className="h-5 w-5 text-red-500 mt-0.5" />
-                    <div>
-                      <h4 className="text-sm font-medium text-red-800 dark:text-red-200">Security Notice</h4>
-                      <p className="text-xs text-red-700 dark:text-red-300 mt-1">
-                        This panel is for authorized administrators only. All access attempts are logged and monitored.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
