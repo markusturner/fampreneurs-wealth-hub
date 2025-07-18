@@ -114,9 +114,21 @@ export function CallRecordingsList() {
       } else if (url.includes('loom.com')) {
         const videoId = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/)?.[1]
         return videoId ? `https://www.loom.com/embed/${videoId}` : url
+      } else if (url.includes('fathom.video')) {
+        // Fathom recordings - convert to embed format
+        const recordingId = url.match(/fathom\.video\/conversations\/([a-zA-Z0-9-]+)/)?.[1]
+        return recordingId ? `https://fathom.video/conversations/${recordingId}/embed` : url
+      } else if (url.includes('app.fathom.video')) {
+        // Alternative Fathom URL format
+        const recordingId = url.match(/app\.fathom\.video\/calls\/([a-zA-Z0-9-]+)/)?.[1]
+        return recordingId ? `https://app.fathom.video/calls/${recordingId}/embed` : url
       }
     }
     return url
+  }
+
+  const isFathomRecording = (url: string) => {
+    return url.includes('fathom.video') || url.includes('app.fathom.video')
   }
 
   if (loading) {
@@ -226,13 +238,41 @@ export function CallRecordingsList() {
                     Your browser does not support the video tag.
                   </video>
                 ) : (
-                  <iframe
-                    src={getVideoEmbedUrl(selectedRecording.recording_url, selectedRecording.recording_type)}
-                    className="w-full h-full"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
+                  <div className="w-full h-full flex flex-col">
+                    {isFathomRecording(selectedRecording.recording_url) ? (
+                      <div className="w-full h-full">
+                        <iframe
+                          src={getVideoEmbedUrl(selectedRecording.recording_url, selectedRecording.recording_type)}
+                          className="w-full h-full"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          title={selectedRecording.title}
+                        />
+                        <div className="mt-2 p-2 bg-muted rounded text-sm">
+                          <p>📹 Fathom Recording</p>
+                          <p className="text-xs text-muted-foreground">
+                            Use the controls in the player above or{' '}
+                            <button 
+                              className="text-primary underline text-xs"
+                              onClick={() => window.open(selectedRecording.recording_url.replace('/embed', ''), '_blank')}
+                            >
+                              open in Fathom
+                            </button>
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <iframe
+                        src={getVideoEmbedUrl(selectedRecording.recording_url, selectedRecording.recording_type)}
+                        className="w-full h-full"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        title={selectedRecording.title}
+                      />
+                    )}
+                  </div>
                 )}
               </div>
               

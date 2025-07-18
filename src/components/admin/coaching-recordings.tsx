@@ -244,7 +244,7 @@ export const CoachingRecordings = () => {
                       <SelectValue placeholder="Select source type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="url">URL (Zoom, Fathom, etc.)</SelectItem>
+                      <SelectItem value="url">URL (Zoom, Fathom, Teams, etc.)</SelectItem>
                       <SelectItem value="upload">Upload File</SelectItem>
                     </SelectContent>
                   </Select>
@@ -280,9 +280,9 @@ export const CoachingRecordings = () => {
                     id="platform"
                     value={platform}
                     onChange={(e) => setPlatform(e.target.value)}
-                    placeholder="Zoom, Fathom, etc."
-                  />
-                </div>
+                     placeholder="Zoom, Teams, Fathom, Google Meet, etc."
+                   />
+                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -372,7 +372,16 @@ export const CoachingRecordings = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(recording.recording_url, '_blank')}
+                      onClick={() => {
+                        // Handle Fathom URLs for better viewing experience
+                        let viewUrl = recording.recording_url
+                        if (recording.platform?.toLowerCase().includes('fathom') || 
+                            recording.recording_url.includes('fathom.video')) {
+                          // Ensure we open the full Fathom viewer instead of embed
+                          viewUrl = recording.recording_url.replace('/embed', '')
+                        }
+                        window.open(viewUrl, '_blank')
+                      }}
                     >
                       <Play className="h-4 w-4" />
                     </Button>
