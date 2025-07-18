@@ -152,7 +152,7 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
   }
 
   return (
-    <Card className="w-64 h-fit">
+    <Card className="w-full h-fit">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-sm">Channels</h3>

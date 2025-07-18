@@ -350,8 +350,8 @@ export const EnhancedCreatePost = ({ onPostCreated, channelId }: EnhancedCreateP
         </div>
       )}
       
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <Input
             type="file"
             accept="image/*"
@@ -364,7 +364,7 @@ export const EnhancedCreatePost = ({ onPostCreated, channelId }: EnhancedCreateP
               type="button"
               variant="outline"
               size="sm"
-              className="cursor-pointer gap-1 sm:gap-2 min-h-[40px] px-2 sm:px-3"
+              className="cursor-pointer gap-1 sm:gap-2 h-9 px-2 sm:px-3"
               asChild
             >
               <span>
@@ -386,7 +386,7 @@ export const EnhancedCreatePost = ({ onPostCreated, channelId }: EnhancedCreateP
               type="button"
               variant="outline"
               size="sm"
-              className="cursor-pointer gap-1 sm:gap-2 min-h-[40px] px-2 sm:px-3"
+              className="cursor-pointer gap-1 sm:gap-2 h-9 px-2 sm:px-3"
               asChild
             >
               <span>
@@ -401,7 +401,7 @@ export const EnhancedCreatePost = ({ onPostCreated, channelId }: EnhancedCreateP
             variant="outline"
             size="sm"
             onClick={isVideoRecording ? stopVideoRecording : startVideoRecording}
-            className={`gap-1 sm:gap-2 min-h-[40px] px-2 sm:px-3 ${isVideoRecording ? 'bg-red-100 text-red-600' : ''}`}
+            className={`gap-1 sm:gap-2 h-9 px-2 sm:px-3 ${isVideoRecording ? 'bg-red-100 text-red-600' : ''}`}
           >
             {isVideoRecording ? (
               <VideoOff className="h-4 w-4" />
@@ -418,7 +418,7 @@ export const EnhancedCreatePost = ({ onPostCreated, channelId }: EnhancedCreateP
             onMouseDown={startAudioRecording}
             onMouseUp={stopAudioRecording}
             onMouseLeave={stopAudioRecording}
-            className={`gap-1 sm:gap-2 min-h-[40px] px-2 sm:px-3 ${isRecording ? 'bg-red-100 text-red-600' : ''}`}
+            className={`gap-1 sm:gap-2 h-9 px-2 sm:px-3 ${isRecording ? 'bg-red-100 text-red-600' : ''}`}
           >
             {isRecording ? (
               <MicOff className="h-4 w-4" />
@@ -434,7 +434,7 @@ export const EnhancedCreatePost = ({ onPostCreated, channelId }: EnhancedCreateP
                 type="button"
                 variant="outline"
                 size="sm"
-                className="gap-1 sm:gap-2 min-h-[40px] px-2 sm:px-3"
+                className="gap-1 sm:gap-2 h-9 px-2 sm:px-3"
               >
                 <Smile className="h-4 w-4" />
                 <span className="hidden sm:inline">Emoji</span>
@@ -449,7 +449,7 @@ export const EnhancedCreatePost = ({ onPostCreated, channelId }: EnhancedCreateP
         <Button
           type="submit"
           disabled={isSubmitting || (!content.trim() && !image && !video && !audioBlob)}
-          className="gap-2 min-h-[40px] px-4 sm:px-6"
+          className="gap-2 h-9 px-4 sm:px-6 flex-shrink-0"
         >
           {isSubmitting ? (
             <Loader2 className="h-4 w-4 animate-spin" />

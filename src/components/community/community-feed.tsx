@@ -130,11 +130,11 @@ export function CommunityFeed() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4">
-      <div className="grid grid-cols-12 gap-4 lg:gap-6">
-        {/* Channels Sidebar - Left side, 2.5 columns */}
-        <div className="col-span-12 lg:col-span-3 xl:col-span-2">
-          <div className="sticky top-4">
+    <div className="container mx-auto px-4 py-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto">
+        {/* Channels Sidebar - Hidden on mobile, 3 columns on large screens */}
+        <div className="hidden lg:block lg:col-span-3">
+          <div className="sticky top-6">
             <ChannelsSidebar 
               selectedChannelId={selectedChannelId}
               onChannelSelect={setSelectedChannelId}
@@ -142,11 +142,11 @@ export function CommunityFeed() {
           </div>
         </div>
 
-        {/* Main Feed - Center, 7 columns */}
-        <div className="col-span-12 lg:col-span-6 xl:col-span-8 space-y-4">
+        {/* Main Feed - Full width on mobile, 6 columns on large screens */}
+        <div className="col-span-1 lg:col-span-6 space-y-6">
           {/* Create Post */}
           <Card>
-            <CardContent className="p-4">
+            <CardContent className="p-4 lg:p-6">
               <EnhancedCreatePost 
                 onPostCreated={fetchPosts} 
                 channelId={selectedChannelId}
@@ -155,14 +155,26 @@ export function CommunityFeed() {
           </Card>
 
           {/* Posts */}
-          {posts.map((post) => (
-            <EnhancedPostCard key={post.id} post={post} onUpdate={fetchPosts} />
-          ))}
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <EnhancedPostCard key={post.id} post={post} onUpdate={fetchPosts} />
+            ))}
+          </div>
+
+          {posts.length === 0 && (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <p className="text-muted-foreground">
+                  {selectedChannelId ? 'No posts in this channel yet.' : 'No posts yet. Be the first to share!'}
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
-        {/* Announcements Panel - Right side, 2.5 columns */}
-        <div className="col-span-12 lg:col-span-3 xl:col-span-2">
-          <div className="sticky top-4">
+        {/* Announcements Panel - Hidden on mobile, 3 columns on large screens */}
+        <div className="hidden lg:block lg:col-span-3">
+          <div className="sticky top-6">
             <Card>
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-2">
@@ -177,16 +189,16 @@ export function CommunityFeed() {
                   </p>
                 ) : (
                   announcements.map((announcement) => (
-                    <div key={announcement.id} className="p-3 bg-muted rounded-lg">
-                      <h4 className="font-medium text-sm mb-1">{announcement.title}</h4>
-                      <p className="text-xs text-muted-foreground mb-2">
+                    <div key={announcement.id} className="p-3 bg-muted rounded-lg space-y-2">
+                      <h4 className="font-medium text-sm line-clamp-2">{announcement.title}</h4>
+                      <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
                         {announcement.content}
                       </p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span className="truncate">
                           by {getDisplayName(announcement.profiles)}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="flex-shrink-0 ml-2">
                           {formatDistanceToNow(new Date(announcement.created_at), { addSuffix: true })}
                         </span>
                       </div>
