@@ -10,8 +10,6 @@ import { format, isSameDay, parseISO, startOfMonth, endOfMonth, eachDayOfInterva
 import { cn } from '@/lib/utils'
 import { supabase } from '@/integrations/supabase/client'
 import { ScheduleSessionDialog } from '@/components/coaching/schedule-session-dialog'
-import { CoachButton } from '@/components/coaching/coach-button'
-import { CallButton } from '@/components/coaching/call-button'
 
 interface GroupSession {
   id: string
@@ -88,6 +86,8 @@ const Coaching = () => {
   const [sessions, setSessions] = useState<GroupSession[]>([])
   const [individualSessions, setIndividualSessions] = useState<IndividualSession[]>([])
   const [loadingSessions, setLoadingSessions] = useState(true)
+  const [availableCoaches, setAvailableCoaches] = useState<any[]>([])
+  const [loadingCoaches, setLoadingCoaches] = useState(true)
 
   const displayName = profile?.display_name || profile?.first_name || 'Member'
 
@@ -128,8 +128,28 @@ const Coaching = () => {
     }
   }
 
+  // Fetch coaches from financial_advisors table
+  const fetchCoaches = async () => {
+    setLoadingCoaches(true)
+    try {
+      const { data, error } = await supabase
+        .from('financial_advisors')
+        .select('*')
+        .eq('is_active', true)
+        .order('full_name', { ascending: true })
+
+      if (error) throw error
+      setAvailableCoaches(data || [])
+    } catch (error) {
+      console.error('Error fetching coaches:', error)
+    } finally {
+      setLoadingCoaches(false)
+    }
+  }
+
   useEffect(() => {
     fetchSessions()
+    fetchCoaches()
   }, [])
 
   // Convert database sessions to format compatible with existing UI
@@ -169,43 +189,6 @@ const Coaching = () => {
     }
   })
 
-  // Sample coaches data - keep for now
-
-  const availableCoaches = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      title: "Certified Financial Planner",
-      speciality: "Wealth Management & Tax Strategy",
-      rating: 4.9,
-      reviews: 127,
-      hourlyRate: "$300",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face",
-      nextAvailable: "Today, 4:00 PM"
-    },
-    {
-      id: 2,
-      name: "Michael Chen",
-      title: "Chartered Financial Analyst", 
-      speciality: "Investment Strategy & Portfolio Management",
-      rating: 4.8,
-      reviews: 89,
-      hourlyRate: "$350",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-      nextAvailable: "Tomorrow, 9:00 AM"
-    },
-    {
-      id: 3,
-      name: "Elizabeth Davis",
-      title: "Estate Planning Attorney",
-      speciality: "Estate Planning & Family Governance",
-      rating: 4.9,
-      reviews: 156,
-      hourlyRate: "$400",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
-      nextAvailable: "Next Week"
-    }
-  ]
 
   // Get sessions for specific date
   const getSessionsForDate = (date: Date) => {
@@ -246,10 +229,6 @@ const Coaching = () => {
             <p className="text-sm sm:text-base text-muted-foreground mt-1">
               Manage your schedule and coaching sessions
             </p>
-          </div>
-          <div className="flex gap-2">
-            <CoachButton onCoachAdded={fetchSessions} />
-            <CallButton onCallAdded={fetchSessions} />
           </div>
         </div>
 
@@ -426,47 +405,62 @@ const Coaching = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Available Coaches</h2>
           </div>
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {availableCoaches.map((coach) => (
-              <Card key={coach.id} className="shadow-soft hover:shadow-medium transition-smooth">
-                <CardHeader className="p-4 sm:p-6">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-16 w-16">
-                      <AvatarImage src={coach.avatar} />
-                      <AvatarFallback>{coach.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-base leading-tight">{coach.name}</h3>
-                      <p className="text-sm text-muted-foreground">{coach.title}</p>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        <span className="text-xs">{coach.rating} ({coach.reviews} reviews)</span>
+          {loadingCoaches ? (
+            <div className="col-span-full flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="ml-2 text-muted-foreground">Loading coaches...</span>
+            </div>
+          ) : availableCoaches.length === 0 ? (
+            <div className="col-span-full text-center py-8 text-muted-foreground">
+              No coaches available. Add coaches through the admin dashboard.
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 col-span-full">
+              {availableCoaches.map((coach) => (
+                <Card key={coach.id} className="shadow-soft hover:shadow-medium transition-smooth">
+                  <CardHeader className="p-4 sm:p-6">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-16 w-16">
+                        <AvatarImage src={`https://ui-avatars.com/api/?name=${encodeURIComponent(coach.full_name)}&background=random`} />
+                        <AvatarFallback>{coach.full_name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-base leading-tight">{coach.full_name}</h3>
+                        <p className="text-sm text-muted-foreground">{coach.title || 'Financial Advisor'}</p>
+                        <div className="flex items-center gap-1 mt-1">
+                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                          <span className="text-xs">4.8 (New)</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6 space-y-3">
-                  <div>
-                    <p className="text-sm font-medium">Speciality</p>
-                    <p className="text-sm text-muted-foreground">{coach.speciality}</p>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Next Available:</span>
-                    <span className="font-medium">{coach.nextAvailable}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-primary">{coach.hourlyRate}/hr</span>
-                    <Button size="sm" className="gap-2">
-                      <CalendarIcon className="h-4 w-4" />
-                      Book Session
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardHeader>
+                  <CardContent className="p-4 sm:p-6 space-y-3">
+                    <div>
+                      <p className="text-sm font-medium">Specialties</p>
+                      <p className="text-sm text-muted-foreground">
+                        {coach.specialties?.join(', ') || 'General Financial Planning'}
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Experience:</span>
+                      <span className="font-medium">{coach.years_experience || 'N/A'} years</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-bold text-primary">
+                        ${coach.hourly_rate || '300'}/hr
+                      </span>
+                      <Button size="sm" className="gap-2">
+                        <CalendarIcon className="h-4 w-4" />
+                        Book Session
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Stats */}
