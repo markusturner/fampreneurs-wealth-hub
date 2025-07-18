@@ -58,7 +58,10 @@ export function GroupChat({ groupId }: GroupChatProps) {
     if (groupId) {
       fetchGroup()
       fetchMessages()
-      subscribeToMessages()
+      const cleanup = subscribeToMessages()
+      
+      // Return cleanup function
+      return cleanup
     }
   }, [groupId])
 
@@ -97,7 +100,14 @@ export function GroupChat({ groupId }: GroupChatProps) {
     try {
       const { data, error } = await supabase
         .from('group_messages')
-        .select('*')
+        .select(`
+          *,
+          profiles!group_messages_user_id_fkey (
+            display_name,
+            first_name,
+            avatar_url
+          )
+        `)
         .eq('group_id', groupId)
         .order('created_at', { ascending: true })
 
