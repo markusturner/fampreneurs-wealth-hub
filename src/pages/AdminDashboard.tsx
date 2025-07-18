@@ -879,18 +879,31 @@ export default function AdminDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Members per Coach</CardTitle>
-                <CardDescription>Distribution of clients across coaches</CardDescription>
+                <CardDescription>Distribution of members across coaches</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <RechartsBarChart data={coachData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="clients" fill="#ffb500" />
-                  </RechartsBarChart>
-                </ResponsiveContainer>
+                {coachData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <RechartsBarChart data={coachData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip 
+                        formatter={(value: number, name: string) => [`${value} member${value !== 1 ? 's' : ''}`, 'Assigned Members']}
+                        labelFormatter={(label: string) => `Coach: ${label}`}
+                      />
+                      <Bar dataKey="clients" fill="#ffb500" />
+                    </RechartsBarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+                    <div className="text-center">
+                      <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No coach assignments yet</p>
+                      <p className="text-sm">Assign coaches to members in the Users section to see the distribution</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
