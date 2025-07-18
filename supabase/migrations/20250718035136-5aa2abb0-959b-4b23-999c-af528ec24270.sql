@@ -1,0 +1,1 @@
+DELETE FROM financial_advisors WHERE full_name IN ('Brian Clemons', 'Markus Turner');
