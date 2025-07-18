@@ -431,27 +431,7 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
     }
   }
 
-  const handleEditAllPosts = () => {
-    // Create a fake channel object for "All Posts" to make it deletable
-    const allPostsChannel = {
-      id: 'all-posts',
-      name: 'All Posts',
-      description: 'Default channel for all posts',
-      is_private: false,
-      created_by: user?.id || '',
-      associated_group_calls: [],
-      associated_courses: []
-    }
-    
-    setEditingChannel(allPostsChannel)
-    setNewChannelName('All Posts')
-    setNewChannelDescription('Default channel for all posts')
-    setIsPrivateChannel(false)
-    setSelectedGroupCalls([])
-    setSelectedCourses([])
-    setEditingAllPosts(true)
-    setShowEditDialog(true)
-  }
+  // Remove the handleEditAllPosts function since we're removing All Posts
 
   // Move useEffect after all function definitions
   useEffect(() => {
@@ -752,29 +732,6 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
         </div>
       </CardHeader>
       <CardContent className="space-y-1">
-        {/* All Posts option */}
-        <div className="flex items-center gap-1">
-          <Button
-            variant={selectedChannelId === null ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => onChannelSelect(null)}
-            className="flex-1 justify-start gap-2 h-8 text-xs"
-          >
-            <Users className="h-3 w-3" />
-            All Posts
-          </Button>
-          {profile?.is_admin && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 flex-shrink-0"
-              onClick={handleEditAllPosts}
-            >
-              <Edit className="h-3 w-3" />
-            </Button>
-          )}
-        </div>
-
         {/* Channels list */}
         <DndContext
           sensors={sensors}
@@ -797,7 +754,7 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
 
         {channels.length === 0 && (
           <p className="text-xs text-muted-foreground text-center py-4">
-            No channels yet
+            No channels yet. Create your first channel to get started!
           </p>
         )}
       </CardContent>

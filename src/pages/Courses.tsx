@@ -232,10 +232,21 @@ const Courses = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground relative">
+      {/* Background Logo with Very Low Transparency */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-5 pointer-events-none"
+        style={{
+          backgroundImage: `url('/lovable-uploads/600ee2e4-cb13-46ef-a548-e2a35b02d2d0.png')`,
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center'
+        }}
+      />
+      
       <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
-      <main className="px-4 py-6 space-y-8">
+      <main className="relative z-10 px-4 py-6 space-y-8">
         {/* Welcome Section - Your Brand Style */}
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent z-10"></div>
@@ -295,8 +306,9 @@ const Courses = () => {
                               <Badge 
                                 className={`text-xs ${
                                   course.level === 'Beginner' ? 'bg-secondary text-secondary-foreground' : 
-                                  course.level === 'Advanced' ? 'bg-destructive text-destructive-foreground' : 'bg-accent text-accent-foreground'
+                                  course.level === 'Advanced' ? 'text-white' : 'bg-accent text-accent-foreground'
                                 }`}
+                                style={course.level === 'Advanced' ? { backgroundColor: '#ffb500' } : {}}
                               >
                                 {course.level}
                               </Badge>
@@ -318,7 +330,8 @@ const Courses = () => {
                             <div className="flex gap-2">
                               <Button 
                                 size="sm" 
-                                className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs px-3 py-1"
+                                className="text-white hover:opacity-90 text-xs px-3 py-1"
+                                style={{ backgroundColor: '#ffb500' }}
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleOpenCourseDetail(course)
@@ -358,8 +371,9 @@ const Courses = () => {
                           <Badge 
                             className={`text-xs ${
                               course.level === 'Beginner' ? 'bg-secondary text-secondary-foreground' : 
-                              course.level === 'Advanced' ? 'bg-destructive text-destructive-foreground' : 'bg-accent text-accent-foreground'
+                              course.level === 'Advanced' ? 'text-white' : 'bg-accent text-accent-foreground'
                             }`}
+                            style={course.level === 'Advanced' ? { backgroundColor: '#ffb500' } : {}}
                           >
                             {course.level}
                           </Badge>
@@ -447,8 +461,10 @@ const Courses = () => {
                     <span className="text-foreground">2024</span>
                     <Badge className={`${
                       selectedCourse.level === 'Beginner' ? 'bg-secondary text-secondary-foreground' : 
-                      selectedCourse.level === 'Advanced' ? 'bg-destructive text-destructive-foreground' : 'bg-accent text-accent-foreground'
-                    }`}>
+                      selectedCourse.level === 'Advanced' ? 'text-white' : 'bg-accent text-accent-foreground'
+                    }`}
+                    style={selectedCourse.level === 'Advanced' ? { backgroundColor: '#ffb500' } : {}}
+                    >
                       {selectedCourse.level}
                     </Badge>
                     {selectedCourse.duration && (
@@ -462,7 +478,8 @@ const Courses = () => {
                   <div className="flex items-center gap-4 mb-4">
                     <Button 
                       size="lg" 
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold"
+                      className="text-white hover:opacity-90 font-semibold"
+                      style={{ backgroundColor: '#ffb500' }}
                       onClick={() => {
                         setCourseDetailOpen(false)
                         // Auto-scroll to videos when opened
