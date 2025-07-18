@@ -42,9 +42,19 @@ export function AccountIntegration() {
   const [loading, setLoading] = useState(true)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [selectedAccountType, setSelectedAccountType] = useState<string>('')
-  const [newAccount, setNewAccount] = useState({
+  const [newAccount, setNewAccount] = useState<{
+    name: string
+    type: 'bank' | 'brokerage' | 'crypto' | 'business'
+    provider: string
+    apiKey: string
+    apiSecret: string
+    accountNumber: string
+    routingNumber: string
+    address: string
+    notes: string
+  }>({
     name: '',
-    type: 'bank' as const,
+    type: 'bank',
     provider: '',
     apiKey: '',
     apiSecret: '',
@@ -149,7 +159,7 @@ export function AccountIntegration() {
   const resetForm = () => {
     setNewAccount({
       name: '',
-      type: 'bank',
+      type: 'bank' as 'bank' | 'brokerage' | 'crypto' | 'business',
       provider: '',
       apiKey: '',
       apiSecret: '',
