@@ -669,7 +669,7 @@ export default function AdminDashboard() {
             </TabsTrigger>
             <TabsTrigger value="users">
               <Users className="h-4 w-4 mr-2" />
-              Users & Fulfillment
+              Users
             </TabsTrigger>
             <TabsTrigger value="courses">
               <BookOpen className="h-4 w-4 mr-2" />
@@ -840,33 +840,49 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          {/* Users & Fulfillment Tab */}
+          {/* Users Tab */}
           <TabsContent value="users" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Users Management</h2>
+              <Select onValueChange={(value) => {
+                if (value === 'create-stages') {
+                  // Handle create stages
+                  toast({
+                    title: "Create Stages",
+                    description: "Stage creation functionality coming soon",
+                  })
+                } else if (value === 'import-stages') {
+                  // Handle import template
+                  toast({
+                    title: "Import Template",
+                    description: "Template import functionality coming soon",
+                  })
+                } else if (value === 'manage-stages') {
+                  // Handle manage stages
+                  toast({
+                    title: "Manage Stages",
+                    description: "Stage management functionality coming soon",
+                  })
+                }
+              }}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Setup Pipeline" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="create-stages">Create Stages</SelectItem>
+                  <SelectItem value="import-stages">Import Template</SelectItem>
+                  <SelectItem value="manage-stages">Manage Stages</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Users & Fulfillment Pipeline</CardTitle>
-                    <CardDescription>
-                      Drag and drop users between fulfillment stages
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant={viewMode === 'kanban' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setViewMode('kanban')}
-                    >
-                      Kanban
-                    </Button>
-                    <Button
-                      variant={viewMode === 'list' ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setViewMode('list')}
-                    >
-                      List
-                    </Button>
-                  </div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5" />
+                    Users
+                  </CardTitle>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Search className="h-4 w-4 text-muted-foreground" />
@@ -879,169 +895,13 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                {viewMode === 'kanban' ? (
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                      {/* Unassigned Users Column */}
-                      <DroppableStage id="unassigned">
-                        <Card className="min-h-[300px]">
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-sm flex items-center space-x-2">
-                              <div className="w-3 h-3 rounded-full bg-gray-400" />
-                              <span>Unassigned</span>
-                              <Badge variant="secondary">{getUsersWithoutStage().length}</Badge>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-3">
-                            <SortableContext 
-                              items={getUsersWithoutStage().map(u => u.id)} 
-                              strategy={verticalListSortingStrategy}
-                            >
-                              {getUsersWithoutStage().map((user) => (
-                                <SortableUser key={user.id} user={user} stage={{ id: 'unassigned', name: 'Unassigned', description: null, stage_order: 0, color: '#6b7280', created_by: '', created_at: '' }} />
-                              ))}
-                            </SortableContext>
-                          </CardContent>
-                        </Card>
-                      </DroppableStage>
-
-                      {/* Fulfillment Stages */}
-                      {fulfillmentStages.map((stage) => {
-                        const stageUsers = getUsersInStage(stage.id)
-                        return (
-                          <DroppableStage key={stage.id} id={stage.id}>
-                            <Card className="min-h-[300px]">
-                              <CardHeader className="pb-3">
-                                <CardTitle className="text-sm flex items-center space-x-2">
-                                  <div 
-                                    className="w-3 h-3 rounded-full" 
-                                    style={{ backgroundColor: stage.color || '#3b82f6' }}
-                                  />
-                                  <span>{stage.name}</span>
-                                  <Badge variant="secondary">{stageUsers.length}</Badge>
-                                </CardTitle>
-                              </CardHeader>
-                              <CardContent className="space-y-3">
-                                <SortableContext 
-                                  items={stageUsers.map(u => u.id)} 
-                                  strategy={verticalListSortingStrategy}
-                                >
-                                  {stageUsers.map((user) => (
-                                    <SortableUser key={user.id} user={user} stage={stage} />
-                                  ))}
-                                </SortableContext>
-                              </CardContent>
-                            </Card>
-                          </DroppableStage>
-                        )
-                      })}
-                    </div>
-                    <DragOverlay>
-                      {activeUser && (
-                        <div className="p-3 bg-card border rounded-lg opacity-75">
-                          <div className="flex items-center space-x-3">
-                            {activeUser.avatar_url && (
-                              <img 
-                                src={activeUser.avatar_url} 
-                                alt={activeUser.display_name || 'User'} 
-                                className="w-8 h-8 rounded-full object-cover"
-                              />
-                            )}
-                            <div className="font-medium text-sm">
-                              {activeUser.display_name || `${activeUser.first_name} ${activeUser.last_name}`}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </DragOverlay>
-                  </DndContext>
-                ) : (
-                  <div className="space-y-4">
-                    {fulfillmentStages.map((stage) => {
-                      const stageUsers = getUsersInStage(stage.id)
-                      return (
-                        <Card key={stage.id}>
-                          <CardHeader className="pb-3">
-                            <CardTitle className="text-sm flex items-center space-x-2">
-                              <div 
-                                className="w-3 h-3 rounded-full" 
-                                style={{ backgroundColor: stage.color || '#3b82f6' }}
-                              />
-                              <span>{stage.name}</span>
-                              <Badge variant="secondary">{stageUsers.length}</Badge>
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {stageUsers.map((user) => (
-                                <div key={user.id} className="p-3 bg-muted rounded-lg">
-                                  <div className="flex items-center space-x-3">
-                                    {user.avatar_url && (
-                                      <img 
-                                        src={user.avatar_url} 
-                                        alt={user.display_name || 'User'} 
-                                        className="w-8 h-8 rounded-full object-cover"
-                                      />
-                                    )}
-                                    <div className="flex-1">
-                                      <div className="font-medium text-sm">
-                                        {user.display_name || `${user.first_name} ${user.last_name}`}
-                                      </div>
-                                      <div className="text-xs text-muted-foreground">
-                                        Progress: {user.course_progress || 0}%
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      )
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Stage Management */}
-            <StageManagement 
-              stages={fulfillmentStages} 
-              onStagesUpdated={loadAdminData}
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
-            />
-
-            {/* Onboarding Emails */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Onboarding Email Tracking</CardTitle>
-                <CardDescription>
-                  Track automated onboarding emails sent to new users
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {onboardingEmails.slice(0, 10).map((email) => (
-                    <div key={email.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <Mail className="h-4 w-4 text-blue-600" />
-                        <div>
-                          <div className="font-medium text-sm">{email.email_subject}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {email.email_type} • {new Date(email.sent_at).toLocaleDateString()}
-                          </div>
-                        </div>
-                      </div>
-                      <Badge variant={email.email_status === 'sent' ? 'default' : 'destructive'}>
-                        {email.email_status}
-                      </Badge>
-                    </div>
+                <div className="space-y-4">
+                  {filteredUsers.map(user => (
+                    <UserCard 
+                      key={user.id} 
+                      user={user} 
+                      onRolesUpdated={loadAdminData}
+                    />
                   ))}
                 </div>
               </CardContent>
