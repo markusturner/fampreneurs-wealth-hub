@@ -78,13 +78,14 @@ export function AssignCoachDialog({ userId, userName, currentCoachId, onAssignme
 
       if (error) throw error
 
+      // Immediately update the assignment and close dialog
+      onAssignmentUpdated()
+      setIsOpen(false)
+
       toast({
         title: "Coach assigned successfully",
         description: `${userName} has been assigned to the selected coach.`,
       })
-
-      setIsOpen(false)
-      onAssignmentUpdated()
     } catch (error: any) {
       toast({
         title: "Error assigning coach",

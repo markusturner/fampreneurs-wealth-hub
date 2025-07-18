@@ -779,18 +779,6 @@ export function GroupChat({ groupId }: GroupChatProps) {
           {/* File Upload */}
           <FileUpload onFileUploaded={onFileUploaded} />
           
-          {/* Emoji Picker */}
-          <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Smile className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" side="top">
-              <EmojiPicker onEmojiClick={onEmojiClick} />
-            </PopoverContent>
-          </Popover>
-          
           {/* Poll Creator */}
           <Button 
             variant="ghost" 

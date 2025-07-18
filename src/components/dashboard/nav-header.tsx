@@ -222,9 +222,15 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
               <DropdownMenuLabel>Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {shouldShowFeedback ? (
-                <DropdownMenuItem onClick={handleFeedbackClick} className="p-3 sm:p-4">
+                <DropdownMenuItem onClick={handleFeedbackClick} className="p-3 sm:p-4 cursor-pointer">
                   <div className="flex items-start gap-3 w-full">
-                    <MessageSquare className="h-5 w-5 text-primary mt-0.5" />
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-5 w-5 text-primary mt-0.5" />
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span className="text-xs text-muted-foreground">New</span>
+                      </div>
+                    </div>
                     <div className="flex-1">
                       <div className="font-medium text-sm">Program Feedback Request</div>
                       <div className="text-xs text-muted-foreground mt-1">

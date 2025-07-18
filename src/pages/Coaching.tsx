@@ -390,96 +390,175 @@ const Coaching = () => {
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
             {viewType === 'month' ? (
-              <div className="space-y-4">
-                {/* Calendar Header */}
-                <div className="flex items-center justify-between">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigateMonth('prev')}
-                    className="gap-2"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  
-                  <div className="text-center">
-                    <h2 className="text-xl font-semibold">
-                      {format(currentMonth, 'MMMM yyyy')}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(), 'h:mmaaa')} New York time
-                    </p>
+              <div className="grid lg:grid-cols-4 gap-6">
+                {/* Calendar - Takes up 3 columns */}
+                <div className="lg:col-span-3 space-y-4">
+                  {/* Calendar Header */}
+                  <div className="flex items-center justify-between">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigateMonth('prev')}
+                      className="gap-2"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    <div className="text-center">
+                      <h2 className="text-xl font-semibold" style={{ color: '#290a52' }}>
+                        {format(currentMonth, 'MMMM yyyy')}
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        {format(new Date(), 'h:mmaaa')} New York time
+                      </p>
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigateMonth('next')}
+                      className="gap-2"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
                   </div>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigateMonth('next')}
-                    className="gap-2"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
+
+                  {/* Calendar Grid */}
+                  <div className="border rounded-lg overflow-hidden bg-card">
+                    {/* Day Headers */}
+                    <div className="grid grid-cols-7 border-b bg-muted/30">
+                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                        <div key={day} className="p-2 sm:p-3 text-center text-xs sm:text-sm font-medium text-muted-foreground border-r last:border-r-0">
+                          {day}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Calendar Days */}
+                    <div className="grid grid-cols-7">
+                      {allDays.map((day, index) => {
+                        if (!day) {
+                          return <div key={index} className="h-16 sm:h-24 border-r border-b last:border-r-0" />
+                        }
+                        
+                        const dayEvents = getSessionsForDate(day)
+                        const isCurrentMonth = isSameMonth(day, currentMonth)
+                        const isDayToday = isToday(day)
+                        
+                        return (
+                          <div 
+                            key={day.toISOString()} 
+                            className={cn(
+                              "h-16 sm:h-24 border-r border-b last:border-r-0 p-1 sm:p-2 relative overflow-hidden",
+                              !isCurrentMonth && "bg-muted/20",
+                              isDayToday && "bg-primary/5"
+                            )}
+                          >
+                            <div className={cn(
+                              "text-xs sm:text-sm font-medium mb-1",
+                              !isCurrentMonth && "text-muted-foreground",
+                              isDayToday && "bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs"
+                            )}>
+                              {format(day, 'd')}
+                            </div>
+                            
+                            <div className="space-y-1">
+                              {dayEvents.slice(0, 1).map((event, eventIndex) => (
+                                <div
+                                  key={eventIndex}
+                                  className="text-xs p-1 rounded bg-primary/10 text-primary truncate cursor-pointer hover:bg-primary/20"
+                                  onClick={() => setSelectedSessionDialog(event)}
+                                >
+                                  {event.title}
+                                </div>
+                              ))}
+                              {dayEvents.length > 1 && (
+                                <div className="text-xs text-muted-foreground">
+                                  +{dayEvents.length - 1} more
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Calendar Grid */}
-                <div className="border rounded-lg overflow-hidden bg-card">
-                  {/* Day Headers */}
-                  <div className="grid grid-cols-7 border-b bg-muted/30">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                      <div key={day} className="p-2 sm:p-3 text-center text-xs sm:text-sm font-medium text-muted-foreground border-r last:border-r-0">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Calendar Days */}
-                  <div className="grid grid-cols-7">
-                    {allDays.map((day, index) => {
-                      if (!day) {
-                        return <div key={index} className="h-16 sm:h-24 border-r border-b last:border-r-0" />
-                      }
-                      
-                      const dayEvents = getSessionsForDate(day)
-                      const isCurrentMonth = isSameMonth(day, currentMonth)
-                      const isDayToday = isToday(day)
-                      
-                      return (
-                        <div 
-                          key={day.toISOString()} 
-                          className={cn(
-                            "h-16 sm:h-24 border-r border-b last:border-r-0 p-1 sm:p-2 relative overflow-hidden",
-                            !isCurrentMonth && "bg-muted/20",
-                            isDayToday && "bg-primary/5"
-                          )}
-                        >
-                          <div className={cn(
-                            "text-xs sm:text-sm font-medium mb-1",
-                            !isCurrentMonth && "text-muted-foreground",
-                            isDayToday && "bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs"
-                          )}>
-                            {format(day, 'd')}
-                          </div>
-                          
-                          <div className="space-y-1">
-                            {dayEvents.slice(0, 1).map((event, eventIndex) => (
-                              <div 
-                                key={eventIndex}
-                                className="text-xs p-1 rounded bg-primary/10 text-primary truncate cursor-pointer hover:bg-primary/20"
-                                onClick={() => setSelectedSessionDialog(event)}
-                              >
-                                {event.title}
-                              </div>
-                            ))}
-                            {dayEvents.length > 1 && (
-                              <div className="text-xs text-muted-foreground">
-                                +{dayEvents.length - 1} more
-                              </div>
-                            )}
-                          </div>
+                {/* Available Coaches Sidebar - Takes up 1 column on the right */}
+                <div className="lg:col-span-1">
+                  <Card className="shadow-soft sticky top-4">
+                    <CardHeader className="p-4">
+                      <CardTitle className="flex items-center gap-2 text-lg font-bold">
+                        <Star className="h-5 w-5" />
+                        Available Coaches
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      {loadingCoaches ? (
+                        <div className="space-y-4">
+                          {[...Array(3)].map((_, i) => (
+                            <Card key={i} className="animate-pulse">
+                              <CardContent className="p-4">
+                                <div className="h-4 bg-muted rounded mb-2"></div>
+                                <div className="h-3 bg-muted rounded mb-1"></div>
+                                <div className="h-3 bg-muted rounded"></div>
+                              </CardContent>
+                            </Card>
+                          ))}
                         </div>
-                      )
-                    })}
-                  </div>
+                      ) : availableCoaches.length === 0 ? (
+                        <div className="text-center py-6">
+                          <User className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">No coaches available</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4 max-h-96 overflow-y-auto">
+                          {availableCoaches.map((coach, index) => (
+                            <Card key={index} className="shadow-sm hover:shadow-md transition-shadow">
+                              <CardContent className="p-3 space-y-3">
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-10 w-10">
+                                    <AvatarImage src={coach.avatar_url || coach.coach_avatar_url} />
+                                    <AvatarFallback className="bg-primary text-primary-foreground">
+                                      {coach.full_name.charAt(0)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1 min-w-0">
+                                    <h4 className="font-semibold truncate text-sm">{coach.full_name}</h4>
+                                    <p className="text-xs text-muted-foreground truncate">{coach.title || coach.specialties?.[0] || 'Financial Coach'}</p>
+                                  </div>
+                                </div>
+                                
+                                {coach.bio && (
+                                  <p className="text-xs text-muted-foreground line-clamp-2">{coach.bio}</p>
+                                )}
+                                
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="text-muted-foreground">Experience:</span>
+                                  <span className="font-medium">{coach.years_experience || 'N/A'} years</span>
+                                </div>
+                                
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-bold" style={{ color: '#ffb500' }}>
+                                    ${coach.hourly_rate || '300'}/hr
+                                  </span>
+                                  <Button 
+                                    size="sm" 
+                                    className="gap-2 text-xs" 
+                                    onClick={() => coach.calendar_link ? window.open(coach.calendar_link, '_blank') : setScheduleDialogOpen(true)}
+                                  >
+                                    <CalendarIcon className="h-3 w-3" />
+                                    Book
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             ) : (
