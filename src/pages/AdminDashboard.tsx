@@ -42,6 +42,7 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
+import { useTheme } from 'next-themes'
 import { Separator } from '@/components/ui/separator'
 import { CreateCourseDialog } from '@/components/admin/create-course-dialog'
 import { EditCourseDialog } from '@/components/admin/edit-course-dialog'
@@ -202,6 +203,7 @@ export default function AdminDashboard() {
   const { user, profile, signOut } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
+  const { theme } = useTheme()
   
   const [users, setUsers] = useState<Profile[]>([])
   const [courses, setCourses] = useState<Course[]>([])
@@ -629,7 +631,7 @@ export default function AdminDashboard() {
                 variant="outline" 
                 onClick={signOut}
                 className="border-white/20 hover:bg-white/10"
-                style={{ color: '#290a52' }}
+                style={{ color: theme === 'dark' ? '#ffb500' : '#290a52' }}
               >
                 Sign Out
               </Button>
