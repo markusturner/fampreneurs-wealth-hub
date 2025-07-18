@@ -366,29 +366,29 @@ const Courses = () => {
                   }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 lg:p-8">
+                  <div className="absolute bottom-0 left-0 right-0 p-4 pb-6 sm:p-6 lg:p-8">
                     <div className="max-w-lg">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-3">
                         <Badge 
-                          className="text-xs font-medium"
+                          className="text-xs font-medium px-2 py-1"
                           style={{ backgroundColor: '#ffb500', color: '#290a52' }}
                         >
                           FEATURED
                         </Badge>
                         <Badge 
-                          className="text-xs"
+                          className="text-xs px-2 py-1"
                           style={filteredCourses[0].level === 'Advanced' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
                         >
                           {filteredCourses[0].level}
                         </Badge>
                       </div>
-                      <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground mb-2">
+                      <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground mb-3">
                         {filteredCourses[0].title}
                       </h2>
                       <p className="text-xs sm:text-sm lg:text-base text-muted-foreground mb-4 line-clamp-2">
                         {filteredCourses[0].description || "Master essential business skills with this comprehensive course."}
                       </p>
-                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4">
                         <Button 
                           size="sm"
                           className="hover:opacity-90 font-semibold text-xs sm:text-sm px-4 py-2 sm:px-6 sm:py-3"
