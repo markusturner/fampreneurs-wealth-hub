@@ -306,6 +306,8 @@ const Coaching = () => {
           // Calculate next occurrence based on recurrence pattern
           if (session.recurrence_pattern === 'weekly') {
             currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000)
+          } else if (session.recurrence_pattern === 'biweekly') {
+            currentDate = new Date(currentDate.getTime() + 14 * 24 * 60 * 60 * 1000)
           } else if (session.recurrence_pattern === 'daily') {
             currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000)
           } else if (session.recurrence_pattern === 'monthly') {
