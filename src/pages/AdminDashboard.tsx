@@ -47,6 +47,8 @@ import { CreateCourseDialog } from '@/components/admin/create-course-dialog'
 import { EditCourseDialog } from '@/components/admin/edit-course-dialog'
 import { UserRoleManagement } from '@/components/admin/user-role-management'
 import { UserCard } from '@/components/admin/user-card'
+import { CommunicationManagement } from '@/components/admin/communication-management'
+import { ThemeSettings } from '@/components/admin/theme-settings'
 import { 
   DndContext, 
   DragEndEvent, 
@@ -517,16 +519,18 @@ export default function AdminDashboard() {
         .delete()
         .eq('user_id', userId)
 
-      // Insert new progress record
-      const { error } = await supabase
-        .from('user_fulfillment_progress')
-        .insert({
-          user_id: userId,
-          stage_id: newStageId,
-          moved_by: user?.id
-        })
+      // If not moving to unassigned, insert new progress record
+      if (newStageId !== 'unassigned') {
+        const { error } = await supabase
+          .from('user_fulfillment_progress')
+          .insert({
+            user_id: userId,
+            stage_id: newStageId,
+            moved_by: user?.id
+          })
 
-      if (error) throw error
+        if (error) throw error
+      }
 
       toast({
         title: "User moved",
@@ -592,6 +596,10 @@ export default function AdminDashboard() {
       // Get the user's current stage from their fulfillment progress
       return user.fulfillment_stage === fulfillmentStages.find(s => s.id === stageId)?.name
     })
+  }
+
+  const getUsersWithoutStage = () => {
+    return users.filter(user => !user.fulfillment_stage)
   }
 
   const activeUser = activeId ? users.find(u => u.id === activeId) : null
@@ -744,7 +752,7 @@ export default function AdminDashboard() {
                 <CardContent>
                   <div className="flex items-center space-x-2">
                     <Star className="h-5 w-5 text-yellow-500" />
-                    <div className="text-2xl font-bold">{metrics.satisfactionScore.toFixed(1)}/10</div>
+                    <div className="text-2xl font-bold">{(metrics.satisfactionScore * 10).toFixed(1)}%</div>
                   </div>
                   <p className="text-xs text-muted-foreground">Average user satisfaction</p>
                 </CardContent>
@@ -757,12 +765,24 @@ export default function AdminDashboard() {
                 <CardContent>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-sm">1-1 Calls (30 days):</span>
-                      <span className="font-bold">{metrics.oneOnOneCalls30Days}</span>
+                      <span className="text-sm">1-1 Calls (This Month):</span>
+                      <span className="font-bold">{metrics.oneOnOneCallsThisMonth}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">1-1 Calls (15 days):</span>
                       <span className="font-bold">{metrics.oneOnOneCalls15Days}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">1-1 Calls (30 days):</span>
+                      <span className="font-bold">{metrics.oneOnOneCalls30Days}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">Group Calls (This Month):</span>
+                      <span className="font-bold">{metrics.groupCallsThisMonth}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">Group Calls (15 days):</span>
+                      <span className="font-bold">{metrics.groupCalls15Days}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm">Group Calls (30 days):</span>
@@ -812,13 +832,35 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <DndContext
+                 <DndContext
                   sensors={sensors}
                   collisionDetection={closestCenter}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                    {/* Unassigned Users Column */}
+                    <Card className="min-h-[300px]">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm flex items-center space-x-2">
+                          <div className="w-3 h-3 rounded-full bg-gray-400" />
+                          <span>Unassigned</span>
+                          <Badge variant="secondary">{getUsersWithoutStage().length}</Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <SortableContext 
+                          items={getUsersWithoutStage().map(u => u.id)} 
+                          strategy={verticalListSortingStrategy}
+                        >
+                          {getUsersWithoutStage().map((user) => (
+                            <SortableUser key={user.id} user={user} stage={{ id: 'unassigned', name: 'Unassigned', description: null, stage_order: 0, color: '#6b7280', created_by: '', created_at: '' }} />
+                          ))}
+                        </SortableContext>
+                      </CardContent>
+                    </Card>
+
+                    {/* Fulfillment Stages */}
                     {fulfillmentStages.map((stage) => {
                       const stageUsers = getUsersInStage(stage.id)
                       return (
