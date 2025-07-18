@@ -96,9 +96,8 @@ export const CreateAnnouncement = ({ onAnnouncementCreated }: CreateAnnouncement
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
           <Plus className="h-4 w-4" />
-          Create Announcement
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">

@@ -41,7 +41,7 @@ interface ChannelsSidebarProps {
 }
 
 export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: ChannelsSidebarProps) => {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { toast } = useToast()
   const [channels, setChannels] = useState<Channel[]>([])
   const [groupCalls, setGroupCalls] = useState<GroupCall[]>([])
@@ -134,7 +134,14 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
   }
 
   const handleCreateChannel = async () => {
-    if (!newChannelName.trim() || !user) return
+    if (!newChannelName.trim() || !user || !profile?.is_admin) {
+      toast({
+        title: "Error",
+        description: "Only administrators can create channels",
+        variant: "destructive"
+      })
+      return
+    }
 
     setIsCreating(true)
     try {
@@ -217,7 +224,14 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
   }
 
   const handleUpdateChannel = async () => {
-    if (!editingChannel || !newChannelName.trim() || !user) return
+    if (!editingChannel || !newChannelName.trim() || !user || !profile?.is_admin) {
+      toast({
+        title: "Error", 
+        description: "Only administrators can edit channels",
+        variant: "destructive"
+      })
+      return
+    }
 
     setIsCreating(true)
     try {
@@ -269,7 +283,7 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
           <h3 className="font-semibold text-sm">Channels</h3>
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={!profile?.is_admin}>
                 <Plus className="h-4 w-4" />
               </Button>
             </DialogTrigger>
@@ -501,8 +515,9 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
                     id="edit-channel-private"
                     checked={isPrivateChannel}
                     onCheckedChange={setIsPrivateChannel}
+                    style={isPrivateChannel ? { backgroundColor: '#ffb500' } : {}}
                   />
-                  <Label htmlFor="edit-channel-private">Private Channel</Label>
+                  <Label htmlFor="edit-channel-private" style={isPrivateChannel ? { color: '#ffb500' } : {}}>Private Channel</Label>
                 </div>
                 
                 <div className="flex gap-2">
@@ -544,38 +559,34 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
 
         {/* Channels list */}
         {channels.map((channel) => (
-          <Button
-            key={channel.id}
-            variant={selectedChannelId === channel.id ? "secondary" : "ghost"}
-            size="sm"
-            onClick={() => onChannelSelect(channel.id)}
-            className="w-full justify-start gap-2 h-8 text-xs"
-          >
-            {channel.is_private ? (
-              <Lock className="h-3 w-3" />
-            ) : (
-              <Hash className="h-3 w-3" />
-            )}
-            <span className="truncate flex-1 text-left">{channel.name}</span>
-            <div className="flex items-center gap-1">
-              {channel.created_by === user?.id && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-4 w-4 p-0"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleEditChannel(channel)
-                  }}
-                >
-                  <Edit className="h-3 w-3" />
-                </Button>
+          <div key={channel.id} className="flex items-center gap-1">
+            <Button
+              variant={selectedChannelId === channel.id ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => onChannelSelect(channel.id)}
+              className="flex-1 justify-start gap-2 h-8 text-xs"
+            >
+              {channel.is_private ? (
+                <Lock className="h-3 w-3" />
+              ) : (
+                <Hash className="h-3 w-3" />
               )}
+              <span className="truncate flex-1 text-left">{channel.name}</span>
               <span className="text-xs text-muted-foreground">
                 {channel.member_count}
               </span>
-            </div>
-          </Button>
+            </Button>
+            {(channel.created_by === user?.id || profile?.is_admin) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 flex-shrink-0"
+                onClick={() => handleEditChannel(channel)}
+              >
+                <Edit className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
         ))}
 
         {channels.length === 0 && (
