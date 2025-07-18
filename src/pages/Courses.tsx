@@ -10,6 +10,7 @@ import { CreateCourseDialog } from "@/components/courses/create-course-dialog"
 import { AddVideoDialog } from "@/components/courses/add-video-dialog"
 import { CourseVideoList } from "@/components/courses/course-video-list"
 import { CallRecordingsList } from "@/components/courses/call-recordings-list"
+import { NetflixCourseDetail } from "@/components/courses/netflix-course-detail"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, BookOpen, Play, CheckCircle, Clock, Users, Star, Plus, Video } from 'lucide-react'
@@ -414,7 +415,7 @@ const Courses = () => {
             {filteredCourses.length > 0 && (
               <div className="relative mb-6 mx-4 sm:mx-6 lg:mx-8 mt-2 lg:mt-6">
                 <div 
-                  className="relative aspect-[16/9] sm:aspect-[21/9] lg:aspect-[2.4/1] rounded-lg overflow-hidden bg-gradient-to-r from-primary/20 to-accent/20"
+                  className="relative aspect-[16/11] sm:aspect-[21/9] lg:aspect-[2.4/1] rounded-lg overflow-hidden bg-gradient-to-r from-primary/20 to-accent/20"
                   style={{
                     backgroundImage: `url(${filteredCourses[0].image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=400&fit=crop"})`,
                     backgroundSize: 'cover',
@@ -586,6 +587,44 @@ const Courses = () => {
                 </div>
               )}
 
+              {/* Learning Stats - Mobile Optimized */}
+              <div className="px-4 sm:px-6 lg:px-8 mb-8">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                  <Card className="shadow-soft text-center bg-card/50 backdrop-blur-sm">
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="text-lg sm:text-xl lg:text-2xl font-bold" style={{ color: '#ffb500' }}>
+                        {recordingsCount}
+                      </div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Weekly Meetings</div>
+                    </CardContent>
+                  </Card>
+                  <Card className="shadow-soft text-center bg-card/50 backdrop-blur-sm">
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="text-lg sm:text-xl lg:text-2xl font-bold text-accent">
+                        {enrollments.filter(e => e.completed_at).length}
+                      </div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Completed</div>
+                    </CardContent>
+                  </Card>
+                  <Card className="shadow-soft text-center bg-card/50 backdrop-blur-sm">
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="text-lg sm:text-xl lg:text-2xl font-bold text-secondary">
+                        {courses.length}
+                      </div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Total Courses</div>
+                    </CardContent>
+                  </Card>
+                  <Card className="shadow-soft text-center bg-card/50 backdrop-blur-sm">
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="text-lg sm:text-xl lg:text-2xl font-bold" style={{ color: '#ffb500' }}>
+                        {enrollments.length > 0 ? Math.round(enrollments.reduce((acc, e) => acc + e.progress, 0) / enrollments.length) : 0}%
+                      </div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Avg Progress</div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
               {/* All Courses */}
               <div className="px-4 sm:px-6 lg:px-8">
                 <h3 className="text-lg sm:text-xl font-bold mb-4 text-foreground">
@@ -676,79 +715,95 @@ const Courses = () => {
         </Tabs>
       </main>
 
-      {/* Course Detail Dialog */}
-      <Dialog open={courseDetailOpen} onOpenChange={setCourseDetailOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-background border-border">
-          <DialogHeader>
-            <DialogTitle className="sr-only">Course Details</DialogTitle>
-          </DialogHeader>
-          {selectedCourse && (
-            <div className="space-y-6">
-              {/* Course Hero */}
-              <div 
-                className="relative aspect-video rounded-lg overflow-hidden bg-gradient-to-r from-primary/20 to-accent/20"
-                style={{
-                  backgroundImage: `url(${selectedCourse.image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=400&fit=crop"})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">{selectedCourse.title}</h1>
-                  <div className="flex items-center gap-4 mb-4">
-                    <span className="text-foreground">2024</span>
-                    <Badge 
-                      className="text-xs"
-                      style={selectedCourse.level === 'Advanced' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
-                    >
-                      {selectedCourse.level}
-                    </Badge>
-                    <span className="text-foreground">{selectedCourse.duration || "Self-paced"}</span>
-                    <span className="text-foreground">{selectedCourse.price}</span>
+      {/* Course Detail Dialog - Netflix Style for Mobile */}
+      <div className="block lg:hidden">
+        <NetflixCourseDetail
+          course={selectedCourse}
+          open={courseDetailOpen}
+          onOpenChange={setCourseDetailOpen}
+          isEnrolled={selectedCourse ? isUserEnrolled(selectedCourse.id) : false}
+          progress={selectedCourse ? getUserProgress(selectedCourse.id) : 0}
+          onEnroll={() => selectedCourse && handleEnrollInCourse(selectedCourse.id)}
+          isInMyList={selectedCourse ? isInMyList(selectedCourse.id) : false}
+          onToggleMyList={() => selectedCourse && handleToggleMyList(selectedCourse)}
+        />
+      </div>
+
+      {/* Course Detail Dialog - Desktop */}
+      <div className="hidden lg:block">
+        <Dialog open={courseDetailOpen} onOpenChange={setCourseDetailOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-background border-border">
+            <DialogHeader>
+              <DialogTitle className="sr-only">Course Details</DialogTitle>
+            </DialogHeader>
+            {selectedCourse && (
+              <div className="space-y-6">
+                {/* Course Hero */}
+                <div 
+                  className="relative aspect-video rounded-lg overflow-hidden bg-gradient-to-r from-primary/20 to-accent/20"
+                  style={{
+                    backgroundImage: `url(${selectedCourse.image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=400&fit=crop"})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-6">
+                    <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">{selectedCourse.title}</h1>
+                    <div className="flex items-center gap-4 mb-4">
+                      <span className="text-foreground">2024</span>
+                      <Badge 
+                        className="text-xs"
+                        style={selectedCourse.level === 'Advanced' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
+                      >
+                        {selectedCourse.level}
+                      </Badge>
+                      <span className="text-foreground">{selectedCourse.duration || "Self-paced"}</span>
+                      <span className="text-foreground">{selectedCourse.price}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 mb-4">
+                      <Button 
+                        size="lg" 
+                        className="hover:opacity-90 font-semibold"
+                        style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                        onClick={() => {
+                          setCourseDetailOpen(false)
+                          // Auto-scroll to videos when opened
+                          setTimeout(() => {
+                            document.querySelector('.course-videos')?.scrollIntoView({ 
+                              behavior: 'smooth' 
+                            })
+                          }, 100)
+                        }}
+                      >
+                        <Play className="h-5 w-5 mr-2" />
+                        {isUserEnrolled(selectedCourse.id) ? 'Continue Course' : 'Start Course'}
+                      </Button>
+                      <Button variant="outline" size="lg" className="bg-background/20 border-foreground/20 text-foreground">
+                        <Plus className="h-5 w-5 mr-2" />
+                        My List
+                      </Button>
+                    </div>
+                    
+                    <p className="text-muted-foreground max-w-2xl leading-relaxed">
+                      {selectedCourse.description || "Comprehensive course designed to enhance your business knowledge and skills."}
+                    </p>
                   </div>
-                  
-                  <div className="flex items-center gap-4 mb-4">
-                    <Button 
-                      size="lg" 
-                      className="hover:opacity-90 font-semibold"
-                      style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                      onClick={() => {
-                        setCourseDetailOpen(false)
-                        // Auto-scroll to videos when opened
-                        setTimeout(() => {
-                          document.querySelector('.course-videos')?.scrollIntoView({ 
-                            behavior: 'smooth' 
-                          })
-                        }, 100)
-                      }}
-                    >
-                      <Play className="h-5 w-5 mr-2" />
-                      {isUserEnrolled(selectedCourse.id) ? 'Continue Course' : 'Start Course'}
-                    </Button>
-                    <Button variant="outline" size="lg" className="bg-background/20 border-foreground/20 text-foreground">
-                      <Plus className="h-5 w-5 mr-2" />
-                      My List
-                    </Button>
-                  </div>
-                  
-                  <p className="text-muted-foreground max-w-2xl leading-relaxed">
-                    {selectedCourse.description || "Comprehensive course designed to enhance your business knowledge and skills."}
-                  </p>
+                </div>
+
+                {/* Course Videos */}
+                <div className="course-videos">
+                  <CourseVideoList 
+                    courseId={selectedCourse.id} 
+                    isCreator={isUserCourseCreator(selectedCourse)}
+                  />
                 </div>
               </div>
-
-              {/* Course Videos */}
-              <div className="course-videos">
-                <CourseVideoList 
-                  courseId={selectedCourse.id} 
-                  isCreator={isUserCourseCreator(selectedCourse)}
-                />
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
 
       {/* Create Course Dialog */}
       <CreateCourseDialog 
