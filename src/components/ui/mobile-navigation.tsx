@@ -7,7 +7,7 @@ const navigationItems = [
   { name: 'Calendar', href: '/coaching', icon: Calendar },
   { name: 'Family Office', href: '/', icon: Home },
   { name: 'Courses', href: '/courses', icon: BookOpen },
-  { name: 'Members', href: '/members', icon: Users },
+  { name: 'Scoreboard', href: '/members', icon: Users },
 ]
 
 export function MobileNavigation() {

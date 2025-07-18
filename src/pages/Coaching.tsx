@@ -400,9 +400,9 @@ const Coaching = () => {
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
             {viewType === 'month' ? (
-              <div className="grid lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
                 {/* Calendar - Takes up 3 columns */}
-                <div className="lg:col-span-3 space-y-4">
+                <div className="order-1 lg:col-span-3 space-y-4">
                   {/* Calendar Header */}
                   <div className="flex items-center justify-between">
                     <Button
@@ -503,7 +503,7 @@ const Coaching = () => {
                 </div>
 
                 {/* Available Coaches Sidebar - Takes up 1 column on the right */}
-                <div className="lg:col-span-1">
+                <div className="order-2 lg:col-span-1">
                   <Card className="shadow-soft sticky top-4">
                     <CardHeader className="p-4">
                       <CardTitle className="flex items-center gap-2 text-lg font-bold">
@@ -583,9 +583,9 @@ const Coaching = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
                 {/* Calendar/List View - Takes up 3 columns */}
-                <div className="lg:col-span-3">
+                <div className="order-1 lg:col-span-3">
                   {currentCalls.length === 0 ? (
                     <div className="text-center py-12">
                       <CalendarIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -668,7 +668,7 @@ const Coaching = () => {
                 </div>
 
                 {/* Available Coaches - Takes up 1 column on the right */}
-                <div className="lg:col-span-1">
+                <div className="order-2 lg:col-span-1">
                   <Card className="shadow-soft sticky top-4">
                     <CardHeader className="p-4">
                       <CardTitle className="flex items-center gap-2 text-lg font-bold">
