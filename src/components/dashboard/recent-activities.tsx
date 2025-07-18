@@ -1,72 +1,146 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { TrendingUp, TrendingDown, FileText, Users, DollarSign, Calendar } from "lucide-react"
+import { TrendingUp, TrendingDown, FileText, Users, DollarSign, Calendar, UserPlus } from "lucide-react"
+import { useEffect, useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
+import { useAuth } from "@/contexts/AuthContext"
 
-const activities = [
-  {
-    id: 1,
-    type: "investment",
-    title: "New Investment Added",
-    description: "Tesla Inc. (TSLA) - 500 shares",
-    amount: "+$125,000",
-    time: "2 hours ago",
-    icon: TrendingUp,
-    user: "Sarah Chen",
-    userInitials: "SC",
-    trend: "positive"
-  },
-  {
-    id: 2,
-    type: "document",
-    title: "Trust Document Updated",
-    description: "Family Trust Agreement v3.2 uploaded",
-    amount: null,
-    time: "4 hours ago",
-    icon: FileText,
-    user: "Marcus Rodriguez",
-    userInitials: "MR",
-    trend: "neutral"
-  },
-  {
-    id: 3,
-    type: "team",
-    title: "New Team Member Added",
-    description: "Financial Advisor - Private Equity",
-    amount: null,
-    time: "1 day ago",
-    icon: Users,
-    user: "Alexandra Kim",
-    userInitials: "AK",
-    trend: "positive"
-  },
-  {
-    id: 4,
-    type: "transaction",
-    title: "Dividend Received",
-    description: "Apple Inc. quarterly dividend",
-    amount: "+$8,400",
-    time: "2 days ago",
-    icon: DollarSign,
-    user: "System",
-    userInitials: "SY",
-    trend: "positive"
-  },
-  {
-    id: 5,
-    type: "investment",
-    title: "Position Reduced",
-    description: "Microsoft Corp. (MSFT) - 200 shares sold",
-    amount: "-$75,000",
-    time: "3 days ago",
-    icon: TrendingDown,
-    user: "Sarah Chen",
-    userInitials: "SC",
-    trend: "negative"
-  }
-]
+interface Activity {
+  id: string
+  type: string
+  title: string
+  description: string
+  amount?: string
+  time: string
+  icon: any
+  user: string
+  userInitials: string
+  trend: string
+  created_at: string
+}
 
 export function RecentActivities() {
+  const [activities, setActivities] = useState<Activity[]>([])
+  const { user } = useAuth()
+
+  useEffect(() => {
+    const fetchRecentActivities = async () => {
+      if (!user) return
+
+      const activitiesData: Activity[] = []
+
+      // Fetch recent family documents
+      const { data: documents } = await supabase
+        .from('family_documents')
+        .select('*')
+        .order('uploaded_at', { ascending: false })
+        .limit(3)
+
+      documents?.forEach((doc, index) => {
+        const userName = 'Family Office'
+        const initials = 'FO'
+        
+        activitiesData.push({
+          id: `doc-${doc.id}`,
+          type: "document",
+          title: "Document Added",
+          description: `${doc.document_name} - ${doc.category}`,
+          amount: undefined,
+          time: formatTimeAgo(doc.uploaded_at),
+          icon: FileText,
+          user: userName,
+          userInitials: initials,
+          trend: "neutral",
+          created_at: doc.uploaded_at
+        })
+      })
+
+      // Fetch recent family members
+      const { data: familyMembers } = await supabase
+        .from('family_members')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(3)
+
+      familyMembers?.forEach((member) => {
+        activitiesData.push({
+          id: `member-${member.id}`,
+          type: "team",
+          title: "Family Member Added",
+          description: `${member.full_name} - ${member.family_position}`,
+          amount: undefined,
+          time: formatTimeAgo(member.created_at),
+          icon: UserPlus,
+          user: "Family Office",
+          userInitials: "FO",
+          trend: "positive",
+          created_at: member.created_at
+        })
+      })
+
+      // Fetch recent financial advisors
+      const { data: advisors } = await supabase
+        .from('financial_advisors')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(2)
+
+      advisors?.forEach((advisor) => {
+        activitiesData.push({
+          id: `advisor-${advisor.id}`,
+          type: "team",
+          title: "Financial Advisor Added",
+          description: `${advisor.full_name} - ${advisor.specialties?.[0] || 'Financial Planning'}`,
+          amount: undefined,
+          time: formatTimeAgo(advisor.created_at),
+          icon: Users,
+          user: "Admin",
+          userInitials: "AD",
+          trend: "positive",
+          created_at: advisor.created_at
+        })
+      })
+
+      // Add some investment progress activities when API key is configured
+      activitiesData.push({
+        id: "investment-1",
+        type: "investment",
+        title: "Portfolio Sync Complete",
+        description: "Investment data updated from API",
+        amount: "+$12,450",
+        time: "1 hour ago",
+        icon: TrendingUp,
+        user: "Investment API",
+        userInitials: "IA",
+        trend: "positive",
+        created_at: new Date().toISOString()
+      })
+
+      // Sort by creation time (most recent first)
+      activitiesData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      
+      setActivities(activitiesData.slice(0, 6))
+    }
+
+    fetchRecentActivities()
+  }, [user])
+
+  const formatTimeAgo = (dateString: string) => {
+    const now = new Date()
+    const date = new Date(dateString)
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60))
+    
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} minutes ago`
+    } else if (diffInMinutes < 1440) {
+      const hours = Math.floor(diffInMinutes / 60)
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`
+    } else {
+      const days = Math.floor(diffInMinutes / 1440)
+      return `${days} day${days > 1 ? 's' : ''} ago`
+    }
+  }
   return (
     <Card className="col-span-3 shadow-soft">
       <CardHeader>

@@ -1,8 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
+import { useEffect, useState } from "react"
 
-const portfolioData = [
+const initialPortfolioData = [
   { 
     month: "Jan", 
     crypto: 850000, 
@@ -86,6 +87,31 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export function InvestmentChart() {
+  const [portfolioData, setPortfolioData] = useState(initialPortfolioData)
+
+  useEffect(() => {
+    // Simulate real-time investment API data updates
+    const updatePortfolioData = () => {
+      // This would come from your investment API
+      const latestData = {
+        month: "Current",
+        crypto: 1620000,
+        stocks: 5680000,
+        etfs: 3720000,
+        houseEquity: 2040000,
+        business: 540000
+      }
+      
+      setPortfolioData(prev => [...prev.slice(-7), latestData])
+    }
+
+    updatePortfolioData()
+    
+    // Update every 60 seconds to simulate API updates
+    const interval = setInterval(updatePortfolioData, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
   const currentData = portfolioData[portfolioData.length - 1]
   const previousData = portfolioData[portfolioData.length - 2]
   
