@@ -247,45 +247,96 @@ const Courses = () => {
       <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
       <main className="relative z-10">
-        {/* Header Section - Mobile Optimized */}
-        <div className="px-4 sm:px-6 lg:px-8 pt-4 pb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">
-              For {displayName}
-            </h1>
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm" className="p-2">
-                <Play className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="p-2">
-                <Users className="h-4 w-4" />
-              </Button>
+        {/* Mobile Netflix-like Layout */}
+        <div className="block lg:hidden">
+          {/* Header Section - Netflix Style */}
+          <div className="px-4 pt-4 pb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-2xl font-bold text-foreground">
+                For {displayName}
+              </h1>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" className="p-2">
+                  <Play className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" className="p-2">
+                  <Users className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          </div>
 
-          {/* Navigation Pills - Mobile First */}
-          <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                size="sm"
-                className={`flex-shrink-0 rounded-full px-4 py-2 text-xs sm:text-sm ${
-                  selectedCategory === category 
-                    ? 'bg-foreground text-background' 
-                    : 'bg-background/20 text-foreground border-foreground/20'
-                }`}
-                onClick={() => setSelectedCategory(category)}
-              >
-                {category}
-              </Button>
-            ))}
+            {/* Category Pills - Netflix Style */}
+            <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide">
+              {[
+                "Courses",
+                "Weekly Meetings",
+                "Categories ⌄"
+              ].map((item, index) => (
+                <Button
+                  key={item}
+                  variant={index === (activeTab === 'courses' ? 0 : 1) ? "default" : "outline"}
+                  size="sm"
+                  className={`flex-shrink-0 rounded-full px-4 py-2 text-sm ${
+                    index === (activeTab === 'courses' ? 0 : 1)
+                      ? 'bg-white text-black' 
+                      : 'bg-black/80 text-white border-white/20'
+                  }`}
+                  onClick={() => {
+                    if (index === 0) setActiveTab('courses')
+                    if (index === 1) setActiveTab('recordings')
+                    if (index === 2) {
+                      // Toggle category dropdown or show categories
+                    }
+                  }}
+                >
+                  {item}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Content Tabs */}
+        {/* Desktop Layout - Original */}
+        <div className="hidden lg:block">
+          <div className="px-4 sm:px-6 lg:px-8 pt-4 pb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">
+                For {displayName}
+              </h1>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" className="p-2">
+                  <Play className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm" className="p-2">
+                  <Users className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Navigation Pills - Desktop */}
+            <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide">
+              {categories.map((category) => (
+                <Button
+                  key={category}
+                  variant={selectedCategory === category ? "default" : "outline"}
+                  size="sm"
+                  className={`flex-shrink-0 rounded-full px-4 py-2 text-xs sm:text-sm ${
+                    selectedCategory === category 
+                      ? 'bg-foreground text-background' 
+                      : 'bg-background/20 text-foreground border-foreground/20'
+                  }`}
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {category}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Content Tabs - Desktop Only */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mx-4 sm:mx-6 lg:mx-8 bg-card/50 border-border/20 backdrop-blur-sm">
+          <TabsList className="hidden lg:flex mx-4 sm:mx-6 lg:mx-8 bg-card/50 border-border/20 backdrop-blur-sm">
             <TabsTrigger 
               value="courses" 
               className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm"
