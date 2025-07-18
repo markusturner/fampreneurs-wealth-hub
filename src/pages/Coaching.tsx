@@ -303,7 +303,7 @@ const Coaching = () => {
                   {/* Day Headers */}
                   <div className="grid grid-cols-7 border-b bg-muted/30">
                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                      <div key={day} className="p-3 text-center text-sm font-medium text-muted-foreground border-r last:border-r-0">
+                      <div key={day} className="p-2 sm:p-3 text-center text-xs sm:text-sm font-medium text-muted-foreground border-r last:border-r-0">
                         {day}
                       </div>
                     ))}
@@ -313,7 +313,7 @@ const Coaching = () => {
                   <div className="grid grid-cols-7">
                     {allDays.map((day, index) => {
                       if (!day) {
-                        return <div key={index} className="h-24 border-r border-b last:border-r-0" />
+                        return <div key={index} className="h-16 sm:h-24 border-r border-b last:border-r-0" />
                       }
                       
                       const dayEvents = getSessionsForDate(day)
@@ -324,32 +324,37 @@ const Coaching = () => {
                         <div 
                           key={day.toISOString()} 
                           className={cn(
-                            "h-24 border-r border-b last:border-r-0 p-2 relative overflow-hidden",
+                            "h-16 sm:h-24 border-r border-b last:border-r-0 p-1 sm:p-2 relative overflow-hidden",
                             !isCurrentMonth && "bg-muted/20",
                             isDayToday && "bg-primary/5"
                           )}
                         >
                           <div className={cn(
-                            "text-sm font-medium mb-1",
+                            "text-xs sm:text-sm font-medium mb-1",
                             !isCurrentMonth && "text-muted-foreground",
-                            isDayToday && "bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                            isDayToday && "bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs"
                           )}>
                             {format(day, 'd')}
                           </div>
                           
                           <div className="space-y-1">
-                            {dayEvents.slice(0, 2).map((event, eventIndex) => (
+                            {dayEvents.slice(0, 1).map((event, eventIndex) => (
                               <div 
                                 key={event.id}
                                 className="text-xs p-1 bg-primary/10 text-primary rounded truncate cursor-pointer hover:bg-primary/20 transition-colors"
                                 title={`${event.time} - ${event.title}`}
                               >
-                                {event.time} - {event.title.length > 12 ? event.title.substring(0, 12) + '...' : event.title}
+                                <div className="hidden sm:block">
+                                  {event.time} - {event.title.length > 8 ? event.title.substring(0, 8) + '...' : event.title}
+                                </div>
+                                <div className="sm:hidden">
+                                  {event.title.length > 6 ? event.title.substring(0, 6) + '...' : event.title}
+                                </div>
                               </div>
                             ))}
-                            {dayEvents.length > 2 && (
+                            {dayEvents.length > 1 && (
                               <div className="text-xs text-muted-foreground">
-                                +{dayEvents.length - 2} more
+                                +{dayEvents.length - 1} more
                               </div>
                             )}
                           </div>
@@ -361,37 +366,37 @@ const Coaching = () => {
               </div>
             ) : (
               /* List View */
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {upcomingCalls.map((session) => (
-                  <div key={session.id} className="p-4 bg-muted/30 rounded-lg space-y-3 border">
+                  <div key={session.id} className="p-3 sm:p-4 bg-muted/30 rounded-lg space-y-3 border">
                     <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10">
+                      <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
                         <AvatarImage src={session.avatar} />
                         <AvatarFallback>{session.coach.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-sm truncate">{session.title}</h4>
-                        <p className="text-xs text-muted-foreground">{session.coach}</p>
+                        <p className="text-xs text-muted-foreground truncate">{session.coach}</p>
                       </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{format(parseISO(session.date), 'MMM d, yyyy')}</div>
+                      <div className="text-right flex-shrink-0">
+                        <div className="text-xs sm:text-sm font-medium">{format(parseISO(session.date), 'MMM d, yyyy')}</div>
                         <div className="text-xs text-muted-foreground">{session.time}</div>
                       </div>
                     </div>
                     
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Button 
                         size="sm" 
-                        className="flex-1 text-xs"
+                        className="flex-1 text-xs gap-1"
                         onClick={() => window.open(session.zoomMeetingUrl, '_blank')}
                       >
-                        <Video className="h-3 w-3 mr-1" />
+                        <Video className="h-3 w-3" />
                         Join Session
                       </Button>
                       <Button 
                         size="sm" 
                         variant="outline"
-                        className="text-xs"
+                        className="text-xs sm:flex-initial"
                       >
                         Details
                       </Button>

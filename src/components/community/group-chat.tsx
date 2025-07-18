@@ -281,29 +281,29 @@ export function GroupChat({ groupId }: GroupChatProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col min-h-0">
       {/* Group Header */}
       {group && (
-        <div className="p-4 border-b bg-background">
+        <div className="p-3 sm:p-4 border-b bg-background flex-shrink-0">
           <div className="flex items-center gap-2">
             {group.is_private ? (
-              <Lock className="h-5 w-5 text-muted-foreground" />
+              <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
             ) : (
-              <Hash className="h-5 w-5 text-muted-foreground" />
+              <Hash className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
             )}
-            <div>
-              <h2 className="font-semibold">{group.name}</h2>
+            <div className="flex-1 min-w-0">
+              <h2 className="font-semibold text-sm sm:text-base truncate">{group.name}</h2>
               {group.description && (
-                <p className="text-sm text-muted-foreground">{group.description}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{group.description}</p>
               )}
             </div>
-            <div className="ml-auto flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <Users className="h-4 w-4" />
-                {group.member_count || 0}
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              <Button variant="ghost" size="sm" className="gap-1 sm:gap-2 text-xs sm:text-sm">
+                <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">{group.member_count || 0}</span>
               </Button>
               <Button variant="ghost" size="sm">
-                <MoreVertical className="h-4 w-4" />
+                <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </div>
           </div>
@@ -311,29 +311,29 @@ export function GroupChat({ groupId }: GroupChatProps) {
       )}
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4">
-        <div className="space-y-4">
+      <ScrollArea className="flex-1 p-2 sm:p-4 min-h-0">
+        <div className="space-y-3 sm:space-y-4">
           {messages.map((message, index) => {
             const isOwn = message.user_id === user?.id
             const showAvatar = index === 0 || messages[index - 1].user_id !== message.user_id
             
             return (
-              <div key={message.id} className={`flex gap-3 ${isOwn ? 'justify-end' : ''}`}>
+              <div key={message.id} className={`flex gap-2 sm:gap-3 ${isOwn ? 'justify-end' : ''}`}>
                 {!isOwn && showAvatar && (
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0">
                     <AvatarImage src={message.profiles?.avatar_url || undefined} />
                     <AvatarFallback className="text-xs">
                       {getDisplayName(message).charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 )}
-                {!isOwn && !showAvatar && <div className="w-8" />}
+                {!isOwn && !showAvatar && <div className="w-6 sm:w-8 flex-shrink-0" />}
                 
-                <div className={`flex-1 max-w-lg ${isOwn ? 'text-right' : ''}`}>
+                <div className={`flex-1 max-w-xs sm:max-w-lg ${isOwn ? 'text-right' : ''}`}>
                   {showAvatar && (
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium">{getDisplayName(message)}</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs sm:text-sm font-medium truncate">{getDisplayName(message)}</span>
+                      <span className="text-xs text-muted-foreground flex-shrink-0">
                         {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
                       </span>
                     </div>
@@ -409,16 +409,16 @@ export function GroupChat({ groupId }: GroupChatProps) {
       </ScrollArea>
 
       {/* Message Input */}
-      <div className="p-4 border-t">
+      <div className="p-2 sm:p-4 border-t flex-shrink-0">
         {replyTo && (
           <div className="mb-2 p-2 bg-muted rounded text-sm">
             <div className="flex items-center justify-between">
-              <span>Replying to {getDisplayName(replyTo)}</span>
+              <span className="truncate">Replying to {getDisplayName(replyTo)}</span>
               <Button variant="ghost" size="sm" onClick={() => setReplyTo(null)}>
                 ×
               </Button>
             </div>
-            <p className="truncate opacity-75">{replyTo.content}</p>
+            <p className="truncate opacity-75 text-xs">{replyTo.content}</p>
           </div>
         )}
         
@@ -430,10 +430,15 @@ export function GroupChat({ groupId }: GroupChatProps) {
             onKeyPress={handleKeyPress}
             placeholder={`Message #${group?.name}`}
             disabled={sending}
-            className="flex-1"
+            className="flex-1 text-sm"
           />
-          <Button onClick={sendMessage} disabled={!newMessage.trim() || sending}>
-            <Send className="h-4 w-4" />
+          <Button 
+            onClick={sendMessage} 
+            disabled={!newMessage.trim() || sending}
+            size="sm"
+            className="flex-shrink-0"
+          >
+            <Send className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       </div>

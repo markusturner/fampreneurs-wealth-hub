@@ -212,10 +212,10 @@ const Courses = () => {
 
         {/* Course Grid */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
             {selectedCategory} ({filteredCourses.length})
           </h2>
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {filteredCourses.map((course) => {
               const progress = getUserProgress(course.id)
               const enrolled = isUserEnrolled(course.id)
@@ -230,21 +230,21 @@ const Courses = () => {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <CardHeader className="p-4">
+                  <CardHeader className="p-3 sm:p-4">
                     <div className="flex items-start justify-between mb-2">
                       <Badge variant={course.level === 'Beginner' ? 'secondary' : course.level === 'Advanced' ? 'destructive' : 'default'} className="text-xs">
                         {course.level}
                       </Badge>
-                      <span className="text-sm font-semibold text-primary">{course.price}</span>
+                      <span className="text-xs sm:text-sm font-semibold text-primary">{course.price}</span>
                     </div>
-                    <CardTitle className="text-base leading-tight">{course.title}</CardTitle>
-                    <CardDescription className="text-sm line-clamp-2">
+                    <CardTitle className="text-sm sm:text-base leading-tight">{course.title}</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm line-clamp-2">
                       {course.description}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="p-4 space-y-3">
-                    <div className="text-sm text-muted-foreground">
-                      <p className="font-medium">{course.instructor}</p>
+                  <CardContent className="p-3 sm:p-4 space-y-3">
+                    <div className="text-xs sm:text-sm text-muted-foreground">
+                      <p className="font-medium truncate">{course.instructor}</p>
                       {course.duration && (
                         <p className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
@@ -263,30 +263,30 @@ const Courses = () => {
                       </div>
                     )}
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Button 
-                        className="flex-1 gap-2" 
+                        className="flex-1 gap-1 sm:gap-2 text-xs sm:text-sm" 
                         size="sm"
                         onClick={() => handleOpenCourseDetail(course)}
                       >
                         {enrolled && progress === 0 ? (
                           <>
-                            <Play className="h-4 w-4" />
+                            <Play className="h-3 w-3 sm:h-4 sm:w-4" />
                             Start Course
                           </>
                         ) : enrolled && progress === 100 ? (
                           <>
-                            <CheckCircle className="h-4 w-4" />
+                            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                             Completed
                           </>
                         ) : enrolled ? (
                           <>
-                            <Play className="h-4 w-4" />
+                            <Play className="h-3 w-3 sm:h-4 sm:w-4" />
                             Continue
                           </>
                         ) : (
                           <>
-                            <BookOpen className="h-4 w-4" />
+                            <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
                             View Course
                           </>
                         )}
@@ -297,9 +297,10 @@ const Courses = () => {
                           variant="outline"
                           size="sm"
                           onClick={() => handleAddVideo(course)}
-                          className="gap-1"
+                          className="gap-1 sm:flex-initial"
                         >
-                          <Video className="h-4 w-4" />
+                          <Video className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="sm:hidden">Add</span>
                         </Button>
                       )}
                     </div>
@@ -308,7 +309,7 @@ const Courses = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="w-full"
+                        className="w-full text-xs sm:text-sm"
                         onClick={() => handleEnrollInCourse(course.id)}
                       >
                         Enroll Now
@@ -322,33 +323,33 @@ const Courses = () => {
         </div>
 
         {/* Learning Stats */}
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           <Card className="shadow-soft text-center">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-primary">{enrollments.length}</div>
-              <div className="text-sm text-muted-foreground">Enrolled Courses</div>
+            <CardContent className="p-3 sm:p-4">
+              <div className="text-xl sm:text-2xl font-bold text-primary">{enrollments.length}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Enrolled Courses</div>
             </CardContent>
           </Card>
           <Card className="shadow-soft text-center">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-accent">
+            <CardContent className="p-3 sm:p-4">
+              <div className="text-xl sm:text-2xl font-bold text-accent">
                 {enrollments.filter(e => e.completed_at).length}
               </div>
-              <div className="text-sm text-muted-foreground">Completed</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Completed</div>
             </CardContent>
           </Card>
           <Card className="shadow-soft text-center">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-secondary">{courses.length}</div>
-              <div className="text-sm text-muted-foreground">Total Courses</div>
+            <CardContent className="p-3 sm:p-4">
+              <div className="text-xl sm:text-2xl font-bold text-secondary">{courses.length}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Total Courses</div>
             </CardContent>
           </Card>
           <Card className="shadow-soft text-center">
-            <CardContent className="p-4">
-              <div className="text-2xl font-bold text-muted-foreground">
+            <CardContent className="p-3 sm:p-4">
+              <div className="text-xl sm:text-2xl font-bold text-muted-foreground">
                 {enrollments.length > 0 ? Math.round(enrollments.reduce((acc, e) => acc + e.progress, 0) / enrollments.length) : 0}%
               </div>
-              <div className="text-sm text-muted-foreground">Avg Progress</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Avg Progress</div>
             </CardContent>
           </Card>
         </div>
@@ -364,18 +365,18 @@ const Courses = () => {
       {/* Course Detail Dialog */}
       {selectedCourse && (
         <Dialog open={courseDetailOpen} onOpenChange={setCourseDetailOpen}>
-          <DialogContent className="sm:max-w-[900px] mx-4 max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-[95vw] max-w-[900px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>{selectedCourse.title}</DialogTitle>
+              <DialogTitle className="text-base sm:text-lg">{selectedCourse.title}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                 <span>Instructor: {selectedCourse.instructor}</span>
                 {selectedCourse.duration && <span>Duration: {selectedCourse.duration}</span>}
-                <Badge variant="outline">{selectedCourse.level}</Badge>
+                <Badge variant="outline" className="w-fit">{selectedCourse.level}</Badge>
               </div>
               {selectedCourse.description && (
-                <p className="text-muted-foreground">{selectedCourse.description}</p>
+                <p className="text-sm text-muted-foreground">{selectedCourse.description}</p>
               )}
               <CourseVideoList courseId={selectedCourse.id} />
             </div>
