@@ -193,7 +193,7 @@ export function CommunityFeed() {
                   </p>
                 ) : (
                   announcements.map((announcement) => (
-                    <div key={announcement.id} className="p-3 rounded-lg space-y-2" style={{ backgroundColor: '#ffb500' }}>
+                    <div key={announcement.id} className="p-3 rounded-lg space-y-2" style={{ backgroundColor: 'white' }}>
                       <h4 className="font-medium text-sm line-clamp-2" style={{ color: '#290a52' }}>{announcement.title}</h4>
                       <p className="text-xs line-clamp-3 leading-relaxed" style={{ color: '#290a52' }}>
                         {announcement.content}
