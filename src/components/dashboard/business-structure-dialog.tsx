@@ -174,6 +174,25 @@ export function BusinessStructureDialog({ open, onOpenChange }: BusinessStructur
     const recs: Recommendation[] = []
     const llcCount = parseInt(formData.llcCount) || 0
     
+    // F.L.I.P. Formula Comprehensive Structure Recommendation
+    recs.push({
+      type: 'success',
+      title: 'The F.L.I.P. Formula™ - Family Legacy Inheritance Plan',
+      description: 'Based on your responses, here is a comprehensive structure following The F.L.I.P. Formula for optimal family wealth building and tax optimization.',
+      actionItems: [
+        '1. Establish Family Trust as the foundational holding entity',
+        '2. Create Tax-Exempt Trust for charitable giving and tax benefits',
+        '3. Form Business Trust to hold operating companies and active investments',
+        '4. Set up Private Foundation (PFF) as a Non-Profit Entity for philanthropic activities',
+        '5. Structure Wyoming HC (SMLLC with S-Corp Status) for active business operations',
+        '6. Create Wyoming PC (SMLLC) for passive investments and real estate',
+        '7. Establish Operating Companies (OC #1, #2, #3) as SMLLCs - Foreign Entities for specific business ventures',
+        '8. Form Management Companies (FMC I as SMLLC, FMC II as C-Corp) for business management',
+        '9. Set up Real Estate Management Company (REMC as SMLLC) for property holdings',
+        '10. Create Real Estate Holding Company (REHC as SMLLC - Foreign Entity) for investment properties'
+      ]
+    })
+    
     // S-Corp Election Recommendations
     Object.entries(formData.llcIncomes).forEach(([llcIndex, income]) => {
       const annualIncome = parseFloat(income) || 0
@@ -508,12 +527,12 @@ export function BusinessStructureDialog({ open, onOpenChange }: BusinessStructur
                   className="mt-2"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="family-yes" />
-                    <Label htmlFor="family-yes">Yes</Label>
+                    <RadioGroupItem value="yes" id="family-yes" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="family-yes" className={formData.workingWithFamily === 'yes' ? 'text-[#ffb500] font-medium' : ''}>Yes</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="family-no" />
-                    <Label htmlFor="family-no">No</Label>
+                    <RadioGroupItem value="no" id="family-no" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="family-no" className={formData.workingWithFamily === 'no' ? 'text-[#ffb500] font-medium' : ''}>No</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -610,12 +629,12 @@ export function BusinessStructureDialog({ open, onOpenChange }: BusinessStructur
                   className="mt-2"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="children-yes" />
-                    <Label htmlFor="children-yes">Yes</Label>
+                    <RadioGroupItem value="yes" id="children-yes" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="children-yes" className={formData.childrenInvolved === 'yes' ? 'text-[#ffb500] font-medium' : ''}>Yes</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="children-no" />
-                    <Label htmlFor="children-no">No</Label>
+                    <RadioGroupItem value="no" id="children-no" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="children-no" className={formData.childrenInvolved === 'no' ? 'text-[#ffb500] font-medium' : ''}>No</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -684,12 +703,12 @@ export function BusinessStructureDialog({ open, onOpenChange }: BusinessStructur
                   className="mt-2"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="realestate-yes" />
-                    <Label htmlFor="realestate-yes">Yes</Label>
+                    <RadioGroupItem value="yes" id="realestate-yes" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="realestate-yes" className={formData.realEstate === 'yes' ? 'text-[#ffb500] font-medium' : ''}>Yes</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="realestate-no" />
-                    <Label htmlFor="realestate-no">No</Label>
+                    <RadioGroupItem value="no" id="realestate-no" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="realestate-no" className={formData.realEstate === 'no' ? 'text-[#ffb500] font-medium' : ''}>No</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -702,12 +721,12 @@ export function BusinessStructureDialog({ open, onOpenChange }: BusinessStructur
                   className="mt-2"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="medical-yes" />
-                    <Label htmlFor="medical-yes">Yes</Label>
+                    <RadioGroupItem value="yes" id="medical-yes" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="medical-yes" className={formData.medicalExpenses === 'yes' ? 'text-[#ffb500] font-medium' : ''}>Yes</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="medical-no" />
-                    <Label htmlFor="medical-no">No</Label>
+                    <RadioGroupItem value="no" id="medical-no" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="medical-no" className={formData.medicalExpenses === 'no' ? 'text-[#ffb500] font-medium' : ''}>No</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -726,12 +745,12 @@ export function BusinessStructureDialog({ open, onOpenChange }: BusinessStructur
                   className="mt-2"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="legitimate-yes" />
-                    <Label htmlFor="legitimate-yes">Yes</Label>
+                    <RadioGroupItem value="yes" id="legitimate-yes" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="legitimate-yes" className={formData.legitimateBusiness === 'yes' ? 'text-[#ffb500] font-medium' : ''}>Yes</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="legitimate-no" />
-                    <Label htmlFor="legitimate-no">No</Label>
+                    <RadioGroupItem value="no" id="legitimate-no" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="legitimate-no" className={formData.legitimateBusiness === 'no' ? 'text-[#ffb500] font-medium' : ''}>No</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -747,12 +766,12 @@ export function BusinessStructureDialog({ open, onOpenChange }: BusinessStructur
                   className="mt-2"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="doubletax-yes" />
-                    <Label htmlFor="doubletax-yes">Yes</Label>
+                    <RadioGroupItem value="yes" id="doubletax-yes" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="doubletax-yes" className={formData.doubleTaxationOk === 'yes' ? 'text-[#ffb500] font-medium' : ''}>Yes</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="doubletax-no" />
-                    <Label htmlFor="doubletax-no">No</Label>
+                    <RadioGroupItem value="no" id="doubletax-no" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="doubletax-no" className={formData.doubleTaxationOk === 'no' ? 'text-[#ffb500] font-medium' : ''}>No</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -771,12 +790,12 @@ export function BusinessStructureDialog({ open, onOpenChange }: BusinessStructur
                   className="mt-2"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="benefits-yes" />
-                    <Label htmlFor="benefits-yes">Yes</Label>
+                    <RadioGroupItem value="yes" id="benefits-yes" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="benefits-yes" className={formData.employeeBenefits === 'yes' ? 'text-[#ffb500] font-medium' : ''}>Yes</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="benefits-no" />
-                    <Label htmlFor="benefits-no">No</Label>
+                    <RadioGroupItem value="no" id="benefits-no" className="data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#ffb500]" />
+                    <Label htmlFor="benefits-no" className={formData.employeeBenefits === 'no' ? 'text-[#ffb500] font-medium' : ''}>No</Label>
                   </div>
                 </RadioGroup>
               </div>

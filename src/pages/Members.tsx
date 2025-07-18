@@ -345,17 +345,6 @@ const Members = () => {
               <Users className="h-5 w-5 text-primary" />
               <span className="text-sm font-medium">{members.length} Total Members</span>
             </div>
-            {profile?.is_admin && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => window.open('/profile-settings', '_blank')}
-                className="flex items-center gap-2"
-              >
-                <Heart className="h-4 w-4" />
-                Accountability Directory
-              </Button>
-            )}
           </div>
         </div>
 

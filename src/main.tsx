@@ -18,6 +18,7 @@ import TeamMembers from "./pages/TeamMembers";
 import FamilyMembers from "./pages/FamilyMembers";
 import Investments from "./pages/Investments";
 import ProfileSettings from "./pages/ProfileSettings";
+import { MobileNavigation } from "@/components/ui/mobile-navigation";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
 
@@ -47,6 +48,7 @@ createRoot(document.getElementById("root")!).render(
                   <Route path="/investments" element={<Investments />} />
                   <Route path="/profile-settings" element={<ProfileSettings />} />
                 </Routes>
+              <MobileNavigation />
               <Toaster />
             </MeetingsProvider>
           </AuthProvider>
