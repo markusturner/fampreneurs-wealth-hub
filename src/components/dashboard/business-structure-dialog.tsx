@@ -603,12 +603,32 @@ export function BusinessStructureDialog({ open, onOpenChange }: BusinessStructur
                       className="mt-2"
                     >
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="yes" id="hiring-yes" />
-                        <Label htmlFor="hiring-yes">Yes</Label>
+                        <RadioGroupItem 
+                          value="yes" 
+                          id="hiring-yes" 
+                          className={formData.familyHiring === 'yes' ? 'border-[#ffb500] text-[#ffb500]' : ''}
+                          style={formData.familyHiring === 'yes' ? { borderColor: '#ffb500' } : {}}
+                        />
+                        <Label 
+                          htmlFor="hiring-yes"
+                          className={formData.familyHiring === 'yes' ? 'text-[#ffb500] font-medium' : ''}
+                        >
+                          Yes
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="no" id="hiring-no" />
-                        <Label htmlFor="hiring-no">No</Label>
+                        <RadioGroupItem 
+                          value="no" 
+                          id="hiring-no"
+                          className={formData.familyHiring === 'no' ? 'border-[#ffb500] text-[#ffb500]' : ''}
+                          style={formData.familyHiring === 'no' ? { borderColor: '#ffb500' } : {}}
+                        />
+                        <Label 
+                          htmlFor="hiring-no"
+                          className={formData.familyHiring === 'no' ? 'text-[#ffb500] font-medium' : ''}
+                        >
+                          No
+                        </Label>
                       </div>
                     </RadioGroup>
                   </div>

@@ -405,7 +405,7 @@ const Coaching = () => {
                     </Button>
                     
                     <div className="text-center">
-                      <h2 className="text-xl font-semibold" style={{ color: '#290a52' }}>
+                      <h2 className="text-xl font-semibold text-foreground">
                         {format(currentMonth, 'MMMM yyyy')}
                       </h2>
                       <p className="text-sm text-muted-foreground">
@@ -423,16 +423,16 @@ const Coaching = () => {
                     </Button>
                   </div>
 
-                  {/* Calendar Grid */}
-                  <div className="border rounded-lg overflow-hidden bg-card">
-                    {/* Day Headers */}
-                    <div className="grid grid-cols-7 border-b bg-muted/30">
-                      {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                        <div key={day} className="p-2 sm:p-3 text-center text-xs sm:text-sm font-medium text-muted-foreground border-r last:border-r-0">
-                          {day}
-                        </div>
-                      ))}
-                    </div>
+                    {/* Calendar Grid */}
+                   <div className="border rounded-lg overflow-hidden bg-card dark:bg-card">
+                     {/* Day Headers */}
+                     <div className="grid grid-cols-7 border-b bg-muted/30 dark:bg-muted/20">
+                       {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+                         <div key={day} className="p-2 sm:p-3 text-center text-xs sm:text-sm font-medium text-muted-foreground dark:text-muted-foreground border-r last:border-r-0 dark:border-border">
+                           {day}
+                         </div>
+                       ))}
+                     </div>
                     
                     {/* Calendar Days */}
                     <div className="grid grid-cols-7">
@@ -449,15 +449,15 @@ const Coaching = () => {
                           <div 
                             key={day.toISOString()} 
                             className={cn(
-                              "h-16 sm:h-24 border-r border-b last:border-r-0 p-1 sm:p-2 relative overflow-hidden",
-                              !isCurrentMonth && "bg-muted/20",
-                              isDayToday && "bg-primary/5"
+                              "h-16 sm:h-24 border-r border-b last:border-r-0 p-1 sm:p-2 relative overflow-hidden dark:border-border",
+                              !isCurrentMonth && "bg-muted/20 dark:bg-muted/10",
+                              isDayToday && "bg-primary/5 dark:bg-primary/10"
                             )}
                           >
                             <div className={cn(
                               "text-xs sm:text-sm font-medium mb-1",
-                              !isCurrentMonth && "text-muted-foreground",
-                              isDayToday && "bg-red-500 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs"
+                              !isCurrentMonth && "text-muted-foreground dark:text-muted-foreground",
+                              isDayToday && "bg-red-500 dark:bg-red-600 text-white rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs"
                             )}>
                               {format(day, 'd')}
                             </div>

@@ -266,17 +266,6 @@ const Courses = () => {
                         )}
                       </Button>
                       
-                      {isCreator && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleAddVideo(course)}
-                          className="gap-1 sm:flex-initial"
-                        >
-                          <Video className="h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="sm:hidden">Add</span>
-                        </Button>
-                      )}
                     </div>
 
                     {!enrolled && !isCreator && (
@@ -358,18 +347,6 @@ const Courses = () => {
         </Dialog>
       )}
 
-      {/* Add Video Dialog */}
-      {selectedCourse && (
-        <AddVideoDialog
-          open={addVideoOpen}
-          onOpenChange={setAddVideoOpen}
-          courseId={selectedCourse.id}
-          onVideoAdded={() => {
-            // Refresh course videos if needed
-            setAddVideoOpen(false)
-          }}
-        />
-      )}
     </div>
   )
 }

@@ -4,10 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { InvestmentChart } from "@/components/dashboard/investment-chart"
-import { RecentActivities } from "@/components/dashboard/recent-activities"
 import { QuickActions } from "@/components/dashboard/quick-actions"
-import { AssetAllocation } from "@/components/dashboard/asset-allocation"
-import { FamilyCalendar } from "@/components/dashboard/family-calendar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from 'lucide-react'
@@ -71,24 +68,6 @@ const Index = () => {
           {/* Quick Actions - Takes up 1 column on xl screens, full width on smaller */}
           <div className="xl:col-span-1 order-2">
             <QuickActions />
-          </div>
-        </div>
-
-        {/* Family Calendar */}
-        <div className="order-3">
-          <FamilyCalendar />
-        </div>
-
-        {/* Recent Activities and Asset Allocation */}
-        <div className="grid gap-4 lg:gap-6 grid-cols-1 xl:grid-cols-4 order-4">
-          {/* Recent Activities - Takes up 3 columns on xl screens, full width on smaller */}
-          <div className="xl:col-span-3 order-1 xl:order-1">
-            <RecentActivities />
-          </div>
-          
-          {/* Asset Allocation - Takes up 1 column on xl screens, full width on smaller */}
-          <div className="xl:col-span-1 order-2 xl:order-2">
-            <AssetAllocation />
           </div>
         </div>
       </main>
