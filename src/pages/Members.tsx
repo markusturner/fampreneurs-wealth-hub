@@ -258,25 +258,26 @@ const Members = () => {
     ))
 
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          is_accountability_partner: false,
-          accountability_specialties: null
-        })
-        .eq('user_id', member.user_id)
+      // Use the remove_user_role function to safely remove the role
+      const { error } = await supabase.rpc('remove_user_role', {
+        target_user_id: member.user_id,
+        role_to_remove: 'accountability_partner',
+        remover_user_id: user.id
+      })
 
       if (error) {
         console.error('Database error:', error)
         throw error
       }
 
-      // Delete from user_roles table as well
+      // Also update the profile
       await supabase
-        .from('user_roles')
-        .delete()
+        .from('profiles')
+        .update({
+          is_accountability_partner: false,
+          accountability_specialties: null
+        })
         .eq('user_id', member.user_id)
-        .eq('role', 'accountability_partner')
 
       toast({
         title: "Accountability Partner Removed",
@@ -423,27 +424,27 @@ const Members = () => {
                                     {member.family_role}
                                   </div>
                                 )}
-                                {/* Role Badges */}
-                                <div className="flex gap-1 mt-1">
-                                  {member.is_admin && (
-                                    <Badge variant="destructive" className="text-xs">
-                                      <Crown className="h-2 w-2 mr-1" />
-                                      Admin
-                                    </Badge>
-                                  )}
-                                   {member.is_accountability_partner && (
-                                     <Badge variant="secondary" className="text-xs">
-                                       <Heart className="h-2 w-2 mr-1" />
-                                       Accountability
+                                 {/* Role Badges */}
+                                 <div className="flex flex-wrap gap-1 mt-1 max-w-full">
+                                   {member.is_admin && (
+                                     <Badge variant="destructive" className="text-xs flex-shrink-0">
+                                       <Crown className="h-2 w-2 mr-1" />
+                                       Admin
                                      </Badge>
                                    )}
-                                   {member.is_moderator && (
-                                     <Badge variant="outline" className="text-xs" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
-                                       <Shield className="h-2 w-2 mr-1" />
-                                       Moderator
-                                     </Badge>
-                                   )}
-                                 </div>
+                                    {member.is_accountability_partner && (
+                                      <Badge variant="secondary" className="text-xs flex-shrink-0">
+                                        <Heart className="h-2 w-2 mr-1" />
+                                        Accountability
+                                      </Badge>
+                                    )}
+                                    {member.is_moderator && (
+                                      <Badge variant="outline" className="text-xs flex-shrink-0" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
+                                        <Shield className="h-2 w-2 mr-1" />
+                                        Moderator
+                                      </Badge>
+                                    )}
+                                  </div>
                               </div>
                             </button>
                              

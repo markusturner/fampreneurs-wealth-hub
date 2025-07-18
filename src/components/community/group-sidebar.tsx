@@ -62,6 +62,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
   const [publicGroups, setPublicGroups] = useState<Group[]>([])
   const [privateGroups, setPrivateGroups] = useState<Group[]>([])
   const [availableCourses, setAvailableCourses] = useState<any[]>([])
+  const [availableCoachingSessions, setAvailableCoachingSessions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
@@ -72,10 +73,12 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
   const [editGroupPrivate, setEditGroupPrivate] = useState(false)
   const [editGroupPremium, setEditGroupPremium] = useState(false)
   const [editGroupCourses, setEditGroupCourses] = useState<string[]>([])
+  const [editGroupCoachingSessions, setEditGroupCoachingSessions] = useState<string[]>([])
   const [newGroupDescription, setNewGroupDescription] = useState('')
   const [newGroupPrivate, setNewGroupPrivate] = useState(false)
   const [newGroupPremium, setNewGroupPremium] = useState(false)
   const [newGroupCourses, setNewGroupCourses] = useState<string[]>([])
+  const [newGroupCoachingSessions, setNewGroupCoachingSessions] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
   const [updating, setUpdating] = useState(false)
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -83,6 +86,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
   useEffect(() => {
     fetchGroups()
     fetchCourses()
+    fetchCoachingSessions()
     // Auto-join public groups for new users
     autoJoinPublicGroups()
   }, [user])
@@ -157,6 +161,22 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
     }
   }
 
+  const fetchCoachingSessions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('group_coaching_sessions')
+        .select('id, title, session_date, session_time')
+        .eq('status', 'scheduled')
+        .order('session_date')
+        .order('session_time')
+
+      if (error) throw error
+      setAvailableCoachingSessions(data || [])
+    } catch (error) {
+      console.error('Error fetching coaching sessions:', error)
+    }
+  }
+
   const fetchGroupCourses = async (groupId: string) => {
     try {
       const { data, error } = await supabase
@@ -227,6 +247,9 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
     // Fetch current group courses
     const groupCourses = await fetchGroupCourses(group.id)
     setEditGroupCourses(groupCourses)
+    
+    // Initialize coaching sessions (groups can be assigned to multiple calls)
+    setEditGroupCoachingSessions([])
     
     setEditDialogOpen(true)
   }
@@ -317,6 +340,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
       setEditGroupPrivate(false)
       setEditGroupPremium(false)
       setEditGroupCourses([])
+      setEditGroupCoachingSessions([])
       setEditingGroup(null)
       setEditDialogOpen(false)
 
@@ -467,6 +491,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
       setNewGroupPrivate(false)
       setNewGroupPremium(false)
       setNewGroupCourses([])
+      setNewGroupCoachingSessions([])
       setCreateDialogOpen(false)
 
       // Refresh groups
@@ -770,10 +795,50 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
                             )
                           })}
                         </div>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
+                       )}
+                     </div>
+                     <div>
+                       <Label htmlFor="new-group-coaching-sessions">Coaching Sessions (Optional)</Label>
+                       <Select onValueChange={(value) => {
+                         if (value && !newGroupCoachingSessions.includes(value)) {
+                           setNewGroupCoachingSessions([...newGroupCoachingSessions, value])
+                         }
+                       }}>
+                         <SelectTrigger>
+                           <SelectValue placeholder="Add coaching sessions for group members" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           {availableCoachingSessions
+                             .filter(session => !newGroupCoachingSessions.includes(session.id))
+                             .map(session => (
+                             <SelectItem key={session.id} value={session.id}>
+                               {session.title} - {session.session_date} at {session.session_time}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                       {newGroupCoachingSessions.length > 0 && (
+                         <div className="flex flex-wrap gap-1 mt-2">
+                           {newGroupCoachingSessions.map(sessionId => {
+                             const session = availableCoachingSessions.find(s => s.id === sessionId)
+                             return (
+                               <Badge key={sessionId} variant="outline" className="text-xs" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
+                                 <BookOpen className="h-3 w-3 mr-1" />
+                                 {session?.title}
+                                 <button
+                                   onClick={() => setNewGroupCoachingSessions(newGroupCoachingSessions.filter(id => id !== sessionId))}
+                                   className="ml-1 hover:bg-destructive hover:text-destructive-foreground rounded-full w-3 h-3 flex items-center justify-center text-xs"
+                                 >
+                                   ×
+                                 </button>
+                               </Badge>
+                             )
+                           })}
+                         </div>
+                       )}
+                     </div>
+                     <div className="flex gap-2">
+                       <Button
                         variant="outline"
                         onClick={() => setCreateDialogOpen(false)}
                         className="flex-1"
@@ -884,10 +949,50 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
                           )
                         })}
                       </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
+                     )}
+                   </div>
+                   <div>
+                     <Label htmlFor="edit-group-coaching-sessions">Coaching Sessions (Optional)</Label>
+                     <Select onValueChange={(value) => {
+                       if (value && !editGroupCoachingSessions.includes(value)) {
+                         setEditGroupCoachingSessions([...editGroupCoachingSessions, value])
+                       }
+                     }}>
+                       <SelectTrigger>
+                         <SelectValue placeholder="Add coaching sessions for group members" />
+                       </SelectTrigger>
+                       <SelectContent>
+                         {availableCoachingSessions
+                           .filter(session => !editGroupCoachingSessions.includes(session.id))
+                           .map(session => (
+                           <SelectItem key={session.id} value={session.id}>
+                             {session.title} - {session.session_date} at {session.session_time}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                     {editGroupCoachingSessions.length > 0 && (
+                       <div className="flex flex-wrap gap-1 mt-2">
+                         {editGroupCoachingSessions.map(sessionId => {
+                           const session = availableCoachingSessions.find(s => s.id === sessionId)
+                           return (
+                             <Badge key={sessionId} variant="outline" className="text-xs" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
+                               <BookOpen className="h-3 w-3 mr-1" />
+                               {session?.title}
+                               <button
+                                 onClick={() => setEditGroupCoachingSessions(editGroupCoachingSessions.filter(id => id !== sessionId))}
+                                 className="ml-1 hover:bg-destructive hover:text-destructive-foreground rounded-full w-3 h-3 flex items-center justify-center text-xs"
+                               >
+                                 ×
+                               </button>
+                             </Badge>
+                           )
+                         })}
+                       </div>
+                     )}
+                   </div>
+                   <div className="flex gap-2">
+                     <Button
                       variant="outline"
                       onClick={() => setEditDialogOpen(false)}
                       className="flex-1"

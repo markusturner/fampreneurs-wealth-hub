@@ -15,7 +15,7 @@ const quickActions = [
     description: "Connect financial accounts",
     icon: TrendingUp,
     variant: "premium" as const,
-    action: "investment_integration" as const
+    action: () => window.location.href = "/investments"
   },
   {
     title: "Upload Document",
@@ -36,7 +36,7 @@ const quickActions = [
     description: "Invite for meeting notifications",
     icon: Users,
     variant: "default" as const,
-    action: "add_family_member" as const
+    action: () => window.location.href = "/family-members"
   },
   {
     title: "Business Structure",
@@ -61,12 +61,8 @@ export function QuickActions() {
   const handleAction = (action: string | (() => void)) => {
     if (action === "google_sheets") {
       setGoogleSheetsDialogOpen(true)
-    } else if (action === "add_family_member") {
-      setAddFamilyMemberDialogOpen(true)
     } else if (action === "business_structure") {
       setBusinessStructureDialogOpen(true)
-    } else if (action === "investment_integration") {
-      setInvestmentIntegrationOpen(true)
     } else if (typeof action === "function") {
       action()
     }

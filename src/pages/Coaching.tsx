@@ -113,18 +113,35 @@ const Coaching = () => {
     }
   }
 
-  // Fetch coaches from financial_advisors table
+  // Fetch coaches from both tables - financial_advisors and coaches
   const fetchCoaches = async () => {
     setLoadingCoaches(true)
     try {
-      const { data, error } = await supabase
+      // Fetch from financial_advisors table
+      const { data: advisorData, error: advisorError } = await supabase
         .from('financial_advisors')
         .select('*')
         .eq('is_active', true)
         .order('full_name', { ascending: true })
 
-      if (error) throw error
-      setAvailableCoaches(data || [])
+      if (advisorError) throw advisorError
+
+      // Fetch from coaches table (from admin dashboard)
+      const { data: coachData, error: coachError } = await supabase
+        .from('coaches')
+        .select('*')
+        .eq('is_active', true)
+        .order('full_name', { ascending: true })
+
+      if (coachError) throw coachError
+
+      // Combine both datasets, avoiding duplicates by email
+      const allCoaches = [...(advisorData || []), ...(coachData || [])]
+      const uniqueCoaches = allCoaches.filter((coach, index, self) => 
+        index === self.findIndex(c => c.email === coach.email && c.email) || !coach.email
+      )
+
+      setAvailableCoaches(uniqueCoaches || [])
     } catch (error) {
       console.error('Error fetching coaches:', error)
     } finally {
@@ -341,7 +358,8 @@ const Coaching = () => {
                             {dayEvents.slice(0, 1).map((event, eventIndex) => (
                               <div 
                                 key={event.id}
-                                className="text-xs p-1 bg-primary/10 text-primary rounded truncate cursor-pointer hover:bg-primary/20 transition-colors"
+                                className="text-xs p-1 rounded truncate cursor-pointer transition-colors"
+                                style={{ backgroundColor: '#ffb500', color: '#290a52' }}
                                 title={`${event.time} - ${event.title}`}
                               >
                                 <div className="hidden sm:block">
