@@ -5,55 +5,133 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
-import { Heart, MessageCircle, Share, Send } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { useToast } from '@/hooks/use-toast'
+import { formatDistanceToNow } from 'date-fns'
+import EmojiPicker from 'emoji-picker-react'
+import { 
+  Heart, 
+  MessageCircle, 
+  Send, 
+  MoreHorizontal,
+  Smile,
+  ImagePlus,
+  Mic,
+  MicOff,
+  Play,
+  Pause,
+  Volume2,
+  Reply,
+  ThumbsUp,
+  Megaphone
+} from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { PostCard } from './post-card'
+import { CreatePost } from './create-post'
 
 interface Post {
   id: string
-  content: string
   user_id: string
+  content: string
+  image_url: string | null
+  audio_url: string | null
   created_at: string
-  profiles?: any
+  parent_id: string | null
+  profiles: {
+    display_name: string | null
+    first_name: string | null
+    avatar_url: string | null
+  } | null
+}
+
+interface Announcement {
+  id: string
+  title: string
+  content: string
+  created_at: string
+  is_pinned: boolean
+  created_by: string
+  profiles: {
+    display_name: string | null
+    first_name: string | null
+  } | null
 }
 
 export function CommunityFeed() {
   const { user, profile } = useAuth()
+  const { toast } = useToast()
   const [posts, setPosts] = useState<Post[]>([])
-  const [newPost, setNewPost] = useState('')
+  const [announcements, setAnnouncements] = useState<Announcement[]>([])
 
   useEffect(() => {
     fetchPosts()
+    fetchAnnouncements()
   }, [])
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
+      const { data: postsData, error: postsError } = await supabase
         .from('community_posts')
-        .select(`*, profiles(display_name, first_name, last_name, avatar_url)`)
+        .select('*')
+        .is('parent_id', null)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
-      setPosts(data || [])
+      if (postsError) throw postsError
+
+      // Fetch profiles separately for each post
+      const postsWithProfiles = await Promise.all(
+        (postsData || []).map(async (post) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('display_name, first_name, avatar_url')
+            .eq('user_id', post.user_id)
+            .single()
+
+          return {
+            ...post,
+            profiles: profile || null
+          }
+        })
+      )
+
+      setPosts(postsWithProfiles)
     } catch (error) {
       console.error('Error fetching posts:', error)
     }
   }
 
-  const createPost = async () => {
-    if (!newPost.trim()) return
-
+  const fetchAnnouncements = async () => {
     try {
-      await supabase.from('community_posts').insert({
-        content: newPost.trim(),
-        user_id: user?.id
-      })
-      
-      setNewPost('')
-      fetchPosts()
+      const { data: announcementsData, error: announcementsError } = await supabase
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      if (announcementsError) throw announcementsError
+
+      // Fetch profiles separately for each announcement
+      const announcementsWithProfiles = await Promise.all(
+        (announcementsData || []).map(async (announcement) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('display_name, first_name')
+            .eq('user_id', announcement.created_by)
+            .single()
+
+          return {
+            ...announcement,
+            profiles: profile || null
+          }
+        })
+      )
+
+      setAnnouncements(announcementsWithProfiles)
     } catch (error) {
-      console.error('Error creating post:', error)
+      console.error('Error fetching announcements:', error)
     }
   }
+
 
   const getDisplayName = (user: any) => {
     if (user?.display_name) return user.display_name
@@ -62,74 +140,57 @@ export function CommunityFeed() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Create Post */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={profile?.avatar_url || ''} />
-              <AvatarFallback>
-                {profile?.first_name?.charAt(0) || 'A'}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <Textarea
-                value={newPost}
-                onChange={(e) => setNewPost(e.target.value)}
-                placeholder="What's on your mind?"
-                className="min-h-[80px]"
-              />
-              <div className="flex justify-end mt-3">
-                <Button onClick={createPost} style={{ backgroundColor: '#ffb500' }}>
-                  <Send className="h-4 w-4 mr-2" />
-                  Post
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Posts */}
-      {posts.map((post) => (
-        <Card key={post.id}>
-          <CardHeader className="p-4">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={post.profiles?.avatar_url || ''} />
-                <AvatarFallback>
-                  {getDisplayName(post.profiles)?.charAt(0) || 'A'}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="font-semibold">{getDisplayName(post.profiles)}</div>
-                <div className="text-sm text-muted-foreground">
-                  {new Date(post.created_at).toLocaleDateString()}
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <p className="mb-4">{post.content}</p>
-            <Separator className="mb-3" />
-            <div className="flex justify-around">
-              <Button variant="ghost" size="sm" className="gap-2">
-                <Heart className="h-4 w-4" />
-                Like
-              </Button>
-              <Button variant="ghost" size="sm" className="gap-2">
-                <MessageCircle className="h-4 w-4" />
-                Comment
-              </Button>
-              <Button variant="ghost" size="sm" className="gap-2">
-                <Share className="h-4 w-4" />
-                Share
-              </Button>
-            </div>
+    <div className="flex gap-6">
+      {/* Main Feed */}
+      <div className="flex-1 space-y-6">
+        {/* Create Post */}
+        <Card>
+          <CardContent className="p-4">
+            <CreatePost onPostCreated={fetchPosts} />
           </CardContent>
         </Card>
-      ))}
+
+        {/* Posts */}
+        {posts.map((post) => (
+          <PostCard key={post.id} post={post} onUpdate={fetchPosts} />
+        ))}
+      </div>
+
+      {/* Announcements Panel */}
+      <div className="w-80 space-y-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Megaphone className="h-5 w-5 text-primary" />
+              <h3 className="font-semibold">Announcements</h3>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {announcements.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No announcements yet
+              </p>
+            ) : (
+              announcements.map((announcement) => (
+                <div key={announcement.id} className="p-3 bg-muted rounded-lg">
+                  <h4 className="font-medium text-sm mb-1">{announcement.title}</h4>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {announcement.content}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">
+                      by {getDisplayName(announcement.profiles)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatDistanceToNow(new Date(announcement.created_at), { addSuffix: true })}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

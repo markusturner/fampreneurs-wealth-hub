@@ -7,23 +7,29 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
+import EmojiPicker from 'emoji-picker-react'
 import { 
   Heart, 
   MessageCircle, 
   Send, 
   MoreHorizontal,
-  Laugh,
-  ThumbsUp,
-  Angry,
-  Frown
+  Smile,
+  Play,
+  Pause,
+  Volume2,
+  Reply,
+  ThumbsUp
 } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 interface Post {
   id: string
   user_id: string
   content: string
   image_url: string | null
+  audio_url: string | null
   created_at: string
+  parent_id: string | null
   profiles: {
     display_name: string | null
     first_name: string | null
@@ -31,16 +37,8 @@ interface Post {
   } | null
 }
 
-interface Comment {
-  id: string
-  user_id: string
-  content: string
-  created_at: string
-  profiles: {
-    display_name: string | null
-    first_name: string | null
-    avatar_url: string | null
-  } | null
+interface Comment extends Post {
+  replies?: Comment[]
 }
 
 interface Reaction {
@@ -52,6 +50,8 @@ interface Reaction {
 interface PostCardProps {
   post: Post
   onUpdate: () => void
+  isReply?: boolean
+  depth?: number
 }
 
 const reactionEmojis = {
@@ -63,30 +63,32 @@ const reactionEmojis = {
   angry: '😡'
 }
 
-export const PostCard = ({ post, onUpdate }: PostCardProps) => {
+export const PostCard = ({ post, onUpdate, isReply = false, depth = 0 }: PostCardProps) => {
   const { user } = useAuth()
   const { toast } = useToast()
   const [comments, setComments] = useState<Comment[]>([])
   const [reactions, setReactions] = useState<Reaction[]>([])
   const [newComment, setNewComment] = useState('')
   const [showComments, setShowComments] = useState(false)
+  const [showReplyForm, setShowReplyForm] = useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
 
   const authorName = post.profiles?.display_name || post.profiles?.first_name || 'Anonymous'
   const authorAvatar = post.profiles?.avatar_url
 
   const fetchComments = async () => {
     try {
-      // First fetch comments
       const { data: commentsData, error: commentsError } = await supabase
-        .from('community_comments')
+        .from('community_posts')
         .select('*')
-        .eq('post_id', post.id)
+        .eq('parent_id', post.id)
         .order('created_at', { ascending: true })
 
       if (commentsError) throw commentsError
 
-      // Then fetch profiles for each comment
+      // Fetch profiles separately for each comment
       const commentsWithProfiles = await Promise.all(
         (commentsData || []).map(async (comment) => {
           const { data: profile } = await supabase
@@ -97,7 +99,7 @@ export const PostCard = ({ post, onUpdate }: PostCardProps) => {
 
           return {
             ...comment,
-            profiles: profile
+            profiles: profile || null
           }
         })
       )
@@ -123,9 +125,11 @@ export const PostCard = ({ post, onUpdate }: PostCardProps) => {
   }
 
   useEffect(() => {
-    fetchComments()
-    fetchReactions()
-  }, [post.id])
+    if (!isReply) {
+      fetchComments()
+      fetchReactions()
+    }
+  }, [post.id, isReply])
 
   const handleReaction = async (reactionType: string) => {
     if (!user) return
@@ -182,9 +186,9 @@ export const PostCard = ({ post, onUpdate }: PostCardProps) => {
 
     try {
       const { error } = await supabase
-        .from('community_comments')
+        .from('community_posts')
         .insert({
-          post_id: post.id,
+          parent_id: post.id,
           user_id: user.id,
           content: newComment.trim()
         })
@@ -192,6 +196,7 @@ export const PostCard = ({ post, onUpdate }: PostCardProps) => {
       if (error) throw error
 
       setNewComment('')
+      setShowReplyForm(false)
       fetchComments()
       
       toast({
@@ -202,11 +207,31 @@ export const PostCard = ({ post, onUpdate }: PostCardProps) => {
       console.error('Error adding comment:', error)
       toast({
         title: "Error",
-        description: "Failed to add comment. Please try again.",
+        description: "Failed to add comment",
         variant: "destructive"
       })
     } finally {
       setIsSubmittingComment(false)
+    }
+  }
+
+  const playAudio = () => {
+    if (!post.audio_url) return
+
+    if (audio) {
+      if (isPlaying) {
+        audio.pause()
+        setIsPlaying(false)
+      } else {
+        audio.play()
+        setIsPlaying(true)
+      }
+    } else {
+      const newAudio = new Audio(post.audio_url)
+      newAudio.addEventListener('ended', () => setIsPlaying(false))
+      newAudio.play()
+      setAudio(newAudio)
+      setIsPlaying(true)
     }
   }
 
@@ -216,8 +241,10 @@ export const PostCard = ({ post, onUpdate }: PostCardProps) => {
     return acc
   }, {} as Record<string, number>)
 
+  const marginLeft = depth > 0 ? `${depth * 20}px` : '0px'
+
   return (
-    <Card className="shadow-soft">
+    <Card className="shadow-soft" style={{ marginLeft }}>
       <CardHeader className="pb-3 p-4 sm:p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -255,6 +282,30 @@ export const PostCard = ({ post, onUpdate }: PostCardProps) => {
           />
         )}
 
+        {/* Audio Player */}
+        {post.audio_url && (
+          <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={playAudio}
+              className="h-8 w-8 p-0"
+            >
+              {isPlaying ? (
+                <Pause className="h-4 w-4" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
+            </Button>
+            <div className="flex-1">
+              <div className="text-sm font-medium">Audio Message</div>
+              <div className="text-xs text-muted-foreground">
+                {isPlaying ? 'Playing...' : 'Click to play'}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Reactions Summary */}
         {Object.keys(reactionCounts).length > 0 && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -272,25 +323,36 @@ export const PostCard = ({ post, onUpdate }: PostCardProps) => {
         )}
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-1 sm:gap-2 pt-2 border-t">
+        <div className="flex items-center gap-2 pt-2 border-t">
           <Button
             variant={userReaction ? "default" : "ghost"}
             size="sm"
             onClick={() => handleReaction('like')}
-            className="flex-1 gap-1 min-h-[36px]"
+            className="flex-1 gap-1"
           >
             <ThumbsUp className="h-4 w-4" />
-            <span className="hidden sm:inline">Like</span>
+            Like
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowComments(!showComments)}
-            className="flex-1 gap-1 min-h-[36px]"
+            className="flex-1 gap-1"
           >
             <MessageCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">Comment</span>
+            Comment
           </Button>
+          {!isReply && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowReplyForm(!showReplyForm)}
+              className="flex-1 gap-1"
+            >
+              <Reply className="h-4 w-4" />
+              Reply
+            </Button>
+          )}
         </div>
 
         {/* Reaction Options */}
@@ -301,59 +363,45 @@ export const PostCard = ({ post, onUpdate }: PostCardProps) => {
               variant={userReaction?.reaction_type === type ? "default" : "outline"}
               size="sm"
               onClick={() => handleReaction(type)}
-              className="text-xs min-h-[32px] px-2"
+              className="text-xs h-8 px-2"
             >
               {emoji}
             </Button>
           ))}
         </div>
 
-        {/* Comments Section */}
-        {showComments && (
-          <div className="space-y-4 pt-4 border-t">
-            {/* Add Comment */}
-            <form onSubmit={handleComment} className="flex gap-2">
-              <Textarea
-                placeholder="Write a comment..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                rows={2}
-                className="flex-1 resize-none text-sm min-h-[60px]"
-              />
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isSubmittingComment || !newComment.trim()}
-                className="min-h-[40px] px-3"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </form>
+        {/* Reply Form */}
+        {showReplyForm && !isReply && (
+          <form onSubmit={handleComment} className="flex gap-2 pt-4 border-t">
+            <Textarea
+              placeholder="Write a reply..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              rows={2}
+              className="flex-1 resize-none text-sm"
+            />
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isSubmittingComment || !newComment.trim()}
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </form>
+        )}
 
-            {/* Comments List */}
-            <div className="space-y-3">
-              {comments.map((comment) => (
-                <div key={comment.id} className="flex gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={comment.profiles?.avatar_url || ''} />
-                    <AvatarFallback>
-                      {(comment.profiles?.display_name || comment.profiles?.first_name || 'A').charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 bg-muted p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-xs">
-                        {comment.profiles?.display_name || comment.profiles?.first_name || 'Anonymous'}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                      </span>
-                    </div>
-                    <p className="text-sm">{comment.content}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+        {/* Comments Section */}
+        {showComments && comments.length > 0 && !isReply && (
+          <div className="space-y-3 pt-4 border-t">
+            {comments.map((comment) => (
+              <PostCard
+                key={comment.id}
+                post={comment}
+                onUpdate={fetchComments}
+                isReply={true}
+                depth={depth + 1}
+              />
+            ))}
           </div>
         )}
       </CardContent>

@@ -5,7 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
-import { ImagePlus, Send, Loader2 } from 'lucide-react'
+import EmojiPicker from 'emoji-picker-react'
+import { ImagePlus, Send, Loader2, Mic, MicOff, Smile } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 interface CreatePostProps {
   onPostCreated?: () => void
@@ -17,6 +19,10 @@ export const CreatePost = ({ onPostCreated }: CreatePostProps) => {
   const [content, setContent] = useState('')
   const [image, setImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
+  const [isRecording, setIsRecording] = useState(false)
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,21 +37,54 @@ export const CreatePost = ({ onPostCreated }: CreatePostProps) => {
     }
   }
 
-  const uploadImage = async (file: File): Promise<string | null> => {
-    const fileExt = file.name.split('.').pop()
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      const chunks: BlobPart[] = []
+
+      recorder.ondataavailable = (e) => chunks.push(e.data)
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' })
+        setAudioBlob(blob)
+        stream.getTracks().forEach(track => track.stop())
+      }
+
+      setMediaRecorder(recorder)
+      recorder.start()
+      setIsRecording(true)
+    } catch (error) {
+      console.error('Error starting recording:', error)
+      toast({
+        title: "Error",
+        description: "Could not access microphone",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop()
+      setIsRecording(false)
+    }
+  }
+
+  const uploadFile = async (file: File, bucket: string): Promise<string | null> => {
+    const fileExt = file.name?.split('.').pop() || 'bin'
     const fileName = `${user?.id}/${Date.now()}.${fileExt}`
     
     const { error: uploadError } = await supabase.storage
-      .from('community-images')
+      .from(bucket)
       .upload(fileName, file)
     
     if (uploadError) {
-      console.error('Error uploading image:', uploadError)
+      console.error('Error uploading file:', uploadError)
       return null
     }
     
     const { data: { publicUrl } } = supabase.storage
-      .from('community-images')
+      .from(bucket)
       .getPublicUrl(fileName)
     
     return publicUrl
@@ -54,10 +93,10 @@ export const CreatePost = ({ onPostCreated }: CreatePostProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!content.trim() && !image) {
+    if (!content.trim() && !image && !audioBlob) {
       toast({
         title: "Error",
-        description: "Please add some content or an image to share",
+        description: "Please add some content, image, or audio to share",
         variant: "destructive"
       })
       return
@@ -67,13 +106,27 @@ export const CreatePost = ({ onPostCreated }: CreatePostProps) => {
     
     try {
       let imageUrl = null
+      let audioUrl = null
       
       if (image) {
-        imageUrl = await uploadImage(image)
+        imageUrl = await uploadFile(image, 'community-images')
         if (!imageUrl) {
           toast({
             title: "Error",
             description: "Failed to upload image. Please try again.",
+            variant: "destructive"
+          })
+          return
+        }
+      }
+
+      if (audioBlob) {
+        const audioFile = new File([audioBlob], 'audio.webm', { type: 'audio/webm' })
+        audioUrl = await uploadFile(audioFile, 'message-attachments')
+        if (!audioUrl) {
+          toast({
+            title: "Error",
+            description: "Failed to upload audio. Please try again.",
             variant: "destructive"
           })
           return
@@ -85,7 +138,8 @@ export const CreatePost = ({ onPostCreated }: CreatePostProps) => {
         .insert({
           user_id: user?.id,
           content: content.trim(),
-          image_url: imageUrl
+          image_url: imageUrl,
+          audio_url: audioUrl
         })
 
       if (error) {
@@ -101,6 +155,7 @@ export const CreatePost = ({ onPostCreated }: CreatePostProps) => {
       setContent('')
       setImage(null)
       setImagePreview(null)
+      setAudioBlob(null)
       
       // Notify parent component
       onPostCreated?.()
@@ -115,6 +170,11 @@ export const CreatePost = ({ onPostCreated }: CreatePostProps) => {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const onEmojiClick = (emojiData: any) => {
+    setContent(prev => prev + emojiData.emoji)
+    setShowEmojiPicker(false)
   }
 
   return (
@@ -148,6 +208,20 @@ export const CreatePost = ({ onPostCreated }: CreatePostProps) => {
           </Button>
         </div>
       )}
+
+      {audioBlob && (
+        <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+          <Mic className="h-4 w-4" />
+          <span className="text-sm">Audio recorded</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setAudioBlob(null)}
+          >
+            Remove
+          </Button>
+        </div>
+      )}
       
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
@@ -168,15 +242,49 @@ export const CreatePost = ({ onPostCreated }: CreatePostProps) => {
             >
               <span>
                 <ImagePlus className="h-4 w-4" />
-                <span className="hidden sm:inline">Add Photo</span>
+                <span className="hidden sm:inline">Photo</span>
               </span>
             </Button>
           </label>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onMouseDown={startRecording}
+            onMouseUp={stopRecording}
+            onMouseLeave={stopRecording}
+            className={`gap-1 sm:gap-2 min-h-[40px] px-2 sm:px-3 ${isRecording ? 'bg-red-100 text-red-600' : ''}`}
+          >
+            {isRecording ? (
+              <MicOff className="h-4 w-4" />
+            ) : (
+              <Mic className="h-4 w-4" />
+            )}
+            <span className="hidden sm:inline">{isRecording ? 'Recording...' : 'Audio'}</span>
+          </Button>
+
+          <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1 sm:gap-2 min-h-[40px] px-2 sm:px-3"
+              >
+                <Smile className="h-4 w-4" />
+                <span className="hidden sm:inline">Emoji</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0">
+              <EmojiPicker onEmojiClick={onEmojiClick} />
+            </PopoverContent>
+          </Popover>
         </div>
         
         <Button
           type="submit"
-          disabled={isSubmitting || (!content.trim() && !image)}
+          disabled={isSubmitting || (!content.trim() && !image && !audioBlob)}
           className="gap-2 min-h-[40px] px-4 sm:px-6"
         >
           {isSubmitting ? (

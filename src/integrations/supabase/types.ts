@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          is_pinned: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_pinned?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_pinned?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -203,30 +233,44 @@ export type Database = {
       }
       community_posts: {
         Row: {
+          audio_url: string | null
           content: string
           created_at: string
           id: string
           image_url: string | null
+          parent_id: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          audio_url?: string | null
           content: string
           created_at?: string
           id?: string
           image_url?: string | null
+          parent_id?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          audio_url?: string | null
           content?: string
           created_at?: string
           id?: string
           image_url?: string | null
+          parent_id?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       community_reactions: {
         Row: {
