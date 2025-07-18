@@ -658,7 +658,7 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
   }
 
   return (
-    <div className="w-64 border-r bg-muted/20 flex flex-col">
+    <div className="w-64 border-r bg-muted/20 flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b">
         <h2 className="font-semibold text-lg">Family Community</h2>

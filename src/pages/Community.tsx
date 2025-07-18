@@ -73,7 +73,7 @@ const Community = () => {
       
       <div className="flex h-[calc(100vh-4rem)] relative">
         {/* Mobile: Hide sidebar when chat is open */}
-        <div className={`${sidebarOpen ? 'fixed inset-0 z-50 bg-background md:relative md:z-auto' : 'hidden md:block'}`}>
+        <div className={`${sidebarOpen ? 'fixed inset-0 z-50 bg-background md:relative md:z-auto md:h-full' : 'hidden md:block md:h-full'}`}>
           <GroupSidebar 
             selectedGroupId={selectedGroupId}
             onGroupSelect={(groupId) => {
