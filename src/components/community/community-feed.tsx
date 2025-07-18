@@ -131,11 +131,13 @@ export function CommunityFeed() {
 
   return (
     <div className="flex gap-6">
-      {/* Channels Sidebar */}
-      <ChannelsSidebar 
-        selectedChannelId={selectedChannelId}
-        onChannelSelect={setSelectedChannelId}
-      />
+      {/* Channels Sidebar - Made bigger */}
+      <div className="w-80 flex-shrink-0">
+        <ChannelsSidebar 
+          selectedChannelId={selectedChannelId}
+          onChannelSelect={setSelectedChannelId}
+        />
+      </div>
 
       {/* Main Feed */}
       <div className="flex-1 space-y-6">

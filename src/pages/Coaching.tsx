@@ -132,7 +132,9 @@ const Coaching = () => {
         .eq('is_active', true)
         .order('full_name', { ascending: true })
 
-      if (advisorError) throw advisorError
+      if (advisorError) {
+        console.error('Error fetching financial advisors:', advisorError)
+      }
 
       // Fetch from coaches table (from admin dashboard)
       const { data: coachData, error: coachError } = await supabase
@@ -141,7 +143,9 @@ const Coaching = () => {
         .eq('is_active', true)
         .order('full_name', { ascending: true })
 
-      if (coachError) throw coachError
+      if (coachError) {
+        console.error('Error fetching coaches:', coachError)
+      }
 
       // Combine both datasets, avoiding duplicates by email
       const allCoaches = [...(advisorData || []), ...(coachData || [])]
@@ -149,6 +153,7 @@ const Coaching = () => {
         index === self.findIndex(c => c.email === coach.email && c.email) || !coach.email
       )
 
+      console.log('Fetched coaches:', uniqueCoaches)
       setAvailableCoaches(uniqueCoaches || [])
     } catch (error) {
       console.error('Error fetching coaches:', error)
@@ -294,7 +299,7 @@ const Coaching = () => {
             ...session,
             id: `${session.id}_${instanceCount}`,
             session_date: currentDate.toISOString().split('T')[0],
-            title: instanceCount === 0 ? session.title : `${session.title} (Instance ${instanceCount + 1})`
+            title: session.title // Remove instance numbering
           })
           
           // Calculate next occurrence based on recurrence pattern
@@ -468,11 +473,13 @@ const Coaching = () => {
                               {dayEvents.slice(0, 1).map((event, eventIndex) => (
                                 <div
                                   key={eventIndex}
-                                  className="text-xs p-1 rounded cursor-pointer hover:opacity-80"
+                                  className="text-xs p-1 rounded cursor-pointer hover:opacity-80 truncate"
                                   style={{ 
                                     backgroundColor: '#ffb500', 
                                     color: '#290a52',
-                                    fontWeight: '500'
+                                    fontWeight: '500',
+                                    fontSize: '10px',
+                                    lineHeight: '1.2'
                                   }}
                                   onClick={() => setSelectedSessionDialog(event)}
                                 >
