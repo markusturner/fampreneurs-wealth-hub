@@ -337,7 +337,7 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
         for (const update of updates) {
           await supabase
             .from('channels')
-            .update({ order_index: update.order_index })
+            .update({ order_index: update.order_index } as any)
             .eq('id', update.id)
         }
       } catch (error) {
