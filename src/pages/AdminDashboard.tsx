@@ -358,7 +358,7 @@ export default function AdminDashboard() {
 
       // Load coaches
       const { data: coachesData, error: coachesError } = await supabase
-        .from('financial_advisors')
+        .from('coaches')
         .select('*')
         .order('created_at', { ascending: false })
 
