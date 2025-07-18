@@ -7,13 +7,18 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Card } from "@/components/ui/card"
 import { useToast } from '@/hooks/use-toast'
-import { Send, Hash, Lock, Users, Edit, Reply, Trash2, Settings, MoreVertical } from 'lucide-react'
+import { Send, Hash, Lock, Users, Edit, Reply, Trash2, Settings, MoreVertical, Smile, Paperclip, Image, Video, Mic, BarChart3, Plus, ThumbsUp, Heart, Laugh, Angry, Frown, X } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import EmojiPicker from 'emoji-picker-react'
+import { MessageReactions } from './message-reactions'
+import { FileUpload } from './file-upload'
+import { PollCreator } from './poll-creator'
 
 interface Message {
   id: string
@@ -24,11 +29,38 @@ interface Message {
   message_type: string
   file_url: string | null
   reply_to: string | null
+  attachment_url: string | null
+  attachment_type: string | null
+  attachment_name: string | null
+  attachment_size: number | null
   profiles?: {
     display_name: string | null
     first_name: string | null
     avatar_url: string | null
   }
+  reactions?: Reaction[]
+  poll?: Poll
+}
+
+interface Reaction {
+  id: string
+  reaction_type: string
+  user_id: string
+  user_count: number
+}
+
+interface Poll {
+  id: string
+  question: string
+  options: string[]
+  multiple_choice: boolean
+  expires_at: string | null
+  votes: PollVote[]
+}
+
+interface PollVote {
+  option_index: number
+  user_id: string
 }
 
 interface Group {
@@ -61,6 +93,20 @@ export function GroupChat({ groupId }: GroupChatProps) {
   const [editGroupName, setEditGroupName] = useState('')
   const [editGroupDescription, setEditGroupDescription] = useState('')
   const [editGroupPrivate, setEditGroupPrivate] = useState(false)
+  
+  // Rich messaging states
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [showPollDialog, setShowPollDialog] = useState(false)
+  const [pollQuestion, setPollQuestion] = useState('')
+  const [pollOptions, setPollOptions] = useState(['', ''])
+  const [pollMultipleChoice, setPollMultipleChoice] = useState(false)
+  const [attachmentData, setAttachmentData] = useState<{
+    url: string
+    type: string
+    name: string
+    size: number
+  } | null>(null)
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -225,23 +271,30 @@ export function GroupChat({ groupId }: GroupChatProps) {
   }
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !groupId || !user) return
+    if ((!newMessage.trim() && !attachmentData) || !groupId || !user) return
 
     setSending(true)
     try {
+      const messageData = {
+        content: newMessage.trim(),
+        group_id: groupId,
+        user_id: user.id,
+        reply_to: replyTo?.id || null,
+        attachment_url: attachmentData?.url || null,
+        attachment_type: attachmentData?.type || null,
+        attachment_name: attachmentData?.name || null,
+        attachment_size: attachmentData?.size || null
+      }
+
       const { error } = await supabase
         .from('group_messages')
-        .insert({
-          content: newMessage.trim(),
-          group_id: groupId,
-          user_id: user.id,
-          reply_to: replyTo?.id || null
-        })
+        .insert(messageData)
 
       if (error) throw error
 
       setNewMessage('')
       setReplyTo(null)
+      setAttachmentData(null)
       inputRef.current?.focus()
     } catch (error) {
       console.error('Error sending message:', error)
@@ -253,6 +306,93 @@ export function GroupChat({ groupId }: GroupChatProps) {
     } finally {
       setSending(false)
     }
+  }
+
+  const sendPoll = async (pollData: { question: string; options: string[]; multiple_choice: boolean }) => {
+    if (!groupId || !user) return
+
+    setSending(true)
+    try {
+      // First create the message
+      const { data: messageData, error: messageError } = await supabase
+        .from('group_messages')
+        .insert({
+          content: `📊 ${pollData.question}`,
+          group_id: groupId,
+          user_id: user.id,
+          message_type: 'poll'
+        })
+        .select()
+        .single()
+
+      if (messageError) throw messageError
+
+      // Then create the poll
+      const { error: pollError } = await supabase
+        .from('message_polls')
+        .insert({
+          message_id: messageData.id,
+          question: pollData.question,
+          options: pollData.options,
+          multiple_choice: pollData.multiple_choice,
+          created_by: user.id
+        })
+
+      if (pollError) throw pollError
+
+      toast({
+        title: "Success",
+        description: "Poll created successfully!",
+      })
+    } catch (error) {
+      console.error('Error creating poll:', error)
+      toast({
+        title: "Error",
+        description: "Failed to create poll",
+        variant: "destructive"
+      })
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const fetchMessageReactions = async (messageId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('message_reactions')
+        .select('reaction_type, user_id, id')
+        .eq('message_id', messageId)
+
+      if (error) throw error
+
+      // Group reactions by type and count users
+      const reactionGroups = data?.reduce((acc, reaction) => {
+        if (!acc[reaction.reaction_type]) {
+          acc[reaction.reaction_type] = {
+            id: reaction.id,
+            reaction_type: reaction.reaction_type,
+            user_id: reaction.user_id,
+            user_count: 0
+          }
+        }
+        acc[reaction.reaction_type].user_count++
+        return acc
+      }, {} as Record<string, any>) || {}
+
+      return Object.values(reactionGroups)
+    } catch (error) {
+      console.error('Error fetching reactions:', error)
+      return []
+    }
+  }
+
+  const onEmojiClick = (emojiData: any) => {
+    setNewMessage(prev => prev + emojiData.emoji)
+    setShowEmojiPicker(false)
+  }
+
+  const onFileUploaded = (fileData: { url: string; type: string; name: string; size: number }) => {
+    setAttachmentData(fileData)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -472,14 +612,68 @@ export function GroupChat({ groupId }: GroupChatProps) {
                       </div>
                     ) : (
                       <>
-                        <Card className={`p-2 sm:p-3 ${isOwn ? 'bg-primary text-primary-foreground ml-auto' : 'bg-muted'}`}>
-                          {message.reply_to && (
-                            <div className="text-xs opacity-75 mb-1 pb-1 border-b border-current/20">
-                              Replying to message
-                            </div>
-                          )}
-                          <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-                        </Card>
+                         <Card className={`p-2 sm:p-3 ${isOwn ? 'bg-primary text-primary-foreground ml-auto' : 'bg-muted'}`}>
+                           {message.reply_to && (
+                             <div className="text-xs opacity-75 mb-1 pb-1 border-b border-current/20">
+                               Replying to message
+                             </div>
+                           )}
+                           
+                           {/* Attachment Display */}
+                           {message.attachment_url && (
+                             <div className="mb-2">
+                               {message.attachment_type === 'image' && (
+                                 <img 
+                                   src={message.attachment_url} 
+                                   alt={message.attachment_name || 'Image'} 
+                                   className="max-w-full max-h-64 rounded cursor-pointer"
+                                   onClick={() => window.open(message.attachment_url!, '_blank')}
+                                 />
+                               )}
+                               {message.attachment_type === 'video' && (
+                                 <video 
+                                   src={message.attachment_url} 
+                                   controls 
+                                   className="max-w-full max-h-64 rounded"
+                                 />
+                               )}
+                               {message.attachment_type === 'audio' && (
+                                 <audio 
+                                   src={message.attachment_url} 
+                                   controls 
+                                   className="w-full"
+                                 />
+                               )}
+                               {message.attachment_type === 'document' && (
+                                 <div className="flex items-center gap-2 p-2 bg-background/50 rounded">
+                                   <Paperclip className="h-4 w-4" />
+                                   <div className="flex-1 min-w-0">
+                                     <p className="text-xs font-medium truncate">{message.attachment_name}</p>
+                                     <p className="text-xs opacity-75">
+                                       {message.attachment_size ? (message.attachment_size / 1024).toFixed(1) + ' KB' : 'Document'}
+                                     </p>
+                                   </div>
+                                   <Button 
+                                     variant="ghost" 
+                                     size="sm" 
+                                     onClick={() => window.open(message.attachment_url!, '_blank')}
+                                   >
+                                     Download
+                                   </Button>
+                                 </div>
+                               )}
+                             </div>
+                           )}
+                           
+                           <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                         </Card>
+                         
+                         {/* Message Reactions */}
+                         <MessageReactions 
+                           messageId={message.id}
+                           reactions={message.reactions || []}
+                           onReactionUpdate={() => fetchMessages()}
+                         />
                         
                         {/* Message actions */}
                         {isOwn && (
@@ -532,14 +726,53 @@ export function GroupChat({ groupId }: GroupChatProps) {
             <div className="flex items-center justify-between">
               <span className="truncate">Replying to {getDisplayName(replyTo)}</span>
               <Button variant="ghost" size="sm" onClick={() => setReplyTo(null)}>
-                ×
+                <X className="h-3 w-3" />
               </Button>
             </div>
             <p className="truncate opacity-75 text-xs">{replyTo.content}</p>
           </div>
         )}
         
+        {attachmentData && (
+          <div className="mb-2 p-2 bg-muted rounded text-sm max-w-4xl mx-auto">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Paperclip className="h-3 w-3" />
+                <span className="truncate">{attachmentData.name}</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setAttachmentData(null)}>
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+        )}
+        
         <div className="flex gap-2 max-w-4xl mx-auto">
+          {/* File Upload */}
+          <FileUpload onFileUploaded={onFileUploaded} />
+          
+          {/* Emoji Picker */}
+          <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Smile className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" side="top">
+              <EmojiPicker onEmojiClick={onEmojiClick} />
+            </PopoverContent>
+          </Popover>
+          
+          {/* Poll Creator */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowPollDialog(true)}
+            className="h-8 w-8 p-0"
+          >
+            <BarChart3 className="h-4 w-4" />
+          </Button>
+          
           <Input
             ref={inputRef}
             value={newMessage}
@@ -551,7 +784,7 @@ export function GroupChat({ groupId }: GroupChatProps) {
           />
           <Button 
             onClick={sendMessage} 
-            disabled={!newMessage.trim() || sending}
+            disabled={(!newMessage.trim() && !attachmentData) || sending}
             size="sm"
             className="flex-shrink-0"
           >
@@ -559,6 +792,13 @@ export function GroupChat({ groupId }: GroupChatProps) {
           </Button>
         </div>
       </div>
+      
+      {/* Poll Creator Dialog */}
+      <PollCreator 
+        open={showPollDialog}
+        onOpenChange={setShowPollDialog}
+        onPollCreated={sendPoll}
+      />
 
       {/* Edit Group Dialog */}
       <Dialog open={editGroupOpen} onOpenChange={setEditGroupOpen}>
