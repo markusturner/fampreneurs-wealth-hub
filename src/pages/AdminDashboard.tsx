@@ -55,6 +55,7 @@ import { AddCoachDialog } from '@/components/admin/add-coach-dialog'
 import { EditCoachDialog } from '@/components/admin/edit-coach-dialog'
 import { AddCoachingSessionDialog } from '@/components/admin/add-coaching-session-dialog'
 import { EditCoachingSessionDialog } from '@/components/admin/edit-coaching-session-dialog'
+import { UserSessionQuotaDialog } from '@/components/admin/user-session-quota-dialog'
 import { 
   DndContext, 
   DragEndEvent, 
@@ -1076,16 +1077,34 @@ export default function AdminDashboard() {
                       Manage coaches and their availability for 1-on-1 sessions
                     </CardDescription>
                   </div>
-                  <AddCoachDialog onCoachAdded={loadAdminData} />
+                  <div className="flex items-center justify-between">
+                    <AddCoachDialog onCoachAdded={loadAdminData} />
+                    <UserSessionQuotaDialog onQuotaUpdated={loadAdminData} />
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {coaches.map((coach) => (
                     <Card key={coach.id}>
-                      <CardHeader>
-                        <CardTitle className="text-sm">{coach.full_name}</CardTitle>
-                        <CardDescription>{coach.email}</CardDescription>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center space-x-3">
+                          {coach.avatar_url ? (
+                            <img 
+                              src={coach.avatar_url} 
+                              alt={coach.full_name}
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                              <Users className="h-6 w-6 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-sm truncate">{coach.full_name}</CardTitle>
+                            <CardDescription className="truncate">{coach.email}</CardDescription>
+                          </div>
+                        </div>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-2">

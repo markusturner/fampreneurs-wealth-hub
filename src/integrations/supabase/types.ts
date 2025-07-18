@@ -74,6 +74,7 @@ export type Database = {
       coaches: {
         Row: {
           added_by: string
+          avatar_url: string | null
           bio: string | null
           created_at: string
           email: string | null
@@ -88,6 +89,7 @@ export type Database = {
         }
         Insert: {
           added_by: string
+          avatar_url?: string | null
           bio?: string | null
           created_at?: string
           email?: string | null
@@ -102,6 +104,7 @@ export type Database = {
         }
         Update: {
           added_by?: string
+          avatar_url?: string | null
           bio?: string | null
           created_at?: string
           email?: string | null
@@ -1195,6 +1198,42 @@ export type Database = {
         }
         Relationships: []
       }
+      paid_session_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          session_id: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          session_id?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          session_id?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           created_at: string | null
@@ -1557,6 +1596,42 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["member_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_session_quotas: {
+        Row: {
+          complimentary_sessions_used: number
+          created_at: string
+          id: string
+          monthly_complimentary_sessions: number
+          period_end: string
+          period_start: string
+          program_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          complimentary_sessions_used?: number
+          created_at?: string
+          id?: string
+          monthly_complimentary_sessions?: number
+          period_end: string
+          period_start: string
+          program_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          complimentary_sessions_used?: number
+          created_at?: string
+          id?: string
+          monthly_complimentary_sessions?: number
+          period_end?: string
+          period_start?: string
+          program_id?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
