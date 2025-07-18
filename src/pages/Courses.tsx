@@ -188,27 +188,6 @@ const Courses = () => {
           </Button>
         </div>
 
-        {/* Course Categories */}
-        <Card className="shadow-soft">
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-lg font-bold">Course Categories</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex flex-wrap gap-2">
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={category === selectedCategory ? "default" : "outline"}
-                  size="sm"
-                  className="text-xs sm:text-sm"
-                  onClick={() => setSelectedCategory(category)}
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Course Grid */}
         <div>
