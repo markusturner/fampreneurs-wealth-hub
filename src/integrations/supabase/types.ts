@@ -41,6 +41,36 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_assignments: {
+        Row: {
+          assigned_at: string
+          coach_id: string
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          coach_id: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          coach_id?: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_comments: {
         Row: {
           content: string
@@ -796,6 +826,42 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_emails: {
+        Row: {
+          created_at: string
+          email_content: string
+          email_status: string
+          email_subject: string
+          email_type: string
+          id: string
+          sent_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_content: string
+          email_status?: string
+          email_subject: string
+          email_type: string
+          id?: string
+          sent_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_content?: string
+          email_status?: string
+          email_subject?: string
+          email_type?: string
+          id?: string
+          sent_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           created_at: string | null
@@ -881,6 +947,75 @@ export type Database = {
           last_name?: string | null
           occupation?: string | null
           phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      revenue_metrics: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          subscription_tier: string | null
+          transaction_date: string
+          transaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          subscription_tier?: string | null
+          transaction_date?: string
+          transaction_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          subscription_tier?: string | null
+          transaction_date?: string
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      satisfaction_scores: {
+        Row: {
+          created_at: string
+          feedback_type: string
+          id: string
+          notes: string | null
+          score: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          feedback_type?: string
+          id?: string
+          notes?: string | null
+          score: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          feedback_type?: string
+          id?: string
+          notes?: string | null
+          score?: number
           updated_at?: string
           user_id?: string
         }

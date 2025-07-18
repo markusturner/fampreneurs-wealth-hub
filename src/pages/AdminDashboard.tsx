@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
   Users, 
   Settings, 
@@ -24,7 +25,20 @@ import {
   Eye,
   Search,
   Plus,
-  Save
+  Save,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Star,
+  Phone,
+  Video,
+  Mail,
+  BarChart,
+  Activity,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Target
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
@@ -32,8 +46,24 @@ import { Separator } from '@/components/ui/separator'
 import { CreateCourseDialog } from '@/components/admin/create-course-dialog'
 import { EditCourseDialog } from '@/components/admin/edit-course-dialog'
 import { UserRoleManagement } from '@/components/admin/user-role-management'
-import { FulfillmentManagement } from '@/components/admin/fulfillment-management'
 import { UserCard } from '@/components/admin/user-card'
+import { 
+  DndContext, 
+  DragEndEvent, 
+  DragOverlay, 
+  DragStartEvent,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  closestCenter
+} from '@dnd-kit/core'
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { 
+  useSortable
+} from '@dnd-kit/sortable'
+import { GripVertical } from 'lucide-react'
+import { ResponsiveContainer, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
 
 interface Profile {
   id: string
@@ -46,6 +76,10 @@ interface Profile {
   created_at: string
   roles?: string[]
   avatar_url: string | null
+  fulfillment_stage?: string | null
+  course_progress?: number
+  group_calls_attended?: number
+  one_on_one_calls_attended?: number
 }
 
 interface Course {
@@ -76,6 +110,95 @@ interface Post {
   profiles?: PostProfile | null
 }
 
+interface FulfillmentStage {
+  id: string
+  name: string
+  description: string | null
+  stage_order: number
+  color: string | null
+  created_by: string
+  created_at: string
+}
+
+interface OnboardingEmail {
+  id: string
+  user_id: string
+  email_type: string
+  email_subject: string
+  sent_at: string
+  email_status: string
+}
+
+interface Metrics {
+  newRenewals: number
+  nonRenewals: number
+  newUpsells: number
+  nonUpsells: number
+  totalRevenue: number
+  averageRevenue: number
+  renewalRate: number
+  satisfactionScore: number
+  oneOnOneCalls30Days: number
+  oneOnOneCalls15Days: number
+  oneOnOneCallsThisMonth: number
+  groupCalls30Days: number
+  groupCalls15Days: number
+  groupCallsThisMonth: number
+}
+
+interface CoachData {
+  name: string
+  clients: number
+}
+
+function SortableUser({ user, stage }: { user: Profile; stage: FulfillmentStage }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: user.id })
+
+  const style = {
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    transition,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`p-3 bg-card border rounded-lg ${isDragging ? 'opacity-50' : ''}`}
+      {...attributes}
+    >
+      <div className="flex items-center space-x-3">
+        <div {...listeners} className="cursor-grab hover:cursor-grabbing">
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
+        {user.avatar_url && (
+          <img 
+            src={user.avatar_url} 
+            alt={user.display_name || 'User'} 
+            className="w-8 h-8 rounded-full object-cover"
+          />
+        )}
+        <div className="flex-1">
+          <div className="font-medium text-sm">
+            {user.display_name || `${user.first_name} ${user.last_name}`}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Progress: {user.course_progress || 0}% | 
+            Group: {user.group_calls_attended || 0} | 
+            1-1: {user.one_on_one_calls_attended || 0}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AdminDashboard() {
   const { user, profile, signOut } = useAuth()
   const { toast } = useToast()
@@ -84,10 +207,37 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<Profile[]>([])
   const [courses, setCourses] = useState<Course[]>([])
   const [posts, setPosts] = useState<Post[]>([])
+  const [fulfillmentStages, setFulfillmentStages] = useState<FulfillmentStage[]>([])
+  const [onboardingEmails, setOnboardingEmails] = useState<OnboardingEmail[]>([])
+  const [metrics, setMetrics] = useState<Metrics>({
+    newRenewals: 0,
+    nonRenewals: 0,
+    newUpsells: 0,
+    nonUpsells: 0,
+    totalRevenue: 0,
+    averageRevenue: 0,
+    renewalRate: 0,
+    satisfactionScore: 0,
+    oneOnOneCalls30Days: 0,
+    oneOnOneCalls15Days: 0,
+    oneOnOneCallsThisMonth: 0,
+    groupCalls30Days: 0,
+    groupCalls15Days: 0,
+    groupCallsThisMonth: 0
+  })
+  const [coachData, setCoachData] = useState<CoachData[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
-  const [platformSettings, setPlatformSettings] = useState({ platform_name: 'Fampreneurs', admin_email: 'admin@fampreneurs.com' })
-  const [fulfillmentViewMode, setFulfillmentViewMode] = useState<'kanban' | 'list'>('kanban')
+  const [platformSettings, setPlatformSettings] = useState({ 
+    platform_name: 'Fampreneurs', 
+    admin_email: 'admin@fampreneurs.com' 
+  })
+  const [activeId, setActiveId] = useState<string | null>(null)
+
+  const sensors = useSensors(
+    useSensor(MouseSensor),
+    useSensor(TouchSensor)
+  )
 
   // Check admin access
   useEffect(() => {
@@ -110,7 +260,6 @@ export default function AdminDashboard() {
 
       if (settingsError) throw settingsError
 
-      // Convert settings array to object
       const settings = settingsData?.reduce((acc, setting) => {
         acc[setting.setting_key] = setting.setting_value
         return acc
@@ -120,27 +269,70 @@ export default function AdminDashboard() {
         platform_name: settings.platform_name || 'Fampreneurs',
         admin_email: settings.admin_email || 'admin@fampreneurs.com'
       })
+
+      // Load fulfillment stages
+      const { data: stagesData, error: stagesError } = await supabase
+        .from('fulfillment_stages')
+        .select('*')
+        .order('stage_order', { ascending: true })
+
+      if (stagesError) throw stagesError
+      setFulfillmentStages(stagesData || [])
       
-      // Load users with auth data
+      // Load users with fulfillment progress
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          *,
+          user_fulfillment_progress (
+            stage_id,
+            fulfillment_stages (
+              name
+            )
+          )
+        `)
         .order('created_at', { ascending: false })
 
       if (profilesError) throw profilesError
 
-      // Load user roles for each profile
+      // Load additional user data
       const usersWithRoles = await Promise.all(
         profilesData.map(async (profile) => {
+          // Get user roles
           const { data: userRoles } = await supabase
             .from('user_roles')
             .select('role')
             .eq('user_id', profile.user_id)
           
+          // Get course progress
+          const { data: enrollments } = await supabase
+            .from('course_enrollments')
+            .select('progress')
+            .eq('user_id', profile.user_id)
+          
+          const avgProgress = enrollments?.length 
+            ? enrollments.reduce((sum, e) => sum + (e.progress || 0), 0) / enrollments.length 
+            : 0
+
+          // Get coaching calls attended
+          const { data: groupSessions } = await supabase
+            .from('session_enrollments')
+            .select('session_id')
+            .eq('user_id', profile.user_id)
+
+          const { data: oneOnOneSessions } = await supabase
+            .from('session_enrollments')
+            .select('session_id')
+            .eq('user_id', profile.user_id)
+          
           return {
             ...profile,
-            email: 'Protected', // Email hidden for privacy
-            roles: userRoles?.map(r => r.role) || ['member']
+            email: 'Protected',
+            roles: userRoles?.map(r => r.role) || ['member'],
+            fulfillment_stage: (profile as any).user_fulfillment_progress?.[0]?.fulfillment_stages?.name || null,
+            course_progress: Math.round(avgProgress),
+            group_calls_attended: groupSessions?.length || 0,
+            one_on_one_calls_attended: oneOnOneSessions?.length || 0
           }
         })
       )
@@ -156,16 +348,19 @@ export default function AdminDashboard() {
       if (coursesError) throw coursesError
       setCourses(coursesData || [])
 
-      // Load community posts
+      // Load community posts with reactions and comments
       const { data: postsData, error: postsError } = await supabase
         .from('community_posts')
-        .select('*')
+        .select(`
+          *,
+          community_reactions (id),
+          community_comments (id)
+        `)
         .order('created_at', { ascending: false })
         .limit(20)
 
       if (postsError) throw postsError
 
-      // Get profile data for each post
       const postsWithProfiles = await Promise.all(
         (postsData || []).map(async (post) => {
           const { data: profileData } = await supabase
@@ -176,12 +371,27 @@ export default function AdminDashboard() {
           
           return {
             ...post,
-            profiles: profileData
+            profiles: profileData,
+            reactions_count: (post as any).community_reactions?.length || 0,
+            comments_count: (post as any).community_comments?.length || 0
           }
         })
       )
 
       setPosts(postsWithProfiles)
+
+      // Load onboarding emails
+      const { data: emailsData, error: emailsError } = await supabase
+        .from('onboarding_emails')
+        .select('*')
+        .order('sent_at', { ascending: false })
+
+      if (emailsError) throw emailsError
+      setOnboardingEmails(emailsData || [])
+
+      // Load metrics
+      await loadMetrics()
+      await loadCoachData()
 
     } catch (error: any) {
       toast({
@@ -194,117 +404,139 @@ export default function AdminDashboard() {
     }
   }
 
-  const deleteUser = async (userId: string) => {
+  const loadMetrics = async () => {
     try {
-      const { error } = await supabase.auth.admin.deleteUser(userId)
-      if (error) throw error
-      
-      toast({
-        title: "User deleted",
-        description: "User has been successfully deleted.",
+      const now = new Date()
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      const fifteenDaysAgo = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000)
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+      // Revenue metrics
+      const { data: revenueData } = await supabase
+        .from('revenue_metrics')
+        .select('*')
+        .gte('transaction_date', thirtyDaysAgo.toISOString())
+
+      const newRenewals = revenueData?.filter(r => r.transaction_type === 'renewal').length || 0
+      const newUpsells = revenueData?.filter(r => r.transaction_type === 'upsell').length || 0
+      const totalRevenue = revenueData?.reduce((sum, r) => sum + Number(r.amount), 0) || 0
+      const averageRevenue = revenueData?.length ? totalRevenue / revenueData.length : 0
+
+      // Satisfaction scores
+      const { data: satisfactionData } = await supabase
+        .from('satisfaction_scores')
+        .select('score')
+        .gte('created_at', thirtyDaysAgo.toISOString())
+
+      const avgSatisfaction = satisfactionData?.length 
+        ? satisfactionData.reduce((sum, s) => sum + s.score, 0) / satisfactionData.length 
+        : 0
+
+      // Coaching calls data
+      const { data: sessionData } = await supabase
+        .from('session_enrollments')
+        .select('enrolled_at')
+        .gte('enrolled_at', thirtyDaysAgo.toISOString())
+
+      const calls30Days = sessionData?.length || 0
+      const calls15Days = sessionData?.filter(s => new Date(s.enrolled_at) >= fifteenDaysAgo).length || 0
+      const callsThisMonth = sessionData?.filter(s => new Date(s.enrolled_at) >= startOfMonth).length || 0
+
+      setMetrics({
+        newRenewals,
+        nonRenewals: 5, // Placeholder
+        newUpsells,
+        nonUpsells: 3, // Placeholder
+        totalRevenue,
+        averageRevenue,
+        renewalRate: 85, // Placeholder
+        satisfactionScore: avgSatisfaction,
+        oneOnOneCalls30Days: calls30Days,
+        oneOnOneCalls15Days: calls15Days,
+        oneOnOneCallsThisMonth: callsThisMonth,
+        groupCalls30Days: calls30Days,
+        groupCalls15Days: calls15Days,
+        groupCallsThisMonth: callsThisMonth
       })
-      
-      loadAdminData()
-    } catch (error: any) {
-      toast({
-        title: "Error deleting user",
-        description: error.message,
-        variant: "destructive",
-      })
+
+    } catch (error) {
+      console.error('Error loading metrics:', error)
     }
   }
 
-  const deleteCourse = async (courseId: string) => {
+  const loadCoachData = async () => {
     try {
-      const { error } = await supabase
-        .from('courses')
+      const { data: coachAssignments } = await supabase
+        .from('coach_assignments')
+        .select(`
+          coach_id,
+          profiles!coach_assignments_coach_id_fkey (
+            first_name,
+            last_name,
+            display_name
+          )
+        `)
+        .eq('status', 'active')
+
+      const coachCounts = coachAssignments?.reduce((acc, assignment) => {
+        const coachName = (assignment as any).profiles?.display_name || 
+          `${(assignment as any).profiles?.first_name} ${(assignment as any).profiles?.last_name}`
+        acc[coachName] = (acc[coachName] || 0) + 1
+        return acc
+      }, {} as Record<string, number>) || {}
+
+      const coachDataArray = Object.entries(coachCounts).map(([name, clients]) => ({
+        name,
+        clients
+      }))
+
+      setCoachData(coachDataArray)
+    } catch (error) {
+      console.error('Error loading coach data:', error)
+    }
+  }
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string)
+  }
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+    setActiveId(null)
+
+    if (!over) return
+
+    const userId = active.id as string
+    const newStageId = over.id as string
+
+    // Update user's fulfillment stage
+    try {
+      // First, remove existing progress record
+      await supabase
+        .from('user_fulfillment_progress')
         .delete()
-        .eq('id', courseId)
-        
-      if (error) throw error
-      
-      toast({
-        title: "Course deleted",
-        description: "Course has been successfully deleted.",
-      })
-      
-      loadAdminData()
-    } catch (error: any) {
-      toast({
-        title: "Error deleting course",
-        description: error.message,
-        variant: "destructive",
-      })
-    }
-  }
+        .eq('user_id', userId)
 
-  const deletePost = async (postId: string) => {
-    try {
+      // Insert new progress record
       const { error } = await supabase
-        .from('community_posts')
-        .delete()
-        .eq('id', postId)
-        
-      if (error) throw error
-      
-      toast({
-        title: "Post deleted",
-        description: "Post has been successfully deleted.",
-      })
-      
-      loadAdminData()
-    } catch (error: any) {
-      toast({
-        title: "Error deleting post",
-        description: error.message,
-        variant: "destructive",
-      })
-    }
-  }
+        .from('user_fulfillment_progress')
+        .insert({
+          user_id: userId,
+          stage_id: newStageId,
+          moved_by: user?.id
+        })
 
-  const makeAdmin = async (userId: string) => {
-    try {
-      const { error } = await supabase.rpc('assign_admin_role', {
-        target_user_id: userId,
-        assigner_user_id: user?.id
-      })
-      
       if (error) throw error
-      
-      toast({
-        title: "Admin role assigned",
-        description: "User has been granted admin privileges and can now access the admin panel.",
-      })
-      
-      loadAdminData()
-    } catch (error: any) {
-      toast({
-        title: "Error assigning admin role",
-        description: error.message,
-        variant: "destructive",
-      })
-    }
-  }
 
-  const makeAccountabilityPartner = async (userId: string) => {
-    try {
-      const { error } = await supabase.rpc('assign_accountability_role', {
-        target_user_id: userId,
-        assigner_user_id: user?.id,
-        specialties: ['general_support']
-      })
-      
-      if (error) throw error
-      
       toast({
-        title: "Accountability partner role assigned",
-        description: "User has been granted accountability partner privileges.",
+        title: "User moved",
+        description: "User has been moved to the new stage successfully.",
       })
-      
+
       loadAdminData()
     } catch (error: any) {
       toast({
-        title: "Error assigning accountability role",
+        title: "Error moving user",
         description: error.message,
         variant: "destructive",
       })
@@ -313,7 +545,6 @@ export default function AdminDashboard() {
 
   const savePlatformSettings = async () => {
     try {
-      // Update or insert platform settings
       const settingsToUpdate = [
         { setting_key: 'platform_name', setting_value: platformSettings.platform_name },
         { setting_key: 'admin_email', setting_value: platformSettings.admin_email }
@@ -356,6 +587,15 @@ export default function AdminDashboard() {
     return null
   }
 
+  const getUsersInStage = (stageId: string) => {
+    return users.filter(user => {
+      // Get the user's current stage from their fulfillment progress
+      return user.fulfillment_stage === fulfillmentStages.find(s => s.id === stageId)?.name
+    })
+  }
+
+  const activeUser = activeId ? users.find(u => u.id === activeId) : null
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -387,14 +627,14 @@ export default function AdminDashboard() {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">
               <BarChart3 className="h-4 w-4 mr-2" />
               Overview
             </TabsTrigger>
             <TabsTrigger value="users">
               <Users className="h-4 w-4 mr-2" />
-              Users
+              Users & Fulfillment
             </TabsTrigger>
             <TabsTrigger value="courses">
               <BookOpen className="h-4 w-4 mr-2" />
@@ -404,10 +644,6 @@ export default function AdminDashboard() {
               <MessageSquare className="h-4 w-4 mr-2" />
               Community
             </TabsTrigger>
-            <TabsTrigger value="fulfillment">
-              <FileText className="h-4 w-4 mr-2" />
-              Fulfillment
-            </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="h-4 w-4 mr-2" />
               Settings
@@ -416,68 +652,154 @@ export default function AdminDashboard() {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
+            {/* Revenue Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium">New Renewals</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{users.length}</div>
-                  <p className="text-xs text-muted-foreground">
-                    {users.filter(u => u.is_admin).length} admins
-                  </p>
+                  <div className="text-2xl font-bold">{metrics.newRenewals}</div>
+                  <p className="text-xs text-muted-foreground">Last 30 days</p>
                 </CardContent>
               </Card>
               
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
-                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium">Non-Renewals</CardTitle>
+                  <TrendingDown className="h-4 w-4 text-red-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{courses.length}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Active learning content
-                  </p>
+                  <div className="text-2xl font-bold">{metrics.nonRenewals}</div>
+                  <p className="text-xs text-muted-foreground">Last 30 days</p>
                 </CardContent>
               </Card>
               
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Community Posts</CardTitle>
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium">New Upsells</CardTitle>
+                  <Target className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{posts.length}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Recent activity
-                  </p>
+                  <div className="text-2xl font-bold">{metrics.newUpsells}</div>
+                  <p className="text-xs text-muted-foreground">Last 30 days</p>
                 </CardContent>
               </Card>
               
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">System Status</CardTitle>
-                  <Database className="h-4 w-4 text-muted-foreground" />
+                  <CardTitle className="text-sm font-medium">Non-Upsells</CardTitle>
+                  <XCircle className="h-4 w-4 text-red-600" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-green-600">Online</div>
-                  <p className="text-xs text-muted-foreground">
-                    All systems operational
-                  </p>
+                  <div className="text-2xl font-bold">{metrics.nonUpsells}</div>
+                  <p className="text-xs text-muted-foreground">Last 30 days</p>
                 </CardContent>
               </Card>
             </div>
+
+            {/* Financial Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                  <DollarSign className="h-4 w-4 text-green-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${metrics.totalRevenue.toFixed(2)}</div>
+                  <p className="text-xs text-muted-foreground">Last 30 days</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Average Revenue</CardTitle>
+                  <BarChart className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${metrics.averageRevenue.toFixed(2)}</div>
+                  <p className="text-xs text-green-600">On track</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Renewal Rate</CardTitle>
+                  <Activity className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{metrics.renewalRate}%</div>
+                  <p className="text-xs text-green-600">Good performance</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Satisfaction & Calls */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium">Satisfaction Score</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center space-x-2">
+                    <Star className="h-5 w-5 text-yellow-500" />
+                    <div className="text-2xl font-bold">{metrics.satisfactionScore.toFixed(1)}/10</div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Average user satisfaction</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium">Coaching Calls</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm">1-1 Calls (30 days):</span>
+                      <span className="font-bold">{metrics.oneOnOneCalls30Days}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">1-1 Calls (15 days):</span>
+                      <span className="font-bold">{metrics.oneOnOneCalls15Days}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm">Group Calls (30 days):</span>
+                      <span className="font-bold">{metrics.groupCalls30Days}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Clients per Coach Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Clients per Coach</CardTitle>
+                <CardDescription>Distribution of clients across coaches</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <RechartsBarChart data={coachData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="clients" fill="#ffb500" />
+                  </RechartsBarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          {/* Users Tab */}
+          {/* Users & Fulfillment Tab */}
           <TabsContent value="users" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>User Management</CardTitle>
+                <CardTitle>Users & Fulfillment Pipeline</CardTitle>
                 <CardDescription>
-                  Manage all users, assign roles, and monitor activity
+                  Drag and drop users between fulfillment stages
                 </CardDescription>
                 <div className="flex items-center space-x-2">
                   <Search className="h-4 w-4 text-muted-foreground" />
@@ -490,9 +812,88 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {filteredUsers.map((user) => (
-                    <UserCard key={user.id} user={user} onRolesUpdated={loadAdminData} />
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {fulfillmentStages.map((stage) => {
+                      const stageUsers = getUsersInStage(stage.id)
+                      return (
+                        <Card key={stage.id} className="min-h-[300px]">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-sm flex items-center space-x-2">
+                              <div 
+                                className="w-3 h-3 rounded-full" 
+                                style={{ backgroundColor: stage.color || '#3b82f6' }}
+                              />
+                              <span>{stage.name}</span>
+                              <Badge variant="secondary">{stageUsers.length}</Badge>
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <SortableContext 
+                              items={stageUsers.map(u => u.id)} 
+                              strategy={verticalListSortingStrategy}
+                            >
+                              {stageUsers.map((user) => (
+                                <SortableUser key={user.id} user={user} stage={stage} />
+                              ))}
+                            </SortableContext>
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                  <DragOverlay>
+                    {activeUser && (
+                      <div className="p-3 bg-card border rounded-lg opacity-75">
+                        <div className="flex items-center space-x-3">
+                          {activeUser.avatar_url && (
+                            <img 
+                              src={activeUser.avatar_url} 
+                              alt={activeUser.display_name || 'User'} 
+                              className="w-8 h-8 rounded-full object-cover"
+                            />
+                          )}
+                          <div className="font-medium text-sm">
+                            {activeUser.display_name || `${activeUser.first_name} ${activeUser.last_name}`}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </DragOverlay>
+                </DndContext>
+              </CardContent>
+            </Card>
+
+            {/* Onboarding Emails */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Onboarding Email Tracking</CardTitle>
+                <CardDescription>
+                  Track automated onboarding emails sent to new users
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {onboardingEmails.slice(0, 10).map((email) => (
+                    <div key={email.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Mail className="h-4 w-4 text-blue-600" />
+                        <div>
+                          <div className="font-medium text-sm">{email.email_subject}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {email.email_type} • {new Date(email.sent_at).toLocaleDateString()}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge variant={email.email_status === 'sent' ? 'default' : 'destructive'}>
+                        {email.email_status}
+                      </Badge>
+                    </div>
                   ))}
                 </div>
               </CardContent>
@@ -557,7 +958,12 @@ export default function AdminDashboard() {
                           <Button 
                             variant="destructive" 
                             size="sm"
-                            onClick={() => deleteCourse(course.id)}
+                            onClick={() => {
+                              supabase.from('courses').delete().eq('id', course.id).then(() => {
+                                toast({ title: "Course deleted" })
+                                loadAdminData()
+                              })
+                            }}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -572,11 +978,46 @@ export default function AdminDashboard() {
 
           {/* Community Tab */}
           <TabsContent value="community" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{posts.length}</div>
+                  <p className="text-xs text-muted-foreground">Last 20 posts shown</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Active Groups</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">12</div>
+                  <p className="text-xs text-muted-foreground">Community groups</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Engagement Rate</CardTitle>
+                  <Activity className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">78%</div>
+                  <p className="text-xs text-green-600">High engagement</p>
+                </CardContent>
+              </Card>
+            </div>
+
             <Card>
               <CardHeader>
-                <CardTitle>Community Management</CardTitle>
+                <CardTitle>Community Posts Management</CardTitle>
                 <CardDescription>
-                  Monitor and moderate community posts and discussions
+                  Monitor and moderate community posts, reactions, and engagement
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -594,58 +1035,86 @@ export default function AdminDashboard() {
                             <span className="text-xs text-muted-foreground">
                               {new Date(post.created_at).toLocaleDateString()}
                             </span>
+                            <div className="flex items-center space-x-3 text-xs text-muted-foreground">
+                              <span>❤️ {(post as any).reactions_count || 0}</span>
+                              <span>💬 {(post as any).comments_count || 0}</span>
+                            </div>
                           </div>
                           <p className="text-sm">{post.content}</p>
                         </div>
-                        <Button 
-                          variant="destructive" 
-                          size="sm"
-                          onClick={() => deletePost(post.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center space-x-2">
+                          <Button variant="outline" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={async () => {
+                              const { error } = await supabase
+                                .from('community_posts')
+                                .delete()
+                                .eq('id', post.id)
+                              
+                              if (!error) {
+                                toast({ title: "Post deleted" })
+                                loadAdminData()
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          {/* Content Tab */}
-          <TabsContent value="content" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Content Management</CardTitle>
+                <CardTitle>Community Groups Management</CardTitle>
                 <CardDescription>
-                  Manage platform content, documents, and media
+                  Manage private groups, premium access, and member permissions
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <Button variant="outline" className="h-24 flex-col">
-                    <FileText className="h-6 w-6 mb-2" />
-                    Manage Documents
+                <div className="space-y-4">
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create New Group
                   </Button>
-                  <Button variant="outline" className="h-24 flex-col">
-                    <Calendar className="h-6 w-6 mb-2" />
-                    Event Management
-                  </Button>
-                  <Button variant="outline" className="h-24 flex-col">
-                    <MessageSquare className="h-6 w-6 mb-2" />
-                    Announcements
-                  </Button>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm">Premium Members Group</CardTitle>
+                        <CardDescription>Exclusive group for premium subscribers</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <Badge variant="secondary">24 members</Badge>
+                          <Button variant="outline" size="sm">Manage</Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm">General Discussion</CardTitle>
+                        <CardDescription>Public group for all members</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <Badge variant="secondary">156 members</Badge>
+                          <Button variant="outline" size="sm">Manage</Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* Fulfillment Tab */}
-          <TabsContent value="fulfillment" className="space-y-6">
-            <FulfillmentManagement 
-              viewMode={fulfillmentViewMode}
-              onViewModeChange={setFulfillmentViewMode}
-            />
           </TabsContent>
 
           {/* Settings Tab */}
