@@ -21,7 +21,7 @@ const quickActions = [
     title: "Upload Document",
     description: "Add trust or family documents",
     icon: Upload,
-    variant: "default" as const,
+    variant: "premium" as const,
     action: () => window.location.href = "/documents"
   },
   {
