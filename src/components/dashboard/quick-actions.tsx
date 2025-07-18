@@ -25,7 +25,7 @@ const quickActions = [
     action: () => window.location.href = "/documents"
   },
   {
-    title: "Add Team Member",
+    title: "Add Family Office Member",
     description: "Invite financial advisor",
     icon: UserPlus,
     variant: "default" as const,

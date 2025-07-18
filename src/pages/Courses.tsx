@@ -48,6 +48,7 @@ const Courses = () => {
   const [courseDetailOpen, setCourseDetailOpen] = useState(false)
   const [addVideoOpen, setAddVideoOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('courses')
+  const [recordingsCount, setRecordingsCount] = useState(0)
 
   const fetchCourses = async () => {
     try {
@@ -64,6 +65,17 @@ const Courses = () => {
         .eq('user_id', user?.id)
 
       if (enrollmentsError) throw enrollmentsError
+
+      // Fetch recordings count
+      const { data: recordingsData, error: recordingsError } = await supabase
+        .from('coaching_call_recordings')
+        .select('id')
+
+      if (recordingsError) {
+        console.error('Error fetching recordings count:', recordingsError)
+      } else {
+        setRecordingsCount(recordingsData?.length || 0)
+      }
 
       setCourses(coursesData || [])
       setEnrollments(enrollmentsData || [])
@@ -305,8 +317,8 @@ const Courses = () => {
             <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
               <Card className="shadow-soft text-center">
                 <CardContent className="p-3 sm:p-4">
-                  <div className="text-xl sm:text-2xl font-bold" style={{ color: '#ffb500' }}>{enrollments.length}</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Enrolled Courses</div>
+                  <div className="text-xl sm:text-2xl font-bold" style={{ color: '#ffb500' }}>{recordingsCount}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Total Call Recordings</div>
                 </CardContent>
               </Card>
               <Card className="shadow-soft text-center">
@@ -314,7 +326,7 @@ const Courses = () => {
                   <div className="text-xl sm:text-2xl font-bold text-accent">
                     {enrollments.filter(e => e.completed_at).length}
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Completed</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Completed Courses</div>
                 </CardContent>
               </Card>
               <Card className="shadow-soft text-center">
@@ -328,7 +340,7 @@ const Courses = () => {
                   <div className="text-xl sm:text-2xl font-bold" style={{ color: '#ffb500' }}>
                     {enrollments.length > 0 ? Math.round(enrollments.reduce((acc, e) => acc + e.progress, 0) / enrollments.length) : 0}%
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Avg Progress</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Average Progress</div>
                 </CardContent>
               </Card>
             </div>
