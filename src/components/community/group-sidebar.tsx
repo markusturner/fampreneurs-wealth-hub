@@ -945,26 +945,6 @@ export function GroupSidebar({ selectedGroupId, onGroupSelect }: GroupSidebarPro
         </div>
       </ScrollArea>
 
-      {/* User Info */}
-      <div className="p-4 border-t">
-        <div className="flex items-center gap-2">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src={user?.user_metadata?.avatar_url} />
-            <AvatarFallback className="text-xs">
-              {user?.email?.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">
-              {user?.user_metadata?.display_name || user?.email}
-            </p>
-            <p className="text-xs text-muted-foreground">Online</p>
-          </div>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-            <Settings className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
     </div>
   )
 }
