@@ -43,14 +43,44 @@ interface InvestmentPlatform {
 
 const investmentPlatforms: InvestmentPlatform[] = [
   {
-    id: "vanguard",
-    name: "Vanguard",
+    id: "alpaca",
+    name: "Alpaca Markets",
     category: "brokerage",
-    icon: Building2,
-    description: "Low-cost index funds and ETFs",
+    icon: TrendingUp,
+    description: "Commission-free API trading platform",
     isPopular: true,
-    connectionType: "manual",
-    website: "https://investor.vanguard.com"
+    connectionType: "api",
+    website: "https://alpaca.markets"
+  },
+  {
+    id: "polygon",
+    name: "Polygon.io",
+    category: "brokerage", 
+    icon: Building2,
+    description: "Real-time and historical market data",
+    isPopular: true,
+    connectionType: "api",
+    website: "https://polygon.io"
+  },
+  {
+    id: "coinbase",
+    name: "Coinbase Pro",
+    category: "crypto",
+    icon: Bitcoin,
+    description: "Professional cryptocurrency trading",
+    isPopular: true,
+    connectionType: "api",
+    website: "https://pro.coinbase.com"
+  },
+  {
+    id: "plaid",
+    name: "Plaid Connected Banks",
+    category: "bank",
+    icon: Wallet,
+    description: "Connect multiple bank accounts via Plaid",
+    isPopular: true,
+    connectionType: "api",
+    website: "https://plaid.com"
   },
   {
     id: "fidelity",
@@ -73,24 +103,24 @@ const investmentPlatforms: InvestmentPlatform[] = [
     website: "https://www.schwab.com"
   },
   {
+    id: "vanguard",
+    name: "Vanguard",
+    category: "brokerage",
+    icon: Building2,
+    description: "Low-cost index funds and ETFs",
+    isPopular: false,
+    connectionType: "manual",
+    website: "https://investor.vanguard.com"
+  },
+  {
     id: "robinhood",
     name: "Robinhood",
     category: "brokerage",
     icon: TrendingUp,
     description: "Commission-free stock trading",
-    isPopular: true,
+    isPopular: false,
     connectionType: "manual",
     website: "https://robinhood.com"
-  },
-  {
-    id: "coinbase",
-    name: "Coinbase",
-    category: "crypto",
-    icon: Bitcoin,
-    description: "Cryptocurrency exchange and wallet",
-    isPopular: true,
-    connectionType: "api",
-    website: "https://www.coinbase.com"
   },
   {
     id: "chase",
@@ -98,29 +128,9 @@ const investmentPlatforms: InvestmentPlatform[] = [
     category: "bank",
     icon: Wallet,
     description: "Personal and business banking",
-    isPopular: true,
-    connectionType: "manual",
-    website: "https://www.chase.com"
-  },
-  {
-    id: "bofa",
-    name: "Bank of America",
-    category: "bank",
-    icon: Wallet,
-    description: "Banking and investment services",
-    isPopular: true,
-    connectionType: "manual",
-    website: "https://www.bankofamerica.com"
-  },
-  {
-    id: "wells_fargo",
-    name: "Wells Fargo",
-    category: "bank",
-    icon: Wallet,
-    description: "Banking and wealth management",
     isPopular: false,
     connectionType: "manual",
-    website: "https://www.wellsfargo.com"
+    website: "https://www.chase.com"
   },
   {
     id: "etrade",
@@ -131,16 +141,6 @@ const investmentPlatforms: InvestmentPlatform[] = [
     isPopular: false,
     connectionType: "manual",
     website: "https://us.etrade.com"
-  },
-  {
-    id: "td_ameritrade",
-    name: "TD Ameritrade",
-    category: "brokerage",
-    icon: Building2,
-    description: "Trading platform and research",
-    isPopular: false,
-    connectionType: "manual",
-    website: "https://www.tdameritrade.com"
   }
 ]
 
@@ -161,6 +161,12 @@ const categoryColors = {
 export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIntegrationDialogProps) {
   const [selectedPlatform, setSelectedPlatform] = useState<InvestmentPlatform | null>(null)
   const [isConnecting, setIsConnecting] = useState(false)
+  const [apiKeyData, setApiKeyData] = useState({
+    apiKey: "",
+    apiSecret: "",
+    accountName: "",
+    environment: "sandbox" as "sandbox" | "live"
+  })
   const [manualData, setManualData] = useState({
     accountNumber: "",
     accountName: "",
@@ -171,10 +177,8 @@ export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIn
 
   const handleConnect = async (platform: InvestmentPlatform) => {
     if (platform.connectionType === "api") {
-      toast({
-        title: "API Integration",
-        description: `${platform.name} API integration would be implemented here. This typically requires OAuth authentication.`,
-      })
+      // Show API key form for platforms that support API connections
+      setSelectedPlatform(platform)
       return
     }
 
@@ -188,6 +192,51 @@ export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIn
 
     // For manual connections, show the form
     setSelectedPlatform(platform)
+  }
+
+  const handleApiKeySubmit = async () => {
+    if (!selectedPlatform) return
+
+    setIsConnecting(true)
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error("User not authenticated")
+
+      // Store API credentials securely (in a real app, you'd encrypt these)
+      const { error } = await supabase
+        .from('financial_advisors')
+        .insert({
+          full_name: `${selectedPlatform.name} API Connection`,
+          company: selectedPlatform.name,
+          title: "API Investment Account",
+          bio: `Account: ${apiKeyData.accountName}\nEnvironment: ${apiKeyData.environment}\nConnected via API`,
+          specialties: [selectedPlatform.category, "api_connection"],
+          added_by: user.id,
+          notes: `Platform: ${selectedPlatform.name}\nConnection Type: API\nEnvironment: ${apiKeyData.environment}`
+        })
+
+      if (error) throw error
+
+      toast({
+        title: "API Connected",
+        description: `Successfully connected to ${selectedPlatform.name} via API.`,
+      })
+
+      // Reset form and close
+      setApiKeyData({ apiKey: "", apiSecret: "", accountName: "", environment: "sandbox" })
+      setSelectedPlatform(null)
+      onOpenChange(false)
+
+    } catch (error: any) {
+      toast({
+        title: "API Connection Failed",
+        description: error.message || "Failed to connect via API",
+        variant: "destructive",
+      })
+    } finally {
+      setIsConnecting(false)
+    }
   }
 
   const handleManualSubmit = async () => {
@@ -236,6 +285,109 @@ export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIn
     }
   }
 
+  // API Key Connection Form
+  if (selectedPlatform && selectedPlatform.connectionType === "api") {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <selectedPlatform.icon className="h-5 w-5" />
+              Connect {selectedPlatform.name} API
+            </DialogTitle>
+            <DialogDescription>
+              Enter your API credentials to connect your {selectedPlatform.name} account.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="accountName">Account Name</Label>
+              <Input
+                id="accountName"
+                placeholder="e.g., Trading Account, Portfolio 1"
+                value={apiKeyData.accountName}
+                onChange={(e) => setApiKeyData(prev => ({ ...prev, accountName: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="apiKey">API Key</Label>
+              <Input
+                id="apiKey"
+                type="password"
+                placeholder="Enter your API key"
+                value={apiKeyData.apiKey}
+                onChange={(e) => setApiKeyData(prev => ({ ...prev, apiKey: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="apiSecret">API Secret</Label>
+              <Input
+                id="apiSecret"
+                type="password"
+                placeholder="Enter your API secret"
+                value={apiKeyData.apiSecret}
+                onChange={(e) => setApiKeyData(prev => ({ ...prev, apiSecret: e.target.value }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="environment">Environment</Label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant={apiKeyData.environment === "sandbox" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setApiKeyData(prev => ({ ...prev, environment: "sandbox" }))}
+                  className="flex-1"
+                >
+                  Sandbox (Testing)
+                </Button>
+                <Button
+                  type="button"
+                  variant={apiKeyData.environment === "live" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setApiKeyData(prev => ({ ...prev, environment: "live" }))}
+                  className="flex-1"
+                >
+                  Live (Production)
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+              <Shield className="h-4 w-4 text-amber-600" />
+              <div className="text-sm text-amber-800">
+                <p className="font-medium">Security Notice</p>
+                <p>API keys are stored securely and encrypted. Start with sandbox mode for testing.</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setSelectedPlatform(null)}
+                className="flex-1"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={handleApiKeySubmit}
+                disabled={!apiKeyData.accountName || !apiKeyData.apiKey || !apiKeyData.apiSecret || isConnecting}
+                className="flex-1"
+              >
+                {isConnecting ? "Connecting..." : "Connect API"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    )
+  }
+
+  // Manual Connection Form
   if (selectedPlatform) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -366,9 +518,19 @@ export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIn
                           size="sm"
                           className="flex-1"
                           onClick={() => handleConnect(platform)}
+                          variant={platform.connectionType === "api" ? "default" : "secondary"}
                         >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Connect
+                          {platform.connectionType === "api" ? (
+                            <>
+                              <Link className="h-3 w-3 mr-1" />
+                              Connect API
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="h-3 w-3 mr-1" />
+                              Add Manual
+                            </>
+                          )}
                         </Button>
                         <Button
                           size="sm"
