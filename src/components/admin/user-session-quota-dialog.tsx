@@ -57,8 +57,8 @@ export function UserSessionQuotaDialog({ onQuotaUpdated }: UserSessionQuotaDialo
   const [programs, setPrograms] = useState<Program[]>([])
   const [quotas, setQuotas] = useState<SessionQuota[]>([])
   const [formData, setFormData] = useState({
-    user_id: '',
-    program_id: '',
+    user_id: 'none',
+    program_id: 'none',
     monthly_complimentary_sessions: '3'
   })
   const { toast } = useToast()
@@ -119,6 +119,16 @@ export function UserSessionQuotaDialog({ onQuotaUpdated }: UserSessionQuotaDialo
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (formData.user_id === 'none') {
+      toast({
+        title: "Validation Error",
+        description: "Please select a user.",
+        variant: "destructive",
+      })
+      return
+    }
+    
     setLoading(true)
 
     try {
@@ -147,8 +157,8 @@ export function UserSessionQuotaDialog({ onQuotaUpdated }: UserSessionQuotaDialo
       })
 
       setFormData({
-        user_id: '',
-        program_id: '',
+        user_id: 'none',
+        program_id: 'none',
         monthly_complimentary_sessions: '3'
       })
       
@@ -199,6 +209,7 @@ export function UserSessionQuotaDialog({ onQuotaUpdated }: UserSessionQuotaDialo
                       <SelectValue placeholder="Select a user" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="none" disabled>Select a user</SelectItem>
                       {users.map((user) => (
                         <SelectItem key={user.user_id} value={user.user_id}>
                           {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User'}
