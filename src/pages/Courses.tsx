@@ -9,7 +9,9 @@ import { Progress } from "@/components/ui/progress"
 import { CreateCourseDialog } from "@/components/courses/create-course-dialog"
 import { AddVideoDialog } from "@/components/courses/add-video-dialog"
 import { CourseVideoList } from "@/components/courses/course-video-list"
+import { CallRecordingsList } from "@/components/courses/call-recordings-list"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, BookOpen, Play, CheckCircle, Clock, Users, Star, Plus, Video } from 'lucide-react'
 
 interface Course {
@@ -45,6 +47,7 @@ const Courses = () => {
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [courseDetailOpen, setCourseDetailOpen] = useState(false)
   const [addVideoOpen, setAddVideoOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('courses')
 
   const fetchCourses = async () => {
     try {
@@ -175,147 +178,171 @@ const Courses = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Family Wealth Courses
+              Family Wealth Learning
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground mt-1">
-              Enhance your financial knowledge with expert-led courses
+              Access courses and coaching call recordings
             </p>
           </div>
         </div>
 
+        {/* Content Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="courses" className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4" />
+              Courses
+            </TabsTrigger>
+            <TabsTrigger value="recordings" className="flex items-center gap-2">
+              <Video className="h-4 w-4" />
+              Call Recordings
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Course Grid */}
-        <div>
-          <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
-            {selectedCategory} ({filteredCourses.length})
-          </h2>
-          <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredCourses.map((course) => {
-              const progress = getUserProgress(course.id)
-              const enrolled = isUserEnrolled(course.id)
-              const isCreator = isUserCourseCreator(course)
-              
-              return (
-                <Card key={course.id} className="shadow-soft hover:shadow-medium transition-smooth overflow-hidden">
-                  <div className="aspect-video overflow-hidden">
-                    <img 
-                      src={course.image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=200&fit=crop"} 
-                      alt={course.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <CardHeader className="p-3 sm:p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <Badge variant={course.level === 'Beginner' ? 'secondary' : course.level === 'Advanced' ? 'destructive' : 'default'} className="text-xs">
-                        {course.level}
-                      </Badge>
-                      <span className="text-xs sm:text-sm font-semibold text-primary">{course.price}</span>
-                    </div>
-                    <CardTitle className="text-sm sm:text-base leading-tight">{course.title}</CardTitle>
-                    <CardDescription className="text-xs sm:text-sm line-clamp-2">
-                      {course.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="p-3 sm:p-4 space-y-3">
-                    <div className="text-xs sm:text-sm text-muted-foreground">
-                      <p className="font-medium truncate">{course.instructor}</p>
-                      {course.duration && (
-                        <p className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {course.duration}
-                        </p>
-                      )}
-                    </div>
-
-                    {enrolled && progress > 0 && (
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-xs">
-                          <span>Progress</span>
-                          <span>{progress}%</span>
-                        </div>
-                        <Progress value={progress} className="h-2" />
+          <TabsContent value="courses" className="space-y-6 mt-6">
+            {/* Course Grid */}
+            <div>
+              <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
+                {selectedCategory} ({filteredCourses.length})
+              </h2>
+              <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredCourses.map((course) => {
+                  const progress = getUserProgress(course.id)
+                  const enrolled = isUserEnrolled(course.id)
+                  const isCreator = isUserCourseCreator(course)
+                  
+                  return (
+                    <Card key={course.id} className="shadow-soft hover:shadow-medium transition-smooth overflow-hidden">
+                      <div className="aspect-video overflow-hidden">
+                        <img 
+                          src={course.image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=200&fit=crop"} 
+                          alt={course.title}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                    )}
+                      <CardHeader className="p-3 sm:p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <Badge variant={course.level === 'Beginner' ? 'secondary' : course.level === 'Advanced' ? 'destructive' : 'default'} className="text-xs">
+                            {course.level}
+                          </Badge>
+                          <span className="text-xs sm:text-sm font-semibold text-primary">{course.price}</span>
+                        </div>
+                        <CardTitle className="text-sm sm:text-base leading-tight">{course.title}</CardTitle>
+                        <CardDescription className="text-xs sm:text-sm line-clamp-2">
+                          {course.description}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-3 sm:p-4 space-y-3">
+                        <div className="text-xs sm:text-sm text-muted-foreground">
+                          <p className="font-medium truncate">{course.instructor}</p>
+                          {course.duration && (
+                            <p className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {course.duration}
+                            </p>
+                          )}
+                        </div>
 
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <Button 
-                        className="flex-1 gap-1 sm:gap-2 text-sm py-2 h-auto" 
-                        size="default"
-                        onClick={() => handleOpenCourseDetail(course)}
-                      >
-                        {enrolled && progress === 0 ? (
-                          <>
-                            <Play className="h-3 w-3 sm:h-4 sm:w-4" />
-                            Start Course
-                          </>
-                        ) : enrolled && progress === 100 ? (
-                          <>
-                            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
-                            Completed
-                          </>
-                        ) : enrolled ? (
-                          <>
-                            <Play className="h-3 w-3 sm:h-4 sm:w-4" />
-                            Continue
-                          </>
-                        ) : (
-                          <>
-                            <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
-                            View Course
-                          </>
+                        {enrolled && progress > 0 && (
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span>Progress</span>
+                              <span>{progress}%</span>
+                            </div>
+                            <Progress value={progress} className="h-2" />
+                          </div>
                         )}
-                      </Button>
-                      
-                    </div>
 
-                    {!enrolled && !isCreator && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-xs sm:text-sm"
-                        onClick={() => handleEnrollInCourse(course.id)}
-                      >
-                        Enroll Now
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </div>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <Button 
+                            className="flex-1 gap-1 sm:gap-2 text-sm py-2 h-auto" 
+                            size="default"
+                            onClick={() => handleOpenCourseDetail(course)}
+                          >
+                            {enrolled && progress === 0 ? (
+                              <>
+                                <Play className="h-3 w-3 sm:h-4 sm:w-4" />
+                                Start Course
+                              </>
+                            ) : enrolled && progress === 100 ? (
+                              <>
+                                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                                Completed
+                              </>
+                            ) : enrolled ? (
+                              <>
+                                <Play className="h-3 w-3 sm:h-4 sm:w-4" />
+                                Continue
+                              </>
+                            ) : (
+                              <>
+                                <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
+                                View Course
+                              </>
+                            )}
+                          </Button>
+                          
+                        </div>
 
-        {/* Learning Stats */}
-        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-          <Card className="shadow-soft text-center">
-            <CardContent className="p-3 sm:p-4">
-              <div className="text-xl sm:text-2xl font-bold" style={{ color: '#ffb500' }}>{enrollments.length}</div>
-              <div className="text-xs sm:text-sm text-muted-foreground">Enrolled Courses</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-soft text-center">
-            <CardContent className="p-3 sm:p-4">
-              <div className="text-xl sm:text-2xl font-bold text-accent">
-                {enrollments.filter(e => e.completed_at).length}
+                        {!enrolled && !isCreator && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full text-xs sm:text-sm"
+                            onClick={() => handleEnrollInCourse(course.id)}
+                          >
+                            Enroll Now
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )
+                })}
               </div>
-              <div className="text-xs sm:text-sm text-muted-foreground">Completed</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-soft text-center">
-            <CardContent className="p-3 sm:p-4">
-              <div className="text-xl sm:text-2xl font-bold text-secondary">{courses.length}</div>
-              <div className="text-xs sm:text-sm text-muted-foreground">Total Courses</div>
-            </CardContent>
-          </Card>
-          <Card className="shadow-soft text-center">
-            <CardContent className="p-3 sm:p-4">
-              <div className="text-xl sm:text-2xl font-bold" style={{ color: '#ffb500' }}>
-                {enrollments.length > 0 ? Math.round(enrollments.reduce((acc, e) => acc + e.progress, 0) / enrollments.length) : 0}%
-              </div>
-              <div className="text-xs sm:text-sm text-muted-foreground">Avg Progress</div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+
+            {/* Learning Stats */}
+            <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+              <Card className="shadow-soft text-center">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="text-xl sm:text-2xl font-bold" style={{ color: '#ffb500' }}>{enrollments.length}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Enrolled Courses</div>
+                </CardContent>
+              </Card>
+              <Card className="shadow-soft text-center">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="text-xl sm:text-2xl font-bold text-accent">
+                    {enrollments.filter(e => e.completed_at).length}
+                  </div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Completed</div>
+                </CardContent>
+              </Card>
+              <Card className="shadow-soft text-center">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="text-xl sm:text-2xl font-bold text-secondary">{courses.length}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Total Courses</div>
+                </CardContent>
+              </Card>
+              <Card className="shadow-soft text-center">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="text-xl sm:text-2xl font-bold" style={{ color: '#ffb500' }}>
+                    {enrollments.length > 0 ? Math.round(enrollments.reduce((acc, e) => acc + e.progress, 0) / enrollments.length) : 0}%
+                  </div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Avg Progress</div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="recordings" className="mt-6">
+            <div>
+              <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
+                Coaching Call Recordings
+              </h2>
+              <CallRecordingsList />
+            </div>
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Create Course Dialog */}
