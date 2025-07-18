@@ -54,6 +54,7 @@ import { ThemeSettings } from '@/components/admin/theme-settings'
 import { AddCoachDialog } from '@/components/admin/add-coach-dialog'
 import { EditCoachDialog } from '@/components/admin/edit-coach-dialog'
 import { AddCoachingSessionDialog } from '@/components/admin/add-coaching-session-dialog'
+import { EditCoachingSessionDialog } from '@/components/admin/edit-coaching-session-dialog'
 import { 
   DndContext, 
   DragEndEvent, 
@@ -1130,9 +1131,10 @@ export default function AdminDashboard() {
                           <Button variant="outline" size="sm">
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          <EditCoachingSessionDialog 
+                            session={session} 
+                            onSessionUpdated={loadAdminData} 
+                          />
                           <Button 
                             variant="destructive" 
                             size="sm"

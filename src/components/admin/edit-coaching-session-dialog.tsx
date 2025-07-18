@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Plus, Users, User } from 'lucide-react'
+import { Edit, Users, User } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -23,30 +23,48 @@ interface Coach {
   email: string
 }
 
-interface AddCoachingSessionDialogProps {
-  onSessionAdded: () => void
-  type: 'group' | 'one-on-one'
+interface Session {
+  id: string
+  title: string
+  description: string | null
+  coach_name: string
+  session_date: string
+  session_time: string
+  duration_minutes: number
+  max_participants: number | null
+  meeting_url: string
+  meeting_password: string | null
+  is_recurring: boolean | null
+  recurrence_pattern: string | null
+  recurrence_end_date: string | null
 }
 
-export function AddCoachingSessionDialog({ onSessionAdded, type }: AddCoachingSessionDialogProps) {
+interface EditCoachingSessionDialogProps {
+  session: Session
+  onSessionUpdated: () => void
+}
+
+export function EditCoachingSessionDialog({ session, onSessionUpdated }: EditCoachingSessionDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [coaches, setCoaches] = useState<Coach[]>([])
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    coach_id: '',
-    session_date: '',
-    session_time: '',
-    duration_minutes: '60',
-    max_participants: type === 'group' ? '10' : '1',
-    meeting_url: '',
-    meeting_password: '',
-    is_recurring: false,
-    recurrence_pattern: 'weekly',
-    recurrence_end_date: ''
+    title: session.title,
+    description: session.description || '',
+    coach_name: session.coach_name,
+    session_date: session.session_date,
+    session_time: session.session_time,
+    duration_minutes: session.duration_minutes.toString(),
+    max_participants: (session.max_participants || 1).toString(),
+    meeting_url: session.meeting_url,
+    meeting_password: session.meeting_password || '',
+    is_recurring: session.is_recurring || false,
+    recurrence_pattern: session.recurrence_pattern || 'weekly',
+    recurrence_end_date: session.recurrence_end_date || ''
   })
   const { toast } = useToast()
+
+  const isGroupSession = (session.max_participants || 1) > 1
 
   useEffect(() => {
     if (open) {
@@ -77,53 +95,36 @@ export function AddCoachingSessionDialog({ onSessionAdded, type }: AddCoachingSe
     setLoading(true)
 
     try {
-      const selectedCoach = coaches.find(c => c.id === formData.coach_id)
-      
       const { error } = await supabase
         .from('group_coaching_sessions')
-        .insert({
+        .update({
           title: formData.title,
           description: formData.description,
-          coach_name: selectedCoach?.full_name || 'Unknown Coach',
+          coach_name: formData.coach_name,
           session_date: formData.session_date,
           session_time: formData.session_time,
           duration_minutes: parseInt(formData.duration_minutes),
           max_participants: parseInt(formData.max_participants),
           meeting_url: formData.meeting_url,
           meeting_password: formData.meeting_password,
-          meeting_type: 'zoom',
           is_recurring: formData.is_recurring,
           recurrence_pattern: formData.is_recurring ? formData.recurrence_pattern : null,
-          recurrence_end_date: formData.is_recurring ? formData.recurrence_end_date : null,
-          created_by: (await supabase.auth.getUser()).data.user?.id
+          recurrence_end_date: formData.is_recurring ? formData.recurrence_end_date : null
         })
+        .eq('id', session.id)
 
       if (error) throw error
 
       toast({
-        title: "Session created successfully",
-        description: `${type === 'group' ? 'Group' : '1-on-1'} coaching session has been scheduled.`,
+        title: "Session updated successfully",
+        description: `${isGroupSession ? 'Group' : '1-on-1'} coaching session has been updated.`,
       })
 
-      setFormData({
-        title: '',
-        description: '',
-        coach_id: '',
-        session_date: '',
-        session_time: '',
-        duration_minutes: '60',
-        max_participants: type === 'group' ? '10' : '1',
-        meeting_url: '',
-        meeting_password: '',
-        is_recurring: false,
-        recurrence_pattern: 'weekly',
-        recurrence_end_date: ''
-      })
       setOpen(false)
-      onSessionAdded()
+      onSessionUpdated()
     } catch (error: any) {
       toast({
-        title: "Error creating session",
+        title: "Error updating session",
         description: error.message,
         variant: "destructive",
       })
@@ -135,28 +136,17 @@ export function AddCoachingSessionDialog({ onSessionAdded, type }: AddCoachingSe
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          {type === 'group' ? (
-            <>
-              <Users className="h-4 w-4 mr-1" />
-              Add Group Session
-            </>
-          ) : (
-            <>
-              <User className="h-4 w-4 mr-1" />
-              Add 1-on-1 Session
-            </>
-          )}
+        <Button variant="outline" size="sm">
+          <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            Add {type === 'group' ? 'Group' : '1-on-1'} Coaching Session
+            Edit {isGroupSession ? 'Group' : '1-on-1'} Coaching Session
           </DialogTitle>
           <DialogDescription>
-            Schedule a new {type === 'group' ? 'group' : '1-on-1'} coaching session with a coach.
+            Update the details for this {isGroupSession ? 'group' : '1-on-1'} coaching session.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -181,14 +171,14 @@ export function AddCoachingSessionDialog({ onSessionAdded, type }: AddCoachingSe
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="coach_id">Coach</Label>
-            <Select value={formData.coach_id} onValueChange={(value) => setFormData({ ...formData, coach_id: value })}>
+            <Label htmlFor="coach_name">Coach Name</Label>
+            <Select value={formData.coach_name} onValueChange={(value) => setFormData({ ...formData, coach_name: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a coach" />
               </SelectTrigger>
               <SelectContent>
                 {coaches.map((coach) => (
-                  <SelectItem key={coach.id} value={coach.id}>
+                  <SelectItem key={coach.id} value={coach.full_name}>
                     {coach.full_name} ({coach.email})
                   </SelectItem>
                 ))}
@@ -232,18 +222,16 @@ export function AddCoachingSessionDialog({ onSessionAdded, type }: AddCoachingSe
               />
             </div>
             
-            {type === 'group' && (
-              <div className="space-y-2">
-                <Label htmlFor="max_participants">Max Participants</Label>
-                <Input
-                  id="max_participants"
-                  type="number"
-                  value={formData.max_participants}
-                  onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
-                  required
-                />
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="max_participants">Max Participants</Label>
+              <Input
+                id="max_participants"
+                type="number"
+                value={formData.max_participants}
+                onChange={(e) => setFormData({ ...formData, max_participants: e.target.value })}
+                required
+              />
+            </div>
           </div>
           
           <div className="space-y-2">
@@ -308,12 +296,12 @@ export function AddCoachingSessionDialog({ onSessionAdded, type }: AddCoachingSe
             )}
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Session'}
+              {loading ? 'Updating...' : 'Update Session'}
             </Button>
           </div>
         </form>
