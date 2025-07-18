@@ -878,7 +878,7 @@ export default function AdminDashboard() {
             {/* Clients per Coach Chart */}
             <Card>
               <CardHeader>
-                <CardTitle>Clients per Coach</CardTitle>
+                <CardTitle>Members per Coach</CardTitle>
                 <CardDescription>Distribution of clients across coaches</CardDescription>
               </CardHeader>
               <CardContent>
