@@ -244,8 +244,8 @@ const Courses = () => {
 
                     <div className="flex flex-col sm:flex-row gap-2">
                       <Button 
-                        className="flex-1 gap-1 sm:gap-2 text-xs sm:text-sm" 
-                        size="sm"
+                        className="flex-1 gap-1 sm:gap-2 text-sm py-2 h-auto" 
+                        size="default"
                         onClick={() => handleOpenCourseDetail(course)}
                       >
                         {enrolled && progress === 0 ? (
