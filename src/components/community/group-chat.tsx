@@ -100,19 +100,26 @@ export function GroupChat({ groupId }: GroupChatProps) {
     try {
       const { data, error } = await supabase
         .from('group_messages')
-        .select(`
-          *,
-          profiles!group_messages_user_id_fkey (
-            display_name,
-            first_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('group_id', groupId)
         .order('created_at', { ascending: true })
 
       if (error) throw error
-      setMessages(data || [])
+      
+      // Fetch profile data for all unique users
+      const userIds = [...new Set(data?.map(msg => msg.user_id) || [])]
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, first_name, avatar_url')
+        .in('user_id', userIds)
+      
+      // Map profiles to messages
+      const messagesWithProfiles = data?.map(msg => ({
+        ...msg,
+        profiles: profiles?.find(p => p.user_id === msg.user_id) || null
+      })) || []
+      
+      setMessages(messagesWithProfiles)
     } catch (error) {
       console.error('Error fetching messages:', error)
     } finally {
@@ -181,14 +188,25 @@ export function GroupChat({ groupId }: GroupChatProps) {
 
   const fetchMessageWithProfile = async (messageId: string): Promise<Message | null> => {
     try {
-      const { data, error } = await supabase
+      const { data: message, error } = await supabase
         .from('group_messages')
         .select('*')
         .eq('id', messageId)
         .single()
 
       if (error) throw error
-      return data as Message
+      
+      // Fetch profile data for the message user
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, first_name, avatar_url')
+        .eq('user_id', message.user_id)
+        .single()
+      
+      return {
+        ...message,
+        profiles: profile || null
+      } as Message
     } catch (error) {
       console.error('Error fetching message with profile:', error)
       return null
