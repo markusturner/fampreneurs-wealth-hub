@@ -43,14 +43,17 @@ export const ProfilePhotoUpload = ({ isOpen, onClose }: ProfilePhotoUploadProps)
     setUploading(true)
     try {
       const fileExt = selectedFile.name.split('.').pop()
-      const fileName = `${user.id}_${Date.now()}.${fileExt}`
-      const filePath = `${fileName}`
+      const fileName = `${Date.now()}.${fileExt}`
+      const filePath = `${user.id}/${fileName}` // Organize by user ID for RLS
 
       // Delete old photo if exists
       if (profile?.avatar_url) {
         try {
-          const oldPath = profile.avatar_url.split('/').pop()
-          if (oldPath) {
+          // Extract the full path from the URL for deletion
+          const urlParts = profile.avatar_url.split('/')
+          const bucketIndex = urlParts.findIndex(part => part === 'profile-photos')
+          if (bucketIndex !== -1 && bucketIndex < urlParts.length - 1) {
+            const oldPath = urlParts.slice(bucketIndex + 1).join('/')
             await supabase.storage.from('profile-photos').remove([oldPath])
           }
         } catch (error) {
