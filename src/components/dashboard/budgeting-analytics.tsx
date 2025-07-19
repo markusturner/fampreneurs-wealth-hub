@@ -94,42 +94,34 @@ export function BudgetingAnalytics() {
       let hasTransactions = false
       
       if (!user) {
-        // For non-authenticated users, check localStorage
-        const stored = localStorage.getItem('connectedAccounts')
-        const accounts = stored ? JSON.parse(stored) : []
-        const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
-        const activeAccounts = accounts.filter((account: any) => !deletedAccounts.includes(account.id))
-        
-        setConnectedAccounts(activeAccounts)
-        hasAccounts = activeAccounts.length > 0
-        
-        // Check for manual transactions
-        const storedTransactions = localStorage.getItem('manualTransactions')
-        const manualTransactions = storedTransactions ? JSON.parse(storedTransactions) : []
-        setTransactions(manualTransactions)
-        hasTransactions = manualTransactions.length > 0
-      } else {
-        // For authenticated users, fetch from Supabase
-        const { data: accounts, error: accountsError } = await supabase
-          .from('connected_accounts')
-          .select('*')
-          .eq('user_id', user.id)
+        // For non-authenticated users, use empty data
+        setBudgetCategories([])
+        setFinancialGoals([])
+        setAiRecommendations([])
+        setIsOperational(false)
+        return
+      }
+      
+      // For authenticated users, fetch from Supabase
+      const { data: accounts, error: accountsError } = await supabase
+        .from('connected_accounts')
+        .select('*')
+        .eq('user_id', user.id)
 
-        if (!accountsError && accounts) {
-          setConnectedAccounts(accounts)
-          hasAccounts = accounts.length > 0
-        }
+      if (!accountsError && accounts) {
+        setConnectedAccounts(accounts)
+        hasAccounts = accounts.length > 0
+      }
 
-        const { data: dbTransactions, error: transactionsError } = await supabase
-          .from('account_transactions')
-          .select('*')
-          .eq('user_id', user.id)
-          .limit(10)
+      const { data: dbTransactions, error: transactionsError } = await supabase
+        .from('account_transactions')
+        .select('*')
+        .eq('user_id', user.id)
+        .limit(10)
 
-        if (!transactionsError && dbTransactions) {
-          setTransactions(dbTransactions)
-          hasTransactions = dbTransactions.length > 0
-        }
+      if (!transactionsError && dbTransactions) {
+        setTransactions(dbTransactions)
+        hasTransactions = dbTransactions.length > 0
       }
 
       // Don't automatically load mock data - only set operational state

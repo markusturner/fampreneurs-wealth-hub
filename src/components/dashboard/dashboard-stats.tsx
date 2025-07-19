@@ -3,9 +3,11 @@ import { Badge } from "@/components/ui/badge"
 import { TrendingUp, TrendingDown, DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, UserPlus, Home, Briefcase } from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
+import { useAuth } from "@/contexts/AuthContext"
 
 
 export function DashboardStats() {
+  const { user } = useAuth()
   const [documentCount, setDocumentCount] = useState(0)
   const [financialAdvisorCount, setFinancialAdvisorCount] = useState(0)
   const [familyMemberCount, setFamilyMemberCount] = useState(0)
@@ -18,40 +20,46 @@ export function DashboardStats() {
   })
 
   useEffect(() => {
+    if (!user) return
+
     const fetchCounts = async () => {
-      // Fetch document count
+      // Fetch document count for current user
       const { count: docCount, error: docError } = await supabase
         .from('family_documents')
         .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
       
       if (!docError && docCount !== null) {
         setDocumentCount(docCount)
       }
 
-      // Fetch financial advisor count
+      // Fetch financial advisor count for current user
       const { count: advisorCount, error: advisorError } = await supabase
         .from('financial_advisors')
         .select('*', { count: 'exact', head: true })
+        .eq('added_by', user.id)
         .eq('is_active', true)
       
       if (!advisorError && advisorCount !== null) {
         setFinancialAdvisorCount(advisorCount)
       }
 
-      // Fetch family member count
+      // Fetch family member count for current user
       const { count: familyCount, error: familyError } = await supabase
         .from('family_members')
         .select('*', { count: 'exact', head: true })
+        .eq('added_by', user.id)
         .neq('status', 'inactive')
       
       if (!familyError && familyCount !== null) {
         setFamilyMemberCount(familyCount)
       }
 
-      // Fetch portfolio data
+      // Fetch portfolio data for current user
       const { data: portfolios, error: portfolioError } = await supabase
         .from('investment_portfolios')
         .select('total_value, day_change, day_change_percent, positions')
+        .eq('user_id', user.id)
       
       if (!portfolioError && portfolios) {
         const totalValue = portfolios.reduce((sum, p) => sum + Number(p.total_value), 0)
@@ -74,12 +82,17 @@ export function DashboardStats() {
     }
 
     fetchCounts()
-  }, [])
+  }, [user])
 
-  // Get connected accounts data from localStorage
+  // Get user-specific connected accounts data from localStorage
   const getConnectedAccountsData = () => {
-    const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
-    const savedAccounts = JSON.parse(localStorage.getItem('connectedAccounts') || '[]')
+    if (!user) return []
+    
+    const userKey = `connectedAccounts_${user.id}`
+    const deletedKey = `deletedAccounts_${user.id}`
+    
+    const deletedAccounts = JSON.parse(localStorage.getItem(deletedKey) || '[]')
+    const savedAccounts = JSON.parse(localStorage.getItem(userKey) || '[]')
     return savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id))
   }
 

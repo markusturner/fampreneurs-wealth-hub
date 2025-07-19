@@ -89,20 +89,9 @@ export function TransactionMonitoring() {
       setLoading(true)
       
       if (!user) {
-        // For non-authenticated users, check localStorage
-        const stored = localStorage.getItem('connectedAccounts')
-        const accounts = stored ? JSON.parse(stored) : []
-        const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
-        const activeAccounts = accounts.filter((account: any) => !deletedAccounts.includes(account.id))
-        
-        setConnectedAccounts(activeAccounts)
-        
-        // Only show transactions if there are connected accounts
-        if (activeAccounts.length > 0) {
-          await fetchTransactions()
-        } else {
-          setTransactions([])
-        }
+        // For non-authenticated users, use empty data
+        setConnectedAccounts([])
+        setTransactions([])
         return
       }
 

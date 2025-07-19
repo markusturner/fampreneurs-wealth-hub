@@ -113,10 +113,15 @@ export default function FamilyOffice() {
     return investments.reduce((sum, inv) => sum + (inv.cash_balance || 0), 0)
   }
 
-  // Get accounts balance from localStorage and connected accounts
+  // Get user-specific accounts balance from localStorage and connected accounts
   const getConnectedAccounts = () => {
-    const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
-    const savedAccounts = JSON.parse(localStorage.getItem('connectedAccounts') || '[]')
+    if (!user) return []
+    
+    const userKey = `connectedAccounts_${user.id}`
+    const deletedKey = `deletedAccounts_${user.id}`
+    
+    const deletedAccounts = JSON.parse(localStorage.getItem(deletedKey) || '[]')
+    const savedAccounts = JSON.parse(localStorage.getItem(userKey) || '[]')
     return savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id))
   }
 
@@ -127,10 +132,15 @@ export default function FamilyOffice() {
   }
 
 
-  // Get active accounts count
+  // Get active accounts count for current user
   const getActiveAccountsCount = () => {
-    const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
-    const savedAccounts = JSON.parse(localStorage.getItem('connectedAccounts') || '[]')
+    if (!user) return 0
+    
+    const userKey = `connectedAccounts_${user.id}`
+    const deletedKey = `deletedAccounts_${user.id}`
+    
+    const deletedAccounts = JSON.parse(localStorage.getItem(deletedKey) || '[]')
+    const savedAccounts = JSON.parse(localStorage.getItem(userKey) || '[]')
     return savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id) && account.status === 'connected').length
   }
 
