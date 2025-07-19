@@ -4,10 +4,11 @@ import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Play, Clock, Edit, Trash2 } from 'lucide-react'
+import { Play, Clock, Edit, Trash2, ChevronDown } from 'lucide-react'
 import { VideoDocuments } from './video-documents'
 import { EditVideoDialog } from './edit-video-dialog'
 import { useToast } from '@/hooks/use-toast'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Video {
   id: string
@@ -16,6 +17,14 @@ interface Video {
   video_url: string
   video_type: 'upload' | 'youtube' | 'vimeo'
   duration_seconds: number | null
+  order_index: number
+  module_id: string | null
+}
+
+interface Module {
+  id: string
+  title: string
+  description: string | null
   order_index: number
 }
 
@@ -100,6 +109,8 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
   const { user } = useAuth()
   const { toast } = useToast()
   const [videos, setVideos] = useState<Video[]>([])
+  const [modules, setModules] = useState<Module[]>([])
+  const [selectedModule, setSelectedModule] = useState<string>('all')
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null)
   const [loading, setLoading] = useState(true)
   const [editVideoOpen, setEditVideoOpen] = useState(false)
@@ -140,6 +151,23 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
       console.error('Error fetching videos:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchModules = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('course_modules')
+        .select('*')
+        .eq('course_id', courseId)
+        .order('order_index', { ascending: true })
+
+      if (error) throw error
+      
+      const typedData = (data || []) as Module[]
+      setModules(typedData)
+    } catch (error) {
+      console.error('Error fetching modules:', error)
     }
   }
 
@@ -209,8 +237,15 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
     fetchVideos()
   }
 
+  const filteredVideos = selectedModule === 'all' 
+    ? videos 
+    : selectedModule === 'unassigned'
+    ? videos.filter(video => !video.module_id)
+    : videos.filter(video => video.module_id === selectedModule)
+
   useEffect(() => {
     fetchVideos()
+    fetchModules()
   }, [courseId])
 
   if (loading) {
@@ -254,10 +289,30 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
 
         {/* Video List - Your Brand Style */}
         <div className="space-y-6">
-          <h3 className="font-bold text-xl mb-8 text-foreground">Episodes ({videos.length})</h3>
+          <h3 className="font-bold text-xl mb-8 text-foreground">Episodes ({filteredVideos.length})</h3>
+          
+          {/* Module Filter Dropdown */}
+          <div className="mb-4">
+            <Select value={selectedModule} onValueChange={setSelectedModule}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Filter by module" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Videos</SelectItem>
+                <SelectItem value="unassigned">Unassigned Videos</SelectItem>
+                {modules.map((module) => (
+                  <SelectItem key={module.id} value={module.id}>
+                    {module.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
           <div className="space-y-4">
-            {videos.map((video, index) => {
-              const isUnlocked = isVideoUnlocked(video, index)
+            {filteredVideos.map((video, index) => {
+              const originalIndex = videos.findIndex(v => v.id === video.id)
+              const isUnlocked = isVideoUnlocked(video, originalIndex)
               const isWatched = watchedVideos.has(video.id)
               
               return (
