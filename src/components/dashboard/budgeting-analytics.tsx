@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -55,10 +57,13 @@ interface AIRecommendation {
 }
 
 export function BudgetingAnalytics() {
+  const { user } = useAuth()
   const { toast } = useToast()
   const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([])
   const [financialGoals, setFinancialGoals] = useState<FinancialGoal[]>([])
   const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([])
+  const [connectedAccounts, setConnectedAccounts] = useState<any[]>([])
+  const [transactions, setTransactions] = useState<any[]>([])
   const [showBudgetDialog, setShowBudgetDialog] = useState(false)
   const [showGoalDialog, setShowGoalDialog] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -77,12 +82,79 @@ export function BudgetingAnalytics() {
   })
 
   useEffect(() => {
-    fetchBudgetData()
-  }, [])
+    checkDataAvailabilityAndFetchBudget()
+  }, [user])
+
+  const checkDataAvailabilityAndFetchBudget = async () => {
+    try {
+      setLoading(true)
+      
+      // Check for connected accounts and transactions
+      let hasAccounts = false
+      let hasTransactions = false
+      
+      if (!user) {
+        // For non-authenticated users, check localStorage
+        const stored = localStorage.getItem('connectedAccounts')
+        const accounts = stored ? JSON.parse(stored) : []
+        const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
+        const activeAccounts = accounts.filter((account: any) => !deletedAccounts.includes(account.id))
+        
+        setConnectedAccounts(activeAccounts)
+        hasAccounts = activeAccounts.length > 0
+        
+        // Check for manual transactions
+        const storedTransactions = localStorage.getItem('manualTransactions')
+        const manualTransactions = storedTransactions ? JSON.parse(storedTransactions) : []
+        setTransactions(manualTransactions)
+        hasTransactions = manualTransactions.length > 0
+      } else {
+        // For authenticated users, fetch from Supabase
+        const { data: accounts, error: accountsError } = await supabase
+          .from('connected_accounts')
+          .select('*')
+          .eq('user_id', user.id)
+
+        if (!accountsError && accounts) {
+          setConnectedAccounts(accounts)
+          hasAccounts = accounts.length > 0
+        }
+
+        const { data: dbTransactions, error: transactionsError } = await supabase
+          .from('account_transactions')
+          .select('*')
+          .eq('user_id', user.id)
+          .limit(10)
+
+        if (!transactionsError && dbTransactions) {
+          setTransactions(dbTransactions)
+          hasTransactions = dbTransactions.length > 0
+        }
+      }
+
+      // Only show budget data if there are connected accounts or transactions
+      if (hasAccounts || hasTransactions) {
+        await fetchBudgetData()
+      } else {
+        setBudgetCategories([])
+        setFinancialGoals([])
+        setAiRecommendations([])
+        setIsOperational(false)
+      }
+    } catch (error) {
+      console.error('Error checking data availability:', error)
+      setBudgetCategories([])
+      setFinancialGoals([])
+      setAiRecommendations([])
+      setIsOperational(false)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const fetchBudgetData = async () => {
     try {
-      // Mock data - replace with actual API calls
+      // Only fetch budget data if we have transactions or accounts to base it on
       const mockBudgets: BudgetCategory[] = [
         {
           id: '1',
@@ -307,14 +379,22 @@ export function BudgetingAnalytics() {
             <div className="text-center">
               <BrainCircuit className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">Budget & Analytics</h3>
-              <p className="text-muted-foreground">
-                Advanced budgeting and analytics tools are now operational and ready to use.
+              <p className="text-muted-foreground mb-4">
+                Connect your accounts or add transactions to start using advanced budgeting and analytics tools.
               </p>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Budget categories and spending analytics will appear once you have transaction data.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  You can still manually add budget categories and financial goals to get started.
+                </p>
+              </div>
               <Button 
                 onClick={() => setIsOperational(true)} 
                 className="mt-4"
               >
-                Launch Budget Dashboard
+                Create Manual Budget
               </Button>
             </div>
           </CardContent>
