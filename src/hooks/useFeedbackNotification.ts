@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 export function useFeedbackNotification() {
   const { user } = useAuth()
   const [shouldShowFeedback, setShouldShowFeedback] = useState(false)
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [timerRef, setTimerRef] = useState<NodeJS.Timeout | null>(null)
 

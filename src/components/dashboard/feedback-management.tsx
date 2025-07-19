@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FeedbackDialog } from '@/components/dashboard/feedback-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { MessageSquare, TrendingUp, Users, Star, Calendar } from 'lucide-react'
@@ -12,14 +11,16 @@ import { MessageSquare, TrendingUp, Users, Star, Calendar } from 'lucide-react'
 interface FeedbackResponse {
   id: string
   user_id: string
-  overall_satisfaction: number
-  program_effectiveness: number
-  ease_of_use: number
-  community_support: number
-  feature_usefulness: number
+  full_name: string | null
+  current_module: string | null
+  overall_experience_rating: number | null
+  experience_explanation: string | null
+  coach_response_rating: number | null
   improvement_suggestions: string | null
-  additional_feedback: string | null
+  retreat_interest: string | null
+  additional_comments: string | null
   created_at: string
+  updated_at: string
 }
 
 export function FeedbackManagement() {
@@ -83,13 +84,21 @@ export function FeedbackManagement() {
   }, [profile?.is_admin])
 
   const getDisplayName = (response: FeedbackResponse) => {
-    return `User ${response.user_id.slice(0, 8)}`
+    return response.full_name || `User ${response.user_id.slice(0, 8)}`
   }
 
-  const calculateAverageRating = (responses: FeedbackResponse[], field: keyof Pick<FeedbackResponse, 'overall_satisfaction' | 'program_effectiveness' | 'ease_of_use' | 'community_support' | 'feature_usefulness'>) => {
-    if (responses.length === 0) return 0
-    const sum = responses.reduce((acc, response) => acc + (response[field] || 0), 0)
-    return (sum / responses.length).toFixed(1)
+  const calculateAverageRating = (responses: FeedbackResponse[], field: 'overall_experience_rating' | 'coach_response_rating') => {
+    const validResponses = responses.filter(r => r[field] !== null)
+    if (validResponses.length === 0) return "0.0"
+    const sum = validResponses.reduce((acc, response) => acc + (response[field] || 0), 0)
+    return (sum / validResponses.length).toFixed(1)
+  }
+
+  const getSatisfactionScore = () => {
+    if (feedbackResponses.length === 0) return 0
+    const avgExperience = parseFloat(calculateAverageRating(feedbackResponses, 'overall_experience_rating'))
+    const avgCoach = parseFloat(calculateAverageRating(feedbackResponses, 'coach_response_rating'))
+    return Math.round((avgExperience + avgCoach) / 2 * 10) // Convert to percentage
   }
 
   if (!profile?.is_admin) {
@@ -152,7 +161,7 @@ export function FeedbackManagement() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total Responses</CardTitle>
@@ -164,11 +173,11 @@ export function FeedbackManagement() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Overall Satisfaction</CardTitle>
+            <CardTitle className="text-sm font-medium">Overall Experience</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold flex items-center gap-1">
-              {calculateAverageRating(feedbackResponses, 'overall_satisfaction')}
+              {calculateAverageRating(feedbackResponses, 'overall_experience_rating')}
               <Star className="h-4 w-4 text-yellow-500" />
             </div>
           </CardContent>
@@ -176,11 +185,11 @@ export function FeedbackManagement() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Program Effectiveness</CardTitle>
+            <CardTitle className="text-sm font-medium">Coach Response</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold flex items-center gap-1">
-              {calculateAverageRating(feedbackResponses, 'program_effectiveness')}
+              {calculateAverageRating(feedbackResponses, 'coach_response_rating')}
               <TrendingUp className="h-4 w-4 text-green-500" />
             </div>
           </CardContent>
@@ -188,24 +197,12 @@ export function FeedbackManagement() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Ease of Use</CardTitle>
+            <CardTitle className="text-sm font-medium">Satisfaction Score</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold flex items-center gap-1">
-              {calculateAverageRating(feedbackResponses, 'ease_of_use')}
+              {getSatisfactionScore()}%
               <Users className="h-4 w-4 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Community Support</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-1">
-              {calculateAverageRating(feedbackResponses, 'community_support')}
-              <MessageSquare className="h-4 w-4 text-purple-500" />
             </div>
           </CardContent>
         </Card>
@@ -236,49 +233,51 @@ export function FeedbackManagement() {
                       <p className="text-sm text-muted-foreground">
                         {new Date(response.created_at).toLocaleDateString()}
                       </p>
+                      {response.current_module && (
+                        <Badge variant="secondary" className="mt-1">
+                          {response.current_module}
+                        </Badge>
+                      )}
                     </div>
-                    <Badge variant="outline">
-                      {response.overall_satisfaction}/10 Overall
-                    </Badge>
-                  </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">
-                    <div className="text-center">
-                      <div className="text-sm font-medium">{response.overall_satisfaction}</div>
-                      <div className="text-xs text-muted-foreground">Overall</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-sm font-medium">{response.program_effectiveness}</div>
-                      <div className="text-xs text-muted-foreground">Effectiveness</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-sm font-medium">{response.ease_of_use}</div>
-                      <div className="text-xs text-muted-foreground">Ease of Use</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-sm font-medium">{response.community_support}</div>
-                      <div className="text-xs text-muted-foreground">Community</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-sm font-medium">{response.feature_usefulness}</div>
-                      <div className="text-xs text-muted-foreground">Features</div>
+                    <div className="flex gap-2">
+                      {response.overall_experience_rating && (
+                        <Badge variant="outline">
+                          Experience: {response.overall_experience_rating}/10
+                        </Badge>
+                      )}
+                      {response.coach_response_rating && (
+                        <Badge variant="outline">
+                          Coach: {response.coach_response_rating}/10
+                        </Badge>
+                      )}
                     </div>
                   </div>
 
-                  {(response.improvement_suggestions || response.additional_feedback) && (
-                    <div className="space-y-2">
-                      {response.improvement_suggestions && (
-                        <div>
-                          <h5 className="text-sm font-medium mb-1">Improvement Suggestions:</h5>
-                          <p className="text-sm text-muted-foreground">{response.improvement_suggestions}</p>
-                        </div>
-                      )}
-                      {response.additional_feedback && (
-                        <div>
-                          <h5 className="text-sm font-medium mb-1">Additional Comments:</h5>
-                          <p className="text-sm text-muted-foreground">{response.additional_feedback}</p>
-                        </div>
-                      )}
+                  {response.experience_explanation && (
+                    <div className="mb-3">
+                      <h5 className="text-sm font-medium mb-1">Experience Explanation:</h5>
+                      <p className="text-sm text-muted-foreground">{response.experience_explanation}</p>
+                    </div>
+                  )}
+
+                  {response.improvement_suggestions && (
+                    <div className="mb-3">
+                      <h5 className="text-sm font-medium mb-1">Improvement Suggestions:</h5>
+                      <p className="text-sm text-muted-foreground">{response.improvement_suggestions}</p>
+                    </div>
+                  )}
+
+                  {response.retreat_interest && (
+                    <div className="mb-3">
+                      <h5 className="text-sm font-medium mb-1">Retreat Interest:</h5>
+                      <p className="text-sm text-muted-foreground">{response.retreat_interest}</p>
+                    </div>
+                  )}
+
+                  {response.additional_comments && (
+                    <div>
+                      <h5 className="text-sm font-medium mb-1">Additional Comments:</h5>
+                      <p className="text-sm text-muted-foreground">{response.additional_comments}</p>
                     </div>
                   )}
                 </Card>

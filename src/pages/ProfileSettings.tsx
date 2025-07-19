@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AdminSettings } from '@/components/dashboard/admin-settings'
 import { AccountabilityDirectory } from '@/components/dashboard/accountability-directory'
 import { AffiliateProgram } from '@/components/dashboard/affiliate-program'
-import { FeedbackManagement } from '@/components/dashboard/feedback-management'
 import { AccountSettings } from '@/components/dashboard/account-settings'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -58,7 +57,7 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="directory" className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2 h-auto' : 'grid-cols-5'}`}>
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2 h-auto' : 'grid-cols-4'}`}>
           <TabsTrigger 
             value="directory" 
             className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
@@ -87,13 +86,6 @@ export function ProfileSettings() {
             </span>
           </TabsTrigger>
           <TabsTrigger 
-            value="feedback" 
-            className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
-          >
-            <Heart className="h-4 w-4 shrink-0" />
-            <span className={isMobile ? "text-center leading-tight" : ""}>Feedback</span>
-          </TabsTrigger>
-          <TabsTrigger 
             value="admin" 
             className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
           >
@@ -114,10 +106,6 @@ export function ProfileSettings() {
 
         <TabsContent value="affiliate">
           <AffiliateProgram />
-        </TabsContent>
-
-        <TabsContent value="feedback">
-          <FeedbackManagement />
         </TabsContent>
 
         <TabsContent value="admin">

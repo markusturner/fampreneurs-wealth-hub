@@ -911,41 +911,44 @@ export type Database = {
       }
       feedback_responses: {
         Row: {
-          additional_feedback: string | null
-          community_support: number | null
+          additional_comments: string | null
+          coach_response_rating: number | null
           created_at: string
-          ease_of_use: number | null
-          feature_usefulness: number | null
+          current_module: string | null
+          experience_explanation: string | null
+          full_name: string | null
           id: string
           improvement_suggestions: string | null
-          overall_satisfaction: number | null
-          program_effectiveness: number | null
+          overall_experience_rating: number | null
+          retreat_interest: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
-          additional_feedback?: string | null
-          community_support?: number | null
+          additional_comments?: string | null
+          coach_response_rating?: number | null
           created_at?: string
-          ease_of_use?: number | null
-          feature_usefulness?: number | null
+          current_module?: string | null
+          experience_explanation?: string | null
+          full_name?: string | null
           id?: string
           improvement_suggestions?: string | null
-          overall_satisfaction?: number | null
-          program_effectiveness?: number | null
+          overall_experience_rating?: number | null
+          retreat_interest?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
-          additional_feedback?: string | null
-          community_support?: number | null
+          additional_comments?: string | null
+          coach_response_rating?: number | null
           created_at?: string
-          ease_of_use?: number | null
-          feature_usefulness?: number | null
+          current_module?: string | null
+          experience_explanation?: string | null
+          full_name?: string | null
           id?: string
           improvement_suggestions?: string | null
-          overall_satisfaction?: number | null
-          program_effectiveness?: number | null
+          overall_experience_rating?: number | null
+          retreat_interest?: string | null
           updated_at?: string
           user_id?: string
         }

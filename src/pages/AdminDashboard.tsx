@@ -62,6 +62,7 @@ import { UserSessionQuotaDialog } from '@/components/admin/user-session-quota-di
 import { AssignCoachDialog } from '@/components/admin/assign-coach-dialog'
 import { ZapierIntegration } from '@/components/admin/zapier-integration'
 import { CoachingRecordings } from '@/components/admin/coaching-recordings'
+import { FeedbackManagement } from '@/components/dashboard/feedback-management'
 import { EnhancedAddVideoDialog } from '@/components/courses/enhanced-add-video-dialog'
 import { 
   DndContext, 
@@ -505,14 +506,18 @@ export default function AdminDashboard() {
       const totalRevenue = revenueData?.reduce((sum, r) => sum + Number(r.amount), 0) || 0
       const averageRevenue = revenueData?.length ? totalRevenue / revenueData.length : 0
 
-      // Satisfaction scores
-      const { data: satisfactionData } = await supabase
-        .from('satisfaction_scores')
-        .select('score')
+      // Satisfaction scores from feedback responses
+      const { data: feedbackData } = await supabase
+        .from('feedback_responses')
+        .select('overall_experience_rating, coach_response_rating')
         .gte('created_at', thirtyDaysAgo.toISOString())
 
-      const avgSatisfaction = satisfactionData?.length 
-        ? satisfactionData.reduce((sum, s) => sum + s.score, 0) / satisfactionData.length 
+      const avgSatisfaction = feedbackData?.length 
+        ? feedbackData.reduce((sum, response) => {
+            const experienceRating = response.overall_experience_rating || 0
+            const coachRating = response.coach_response_rating || 0
+            return sum + ((experienceRating + coachRating) / 2)
+          }, 0) / feedbackData.length 
         : 0
 
       // Coaching calls data - using session_attendance for accurate data
@@ -781,7 +786,7 @@ export default function AdminDashboard() {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">
               <BarChart3 className="h-4 w-4 mr-2" />
               Overview
@@ -797,6 +802,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="coaching">
               <Calendar className="h-4 w-4 mr-2" />
               Coaching
+            </TabsTrigger>
+            <TabsTrigger value="feedback">
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Feedback
             </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="h-4 w-4 mr-2" />
@@ -1420,6 +1429,11 @@ export default function AdminDashboard() {
 
             {/* Coaching Call Recordings */}
             <CoachingRecordings />
+          </TabsContent>
+
+          {/* Feedback Tab */}
+          <TabsContent value="feedback" className="space-y-6">
+            <FeedbackManagement />
           </TabsContent>
 
           {/* Settings Tab */}
