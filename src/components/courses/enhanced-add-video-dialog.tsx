@@ -66,7 +66,7 @@ const getEmbedUrl = (url: string, type: VideoType): string => {
 export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAdded }: AddVideoDialogProps) => {
   const { user } = useAuth()
   const { toast } = useToast()
-  const [activeTab, setActiveTab] = useState<'upload' | 'url'>('url')
+  const [activeTab, setActiveTab] = useState<'upload' | 'url' | 'existing'>('url')
   
   // Video form state
   const [title, setTitle] = useState('')
@@ -88,11 +88,17 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
   // Documents state
   const [documents, setDocuments] = useState<Document[]>([])
   const [showDocumentSection, setShowDocumentSection] = useState(false)
+  
+  // Existing videos state
+  const [existingVideos, setExistingVideos] = useState<Array<{ id: string; title: string; description: string }>>([])
+  const [selectedExistingVideos, setSelectedExistingVideos] = useState<string[]>([])
+  const [assignModuleId, setAssignModuleId] = useState('none')
 
-  // Load modules when dialog opens
+  // Load modules and existing videos when dialog opens
   useEffect(() => {
     if (open && courseId) {
       loadModules()
+      loadExistingVideos()
     }
   }, [open, courseId])
 
@@ -108,6 +114,62 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
       setModules(data || [])
     } catch (error) {
       console.error('Error loading modules:', error)
+    }
+  }
+
+  const loadExistingVideos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('course_videos')
+        .select('id, title, description')
+        .eq('course_id', courseId)
+        .is('module_id', null)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+      setExistingVideos(data || [])
+    } catch (error) {
+      console.error('Error loading existing videos:', error)
+    }
+  }
+
+  const handleExistingVideoToggle = (videoId: string) => {
+    setSelectedExistingVideos(prev => 
+      prev.includes(videoId) 
+        ? prev.filter(id => id !== videoId)
+        : [...prev, videoId]
+    )
+  }
+
+  const assignVideosToModule = async () => {
+    if (!user || selectedExistingVideos.length === 0 || assignModuleId === 'none') return
+
+    setIsSubmitting(true)
+    try {
+      const { error } = await supabase
+        .from('course_videos')
+        .update({ module_id: assignModuleId })
+        .in('id', selectedExistingVideos)
+
+      if (error) throw error
+
+      setSelectedExistingVideos([])
+      setAssignModuleId('none')
+      loadExistingVideos() // Refresh the list
+      onVideoAdded() // Refresh parent component
+      
+      toast({
+        title: "Success",
+        description: `${selectedExistingVideos.length} video(s) assigned to module successfully!`
+      })
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to assign videos to module",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -262,6 +324,12 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Skip normal video creation for existing videos tab
+    if (activeTab === 'existing') {
+      return
+    }
+    
     if (!user || !title.trim()) return
 
     setIsSubmitting(true)
@@ -342,6 +410,8 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
     setDocuments([])
     setShowDocumentSection(false)
     setActiveTab('url')
+    setSelectedExistingVideos([])
+    setAssignModuleId('none')
   }
 
   return (
@@ -352,38 +422,41 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Info */}
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="title">Title *</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Video title"
-                required
-              />
-            </div>
+          {/* Basic Info - Only show for new video creation */}
+          {activeTab !== 'existing' && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="title">Title *</Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Video title"
+                  required
+                />
+              </div>
 
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Video description"
-                rows={3}
-              />
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Video description"
+                  rows={3}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Video Source */}
           <div>
             <Label>Video Source</Label>
-            <Tabs value={activeTab} onValueChange={(value: 'upload' | 'url') => setActiveTab(value)} className="mt-2">
-              <TabsList className="grid w-full grid-cols-2">
+            <Tabs value={activeTab} onValueChange={(value: 'upload' | 'url' | 'existing') => setActiveTab(value)} className="mt-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="url">URL (YouTube/Vimeo/Loom)</TabsTrigger>
                 <TabsTrigger value="upload">Upload File</TabsTrigger>
+                <TabsTrigger value="existing">Assign Existing</TabsTrigger>
               </TabsList>
               
               <TabsContent value="url" className="space-y-4">
@@ -430,179 +503,248 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
                   )}
                 </div>
               </TabsContent>
+
+              <TabsContent value="existing" className="space-y-4">
+                <div>
+                  <Label>Select Module to Assign Videos To</Label>
+                  <Select value={assignModuleId} onValueChange={setAssignModuleId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a module" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Select Module</SelectItem>
+                      {modules.map((module) => (
+                        <SelectItem key={module.id} value={module.id}>
+                          {module.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Videos Not in Any Module</Label>
+                  {existingVideos.length === 0 ? (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      No videos available. All videos are already assigned to modules.
+                    </p>
+                  ) : (
+                    <div className="mt-2 space-y-2 max-h-60 overflow-y-auto border rounded-lg p-3">
+                      {existingVideos.map((video) => (
+                        <div key={video.id} className="flex items-start space-x-3 p-2 hover:bg-muted/50 rounded">
+                          <input
+                            type="checkbox"
+                            id={`video-${video.id}`}
+                            checked={selectedExistingVideos.includes(video.id)}
+                            onChange={() => handleExistingVideoToggle(video.id)}
+                            className="mt-1"
+                          />
+                          <label htmlFor={`video-${video.id}`} className="flex-1 cursor-pointer">
+                            <div className="font-medium text-sm">{video.title}</div>
+                            {video.description && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {video.description}
+                              </div>
+                            )}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {selectedExistingVideos.length > 0 && assignModuleId !== 'none' && (
+                  <Button
+                    type="button"
+                    onClick={assignVideosToModule}
+                    disabled={isSubmitting}
+                    className="w-full"
+                  >
+                    {isSubmitting ? 'Assigning...' : `Assign ${selectedExistingVideos.length} Video(s) to Module`}
+                  </Button>
+                )}
+              </TabsContent>
             </Tabs>
           </div>
 
-          {/* Module Selection */}
-          <div className="space-y-4">
-            <Label>Module (Optional)</Label>
-            <div className="space-y-3">
-              <Select value={selectedModuleId} onValueChange={setSelectedModuleId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a module" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No Module</SelectItem>
-                  {modules.map((module) => (
-                    <SelectItem key={module.id} value={module.id}>
-                      {module.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowCreateModule(!showCreateModule)}
-                className="flex items-center gap-2"
-              >
-                <FolderPlus className="h-4 w-4" />
-                {showCreateModule ? 'Cancel' : 'Create New Module'}
-              </Button>
-
-              {showCreateModule && (
-                <div className="space-y-3 p-4 border rounded-lg bg-muted/20">
-                  <div>
-                    <Label htmlFor="newModuleTitle">Module Title *</Label>
-                    <Input
-                      id="newModuleTitle"
-                      value={newModuleTitle}
-                      onChange={(e) => setNewModuleTitle(e.target.value)}
-                      placeholder="Module title"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="newModuleDescription">Module Description</Label>
-                    <Textarea
-                      id="newModuleDescription"
-                      value={newModuleDescription}
-                      onChange={(e) => setNewModuleDescription(e.target.value)}
-                      placeholder="Module description"
-                      rows={2}
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    onClick={createModule}
-                    disabled={!newModuleTitle.trim()}
-                    size="sm"
-                  >
-                    Create Module
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Additional Details */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="duration">Duration (minutes)</Label>
-              <Input
-                id="duration"
-                type="number"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                placeholder="60"
-              />
-            </div>
-            <div>
-              <Label htmlFor="category">Category</Label>
-              <Input
-                id="category"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                placeholder="Lesson, Workshop, etc."
-              />
-            </div>
-          </div>
-
-          {/* Documents Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Supporting Documents (Optional)</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setShowDocumentSection(!showDocumentSection)}
-              >
-                {showDocumentSection ? 'Hide' : 'Add Documents'}
-              </Button>
-            </div>
-
-            {showDocumentSection && (
-              <div className="space-y-4 p-4 border rounded-lg">
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => document.getElementById('documentFile')?.click()}
-                    className="flex items-center gap-1"
-                  >
-                    <Upload className="h-4 w-4" />
-                    Upload PDF
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addLinkDocument}
-                    className="flex items-center gap-1"
-                  >
-                    <Link className="h-4 w-4" />
-                    Add Link
-                  </Button>
-                  <input
-                    id="documentFile"
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleDocumentFileChange}
-                    className="hidden"
-                  />
-                </div>
-
-                {documents.length > 0 && (
-                  <div className="space-y-2">
-                    <Label>Documents to upload:</Label>
-                    {documents.map((doc, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
-                        <div className="flex items-center gap-2">
-                          {doc.type === 'pdf' ? (
-                            <FileText className="h-4 w-4" />
-                          ) : (
-                            <Link className="h-4 w-4" />
-                          )}
-                          <span className="text-sm">{doc.name}</span>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeDocument(index)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+          {/* Module Selection - Only show for new video creation */}
+          {activeTab !== 'existing' && (
+            <div className="space-y-4">
+              <Label>Module (Optional)</Label>
+              <div className="space-y-3">
+                <Select value={selectedModuleId} onValueChange={setSelectedModuleId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a module" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Module</SelectItem>
+                    {modules.map((module) => (
+                      <SelectItem key={module.id} value={module.id}>
+                        {module.title}
+                      </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowCreateModule(!showCreateModule)}
+                  className="flex items-center gap-2"
+                >
+                  <FolderPlus className="h-4 w-4" />
+                  {showCreateModule ? 'Cancel' : 'Create New Module'}
+                </Button>
+
+                {showCreateModule && (
+                  <div className="space-y-3 p-4 border rounded-lg bg-muted/20">
+                    <div>
+                      <Label htmlFor="newModuleTitle">Module Title *</Label>
+                      <Input
+                        id="newModuleTitle"
+                        value={newModuleTitle}
+                        onChange={(e) => setNewModuleTitle(e.target.value)}
+                        placeholder="Module title"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="newModuleDescription">Module Description</Label>
+                      <Textarea
+                        id="newModuleDescription"
+                        value={newModuleDescription}
+                        onChange={(e) => setNewModuleDescription(e.target.value)}
+                        placeholder="Module description"
+                        rows={2}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={createModule}
+                      disabled={!newModuleTitle.trim()}
+                      size="sm"
+                    >
+                      Create Module
+                    </Button>
                   </div>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
+
+          {/* Additional Details - Only show for new video creation */}
+          {activeTab !== 'existing' && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="duration">Duration (minutes)</Label>
+                <Input
+                  id="duration"
+                  type="number"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  placeholder="60"
+                />
+              </div>
+              <div>
+                <Label htmlFor="category">Category</Label>
+                <Input
+                  id="category"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  placeholder="Lesson, Workshop, etc."
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Documents Section - Only show for new video creation */}
+          {activeTab !== 'existing' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Supporting Documents (Optional)</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDocumentSection(!showDocumentSection)}
+                >
+                  {showDocumentSection ? 'Hide' : 'Add Documents'}
+                </Button>
+              </div>
+
+              {showDocumentSection && (
+                <div className="space-y-4 p-4 border rounded-lg">
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById('documentFile')?.click()}
+                      className="flex items-center gap-1"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Upload PDF
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addLinkDocument}
+                      className="flex items-center gap-1"
+                    >
+                      <Link className="h-4 w-4" />
+                      Add Link
+                    </Button>
+                    <input
+                      id="documentFile"
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleDocumentFileChange}
+                      className="hidden"
+                    />
+                  </div>
+
+                  {documents.length > 0 && (
+                    <div className="space-y-2">
+                      <Label>Documents to upload:</Label>
+                      {documents.map((doc, index) => (
+                        <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                          <div className="flex items-center gap-2">
+                            {doc.type === 'pdf' ? (
+                              <FileText className="h-4 w-4" />
+                            ) : (
+                              <Link className="h-4 w-4" />
+                            )}
+                            <span className="text-sm">{doc.name}</span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeDocument(index)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Submit Buttons */}
           <div className="flex gap-2 pt-4">
-            <Button
-              type="submit"
-              disabled={isSubmitting || !title.trim()}
-              className="flex-1"
-            >
-              {isSubmitting ? 'Adding...' : 'Add Video'}
-            </Button>
+            {activeTab !== 'existing' && (
+              <Button
+                type="submit"
+                disabled={isSubmitting || !title.trim()}
+                className="flex-1"
+              >
+                {isSubmitting ? 'Adding...' : 'Add Video'}
+              </Button>
+            )}
             <Button
               type="button"
               variant="outline"
