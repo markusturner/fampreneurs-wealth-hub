@@ -606,6 +606,44 @@ export type Database = {
         }
         Relationships: []
       }
+      course_certificates: {
+        Row: {
+          certificate_number: string
+          completion_date: string
+          course_id: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          certificate_number: string
+          completion_date?: string
+          course_id: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          certificate_number?: string
+          completion_date?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_certificates_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_enrollments: {
         Row: {
           completed_at: string | null
@@ -2300,6 +2338,10 @@ export type Database = {
       can_join_group: {
         Args: { group_id: string; user_id: string }
         Returns: boolean
+      }
+      generate_certificate_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       is_family_office_only_user: {
         Args: { user_id: string }

@@ -11,9 +11,10 @@ import { AddVideoDialog } from "@/components/courses/add-video-dialog"
 import { CourseVideoList } from "@/components/courses/course-video-list"
 import { CallRecordingsList } from "@/components/courses/call-recordings-list"
 import { NetflixCourseDetail } from "@/components/courses/netflix-course-detail"
+import { CertificateDialog, CertificateCard } from "@/components/courses/certificate-dialog"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, BookOpen, Play, CheckCircle, Clock, Users, Star, Plus, Video } from 'lucide-react'
+import { Loader2, BookOpen, Play, CheckCircle, Clock, Users, Star, Plus, Video, Award } from 'lucide-react'
 
 interface Course {
   id: string
@@ -53,6 +54,9 @@ const Courses = () => {
   const [userGroups, setUserGroups] = useState<string[]>([])
   const [myListCourses, setMyListCourses] = useState<string[]>([])
   const [loadingMyList, setLoadingMyList] = useState(false)
+  const [certificates, setCertificates] = useState<any[]>([])
+  const [selectedCertificate, setSelectedCertificate] = useState<any>(null)
+  const [certificateDialogOpen, setCertificateDialogOpen] = useState(false)
 
   const fetchCourses = async () => {
     try {
@@ -133,6 +137,9 @@ const Courses = () => {
       // Fetch user's course list
       await fetchMyList()
 
+      // Fetch certificates
+      await fetchCertificates()
+
       setCourses(allCourses)
       setEnrollments(enrollmentsData || [])
     } catch (error) {
@@ -153,6 +160,29 @@ const Courses = () => {
       setMyListCourses((data || []).map(item => item.course_id))
     } catch (error) {
       console.error('Error fetching my list:', error)
+    }
+  }
+
+  const fetchCertificates = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('course_certificates')
+        .select(`
+          id,
+          certificate_number,
+          completion_date,
+          courses (
+            title,
+            instructor
+          )
+        `)
+        .eq('user_id', user?.id)
+        .order('completion_date', { ascending: false })
+
+      if (error) throw error
+      setCertificates(data || [])
+    } catch (error) {
+      console.error('Error fetching certificates:', error)
     }
   }
 
@@ -288,6 +318,11 @@ const Courses = () => {
     )
   }
 
+  const handleViewCertificate = (certificate: any) => {
+    setSelectedCertificate(certificate)
+    setCertificateDialogOpen(true)
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground relative">
       {/* Background Logo with Very Low Transparency */}
@@ -327,23 +362,27 @@ const Courses = () => {
               {[
                 "Courses",
                 "Call Recordings",
-                "Categories"
+                "Certificates"
               ].map((item, index) => (
                 <Button
                   key={item}
-                  variant={index === (activeTab === 'courses' ? 0 : 1) ? "default" : "outline"}
+                  variant={index === (
+                    activeTab === 'courses' ? 0 : 
+                    activeTab === 'recordings' ? 1 : 2
+                  ) ? "default" : "outline"}
                   size="sm"
                   className={`flex-shrink-0 rounded-full px-4 py-2 text-sm whitespace-nowrap ${
-                    index === (activeTab === 'courses' ? 0 : 1)
+                    index === (
+                      activeTab === 'courses' ? 0 : 
+                      activeTab === 'recordings' ? 1 : 2
+                    )
                       ? 'bg-white text-black' 
                       : 'bg-black/80 text-white border-white/20'
                   }`}
                   onClick={() => {
                     if (index === 0) setActiveTab('courses')
                     if (index === 1) setActiveTab('recordings')
-                    if (index === 2) {
-                      // Toggle category dropdown or show categories
-                    }
+                    if (index === 2) setActiveTab('certificates')
                   }}
                 >
                   {item}
@@ -407,6 +446,13 @@ const Courses = () => {
             >
               <Video className="h-3 w-3 sm:h-4 sm:w-4" />
               Call Recordings
+            </TabsTrigger>
+            <TabsTrigger 
+              value="certificates" 
+              className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm"
+            >
+              <Award className="h-3 w-3 sm:h-4 sm:w-4" />
+              Certificates ({certificates.length})
             </TabsTrigger>
           </TabsList>
 
@@ -712,6 +758,45 @@ const Courses = () => {
           <TabsContent value="recordings" className="mt-6 px-4 sm:px-6 lg:px-8">
             <CallRecordingsList />
           </TabsContent>
+          
+          <TabsContent value="certificates" className="mt-6 px-4 sm:px-6 lg:px-8">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-foreground">Your Certificates</h2>
+                  <p className="text-muted-foreground">Certificates of completion for finished courses</p>
+                </div>
+              </div>
+              
+              {certificates.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {certificates.map((certificate) => (
+                    <CertificateCard
+                      key={certificate.id}
+                      certificate={certificate}
+                      onViewCertificate={handleViewCertificate}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Award className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No certificates yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Complete courses to earn certificates of completion
+                  </p>
+                  <Button
+                    onClick={() => setActiveTab('courses')}
+                    className="hover:opacity-90"
+                    style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                  >
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Browse Courses
+                  </Button>
+                </div>
+              )}
+            </div>
+          </TabsContent>
         </Tabs>
       </main>
 
@@ -818,6 +903,13 @@ const Courses = () => {
         onOpenChange={setAddVideoOpen}
         courseId={selectedCourse?.id || ''}
         onVideoAdded={fetchCourses}
+      />
+
+      {/* Certificate Dialog */}
+      <CertificateDialog
+        open={certificateDialogOpen}
+        onOpenChange={setCertificateDialogOpen}
+        certificate={selectedCertificate}
       />
     </div>
   )
