@@ -128,7 +128,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
         </div>
         
         {/* Mobile Search Button */}
-        <div className="md:hidden flex-1 flex justify-center">
+        <div className="md:hidden flex-1 flex justify-end pr-4">
           <Button variant="ghost" size="icon" className="h-9 w-9">
             <Search className="h-4 w-4" />
           </Button>
