@@ -28,6 +28,7 @@ import {
   Plus,
   Save,
   TrendingUp,
+  CalendarCheck,
   TrendingDown,
   DollarSign,
   Star,
@@ -787,7 +788,7 @@ export default function AdminDashboard() {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview">
               <BarChart3 className="h-4 w-4 mr-2" />
               Overview
@@ -807,6 +808,10 @@ export default function AdminDashboard() {
             <TabsTrigger value="feedback">
               <MessageSquare className="h-4 w-4 mr-2" />
               Feedback
+            </TabsTrigger>
+            <TabsTrigger value="checkins">
+              <CalendarCheck className="h-4 w-4 mr-2" />
+              Check-ins
             </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="h-4 w-4 mr-2" />
@@ -1435,6 +1440,11 @@ export default function AdminDashboard() {
           {/* Feedback Tab */}
           <TabsContent value="feedback" className="space-y-6">
             <FeedbackManagement />
+          </TabsContent>
+
+          {/* Weekly Check-ins Tab */}
+          <TabsContent value="checkins" className="space-y-6">
+            <WeeklyCheckinManagement />
           </TabsContent>
 
           {/* Settings Tab */}
