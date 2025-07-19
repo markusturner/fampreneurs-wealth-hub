@@ -318,7 +318,7 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
           {/* Module Filter Dropdown */}
           <div className="mb-4">
             <Select value={selectedModule} onValueChange={setSelectedModule}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full border-2" style={{ borderColor: '#ffb500' }}>
                 <SelectValue placeholder="Filter by module" />
               </SelectTrigger>
               <SelectContent>
