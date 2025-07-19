@@ -285,7 +285,28 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
               <div className="aspect-video bg-card rounded-lg overflow-hidden relative group border-2" style={{ borderColor: '#ffb500' }}>
                 <VideoPlayer video={selectedVideo} onVideoCompleted={handleVideoCompleted} />
               </div>
-              <VideoDocuments videoId={selectedVideo.id} />
+              
+              {/* Video Description */}
+              {selectedVideo.description && (
+                <Card className="border-2" style={{ borderColor: '#ffb500' }}>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Description</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">{selectedVideo.description}</p>
+                  </CardContent>
+                </Card>
+              )}
+              
+              {/* Video Resources */}
+              <Card className="border-2" style={{ borderColor: '#ffb500' }}>
+                <CardHeader>
+                  <CardTitle className="text-lg">Resources</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <VideoDocuments videoId={selectedVideo.id} />
+                </CardContent>
+              </Card>
             </>
           )}
         </div>
@@ -358,20 +379,6 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
                           )}
                         </div>
                       </div>
-                    </div>
-                    
-                    {/* Video Description */}
-                    {video.description && (
-                      <div className="mt-3 pt-3 border-t border-border">
-                        <p className="text-sm text-muted-foreground">
-                          {video.description}
-                        </p>
-                      </div>
-                    )}
-                    
-                    {/* Video Resources */}
-                    <div className="mt-3 pt-3 border-t border-border">
-                      <VideoDocuments videoId={video.id} />
                     </div>
                   </CardContent>
                 </Card>
