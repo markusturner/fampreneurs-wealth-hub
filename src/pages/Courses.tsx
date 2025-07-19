@@ -379,6 +379,67 @@ const Courses = () => {
           <div className="px-4">
             {activeTab === 'courses' && (
               <div className="space-y-4">
+                {/* My List Section */}
+                {myListCourses.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-bold mb-4 text-foreground">My List</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      {courses.filter(course => myListCourses.includes(course.id)).map((course) => {
+                        const progress = getUserProgress(course.id)
+                        const enrolled = isUserEnrolled(course.id)
+                        
+                        return (
+                          <div
+                            key={course.id}
+                            className="cursor-pointer group"
+                            onClick={() => handleOpenCourseDetail(course)}
+                          >
+                            <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-2">
+                              <img 
+                                src={course.image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300&h=450&fit=crop"} 
+                                alt={course.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                              
+                              {/* Progress indicator */}
+                              {enrolled && progress > 0 && (
+                                <>
+                                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-background/20">
+                                    <div 
+                                      className="h-full bg-primary transition-all duration-300" 
+                                      style={{ width: `${progress}%` }}
+                                    />
+                                  </div>
+                                  <div className="absolute top-2 right-2">
+                                    <Badge variant="secondary" className="text-xs bg-background/80">
+                                      {progress}%
+                                    </Badge>
+                                  </div>
+                                </>
+                              )}
+
+                              {/* Hover overlay */}
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                <Button 
+                                  size="sm" 
+                                  className="hover:opacity-90"
+                                  style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                                >
+                                  <Play className="h-3 w-3 mr-1" />
+                                  {enrolled ? 'Continue' : 'Start'}
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <h4 className="text-xs font-medium text-foreground line-clamp-2 mb-1">{course.title}</h4>
+                            <p className="text-xs text-muted-foreground line-clamp-1">{course.instructor}</p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {filteredCourses.length === 0 ? (
                   <div className="text-center py-8">
                     <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
