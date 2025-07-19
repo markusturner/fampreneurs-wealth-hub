@@ -203,8 +203,13 @@ const Courses = () => {
   ]
 
   const filteredCourses = selectedCategory === 'All Courses' 
-    ? courses 
-    : courses.filter(course => course.category === selectedCategory)
+    ? courses.filter((course, index, arr) => 
+        arr.findIndex(c => c.title === course.title) === index
+      )
+    : courses.filter(course => 
+        course.category === selectedCategory &&
+        courses.findIndex(c => c.title === course.title) === courses.indexOf(course)
+      )
 
   const getUserProgress = (courseId: string) => {
     const enrollment = enrollments.find(e => e.course_id === courseId)

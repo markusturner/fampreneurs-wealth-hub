@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Play, Download, Check, ThumbsUp, Share, X, ChevronDown, Clock } from 'lucide-react'
+import { Play, Download, Check, ThumbsUp, Share, X, ChevronDown, Clock, Plus } from 'lucide-react'
 
 interface Course {
   id: string
@@ -71,206 +71,150 @@ export function NetflixCourseDetail({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-0 max-w-full h-full lg:max-w-4xl lg:h-auto bg-black text-white border-none overflow-hidden">
-        <div className="relative h-full overflow-y-auto">
+      <DialogContent className="p-0 max-w-full h-full lg:max-w-4xl lg:h-auto bg-background border-none overflow-hidden">
+        <div className="relative h-full overflow-y-auto bg-background">
           {/* Close button */}
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 rounded-full"
+            className="absolute top-2 right-2 z-50 text-foreground hover:bg-muted rounded-full w-8 h-8"
             onClick={() => onOpenChange(false)}
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </Button>
 
-          {/* Video/Image Section */}
-          <div className="relative aspect-video bg-gradient-to-b from-gray-900 to-black">
+          {/* Video/Image Section - Optimized for mobile */}
+          <div className="relative aspect-[16/10] sm:aspect-video bg-gradient-to-b from-muted to-background">
             <img 
               src={course.image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=450&fit=crop"}
               alt={course.title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
             
-            {/* Course Info Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6">
-              <div className="space-y-3">
+            {/* Course Info Overlay - Optimized for mobile */}
+            <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6">
+              <div className="space-y-2 sm:space-y-3">
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-red-600 text-white font-bold px-2 py-1">COURSE</Badge>
-                </div>
-                
-                <h1 className="text-2xl sm:text-3xl font-bold">{course.title}</h1>
-                
-                <div className="flex items-center gap-4 text-sm text-gray-300">
-                  <span>2024</span>
-                  <span>{course.level}</span>
-                  <Badge variant="outline" className="border-gray-600 text-gray-300">
-                    {course.category || 'Business'}
+                  <Badge 
+                    className="text-xs px-2 py-1 font-bold"
+                    style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                  >
+                    {course.level}
                   </Badge>
+                  <span className="text-xs text-muted-foreground">12 weeks</span>
+                  <span className="text-xs text-muted-foreground">Free</span>
                 </div>
-
-                <p className="text-sm sm:text-base text-gray-300 max-w-2xl line-clamp-3">
+                
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground line-clamp-2">{course.title}</h1>
+                
+                <p className="text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3">
                   {course.description || "Master essential business skills with this comprehensive course designed for first-generation wealth builders."}
                 </p>
 
-                {/* Action Buttons */}
-                <div className="flex flex-wrap gap-3 pt-2">
+                {/* Action Buttons - Mobile optimized */}
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
                   <Button 
                     size="lg" 
-                    className="flex-1 sm:flex-none bg-white text-black hover:bg-gray-200 font-semibold"
+                    className="w-full sm:flex-1 font-semibold text-base py-3"
+                    style={{ backgroundColor: '#ffb500', color: '#290a52' }}
                     onClick={onEnroll}
                   >
-                    <Play className="h-5 w-5 mr-2" />
-                    {isEnrolled ? `Continue (${progress}%)` : 'Start Course'}
+                    <Play className="h-4 w-4 mr-2" />
+                    {isEnrolled ? 'Continue Course' : 'Start Course'}
                   </Button>
                   
                   <Button 
                     size="lg" 
-                    variant="secondary"
-                    className="bg-gray-600 hover:bg-gray-500 text-white border-0"
+                    variant="outline"
+                    className="w-full sm:w-auto bg-background/20 border-foreground/20 text-foreground hover:bg-background/40 backdrop-blur-sm"
                     onClick={onToggleMyList}
                   >
-                    {isInMyList ? <Check className="h-5 w-5" /> : <Download className="h-5 w-5" />}
-                  </Button>
-                  
-                  <Button 
-                    size="lg" 
-                    variant="secondary"
-                    className="bg-gray-600 hover:bg-gray-500 text-white border-0"
-                  >
-                    <ThumbsUp className="h-5 w-5" />
-                  </Button>
-                  
-                  <Button 
-                    size="lg" 
-                    variant="secondary"
-                    className="bg-gray-600 hover:bg-gray-500 text-white border-0"
-                  >
-                    <Share className="h-5 w-5" />
+                    <Plus className="h-4 w-4 mr-2" />
+                    My List
                   </Button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Content Section */}
-          <div className="p-4 sm:p-6">
+          {/* Content Section - Mobile optimized */}
+          <div className="p-3 sm:p-6 bg-background">
             {/* Progress Bar */}
             {isEnrolled && progress > 0 && (
-              <div className="mb-6">
+              <div className="mb-4 sm:mb-6">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm text-gray-400">Your Progress</span>
-                  <span className="text-sm text-gray-400">{progress}%</span>
+                  <span className="text-sm text-muted-foreground">Your Progress</span>
+                  <span className="text-sm text-muted-foreground">{progress}%</span>
                 </div>
                 <Progress value={progress} className="h-2" />
               </div>
             )}
 
-            {/* Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="bg-transparent border-b border-gray-800 rounded-none h-auto p-0 w-full justify-start">
-                <TabsTrigger 
-                  value="lessons" 
-                  className="bg-transparent border-b-2 border-transparent data-[state=active]:border-red-600 data-[state=active]:bg-transparent rounded-none pb-3 text-gray-400 data-[state=active]:text-white"
-                >
-                  Lessons
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="more" 
-                  className="bg-transparent border-b-2 border-transparent data-[state=active]:border-red-600 data-[state=active]:bg-transparent rounded-none pb-3 text-gray-400 data-[state=active]:text-white"
-                >
-                  More Like This
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="details" 
-                  className="bg-transparent border-b-2 border-transparent data-[state=active]:border-red-600 data-[state=active]:bg-transparent rounded-none pb-3 text-gray-400 data-[state=active]:text-white"
-                >
-                  Details
-                </TabsTrigger>
-              </TabsList>
+            {/* Video Player Section */}
+            <div className="mb-6 bg-muted rounded-lg overflow-hidden">
+              <div className="relative aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary rounded-full flex items-center justify-center mb-3 mx-auto">
+                    <Play className="h-8 w-8 sm:h-10 sm:w-10 text-primary-foreground ml-1" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">6 min ⚡ 4 min 52 sec</p>
+                </div>
+                <div className="absolute bottom-2 left-2 bg-background/80 backdrop-blur-sm rounded px-2 py-1">
+                  <span className="text-xs">🔄 1.2x</span>
+                </div>
+              </div>
+            </div>
 
-              <TabsContent value="lessons" className="mt-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">Course Content</h3>
-                  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                    <span className="mr-2">All Lessons</span>
-                    <ChevronDown className="h-4 w-4" />
+            {/* Description Section */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3 text-foreground">Description</h3>
+              <div className="bg-muted/50 rounded-lg p-4">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {course.description || "Master essential business skills with this comprehensive course designed for first-generation wealth builders."}
+                </p>
+              </div>
+            </div>
+
+            {/* Resources Section */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3 text-foreground">Resources</h3>
+              <div className="bg-muted/50 rounded-lg p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center">
+                    <Download className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">Course Materials</p>
+                    <p className="text-xs text-muted-foreground">PDF, worksheets, and templates</p>
+                  </div>
+                  <Button size="sm" variant="outline">
+                    Download
                   </Button>
                 </div>
+              </div>
+            </div>
 
-                {mockLessons.map((lesson, index) => (
-                  <div key={lesson.id} className="flex gap-4 p-3 hover:bg-gray-900 rounded-lg cursor-pointer group">
-                    <div className="relative flex-shrink-0">
-                      <img 
-                        src={lesson.thumbnail}
-                        alt={lesson.title}
-                        className="w-24 h-14 object-cover rounded"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded">
-                        <Play className="h-6 w-6 text-white" />
-                      </div>
-                      <div className="absolute bottom-1 right-1 bg-black/80 text-xs px-1 rounded">
-                        {lesson.duration}
-                      </div>
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-white group-hover:text-gray-300 truncate">
-                            {index + 1}. {lesson.title}
-                          </h4>
-                          <p className="text-sm text-gray-400 mt-1 line-clamp-2">
-                            {lesson.description}
-                          </p>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="ml-2 flex-shrink-0 text-gray-400 hover:text-white"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </TabsContent>
+            {/* Course Details */}
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground mb-1">Instructor</p>
+                <p className="text-foreground font-medium">{course.instructor || 'Expert Instructor'}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground mb-1">Duration</p>
+                <p className="text-foreground font-medium">{course.duration || '3 hours'}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground mb-1">Level</p>
+                <p className="text-foreground font-medium">{course.level}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground mb-1">Category</p>
+                <p className="text-foreground font-medium">{course.category || 'Business'}</p>
+              </div>
+            </div>
 
-              <TabsContent value="more" className="mt-6">
-                <div className="text-center py-8">
-                  <p className="text-gray-400">More courses coming soon...</p>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="details" className="mt-6 space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">About this Course</h3>
-                  <p className="text-gray-300 leading-relaxed">
-                    {course.description || "This comprehensive course is designed to help first-generation wealth builders understand the fundamentals of building and preserving family wealth. Through practical lessons and real-world examples, you'll learn proven strategies used by successful families to create lasting financial legacies."}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-medium mb-2">Instructor</h4>
-                    <p className="text-gray-400">{course.instructor || 'Expert Instructor'}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-2">Duration</h4>
-                    <p className="text-gray-400">{course.duration || '3 hours'}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-2">Level</h4>
-                    <p className="text-gray-400">{course.level}</p>
-                  </div>
-                  <div>
-                    <h4 className="font-medium mb-2">Category</h4>
-                    <p className="text-gray-400">{course.category || 'Business'}</p>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
           </div>
         </div>
       </DialogContent>
