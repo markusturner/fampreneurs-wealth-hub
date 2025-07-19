@@ -21,9 +21,10 @@ interface Video {
 
 interface VideoPlayerProps {
   video: Video
+  onVideoCompleted: (videoId: string) => void
 }
 
-const VideoPlayer = ({ video }: VideoPlayerProps) => {
+const VideoPlayer = ({ video, onVideoCompleted }: VideoPlayerProps) => {
   const getPlatformName = (type: string) => {
     switch (type) {
       case 'youtube': return 'YouTube'
@@ -42,6 +43,10 @@ const VideoPlayer = ({ video }: VideoPlayerProps) => {
     }
   }
 
+  const handleVideoEnded = () => {
+    onVideoCompleted(video.id)
+  }
+
   if (video.video_type === 'upload') {
     return (
       <div className="aspect-video bg-black rounded-lg overflow-hidden">
@@ -50,6 +55,7 @@ const VideoPlayer = ({ video }: VideoPlayerProps) => {
           className="w-full h-full"
           poster="/placeholder.svg"
           controlsList="nodownload"
+          onEnded={handleVideoEnded}
         >
           <source src={video.video_url} type="video/mp4" />
           Your browser does not support the video tag.
@@ -58,8 +64,11 @@ const VideoPlayer = ({ video }: VideoPlayerProps) => {
     )
   }
 
+  // For iframe videos (YouTube, Vimeo), we'll implement a workaround
+  // Note: Due to iframe restrictions, we can't detect completion for embedded videos
+  // This would require integration with YouTube/Vimeo APIs for proper tracking
   return (
-    <div className="aspect-video bg-black rounded-lg overflow-hidden">
+    <div className="aspect-video bg-black rounded-lg overflow-hidden relative">
       <iframe
         src={video.video_url}
         title={video.title}
@@ -68,6 +77,16 @@ const VideoPlayer = ({ video }: VideoPlayerProps) => {
         allow="autoplay; encrypted-media"
         sandbox="allow-scripts allow-same-origin allow-presentation"
       />
+      {/* Temporary completion button for iframe videos */}
+      <div className="absolute bottom-4 right-4 z-10">
+        <Button
+          size="sm"
+          onClick={handleVideoEnded}
+          className="bg-primary/80 hover:bg-primary"
+        >
+          Mark as Completed
+        </Button>
+      </div>
     </div>
   )
 }
@@ -115,8 +134,7 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
       setVideos(typedData)
       if (typedData && typedData.length > 0 && !selectedVideo) {
         setSelectedVideo(typedData[0])
-        // Mark first video as watched by default
-        setWatchedVideos(new Set([typedData[0].id]))
+        // First video starts unlocked but not watched
       }
     } catch (error) {
       console.error('Error fetching videos:', error)
@@ -127,8 +145,15 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
 
   const handleVideoSelect = (video: Video) => {
     setSelectedVideo(video)
-    // Mark video as watched when selected
-    setWatchedVideos(prev => new Set([...prev, video.id]))
+    // Don't mark as watched on select - only when completed
+  }
+
+  const handleVideoCompleted = (videoId: string) => {
+    setWatchedVideos(prev => new Set([...prev, videoId]))
+    toast({
+      title: "Video Completed!",
+      description: "Great job! The next video is now unlocked."
+    })
   }
 
   const isVideoUnlocked = (video: Video, index: number) => {
@@ -220,7 +245,7 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
           {selectedVideo && (
             <>
               <div className="aspect-video bg-card rounded-lg overflow-hidden relative group border border-border">
-                <VideoPlayer video={selectedVideo} />
+                <VideoPlayer video={selectedVideo} onVideoCompleted={handleVideoCompleted} />
               </div>
               <VideoDocuments videoId={selectedVideo.id} />
             </>
