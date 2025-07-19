@@ -135,6 +135,7 @@ export function BudgetingAnalytics() {
       // Only show budget data if there are connected accounts or transactions
       if (hasAccounts || hasTransactions) {
         await fetchBudgetData()
+        setIsOperational(true)
       } else {
         setBudgetCategories([])
         setFinancialGoals([])
@@ -394,7 +395,10 @@ export function BudgetingAnalytics() {
               <Button 
                 onClick={() => {
                   setIsOperational(true)
-                  // Don't load mock data, just enable the UI for manual budget creation
+                  // Clear any existing mock data and just enable the UI
+                  setBudgetCategories([])
+                  setFinancialGoals([])
+                  setAiRecommendations([])
                 }} 
                 className="mt-4"
               >
