@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_transactions: {
+        Row: {
+          account_id: string
+          amount: number
+          authorized_date: string | null
+          category: string | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          id: string
+          location: Json | null
+          merchant_name: string | null
+          metadata: Json | null
+          pending: boolean | null
+          transaction_date: string
+          transaction_id: string
+          transaction_type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          authorized_date?: string | null
+          category?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          location?: Json | null
+          merchant_name?: string | null
+          metadata?: Json | null
+          pending?: boolean | null
+          transaction_date: string
+          transaction_id: string
+          transaction_type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          authorized_date?: string | null
+          category?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          location?: Json | null
+          merchant_name?: string | null
+          metadata?: Json | null
+          pending?: boolean | null
+          transaction_date?: string
+          transaction_id?: string
+          transaction_type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "connected_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       announcements: {
         Row: {
           content: string
@@ -477,6 +545,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      connected_accounts: {
+        Row: {
+          account_name: string
+          account_type: string
+          balance: number | null
+          created_at: string
+          credentials: Json | null
+          currency: string | null
+          external_account_id: string | null
+          google_sheet_id: string | null
+          id: string
+          last_sync: string | null
+          metadata: Json | null
+          plaid_access_token: string | null
+          plaid_item_id: string | null
+          provider: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          account_type: string
+          balance?: number | null
+          created_at?: string
+          credentials?: Json | null
+          currency?: string | null
+          external_account_id?: string | null
+          google_sheet_id?: string | null
+          id?: string
+          last_sync?: string | null
+          metadata?: Json | null
+          plaid_access_token?: string | null
+          plaid_item_id?: string | null
+          provider: string
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          account_type?: string
+          balance?: number | null
+          created_at?: string
+          credentials?: Json | null
+          currency?: string | null
+          external_account_id?: string | null
+          google_sheet_id?: string | null
+          id?: string
+          last_sync?: string | null
+          metadata?: Json | null
+          plaid_access_token?: string | null
+          plaid_item_id?: string | null
+          provider?: string
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       course_enrollments: {
         Row: {
