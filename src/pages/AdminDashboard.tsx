@@ -765,88 +765,104 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header - Mobile Optimized */}
       <div className="border-b" style={{ backgroundColor: '#290a52' }}>
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/')}
-                className="text-white hover:bg-white/10 transition-colors hover:text-[#ffb500]"
+                className="text-white hover:bg-white/10 transition-colors hover:text-[#ffb500] h-8 w-8 sm:h-10 sm:w-10"
                 title="Back to Dashboard"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
-              <Shield className="h-8 w-8" style={{ color: '#ffb500' }} />
-              <div>
-                <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-                <p className="text-gray-300">Manage your Fampreneurs platform</p>
+              <Shield className="h-6 w-6 sm:h-8 sm:w-8" style={{ color: '#ffb500' }} />
+              <div className="hidden sm:block">
+                <h1 className="text-xl sm:text-2xl font-bold text-white">Admin Dashboard</h1>
+                <p className="text-gray-300 text-sm">Manage your Fampreneurs platform</p>
+              </div>
+              <div className="sm:hidden">
+                <h1 className="text-lg font-bold text-white">Admin</h1>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <AdminThemeToggle />
-              <Badge variant="secondary" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="hidden sm:block">
+                <AdminThemeToggle />
+              </div>
+              <Badge variant="secondary" style={{ backgroundColor: '#ffb500', color: '#290a52' }} className="text-xs sm:text-sm">
                 Admin
               </Badge>
               <Button 
                 variant="outline" 
+                size="sm"
                 onClick={signOut}
-                className="border-white/20 hover:bg-white/10"
+                className="border-white/20 hover:bg-white/10 text-xs sm:text-sm px-2 sm:px-4"
                 style={{ 
                   color: '#290a52',
                   backgroundColor: theme === 'light' ? 'transparent' : '#ffb500',
                   borderColor: theme === 'light' ? 'rgba(255, 255, 255, 0.2)' : '#ffb500'
                 }}
               >
-                Sign Out
+                <span className="hidden sm:inline">Sign Out</span>
+                <span className="sm:hidden">Out</span>
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="overview">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="users">
-              <Users className="h-4 w-4 mr-2" />
-              Users
-            </TabsTrigger>
-            <TabsTrigger value="courses">
-              <BookOpen className="h-4 w-4 mr-2" />
-              Courses
-             </TabsTrigger>
-            <TabsTrigger value="coaching">
-              <Calendar className="h-4 w-4 mr-2" />
-              Coaching
-            </TabsTrigger>
-            <TabsTrigger value="feedback">
-              <MessageSquare className="h-4 w-4 mr-2" />
-              Feedback
-            </TabsTrigger>
-            <TabsTrigger value="settings">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </TabsTrigger>
-          </TabsList>
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+          {/* Mobile-first tabs */}
+          <div className="overflow-x-auto">
+            <TabsList className="grid w-full grid-cols-6 min-w-[600px] sm:min-w-0">
+              <TabsTrigger value="overview" className="text-xs sm:text-sm">
+                <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Overview</span>
+                <span className="sm:hidden">Stats</span>
+              </TabsTrigger>
+              <TabsTrigger value="users" className="text-xs sm:text-sm">
+                <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Users</span>
+                <span className="sm:hidden">Users</span>
+              </TabsTrigger>
+              <TabsTrigger value="courses" className="text-xs sm:text-sm">
+                <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Courses</span>
+                <span className="sm:hidden">Courses</span>
+              </TabsTrigger>
+              <TabsTrigger value="coaching" className="text-xs sm:text-sm">
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Coaching</span>
+                <span className="sm:hidden">Coach</span>
+              </TabsTrigger>
+              <TabsTrigger value="feedback" className="text-xs sm:text-sm">
+                <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Feedback</span>
+                <span className="sm:hidden">Feed</span>
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="text-xs sm:text-sm">
+                <Settings className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Settings</span>
+                <span className="sm:hidden">Set</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-6">
-            {/* Revenue Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Overview Tab - Mobile Optimized */}
+          <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+            {/* Revenue Metrics - Mobile Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">New Renewals</CardTitle>
-                  <TrendingUp className="h-4 w-4 text-green-600" />
+                  <CardTitle className="text-sm sm:text-base font-medium">New Renewals</CardTitle>
+                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{metrics.newRenewals}</div>
+                <CardContent className="pb-2 sm:pb-4">
+                  <div className="text-xl sm:text-2xl font-bold">{metrics.newRenewals}</div>
                   <p className="text-xs text-muted-foreground">Last 30 days</p>
                 </CardContent>
               </Card>

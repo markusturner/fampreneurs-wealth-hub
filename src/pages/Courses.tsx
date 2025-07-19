@@ -104,13 +104,15 @@ const Courses = () => {
 
       if (enrollmentsError) throw enrollmentsError
 
-      // Fetch recordings count
+      // Fetch recordings count (consistent with admin dashboard)
       const { data: recordingsData, error: recordingsError } = await supabase
         .from('coaching_call_recordings')
         .select('id')
+        .order('created_at', { ascending: false })
 
       if (recordingsError) {
         console.error('Error fetching recordings count:', recordingsError)
+        setRecordingsCount(0)
       } else {
         setRecordingsCount(recordingsData?.length || 0)
       }
