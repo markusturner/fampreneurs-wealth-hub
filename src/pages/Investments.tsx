@@ -246,12 +246,21 @@ export default function FamilyOffice() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="accounts">Accounts</TabsTrigger>
-            <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="budget">Budget</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm">
+            <TabsTrigger value="overview" className="px-2 sm:px-4">
+              <span className="hidden sm:inline">Overview</span>
+              <span className="sm:hidden">Home</span>
+            </TabsTrigger>
+            <TabsTrigger value="accounts" className="px-2 sm:px-4">
+              <span className="hidden sm:inline">Accounts</span>
+              <span className="sm:hidden">Accts</span>
+            </TabsTrigger>
+            <TabsTrigger value="transactions" className="px-2 sm:px-4">
+              <span className="hidden sm:inline">Transactions</span>
+              <span className="sm:hidden">Trans</span>
+            </TabsTrigger>
+            <TabsTrigger value="budget" className="px-2 sm:px-4">Budget</TabsTrigger>
+            <TabsTrigger value="reports" className="px-2 sm:px-4">Reports</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -259,19 +268,21 @@ export default function FamilyOffice() {
             {(connectedAccounts.length > 0 || investments.length > 0) ? (
               <>
                 {/* Executive Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
                   <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium flex items-center gap-2">
-                        <Wallet className="h-4 w-4" />
-                        Net Worth
+                    <CardHeader className="pb-2 sm:pb-3">
+                      <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-2">
+                        <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">Net Worth</span>
+                        <span className="sm:hidden">Net</span>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{formatCurrency(getAccountsBalance() + getTotalPortfolioValue())}</div>
-                      <div className="text-sm text-green-600 flex items-center gap-1">
-                        <TrendingUp className="h-3 w-3" />
-                        Total Assets
+                    <CardContent className="pt-0">
+                      <div className="text-lg sm:text-2xl font-bold">{formatCurrency(getAccountsBalance() + getTotalPortfolioValue())}</div>
+                      <div className="text-xs sm:text-sm text-green-600 flex items-center gap-1">
+                        <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3" />
+                        <span className="hidden sm:inline">Total Assets</span>
+                        <span className="sm:hidden">Assets</span>
                       </div>
                     </CardContent>
                   </Card>

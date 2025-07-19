@@ -2136,6 +2136,90 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_checkin_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          last_notification_sent: string
+          notification_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_notification_sent?: string
+          notification_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_notification_sent?: string
+          notification_count?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      weekly_checkin_responses: {
+        Row: {
+          completed_main_action: boolean | null
+          completed_sessions: boolean | null
+          created_at: string
+          energy_level: number | null
+          full_name: string
+          grateful_for: string | null
+          id: string
+          potential_obstacles: string | null
+          roadblocks_faced: string | null
+          session_completion_notes: string | null
+          setbacks_rating: number | null
+          training_rating: number | null
+          updated_at: string
+          user_id: string
+          week_ending: string
+          weekly_goals: string | null
+        }
+        Insert: {
+          completed_main_action?: boolean | null
+          completed_sessions?: boolean | null
+          created_at?: string
+          energy_level?: number | null
+          full_name: string
+          grateful_for?: string | null
+          id?: string
+          potential_obstacles?: string | null
+          roadblocks_faced?: string | null
+          session_completion_notes?: string | null
+          setbacks_rating?: number | null
+          training_rating?: number | null
+          updated_at?: string
+          user_id: string
+          week_ending: string
+          weekly_goals?: string | null
+        }
+        Update: {
+          completed_main_action?: boolean | null
+          completed_sessions?: boolean | null
+          created_at?: string
+          energy_level?: number | null
+          full_name?: string
+          grateful_for?: string | null
+          id?: string
+          potential_obstacles?: string | null
+          roadblocks_faced?: string | null
+          session_completion_notes?: string | null
+          setbacks_rating?: number | null
+          training_rating?: number | null
+          updated_at?: string
+          user_id?: string
+          week_ending?: string
+          weekly_goals?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -2212,6 +2296,10 @@ export type Database = {
         Returns: boolean
       }
       user_needs_feedback_notification: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
+      user_needs_weekly_checkin: {
         Args: { target_user_id: string }
         Returns: boolean
       }

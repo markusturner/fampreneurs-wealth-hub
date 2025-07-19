@@ -63,6 +63,7 @@ import { AssignCoachDialog } from '@/components/admin/assign-coach-dialog'
 import { ZapierIntegration } from '@/components/admin/zapier-integration'
 import { CoachingRecordings } from '@/components/admin/coaching-recordings'
 import { FeedbackManagement } from '@/components/dashboard/feedback-management'
+import { WeeklyCheckinManagement } from '@/components/dashboard/weekly-checkin-management'
 import { EnhancedAddVideoDialog } from '@/components/courses/enhanced-add-video-dialog'
 import { 
   DndContext, 

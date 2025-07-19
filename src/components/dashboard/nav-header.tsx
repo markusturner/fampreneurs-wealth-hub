@@ -113,8 +113,8 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           </Button>
         </div>
 
-        {/* Search Bar - Hidden on mobile, shows on tablet+ */}
-        <div className="flex-1 max-w-lg mx-2 sm:mx-3 xl:mx-4 hidden md:block">
+        {/* Search Bar - Visible on all devices */}
+        <div className="flex-1 max-w-lg mx-2 sm:mx-3 xl:mx-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input

@@ -29,7 +29,7 @@ const quickActions = [
     description: "Invite financial advisor",
     icon: UserPlus,
     variant: "default" as const,
-    action: () => window.location.href = "/team-members"
+    action: () => window.location.href = "/family-members"
   },
   {
     title: "Add Family Member",
