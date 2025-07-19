@@ -570,23 +570,41 @@ export default function AdminDashboard() {
 
   const loadCoachData = async () => {
     try {
+      console.log('Loading coach data...')
+      
       // Get all coaches first
-      const { data: allCoaches } = await supabase
+      const { data: allCoaches, error: coachesError } = await supabase
         .from('coaches')
         .select('id, full_name')
         .eq('is_active', true)
 
+      if (coachesError) {
+        console.error('Error fetching coaches:', coachesError)
+        throw coachesError
+      }
+
+      console.log('Found coaches:', allCoaches)
+
       // Get coach assignments with coach data
-      const { data: coachAssignments } = await supabase
+      const { data: coachAssignments, error: assignmentsError } = await supabase
         .from('coach_assignments')
         .select('coach_id')
         .eq('status', 'active')
+
+      if (assignmentsError) {
+        console.error('Error fetching coach assignments:', assignmentsError)
+        throw assignmentsError
+      }
+
+      console.log('Found coach assignments:', coachAssignments)
 
       // Count assignments per coach
       const coachCounts = coachAssignments?.reduce((acc, assignment) => {
         acc[assignment.coach_id] = (acc[assignment.coach_id] || 0) + 1
         return acc
       }, {} as Record<string, number>) || {}
+
+      console.log('Coach counts:', coachCounts)
 
       // Include coaches with 0 assignments and add unique keys
       const coachDataArray = (allCoaches || []).map((coach, index) => ({
@@ -595,6 +613,7 @@ export default function AdminDashboard() {
         clients: coachCounts[coach.id] || 0
       }))
 
+      console.log('Final coach data array:', coachDataArray)
       setCoachData(coachDataArray)
     } catch (error) {
       console.error('Error loading coach data:', error)
@@ -960,6 +979,10 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                  {coachData.length > 0 ? (
+                  <div>
+                    <div className="mb-2 text-sm text-muted-foreground">
+                      Debug: Found {coachData.length} coaches
+                    </div>
                   <ResponsiveContainer width="100%" height={300}>
                      <RechartsBarChart data={coachData} layout="horizontal" margin={{ left: 20, right: 20, top: 20, bottom: 20 }}>
                        <CartesianGrid strokeDasharray="3 3" />
@@ -980,8 +1003,9 @@ export default function AdminDashboard() {
                          fill="#ffb500"
                          radius={[0, 4, 4, 0]}
                        />
-                    </RechartsBarChart>
-                  </ResponsiveContainer>
+                     </RechartsBarChart>
+                   </ResponsiveContainer>
+                  </div>
                 ) : (
                   <div className="flex items-center justify-center h-[300px] text-muted-foreground">
                     <div className="text-center">
