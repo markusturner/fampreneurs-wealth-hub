@@ -172,7 +172,7 @@ export function Scoreboard() {
         <CardHeader className="text-center">
           <CardTitle className="flex items-center justify-center gap-2 text-2xl">
             <Trophy className="h-6 w-6 text-yellow-500" />
-            Family Office Badge System
+            The Fampreneurs Badge System
           </CardTitle>
           <CardDescription>
             Track your progress and earn badges through course completion and call participation
@@ -251,7 +251,7 @@ export function Scoreboard() {
       </div>
 
       {/* Member Cards with Badge Focus */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3">
         {members.map((member, index) => (
           <Card key={member.id} className={`relative ${index < 3 ? 'ring-2 ring-primary/30' : ''} hover:shadow-lg transition-all duration-300`}>
             <CardContent className="p-6">
