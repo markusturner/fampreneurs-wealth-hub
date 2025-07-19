@@ -377,38 +377,20 @@ const Courses = () => {
               </div>
             </div>
 
-            {/* Category Pills - Netflix Style */}
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-              {[
-                "Courses",
-                "Call Recordings", 
-                "Certificates"
-              ].map((item, index) => (
-                <Button
-                  key={item}
-                  variant={index === (
-                    activeTab === 'courses' ? 0 : 
-                    activeTab === 'recordings' ? 1 : 2
-                  ) ? "default" : "outline"}
-                  size="sm"
-                  className={`flex-shrink-0 rounded-full px-4 py-2 text-sm whitespace-nowrap ${
-                    index === (
-                      activeTab === 'courses' ? 0 : 
-                      activeTab === 'recordings' ? 1 : 2
-                    )
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-background/20 text-foreground border-border/20'
-                  }`}
-                  onClick={() => {
-                    if (index === 0) setActiveTab('courses')
-                    if (index === 1) setActiveTab('recordings')
-                    if (index === 2) setActiveTab('certificates')
-                  }}
-                >
-                  {item}
-                </Button>
-              ))}
-            </div>
+            {/* Tab Navigation - iPad/Touch Friendly */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-3 bg-background/20 border-border/20">
+                <TabsTrigger value="courses" className="text-sm">
+                  Courses
+                </TabsTrigger>
+                <TabsTrigger value="recordings" className="text-sm">
+                  Call Recordings
+                </TabsTrigger>
+                <TabsTrigger value="certificates" className="text-sm">
+                  Certificates
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
 
 
