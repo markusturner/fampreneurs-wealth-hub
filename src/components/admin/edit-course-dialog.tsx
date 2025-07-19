@@ -269,13 +269,47 @@ export function EditCourseDialog({ course, onCourseUpdated }: EditCourseDialogPr
             </div>
           </div>
           
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
+          <div className="flex justify-between">
+            <Button 
+              type="button" 
+              variant="secondary"
+              onClick={async () => {
+                try {
+                  // Add this course as a featured course in the main program
+                  const { error } = await supabase
+                    .from('featured_courses')
+                    .upsert({
+                      course_id: course.id,
+                      featured_by: (await supabase.auth.getUser()).data.user?.id,
+                      is_featured: true,
+                      featured_at: new Date().toISOString()
+                    })
+                  
+                  if (error) throw error
+                  
+                  toast({
+                    title: "Course featured",
+                    description: "This course has been added as a featured course in the main program.",
+                  })
+                } catch (error: any) {
+                  toast({
+                    title: "Error featuring course",
+                    description: error.message,
+                    variant: "destructive",
+                  })
+                }
+              }}
+            >
+              Add as Feature
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Updating...' : 'Update Course'}
-            </Button>
+            <div className="flex space-x-2">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Updating...' : 'Update Course'}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
