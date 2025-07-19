@@ -76,27 +76,48 @@ export function DashboardStats() {
     fetchCounts()
   }, [])
 
+  // Get connected accounts data from localStorage
+  const getConnectedAccountsData = () => {
+    const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
+    const savedAccounts = JSON.parse(localStorage.getItem('connectedAccounts') || '[]')
+    return savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id))
+  }
+
+  const connectedAccounts = getConnectedAccountsData()
+  const hasFinancialData = portfolioData.totalValue > 0 || connectedAccounts.length > 0
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
   const stats = [
     {
       title: "Total Portfolio Value",
-      value: "$13,600,000", // Fixed value as requested
-      change: "+$150,000",
-      trend: "up",
+      value: hasFinancialData 
+        ? formatCurrency(portfolioData.totalValue + connectedAccounts.reduce((sum, acc) => sum + (acc.balance || 0), 0))
+        : "No data",
+      change: hasFinancialData ? formatCurrency(portfolioData.dayChange) : "Connect accounts",
+      trend: portfolioData.dayChange >= 0 ? "up" : "down",
       icon: DollarSign,
       iconColor: "#10b981", // Green
-      description: "From investment page performance",
+      description: hasFinancialData ? "From connected accounts & investments" : "Connect accounts to see portfolio value",
       tagColor: "#ffb500" // Orange
     },
     {
       title: "Active Investments",
-      value: portfolioData.activeInvestments > 0 
-        ? `${portfolioData.activeInvestments}`
-        : "47",
-      change: `+${portfolioData.connectedAccounts || 3}`,
+      value: hasFinancialData 
+        ? `${portfolioData.activeInvestments + connectedAccounts.length}`
+        : "0",
+      change: hasFinancialData ? `${connectedAccounts.length} accounts` : "No accounts",
       trend: "up", 
       icon: PieChart,
       iconColor: "#3b82f6", // Blue
-      description: `From ${portfolioData.connectedAccounts || 3} accounts section`,
+      description: hasFinancialData ? `${connectedAccounts.length} connected accounts` : "Connect accounts to track investments",
       tagColor: "#ffb500" // Orange
     },
     {
