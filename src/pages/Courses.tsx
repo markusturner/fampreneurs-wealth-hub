@@ -376,23 +376,36 @@ const Courses = () => {
                 </Button>
               </div>
             </div>
+          </div>
 
-            {/* Tab Navigation - iPad/Touch Friendly */}
+          {/* Tab Navigation - iPad/Touch Friendly */}
+          <div className="relative z-10 px-4 pb-4">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-background/20 border-border/20">
-                <TabsTrigger value="courses" className="text-sm">
+              <TabsList className="grid w-full grid-cols-3 bg-background/90 border border-border/30 rounded-lg p-1 touch-manipulation">
+                <TabsTrigger 
+                  value="courses" 
+                  className="text-sm font-medium touch-manipulation cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200"
+                  style={{ minHeight: '40px', touchAction: 'manipulation' }}
+                >
                   Courses
                 </TabsTrigger>
-                <TabsTrigger value="recordings" className="text-sm">
+                <TabsTrigger 
+                  value="recordings" 
+                  className="text-sm font-medium touch-manipulation cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200"
+                  style={{ minHeight: '40px', touchAction: 'manipulation' }}
+                >
                   Call Recordings
                 </TabsTrigger>
-                <TabsTrigger value="certificates" className="text-sm">
+                <TabsTrigger 
+                  value="certificates" 
+                  className="text-sm font-medium touch-manipulation cursor-pointer data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all duration-200"
+                  style={{ minHeight: '40px', touchAction: 'manipulation' }}
+                >
                   Certificates
                 </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
-
 
           {/* Mobile Course Grid */}
           <div className="px-4">
