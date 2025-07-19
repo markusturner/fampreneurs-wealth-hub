@@ -57,6 +57,8 @@ const Courses = () => {
   const [certificates, setCertificates] = useState<any[]>([])
   const [selectedCertificate, setSelectedCertificate] = useState<any>(null)
   const [certificateDialogOpen, setCertificateDialogOpen] = useState(false)
+  const [featuredCourses, setFeaturedCourses] = useState<Course[]>([])
+  const [featuredCoursesLoading, setFeaturedCoursesLoading] = useState(true)
 
   const fetchCourses = async () => {
     try {
@@ -96,6 +98,36 @@ const Courses = () => {
           allCourses.push(course)
         }
       })
+
+      // Fetch featured courses - first get the featured course IDs
+      const { data: featuredData, error: featuredError } = await supabase
+        .from('featured_courses')
+        .select('course_id')
+        .eq('is_featured', true)
+        .order('featured_at', { ascending: false })
+
+      if (featuredError) {
+        console.error('Error fetching featured courses:', featuredError)
+        setFeaturedCourses([])
+      } else if (featuredData && featuredData.length > 0) {
+        // Now fetch the actual course details for featured courses
+        const { data: featuredCoursesData, error: featuredCoursesError } = await supabase
+          .from('courses')
+          .select('*')
+          .in('id', featuredData.map(f => f.course_id))
+          .eq('status', 'published')
+          .order('created_at', { ascending: false })
+
+        if (featuredCoursesError) {
+          console.error('Error fetching featured course details:', featuredCoursesError)
+          setFeaturedCourses([])
+        } else {
+          setFeaturedCourses(featuredCoursesData || [])
+        }
+      } else {
+        setFeaturedCourses([])
+      }
+      setFeaturedCoursesLoading(false)
 
       const { data: enrollmentsData, error: enrollmentsError } = await supabase
         .from('course_enrollments')
@@ -555,12 +587,12 @@ const Courses = () => {
 
           <TabsContent value="courses" className="mt-6">
             {/* Featured Course - Netflix Style Hero */}
-            {filteredCourses.length > 0 && (
+            {!featuredCoursesLoading && featuredCourses.length > 0 && (
               <div className="relative mb-6 mx-4 sm:mx-6 lg:mx-8 mt-2 lg:mt-6">
                 <div 
                   className="relative aspect-[16/11] sm:aspect-[21/9] lg:aspect-[2.4/1] rounded-lg overflow-hidden bg-gradient-to-r from-primary/20 to-accent/20"
                   style={{
-                    backgroundImage: `url(${filteredCourses[0].image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=400&fit=crop"})`,
+                    backgroundImage: `url(${featuredCourses[0].image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=400&fit=crop"})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center'
                   }}
@@ -569,7 +601,7 @@ const Courses = () => {
                   <div className="absolute bottom-0 left-0 right-0 p-4 pb-6 sm:p-6 lg:p-8">
                     <div className="max-w-lg">
                       <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground mb-2 line-clamp-2">
-                        {filteredCourses[0].title}
+                        {featuredCourses[0].title}
                       </h2>
                       <div className="flex items-center gap-2 mb-3">
                         <Badge 
@@ -580,33 +612,33 @@ const Courses = () => {
                         </Badge>
                         <Badge 
                           className="text-xs px-2 py-1"
-                          style={filteredCourses[0].level === 'Advanced' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
+                          style={featuredCourses[0].level === 'Advanced' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
                         >
-                          {filteredCourses[0].level}
+                          {featuredCourses[0].level}
                         </Badge>
                       </div>
                       <p className="text-xs sm:text-sm lg:text-base text-muted-foreground mb-4 line-clamp-2">
-                        {filteredCourses[0].description || "Master essential business skills with this comprehensive course."}
+                        {featuredCourses[0].description || "Master essential business skills with this comprehensive course."}
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4">
                         <Button 
                           size="sm"
                           className="hover:opacity-90 font-semibold text-xs sm:text-sm px-4 py-2 sm:px-6 sm:py-3"
                           style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                          onClick={() => handleOpenCourseDetail(filteredCourses[0])}
+                          onClick={() => handleOpenCourseDetail(featuredCourses[0])}
                         >
                           <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                          {isUserEnrolled(filteredCourses[0].id) ? 'Continue' : 'Start Course'}
+                          {isUserEnrolled(featuredCourses[0].id) ? 'Continue' : 'Start Course'}
                         </Button>
                         <Button 
                           variant="outline" 
                           size="sm"
                           className="bg-background/20 border-foreground/20 text-foreground hover:bg-background/40 text-xs sm:text-sm px-4 py-2 sm:px-6 sm:py-3"
-                          onClick={() => handleToggleMyList(filteredCourses[0])}
+                          onClick={() => handleToggleMyList(featuredCourses[0])}
                           disabled={loadingMyList}
                         >
                           <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                          {isInMyList(filteredCourses[0].id) ? 'Remove from List' : 'My List'}
+                          {isInMyList(featuredCourses[0].id) ? 'Remove from List' : 'My List'}
                         </Button>
                       </div>
                     </div>
