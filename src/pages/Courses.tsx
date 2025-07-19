@@ -326,7 +326,7 @@ const Courses = () => {
             <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
               {[
                 "Courses",
-                "Weekly Meetings",
+                "Call Recordings",
                 "Categories"
               ].map((item, index) => (
                 <Button
@@ -406,7 +406,7 @@ const Courses = () => {
               className="flex items-center gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm"
             >
               <Video className="h-3 w-3 sm:h-4 sm:w-4" />
-              Weekly Meetings
+              Call Recordings
             </TabsTrigger>
           </TabsList>
 
@@ -595,7 +595,7 @@ const Courses = () => {
                       <div className="text-lg sm:text-xl lg:text-2xl font-bold" style={{ color: '#ffb500' }}>
                         {recordingsCount}
                       </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">Weekly Meetings</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Call Recordings</div>
                     </CardContent>
                   </Card>
                   <Card className="shadow-soft text-center bg-card/50 backdrop-blur-sm">

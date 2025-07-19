@@ -94,10 +94,10 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.fullName.trim() || !formData.familyPosition) {
+    if (!formData.fullName.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please provide at least the full name and family position.",
+        description: "Please provide the full name.",
         variant: "destructive"
       })
       return
@@ -112,7 +112,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
           full_name: formData.fullName.trim(),
           email: formData.email.trim() || null,
           phone: formData.phone.trim() || null,
-          family_position: formData.familyPosition,
+          family_position: formData.familyPosition || null,
           trust_positions: selectedTrustPositions.length > 0 ? selectedTrustPositions : null,
           relationship_to_family: formData.relationshipToFamily.trim() || null,
           notes: formData.notes.trim() || null,
@@ -202,10 +202,10 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
             
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <Label htmlFor="familyPosition">Position in Family *</Label>
+                <Label htmlFor="familyPosition">Position in Family</Label>
                 <Select value={formData.familyPosition} onValueChange={(value) => setFormData(prev => ({ ...prev, familyPosition: value }))}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select family position" />
+                    <SelectValue placeholder="Select family position (optional)" />
                   </SelectTrigger>
                   <SelectContent>
                     {familyPositions.map((position) => (

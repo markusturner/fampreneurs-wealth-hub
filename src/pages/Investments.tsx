@@ -450,11 +450,25 @@ export default function FamilyOffice() {
           </TabsContent>
 
           <TabsContent value="accounts" className="space-y-6">
-            <AccountIntegration />
+            <div className="lg:hidden">
+              <div className="space-y-4">
+                <AccountIntegration />
+              </div>
+            </div>
+            <div className="hidden lg:block">
+              <AccountIntegration />
+            </div>
           </TabsContent>
 
           <TabsContent value="transactions" className="space-y-6">
-            <TransactionMonitoring />
+            <div className="lg:hidden">
+              <div className="space-y-4">
+                <TransactionMonitoring />
+              </div>
+            </div>
+            <div className="hidden lg:block">
+              <TransactionMonitoring />
+            </div>
           </TabsContent>
 
           <TabsContent value="budget" className="space-y-6">
