@@ -244,7 +244,7 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
         <div className="lg:col-span-2 space-y-4">
           {selectedVideo && (
             <>
-              <div className="aspect-video bg-card rounded-lg overflow-hidden relative group border border-border">
+              <div className="aspect-video bg-card rounded-lg overflow-hidden relative group border-2" style={{ borderColor: '#ffb500' }}>
                 <VideoPlayer video={selectedVideo} onVideoCompleted={handleVideoCompleted} />
               </div>
               <VideoDocuments videoId={selectedVideo.id} />
