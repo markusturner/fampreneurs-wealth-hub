@@ -67,15 +67,7 @@ serve(async (req) => {
       user: {
         client_user_id: user.id,
       },
-      products: ['transactions', 'assets'],
-      account_filters: {
-        depository: {
-          account_subtypes: ['checking', 'savings', 'money_market', 'cd']
-        },
-        investment: {
-          account_subtypes: ['401k', '403b', 'ira', 'roth_ira', 'brokerage']
-        }
-      },
+      products: ['transactions'],
     };
 
     console.log('Creating link token for user:', user.id);
