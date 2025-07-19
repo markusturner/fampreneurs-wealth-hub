@@ -61,7 +61,14 @@ export function CallRecordingsList() {
           table: 'coaching_call_recordings'
         },
         (payload) => {
-          setRecordings(prev => [payload.new as CoachingRecording, ...prev])
+          setRecordings(prev => {
+            // Check if the recording already exists to prevent duplicates
+            const existingRecording = prev.find(r => r.id === payload.new.id)
+            if (existingRecording) {
+              return prev
+            }
+            return [payload.new as CoachingRecording, ...prev]
+          })
         }
       )
       .on(
