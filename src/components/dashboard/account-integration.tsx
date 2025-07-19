@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { 
   Plus, 
@@ -21,7 +22,12 @@ import {
   AlertCircle,
   RefreshCw,
   ExternalLink,
-  Settings
+  Settings,
+  Trash2,
+  Eye,
+  DollarSign,
+  Calendar,
+  MapPin
 } from 'lucide-react'
 
 interface ConnectedAccount {
@@ -41,7 +47,11 @@ export function AccountIntegration() {
   const [accounts, setAccounts] = useState<ConnectedAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddDialog, setShowAddDialog] = useState(false)
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false)
+  const [showViewDialog, setShowViewDialog] = useState(false)
+  const [selectedAccount, setSelectedAccount] = useState<ConnectedAccount | null>(null)
   const [selectedAccountType, setSelectedAccountType] = useState<string>('')
+  const [realTimeUpdates, setRealTimeUpdates] = useState(true)
   const [newAccount, setNewAccount] = useState<{
     name: string
     type: 'bank' | 'brokerage' | 'crypto' | 'business'
@@ -66,7 +76,20 @@ export function AccountIntegration() {
 
   useEffect(() => {
     fetchConnectedAccounts()
-  }, [])
+    
+    // Set up real-time updates simulation
+    if (realTimeUpdates) {
+      const interval = setInterval(() => {
+        setAccounts(prev => prev.map(account => ({
+          ...account,
+          balance: account.balance + (Math.random() - 0.5) * 1000, // Simulate market fluctuations
+          lastSync: new Date().toISOString()
+        })))
+      }, 30000) // Update every 30 seconds
+      
+      return () => clearInterval(interval)
+    }
+  }, [realTimeUpdates])
 
   const fetchConnectedAccounts = async () => {
     try {
@@ -227,6 +250,33 @@ export function AccountIntegration() {
     }
   }
 
+  const handleDeleteAccount = async (accountId: string) => {
+    setAccounts(prev => prev.filter(acc => acc.id !== accountId))
+    toast({
+      title: "Account Deleted",
+      description: "Account has been removed from your portfolio",
+    })
+  }
+
+  const handleConnectRealAccount = async (accountType: string) => {
+    // Simulate real account connection (in production, this would use Plaid, Yodlee, etc.)
+    const mockAccount: ConnectedAccount = {
+      id: Date.now().toString(),
+      name: `Connected ${accountType} Account`,
+      type: accountType as any,
+      provider: accountType === 'brokerage' ? 'Fidelity' : 'Chase Bank',
+      balance: Math.random() * 1000000,
+      lastSync: new Date().toISOString(),
+      status: 'connected'
+    }
+
+    setAccounts(prev => [...prev, mockAccount])
+    toast({
+      title: "Account Connected",
+      description: `Successfully connected your ${accountType} account with real-time updates`,
+    })
+  }
+
   const accountProviders = {
     bank: ['Chase Bank', 'Bank of America', 'Wells Fargo', 'Citibank', 'US Bank', 'PNC Bank'],
     brokerage: ['Fidelity', 'Charles Schwab', 'Vanguard', 'E*TRADE', 'TD Ameritrade', 'Interactive Brokers'],
@@ -245,6 +295,37 @@ export function AccountIntegration() {
           <p className="text-sm text-muted-foreground">
             Connect and manage all your financial accounts
           </p>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <Label className="flex items-center gap-2">
+            <input 
+              type="checkbox" 
+              checked={realTimeUpdates} 
+              onChange={(e) => setRealTimeUpdates(e.target.checked)}
+            />
+            <span className="text-sm">Real-time updates</span>
+          </Label>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => handleConnectRealAccount('brokerage')}
+            className="flex items-center gap-2"
+          >
+            <TrendingUp className="h-4 w-4" />
+            Connect Brokerage
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            onClick={() => handleConnectRealAccount('bank')}
+            className="flex items-center gap-2"
+          >
+            <CreditCard className="h-4 w-4" />
+            Connect Bank
+          </Button>
         </div>
         
         <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
@@ -464,35 +545,197 @@ export function AccountIntegration() {
                       Sync
                     </Button>
                     
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex items-center gap-1"
-                      onClick={() => {
-                        toast({
-                          title: "Settings",
-                          description: `Opening settings for ${account.name}`,
-                        })
-                      }}
-                    >
-                      <Settings className="h-3 w-3" />
-                      Settings
-                    </Button>
+                    <Dialog open={showSettingsDialog && selectedAccount?.id === account.id} onOpenChange={(open) => {
+                      setShowSettingsDialog(open)
+                      if (!open) setSelectedAccount(null)
+                    }}>
+                      <DialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex items-center gap-1"
+                          onClick={() => setSelectedAccount(account)}
+                        >
+                          <Settings className="h-3 w-3" />
+                          Settings
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Account Settings - {account.name}</DialogTitle>
+                          <DialogDescription>
+                            Manage your account preferences and connection settings
+                          </DialogDescription>
+                        </DialogHeader>
+                        
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <Label>Account Name</Label>
+                            <Input defaultValue={account.name} />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Provider</Label>
+                            <Input defaultValue={account.provider} disabled />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Account Type</Label>
+                            <Input defaultValue={account.type} disabled />
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label>Auto-sync Frequency</Label>
+                            <Select defaultValue="15min">
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1min">Every minute</SelectItem>
+                                <SelectItem value="5min">Every 5 minutes</SelectItem>
+                                <SelectItem value="15min">Every 15 minutes</SelectItem>
+                                <SelectItem value="1hour">Every hour</SelectItem>
+                                <SelectItem value="manual">Manual only</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" defaultChecked />
+                            <Label>Enable real-time notifications</Label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <input type="checkbox" defaultChecked />
+                            <Label>Include in portfolio calculations</Label>
+                          </div>
+                          
+                          <div className="flex gap-2 pt-4">
+                            <Button variant="outline" onClick={() => setShowSettingsDialog(false)} className="flex-1">
+                              Cancel
+                            </Button>
+                            <Button onClick={() => {
+                              setShowSettingsDialog(false)
+                              toast({ title: "Settings Updated", description: "Account settings have been saved" })
+                            }} className="flex-1">
+                              Save Changes
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                     
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex items-center gap-1"
-                      onClick={() => {
-                        toast({
-                          title: "View Account", 
-                          description: `Opening detailed view for ${account.name}`,
-                        })
-                      }}
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      View
-                    </Button>
+                    <Dialog open={showViewDialog && selectedAccount?.id === account.id} onOpenChange={(open) => {
+                      setShowViewDialog(open)
+                      if (!open) setSelectedAccount(null)
+                    }}>
+                      <DialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex items-center gap-1"
+                          onClick={() => setSelectedAccount(account)}
+                        >
+                          <Eye className="h-3 w-3" />
+                          View
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                          <DialogTitle>Account Details - {account.name}</DialogTitle>
+                          <DialogDescription>
+                            Detailed information and transaction history
+                          </DialogDescription>
+                        </DialogHeader>
+                        
+                        <div className="space-y-6">
+                          {/* Account Overview */}
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="text-center p-4 border rounded-lg">
+                              <DollarSign className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                              <div className="text-lg font-bold">{formatCurrency(account.balance)}</div>
+                              <div className="text-xs text-muted-foreground">Current Balance</div>
+                            </div>
+                            
+                            <div className="text-center p-4 border rounded-lg">
+                              <TrendingUp className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                              <div className="text-lg font-bold">+2.4%</div>
+                              <div className="text-xs text-muted-foreground">30-Day Return</div>
+                            </div>
+                            
+                            <div className="text-center p-4 border rounded-lg">
+                              <Calendar className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                              <div className="text-lg font-bold">24 days</div>
+                              <div className="text-xs text-muted-foreground">Connected</div>
+                            </div>
+                            
+                            <div className="text-center p-4 border rounded-lg">
+                              <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                              <div className="text-lg font-bold">Active</div>
+                              <div className="text-xs text-muted-foreground">Status</div>
+                            </div>
+                          </div>
+                          
+                          {/* Recent Transactions */}
+                          <div>
+                            <h4 className="font-semibold mb-3">Recent Transactions</h4>
+                            <div className="space-y-2 max-h-40 overflow-y-auto">
+                              {[
+                                { date: '2024-01-15', description: 'Market Purchase - AAPL', amount: -2500 },
+                                { date: '2024-01-14', description: 'Dividend Payment', amount: 150 },
+                                { date: '2024-01-12', description: 'Market Sale - TSLA', amount: 3200 },
+                                { date: '2024-01-10', description: 'Interest Payment', amount: 45 }
+                              ].map((transaction, index) => (
+                                <div key={index} className="flex justify-between items-center p-2 border rounded">
+                                  <div>
+                                    <div className="font-medium text-sm">{transaction.description}</div>
+                                    <div className="text-xs text-muted-foreground">{transaction.date}</div>
+                                  </div>
+                                  <div className={`font-medium ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <Button onClick={() => setShowViewDialog(false)} className="w-full">
+                            Close
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Account Connection</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to remove "{account.name}" from your connected accounts? 
+                            This action cannot be undone and you'll need to reconnect the account manually.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDeleteAccount(account.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete Account
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </CardContent>
