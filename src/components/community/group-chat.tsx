@@ -607,12 +607,19 @@ export function GroupChat({ groupId }: GroupChatProps) {
             return (
               <div key={message.id} className={`flex gap-2 sm:gap-3 ${isOwn ? 'justify-end' : ''}`}>
                 {!isOwn && showAvatar && (
-                  <Avatar className="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0">
-                    <AvatarImage src={message.profiles?.avatar_url || undefined} />
-                    <AvatarFallback className="text-xs">
-                      {getDisplayName(message).charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden flex-shrink-0 border">
+                    {message.profiles?.avatar_url ? (
+                      <img 
+                        src={message.profiles.avatar_url} 
+                        alt={getDisplayName(message)}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-primary text-primary-foreground flex items-center justify-center text-xs">
+                        {getDisplayName(message).charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
                 )}
                 {!isOwn && !showAvatar && <div className="w-6 sm:w-8 flex-shrink-0" />}
                 

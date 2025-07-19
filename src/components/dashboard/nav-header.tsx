@@ -184,14 +184,19 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-7 w-7 sm:h-8 sm:w-8 ring-2 ring-primary/20">
-                  <AvatarImage src={profile?.avatar_url || "/placeholder.svg"} />
-                  <AvatarFallback className="text-xs bg-primary text-primary-foreground">
+              <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-primary/20">
+                {profile?.avatar_url ? (
+                  <img 
+                    src={profile.avatar_url} 
+                    alt="Profile"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-primary text-primary-foreground flex items-center justify-center text-xs">
                     {getInitials()}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
+                  </div>
+                )}
+              </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">

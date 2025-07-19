@@ -246,10 +246,19 @@ export function Scoreboard() {
               
               {/* Member Info */}
               <div className="text-center mb-4">
-                <Avatar className="h-16 w-16 mx-auto mb-3 ring-2 ring-primary/20">
-                  <AvatarImage src={member.avatar_url || ''} />
-                  <AvatarFallback className="text-lg">{getInitials(member)}</AvatarFallback>
-                </Avatar>
+                <div className="w-16 h-16 rounded-full overflow-hidden mx-auto mb-3 border-2 border-primary/20">
+                  {member.avatar_url ? (
+                    <img 
+                      src={member.avatar_url} 
+                      alt={getDisplayName(member)}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-primary text-primary-foreground flex items-center justify-center text-lg">
+                      {getInitials(member)}
+                    </div>
+                  )}
+                </div>
                 <h3 className="font-semibold text-lg">{getDisplayName(member)}</h3>
                 <div className="text-sm text-muted-foreground">Rank #{index + 1}</div>
               </div>

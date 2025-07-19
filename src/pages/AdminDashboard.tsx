@@ -515,15 +515,28 @@ export default function AdminDashboard() {
         ? satisfactionData.reduce((sum, s) => sum + s.score, 0) / satisfactionData.length 
         : 0
 
-      // Coaching calls data
-      const { data: sessionData } = await supabase
-        .from('session_enrollments')
-        .select('enrolled_at')
-        .gte('enrolled_at', thirtyDaysAgo.toISOString())
+      // Coaching calls data - using session_attendance for accurate data
+      const { data: attendanceData } = await supabase
+        .from('session_attendance')
+        .select('session_type, created_at, attended')
+        .eq('attended', true)
+        .gte('created_at', thirtyDaysAgo.toISOString())
 
-      const calls30Days = sessionData?.length || 0
-      const calls15Days = sessionData?.filter(s => new Date(s.enrolled_at) >= fifteenDaysAgo).length || 0
-      const callsThisMonth = sessionData?.filter(s => new Date(s.enrolled_at) >= startOfMonth).length || 0
+      const groupCalls30Days = attendanceData?.filter(a => a.session_type === 'group').length || 0
+      const groupCalls15Days = attendanceData?.filter(a => 
+        a.session_type === 'group' && new Date(a.created_at) >= fifteenDaysAgo
+      ).length || 0
+      const groupCallsThisMonth = attendanceData?.filter(a => 
+        a.session_type === 'group' && new Date(a.created_at) >= startOfMonth
+      ).length || 0
+
+      const oneOnOneCalls30Days = attendanceData?.filter(a => a.session_type === 'individual').length || 0
+      const oneOnOneCalls15Days = attendanceData?.filter(a => 
+        a.session_type === 'individual' && new Date(a.created_at) >= fifteenDaysAgo
+      ).length || 0
+      const oneOnOneCallsThisMonth = attendanceData?.filter(a => 
+        a.session_type === 'individual' && new Date(a.created_at) >= startOfMonth
+      ).length || 0
 
       setMetrics({
         newRenewals,
@@ -534,12 +547,12 @@ export default function AdminDashboard() {
         averageRevenue,
         renewalRate: 85, // Placeholder
         satisfactionScore: avgSatisfaction,
-        oneOnOneCalls30Days: calls30Days,
-        oneOnOneCalls15Days: calls15Days,
-        oneOnOneCallsThisMonth: callsThisMonth,
-        groupCalls30Days: calls30Days,
-        groupCalls15Days: calls15Days,
-        groupCallsThisMonth: callsThisMonth
+        oneOnOneCalls30Days,
+        oneOnOneCalls15Days,
+        oneOnOneCallsThisMonth,
+        groupCalls30Days,
+        groupCalls15Days,
+        groupCallsThisMonth
       })
 
     } catch (error) {
