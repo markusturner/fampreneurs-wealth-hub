@@ -135,50 +135,8 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             <Search className="h-4 w-4" />
           </Button>
           
-          {/* New Notification Bell for Meeting Notifications */}
+          {/* Single Notification Bell for all notifications */}
           <NotificationBell />
-          
-          {/* Feedback Notification */}
-          {shouldShowFeedback && (
-            <DropdownMenu onOpenChange={(open) => {
-              if (open && shouldShowFeedback) {
-                temporarilyHideNotification()
-              }
-            }}>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative h-9 w-9">
-                  <MessageSquare className="h-4 w-4" />
-                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full flex items-center justify-center">
-                    <span className="text-[10px] font-bold text-destructive-foreground">1</span>
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-72 sm:w-80" align="end">
-                <DropdownMenuLabel>Program Feedback</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleFeedbackClick} className="p-3 sm:p-4 cursor-pointer">
-                  <div className="flex items-start gap-3 w-full">
-                    <div className="flex items-center gap-2">
-                      <MessageSquare className="h-5 w-5 text-primary mt-0.5" />
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-xs text-muted-foreground">New</span>
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">Program Feedback Request</div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Help us improve! Share your thoughts about the program and your experience.
-                      </div>
-                      <div className="text-xs text-primary mt-2 font-medium">
-                        Click to provide feedback →
-                      </div>
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
