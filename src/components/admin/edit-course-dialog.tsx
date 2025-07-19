@@ -264,6 +264,7 @@ export function EditCourseDialog({ course, onCourseUpdated }: EditCourseDialogPr
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
+                  <SelectItem value="featured">Featured</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -275,22 +276,22 @@ export function EditCourseDialog({ course, onCourseUpdated }: EditCourseDialogPr
               variant="secondary"
               onClick={async () => {
                 try {
-                  // Add this course as a featured course in the main program
+                  // Add this course as a featured course by updating course status
                   const { error } = await supabase
-                    .from('featured_courses')
-                    .upsert({
-                      course_id: course.id,
-                      featured_by: (await supabase.auth.getUser()).data.user?.id,
-                      is_featured: true,
-                      featured_at: new Date().toISOString()
+                    .from('courses')
+                    .update({
+                      status: 'featured'
                     })
+                    .eq('id', course.id)
                   
                   if (error) throw error
                   
                   toast({
                     title: "Course featured",
-                    description: "This course has been added as a featured course in the main program.",
+                    description: "This course has been marked as featured in the main program.",
                   })
+                  
+                  onCourseUpdated()
                 } catch (error: any) {
                   toast({
                     title: "Error featuring course",

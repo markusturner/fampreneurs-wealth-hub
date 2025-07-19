@@ -1018,6 +1018,39 @@ export type Database = {
           },
         ]
       }
+      featured_courses: {
+        Row: {
+          course_id: string
+          created_at: string
+          featured_at: string
+          featured_by: string
+          id: string
+          is_featured: boolean
+          unfeatured_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          featured_at?: string
+          featured_by: string
+          id?: string
+          is_featured?: boolean
+          unfeatured_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          featured_at?: string
+          featured_by?: string
+          id?: string
+          is_featured?: boolean
+          unfeatured_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       feedback_notifications: {
         Row: {
           created_at: string
