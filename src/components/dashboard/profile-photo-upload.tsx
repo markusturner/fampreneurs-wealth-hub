@@ -44,11 +44,26 @@ export const ProfilePhotoUpload = ({ isOpen, onClose }: ProfilePhotoUploadProps)
     try {
       const fileExt = selectedFile.name.split('.').pop()
       const fileName = `${user.id}_${Date.now()}.${fileExt}`
-      const filePath = `profile-photos/${fileName}`
+      const filePath = `${fileName}`
+
+      // Delete old photo if exists
+      if (profile?.avatar_url) {
+        try {
+          const oldPath = profile.avatar_url.split('/').pop()
+          if (oldPath) {
+            await supabase.storage.from('profile-photos').remove([oldPath])
+          }
+        } catch (error) {
+          console.log('Could not delete old photo:', error)
+        }
+      }
 
       const { error: uploadError } = await supabase.storage
         .from('profile-photos')
-        .upload(filePath, selectedFile)
+        .upload(filePath, selectedFile, {
+          cacheControl: '3600',
+          upsert: true
+        })
 
       if (uploadError) throw uploadError
 
@@ -78,7 +93,7 @@ export const ProfilePhotoUpload = ({ isOpen, onClose }: ProfilePhotoUploadProps)
       console.error('Error uploading profile photo:', error)
       toast({
         title: "Error",
-        description: "Failed to upload profile photo",
+        description: "Failed to upload profile photo. Please try again.",
         variant: "destructive"
       })
     } finally {
@@ -88,13 +103,27 @@ export const ProfilePhotoUpload = ({ isOpen, onClose }: ProfilePhotoUploadProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md"
+      <DialogContent 
+        className="sm:max-w-md"
         style={{
           pointerEvents: 'auto'
         }}
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
+        <div 
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+            backdropFilter: 'blur(2px)',
+            zIndex: -1
+          }}
+        />
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
@@ -107,20 +136,24 @@ export const ProfilePhotoUpload = ({ isOpen, onClose }: ProfilePhotoUploadProps)
           </p>
           
           <div className="flex justify-center">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={previewUrl || profile?.avatar_url || undefined} />
-              <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+            <Avatar className="h-32 w-32 border-4 border-primary/20">
+              <AvatarImage 
+                src={previewUrl || profile?.avatar_url || undefined} 
+                className="object-cover w-full h-full"
+                style={{ objectFit: 'cover' }}
+              />
+              <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
                 {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || 'U'}
               </AvatarFallback>
             </Avatar>
           </div>
 
           <div>
-            <Label htmlFor="photo-upload">Select Photo</Label>
+            <Label htmlFor="photo-upload">Select Photo (JPG, PNG, max 5MB)</Label>
             <Input
               id="photo-upload"
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/jpg"
               onChange={handleFileSelect}
               className="mt-1"
             />
