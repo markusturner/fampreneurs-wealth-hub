@@ -399,7 +399,7 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
 
-    if (!over || active.id === over.id) {
+    if (!over || active.id === over.id || !profile?.is_admin) {
       return
     }
 
@@ -733,8 +733,8 @@ export const ChannelsSidebar = ({ selectedChannelId, onChannelSelect }: Channels
       </CardHeader>
       <CardContent className="space-y-1">
         {/* Channels list */}
-        <DndContext
-          sensors={sensors}
+        <DndContext 
+          sensors={profile?.is_admin ? sensors : []}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >

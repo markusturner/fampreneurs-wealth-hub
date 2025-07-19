@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
+import { ProfilePhotoUpload } from '@/components/dashboard/profile-photo-upload'
 
 interface Profile {
   id: string
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showPhotoUpload, setShowPhotoUpload] = useState(false)
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -64,6 +66,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
 
       setProfile(data)
+      
+      // Check if profile photo is required
+      if (data && !data.profile_photo_uploaded) {
+        setShowPhotoUpload(true)
+      }
     } catch (error) {
       console.error('Error fetching profile:', error)
     }
@@ -149,6 +156,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   return (
     <AuthContext.Provider value={value}>
       {children}
+      <ProfilePhotoUpload 
+        isOpen={showPhotoUpload} 
+        onClose={() => setShowPhotoUpload(false)} 
+      />
     </AuthContext.Provider>
   )
 }

@@ -19,6 +19,7 @@ export type Database = {
           content: string
           created_at: string
           created_by: string
+          expires_at: string | null
           id: string
           is_pinned: boolean
           title: string
@@ -28,6 +29,7 @@ export type Database = {
           content: string
           created_at?: string
           created_by: string
+          expires_at?: string | null
           id?: string
           is_pinned?: boolean
           title: string
@@ -37,6 +39,7 @@ export type Database = {
           content?: string
           created_at?: string
           created_by?: string
+          expires_at?: string | null
           id?: string
           is_pinned?: boolean
           title?: string
@@ -1522,6 +1525,7 @@ export type Database = {
           membership_type: string | null
           occupation: string | null
           phone: string | null
+          profile_photo_uploaded: boolean
           program_name: string | null
           updated_at: string
           user_id: string
@@ -1543,6 +1547,7 @@ export type Database = {
           membership_type?: string | null
           occupation?: string | null
           phone?: string | null
+          profile_photo_uploaded?: boolean
           program_name?: string | null
           updated_at?: string
           user_id: string
@@ -1564,6 +1569,7 @@ export type Database = {
           membership_type?: string | null
           occupation?: string | null
           phone?: string | null
+          profile_photo_uploaded?: boolean
           program_name?: string | null
           updated_at?: string
           user_id?: string

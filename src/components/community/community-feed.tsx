@@ -9,6 +9,7 @@ import { EnhancedPostCard } from './enhanced-post-card'
 import { EnhancedCreatePost } from './enhanced-create-post'
 import { ChannelsSidebar } from './channels-sidebar'
 import { CreateAnnouncement } from './create-announcement'
+import { AnnouncementCard } from './announcement-card'
 
 interface Post {
   id: string
@@ -34,6 +35,7 @@ interface Announcement {
   created_at: string
   is_pinned: boolean
   created_by: string
+  expires_at: string | null
   profiles: {
     display_name: string | null
     first_name: string | null
@@ -193,20 +195,11 @@ export function CommunityFeed() {
                   </p>
                 ) : (
                   announcements.map((announcement) => (
-                    <div key={announcement.id} className="p-3 rounded-lg space-y-2" style={{ backgroundColor: 'white' }}>
-                      <h4 className="font-medium text-sm line-clamp-2" style={{ color: '#290a52' }}>{announcement.title}</h4>
-                      <p className="text-xs line-clamp-3 leading-relaxed" style={{ color: '#290a52' }}>
-                        {announcement.content}
-                      </p>
-                      <div className="flex items-center justify-between text-xs" style={{ color: '#290a52' }}>
-                        <span className="truncate">
-                          by {getDisplayName(announcement.profiles)}
-                        </span>
-                        <span className="flex-shrink-0 ml-2">
-                          {formatDistanceToNow(new Date(announcement.created_at), { addSuffix: true })}
-                        </span>
-                      </div>
-                    </div>
+                    <AnnouncementCard 
+                      key={announcement.id} 
+                      announcement={announcement} 
+                      onUpdate={fetchAnnouncements} 
+                    />
                   ))
                 )}
               </CardContent>

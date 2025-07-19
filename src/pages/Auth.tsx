@@ -154,10 +154,19 @@ export default function Auth() {
     e.preventDefault()
     
     // Validate required fields
-    if (!firstName || !lastName || !occupation || !profilePhoto) {
+    if (!firstName || !lastName || !occupation) {
       toast({
         title: "Missing required fields",
-        description: "Please fill in your full name, occupation, and upload a profile photo.",
+        description: "Please fill in your full name and occupation.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!selectedProgram) {
+      toast({
+        title: "Program required",
+        description: "Please select a program.",
         variant: "destructive",
       })
       return
@@ -165,10 +174,10 @@ export default function Auth() {
 
     // Validate paid membership fields
     if (membershipType === 'paid') {
-      if (!customPrice || !selectedProgram) {
+      if (!customPrice) {
         toast({
           title: "Missing paid membership fields",
-          description: "Please enter the price and select a program for paid membership.",
+          description: "Please enter the price for paid membership.",
           variant: "destructive",
         })
         return
@@ -223,15 +232,7 @@ export default function Auth() {
       }
 
       if (data.user) {
-        // Upload profile photo
-        const photoUrl = await uploadProfilePhoto(profilePhoto, data.user.id)
-        
-        if (photoUrl) {
-          // Update the user's metadata with the photo URL
-          await supabase.auth.updateUser({
-            data: { avatar_url: photoUrl }
-          })
-        }
+        // Note: Profile photo will be required after login
 
         // Update profile with program and membership info
         await supabase
@@ -624,47 +625,22 @@ export default function Auth() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="profilePhoto">Profile Photo *</Label>
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
-                      {profilePhotoUrl ? (
-                        <img 
-                          src={profilePhotoUrl} 
-                          alt="Profile preview" 
-                          className="w-16 h-16 rounded-full object-cover border-2 border-border"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-full bg-muted border-2 border-border flex items-center justify-center">
-                          <User className="w-8 h-8 text-muted-foreground" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <Input
-                        id="profilePhoto"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleProfilePhotoChange}
-                        disabled={isLoading}
-                        className="hidden"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById('profilePhoto')?.click()}
-                        disabled={isLoading}
-                        className="w-full"
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        {profilePhoto ? 'Change Photo' : 'Upload Photo'}
-                      </Button>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Maximum file size: 5MB. Supported formats: JPG, PNG, GIF
-                  </p>
+                <div>
+                  <Label htmlFor="program">Program *</Label>
+                  <Select value={selectedProgram} onValueChange={setSelectedProgram}>
+                    <SelectTrigger id="program">
+                      <SelectValue placeholder="Select a program" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="The Family Business University">The Family Business University</SelectItem>
+                      <SelectItem value="The Family Vault">The Family Vault</SelectItem>
+                      <SelectItem value="The Family Business Accelerator">The Family Business Accelerator</SelectItem>
+                      <SelectItem value="The Family Legacy: VIP Weekend">The Family Legacy: VIP Weekend</SelectItem>
+                      <SelectItem value="The Family Fortune Mastermind">The Family Fortune Mastermind</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+
                 
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email *</Label>
@@ -728,30 +704,12 @@ export default function Auth() {
                    </div>
                  )}
 
-                 {/* Program Selection (only for paid) */}
-                 {membershipType === 'paid' && (
-                   <div className="space-y-2">
-                     <Label htmlFor="programSelect">Select Program *</Label>
-                     <Select value={selectedProgram} onValueChange={setSelectedProgram}>
-                       <SelectTrigger>
-                         <SelectValue placeholder="Choose your program" />
-                       </SelectTrigger>
-                       <SelectContent>
-                         <SelectItem value="The Family Business University">The Family Business University</SelectItem>
-                         <SelectItem value="The Family Vault">The Family Vault</SelectItem>
-                         <SelectItem value="The Family Business Accelerator">The Family Business Accelerator</SelectItem>
-                         <SelectItem value="The Family Legacy: VIP Weekend">The Family Legacy: VIP Weekend</SelectItem>
-                         <SelectItem value="The Family Fortune Mastermind">The Family Fortune Mastermind</SelectItem>
-                       </SelectContent>
-                     </Select>
-                   </div>
-                 )}
                 
                  <Button 
                    type="submit" 
                    className="w-full" 
                    style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                   disabled={isLoading || !firstName || !lastName || !occupation || !profilePhoto || (membershipType === 'paid' && (!customPrice || !selectedProgram))}
+                   disabled={isLoading || !firstName || !lastName || !occupation || !selectedProgram || (membershipType === 'paid' && !customPrice)}
                  >
                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                    {membershipType === 'paid' ? 'Create Account & Pay' : 'Create Account'}

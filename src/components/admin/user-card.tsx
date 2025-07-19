@@ -6,6 +6,8 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { UserRoleManagement } from './user-role-management'
 import { Users, Calendar } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useToast } from '@/hooks/use-toast'
 
 interface Profile {
   id: string
@@ -36,6 +38,7 @@ interface UserStats {
 }
 
 export function UserCard({ user, onRolesUpdated }: UserCardProps) {
+  const { toast } = useToast()
   const [stats, setStats] = useState<UserStats>({
     courseProgress: 0,
     totalCourses: 0,
@@ -44,6 +47,7 @@ export function UserCard({ user, onRolesUpdated }: UserCardProps) {
     oneOnOneSessions: 0
   })
   const [loading, setLoading] = useState(true)
+  const [updatingProgram, setUpdatingProgram] = useState(false)
 
   useEffect(() => {
     loadUserStats()
@@ -116,6 +120,34 @@ export function UserCard({ user, onRolesUpdated }: UserCardProps) {
     return user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unnamed User'
   }
 
+  const handleProgramChange = async (newProgram: string) => {
+    setUpdatingProgram(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ program_name: newProgram })
+        .eq('user_id', user.user_id)
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: "User program updated successfully!"
+      })
+
+      onRolesUpdated() // Refresh the user data
+    } catch (error) {
+      console.error('Error updating program:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update user program",
+        variant: "destructive"
+      })
+    } finally {
+      setUpdatingProgram(false)
+    }
+  }
+
   return (
     <Card className="p-4">
       <CardContent className="p-0">
@@ -140,11 +172,25 @@ export function UserCard({ user, onRolesUpdated }: UserCardProps) {
                   )}
                 </div>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
-                {user.program_name && (
-                  <p className="text-xs text-muted-foreground">
-                    Program: {user.program_name}
-                  </p>
-                )}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Program:</span>
+                  <Select
+                    value={user.program_name || ''}
+                    onValueChange={handleProgramChange}
+                    disabled={updatingProgram}
+                  >
+                    <SelectTrigger className="h-6 text-xs min-w-[200px]">
+                      <SelectValue placeholder="Select program" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="The Family Business University">The Family Business University</SelectItem>
+                      <SelectItem value="The Family Vault">The Family Vault</SelectItem>
+                      <SelectItem value="The Family Business Accelerator">The Family Business Accelerator</SelectItem>
+                      <SelectItem value="The Family Legacy: VIP Weekend">The Family Legacy: VIP Weekend</SelectItem>
+                      <SelectItem value="The Family Fortune Mastermind">The Family Fortune Mastermind</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
             {/* Course Progress */}
