@@ -71,36 +71,16 @@ const Courses = () => {
       const groupIds = (groupMemberships || []).map(membership => membership.group_id)
       setUserGroups(groupIds)
 
-      // Fetch courses associated with user's groups (only published courses)
-      let coursesData: Course[] = []
-      
-      if (groupIds.length > 0) {
-        const { data: groupCourses, error: groupCoursesError } = await supabase
-          .from('group_courses')
-          .select(`
-            course_id,
-            courses!inner (*)
-          `)
-          .in('group_id', groupIds)
-          .eq('courses.status', 'published')
+      // Fetch ALL published courses (not just group-specific ones)
+      const { data: allPublishedCourses, error: allCoursesError } = await supabase
+        .from('courses')
+        .select('*')
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
 
-        if (groupCoursesError) throw groupCoursesError
+      if (allCoursesError) throw allCoursesError
 
-        // Extract unique courses from group courses
-        const uniqueCourseIds = new Set()
-        coursesData = (groupCourses || [])
-          .filter(gc => {
-            if (uniqueCourseIds.has(gc.course_id)) {
-              return false
-            }
-            uniqueCourseIds.add(gc.course_id)
-            return true
-          })
-          .map(gc => gc.courses as Course)
-          .filter(course => course !== null)
-      }
-
-      // Also fetch courses created by the user (show all for creators, only published for others)
+      // Also fetch courses created by the user (show all statuses for creators)
       const { data: userCreatedCourses, error: userCoursesError } = await supabase
         .from('courses')
         .select('*')
@@ -109,8 +89,8 @@ const Courses = () => {
 
       if (userCoursesError) throw userCoursesError
 
-      // Combine group courses with user-created courses (remove duplicates)
-      const allCourses = [...coursesData]
+      // Combine published courses with user-created courses (remove duplicates)
+      const allCourses = [...(allPublishedCourses || [])]
       userCreatedCourses?.forEach(course => {
         if (!allCourses.find(c => c.id === course.id)) {
           allCourses.push(course)
