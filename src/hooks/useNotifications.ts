@@ -97,6 +97,28 @@ export function useNotifications() {
 
   useEffect(() => {
     fetchNotifications()
+    
+    // Set up real-time subscription for new notifications
+    const channel = supabase
+      .channel('notifications-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'family_notifications',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          console.log('New notification received, refetching...')
+          fetchNotifications()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [user])
 
   return {

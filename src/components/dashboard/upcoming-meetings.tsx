@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { CalendarIcon, Clock } from "lucide-react"
 import { useMeetings } from "@/contexts/MeetingsContext"
+import { TestNotificationButton } from "./test-notification-button"
 
 export function UpcomingMeetings() {
   const { meetings } = useMeetings()
@@ -18,7 +19,8 @@ export function UpcomingMeetings() {
         </CardDescription>
       </CardHeader>
       <CardContent className="p-4">
-        <div className="space-y-3">
+        <TestNotificationButton />
+        <div className="space-y-3 mt-4">
           {meetings
             .filter(meeting => new Date(meeting.date) >= new Date())
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
