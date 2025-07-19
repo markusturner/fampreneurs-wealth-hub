@@ -110,7 +110,7 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
   const { toast } = useToast()
   const [videos, setVideos] = useState<Video[]>([])
   const [modules, setModules] = useState<Module[]>([])
-  const [selectedModule, setSelectedModule] = useState<string>('all')
+  const [selectedModule, setSelectedModule] = useState<string>('')
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null)
   const [loading, setLoading] = useState(true)
   const [editVideoOpen, setEditVideoOpen] = useState(false)
@@ -166,6 +166,11 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
       
       const typedData = (data || []) as Module[]
       setModules(typedData)
+      
+      // Set first module as default if no module is selected
+      if (typedData.length > 0 && selectedModule === '') {
+        setSelectedModule(typedData[0].id)
+      }
     } catch (error) {
       console.error('Error fetching modules:', error)
     }
@@ -237,10 +242,8 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
     fetchVideos()
   }
 
-  const filteredVideos = selectedModule === 'all' 
+  const filteredVideos = selectedModule === '' 
     ? videos 
-    : selectedModule === 'unassigned'
-    ? videos.filter(video => !video.module_id)
     : videos.filter(video => video.module_id === selectedModule)
 
   useEffect(() => {
@@ -298,8 +301,6 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
                 <SelectValue placeholder="Filter by module" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Videos</SelectItem>
-                <SelectItem value="unassigned">Unassigned Videos</SelectItem>
                 {modules.map((module) => (
                   <SelectItem key={module.id} value={module.id}>
                     {module.title}
