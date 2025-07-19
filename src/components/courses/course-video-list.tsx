@@ -282,13 +282,13 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
         <div className="lg:col-span-2 space-y-4">
           {selectedVideo && (
             <>
-              <div className="aspect-video bg-card rounded-lg overflow-hidden relative group border-2" style={{ borderColor: '#ffb500' }}>
+              <div className="aspect-video bg-card rounded-lg overflow-hidden relative group">
                 <VideoPlayer video={selectedVideo} onVideoCompleted={handleVideoCompleted} />
               </div>
               
               {/* Video Description */}
               {selectedVideo.description && (
-                <Card className="border-2" style={{ borderColor: '#ffb500' }}>
+                <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">Description</CardTitle>
                   </CardHeader>
@@ -299,7 +299,7 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
               )}
               
               {/* Video Resources */}
-              <Card className="border-2" style={{ borderColor: '#ffb500' }}>
+              <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Resources</CardTitle>
                 </CardHeader>
@@ -340,12 +340,11 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
               return (
                 <Card
                   key={video.id}
-                  className={`transition-all duration-300 border-2 ${
+                  className={`transition-all duration-300 ${
                     isUnlocked 
                       ? `cursor-pointer hover:bg-muted/50 ${selectedVideo?.id === video.id ? 'ring-2 ring-primary bg-muted/30' : 'bg-card'}` 
                       : 'cursor-not-allowed opacity-50 bg-card/50'
                   }`}
-                  style={{ borderColor: '#ffb500' }}
                   onClick={() => isUnlocked && handleVideoSelect(video)}
                 >
                   <CardContent className="p-4">
