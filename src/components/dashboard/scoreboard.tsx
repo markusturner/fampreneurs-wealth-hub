@@ -78,14 +78,9 @@ export function Scoreboard() {
             completedCourses = enrollments.filter(e => e.completed_at)?.length || 0
           }
 
-          if (attendance?.length) {
-            groupCallsAttended = attendance.filter(a => a.session_type === 'group')?.length || 0
-            individualCallsAttended = attendance.filter(a => a.session_type === 'individual')?.length || 0
-          } else {
-            // Fallback to session data if attendance tracking is not available
-            groupCallsAttended = Math.floor(Math.random() * 5) // Placeholder - should be replaced with real data
-            individualCallsAttended = individualSessions?.length || 0
-          }
+          // Use actual attendance data only
+          groupCallsAttended = attendance?.filter(a => a.session_type === 'group')?.length || 0
+          individualCallsAttended = attendance?.filter(a => a.session_type === 'individual')?.length || 0
           
           // Calculate total score using the database function logic
           const courseScore = Math.round(courseProgress * 0.4)
