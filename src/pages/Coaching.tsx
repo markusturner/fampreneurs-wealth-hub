@@ -122,22 +122,11 @@ const Coaching = () => {
     }
   }
 
-  // Fetch coaches from both tables - financial_advisors and coaches
+  // Fetch coaches from the coaches table (admin dashboard section)
   const fetchCoaches = async () => {
     setLoadingCoaches(true)
     try {
-      // Fetch from financial_advisors table
-      const { data: advisorData, error: advisorError } = await supabase
-        .from('financial_advisors')
-        .select('*')
-        .eq('is_active', true)
-        .order('full_name', { ascending: true })
-
-      if (advisorError) {
-        console.error('Error fetching financial advisors:', advisorError)
-      }
-
-      // Fetch from coaches table (from admin dashboard)
+      // Fetch from coaches table (from admin dashboard coaching section)
       const { data: coachData, error: coachError } = await supabase
         .from('coaches')
         .select('*')
@@ -146,18 +135,14 @@ const Coaching = () => {
 
       if (coachError) {
         console.error('Error fetching coaches:', coachError)
+        setAvailableCoaches([])
+      } else {
+        console.log('Fetched coaches:', coachData)
+        setAvailableCoaches(coachData || [])
       }
-
-      // Combine both datasets, avoiding duplicates by email
-      const allCoaches = [...(advisorData || []), ...(coachData || [])]
-      const uniqueCoaches = allCoaches.filter((coach, index, self) => 
-        index === self.findIndex(c => c.email === coach.email && c.email) || !coach.email
-      )
-
-      console.log('Fetched coaches:', uniqueCoaches)
-      setAvailableCoaches(uniqueCoaches || [])
     } catch (error) {
       console.error('Error fetching coaches:', error)
+      setAvailableCoaches([])
     } finally {
       setLoadingCoaches(false)
     }

@@ -47,11 +47,14 @@ export const AttendanceTracker = ({
     if (!user) return
 
     try {
+      // Clean session ID to remove any suffixes like "_0"
+      const cleanSessionId = sessionId.includes('_') ? sessionId.split('_')[0] : sessionId
+      
       const { data, error } = await supabase
         .from('session_attendance')
         .select('*')
         .eq('user_id', user.id)
-        .eq('session_id', sessionId)
+        .eq('session_id', cleanSessionId)
         .eq('session_type', sessionType)
         .maybeSingle()
 
@@ -68,12 +71,14 @@ export const AttendanceTracker = ({
     setIsJoining(true)
     try {
       const joinTime = new Date()
+      // Clean session ID to remove any suffixes like "_0"
+      const cleanSessionId = sessionId.includes('_') ? sessionId.split('_')[0] : sessionId
       
       const { error } = await supabase
         .from('session_attendance')
         .upsert({
           user_id: user.id,
-          session_id: sessionId,
+          session_id: cleanSessionId,
           session_type: sessionType,
           attended: true,
           joined_at: joinTime.toISOString()

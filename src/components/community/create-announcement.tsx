@@ -50,13 +50,18 @@ export const CreateAnnouncement = ({ onAnnouncementCreated }: CreateAnnouncement
 
     setIsCreating(true)
     try {
+      // Get expiration time if set
+      const expiresAtInput = document.getElementById('expires-at') as HTMLInputElement
+      const expiresAt = expiresAtInput?.value ? new Date(expiresAtInput.value).toISOString() : null
+
       const { error } = await supabase
         .from('announcements')
         .insert({
           title: title.trim(),
           content: content.trim(),
           created_by: user.id,
-          is_pinned: isPinned
+          is_pinned: isPinned,
+          expires_at: expiresAt
         })
 
       if (error) throw error
@@ -143,13 +148,27 @@ export const CreateAnnouncement = ({ onAnnouncementCreated }: CreateAnnouncement
             </p>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="pin-announcement"
-              checked={isPinned}
-              onCheckedChange={setIsPinned}
-            />
-            <Label htmlFor="pin-announcement">Pin to top</Label>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="pin-announcement"
+                checked={isPinned}
+                onCheckedChange={setIsPinned}
+              />
+              <Label htmlFor="pin-announcement">Pin to top</Label>
+            </div>
+            
+            <div>
+              <Label htmlFor="expires-at">Auto-expire (optional)</Label>
+              <Input
+                type="datetime-local"
+                id="expires-at"
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Announcement will automatically disappear after this time
+              </p>
+            </div>
           </div>
           
           <div className="flex gap-2">
