@@ -22,6 +22,7 @@ serve(async (req) => {
   console.log('Starting feedback notification process...');
 
   try {
+    const { sendToAllUsers } = await req.json().catch(() => ({ sendToAllUsers: false }));
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
@@ -46,17 +47,24 @@ serve(async (req) => {
     for (const profile of profiles || []) {
       usersProcessed++;
       
-      // Check if user needs feedback notification using the database function
-      const { data: needsNotification, error: checkError } = await supabase
-        .rpc('user_needs_feedback_notification', { target_user_id: profile.user_id });
+      // If sendToAllUsers is true, send to everyone regardless of timing
+      let needsNotification = sendToAllUsers;
+      
+      if (!sendToAllUsers) {
+        // Check if user needs feedback notification using the database function
+        const { data: checkResult, error: checkError } = await supabase
+          .rpc('user_needs_feedback_notification', { target_user_id: profile.user_id });
 
-      if (checkError) {
-        console.error(`Error checking notification status for user ${profile.user_id}:`, checkError);
-        continue;
+        if (checkError) {
+          console.error(`Error checking notification status for user ${profile.user_id}:`, checkError);
+          continue;
+        }
+        
+        needsNotification = checkResult;
       }
 
       if (needsNotification) {
-        console.log(`User ${profile.user_id} needs feedback notification`);
+        console.log(`User ${profile.user_id} ${sendToAllUsers ? '(admin-triggered)' : 'needs feedback notification'}`);
         
         // Insert or update notification record
         const { error: upsertError } = await supabase

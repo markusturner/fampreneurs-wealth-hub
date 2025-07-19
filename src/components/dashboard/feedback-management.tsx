@@ -56,14 +56,16 @@ export function FeedbackManagement() {
 
   const handleTriggerFeedbackForAll = async () => {
     try {
-      // Call the edge function to trigger feedback notifications
-      const { error } = await supabase.functions.invoke('feedback-notifications')
+      // Call the edge function to trigger feedback notifications for all users
+      const { error } = await supabase.functions.invoke('feedback-notifications', {
+        body: { sendToAllUsers: true }
+      })
       
       if (error) throw error
 
       toast({
-        title: "Feedback notifications sent",
-        description: "All eligible users have been notified to provide feedback.",
+        title: "Satisfaction survey notifications sent",
+        description: "All users have been notified to complete the satisfaction survey.",
       })
     } catch (error) {
       console.error('Error triggering feedback notifications:', error)
@@ -155,7 +157,7 @@ export function FeedbackManagement() {
           </Button>
           <Button onClick={handleTriggerFeedbackForAll}>
             <Calendar className="h-4 w-4 mr-2" />
-            Send Feedback Requests
+            Send Survey to All Users
           </Button>
         </div>
       </div>

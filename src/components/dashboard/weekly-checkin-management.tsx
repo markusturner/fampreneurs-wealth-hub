@@ -39,6 +39,27 @@ export function WeeklyCheckinManagement() {
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
 
+  const handleSendWeeklyCheckinToAll = async () => {
+    try {
+      // Call the edge function to send weekly check-in notifications to all users
+      const { error } = await supabase.functions.invoke('weekly-checkin-notifications')
+      
+      if (error) throw error
+
+      toast({
+        title: "Weekly check-in notifications sent",
+        description: "All users have been notified to complete their weekly check-in.",
+      })
+    } catch (error) {
+      console.error('Error sending weekly check-in notifications:', error)
+      toast({
+        title: "Error",
+        description: "Failed to send weekly check-in notifications.",
+        variant: "destructive",
+      })
+    }
+  }
+
   useEffect(() => {
     fetchResponses()
   }, [])
@@ -153,10 +174,16 @@ export function WeeklyCheckinManagement() {
             </p>
           </div>
           
-          <Button onClick={() => setDialogOpen(true)} className="gap-2">
-            <CalendarCheck className="h-4 w-4" />
-            New Check-in
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setDialogOpen(true)} className="gap-2">
+              <CalendarCheck className="h-4 w-4" />
+              New Check-in
+            </Button>
+            <Button onClick={handleSendWeeklyCheckinToAll} variant="outline" className="gap-2">
+              <CalendarCheck className="h-4 w-4" />
+              Send Check-in to All Users
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
