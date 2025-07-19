@@ -143,9 +143,9 @@ export function FeedbackManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Feedback Management</h2>
+          <h2 className="text-2xl font-bold">Satisfaction Survey</h2>
           <p className="text-muted-foreground">
-            Monitor program feedback and user satisfaction
+            Monitor user satisfaction and gather feedback through 6-week surveys
           </p>
         </div>
         <div className="flex gap-2">
