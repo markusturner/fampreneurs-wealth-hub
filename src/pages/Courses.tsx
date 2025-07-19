@@ -392,66 +392,6 @@ const Courses = () => {
             </div>
           </div>
 
-          {/* Featured Course - Mobile/Tablet Netflix Style Hero */}
-          {activeTab === 'courses' && filteredCourses.length > 0 && (
-            <div className="relative mb-6 mx-4 mt-2">
-              <div 
-                className="relative aspect-[16/9] rounded-lg overflow-hidden bg-gradient-to-r from-primary/20 to-accent/20"
-                style={{
-                  backgroundImage: `url(${filteredCourses[0].image_url || "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=400&fit=crop"})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/40 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <div className="max-w-full">
-                    <h2 className="text-lg font-bold text-foreground mb-2 line-clamp-2">
-                      {filteredCourses[0].title}
-                    </h2>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge 
-                        className="text-xs font-medium px-2 py-1"
-                        style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                      >
-                        FEATURED
-                      </Badge>
-                      <Badge 
-                        className="text-xs px-2 py-1"
-                        style={filteredCourses[0].level === 'Advanced' ? { backgroundColor: '#ffb500', color: '#290a52' } : {}}
-                      >
-                        {filteredCourses[0].level}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {filteredCourses[0].description || "Master essential business skills with this comprehensive course."}
-                    </p>
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm"
-                        className="hover:opacity-90 font-semibold text-sm px-4 py-2"
-                        style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                        onClick={() => handleOpenCourseDetail(filteredCourses[0])}
-                      >
-                        <Play className="h-4 w-4 mr-2" />
-                        {isUserEnrolled(filteredCourses[0].id) ? 'Continue' : 'Start Course'}
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="bg-background/20 border-foreground/20 text-foreground hover:bg-background/40 text-sm px-4 py-2"
-                        onClick={() => handleToggleMyList(filteredCourses[0])}
-                        disabled={loadingMyList}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        {isInMyList(filteredCourses[0].id) ? 'Remove' : 'My List'}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Mobile Course Grid */}
           <div className="px-4">
@@ -464,7 +404,7 @@ const Courses = () => {
                     <p className="text-muted-foreground">Check back later for new courses.</p>
                   </div>
                 ) : (
-                  <div className="grid gap-4">
+                  <div className="space-y-4">
                     {filteredCourses.map((course) => (
                       <Card key={course.id} className="overflow-hidden bg-card/80 backdrop-blur-sm border-border/20">
                         <div className="aspect-[16/9] bg-gradient-to-r from-primary/20 to-accent/20">
