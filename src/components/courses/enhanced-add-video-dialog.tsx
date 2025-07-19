@@ -80,7 +80,7 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
   
   // Module state
   const [modules, setModules] = useState<Array<{ id: string; title: string }>>([])
-  const [selectedModuleId, setSelectedModuleId] = useState('')
+  const [selectedModuleId, setSelectedModuleId] = useState('none')
   const [newModuleTitle, setNewModuleTitle] = useState('')
   const [newModuleDescription, setNewModuleDescription] = useState('')
   const [showCreateModule, setShowCreateModule] = useState(false)
@@ -293,7 +293,7 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
           video_url: finalVideoUrl,
           video_type: activeTab === 'upload' ? 'upload' : videoType,
           duration_seconds: duration ? parseInt(duration) * 60 : null,
-          module_id: selectedModuleId || null,
+          module_id: selectedModuleId === 'none' ? null : selectedModuleId || null,
           created_by: user.id,
           order_index: 0 // Will be updated by admin if needed
         })
@@ -335,7 +335,7 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
     setVideoType('youtube')
     setDuration('')
     setCategory('')
-    setSelectedModuleId('')
+    setSelectedModuleId('none')
     setNewModuleTitle('')
     setNewModuleDescription('')
     setShowCreateModule(false)
@@ -442,7 +442,7 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
                   <SelectValue placeholder="Select a module" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No Module</SelectItem>
+                  <SelectItem value="none">No Module</SelectItem>
                   {modules.map((module) => (
                     <SelectItem key={module.id} value={module.id}>
                       {module.title}
