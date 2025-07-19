@@ -154,7 +154,8 @@ export function BudgetingAnalytics() {
 
   const fetchBudgetData = async () => {
     try {
-      // Only fetch budget data if we have transactions or accounts to base it on
+      // Only show mock data if we have actual accounts or transactions to base it on
+      // This function should only be called when there are connected accounts or transactions
       const mockBudgets: BudgetCategory[] = [
         {
           id: '1',
@@ -391,7 +392,10 @@ export function BudgetingAnalytics() {
                 </p>
               </div>
               <Button 
-                onClick={() => setIsOperational(true)} 
+                onClick={() => {
+                  setIsOperational(true)
+                  // Don't load mock data, just enable the UI for manual budget creation
+                }} 
                 className="mt-4"
               >
                 Create Manual Budget
