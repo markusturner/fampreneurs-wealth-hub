@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
-import { Plus } from 'lucide-react'
+import { Plus, Upload, Link } from 'lucide-react'
 
 interface CreateCourseDialogProps {
   onCourseCreated: () => void
@@ -17,6 +18,9 @@ interface CreateCourseDialogProps {
 export function CreateCourseDialog({ onCourseCreated }: CreateCourseDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [imageTab, setImageTab] = useState<'upload' | 'url'>('url')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imageUrl, setImageUrl] = useState('')
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -30,6 +34,29 @@ export function CreateCourseDialog({ onCourseCreated }: CreateCourseDialogProps)
   const { toast } = useToast()
   const { user } = useAuth()
 
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}.${fileExt}`
+      const filePath = `course-images/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('course-videos')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('course-videos')
+        .getPublicUrl(filePath)
+
+      return publicUrl
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      return null
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) return
@@ -37,10 +64,22 @@ export function CreateCourseDialog({ onCourseCreated }: CreateCourseDialogProps)
     try {
       setLoading(true)
       
+      let finalImageUrl = imageUrl
+
+      // Handle image upload
+      if (imageTab === 'upload' && imageFile) {
+        const uploadedUrl = await uploadImage(imageFile)
+        if (!uploadedUrl) {
+          throw new Error('Failed to upload image file')
+        }
+        finalImageUrl = uploadedUrl
+      }
+      
       const { error } = await supabase
         .from('courses')
         .insert({
           ...formData,
+          image_url: finalImageUrl || null,
           created_by: user.id
         })
       
@@ -61,6 +100,8 @@ export function CreateCourseDialog({ onCourseCreated }: CreateCourseDialogProps)
         price: 'Free',
         status: 'draft'
       })
+      setImageUrl('')
+      setImageFile(null)
       setOpen(false)
       onCourseCreated()
     } catch (error: any) {
@@ -108,6 +149,38 @@ export function CreateCourseDialog({ onCourseCreated }: CreateCourseDialogProps)
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
               rows={3}
             />
+          </div>
+          
+          {/* Course Photo Upload */}
+          <div className="space-y-2">
+            <Label>Course Photo (Optional)</Label>
+            <Tabs value={imageTab} onValueChange={(value: 'upload' | 'url') => setImageTab(value)}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="url">Image URL</TabsTrigger>
+                <TabsTrigger value="upload">Upload File</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="url" className="space-y-2">
+                <Input
+                  placeholder="https://example.com/image.jpg"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                />
+              </TabsContent>
+              
+              <TabsContent value="upload" className="space-y-2">
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                />
+                {imageFile && (
+                  <p className="text-sm text-muted-foreground">
+                    Selected: {imageFile.name}
+                  </p>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
           
           <div className="grid grid-cols-2 gap-4">

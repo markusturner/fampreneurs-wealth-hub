@@ -679,6 +679,47 @@ export type Database = {
           },
         ]
       }
+      course_modules: {
+        Row: {
+          course_id: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          order_index: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          order_index?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          order_index?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_modules_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_videos: {
         Row: {
           course_id: string | null
@@ -687,6 +728,7 @@ export type Database = {
           description: string | null
           duration_seconds: number | null
           id: string
+          module_id: string | null
           order_index: number | null
           title: string
           updated_at: string
@@ -700,6 +742,7 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           id?: string
+          module_id?: string | null
           order_index?: number | null
           title: string
           updated_at?: string
@@ -713,6 +756,7 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           id?: string
+          module_id?: string | null
           order_index?: number | null
           title?: string
           updated_at?: string
@@ -725,6 +769,13 @@ export type Database = {
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_videos_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "course_modules"
             referencedColumns: ["id"]
           },
         ]

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Upload, Link, FileText, Plus, Trash2 } from 'lucide-react'
+import { Upload, Link, FileText, Plus, Trash2, FolderPlus } from 'lucide-react'
 
 interface AddVideoDialogProps {
   open: boolean
@@ -78,9 +78,75 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
   const [category, setCategory] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   
+  // Module state
+  const [modules, setModules] = useState<Array<{ id: string; title: string }>>([])
+  const [selectedModuleId, setSelectedModuleId] = useState('')
+  const [newModuleTitle, setNewModuleTitle] = useState('')
+  const [newModuleDescription, setNewModuleDescription] = useState('')
+  const [showCreateModule, setShowCreateModule] = useState(false)
+  
   // Documents state
   const [documents, setDocuments] = useState<Document[]>([])
   const [showDocumentSection, setShowDocumentSection] = useState(false)
+
+  // Load modules when dialog opens
+  useEffect(() => {
+    if (open && courseId) {
+      loadModules()
+    }
+  }, [open, courseId])
+
+  const loadModules = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('course_modules')
+        .select('id, title')
+        .eq('course_id', courseId)
+        .order('order_index', { ascending: true })
+
+      if (error) throw error
+      setModules(data || [])
+    } catch (error) {
+      console.error('Error loading modules:', error)
+    }
+  }
+
+  const createModule = async () => {
+    if (!newModuleTitle.trim() || !user) return
+
+    try {
+      const { data, error } = await supabase
+        .from('course_modules')
+        .insert({
+          course_id: courseId,
+          title: newModuleTitle.trim(),
+          description: newModuleDescription.trim() || null,
+          order_index: modules.length,
+          created_by: user.id
+        })
+        .select('id, title')
+        .single()
+
+      if (error) throw error
+
+      setModules(prev => [...prev, data])
+      setSelectedModuleId(data.id)
+      setNewModuleTitle('')
+      setNewModuleDescription('')
+      setShowCreateModule(false)
+
+      toast({
+        title: "Module created",
+        description: "The module has been created successfully."
+      })
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create module",
+        variant: "destructive"
+      })
+    }
+  }
 
   const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -225,8 +291,9 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
           title: title.trim(),
           description: description.trim() || null,
           video_url: finalVideoUrl,
-          video_type: activeTab === 'upload' ? 'upload' : 'url',
+          video_type: activeTab === 'upload' ? 'upload' : videoType,
           duration_seconds: duration ? parseInt(duration) * 60 : null,
+          module_id: selectedModuleId || null,
           created_by: user.id,
           order_index: 0 // Will be updated by admin if needed
         })
@@ -268,6 +335,10 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
     setVideoType('youtube')
     setDuration('')
     setCategory('')
+    setSelectedModuleId('')
+    setNewModuleTitle('')
+    setNewModuleDescription('')
+    setShowCreateModule(false)
     setDocuments([])
     setShowDocumentSection(false)
     setActiveTab('url')
@@ -360,6 +431,69 @@ export const EnhancedAddVideoDialog = ({ open, onOpenChange, courseId, onVideoAd
                 </div>
               </TabsContent>
             </Tabs>
+          </div>
+
+          {/* Module Selection */}
+          <div className="space-y-4">
+            <Label>Module (Optional)</Label>
+            <div className="space-y-3">
+              <Select value={selectedModuleId} onValueChange={setSelectedModuleId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a module" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No Module</SelectItem>
+                  {modules.map((module) => (
+                    <SelectItem key={module.id} value={module.id}>
+                      {module.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCreateModule(!showCreateModule)}
+                className="flex items-center gap-2"
+              >
+                <FolderPlus className="h-4 w-4" />
+                {showCreateModule ? 'Cancel' : 'Create New Module'}
+              </Button>
+
+              {showCreateModule && (
+                <div className="space-y-3 p-4 border rounded-lg bg-muted/20">
+                  <div>
+                    <Label htmlFor="newModuleTitle">Module Title *</Label>
+                    <Input
+                      id="newModuleTitle"
+                      value={newModuleTitle}
+                      onChange={(e) => setNewModuleTitle(e.target.value)}
+                      placeholder="Module title"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="newModuleDescription">Module Description</Label>
+                    <Textarea
+                      id="newModuleDescription"
+                      value={newModuleDescription}
+                      onChange={(e) => setNewModuleDescription(e.target.value)}
+                      placeholder="Module description"
+                      rows={2}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={createModule}
+                    disabled={!newModuleTitle.trim()}
+                    size="sm"
+                  >
+                    Create Module
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Additional Details */}
