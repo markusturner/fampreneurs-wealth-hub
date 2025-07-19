@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, TrendingDown, DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, UserPlus } from "lucide-react"
+import { TrendingUp, TrendingDown, DollarSign, PieChart, Users, FileText, ArrowUpRight, ArrowDownRight, UserPlus, Home, Briefcase } from "lucide-react"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 
@@ -79,32 +79,25 @@ export function DashboardStats() {
   const stats = [
     {
       title: "Total Portfolio Value",
-      value: portfolioData.totalValue > 0 
-        ? `$${portfolioData.totalValue.toLocaleString()}` 
-        : "$12,450,000",
-      change: portfolioData.totalValue > 0 
-        ? (portfolioData.dayChangePercent >= 0 ? `+${portfolioData.dayChangePercent.toFixed(1)}%` : `${portfolioData.dayChangePercent.toFixed(1)}%`)
-        : "+8.2%",
-      trend: portfolioData.totalValue > 0 
-        ? (portfolioData.dayChangePercent >= 0 ? "up" : "down")
-        : "up",
+      value: "$13,600,000", // Fixed value as requested
+      change: "+$150,000",
+      trend: "up",
       icon: DollarSign,
-      description: portfolioData.totalValue > 0 ? "From connected accounts" : "Since yesterday",
-      useRealData: portfolioData.totalValue > 0
+      iconColor: "#10b981", // Green
+      description: "From investment page performance",
+      tagColor: "#ffb500" // Orange
     },
     {
       title: "Active Investments",
-      value: portfolioData.totalValue > 0 
+      value: portfolioData.activeInvestments > 0 
         ? `${portfolioData.activeInvestments}`
         : "47",
-      change: portfolioData.totalValue > 0 
-        ? `${portfolioData.activeInvestments > 0 ? `+${portfolioData.activeInvestments}` : "0"}`
-        : "+2",
+      change: `+${portfolioData.connectedAccounts || 3}`,
       trend: "up", 
       icon: PieChart,
-      description: portfolioData.totalValue > 0 
-        ? `From ${portfolioData.connectedAccounts} connected account${portfolioData.connectedAccounts !== 1 ? 's' : ''}`
-        : "New positions this week"
+      iconColor: "#3b82f6", // Blue
+      description: `From ${portfolioData.connectedAccounts || 3} accounts section`,
+      tagColor: "#ffb500" // Orange
     },
     {
       title: "Financial Advisors",
@@ -112,7 +105,9 @@ export function DashboardStats() {
       change: financialAdvisorCount > 0 ? "+1" : "0",
       trend: "up",
       icon: Users,
-      description: "Active team members"
+      iconColor: "#f59e0b", // Yellow/Orange
+      description: "Active team members",
+      tagColor: "#ffb500" // Orange
     },
     {
       title: "Family Members",
@@ -120,7 +115,9 @@ export function DashboardStats() {
       change: familyMemberCount > 0 ? "+1" : "0",
       trend: "up",
       icon: UserPlus,
-      description: "Family network"
+      iconColor: "#ef4444", // Red
+      description: "Family network",
+      tagColor: "#ffb500" // Orange
     },
     {
       title: "Family Documents",
@@ -128,7 +125,9 @@ export function DashboardStats() {
       change: documentCount > 0 ? "+5" : "0",
       trend: "up",
       icon: FileText,
-      description: "Managed documents"
+      iconColor: "#06b6d4", // Cyan
+      description: "Managed documents",
+      tagColor: "#ffb500" // Orange
     }
   ]
   return (
@@ -143,16 +142,12 @@ export function DashboardStats() {
               <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">
                 {stat.title}
               </CardTitle>
-              <Icon className="h-4 w-4 text-primary flex-shrink-0" />
+              <Icon className="h-4 w-4 flex-shrink-0" style={{ color: stat.iconColor }} />
             </CardHeader>
             <CardContent className="p-3 sm:p-6 pt-0">
               <div className="flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className={`text-xl sm:text-2xl font-bold truncate ${
-                    stat.title === "Total Portfolio Value" && stat.useRealData ? "" : "text-foreground"
-                  }`} style={{
-                    color: stat.title === "Total Portfolio Value" && stat.useRealData ? '#ffb500' : undefined
-                  }}>
+                  <div className="text-xl sm:text-2xl font-bold truncate text-foreground">
                     {stat.value}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1 leading-tight">
@@ -160,8 +155,8 @@ export function DashboardStats() {
                   </p>
                 </div>
                 <Badge 
-                  variant={stat.trend === "up" ? "default" : "destructive"} 
-                  className={`ml-2 flex-shrink-0 ${stat.trend === "up" ? "bg-accent text-accent-foreground" : ""}`}
+                  className="ml-2 flex-shrink-0 text-white"
+                  style={{ backgroundColor: stat.tagColor }}
                 >
                   <TrendIcon className="h-3 w-3 mr-1" />
                   <span className="text-xs">{stat.change}</span>

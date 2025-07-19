@@ -69,6 +69,14 @@ export function EditCoachDialog({ coach, onCoachUpdated }: EditCoachDialogProps)
         })
         .eq('id', coach.id)
 
+      // Also update the hourly rate in financial_advisors table if this coach exists there
+      if (formData.hourly_rate) {
+        await supabase
+          .from('financial_advisors')
+          .update({ hourly_rate: parseFloat(formData.hourly_rate) })
+          .eq('full_name', formData.full_name)
+      }
+
       if (error) throw error
 
       toast({

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
 import { NavHeader } from '@/components/dashboard/nav-header'
 import { 
   TrendingUp, 
@@ -22,7 +24,8 @@ import {
   Bitcoin,
   FileText,
   Users,
-  Lock
+  Lock,
+  ArrowLeft
 } from 'lucide-react'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
 import { AssetAllocation } from '@/components/dashboard/asset-allocation'
@@ -53,6 +56,7 @@ interface AssetAllocationData {
 
 export default function FamilyOffice() {
   const { user, profile } = useAuth()
+  const navigate = useNavigate()
   const [investments, setInvestments] = useState<Investment[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -144,11 +148,22 @@ export default function FamilyOffice() {
       
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Digital Family Office</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Complete financial ecosystem management and wealth tracking
-            </p>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/')}
+              className="hover:bg-muted"
+              title="Back to Family Office"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold">Digital Family Office</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Complete financial ecosystem management and wealth tracking
+              </p>
+            </div>
           </div>
         </div>
 

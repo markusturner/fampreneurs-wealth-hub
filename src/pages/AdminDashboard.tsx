@@ -746,7 +746,7 @@ export default function AdminDashboard() {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/')}
-                className="text-white hover:bg-white/10 transition-colors"
+                className="text-white hover:bg-white/10 transition-colors hover:text-[#ffb500]"
                 title="Back to Dashboard"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -946,17 +946,27 @@ export default function AdminDashboard() {
                 <CardDescription>Distribution of members across coaches</CardDescription>
               </CardHeader>
               <CardContent>
-                {coachData.length > 0 ? (
+                 {coachData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
-                     <RechartsBarChart data={coachData} layout="horizontal">
+                     <RechartsBarChart data={coachData} layout="horizontal" margin={{ left: 20, right: 20, top: 20, bottom: 20 }}>
                        <CartesianGrid strokeDasharray="3 3" />
                        <XAxis type="number" />
-                       <YAxis dataKey="name" type="category" width={120} />
+                       <YAxis 
+                         dataKey="name" 
+                         type="category" 
+                         width={180} 
+                         tick={{ fontSize: 12 }}
+                         interval={0}
+                       />
                        <Tooltip 
                          formatter={(value: number, name: string) => [`${value} member${value !== 1 ? 's' : ''}`, 'Assigned Members']}
                          labelFormatter={(label: string) => `Coach: ${label}`}
                        />
-                       <Bar dataKey="clients" fill="#ffb500" />
+                       <Bar 
+                         dataKey="clients" 
+                         fill="#ffb500"
+                         radius={[0, 4, 4, 0]}
+                       />
                     </RechartsBarChart>
                   </ResponsiveContainer>
                 ) : (
