@@ -340,11 +340,12 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
               return (
                 <Card
                   key={video.id}
-                  className={`transition-all duration-300 ${
+                  className={`transition-all duration-300 border-2 ${
                     isUnlocked 
                       ? `cursor-pointer hover:bg-muted/50 ${selectedVideo?.id === video.id ? 'ring-2 ring-primary bg-muted/30' : 'bg-card'}` 
                       : 'cursor-not-allowed opacity-50 bg-card/50'
                   }`}
+                  style={{ borderColor: '#ffb500' }}
                   onClick={() => isUnlocked && handleVideoSelect(video)}
                 >
                   <CardContent className="p-4">
