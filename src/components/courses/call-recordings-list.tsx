@@ -29,6 +29,7 @@ export function CallRecordingsList() {
 
   const fetchRecordings = async () => {
     try {
+      console.log('CallRecordingsList: Fetching recordings...')
       const { data, error } = await supabase
         .from('coaching_call_recordings')
         .select('*')
@@ -39,11 +40,14 @@ export function CallRecordingsList() {
         return
       }
 
+      console.log('CallRecordingsList: Raw data from DB:', data)
+      
       // Remove duplicates based on ID before setting state
       const uniqueRecordings = (data || []).filter((recording, index, self) => 
         index === self.findIndex(r => r.id === recording.id)
       )
       
+      console.log('CallRecordingsList: Unique recordings after dedup:', uniqueRecordings)
       setRecordings(uniqueRecordings)
     } catch (error) {
       console.error('Error fetching recordings:', error)
