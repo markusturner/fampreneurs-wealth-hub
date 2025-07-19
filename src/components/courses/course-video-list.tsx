@@ -221,23 +221,6 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
             <>
               <div className="aspect-video bg-card rounded-lg overflow-hidden relative group border border-border">
                 <VideoPlayer video={selectedVideo} />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent p-6">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-2xl font-bold text-foreground">{selectedVideo.title}</h2>
-                    <Badge className="text-white" style={{ backgroundColor: getPlatformColor(selectedVideo.video_type) }}>
-                      {getPlatformName(selectedVideo.video_type)}
-                    </Badge>
-                    {selectedVideo.duration_seconds && (
-                      <Badge variant="outline" className="gap-1 bg-card/50 border-border text-foreground">
-                        <Clock className="h-3 w-3" />
-                        {Math.floor(selectedVideo.duration_seconds / 60)} min
-                      </Badge>
-                    )}
-                  </div>
-                  {selectedVideo.description && (
-                    <p className="text-muted-foreground text-sm max-w-2xl">{selectedVideo.description}</p>
-                  )}
-                </div>
               </div>
               <VideoDocuments videoId={selectedVideo.id} />
             </>
