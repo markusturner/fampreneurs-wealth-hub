@@ -409,362 +409,386 @@ export function BudgetingAnalytics() {
 
   return (
     <div className="space-y-6">
-      {/* Budget Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <DollarSign className="h-4 w-4" />
-              Total Budgeted
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(getTotalBudgeted())}</div>
-            <div className="text-sm text-muted-foreground">Monthly budget</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingDown className="h-4 w-4" />
-              Total Spent
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(getTotalSpent())}</div>
-            <div className={`text-sm ${getTotalSpent() > getTotalBudgeted() ? 'text-red-600' : 'text-green-600'}`}>
-              {getTotalSpent() > getTotalBudgeted() ? 'Over budget' : 'Under budget'}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Remaining
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(getTotalRemaining())}</div>
-            <div className="text-sm text-muted-foreground">This month</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Budget Categories */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <PieChart className="h-5 w-5" />
-                Budget Categories
+      {/* Only show Budget Overview if there are budget categories */}
+      {budgetCategories.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                Total Budgeted
               </CardTitle>
-              <CardDescription>Monthly budget breakdown and spending</CardDescription>
-            </div>
-            <Dialog open={showBudgetDialog} onOpenChange={setShowBudgetDialog}>
-              <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Add Budget
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add Budget Category</DialogTitle>
-                  <DialogDescription>
-                    Create a new budget category with monthly limit
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Category Name</Label>
-                    <Input
-                      id="name"
-                      value={newBudget.name}
-                      onChange={(e) => setNewBudget(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="e.g., Food & Dining, Entertainment"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="amount">Monthly Budget Amount</Label>
-                    <Input
-                      id="amount"
-                      type="number"
-                      value={newBudget.amount}
-                      onChange={(e) => setNewBudget(prev => ({ ...prev, amount: e.target.value }))}
-                      placeholder="1000"
-                    />
-                  </div>
-                  
-                  <div className="flex gap-2 pt-4">
-                    <Button variant="outline" onClick={() => setShowBudgetDialog(false)} className="flex-1">
-                      Cancel
-                    </Button>
-                    <Button onClick={handleAddBudget} className="flex-1">
-                      Add Budget
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {budgetCategories.map((category) => (
-              <div key={category.id} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{category.name}</span>
-                    {category.isOverBudget && (
-                      <Badge variant="destructive" className="text-xs">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
-                        Over Budget
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="text-right">
-                      <div className="font-medium">
-                        {formatCurrency(category.spent)} / {formatCurrency(category.budgeted)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {formatCurrency(Math.abs(category.remaining))} {category.remaining >= 0 ? 'remaining' : 'over'}
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setBudgetCategories(prev => prev.filter(cat => cat.id !== category.id))
-                        toast({
-                          title: "Category Deleted",
-                          description: `${category.name} budget category has been removed`,
-                        })
-                      }}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-                <Progress 
-                  value={Math.min(category.percentage, 100)} 
-                  className="h-2"
-                  style={{ 
-                    backgroundColor: category.isOverBudget ? '#fecaca' : undefined 
-                  }}
-                />
-                <div className="text-xs text-muted-foreground">
-                  {category.percentage.toFixed(1)}% of budget used
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(getTotalBudgeted())}</div>
+              <div className="text-sm text-muted-foreground">Monthly budget</div>
+            </CardContent>
+          </Card>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <TrendingDown className="h-4 w-4" />
+                Total Spent
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(getTotalSpent())}</div>
+              <div className={`text-sm ${getTotalSpent() > getTotalBudgeted() ? 'text-red-600' : 'text-green-600'}`}>
+                {getTotalSpent() > getTotalBudgeted() ? 'Over budget' : 'Under budget'}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Remaining
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(getTotalRemaining())}</div>
+              <div className="text-sm text-muted-foreground">This month</div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Budget Categories - Show if there are categories OR allow adding new ones */}
+      {(budgetCategories.length > 0 || isOperational) && (
         <Card>
           <CardHeader>
-            <CardTitle>Spending Trends</CardTitle>
-            <CardDescription>Budget vs actual spending over time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={spendingTrendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                <Line type="monotone" dataKey="budget" stroke="hsl(var(--primary))" strokeDasharray="5 5" />
-                <Line type="monotone" dataKey="actual" stroke="hsl(var(--destructive))" />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Budget Distribution</CardTitle>
-            <CardDescription>Current month budget allocation</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <RechartsPieChart>
-                <Pie
-                  data={budgetCategories}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={120}
-                  paddingAngle={5}
-                  dataKey="budgeted"
-                >
-                  {budgetCategories.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => formatCurrency(value as number)} />
-              </RechartsPieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Financial Goals */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Financial Goals
-              </CardTitle>
-              <CardDescription>Track progress toward your financial objectives</CardDescription>
-            </div>
-            <Dialog open={showGoalDialog} onOpenChange={setShowGoalDialog}>
-              <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <Plus className="h-4 w-4" />
-                  Add Goal
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add Financial Goal</DialogTitle>
-                  <DialogDescription>
-                    Set a new financial goal to track your progress
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="goalName">Goal Name</Label>
-                    <Input
-                      id="goalName"
-                      value={newGoal.name}
-                      onChange={(e) => setNewGoal(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="e.g., Emergency Fund, Vacation"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="targetAmount">Target Amount</Label>
-                    <Input
-                      id="targetAmount"
-                      type="number"
-                      value={newGoal.targetAmount}
-                      onChange={(e) => setNewGoal(prev => ({ ...prev, targetAmount: e.target.value }))}
-                      placeholder="50000"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="targetDate">Target Date</Label>
-                    <Input
-                      id="targetDate"
-                      type="date"
-                      value={newGoal.targetDate}
-                      onChange={(e) => setNewGoal(prev => ({ ...prev, targetDate: e.target.value }))}
-                    />
-                  </div>
-                  
-                  <div className="flex gap-2 pt-4">
-                    <Button variant="outline" onClick={() => setShowGoalDialog(false)} className="flex-1">
-                      Cancel
-                    </Button>
-                    <Button onClick={handleAddGoal} className="flex-1">
-                      Add Goal
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {financialGoals.map((goal) => (
-              <div key={goal.id} className="p-4 border rounded-lg">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium">{goal.name}</h3>
-                    <Badge className={getPriorityColor(goal.priority)}>
-                      {goal.priority}
-                    </Badge>
-                    {goal.isCompleted && (
-                      <Badge className="bg-green-100 text-green-800">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Completed
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <div className="font-medium">
-                      {formatCurrency(goal.currentAmount)} / {formatCurrency(goal.targetAmount)}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Target: {new Date(goal.targetDate).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-                <Progress 
-                  value={(goal.currentAmount / goal.targetAmount) * 100} 
-                  className="h-2"
-                />
-                <div className="text-xs text-muted-foreground mt-1">
-                  {((goal.currentAmount / goal.targetAmount) * 100).toFixed(1)}% complete
-                </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <PieChart className="h-5 w-5" />
+                  Budget Categories
+                </CardTitle>
+                <CardDescription>Monthly budget breakdown and spending</CardDescription>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* AI Recommendations */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BrainCircuit className="h-5 w-5" />
-            AI-Powered Recommendations
-          </CardTitle>
-          <CardDescription>
-            Personalized insights to optimize your finances
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {aiRecommendations.map((rec) => (
-              <div key={rec.id} className="p-4 border rounded-lg">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium">{rec.title}</h3>
-                      <Badge className={getPriorityColor(rec.priority)}>
-                        {rec.priority}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{rec.description}</p>
-                    <div className="text-sm font-medium text-green-600">
-                      Potential savings: {formatCurrency(rec.impact)}/month
-                    </div>
-                  </div>
-                  <Button size="sm" variant="outline">
-                    Apply
+              <Dialog open={showBudgetDialog} onOpenChange={setShowBudgetDialog}>
+                <DialogTrigger asChild>
+                  <Button className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add Budget
                   </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Budget Category</DialogTitle>
+                    <DialogDescription>
+                      Create a new budget category with monthly limit
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Category Name</Label>
+                      <Input
+                        id="name"
+                        value={newBudget.name}
+                        onChange={(e) => setNewBudget(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="e.g., Food & Dining, Entertainment"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="amount">Monthly Budget Amount</Label>
+                      <Input
+                        id="amount"
+                        type="number"
+                        value={newBudget.amount}
+                        onChange={(e) => setNewBudget(prev => ({ ...prev, amount: e.target.value }))}
+                        placeholder="1000"
+                      />
+                    </div>
+                    
+                    <div className="flex gap-2 pt-4">
+                      <Button variant="outline" onClick={() => setShowBudgetDialog(false)} className="flex-1">
+                        Cancel
+                      </Button>
+                      <Button onClick={handleAddBudget} className="flex-1">
+                        Add Budget
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {budgetCategories.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <PieChart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No budget categories yet. Click "Add Budget" to get started.</p>
                 </div>
+              ) : (
+                budgetCategories.map((category) => (
+                  <div key={category.id} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{category.name}</span>
+                        {category.isOverBudget && (
+                          <Badge variant="destructive" className="text-xs">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Over Budget
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <div className="font-medium">
+                            {formatCurrency(category.spent)} / {formatCurrency(category.budgeted)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {formatCurrency(Math.abs(category.remaining))} {category.remaining >= 0 ? 'remaining' : 'over'}
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setBudgetCategories(prev => prev.filter(cat => cat.id !== category.id))
+                            toast({
+                              title: "Category Deleted",
+                              description: `${category.name} budget category has been removed`,
+                            })
+                          }}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                    <Progress 
+                      value={Math.min(category.percentage, 100)} 
+                      className="h-2"
+                      style={{ 
+                        backgroundColor: category.isOverBudget ? '#fecaca' : undefined 
+                      }}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      {category.percentage.toFixed(1)}% of budget used
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Charts - Only show if there are budget categories */}
+      {budgetCategories.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Spending Trends</CardTitle>
+              <CardDescription>Budget vs actual spending over time</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={spendingTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                  <Line type="monotone" dataKey="budget" stroke="hsl(var(--primary))" strokeDasharray="5 5" />
+                  <Line type="monotone" dataKey="actual" stroke="hsl(var(--destructive))" />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Budget Distribution</CardTitle>
+              <CardDescription>Current month budget allocation</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <RechartsPieChart>
+                  <Pie
+                    data={budgetCategories}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={120}
+                    paddingAngle={5}
+                    dataKey="budgeted"
+                  >
+                    {budgetCategories.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                </RechartsPieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Financial Goals - Show if there are goals OR allow adding new ones */}
+      {(financialGoals.length > 0 || isOperational) && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Financial Goals
+                </CardTitle>
+                <CardDescription>Track progress toward your financial objectives</CardDescription>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <Dialog open={showGoalDialog} onOpenChange={setShowGoalDialog}>
+                <DialogTrigger asChild>
+                  <Button className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add Goal
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Financial Goal</DialogTitle>
+                    <DialogDescription>
+                      Set a new financial goal to track your progress
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="goalName">Goal Name</Label>
+                      <Input
+                        id="goalName"
+                        value={newGoal.name}
+                        onChange={(e) => setNewGoal(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="e.g., Emergency Fund, Vacation"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="targetAmount">Target Amount</Label>
+                      <Input
+                        id="targetAmount"
+                        type="number"
+                        value={newGoal.targetAmount}
+                        onChange={(e) => setNewGoal(prev => ({ ...prev, targetAmount: e.target.value }))}
+                        placeholder="50000"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="targetDate">Target Date</Label>
+                      <Input
+                        id="targetDate"
+                        type="date"
+                        value={newGoal.targetDate}
+                        onChange={(e) => setNewGoal(prev => ({ ...prev, targetDate: e.target.value }))}
+                      />
+                    </div>
+                    
+                    <div className="flex gap-2 pt-4">
+                      <Button variant="outline" onClick={() => setShowGoalDialog(false)} className="flex-1">
+                        Cancel
+                      </Button>
+                      <Button onClick={handleAddGoal} className="flex-1">
+                        Add Goal
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {financialGoals.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No financial goals yet. Click "Add Goal" to get started.</p>
+                </div>
+              ) : (
+                financialGoals.map((goal) => (
+                  <div key={goal.id} className="p-4 border rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium">{goal.name}</h3>
+                        <Badge className={getPriorityColor(goal.priority)}>
+                          {goal.priority}
+                        </Badge>
+                        {goal.isCompleted && (
+                          <Badge className="bg-green-100 text-green-800">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Completed
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium">
+                          {formatCurrency(goal.currentAmount)} / {formatCurrency(goal.targetAmount)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Target: {new Date(goal.targetDate).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                    <Progress 
+                      value={(goal.currentAmount / goal.targetAmount) * 100} 
+                      className="h-2"
+                    />
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {((goal.currentAmount / goal.targetAmount) * 100).toFixed(1)}% complete
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* AI Recommendations - Only show if there are recommendations */}
+      {aiRecommendations.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BrainCircuit className="h-5 w-5" />
+              AI-Powered Recommendations
+            </CardTitle>
+            <CardDescription>
+              Personalized insights to optimize your finances
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {aiRecommendations.map((rec) => (
+                <div key={rec.id} className="p-4 border rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium">{rec.title}</h3>
+                        <Badge className={getPriorityColor(rec.priority)}>
+                          {rec.priority}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{rec.description}</p>
+                      <div className="text-sm font-medium text-green-600">
+                        Potential savings: {formatCurrency(rec.impact)}/month
+                      </div>
+                    </div>
+                    <Button size="sm" variant="outline">
+                      Apply
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
