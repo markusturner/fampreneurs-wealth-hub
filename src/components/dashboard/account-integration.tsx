@@ -468,6 +468,12 @@ export function AccountIntegration() {
                       size="sm"
                       variant="outline"
                       className="flex items-center gap-1"
+                      onClick={() => {
+                        toast({
+                          title: "Settings",
+                          description: `Opening settings for ${account.name}`,
+                        })
+                      }}
                     >
                       <Settings className="h-3 w-3" />
                       Settings
@@ -477,6 +483,12 @@ export function AccountIntegration() {
                       size="sm"
                       variant="outline"
                       className="flex items-center gap-1"
+                      onClick={() => {
+                        toast({
+                          title: "View Account", 
+                          description: `Opening detailed view for ${account.name}`,
+                        })
+                      }}
                     >
                       <ExternalLink className="h-3 w-3" />
                       View

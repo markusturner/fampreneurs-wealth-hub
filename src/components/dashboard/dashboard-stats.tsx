@@ -155,8 +155,8 @@ export function DashboardStats() {
                   </p>
                 </div>
                 <Badge 
-                  className="ml-2 flex-shrink-0 text-white"
-                  style={{ backgroundColor: stat.tagColor }}
+                  className="ml-2 flex-shrink-0"
+                  style={{ backgroundColor: stat.tagColor, color: '#290a52' }}
                 >
                   <TrendIcon className="h-3 w-3 mr-1" />
                   <span className="text-xs">{stat.change}</span>

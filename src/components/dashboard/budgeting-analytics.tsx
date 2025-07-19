@@ -62,6 +62,7 @@ export function BudgetingAnalytics() {
   const [showBudgetDialog, setShowBudgetDialog] = useState(false)
   const [showGoalDialog, setShowGoalDialog] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [isOperational, setIsOperational] = useState(true)
 
   const [newBudget, setNewBudget] = useState({
     name: '',
@@ -297,6 +298,30 @@ export function BudgetingAnalytics() {
     { month: 'May', budget: 4600, actual: 4700 },
     { month: 'Jun', budget: 4600, actual: 4020 }
   ]
+
+  if (!isOperational) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <BrainCircuit className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">Budget & Analytics</h3>
+              <p className="text-muted-foreground">
+                Advanced budgeting and analytics tools are now operational and ready to use.
+              </p>
+              <Button 
+                onClick={() => setIsOperational(true)} 
+                className="mt-4"
+              >
+                Launch Budget Dashboard
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">

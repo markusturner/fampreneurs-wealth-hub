@@ -598,7 +598,18 @@ const Coaching = () => {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {currentCalls.map((session) => (
+                      {currentCalls
+                        .sort((a, b) => {
+                          // Sort by date first, then by time
+                          const dateCompare = new Date(a.date).getTime() - new Date(b.date).getTime()
+                          if (dateCompare !== 0) return dateCompare
+                          
+                          // Convert time to comparable format for secondary sort
+                          const timeA = a.time.replace(/[ap]m/i, '').padStart(5, '0')
+                          const timeB = b.time.replace(/[ap]m/i, '').padStart(5, '0')
+                          return timeA.localeCompare(timeB)
+                        })
+                        .map((session) => (
                         <Card key={session.id} className="shadow-sm hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedSessionDialog(session)}>
                           <CardContent className="p-4">
                             <div className="flex flex-col sm:flex-row gap-4">
