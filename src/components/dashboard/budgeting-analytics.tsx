@@ -67,7 +67,7 @@ export function BudgetingAnalytics() {
   const [showBudgetDialog, setShowBudgetDialog] = useState(false)
   const [showGoalDialog, setShowGoalDialog] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [isOperational, setIsOperational] = useState(true)
+  const [isOperational, setIsOperational] = useState(false)
 
   const [newBudget, setNewBudget] = useState({
     name: '',
@@ -263,7 +263,7 @@ export function BudgetingAnalytics() {
     { month: 'Jun', budget: 4600, actual: 4020 }
   ]
 
-  if (!isOperational && budgetCategories.length === 0 && financialGoals.length === 0) {
+  if (!isOperational) {
     return (
       <div className="space-y-6">
         <Card>
