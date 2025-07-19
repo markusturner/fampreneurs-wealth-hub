@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -53,6 +54,7 @@ export function TransactionMonitoring() {
   const { user } = useAuth()
   const { toast } = useToast()
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [connectedAccounts, setConnectedAccounts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showFilterDialog, setShowFilterDialog] = useState(false)
@@ -79,81 +81,102 @@ export function TransactionMonitoring() {
   })
 
   useEffect(() => {
-    fetchTransactions()
-  }, [])
+    fetchConnectedAccountsAndTransactions()
+  }, [user])
+
+  const fetchConnectedAccountsAndTransactions = async () => {
+    try {
+      setLoading(true)
+      
+      if (!user) {
+        // For non-authenticated users, check localStorage
+        const stored = localStorage.getItem('connectedAccounts')
+        const accounts = stored ? JSON.parse(stored) : []
+        const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
+        const activeAccounts = accounts.filter((account: any) => !deletedAccounts.includes(account.id))
+        
+        setConnectedAccounts(activeAccounts)
+        
+        // Only show transactions if there are connected accounts
+        if (activeAccounts.length > 0) {
+          await fetchTransactions()
+        } else {
+          setTransactions([])
+        }
+        return
+      }
+
+      // For authenticated users, fetch from Supabase
+      const { data: accounts, error } = await supabase
+        .from('connected_accounts')
+        .select('*')
+        .eq('user_id', user.id)
+
+      if (error) {
+        console.error('Error fetching accounts:', error)
+        setConnectedAccounts([])
+        setTransactions([])
+        return
+      }
+
+      setConnectedAccounts(accounts || [])
+      
+      // Only fetch transactions if there are connected accounts
+      if (accounts && accounts.length > 0) {
+        await fetchTransactions()
+      } else {
+        setTransactions([])
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error)
+      setConnectedAccounts([])
+      setTransactions([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const fetchTransactions = async () => {
     try {
-      // Generate real-time transaction data based on connected accounts
-      const mockTransactions: Transaction[] = [
-        {
-          id: '1',
-          date: '2024-01-15',
-          description: 'Fidelity Investment Purchase',
-          amount: -5000,
-          type: 'investment',
-          category: 'Brokerage',
-          account: 'Fidelity Investment Account',
-          tags: ['investment', 'stocks'],
-          familyMember: 'John Doe',
-          isRecurring: false,
-          status: 'completed'
-        },
-        {
-          id: '2',
-          date: '2024-01-14',
-          description: 'Grocery Shopping - Whole Foods',
-          amount: -450,
-          type: 'expense',
-          category: 'Food & Dining',
-          account: 'Chase Checking',
-          tags: ['groceries', 'family'],
-          familyMember: 'Jane Doe',
-          isRecurring: false,
-          status: 'completed'
-        },
-        {
-          id: '3',
-          date: '2024-01-13',
-          description: 'Investment - S&P 500 ETF',
-          amount: -5000,
-          type: 'investment',
-          category: 'Investments',
-          account: 'Fidelity Brokerage',
-          tags: ['etf', 'long-term'],
-          isRecurring: false,
-          status: 'completed'
-        },
-        {
-          id: '4',
-          date: '2024-01-12',
-          description: 'Property Rental Income',
-          amount: 3500,
-          type: 'income',
-          category: 'Real Estate',
-          account: 'Business Checking',
-          tags: ['rental', 'property'],
-          isRecurring: true,
-          status: 'completed'
-        },
-        {
-          id: '5',
-          date: '2024-01-11',
-          description: 'Transfer to Savings',
-          amount: -2000,
-          type: 'transfer',
-          category: 'Transfers',
-          account: 'Chase Checking',
-          tags: ['savings'],
-          isRecurring: true,
-          status: 'completed'
+      if (user) {
+        // For authenticated users, fetch from Supabase
+        const { data: dbTransactions, error } = await supabase
+          .from('account_transactions')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('transaction_date', { ascending: false })
+          .limit(50)
+
+        if (error) {
+          console.error('Error fetching transactions:', error)
+          setTransactions([])
+          return
         }
-      ]
-      setTransactions(mockTransactions)
+
+        // Transform Supabase data to match our interface
+        const transformedTransactions: Transaction[] = (dbTransactions || []).map(tx => ({
+          id: tx.id,
+          date: tx.transaction_date,
+          description: tx.description || 'Transaction',
+          amount: Number(tx.amount),
+          type: tx.transaction_type === 'credit' ? 'income' : 'expense',
+          category: tx.category || 'Uncategorized',
+          account: 'Connected Account',
+          tags: [],
+          isRecurring: false,
+          status: tx.pending ? 'pending' : 'completed'
+        }))
+
+        setTransactions(transformedTransactions)
+      } else {
+        // For non-authenticated users, only show transactions if they manually added them
+        const storedTransactions = localStorage.getItem('manualTransactions')
+        const manualTransactions = storedTransactions ? JSON.parse(storedTransactions) : []
+        setTransactions(manualTransactions)
+      }
     } catch (error) {
       console.error('Error fetching transactions:', error)
-    } finally {
-      setLoading(false)
+      setTransactions([])
     }
   }
 
@@ -182,6 +205,15 @@ export function TransactionMonitoring() {
       }
 
       setTransactions(prev => [transaction, ...prev])
+      
+      // Store manually added transactions for non-authenticated users
+      if (!user) {
+        const storedTransactions = localStorage.getItem('manualTransactions')
+        const existingTransactions = storedTransactions ? JSON.parse(storedTransactions) : []
+        const updatedTransactions = [transaction, ...existingTransactions]
+        localStorage.setItem('manualTransactions', JSON.stringify(updatedTransactions))
+      }
+      
       setShowAddDialog(false)
       resetForm()
 
