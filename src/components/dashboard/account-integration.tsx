@@ -93,36 +93,40 @@ export function AccountIntegration() {
 
   const fetchConnectedAccounts = async () => {
     try {
+      // Check for deleted accounts
+      const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
+      
       // Mock data for demonstration - replace with actual API calls
       const mockAccounts: ConnectedAccount[] = [
         {
           id: '1',
           name: 'Chase Business Checking',
-          type: 'bank',
+          type: 'bank' as const,
           provider: 'Chase Bank',
           balance: 125000,
           lastSync: new Date().toISOString(),
-          status: 'connected'
+          status: 'connected' as const
         },
         {
           id: '2',
           name: 'Fidelity Investment Account',
-          type: 'brokerage',
+          type: 'brokerage' as const,
           provider: 'Fidelity',
           balance: 850000,
           lastSync: new Date().toISOString(),
-          status: 'connected'
+          status: 'connected' as const
         },
         {
           id: '3',
           name: 'Coinbase Pro',
-          type: 'crypto',
+          type: 'crypto' as const,
           provider: 'Coinbase',
           balance: 75000,
           lastSync: new Date().toISOString(),
-          status: 'syncing'
+          status: 'syncing' as const
         }
-      ]
+      ].filter(account => !deletedAccounts.includes(account.id))
+      
       setAccounts(mockAccounts)
     } catch (error) {
       console.error('Error fetching accounts:', error)
@@ -251,10 +255,15 @@ export function AccountIntegration() {
   }
 
   const handleDeleteAccount = async (accountId: string) => {
+    // Create a persistent deletion by storing in localStorage
+    const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
+    deletedAccounts.push(accountId)
+    localStorage.setItem('deletedAccounts', JSON.stringify(deletedAccounts))
+    
     setAccounts(prev => prev.filter(acc => acc.id !== accountId))
     toast({
       title: "Account Deleted",
-      description: "Account has been removed from your portfolio",
+      description: "Account has been permanently removed from your portfolio",
     })
   }
 
@@ -524,7 +533,7 @@ export function AccountIntegration() {
                       </div>
                       
                       <div className="text-lg font-semibold">
-                        {formatCurrency(account.balance)}
+                        ${formatCurrency(account.balance).replace('$', '')}
                       </div>
                       
                       <div className="text-xs text-muted-foreground">

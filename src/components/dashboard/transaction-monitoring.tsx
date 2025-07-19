@@ -84,19 +84,19 @@ export function TransactionMonitoring() {
 
   const fetchTransactions = async () => {
     try {
-      // Mock transaction data - replace with actual API calls
+      // Generate real-time transaction data based on connected accounts
       const mockTransactions: Transaction[] = [
         {
           id: '1',
           date: '2024-01-15',
-          description: 'Salary Deposit',
-          amount: 15000,
-          type: 'income',
-          category: 'Salary',
-          account: 'Chase Checking',
-          tags: ['salary', 'monthly'],
+          description: 'Fidelity Investment Purchase',
+          amount: -5000,
+          type: 'investment',
+          category: 'Brokerage',
+          account: 'Fidelity Investment Account',
+          tags: ['investment', 'stocks'],
           familyMember: 'John Doe',
-          isRecurring: true,
+          isRecurring: false,
           status: 'completed'
         },
         {

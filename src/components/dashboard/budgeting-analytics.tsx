@@ -444,13 +444,29 @@ export function BudgetingAnalytics() {
                       </Badge>
                     )}
                   </div>
-                  <div className="text-right">
-                    <div className="font-medium">
-                      {formatCurrency(category.spent)} / {formatCurrency(category.budgeted)}
+                  <div className="flex items-center gap-2">
+                    <div className="text-right">
+                      <div className="font-medium">
+                        {formatCurrency(category.spent)} / {formatCurrency(category.budgeted)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {formatCurrency(Math.abs(category.remaining))} {category.remaining >= 0 ? 'remaining' : 'over'}
+                      </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {formatCurrency(Math.abs(category.remaining))} {category.remaining >= 0 ? 'remaining' : 'over'}
-                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setBudgetCategories(prev => prev.filter(cat => cat.id !== category.id))
+                        toast({
+                          title: "Category Deleted",
+                          description: `${category.name} budget category has been removed`,
+                        })
+                      }}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
                   </div>
                 </div>
                 <Progress 

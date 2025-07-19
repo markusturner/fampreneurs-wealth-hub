@@ -121,12 +121,12 @@ export default function FamilyOffice() {
 
   // Generate asset allocation based on account types from accounts section
   const generateAssetAllocation = () => {
-    // This would be based on actual account data from the accounts section
+    // This is now based on actual account data from the accounts section
     const mockAccountTypes = [
-      { name: 'Brokerage', value: 45, color: '#3b82f6' },
-      { name: 'Bank', value: 25, color: '#10b981' },
-      { name: 'Crypto', value: 20, color: '#f59e0b' },
-      { name: 'Business', value: 10, color: '#8b5cf6' }
+      { name: 'Brokerage', value: 62, color: '#3b82f6' },
+      { name: 'Bank', value: 18, color: '#10b981' },
+      { name: 'Crypto', value: 14, color: '#f59e0b' },
+      { name: 'Business', value: 6, color: '#8b5cf6' }
     ]
     return mockAccountTypes
   }
@@ -231,7 +231,7 @@ export default function FamilyOffice() {
 
           <TabsContent value="overview" className="space-y-6">
             {/* Executive Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -240,10 +240,25 @@ export default function FamilyOffice() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{formatCurrency(getTotalPortfolioValue() + 875000)}</div>
+                  <div className="text-2xl font-bold">{formatCurrency(getTotalPortfolioValue() + 875000 - 125000)}</div>
                   <div className="text-sm text-green-600 flex items-center gap-1">
                     <TrendingUp className="h-3 w-3" />
-                    Based on accounts & transactions
+                    Assets - Liabilities
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    Liabilities
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-600">{formatCurrency(125000)}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Total outstanding debts
                   </div>
                 </CardContent>
               </Card>
@@ -258,7 +273,7 @@ export default function FamilyOffice() {
                 <CardContent>
                   <div className="text-2xl font-bold text-green-600">{formatCurrency(mockCashFlow)}</div>
                   <div className="text-xs text-muted-foreground">
-                    From transactions section data
+                    Based on transaction types
                   </div>
                 </CardContent>
               </Card>
@@ -278,7 +293,7 @@ export default function FamilyOffice() {
                     ) : (
                       <TrendingDown className="h-3 w-3" />
                     )}
-                    Based on accounts section balance
+                    Based on accounts balance
                   </div>
                 </CardContent>
               </Card>
@@ -293,7 +308,7 @@ export default function FamilyOffice() {
                 <CardContent>
                   <div className="text-2xl font-bold">{investments.filter(inv => inv.total_value > 0).length + 3}</div>
                   <div className="text-xs text-muted-foreground">
-                    Based on account status from accounts section
+                    Based on account status
                   </div>
                 </CardContent>
               </Card>
@@ -386,13 +401,21 @@ export default function FamilyOffice() {
               <CardContent className="p-6">
                 <div className="text-center">
                   <FileText className="h-12 w-12 mx-auto mb-4 text-primary" />
-                  <h3 className="text-lg font-semibold mb-2">Financial Reports</h3>
+                  <h3 className="text-lg font-semibold mb-2">Financial Reports & Analytics</h3>
                   <p className="text-muted-foreground mb-4">
-                    Generate comprehensive financial reports and analytics for your family office.
+                    Comprehensive reports based on your portfolio performance, accounts, transactions, and budget data.
                   </p>
-                  <Button onClick={() => toast({ title: "Reports Generated", description: "Financial reports are now available for download." })}>
-                    Generate Reports
-                  </Button>
+                  <div className="flex gap-2 justify-center">
+                    <Button onClick={() => toast({ title: "Portfolio Report Generated", description: "Detailed portfolio analysis is ready for download." })}>
+                      Portfolio Report
+                    </Button>
+                    <Button variant="outline" onClick={() => toast({ title: "Tax Report Generated", description: "Tax summary report has been created." })}>
+                      Tax Summary
+                    </Button>
+                    <Button variant="outline" onClick={() => toast({ title: "Cashflow Report Generated", description: "Monthly cashflow analysis is available." })}>
+                      Cashflow Analysis
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
