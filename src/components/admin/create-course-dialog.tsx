@@ -24,7 +24,8 @@ export function CreateCourseDialog({ onCourseCreated }: CreateCourseDialogProps)
     category: '',
     level: 'Beginner',
     duration: '',
-    price: 'Free'
+    price: 'Free',
+    status: 'draft'
   })
   const { toast } = useToast()
   const { user } = useAuth()
@@ -57,7 +58,8 @@ export function CreateCourseDialog({ onCourseCreated }: CreateCourseDialogProps)
         category: '',
         level: 'Beginner',
         duration: '',
-        price: 'Free'
+        price: 'Free',
+        status: 'draft'
       })
       setOpen(false)
       onCourseCreated()
@@ -154,20 +156,35 @@ export function CreateCourseDialog({ onCourseCreated }: CreateCourseDialogProps)
             </div>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="price">Price</Label>
-            <Select value={formData.price} onValueChange={(value) => setFormData(prev => ({ ...prev, price: value }))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Free">Free</SelectItem>
-                <SelectItem value="$19">$19</SelectItem>
-                <SelectItem value="$49">$49</SelectItem>
-                <SelectItem value="$99">$99</SelectItem>
-                <SelectItem value="$199">$199</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="price">Price</Label>
+              <Select value={formData.price} onValueChange={(value) => setFormData(prev => ({ ...prev, price: value }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Free">Free</SelectItem>
+                  <SelectItem value="$19">$19</SelectItem>
+                  <SelectItem value="$49">$49</SelectItem>
+                  <SelectItem value="$99">$99</SelectItem>
+                  <SelectItem value="$199">$199</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           
           <div className="flex justify-end space-x-2">

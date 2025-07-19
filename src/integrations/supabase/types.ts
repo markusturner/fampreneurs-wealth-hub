@@ -741,6 +741,7 @@ export type Database = {
           instructor: string | null
           level: string | null
           price: string | null
+          status: string
           title: string
           updated_at: string
         }
@@ -755,6 +756,7 @@ export type Database = {
           instructor?: string | null
           level?: string | null
           price?: string | null
+          status?: string
           title: string
           updated_at?: string
         }
@@ -769,6 +771,7 @@ export type Database = {
           instructor?: string | null
           level?: string | null
           price?: string | null
+          status?: string
           title?: string
           updated_at?: string
         }

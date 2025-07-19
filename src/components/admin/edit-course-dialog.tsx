@@ -20,6 +20,7 @@ interface Course {
   duration: string | null
   price: string | null
   image_url: string | null
+  status?: string
 }
 
 interface EditCourseDialogProps {
@@ -37,7 +38,8 @@ export function EditCourseDialog({ course, onCourseUpdated }: EditCourseDialogPr
     category: course.category || '',
     level: course.level || 'Beginner',
     duration: course.duration || '',
-    price: course.price || 'Free'
+    price: course.price || 'Free',
+    status: (course as any).status || 'published'
   })
   const { toast } = useToast()
 
@@ -153,20 +155,35 @@ export function EditCourseDialog({ course, onCourseUpdated }: EditCourseDialogPr
             </div>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="price">Price</Label>
-            <Select value={formData.price} onValueChange={(value) => setFormData(prev => ({ ...prev, price: value }))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Free">Free</SelectItem>
-                <SelectItem value="$19">$19</SelectItem>
-                <SelectItem value="$49">$49</SelectItem>
-                <SelectItem value="$99">$99</SelectItem>
-                <SelectItem value="$199">$199</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="price">Price</Label>
+              <Select value={formData.price} onValueChange={(value) => setFormData(prev => ({ ...prev, price: value }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Free">Free</SelectItem>
+                  <SelectItem value="$19">$19</SelectItem>
+                  <SelectItem value="$49">$49</SelectItem>
+                  <SelectItem value="$99">$99</SelectItem>
+                  <SelectItem value="$199">$199</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           
           <div className="flex justify-end space-x-2">

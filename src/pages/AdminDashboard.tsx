@@ -1218,7 +1218,15 @@ export default function AdminDashboard() {
                           {course.description || 'No description'}
                         </p>
                         <div className="flex items-center justify-between mt-3">
-                          <Badge variant="secondary">{course.category || 'General'}</Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="secondary">{course.category || 'General'}</Badge>
+                            <Badge 
+                              variant={(course as any).status === 'published' ? 'default' : 'outline'}
+                              className={(course as any).status === 'draft' ? 'text-orange-600 border-orange-600' : ''}
+                            >
+                              {(course as any).status === 'published' ? 'Published' : 'Draft'}
+                            </Badge>
+                          </div>
                           <div className="text-xs text-muted-foreground">
                             {course.level || 'Beginner'}
                           </div>

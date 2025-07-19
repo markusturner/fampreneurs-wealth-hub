@@ -71,7 +71,7 @@ const Courses = () => {
       const groupIds = (groupMemberships || []).map(membership => membership.group_id)
       setUserGroups(groupIds)
 
-      // Fetch courses associated with user's groups
+      // Fetch courses associated with user's groups (only published courses)
       let coursesData: Course[] = []
       
       if (groupIds.length > 0) {
@@ -79,9 +79,10 @@ const Courses = () => {
           .from('group_courses')
           .select(`
             course_id,
-            courses (*)
+            courses!inner (*)
           `)
           .in('group_id', groupIds)
+          .eq('courses.status', 'published')
 
         if (groupCoursesError) throw groupCoursesError
 
@@ -99,7 +100,7 @@ const Courses = () => {
           .filter(course => course !== null)
       }
 
-      // Also fetch courses created by the user
+      // Also fetch courses created by the user (show all for creators, only published for others)
       const { data: userCreatedCourses, error: userCoursesError } = await supabase
         .from('courses')
         .select('*')
@@ -361,7 +362,7 @@ const Courses = () => {
             <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
               {[
                 "Courses",
-                "Call Recordings",
+                "Call Recordings", 
                 "Certificates"
               ].map((item, index) => (
                 <Button
@@ -376,8 +377,8 @@ const Courses = () => {
                       activeTab === 'courses' ? 0 : 
                       activeTab === 'recordings' ? 1 : 2
                     )
-                      ? 'bg-white text-black' 
-                      : 'bg-black/80 text-white border-white/20'
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-background/20 text-foreground border-border/20'
                   }`}
                   onClick={() => {
                     if (index === 0) setActiveTab('courses')
@@ -389,6 +390,125 @@ const Courses = () => {
                 </Button>
               ))}
             </div>
+          </div>
+
+          {/* Mobile Course Grid */}
+          <div className="px-4">
+            {activeTab === 'courses' && (
+              <div className="space-y-4">
+                {filteredCourses.length === 0 ? (
+                  <div className="text-center py-8">
+                    <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">No courses available</h3>
+                    <p className="text-muted-foreground">Check back later for new courses.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {filteredCourses.map((course) => (
+                      <Card key={course.id} className="overflow-hidden bg-card/80 backdrop-blur-sm border-border/20">
+                        <div className="aspect-[16/9] bg-gradient-to-r from-primary/20 to-accent/20">
+                          {course.image_url ? (
+                            <img 
+                              src={course.image_url} 
+                              alt={course.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <BookOpen className="h-12 w-12 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="text-lg font-semibold text-foreground line-clamp-1">
+                              {course.title}
+                            </h3>
+                            <Badge 
+                              variant={course.level === 'Advanced' ? 'default' : 'secondary'}
+                              className="ml-2 flex-shrink-0"
+                            >
+                              {course.level}
+                            </Badge>
+                          </div>
+                          
+                          {course.description && (
+                            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                              {course.description}
+                            </p>
+                          )}
+                          
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              {course.duration && (
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-3 w-3" />
+                                  {course.duration}
+                                </span>
+                              )}
+                              {course.instructor && (
+                                <span>by {course.instructor}</span>
+                              )}
+                            </div>
+                            <Badge variant="outline" className="text-xs">
+                              {course.price}
+                            </Badge>
+                          </div>
+                          
+                          {isUserEnrolled(course.id) && (
+                            <div className="mb-3">
+                              <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                <span>Progress</span>
+                                <span>{getUserProgress(course.id)}%</span>
+                              </div>
+                              <Progress value={getUserProgress(course.id)} className="h-1" />
+                            </div>
+                          )}
+                          
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              className="flex-1"
+                              onClick={() => handleOpenCourseDetail(course)}
+                            >
+                              {isUserEnrolled(course.id) ? 'Continue' : 'View Course'}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {activeTab === 'recordings' && (
+              <div className="space-y-4">
+                <CallRecordingsList />
+              </div>
+            )}
+            
+            {activeTab === 'certificates' && (
+              <div className="space-y-4">
+                {certificates.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Award className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">No certificates yet</h3>
+                    <p className="text-muted-foreground">Complete courses to earn certificates.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {certificates.map((certificate) => (
+                      <CertificateCard
+                        key={certificate.id}
+                        certificate={certificate}
+                        onViewCertificate={() => handleViewCertificate(certificate)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
