@@ -18,6 +18,9 @@ interface Profile {
   is_moderator: boolean
   accountability_specialties: string[] | null
   admin_permissions: string[] | null
+  program_name: string | null
+  membership_type: string | null
+  profile_photo_uploaded: boolean
   created_at: string
   updated_at: string
 }
