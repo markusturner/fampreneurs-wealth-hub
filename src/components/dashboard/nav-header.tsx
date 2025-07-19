@@ -113,27 +113,29 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           </Button>
         </div>
 
-        {/* Search Bar - Visible on all devices */}
-        <div className="flex-1 max-w-lg mx-2 sm:mx-3 xl:mx-4">
-          <div className="relative">
+        {/* Search Bar - Desktop only */}
+        <div className="hidden md:flex flex-1 max-w-lg mx-2 sm:mx-3 xl:mx-4">
+          <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search investments, documents, team..."
-              className="pl-10 bg-muted/50 border-none focus:bg-background text-sm h-9"
+              className="pl-10 bg-muted/50 border-none focus:bg-background text-sm h-9 w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>
+        
+        {/* Mobile Search Button */}
+        <div className="md:hidden flex-1 flex justify-center">
+          <Button variant="ghost" size="icon" className="h-9 w-9">
+            <Search className="h-4 w-4" />
+          </Button>
+        </div>
 
         <div className="flex items-center gap-2 sm:gap-3 ml-auto">
           <ThemeToggle />
-          
-          {/* Mobile Search Button */}
-          <Button variant="ghost" size="icon" className="md:hidden h-9 w-9">
-            <Search className="h-4 w-4" />
-          </Button>
           
           {/* Single Notification Bell for all notifications */}
           <NotificationBell />
