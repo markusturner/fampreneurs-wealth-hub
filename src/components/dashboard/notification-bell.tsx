@@ -15,6 +15,9 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications()
 
+  console.log('NotificationBell: notifications:', notifications)
+  console.log('NotificationBell: unreadCount:', unreadCount)
+
   const handleNotificationClick = (notificationId: string, isRead: boolean) => {
     if (!isRead) {
       markAsRead(notificationId)

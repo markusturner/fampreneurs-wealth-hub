@@ -24,7 +24,12 @@ export function useNotifications() {
   const { user } = useAuth()
 
   const fetchNotifications = async () => {
-    if (!user) return
+    if (!user) {
+      console.log('useNotifications: No user found')
+      return
+    }
+
+    console.log('useNotifications: Fetching notifications for user:', user.id)
 
     try {
       const { data, error } = await supabase
@@ -33,8 +38,12 @@ export function useNotifications() {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.error('useNotifications: Error fetching notifications:', error)
+        throw error
+      }
 
+      console.log('useNotifications: Fetched notifications:', data)
       setNotifications(data || [])
       setUnreadCount(data?.filter(n => !n.is_read).length || 0)
     } catch (error) {

@@ -83,7 +83,12 @@ export function MeetingsProvider({ children }: { children: React.ReactNode }) {
   }
 
   const addMeeting = async (meetingData: Omit<Meeting, 'id'>) => {
-    if (!user) return
+    if (!user) {
+      console.log('MeetingsContext: No user found when adding meeting')
+      return
+    }
+
+    console.log('MeetingsContext: Adding meeting for user:', user.id, meetingData)
 
     const newMeeting: Meeting = {
       ...meetingData,
@@ -99,6 +104,8 @@ export function MeetingsProvider({ children }: { children: React.ReactNode }) {
       // Save to localStorage
       localStorage.setItem(`meetings_${user.id}`, JSON.stringify(updatedMeetings))
 
+      console.log('MeetingsContext: About to call notify_family_members_about_meeting')
+      
       // Notify family members about the new meeting
       const { data, error } = await supabase.rpc('notify_family_members_about_meeting', {
         meeting_title: meetingData.title,
@@ -109,12 +116,12 @@ export function MeetingsProvider({ children }: { children: React.ReactNode }) {
       })
 
       if (error) {
-        console.error('Error sending notifications:', error)
+        console.error('MeetingsContext: Error sending notifications:', error)
       } else {
-        console.log(`Notifications sent to ${data} family members`)
+        console.log(`MeetingsContext: Notifications sent to ${data} family members`)
       }
     } catch (error) {
-      console.error('Error adding meeting:', error)
+      console.error('MeetingsContext: Error adding meeting:', error)
     }
   }
 
