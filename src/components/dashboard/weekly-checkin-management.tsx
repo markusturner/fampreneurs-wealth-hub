@@ -68,14 +68,7 @@ export function WeeklyCheckinManagement() {
     try {
       let query = supabase
         .from('weekly_checkin_responses')
-        .select(`
-          *,
-          profiles:user_id (
-            display_name,
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: false })
 
       // If not admin, only show current user's responses
@@ -109,11 +102,7 @@ export function WeeklyCheckinManagement() {
   }
 
   const getDisplayName = (response: WeeklyCheckinResponse) => {
-    if (response.profiles?.display_name) return response.profiles.display_name
-    if (response.profiles?.first_name && response.profiles?.last_name) {
-      return `${response.profiles.first_name} ${response.profiles.last_name}`
-    }
-    return 'Unknown User'
+    return response.full_name || `User ${response.user_id.slice(0, 8)}`
   }
 
   const getRatingColor = (rating: number) => {

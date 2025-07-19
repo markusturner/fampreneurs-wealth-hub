@@ -186,6 +186,7 @@ interface Metrics {
 }
 
 interface CoachData {
+  id: string
   name: string
   clients: number
 }
@@ -587,8 +588,9 @@ export default function AdminDashboard() {
         return acc
       }, {} as Record<string, number>) || {}
 
-      // Include coaches with 0 assignments
-      const coachDataArray = (allCoaches || []).map(coach => ({
+      // Include coaches with 0 assignments and add unique keys
+      const coachDataArray = (allCoaches || []).map((coach, index) => ({
+        id: coach.id, // Add unique ID for React keys
         name: coach.full_name,
         clients: coachCounts[coach.id] || 0
       }))
@@ -598,7 +600,7 @@ export default function AdminDashboard() {
       console.error('Error loading coach data:', error)
       // Fallback with sample data if there's an error
       setCoachData([
-        { name: 'No coaches', clients: 0 }
+        { id: 'fallback', name: 'No coaches', clients: 0 }
       ])
     }
   }
