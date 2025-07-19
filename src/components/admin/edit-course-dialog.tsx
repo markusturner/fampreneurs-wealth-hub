@@ -316,18 +316,39 @@ export function EditCourseDialog({ course, onCourseUpdated }: EditCourseDialogPr
                     })
                     setIsFeatured(false)
                   } else {
-                    // Add to featured courses
-                    const { error } = await supabase
+                    // Check if there's an existing record for this course
+                    const { data: existingRecord } = await supabase
                       .from('featured_courses')
-                      .upsert({
-                        course_id: course.id,
-                        featured_by: (await supabase.auth.getUser()).data.user?.id,
-                        is_featured: true,
-                        featured_at: new Date().toISOString(),
-                        unfeatured_at: null
-                      })
-                    
-                    if (error) throw error
+                      .select('*')
+                      .eq('course_id', course.id)
+                      .maybeSingle()
+
+                    if (existingRecord) {
+                      // Update existing record to featured
+                      const { error } = await supabase
+                        .from('featured_courses')
+                        .update({
+                          is_featured: true,
+                          featured_at: new Date().toISOString(),
+                          unfeatured_at: null,
+                          featured_by: (await supabase.auth.getUser()).data.user?.id
+                        })
+                        .eq('course_id', course.id)
+                      
+                      if (error) throw error
+                    } else {
+                      // Create new featured course record
+                      const { error } = await supabase
+                        .from('featured_courses')
+                        .insert({
+                          course_id: course.id,
+                          featured_by: (await supabase.auth.getUser()).data.user?.id,
+                          is_featured: true,
+                          featured_at: new Date().toISOString()
+                        })
+                      
+                      if (error) throw error
+                    }
                     
                     toast({
                       title: "Course featured",
