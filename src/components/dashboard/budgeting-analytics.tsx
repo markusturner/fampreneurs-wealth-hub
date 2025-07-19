@@ -155,124 +155,14 @@ export function BudgetingAnalytics() {
 
   const fetchBudgetData = async () => {
     try {
-      // Only show mock data if we have actual accounts or transactions to base it on
-      // This function should only be called when there are connected accounts or transactions
-      const mockBudgets: BudgetCategory[] = [
-        {
-          id: '1',
-          name: 'Food & Dining',
-          budgeted: 1200,
-          spent: 850,
-          remaining: 350,
-          percentage: 70.8,
-          color: '#3b82f6',
-          isOverBudget: false
-        },
-        {
-          id: '2',
-          name: 'Transportation',
-          budgeted: 800,
-          spent: 920,
-          remaining: -120,
-          percentage: 115,
-          color: '#ef4444',
-          isOverBudget: true
-        },
-        {
-          id: '3',
-          name: 'Entertainment',
-          budgeted: 500,
-          spent: 320,
-          remaining: 180,
-          percentage: 64,
-          color: '#10b981',
-          isOverBudget: false
-        },
-        {
-          id: '4',
-          name: 'Shopping',
-          budgeted: 600,
-          spent: 450,
-          remaining: 150,
-          percentage: 75,
-          color: '#f59e0b',
-          isOverBudget: false
-        },
-        {
-          id: '5',
-          name: 'Bills & Utilities',
-          budgeted: 1500,
-          spent: 1480,
-          remaining: 20,
-          percentage: 98.7,
-          color: '#8b5cf6',
-          isOverBudget: false
-        }
-      ]
-
-      const mockGoals: FinancialGoal[] = [
-        {
-          id: '1',
-          name: 'Emergency Fund',
-          targetAmount: 50000,
-          currentAmount: 32000,
-          targetDate: '2024-12-31',
-          category: 'emergency',
-          priority: 'high',
-          isCompleted: false
-        },
-        {
-          id: '2',
-          name: 'Vacation Fund',
-          targetAmount: 15000,
-          currentAmount: 8500,
-          targetDate: '2024-08-15',
-          category: 'travel',
-          priority: 'medium',
-          isCompleted: false
-        },
-        {
-          id: '3',
-          name: 'New Car Down Payment',
-          targetAmount: 25000,
-          currentAmount: 25000,
-          targetDate: '2024-06-01',
-          category: 'vehicle',
-          priority: 'high',
-          isCompleted: true
-        }
-      ]
-
-      const mockRecommendations: AIRecommendation[] = [
-        {
-          id: '1',
-          type: 'spending',
-          title: 'Reduce Transportation Spending',
-          description: 'You\'re 15% over budget in transportation. Consider carpooling or using public transit to save $120/month.',
-          impact: 120,
-          priority: 'high'
-        },
-        {
-          id: '2',
-          type: 'savings',
-          title: 'Optimize Savings Rate',
-          description: 'Based on your income, you could save an additional $800/month by reducing discretionary spending.',
-          impact: 800,
-          priority: 'medium'
-        },
-        {
-          id: '3',
-          type: 'investment',
-          title: 'Rebalance Portfolio',
-          description: 'Consider moving some cash reserves to index funds for better long-term returns.',
-          impact: 2400,
-          priority: 'medium'
-        }
-      ]
-
-      setBudgetCategories(mockBudgets)
-      setFinancialGoals(mockGoals)
-      setAiRecommendations(mockRecommendations)
+      // This function is only called when there are actual accounts/transactions
+      // For now, we'll keep it empty and only allow manual budget creation
+      // Real budget data should come from actual transaction analysis
+      
+      // No mock data - users must create their own budgets
+      setBudgetCategories([])
+      setFinancialGoals([])
+      setAiRecommendations([])
     } catch (error) {
       console.error('Error fetching budget data:', error)
     } finally {
