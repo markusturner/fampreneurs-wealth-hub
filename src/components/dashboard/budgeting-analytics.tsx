@@ -371,7 +371,7 @@ export function BudgetingAnalytics() {
     { month: 'Jun', budget: 4600, actual: 4020 }
   ]
 
-  if (!isOperational) {
+  if (!isOperational && budgetCategories.length === 0 && financialGoals.length === 0) {
     return (
       <div className="space-y-6">
         <Card>
