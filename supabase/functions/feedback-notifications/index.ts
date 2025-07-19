@@ -82,10 +82,23 @@ serve(async (req) => {
           continue;
         }
 
+        // Create actual notification for the user
+        const { error: userNotificationError } = await supabase
+          .from('family_notifications')
+          .insert({
+            user_id: profile.user_id,
+            notification_type: 'satisfaction_survey',
+            title: 'Satisfaction Survey Reminder',
+            message: 'Please complete your satisfaction survey to help us improve our coaching, curriculum, calls, and processes.',
+            is_read: false
+          });
+
+        if (userNotificationError) {
+          console.error(`Failed to create user notification for user ${profile.user_id}:`, userNotificationError);
+          continue;
+        }
+
         notificationsSent++;
-        
-        // Here you could integrate with an email service or push notification service
-        // For now, we're just tracking in the database
         console.log(`Feedback notification sent to ${profile.display_name || profile.first_name || 'User'}`);
       } else {
         console.log(`User ${profile.user_id} does not need notification yet`);

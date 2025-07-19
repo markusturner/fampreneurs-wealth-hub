@@ -56,8 +56,22 @@ serve(async (req) => {
             continue;
           }
 
-          // Here you could integrate with an actual notification system
-          // For now, we'll just log and count successful notifications
+          // Create actual notification for the user
+          const { error: userNotificationError } = await supabase
+            .from('family_notifications')
+            .insert({
+              user_id: profile.user_id,
+              notification_type: 'weekly_checkin',
+              title: 'Weekly Check-in Reminder',
+              message: 'Please complete your weekly check-in to help us track your progress and well-being.',
+              is_read: false
+            });
+
+          if (userNotificationError) {
+            console.error(`Failed to create user notification for user ${profile.user_id}:`, userNotificationError);
+            continue;
+          }
+
           console.log(`Weekly check-in notification sent to user ${profile.user_id}`);
           notificationsSent++;
 
