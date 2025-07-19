@@ -132,10 +132,10 @@ export function BudgetingAnalytics() {
         }
       }
 
-      // Only show budget data if there are connected accounts or transactions
+      // Don't automatically load mock data - only set operational state
       if (hasAccounts || hasTransactions) {
-        await fetchBudgetData()
         setIsOperational(true)
+        // Only show empty state initially, user can choose to load sample data or create manual budgets
       } else {
         setBudgetCategories([])
         setFinancialGoals([])
