@@ -100,7 +100,7 @@ export function DashboardStats() {
       title: "Total Portfolio Value",
       value: hasFinancialData 
         ? formatCurrency(portfolioData.totalValue + connectedAccounts.reduce((sum, acc) => sum + (acc.balance || 0), 0))
-        : "No data",
+        : "$0",
       change: hasFinancialData ? formatCurrency(portfolioData.dayChange) : "Connect accounts",
       trend: portfolioData.dayChange >= 0 ? "up" : "down",
       icon: DollarSign,
