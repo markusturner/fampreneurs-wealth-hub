@@ -30,13 +30,11 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("GoHighLevel API key or Location ID not configured")
     }
 
-    // Map programs to their service agreement template IDs
+    // Map programs to their actual GoHighLevel service agreement template names
     const programServiceAgreements = {
-      "The Family Business University": serviceAgreementTemplateId || "family_business_university_agreement",
-      "The Family Vault": serviceAgreementTemplateId || "family_vault_agreement", 
-      "The Family Business Accelerator": serviceAgreementTemplateId || "family_business_accelerator_agreement",
-      "The Family Legacy: VIP Weekend": serviceAgreementTemplateId || "family_legacy_vip_agreement",
-      "The Family Fortune Mastermind": serviceAgreementTemplateId || "family_fortune_mastermind_agreement"
+      "The Family Legacy: VIP Weekend": "The Family Legacy: VIP Weekend Program Services Agreement",
+      "The Family Vault": "The Family Vault Program Services Agreement", 
+      "The Family Business Accelerator": "The Family Business Accelerator Program Services Agreement"
     }
 
     const serviceAgreementTemplate = programServiceAgreements[programName as keyof typeof programServiceAgreements]
