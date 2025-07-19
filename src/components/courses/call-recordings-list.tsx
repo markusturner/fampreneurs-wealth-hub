@@ -39,7 +39,12 @@ export function CallRecordingsList() {
         return
       }
 
-      setRecordings(data || [])
+      // Remove duplicates based on ID before setting state
+      const uniqueRecordings = (data || []).filter((recording, index, self) => 
+        index === self.findIndex(r => r.id === recording.id)
+      )
+      
+      setRecordings(uniqueRecordings)
     } catch (error) {
       console.error('Error fetching recordings:', error)
     } finally {
