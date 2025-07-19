@@ -12,6 +12,7 @@ interface LoginCredentialsRequest {
   programName: string
   membershipType: string
   templateId?: string
+  serviceAgreementTemplateId?: string
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -20,7 +21,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, firstName, lastName, programName, membershipType, templateId }: LoginCredentialsRequest = await req.json()
+    const { email, firstName, lastName, programName, membershipType, templateId, serviceAgreementTemplateId }: LoginCredentialsRequest = await req.json()
     
     const apiKey = Deno.env.get("GOHIGHLEVEL_API_KEY")
     const locationId = Deno.env.get("GOHIGHLEVEL_LOCATION_ID")
@@ -28,6 +29,17 @@ const handler = async (req: Request): Promise<Response> => {
     if (!apiKey || !locationId) {
       throw new Error("GoHighLevel API key or Location ID not configured")
     }
+
+    // Map programs to their service agreement template IDs
+    const programServiceAgreements = {
+      "The Family Business University": serviceAgreementTemplateId || "family_business_university_agreement",
+      "The Family Vault": serviceAgreementTemplateId || "family_vault_agreement", 
+      "The Family Business Accelerator": serviceAgreementTemplateId || "family_business_accelerator_agreement",
+      "The Family Legacy: VIP Weekend": serviceAgreementTemplateId || "family_legacy_vip_agreement",
+      "The Family Fortune Mastermind": serviceAgreementTemplateId || "family_fortune_mastermind_agreement"
+    }
+
+    const serviceAgreementTemplate = programServiceAgreements[programName as keyof typeof programServiceAgreements]
 
     // First, create or update the contact in GoHighLevel
     const contactData = {
@@ -194,11 +206,48 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Login credentials email sent successfully via GoHighLevel:", emailResult)
 
+    // Send program-specific service agreement if template exists
+    let serviceAgreementResult = null
+    if (serviceAgreementTemplate) {
+      const serviceAgreementData = {
+        locationId: locationId,
+        contactId: contactResult.contact?.id,
+        templateId: serviceAgreementTemplate,
+        from: "legal@thefampreneurs.com",
+        fromName: "The Fampreneurs Legal Team",
+        subject: `${programName} - Service Agreement & Terms`
+      }
+
+      console.log("Sending service agreement via GoHighLevel:", serviceAgreementData)
+
+      const serviceResponse = await fetch(`https://services.leadconnectorhq.com/conversations/messages/email`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "Version": "2021-07-28"
+        },
+        body: JSON.stringify(serviceAgreementData)
+      })
+
+      if (serviceResponse.ok) {
+        serviceAgreementResult = await serviceResponse.json()
+        console.log("Service agreement sent successfully:", serviceAgreementResult)
+      } else {
+        const errorText = await serviceResponse.text()
+        console.error("Error sending service agreement:", errorText)
+        // Don't throw error here as the main welcome email was successful
+      }
+    }
+
     return new Response(JSON.stringify({
       success: true,
       contact: contactResult,
       email: emailResult,
-      message: "Contact created and welcome email sent via GoHighLevel"
+      serviceAgreement: serviceAgreementResult,
+      message: serviceAgreementResult 
+        ? "Contact created, welcome email and service agreement sent via GoHighLevel"
+        : "Contact created and welcome email sent via GoHighLevel"
     }), {
       status: 200,
       headers: {
