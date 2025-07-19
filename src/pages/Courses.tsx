@@ -754,22 +754,6 @@ const Courses = () => {
                             </Badge>
                           </div>
 
-                          {/* Creator controls */}
-                          {isCreator && (
-                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                              <Button
-                                size="sm"
-                                variant="secondary"
-                                className="h-8 w-8 p-0 bg-background/80 hover:bg-background"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleAddVideo(course)
-                                }}
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          )}
 
                           {/* Progress indicator */}
                           {enrolled && progress > 0 && (
