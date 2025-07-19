@@ -93,41 +93,16 @@ export function AccountIntegration() {
 
   const fetchConnectedAccounts = async () => {
     try {
-      // Check for deleted accounts
+      // Get persistent data from localStorage or Supabase
       const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
+      const savedAccounts = JSON.parse(localStorage.getItem('connectedAccounts') || '[]')
       
-      // Mock data for demonstration - replace with actual API calls
-      const mockAccounts: ConnectedAccount[] = [
-        {
-          id: '1',
-          name: 'Chase Business Checking',
-          type: 'bank' as const,
-          provider: 'Chase Bank',
-          balance: 125000,
-          lastSync: new Date().toISOString(),
-          status: 'connected' as const
-        },
-        {
-          id: '2',
-          name: 'Fidelity Investment Account',
-          type: 'brokerage' as const,
-          provider: 'Fidelity',
-          balance: 850000,
-          lastSync: new Date().toISOString(),
-          status: 'connected' as const
-        },
-        {
-          id: '3',
-          name: 'Coinbase Pro',
-          type: 'crypto' as const,
-          provider: 'Coinbase',
-          balance: 75000,
-          lastSync: new Date().toISOString(),
-          status: 'syncing' as const
-        }
-      ].filter(account => !deletedAccounts.includes(account.id))
+      // Only show saved accounts that haven't been deleted
+      const validAccounts = savedAccounts.filter((account: ConnectedAccount) => 
+        !deletedAccounts.includes(account.id)
+      )
       
-      setAccounts(mockAccounts)
+      setAccounts(validAccounts)
     } catch (error) {
       console.error('Error fetching accounts:', error)
     } finally {
@@ -156,17 +131,24 @@ export function AccountIntegration() {
         status: 'syncing'
       }
 
-      setAccounts(prev => [...prev, account])
+      const updatedAccounts = [...accounts, account]
+      setAccounts(updatedAccounts)
+      
+      // Persist to localStorage
+      localStorage.setItem('connectedAccounts', JSON.stringify(updatedAccounts))
+      
       setShowAddDialog(false)
       resetForm()
 
       // Simulate API integration
       setTimeout(() => {
-        setAccounts(prev => prev.map(acc => 
-          acc.id === account.id 
-            ? { ...acc, status: 'connected', balance: Math.random() * 1000000 }
-            : acc
-        ))
+        const finalAccount = { ...account, status: 'connected' as const, balance: Math.random() * 1000000 }
+        const finalAccounts = updatedAccounts.map(acc => 
+          acc.id === account.id ? finalAccount : acc
+        )
+        setAccounts(finalAccounts)
+        localStorage.setItem('connectedAccounts', JSON.stringify(finalAccounts))
+        
         toast({
           title: "Account Connected",
           description: `Successfully connected ${newAccount.name}`,
@@ -317,25 +299,6 @@ export function AccountIntegration() {
           </Label>
         </div>
         
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => handleConnectRealAccount('brokerage')}
-            className="flex items-center gap-2"
-          >
-            <TrendingUp className="h-4 w-4" />
-            Connect Brokerage
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            onClick={() => handleConnectRealAccount('bank')}
-            className="flex items-center gap-2"
-          >
-            <CreditCard className="h-4 w-4" />
-            Connect Bank
-          </Button>
-        </div>
         
         <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
           <DialogTrigger asChild>

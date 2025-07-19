@@ -113,11 +113,25 @@ export default function FamilyOffice() {
     return investments.reduce((sum, inv) => sum + (inv.cash_balance || 0), 0)
   }
 
-  // Mock data for demonstration
-  const mockNetWorth = 2500000
+  // Get accounts balance from localStorage
+  const getAccountsBalance = () => {
+    const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
+    const savedAccounts = JSON.parse(localStorage.getItem('connectedAccounts') || '[]')
+    const validAccounts = savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id))
+    return validAccounts.reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
+  }
+
+  const mockLiabilities = 125000
   const mockMonthlyIncome = 45000
   const mockMonthlyExpenses = 28000
   const mockCashFlow = mockMonthlyIncome - mockMonthlyExpenses
+
+  // Get active accounts count
+  const getActiveAccountsCount = () => {
+    const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
+    const savedAccounts = JSON.parse(localStorage.getItem('connectedAccounts') || '[]')
+    return savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id) && account.status === 'connected').length
+  }
 
   // Generate asset allocation based on account types from accounts section
   const generateAssetAllocation = () => {
@@ -240,7 +254,7 @@ export default function FamilyOffice() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{formatCurrency(getTotalPortfolioValue() + 875000 - 125000)}</div>
+                  <div className="text-2xl font-bold">{formatCurrency(getAccountsBalance() - mockLiabilities)}</div>
                   <div className="text-sm text-green-600 flex items-center gap-1">
                     <TrendingUp className="h-3 w-3" />
                     Assets - Liabilities
@@ -256,7 +270,7 @@ export default function FamilyOffice() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-red-600">{formatCurrency(125000)}</div>
+                  <div className="text-2xl font-bold text-red-600">{formatCurrency(mockLiabilities)}</div>
                   <div className="text-xs text-muted-foreground">
                     Total outstanding debts
                   </div>
@@ -286,7 +300,7 @@ export default function FamilyOffice() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{formatCurrency(getTotalPortfolioValue() || 13600000)}</div>
+                  <div className="text-2xl font-bold">{formatCurrency(getAccountsBalance())}</div>
                   <div className={`text-sm flex items-center gap-1 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                     {getTotalDayChange() >= 0 ? (
                       <TrendingUp className="h-3 w-3" />
@@ -306,7 +320,7 @@ export default function FamilyOffice() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{investments.filter(inv => inv.total_value > 0).length + 3}</div>
+                  <div className="text-2xl font-bold">{getActiveAccountsCount()}</div>
                   <div className="text-xs text-muted-foreground">
                     Based on account status
                   </div>
