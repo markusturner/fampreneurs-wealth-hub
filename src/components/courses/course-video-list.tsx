@@ -228,9 +228,9 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
         </div>
 
         {/* Video List - Your Brand Style */}
-        <div className="space-y-3">
-          <h3 className="font-bold text-xl mb-6 text-foreground">Episodes ({videos.length})</h3>
-          <div className="space-y-2">
+        <div className="space-y-6">
+          <h3 className="font-bold text-xl mb-8 text-foreground">Episodes ({videos.length})</h3>
+          <div className="space-y-4">
             {videos.map((video, index) => {
               const isUnlocked = isVideoUnlocked(video, index)
               const isWatched = watchedVideos.has(video.id)
@@ -245,61 +245,61 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
                   }`}
                   onClick={() => isUnlocked && handleVideoSelect(video)}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-4">
-                      <div className={`rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0 font-bold ${
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-6">
+                      <div className={`rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0 font-bold text-sm ${
                         isWatched ? 'bg-primary text-primary-foreground' : isUnlocked ? 'bg-muted text-foreground' : 'bg-muted/50 text-muted-foreground'
                       }`}>
                         {index + 1}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className={`font-medium leading-tight ${
+                      <div className="flex-1 min-w-0 space-y-3">
+                        <h4 className={`font-semibold text-lg leading-relaxed ${
                           isUnlocked ? 'text-foreground' : 'text-muted-foreground'
                         }`}>
                           {video.title}
                         </h4>
-                        <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <Badge 
                             variant="secondary" 
-                            className="text-xs text-white"
+                            className="text-xs text-white px-3 py-1"
                             style={{ backgroundColor: getPlatformColor(video.video_type) }}
                           >
                             {getPlatformName(video.video_type)}
                           </Badge>
                           {video.duration_seconds && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-sm text-muted-foreground">
                               {Math.floor(video.duration_seconds / 60)} min
                             </span>
                           )}
                           {isWatched && (
-                            <Badge variant="outline" className="text-xs border-primary" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
+                            <Badge variant="outline" className="text-xs border-primary px-3 py-1" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
                               Watched
                             </Badge>
                           )}
                           {!isUnlocked && (
-                            <Badge variant="outline" className="text-xs bg-muted border-border text-muted-foreground">
+                            <Badge variant="outline" className="text-xs bg-muted border-border text-muted-foreground px-3 py-1">
                               Locked
                             </Badge>
                           )}
                         </div>
                       </div>
                       {isCreator && (
-                        <div className="flex gap-1">
+                        <div className="flex gap-2 flex-shrink-0">
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={(e) => handleEditVideo(video, e)}
-                            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                            className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
                           >
-                            <Edit className="h-3 w-3" />
+                            <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={(e) => handleDeleteVideo(video.id, e)}
-                            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       )}
