@@ -9,19 +9,35 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useNotifications } from "@/hooks/useNotifications"
+import { FeedbackDialog } from "@/components/dashboard/feedback-dialog"
+import { WeeklyCheckinDialog } from "@/components/dashboard/weekly-checkin-dialog"
 import { cn } from "@/lib/utils"
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false)
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
+  const [weeklyCheckinDialogOpen, setWeeklyCheckinDialogOpen] = useState(false)
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications()
 
   console.log('NotificationBell: notifications:', notifications)
   console.log('NotificationBell: unreadCount:', unreadCount)
 
-  const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
-    console.log('Clicking notification:', notificationId, 'isRead:', isRead)
-    if (!isRead) {
-      await markAsRead(notificationId)
+  const handleNotificationClick = async (notification: any) => {
+    console.log('Clicking notification:', notification.id, 'type:', notification.notification_type)
+    
+    // Mark as read if not already read
+    if (!notification.is_read) {
+      await markAsRead(notification.id)
+    }
+
+    // Close the notification popover
+    setOpen(false)
+
+    // Open the appropriate dialog based on notification type
+    if (notification.notification_type === 'satisfaction_survey') {
+      setFeedbackDialogOpen(true)
+    } else if (notification.notification_type === 'weekly_checkin') {
+      setWeeklyCheckinDialogOpen(true)
     }
   }
 
@@ -77,7 +93,7 @@ export function NotificationBell() {
                     "p-3 rounded-lg mb-2 cursor-pointer transition-all duration-200 hover:bg-muted/50 group",
                     !notification.is_read && "bg-primary/5 border border-primary/20"
                   )}
-                  onClick={() => handleNotificationClick(notification.id, notification.is_read)}
+                  onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2 flex-1">
@@ -118,6 +134,16 @@ export function NotificationBell() {
           )}
         </ScrollArea>
       </PopoverContent>
+      
+      {/* Dialogs */}
+      <FeedbackDialog 
+        open={feedbackDialogOpen} 
+        onOpenChange={setFeedbackDialogOpen}
+      />
+      <WeeklyCheckinDialog 
+        open={weeklyCheckinDialogOpen} 
+        onOpenChange={setWeeklyCheckinDialogOpen}
+      />
     </Popover>
   )
 }
