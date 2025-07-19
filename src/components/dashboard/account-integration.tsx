@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
+import { usePlaidLink } from 'react-plaid-link'
 import { 
   Plus, 
   CreditCard, 
@@ -52,6 +53,7 @@ export function AccountIntegration() {
   const [selectedAccount, setSelectedAccount] = useState<ConnectedAccount | null>(null)
   const [selectedAccountType, setSelectedAccountType] = useState<string>('')
   const [realTimeUpdates, setRealTimeUpdates] = useState(true)
+  const [linkToken, setLinkToken] = useState<string | null>(null)
   const [newAccount, setNewAccount] = useState<{
     name: string
     type: 'bank' | 'brokerage' | 'crypto' | 'business'
@@ -77,15 +79,15 @@ export function AccountIntegration() {
   useEffect(() => {
     fetchConnectedAccounts()
     
-    // Set up real-time updates simulation
+    // Set up real-time updates simulation for mock accounts only
     if (realTimeUpdates) {
       const interval = setInterval(() => {
         setAccounts(prev => prev.map(account => ({
           ...account,
-          balance: account.balance + (Math.random() - 0.5) * 1000, // Simulate market fluctuations
+          balance: account.provider === 'mock' ? account.balance + (Math.random() - 0.5) * 1000 : account.balance,
           lastSync: new Date().toISOString()
         })))
-      }, 30000) // Update every 30 seconds
+      }, 30000)
       
       return () => clearInterval(interval)
     }
@@ -93,22 +95,151 @@ export function AccountIntegration() {
 
   const fetchConnectedAccounts = async () => {
     try {
-      // Get persistent data from localStorage or Supabase
-      const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
-      const savedAccounts = JSON.parse(localStorage.getItem('connectedAccounts') || '[]')
-      
-      // Only show saved accounts that haven't been deleted
-      const validAccounts = savedAccounts.filter((account: ConnectedAccount) => 
-        !deletedAccounts.includes(account.id)
-      )
-      
-      setAccounts(validAccounts)
+      if (!user) {
+        // Fall back to localStorage for non-authenticated users
+        const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
+        const savedAccounts = JSON.parse(localStorage.getItem('connectedAccounts') || '[]')
+        const validAccounts = savedAccounts.filter((account: ConnectedAccount) => 
+          !deletedAccounts.includes(account.id)
+        )
+        setAccounts(validAccounts)
+        setLoading(false)
+        return
+      }
+
+      // Fetch from Supabase for authenticated users
+      const { data: supabaseAccounts, error } = await supabase
+        .from('connected_accounts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching accounts from Supabase:', error)
+        toast({
+          title: "Error",
+          description: "Failed to fetch connected accounts",
+          variant: "destructive",
+        })
+        setLoading(false)
+        return
+      }
+
+      // Transform Supabase data to match our interface
+      const transformedAccounts: ConnectedAccount[] = supabaseAccounts.map(account => ({
+        id: account.id,
+        name: account.account_name,
+        type: account.account_type as 'bank' | 'brokerage' | 'crypto' | 'business',
+        provider: account.provider,
+        balance: Number(account.balance),
+        lastSync: account.last_sync,
+        status: account.status as 'connected' | 'disconnected' | 'syncing' | 'error',
+        credentials: account.metadata
+      }))
+
+      setAccounts(transformedAccounts)
     } catch (error) {
       console.error('Error fetching accounts:', error)
+      setAccounts([])
     } finally {
       setLoading(false)
     }
   }
+
+  // Plaid Link Token Creation
+  const createLinkToken = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to connect your accounts",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const { data, error } = await supabase.functions.invoke('plaid-link-token', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      })
+
+      if (error) {
+        console.error('Error creating link token:', error)
+        toast({
+          title: "Error", 
+          description: "Failed to initialize Plaid connection",
+          variant: "destructive",
+        })
+        return
+      }
+
+      setLinkToken(data.link_token)
+    } catch (error) {
+      console.error('Error creating link token:', error)
+      toast({
+        title: "Error",
+        description: "Failed to initialize Plaid connection",
+        variant: "destructive",
+      })
+    }
+  }
+
+  // Plaid Link Success Handler
+  const { open, ready } = usePlaidLink({
+    token: linkToken,
+    onSuccess: async (public_token: string) => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) return
+
+        const { data, error } = await supabase.functions.invoke('plaid-exchange-token', {
+          body: { public_token },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        })
+
+        if (error) {
+          console.error('Error exchanging token:', error)
+          toast({
+            title: "Error",
+            description: "Failed to connect accounts",
+            variant: "destructive",
+          })
+          return
+        }
+
+        toast({
+          title: "Success!",
+          description: data.message,
+        })
+
+        // Refresh accounts list
+        await fetchConnectedAccounts()
+        setShowAddDialog(false)
+        setLinkToken(null)
+      } catch (error) {
+        console.error('Error in Plaid success handler:', error)
+        toast({
+          title: "Error",
+          description: "Failed to save connected accounts",
+          variant: "destructive",
+        })
+      }
+    },
+    onExit: () => {
+      setLinkToken(null)
+    },
+  })
+
+  // Auto-open Plaid Link when token is ready
+  useEffect(() => {
+    if (linkToken && ready) {
+      open()
+    }
+  }, [linkToken, ready, open])
 
   const handleAddAccount = async () => {
     if (!newAccount.name || !newAccount.provider) {
@@ -134,7 +265,7 @@ export function AccountIntegration() {
       const updatedAccounts = [...accounts, account]
       setAccounts(updatedAccounts)
       
-      // Persist to localStorage
+      // Persist to localStorage for mock accounts
       localStorage.setItem('connectedAccounts', JSON.stringify(updatedAccounts))
       
       setShowAddDialog(false)
@@ -237,35 +368,74 @@ export function AccountIntegration() {
   }
 
   const handleDeleteAccount = async (accountId: string) => {
-    // Create a persistent deletion by storing in localStorage
-    const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
-    deletedAccounts.push(accountId)
-    localStorage.setItem('deletedAccounts', JSON.stringify(deletedAccounts))
-    
-    setAccounts(prev => prev.filter(acc => acc.id !== accountId))
-    toast({
-      title: "Account Deleted",
-      description: "Account has been permanently removed from your portfolio",
-    })
+    try {
+      if (user) {
+        // Delete from Supabase for authenticated users
+        const { error } = await supabase
+          .from('connected_accounts')
+          .delete()
+          .eq('id', accountId)
+          .eq('user_id', user.id)
+
+        if (error) {
+          console.error('Error deleting account from Supabase:', error)
+          toast({
+            title: "Error",
+            description: "Failed to delete account",
+            variant: "destructive",
+          })
+          return
+        }
+      } else {
+        // For mock accounts, use localStorage deletion tracking
+        const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
+        deletedAccounts.push(accountId)
+        localStorage.setItem('deletedAccounts', JSON.stringify(deletedAccounts))
+      }
+      
+      setAccounts(prev => prev.filter(acc => acc.id !== accountId))
+      toast({
+        title: "Account Deleted",
+        description: "Account has been permanently removed from your portfolio",
+      })
+    } catch (error) {
+      console.error('Error deleting account:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete account",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleConnectRealAccount = async (accountType: string) => {
-    // Simulate real account connection (in production, this would use Plaid, Yodlee, etc.)
-    const mockAccount: ConnectedAccount = {
-      id: Date.now().toString(),
-      name: `Connected ${accountType} Account`,
-      type: accountType as any,
-      provider: accountType === 'brokerage' ? 'Fidelity' : 'Chase Bank',
-      balance: Math.random() * 1000000,
-      lastSync: new Date().toISOString(),
-      status: 'connected'
-    }
+    if (accountType === 'plaid') {
+      if (!linkToken) {
+        await createLinkToken()
+      }
+    } else if (accountType === 'google_sheets') {
+      toast({
+        title: "Google Sheets Integration",
+        description: "Google Sheets integration coming soon for business accounts",
+      })
+    } else {
+      // Fallback to mock account creation
+      const mockAccount: ConnectedAccount = {
+        id: Date.now().toString(),
+        name: `Connected ${accountType} Account`,
+        type: accountType as any,
+        provider: accountType === 'brokerage' ? 'Fidelity' : 'Chase Bank',
+        balance: Math.random() * 1000000,
+        lastSync: new Date().toISOString(),
+        status: 'connected'
+      }
 
-    setAccounts(prev => [...prev, mockAccount])
-    toast({
-      title: "Account Connected",
-      description: `Successfully connected your ${accountType} account with real-time updates`,
-    })
+      setAccounts(prev => [...prev, mockAccount])
+      toast({
+        title: "Account Connected",
+        description: `Successfully connected your ${accountType} account with real-time updates`,
+      })
+    }
   }
 
   const accountProviders = {
@@ -307,153 +477,108 @@ export function AccountIntegration() {
               Add Account
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Connect New Account</DialogTitle>
+              <DialogTitle>Add Account</DialogTitle>
               <DialogDescription>
-                Add a new financial account to your family office
+                Connect your real financial accounts for automatic data synchronization
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="type">Account Type</Label>
-                <Select 
-                  value={newAccount.type} 
-                  onValueChange={(value: any) => {
-                    setNewAccount(prev => ({ ...prev, type: value, provider: '' }))
-                    setSelectedAccountType(value)
-                  }}
+                <h3 className="font-semibold">Bank & Investment Accounts</h3>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => handleConnectRealAccount('plaid')}
+                  disabled={loading}
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bank">Bank Account</SelectItem>
-                    <SelectItem value="brokerage">Brokerage Account</SelectItem>
-                    <SelectItem value="crypto">Cryptocurrency</SelectItem>
-                    <SelectItem value="business">Business Account</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <Building2 className="w-4 h-4 mr-2" />
+                  Connect via Plaid
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Securely connect bank and brokerage accounts
+                </p>
               </div>
-              
-              {selectedAccountType && (
+
+              <div className="space-y-2">
+                <h3 className="font-semibold">Business Accounts</h3>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => handleConnectRealAccount('google_sheets')}
+                >
+                  <Building2 className="w-4 h-4 mr-2" />
+                  Connect Google Sheets
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  Import data from Google Sheets
+                </p>
+              </div>
+            </div>
+
+            <div className="border-t pt-4">
+              <h3 className="font-semibold mb-2">Manual Account Setup</h3>
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="provider">Provider</Label>
+                  <Label htmlFor="type">Account Type</Label>
                   <Select 
-                    value={newAccount.provider} 
-                    onValueChange={(value) => setNewAccount(prev => ({ ...prev, provider: value }))}
+                    value={newAccount.type} 
+                    onValueChange={(value: any) => {
+                      setNewAccount(prev => ({ ...prev, type: value, provider: '' }))
+                      setSelectedAccountType(value)
+                    }}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select provider" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {accountProviders[newAccount.type as keyof typeof accountProviders]?.map((provider) => (
-                        <SelectItem key={provider} value={provider}>{provider}</SelectItem>
-                      ))}
+                      <SelectItem value="bank">Bank Account</SelectItem>
+                      <SelectItem value="brokerage">Brokerage Account</SelectItem>
+                      <SelectItem value="crypto">Cryptocurrency</SelectItem>
+                      <SelectItem value="business">Business Account</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-              )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="name">Account Name</Label>
-                <Input
-                  id="name"
-                  value={newAccount.name}
-                  onChange={(e) => setNewAccount(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g., Primary Checking, Investment Portfolio"
-                />
-              </div>
-              
-              {newAccount.type === 'crypto' && (
-                <>
+                
+                {selectedAccountType && (
                   <div className="space-y-2">
-                    <Label htmlFor="address">Wallet Address (Optional)</Label>
-                    <Input
-                      id="address"
-                      value={newAccount.address}
-                      onChange={(e) => setNewAccount(prev => ({ ...prev, address: e.target.value }))}
-                      placeholder="Enter wallet address"
-                    />
+                    <Label htmlFor="provider">Provider</Label>
+                    <Select 
+                      value={newAccount.provider} 
+                      onValueChange={(value) => setNewAccount(prev => ({ ...prev, provider: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select provider" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {accountProviders[newAccount.type as keyof typeof accountProviders]?.map((provider) => (
+                          <SelectItem key={provider} value={provider}>{provider}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="apiKey">API Key (Optional)</Label>
-                    <Input
-                      id="apiKey"
-                      type="password"
-                      value={newAccount.apiKey}
-                      onChange={(e) => setNewAccount(prev => ({ ...prev, apiKey: e.target.value }))}
-                      placeholder="Enter API key for automatic sync"
-                    />
-                  </div>
-                </>
-              )}
-              
-              {newAccount.type === 'brokerage' && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="accountNumber">Account Number</Label>
-                    <Input
-                      id="accountNumber"
-                      value={newAccount.accountNumber}
-                      onChange={(e) => setNewAccount(prev => ({ ...prev, accountNumber: e.target.value }))}
-                      placeholder="Account number"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="apiKey">API Key (Optional)</Label>
-                    <Input
-                      id="apiKey"
-                      type="password"
-                      value={newAccount.apiKey}
-                      onChange={(e) => setNewAccount(prev => ({ ...prev, apiKey: e.target.value }))}
-                      placeholder="API key for automatic sync"
-                    />
-                  </div>
-                </>
-              )}
-              
-              {newAccount.type === 'bank' && (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="accountNumber">Account Number</Label>
-                    <Input
-                      id="accountNumber"
-                      value={newAccount.accountNumber}
-                      onChange={(e) => setNewAccount(prev => ({ ...prev, accountNumber: e.target.value }))}
-                      placeholder="Account number"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="routingNumber">Routing Number</Label>
-                    <Input
-                      id="routingNumber"
-                      value={newAccount.routingNumber}
-                      onChange={(e) => setNewAccount(prev => ({ ...prev, routingNumber: e.target.value }))}
-                      placeholder="Routing number"
-                    />
-                  </div>
-                </>
-              )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes (Optional)</Label>
-                <Input
-                  id="notes"
-                  value={newAccount.notes}
-                  onChange={(e) => setNewAccount(prev => ({ ...prev, notes: e.target.value }))}
-                  placeholder="Additional notes"
-                />
-              </div>
-              
-              <div className="flex gap-2 pt-4">
-                <Button variant="outline" onClick={() => { setShowAddDialog(false); resetForm() }} className="flex-1">
-                  Cancel
-                </Button>
-                <Button onClick={handleAddAccount} className="flex-1">
-                  Connect Account
-                </Button>
+                )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="name">Account Name</Label>
+                  <Input
+                    id="name"
+                    value={newAccount.name}
+                    onChange={(e) => setNewAccount(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="e.g., Primary Checking, Investment Portfolio"
+                  />
+                </div>
+                
+                <div className="flex gap-2 pt-4">
+                  <Button variant="outline" onClick={() => { setShowAddDialog(false); resetForm() }} className="flex-1">
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddAccount} className="flex-1">
+                    Connect Account
+                  </Button>
+                </div>
               </div>
             </div>
           </DialogContent>
@@ -481,233 +606,73 @@ export function AccountIntegration() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                      {getAccountIcon(account.type)}
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium">{account.name}</h3>
-                        {getStatusBadge(account.status)}
-                      </div>
-                      
-                      <div className="text-sm text-muted-foreground">
+                    {getAccountIcon(account.type)}
+                    <div>
+                      <h3 className="font-semibold">{account.name}</h3>
+                      <p className="text-sm text-muted-foreground capitalize">
                         {account.provider} • {account.type}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="font-semibold text-lg">
+                        {formatCurrency(account.balance)}
                       </div>
-                      
-                      <div className="text-lg font-semibold">
-                        ${formatCurrency(account.balance).replace('$', '')}
-                      </div>
-                      
                       <div className="text-xs text-muted-foreground">
                         Last sync: {new Date(account.lastSync).toLocaleString()}
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleSync(account.id)}
-                      disabled={account.status === 'syncing'}
-                      className="flex items-center gap-1"
-                    >
-                      <RefreshCw className={`h-3 w-3 ${account.status === 'syncing' ? 'animate-spin' : ''}`} />
-                      Sync
-                    </Button>
-                    
-                    <Dialog open={showSettingsDialog && selectedAccount?.id === account.id} onOpenChange={(open) => {
-                      setShowSettingsDialog(open)
-                      if (!open) setSelectedAccount(null)
-                    }}>
-                      <DialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex items-center gap-1"
-                          onClick={() => setSelectedAccount(account)}
-                        >
-                          <Settings className="h-3 w-3" />
-                          Settings
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Account Settings - {account.name}</DialogTitle>
-                          <DialogDescription>
-                            Manage your account preferences and connection settings
-                          </DialogDescription>
-                        </DialogHeader>
-                        
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label>Account Name</Label>
-                            <Input defaultValue={account.name} />
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label>Provider</Label>
-                            <Input defaultValue={account.provider} disabled />
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label>Account Type</Label>
-                            <Input defaultValue={account.type} disabled />
-                          </div>
-                          
-                          <div className="space-y-2">
-                            <Label>Auto-sync Frequency</Label>
-                            <Select defaultValue="15min">
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="1min">Every minute</SelectItem>
-                                <SelectItem value="5min">Every 5 minutes</SelectItem>
-                                <SelectItem value="15min">Every 15 minutes</SelectItem>
-                                <SelectItem value="1hour">Every hour</SelectItem>
-                                <SelectItem value="manual">Manual only</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" defaultChecked />
-                            <Label>Enable real-time notifications</Label>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            <input type="checkbox" defaultChecked />
-                            <Label>Include in portfolio calculations</Label>
-                          </div>
-                          
-                          <div className="flex gap-2 pt-4">
-                            <Button variant="outline" onClick={() => setShowSettingsDialog(false)} className="flex-1">
-                              Cancel
-                            </Button>
-                            <Button onClick={() => {
-                              setShowSettingsDialog(false)
-                              toast({ title: "Settings Updated", description: "Account settings have been saved" })
-                            }} className="flex-1">
-                              Save Changes
-                            </Button>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                    
-                    <Dialog open={showViewDialog && selectedAccount?.id === account.id} onOpenChange={(open) => {
-                      setShowViewDialog(open)
-                      if (!open) setSelectedAccount(null)
-                    }}>
-                      <DialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex items-center gap-1"
-                          onClick={() => setSelectedAccount(account)}
-                        >
-                          <Eye className="h-3 w-3" />
-                          View
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Account Details - {account.name}</DialogTitle>
-                          <DialogDescription>
-                            Detailed information and transaction history
-                          </DialogDescription>
-                        </DialogHeader>
-                        
-                        <div className="space-y-6">
-                          {/* Account Overview */}
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="text-center p-4 border rounded-lg">
-                              <DollarSign className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                              <div className="text-lg font-bold">{formatCurrency(account.balance)}</div>
-                              <div className="text-xs text-muted-foreground">Current Balance</div>
-                            </div>
-                            
-                            <div className="text-center p-4 border rounded-lg">
-                              <TrendingUp className="h-8 w-8 mx-auto mb-2 text-blue-600" />
-                              <div className="text-lg font-bold">+2.4%</div>
-                              <div className="text-xs text-muted-foreground">30-Day Return</div>
-                            </div>
-                            
-                            <div className="text-center p-4 border rounded-lg">
-                              <Calendar className="h-8 w-8 mx-auto mb-2 text-purple-600" />
-                              <div className="text-lg font-bold">24 days</div>
-                              <div className="text-xs text-muted-foreground">Connected</div>
-                            </div>
-                            
-                            <div className="text-center p-4 border rounded-lg">
-                              <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-600" />
-                              <div className="text-lg font-bold">Active</div>
-                              <div className="text-xs text-muted-foreground">Status</div>
-                            </div>
-                          </div>
-                          
-                          {/* Recent Transactions */}
-                          <div>
-                            <h4 className="font-semibold mb-3">Recent Transactions</h4>
-                            <div className="space-y-2 max-h-40 overflow-y-auto">
-                              {[
-                                { date: '2024-01-15', description: 'Market Purchase - AAPL', amount: -2500 },
-                                { date: '2024-01-14', description: 'Dividend Payment', amount: 150 },
-                                { date: '2024-01-12', description: 'Market Sale - TSLA', amount: 3200 },
-                                { date: '2024-01-10', description: 'Interest Payment', amount: 45 }
-                              ].map((transaction, index) => (
-                                <div key={index} className="flex justify-between items-center p-2 border rounded">
-                                  <div>
-                                    <div className="font-medium text-sm">{transaction.description}</div>
-                                    <div className="text-xs text-muted-foreground">{transaction.date}</div>
-                                  </div>
-                                  <div className={`font-medium ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                    {transaction.amount > 0 ? '+' : ''}{formatCurrency(transaction.amount)}
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <Button onClick={() => setShowViewDialog(false)} className="w-full">
-                            Close
+
+                    {getStatusBadge(account.status)}
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSync(account.id)}
+                        disabled={account.status === 'syncing'}
+                      >
+                        <RefreshCw className={`h-4 w-4 ${account.status === 'syncing' ? 'animate-spin' : ''}`} />
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedAccount(account)
+                          setShowViewDialog(true)
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="h-4 w-4" />
                           </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                    
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex items-center gap-1 text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Account Connection</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to remove "{account.name}" from your connected accounts? 
-                            This action cannot be undone and you'll need to reconnect the account manually.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={() => handleDeleteAccount(account.id)}
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            Delete Account
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete "{account.name}"? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteAccount(account.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -715,6 +680,68 @@ export function AccountIntegration() {
           ))
         )}
       </div>
+
+      {/* Account Details Dialog */}
+      <Dialog open={showViewDialog} onOpenChange={setShowViewDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Account Details</DialogTitle>
+          </DialogHeader>
+          
+          {selectedAccount && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                {getAccountIcon(selectedAccount.type)}
+                <div>
+                  <h3 className="font-semibold">{selectedAccount.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedAccount.provider} • {selectedAccount.type}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium">Balance:</span>
+                  <span className="text-sm">{formatCurrency(selectedAccount.balance)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium">Status:</span>
+                  <span className="text-sm">{getStatusBadge(selectedAccount.status)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium">Last Sync:</span>
+                  <span className="text-sm">{new Date(selectedAccount.lastSync).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-medium">Account ID:</span>
+                  <span className="text-sm font-mono">{selectedAccount.id.slice(0, 8)}...</span>
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowViewDialog(false)}
+                  className="flex-1"
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={() => {
+                    handleSync(selectedAccount.id)
+                    setShowViewDialog(false)
+                  }}
+                  className="flex-1"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Sync Now
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
