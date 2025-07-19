@@ -1,4 +1,4 @@
-import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar, Crown, MessageSquare } from "lucide-react"
+import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar, Crown, MessageSquare, PanelLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -9,8 +9,10 @@ import { FeedbackDialog } from "@/components/dashboard/feedback-dialog"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { useAuth } from "@/contexts/AuthContext"
 import { useFeedbackNotification } from "@/hooks/useFeedbackNotification"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
+import { supabase } from "@/integrations/supabase/client"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface NavHeaderProps {
   onMenuClick?: () => void
@@ -20,10 +22,13 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const { profile, signOut } = useAuth()
   const { shouldShowFeedback, markFeedbackShown, temporarilyHideNotification } = useFeedbackNotification()
   const navigate = useNavigate()
   const location = useLocation()
+  const isMobile = useIsMobile()
 
   const handleFeedbackClick = () => {
     setFeedbackDialogOpen(true)
@@ -48,10 +53,105 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
     return 'U'
   }
 
+  const fetchSearchSuggestions = async (query: string) => {
+    if (!query.trim()) {
+      setSearchSuggestions([])
+      return
+    }
+
+    try {
+      const suggestions = new Set<string>()
+      
+      // Search in community posts
+      const { data: posts } = await supabase
+        .from('community_posts')
+        .select('content')
+        .ilike('content', `%${query}%`)
+        .limit(5)
+      
+      posts?.forEach(post => {
+        const words = post.content.toLowerCase().split(/\s+/)
+        words.forEach(word => {
+          if (word.includes(query.toLowerCase()) && word.length > 2) {
+            suggestions.add(word)
+          }
+        })
+      })
+
+      // Search in courses
+      const { data: courses } = await supabase
+        .from('courses')
+        .select('title, description')
+        .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+        .limit(5)
+      
+      courses?.forEach(course => {
+        if (course.title.toLowerCase().includes(query.toLowerCase())) {
+          suggestions.add(course.title)
+        }
+        if (course.description?.toLowerCase().includes(query.toLowerCase())) {
+          const words = course.description.toLowerCase().split(/\s+/)
+          words.forEach(word => {
+            if (word.includes(query.toLowerCase()) && word.length > 2) {
+              suggestions.add(word)
+            }
+          })
+        }
+      })
+
+      // Search in profiles
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('display_name, first_name, last_name')
+        .or(`display_name.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
+        .limit(5)
+      
+      profiles?.forEach(profile => {
+        if (profile.display_name?.toLowerCase().includes(query.toLowerCase())) {
+          suggestions.add(profile.display_name)
+        }
+        if (profile.first_name?.toLowerCase().includes(query.toLowerCase())) {
+          suggestions.add(profile.first_name)
+        }
+        if (profile.last_name?.toLowerCase().includes(query.toLowerCase())) {
+          suggestions.add(profile.last_name)
+        }
+      })
+
+      setSearchSuggestions(Array.from(suggestions).slice(0, 8))
+    } catch (error) {
+      console.error('Error fetching search suggestions:', error)
+    }
+  }
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value)
+    setShowSuggestions(true)
+    fetchSearchSuggestions(value)
+  }
+
+  const handleSearchSubmit = (query: string) => {
+    setShowSuggestions(false)
+    setSearchQuery(query)
+    // Here you would implement the actual search functionality
+    console.log('Searching for:', query)
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-soft">
       <div className="container flex h-14 sm:h-16 items-center px-3 sm:px-4">
         <div className="flex items-center gap-1 sm:gap-2">
+          {/* Sidebar toggle for iPad/tablet */}
+          {isMobile && onMenuClick && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={onMenuClick}
+              className="h-9 w-9 mr-2"
+            >
+              <PanelLeft className="h-5 w-5" />
+            </Button>
+          )}
           
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden sm:block">
@@ -119,11 +219,33 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search investments, documents, team..."
+              placeholder="Search posts, courses, members..."
               className="pl-10 bg-muted/50 border-none focus:bg-background text-sm h-9 w-full"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearchSubmit(searchQuery)
+                }
+              }}
             />
+            
+            {/* Search Suggestions */}
+            {showSuggestions && searchSuggestions.length > 0 && (
+              <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-md shadow-lg mt-1 z-50 max-h-60 overflow-y-auto">
+                {searchSuggestions.map((suggestion, index) => (
+                  <div
+                    key={index}
+                    className="px-3 py-2 hover:bg-muted cursor-pointer text-sm"
+                    onClick={() => handleSearchSubmit(suggestion)}
+                  >
+                    {suggestion}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         

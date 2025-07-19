@@ -7,7 +7,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { Megaphone } from 'lucide-react'
 import { EnhancedPostCard } from './enhanced-post-card'
 import { EnhancedCreatePost } from './enhanced-create-post'
-import { ChannelsSidebar } from './channels-sidebar'
+import { GroupChannelsSidebar } from './group-channels-sidebar'
 import { CreateAnnouncement } from './create-announcement'
 import { AnnouncementCard } from './announcement-card'
 
@@ -138,10 +138,10 @@ export function CommunityFeed() {
         {/* Channels Sidebar - Hidden on mobile, 3 columns on large screens */}
         <div className="hidden lg:block lg:col-span-3">
           <div className="sticky top-24">
-            <ChannelsSidebar 
-              selectedChannelId={selectedChannelId}
-              onChannelSelect={setSelectedChannelId}
-            />
+              <GroupChannelsSidebar
+                selectedGroupId={selectedChannelId}
+                onGroupSelect={setSelectedChannelId}
+              />
           </div>
         </div>
 
