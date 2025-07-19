@@ -126,10 +126,6 @@ export default function FamilyOffice() {
     return connectedAccounts.reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
   }
 
-  const mockLiabilities = 125000
-  const mockMonthlyIncome = 45000
-  const mockMonthlyExpenses = 28000
-  const mockCashFlow = mockMonthlyIncome - mockMonthlyExpenses
 
   // Get active accounts count
   const getActiveAccountsCount = () => {
@@ -249,156 +245,187 @@ export default function FamilyOffice() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Executive Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Wallet className="h-4 w-4" />
-                    Net Worth
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{formatCurrency(getAccountsBalance() - mockLiabilities)}</div>
-                  <div className="text-sm text-green-600 flex items-center gap-1">
-                    <TrendingUp className="h-3 w-3" />
-                    Assets - Liabilities
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Only show overview if there are connected accounts or investment data */}
+            {(connectedAccounts.length > 0 || investments.length > 0) ? (
+              <>
+                {/* Executive Summary */}
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <Wallet className="h-4 w-4" />
+                        Net Worth
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{formatCurrency(getAccountsBalance() + getTotalPortfolioValue())}</div>
+                      <div className="text-sm text-green-600 flex items-center gap-1">
+                        <TrendingUp className="h-3 w-3" />
+                        Total Assets
+                      </div>
+                    </CardContent>
+                  </Card>
 
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4" />
-                    Liabilities
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-red-600">{formatCurrency(mockLiabilities)}</div>
-                  <div className="text-xs text-muted-foreground">
-                    Total outstanding debts
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <DollarSign className="h-4 w-4" />
-                    Monthly Cash Flow
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">{formatCurrency(mockCashFlow)}</div>
-                  <div className="text-xs text-muted-foreground">
-                    Based on transaction types
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <PieChart className="h-4 w-4" />
-                    Portfolio Value
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{formatCurrency(getAccountsBalance())}</div>
-                  <div className={`text-sm flex items-center gap-1 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {getTotalDayChange() >= 0 ? (
-                      <TrendingUp className="h-3 w-3" />
-                    ) : (
-                      <TrendingDown className="h-3 w-3" />
-                    )}
-                    Based on accounts balance
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4" />
-                    Active Accounts
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{getActiveAccountsCount()}</div>
-                  <div className="text-xs text-muted-foreground">
-                    Based on account status
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* AI Insights */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BrainCircuit className="h-5 w-5" />
-                  AI Financial Insights
-                </CardTitle>
-                <CardDescription>
-                  Personalized recommendations and alerts based on your financial data
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {aiInsights.map((insight, index) => (
-                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
-                      <div className={`p-1 rounded-full ${
-                        insight.priority === 'high' ? 'bg-red-100 text-red-600' :
-                        insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                        'bg-blue-100 text-blue-600'
-                      }`}>
-                        {insight.priority === 'high' ? (
-                          <AlertTriangle className="h-4 w-4" />
-                        ) : insight.type === 'opportunity' ? (
-                          <Target className="h-4 w-4" />
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <PieChart className="h-4 w-4" />
+                        Portfolio Value
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{formatCurrency(getTotalPortfolioValue())}</div>
+                      <div className={`text-sm flex items-center gap-1 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {getTotalDayChange() >= 0 ? (
+                          <TrendingUp className="h-3 w-3" />
                         ) : (
-                          <BrainCircuit className="h-4 w-4" />
+                          <TrendingDown className="h-3 w-3" />
                         )}
+                        {formatCurrency(getTotalDayChange())} today
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm">{insight.message}</p>
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          insight.priority === 'high' ? 'bg-red-100 text-red-600' :
-                          insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                          'bg-blue-100 text-blue-600'
-                        }`}>
-                          {insight.priority} priority
-                        </span>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <CreditCard className="h-4 w-4" />
+                        Cash & Bank
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{formatCurrency(getAccountsBalance())}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Available funds
                       </div>
-                    </div>
-                  ))}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4" />
+                        Active Accounts
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{getActiveAccountsCount()}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Connected accounts
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Investment Accounts
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{investments.length}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Investment portfolios
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              </>
+            ) : (
+              /* Empty state for overview */
               <Card>
-                <CardHeader>
-                  <CardTitle>Portfolio Performance</CardTitle>
-                  <CardDescription>12-month investment growth</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <InvestmentChart />
+                <CardContent className="p-6">
+                  <div className="text-center">
+                    <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Investment Overview</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Connect your accounts or add investment data to see your complete financial overview.
+                    </p>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Your portfolio performance, net worth, and account balances will appear here.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Start by connecting accounts or manually adding investment data.
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
+            )}
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Asset Allocation</CardTitle>
-                  <CardDescription>Current portfolio distribution</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <AssetAllocation data={assetAllocationData} />
-                </CardContent>
-              </Card>
-            </div>
+            {/* Only show AI Insights and Charts if there's actual data */}
+            {(connectedAccounts.length > 0 || investments.length > 0) && (
+              <>
+                {/* AI Insights */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BrainCircuit className="h-5 w-5" />
+                      AI Financial Insights
+                    </CardTitle>
+                    <CardDescription>
+                      Personalized recommendations and alerts based on your financial data
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {aiInsights.map((insight, index) => (
+                        <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
+                          <div className={`p-1 rounded-full ${
+                            insight.priority === 'high' ? 'bg-red-100 text-red-600' :
+                            insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                            'bg-blue-100 text-blue-600'
+                          }`}>
+                            {insight.priority === 'high' ? (
+                              <AlertTriangle className="h-4 w-4" />
+                            ) : insight.type === 'opportunity' ? (
+                              <Target className="h-4 w-4" />
+                            ) : (
+                              <BrainCircuit className="h-4 w-4" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm">{insight.message}</p>
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              insight.priority === 'high' ? 'bg-red-100 text-red-600' :
+                              insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                              'bg-blue-100 text-blue-600'
+                            }`}>
+                              {insight.priority} priority
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Portfolio Performance</CardTitle>
+                      <CardDescription>12-month investment growth</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <InvestmentChart />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Asset Allocation</CardTitle>
+                      <CardDescription>Current portfolio distribution</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <AssetAllocation data={assetAllocationData} />
+                    </CardContent>
+                  </Card>
+                </div>
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="accounts" className="space-y-6">
@@ -499,116 +526,6 @@ export default function FamilyOffice() {
             )}
           </TabsContent>
 
-          <TabsContent value="budget" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Monthly Budget Overview</CardTitle>
-                  <CardDescription>Income vs expenses breakdown</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Total Income</span>
-                      <span className="text-lg font-bold text-green-600">{formatCurrency(mockMonthlyIncome)}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium">Total Expenses</span>
-                      <span className="text-lg font-bold text-red-600">{formatCurrency(mockMonthlyExpenses)}</span>
-                    </div>
-                    <div className="pt-3 border-t">
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">Net Cash Flow</span>
-                        <span className="text-xl font-bold text-green-600">{formatCurrency(mockCashFlow)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Financial Goals</CardTitle>
-                  <CardDescription>Progress toward key objectives</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Emergency Fund</span>
-                        <span>75%</span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '75%' }}></div>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">$150K of $200K target</p>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Retirement Savings</span>
-                        <span>92%</span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div className="bg-green-500 h-2 rounded-full" style={{ width: '92%' }}></div>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">On track for target</p>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Children's Education</span>
-                        <span>45%</span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div className="bg-blue-500 h-2 rounded-full" style={{ width: '45%' }}></div>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">$225K of $500K target</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Budget Categories */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Expense Categories</CardTitle>
-                <CardDescription>Monthly spending breakdown by category</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[
-                    { category: 'Housing', amount: 8500, budget: 9000, color: 'bg-blue-500' },
-                    { category: 'Transportation', amount: 2200, budget: 2500, color: 'bg-green-500' },
-                    { category: 'Food & Dining', amount: 1800, budget: 2000, color: 'bg-yellow-500' },
-                    { category: 'Healthcare', amount: 1200, budget: 1500, color: 'bg-red-500' },
-                    { category: 'Education', amount: 3000, budget: 3000, color: 'bg-purple-500' },
-                    { category: 'Entertainment', amount: 900, budget: 1000, color: 'bg-pink-500' }
-                  ].map((item) => (
-                    <div key={item.category} className="p-4 border rounded-lg">
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-medium text-sm">{item.category}</h4>
-                        <span className="text-xs text-muted-foreground">
-                          {Math.round((item.amount / item.budget) * 100)}%
-                        </span>
-                      </div>
-                      <div className="text-lg font-bold mb-1">{formatCurrency(item.amount)}</div>
-                      <div className="w-full bg-muted rounded-full h-1.5">
-                        <div 
-                          className={`${item.color} h-1.5 rounded-full`}
-                          style={{ width: `${(item.amount / item.budget) * 100}%` }}
-                        ></div>
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        of {formatCurrency(item.budget)} budgeted
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="trusts" className="space-y-6">
             <Card>
