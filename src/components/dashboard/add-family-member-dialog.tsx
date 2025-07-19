@@ -105,7 +105,8 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
 
     setLoading(true)
     try {
-      const { error } = await supabase
+      // First, insert the family member
+      const { data: familyMemberData, error: familyMemberError } = await supabase
         .from('family_members')
         .insert({
           added_by: user?.id,
@@ -118,13 +119,57 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
           notes: formData.notes.trim() || null,
           status: 'pending'
         })
+        .select()
+        .single()
 
-      if (error) throw error
+      if (familyMemberError) throw familyMemberError
 
-      toast({
-        title: "Family Member Added",
-        description: `${formData.fullName} has been added to your family directory.`
-      })
+      // If email is provided, create login credentials
+      if (formData.email.trim()) {
+        try {
+          // Generate temporary password
+          const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+          
+          const { data, error: credentialsError } = await supabase.functions.invoke(
+            'create-family-member-credentials',
+            {
+              body: {
+                email: formData.email.trim(),
+                firstName: formData.fullName.split(' ')[0],
+                lastName: formData.fullName.split(' ').slice(1).join(' '),
+                familyMemberId: familyMemberData.id,
+                tempPassword: tempPassword
+              }
+            }
+          );
+
+          if (credentialsError) {
+            console.error('Error creating credentials:', credentialsError);
+            toast({
+              title: "Family Member Added",
+              description: `${formData.fullName} has been added but login credentials could not be created. You can create them manually later.`,
+              variant: "destructive"
+            });
+          } else {
+            toast({
+              title: "Family Member Added Successfully",
+              description: `${formData.fullName} has been added with Family Office access. Temporary password: ${tempPassword}`,
+            });
+          }
+        } catch (credentialsError) {
+          console.error('Error with credentials function:', credentialsError);
+          toast({
+            title: "Family Member Added",
+            description: `${formData.fullName} has been added but login credentials could not be created.`,
+            variant: "destructive"
+          });
+        }
+      } else {
+        toast({
+          title: "Family Member Added",
+          description: `${formData.fullName} has been added to your family directory.`
+        });
+      }
 
       resetForm()
       onOpenChange(false)

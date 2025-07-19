@@ -775,6 +775,50 @@ export type Database = {
         }
         Relationships: []
       }
+      family_member_credentials: {
+        Row: {
+          created_at: string
+          email: string
+          family_member_id: string
+          id: string
+          is_active: boolean
+          last_login: string | null
+          password_hash: string
+          role: Database["public"]["Enums"]["family_member_role"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          family_member_id: string
+          id?: string
+          is_active?: boolean
+          last_login?: string | null
+          password_hash: string
+          role?: Database["public"]["Enums"]["family_member_role"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          family_member_id?: string
+          id?: string
+          is_active?: boolean
+          last_login?: string | null
+          password_hash?: string
+          role?: Database["public"]["Enums"]["family_member_role"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_member_credentials_family_member_id_fkey"
+            columns: ["family_member_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       family_members: {
         Row: {
           added_by: string
@@ -2257,6 +2301,10 @@ export type Database = {
         Args: { group_id: string; user_id: string }
         Returns: boolean
       }
+      is_family_office_only_user: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
       is_group_member: {
         Args: { group_id: string; user_id: string }
         Returns: boolean
@@ -2305,6 +2353,7 @@ export type Database = {
       }
     }
     Enums: {
+      family_member_role: "family_office_only"
       member_role:
         | "member"
         | "billing_manager"
@@ -2439,6 +2488,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      family_member_role: ["family_office_only"],
       member_role: [
         "member",
         "billing_manager",
