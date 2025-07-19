@@ -113,12 +113,17 @@ export default function FamilyOffice() {
     return investments.reduce((sum, inv) => sum + (inv.cash_balance || 0), 0)
   }
 
-  // Get accounts balance from localStorage
-  const getAccountsBalance = () => {
+  // Get accounts balance from localStorage and connected accounts
+  const getConnectedAccounts = () => {
     const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
     const savedAccounts = JSON.parse(localStorage.getItem('connectedAccounts') || '[]')
-    const validAccounts = savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id))
-    return validAccounts.reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
+    return savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id))
+  }
+
+  const connectedAccounts = getConnectedAccounts()
+
+  const getAccountsBalance = () => {
+    return connectedAccounts.reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
   }
 
   const mockLiabilities = 125000
@@ -410,163 +415,88 @@ export default function FamilyOffice() {
 
 
           <TabsContent value="reports" className="space-y-6">
-            {/* Reports Section Header */}
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <FileText className="h-12 w-12 mx-auto mb-4 text-primary" />
-                  <h3 className="text-lg font-semibold mb-2">Financial Reports & Analytics</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Comprehensive reports based on your portfolio performance, accounts, transactions, and budget data.
-                  </p>
-                  <div className="flex gap-2 justify-center">
-                    <Button onClick={() => toast({ title: "Portfolio Report Generated", description: "Detailed portfolio analysis is ready for download." })}>
-                      Portfolio Report
-                    </Button>
-                    <Button variant="outline" onClick={() => toast({ title: "Tax Report Generated", description: "Tax summary report has been created." })}>
-                      Tax Summary
-                    </Button>
-                    <Button variant="outline" onClick={() => toast({ title: "Cashflow Report Generated", description: "Monthly cashflow analysis is available." })}>
-                      Cashflow Analysis
-                    </Button>
-                  </div>
+            {/* Only show reports if there are connected accounts or investment data */}
+            {(connectedAccounts.length > 0 || investments.length > 0) ? (
+              <>
+                {/* Reports Section Header */}
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="text-center">
+                      <FileText className="h-12 w-12 mx-auto mb-4 text-primary" />
+                      <h3 className="text-lg font-semibold mb-2">Financial Reports & Analytics</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Comprehensive reports based on your portfolio performance, accounts, transactions, and budget data.
+                      </p>
+                      <div className="flex gap-2 justify-center">
+                        <Button onClick={() => toast({ title: "Portfolio Report Generated", description: "Detailed portfolio analysis is ready for download." })}>
+                          Portfolio Report
+                        </Button>
+                        <Button variant="outline" onClick={() => toast({ title: "Tax Report Generated", description: "Tax summary report has been created." })}>
+                          Tax Summary
+                        </Button>
+                        <Button variant="outline" onClick={() => toast({ title: "Cashflow Report Generated", description: "Monthly cashflow analysis is available." })}>
+                          Cashflow Analysis
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Only show asset cards if there are connected accounts */}
+                  {connectedAccounts.length > 0 && (
+                    <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                          <CreditCard className="h-4 w-4" />
+                          Bank Accounts
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-xl font-bold">{formatCurrency(connectedAccounts.reduce((sum, acc) => sum + (acc.balance || 0), 0))}</div>
+                        <div className="text-xs text-muted-foreground">{connectedAccounts.length} accounts connected</div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {investments.length > 0 && (
+                    <Card className="cursor-pointer hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-sm font-medium flex items-center gap-2">
+                          <BarChart3 className="h-4 w-4" />
+                          Brokerage
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-xl font-bold">{formatCurrency(getTotalPortfolioValue())}</div>
+                        <div className="text-xs text-muted-foreground">{investments.length} accounts</div>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Asset Type Cards */}
-              <Card className="cursor-pointer hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <CreditCard className="h-4 w-4" />
-                    Bank Accounts
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xl font-bold">{formatCurrency(350000)}</div>
-                  <div className="text-xs text-muted-foreground">5 accounts connected</div>
-                </CardContent>
-              </Card>
-
-              <Card className="cursor-pointer hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4" />
-                    Brokerage
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xl font-bold">{formatCurrency(getTotalPortfolioValue())}</div>
-                  <div className="text-xs text-muted-foreground">{investments.length} accounts</div>
-                </CardContent>
-              </Card>
-
-              <Card className="cursor-pointer hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Bitcoin className="h-4 w-4" />
-                    Cryptocurrency
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xl font-bold">{formatCurrency(125000)}</div>
-                  <div className="text-xs text-muted-foreground">3 wallets</div>
-                </CardContent>
-              </Card>
-
-              <Card className="cursor-pointer hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Home className="h-4 w-4" />
-                    Real Estate
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xl font-bold">{formatCurrency(850000)}</div>
-                  <div className="text-xs text-muted-foreground">2 properties</div>
-                </CardContent>
-              </Card>
-
-              <Card className="cursor-pointer hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Briefcase className="h-4 w-4" />
-                    Private Business
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xl font-bold">{formatCurrency(450000)}</div>
-                  <div className="text-xs text-muted-foreground">2 businesses</div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Detailed Asset View */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Connected Accounts</CardTitle>
-                <CardDescription>All linked financial accounts and their current balances</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {investments.map((investment) => (
-                    <div key={investment.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <BarChart3 className="h-5 w-5 text-primary" />
-                        </div>
-                        <div>
-                          <h3 className="font-medium">{investment.platform_id}</h3>
-                          <p className="text-sm text-muted-foreground">Investment Account</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium">{formatCurrency(investment.total_value)}</div>
-                        {investment.day_change !== null && (
-                          <div className={`text-sm ${investment.day_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency(investment.day_change)} ({formatPercent(investment.day_change_percent || 0)})
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Mock additional accounts */}
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <CreditCard className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium">Chase Business Checking</h3>
-                        <p className="text-sm text-muted-foreground">Bank Account</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium">{formatCurrency(125000)}</div>
-                      <div className="text-sm text-muted-foreground">Available balance</div>
+              </>
+            ) : (
+              /* Empty state for reports */
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center">
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Financial Reports</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Connect your accounts or add investment data to generate comprehensive financial reports and analytics.
+                    </p>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Reports will include portfolio performance, tax summaries, and cashflow analysis.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Available once you have connected accounts or investment data.
+                      </p>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                        <Bitcoin className="h-5 w-5 text-orange-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium">Coinbase Pro</h3>
-                        <p className="text-sm text-muted-foreground">Crypto Exchange</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium">{formatCurrency(85000)}</div>
-                      <div className="text-sm text-green-600">+$2,150 (+2.6%)</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="budget" className="space-y-6">
