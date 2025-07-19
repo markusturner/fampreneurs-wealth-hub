@@ -167,7 +167,7 @@ const Community = () => {
                       className="flex items-center gap-2 w-fit"
                     >
                       <Hash className="h-4 w-4" />
-                      Community Groups
+                      Channels
                     </Button>
                   </div>
                 </div>
