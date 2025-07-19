@@ -13,14 +13,15 @@ import { cn } from "@/lib/utils"
 
 export function NotificationBell() {
   const [open, setOpen] = useState(false)
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications()
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications()
 
   console.log('NotificationBell: notifications:', notifications)
   console.log('NotificationBell: unreadCount:', unreadCount)
 
-  const handleNotificationClick = (notificationId: string, isRead: boolean) => {
+  const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
+    console.log('Clicking notification:', notificationId, 'isRead:', isRead)
     if (!isRead) {
-      markAsRead(notificationId)
+      await markAsRead(notificationId)
     }
   }
 
@@ -73,29 +74,43 @@ export function NotificationBell() {
                 <div
                   key={notification.id}
                   className={cn(
-                    "p-3 rounded-lg mb-2 cursor-pointer transition-all duration-200 hover:bg-muted/50",
+                    "p-3 rounded-lg mb-2 cursor-pointer transition-all duration-200 hover:bg-muted/50 group",
                     !notification.is_read && "bg-primary/5 border border-primary/20"
                   )}
                   onClick={() => handleNotificationClick(notification.id, notification.is_read)}
                 >
-                  <div className="flex items-start gap-2">
-                    {!notification.is_read && (
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 animate-pulse" />
-                    )}
-                    <div className="flex-1">
-                      <h4 className="font-medium text-sm">{notification.title}</h4>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {notification.message}
-                      </p>
-                      <p className="text-xs text-muted-foreground/70 mt-2">
-                        {new Date(notification.created_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2 flex-1">
+                      {!notification.is_read && (
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 animate-pulse flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-sm">{notification.title}</h4>
+                        <p className="text-xs text-muted-foreground mt-1 break-words">
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-muted-foreground/70 mt-2">
+                          {new Date(notification.created_at).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
                     </div>
+                    {notification.is_read && (
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          await deleteNotification(notification.id)
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1"
+                        title="Delete notification"
+                      >
+                        ×
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
