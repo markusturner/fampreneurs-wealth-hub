@@ -125,10 +125,22 @@ export const CreateAnnouncement = ({ onAnnouncementCreated }: CreateAnnouncement
               id="announcement-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Enter announcement content"
+              placeholder="Enter announcement content (photos and videos can be added using URLs)"
               rows={4}
               required
             />
+          </div>
+          
+          <div>
+            <Label htmlFor="announcement-media">Media URL (Optional)</Label>
+            <Input
+              id="announcement-media"
+              placeholder="Add image or video URL (https://...)"
+              className="mt-1"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Add photos or videos by pasting their URLs
+            </p>
           </div>
           
           <div className="flex items-center space-x-2">

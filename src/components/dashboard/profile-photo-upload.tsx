@@ -139,16 +139,19 @@ export const ProfilePhotoUpload = ({ isOpen, onClose }: ProfilePhotoUploadProps)
           </p>
           
           <div className="flex justify-center">
-            <Avatar className="h-32 w-32 border-4 border-primary/20">
-              <AvatarImage 
-                src={previewUrl || profile?.avatar_url || undefined} 
-                className="object-cover w-full h-full"
-                style={{ objectFit: 'cover' }}
-              />
-              <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || 'U'}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative w-32 h-32 border-4 border-primary/20 rounded-full overflow-hidden">
+              {previewUrl || profile?.avatar_url ? (
+                <img 
+                  src={previewUrl || profile?.avatar_url || undefined} 
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-primary text-primary-foreground flex items-center justify-center text-2xl">
+                  {profile?.display_name?.charAt(0) || profile?.first_name?.charAt(0) || 'U'}
+                </div>
+              )}
+            </div>
           </div>
 
           <div>

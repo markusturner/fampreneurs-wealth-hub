@@ -248,12 +248,19 @@ export const PostCard = ({ post, onUpdate, isReply = false, depth = 0 }: PostCar
       <CardHeader className="pb-3 p-4 sm:p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <Avatar className="h-10 w-10 flex-shrink-0">
-              <AvatarImage src={authorAvatar || ''} />
-              <AvatarFallback>
-                {authorName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 border">
+              {authorAvatar ? (
+                <img 
+                  src={authorAvatar} 
+                  alt={authorName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
+                  {authorName.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
             <div className="min-w-0 flex-1">
               <p className="font-semibold text-sm truncate">{authorName}</p>
               <p className="text-xs text-muted-foreground">

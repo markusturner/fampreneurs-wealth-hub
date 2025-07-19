@@ -45,15 +45,15 @@ const Contact = () => {
               <div className="space-y-2">
                 <div>
                   <p className="font-medium">General Support</p>
-                  <p className="text-primary">support@fampreneurs.com</p>
+                  <p style={{ color: '#ffb500' }}>info@fampreneurs.com</p>
                 </div>
                 <div>
                   <p className="font-medium">Technical Issues</p>
-                  <p className="text-primary">tech@fampreneurs.com</p>
+                  <p style={{ color: '#ffb500' }}>info@fampreneurs.com</p>
                 </div>
                 <div>
                   <p className="font-medium">Billing & Subscriptions</p>
-                  <p className="text-primary">billing@fampreneurs.com</p>
+                  <p style={{ color: '#ffb500' }}>info@fampreneurs.com</p>
                 </div>
               </div>
             </CardContent>
@@ -68,16 +68,16 @@ const Contact = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                Call us during business hours for immediate assistance.
+                Contact our family success coaches for immediate assistance.
               </p>
               <div className="space-y-2">
                 <div>
-                  <p className="font-medium">Main Line</p>
-                  <p className="text-primary">+1 (555) 123-4567</p>
+                  <p className="font-medium">Family Success Coaches</p>
+                  <p style={{ color: '#ffb500' }}>+1 (555) 123-4567</p>
                 </div>
                 <div>
-                  <p className="font-medium">Coaching Support</p>
-                  <p className="text-primary">+1 (555) 123-4568</p>
+                  <p className="font-medium">General Support</p>
+                  <p style={{ color: '#ffb500' }}>+1 (555) 123-4568</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -98,7 +98,13 @@ const Contact = () => {
               <p className="text-muted-foreground">
                 Get instant help through our live chat feature.
               </p>
-              <Button className="w-full">
+              <Button 
+                className="w-full"
+                onClick={() => {
+                  // Simple chat implementation - opens mailto as fallback
+                  window.open('mailto:info@fampreneurs.com?subject=Live Chat Support Request', '_blank')
+                }}
+              >
                 Start Live Chat
               </Button>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -122,9 +128,9 @@ const Contact = () => {
               <div>
                 <p className="font-medium">The Fampreneurs HQ</p>
                 <p className="text-muted-foreground">
-                  123 Wealth Building Street<br />
-                  Financial District<br />
-                  New York, NY 10001
+                  1650 Marietta Boulevard NW<br />
+                  Unit D58<br />
+                  Atlanta, GA 30318
                 </p>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -141,11 +147,11 @@ const Contact = () => {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              For urgent technical issues or account problems that need immediate attention:
+              For urgent issues that need immediate assistance, contact our family success coaches:
             </p>
             <div className="space-y-2">
               <div>
-                <p className="font-medium text-red-600">Emergency Hotline</p>
+                <p className="font-medium text-red-600">Family Success Coaches</p>
                 <p className="text-primary">+1 (555) 911-HELP</p>
               </div>
               <p className="text-sm text-muted-foreground">

@@ -174,9 +174,19 @@ export const AnnouncementCard = ({ announcement, onUpdate }: AnnouncementCardPro
               <Textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                placeholder="Announcement content"
+                placeholder="Announcement content (photos and videos can be added using URLs)"
                 rows={4}
               />
+            </div>
+            <div>
+              <Label>Media URL (Optional)</Label>
+              <Input
+                placeholder="Add image or video URL (https://...)"
+                className="mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Add photos or videos by pasting their URLs
+              </p>
             </div>
             <div className="flex items-center space-x-2">
               <Switch

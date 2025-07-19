@@ -935,10 +935,10 @@ export default function AdminDashboard() {
               <CardContent>
                 {coachData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={300}>
-                    <RechartsBarChart data={coachData}>
+                    <RechartsBarChart data={coachData} layout="horizontal">
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
+                      <XAxis type="number" />
+                      <YAxis dataKey="name" type="category" width={120} />
                       <Tooltip 
                         formatter={(value: number, name: string) => [`${value} member${value !== 1 ? 's' : ''}`, 'Assigned Members']}
                         labelFormatter={(label: string) => `Coach: ${label}`}
