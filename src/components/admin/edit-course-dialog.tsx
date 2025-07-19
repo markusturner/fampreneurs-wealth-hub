@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -49,7 +49,7 @@ export function EditCourseDialog({ course, onCourseUpdated }: EditCourseDialogPr
   const { toast } = useToast()
 
   // Check if course is featured when dialog opens
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       checkIfFeatured()
     }
