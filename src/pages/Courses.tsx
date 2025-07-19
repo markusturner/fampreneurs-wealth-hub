@@ -617,14 +617,18 @@ const Courses = () => {
 
             {/* Course Rows - Netflix Style */}
             <div className="space-y-8">
-              {/* Continue Watching */}
-              {enrollments.length > 0 && (
-                <div className="px-4 sm:px-6 lg:px-8">
-                  <h3 className="text-lg sm:text-xl font-bold mb-4 text-foreground">Continue Learning</h3>
-                  <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-                    {enrollments.slice(0, 6).map((enrollment) => {
-                      const course = courses.find(c => c.id === enrollment.course_id)
-                      if (!course) return null
+            {/* Continue Watching */}
+            {enrollments.length > 0 && (
+              <div className="px-4 sm:px-6 lg:px-8">
+                <h3 className="text-lg sm:text-xl font-bold mb-4 text-foreground">Continue Learning</h3>
+                <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+                  {enrollments.slice(0, 6).map((enrollment) => {
+                    const course = courses.find(c => c.id === enrollment.course_id)
+                    if (!course) return null
+                    
+                    // Check if this is a duplicate course by title
+                    const isDuplicate = courses.findIndex(c => c.title === course.title) !== courses.indexOf(course)
+                    if (isDuplicate) return null
                       
                       return (
                         <div
