@@ -79,37 +79,10 @@ export function ScheduleMeetingDialog({ open, onOpenChange }: ScheduleMeetingDia
         notes: values.notes,
       })
 
-      // Create the meeting datetime for notifications
-      const meetingDateTime = new Date(`${format(values.date, "yyyy-MM-dd")}T${values.time}`)
-      
-      // Notify family members
-      try {
-        const { data: notificationResult, error: notificationError } = await supabase
-          .rpc('notify_family_about_meeting', {
-            meeting_title: values.name,
-            meeting_date: meetingDateTime.toISOString(),
-            meeting_details: values.notes || null
-          })
-
-        if (notificationError) {
-          console.error('Error sending notifications:', notificationError)
-        }
-
-        const notificationCount = typeof notificationResult === 'object' && notificationResult && 'notifications_sent' in notificationResult 
-          ? (notificationResult as any).notifications_sent 
-          : 0
-        
-        toast({
-          title: "Meeting Scheduled",
-          description: `${values.name} has been scheduled for ${format(values.date, "PPP")} at ${values.time}.${notificationCount > 0 ? ` ${notificationCount} family members will be notified.` : ' No family members to notify yet.'}`,
-        })
-      } catch (error) {
-        console.error('Notification error:', error)
-        toast({
-          title: "Meeting Scheduled",
-          description: `${values.name} has been scheduled for ${format(values.date, "PPP")} at ${values.time}. Note: Unable to send notifications at this time.`,
-        })
-      }
+      toast({
+        title: "Meeting Scheduled",
+        description: `${values.name} has been scheduled for ${format(values.date, "PPP")} at ${values.time}. Family members will be notified automatically.`,
+      })
       
       onOpenChange(false)
       form.reset()

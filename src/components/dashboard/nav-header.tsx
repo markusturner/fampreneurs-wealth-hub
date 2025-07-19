@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { FeedbackDialog } from "@/components/dashboard/feedback-dialog"
+import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { useAuth } from "@/contexts/AuthContext"
 import { useFeedbackNotification } from "@/hooks/useFeedbackNotification"
 import { useState } from "react"
@@ -134,25 +135,27 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             <Search className="h-4 w-4" />
           </Button>
           
-          <DropdownMenu onOpenChange={(open) => {
-            if (open && shouldShowFeedback) {
-              temporarilyHideNotification()
-            }
-          }}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="relative h-9 w-9">
-                <Bell className="h-4 w-4" />
-                {shouldShowFeedback && (
+          {/* New Notification Bell for Meeting Notifications */}
+          <NotificationBell />
+          
+          {/* Feedback Notification */}
+          {shouldShowFeedback && (
+            <DropdownMenu onOpenChange={(open) => {
+              if (open && shouldShowFeedback) {
+                temporarilyHideNotification()
+              }
+            }}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative h-9 w-9">
+                  <MessageSquare className="h-4 w-4" />
                   <span className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full flex items-center justify-center">
                     <span className="text-[10px] font-bold text-destructive-foreground">1</span>
                   </span>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-72 sm:w-80" align="end">
-              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {shouldShowFeedback ? (
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-72 sm:w-80" align="end">
+                <DropdownMenuLabel>Program Feedback</DropdownMenuLabel>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleFeedbackClick} className="p-3 sm:p-4 cursor-pointer">
                   <div className="flex items-start gap-3 w-full">
                     <div className="flex items-center gap-2">
@@ -173,14 +176,9 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                     </div>
                   </div>
                 </DropdownMenuItem>
-              ) : (
-                <div className="p-4 text-center text-sm text-muted-foreground">
-                  <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>No new notifications</p>
-                </div>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

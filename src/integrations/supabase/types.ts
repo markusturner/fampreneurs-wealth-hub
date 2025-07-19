@@ -829,6 +829,59 @@ export type Database = {
         }
         Relationships: []
       }
+      family_notifications: {
+        Row: {
+          created_at: string
+          family_member_id: string | null
+          id: string
+          is_read: boolean
+          meeting_date: string | null
+          meeting_id: string | null
+          meeting_time: string | null
+          message: string
+          notification_type: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          family_member_id?: string | null
+          id?: string
+          is_read?: boolean
+          meeting_date?: string | null
+          meeting_id?: string | null
+          meeting_time?: string | null
+          message: string
+          notification_type?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          family_member_id?: string | null
+          id?: string
+          is_read?: boolean
+          meeting_date?: string | null
+          meeting_id?: string | null
+          meeting_time?: string | null
+          message?: string
+          notification_type?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_notifications_family_member_id_fkey"
+            columns: ["family_member_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback_notifications: {
         Row: {
           created_at: string
@@ -2132,6 +2185,16 @@ export type Database = {
           meeting_details?: string
         }
         Returns: Json
+      }
+      notify_family_members_about_meeting: {
+        Args: {
+          meeting_title: string
+          meeting_date: string
+          meeting_time: string
+          meeting_id: string
+          creator_user_id: string
+        }
+        Returns: number
       }
       remove_user_role: {
         Args: {
