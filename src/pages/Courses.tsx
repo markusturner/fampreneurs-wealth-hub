@@ -395,7 +395,7 @@ const Courses = () => {
             
             {activeTab === 'recordings' && (
               <div className="space-y-4">
-                <CallRecordingsList />
+                {/* CallRecordingsList moved to TabsContent to avoid duplication */}
               </div>
             )}
             
