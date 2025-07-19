@@ -175,11 +175,11 @@ export function WeeklyCheckinManagement() {
           </div>
           
           <div className="flex gap-2">
-            <Button onClick={() => setDialogOpen(true)} className="gap-2">
+            <Button onClick={() => setDialogOpen(true)} variant="outline" className="gap-2">
               <CalendarCheck className="h-4 w-4" />
               New Check-in
             </Button>
-            <Button onClick={handleSendWeeklyCheckinToAll} variant="outline" className="gap-2">
+            <Button onClick={handleSendWeeklyCheckinToAll} className="gap-2">
               <CalendarCheck className="h-4 w-4" />
               Send Check-in to All Users
             </Button>
