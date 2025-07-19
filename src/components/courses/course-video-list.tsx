@@ -359,6 +359,20 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
                         </div>
                       </div>
                     </div>
+                    
+                    {/* Video Description */}
+                    {video.description && (
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <p className="text-sm text-muted-foreground">
+                          {video.description}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Video Resources */}
+                    <div className="mt-3 pt-3 border-t border-border">
+                      <VideoDocuments videoId={video.id} />
+                    </div>
                   </CardContent>
                 </Card>
               )
