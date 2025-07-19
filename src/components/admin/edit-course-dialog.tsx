@@ -35,6 +35,7 @@ export function EditCourseDialog({ course, onCourseUpdated }: EditCourseDialogPr
   const [imageTab, setImageTab] = useState<'upload' | 'url'>('url')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imageUrl, setImageUrl] = useState(course.image_url || '')
+  const [isFeatured, setIsFeatured] = useState(false)
   const [formData, setFormData] = useState({
     title: course.title,
     description: course.description || '',
@@ -46,6 +47,28 @@ export function EditCourseDialog({ course, onCourseUpdated }: EditCourseDialogPr
     status: (course as any).status || 'published'
   })
   const { toast } = useToast()
+
+  // Check if course is featured when dialog opens
+  React.useEffect(() => {
+    if (open) {
+      checkIfFeatured()
+    }
+  }, [open, course.id])
+
+  const checkIfFeatured = async () => {
+    try {
+      const { data } = await supabase
+        .from('featured_courses')
+        .select('*')
+        .eq('course_id', course.id)
+        .eq('is_featured', true)
+        .maybeSingle()
+      
+      setIsFeatured(!!data)
+    } catch (error) {
+      console.error('Error checking featured status:', error)
+    }
+  }
 
   const uploadImage = async (file: File): Promise<string | null> => {
     try {
@@ -264,7 +287,6 @@ export function EditCourseDialog({ course, onCourseUpdated }: EditCourseDialogPr
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="featured">Featured</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -276,32 +298,55 @@ export function EditCourseDialog({ course, onCourseUpdated }: EditCourseDialogPr
               variant="secondary"
               onClick={async () => {
                 try {
-                  // Add this course as a featured course by updating course status
-                  const { error } = await supabase
-                    .from('courses')
-                    .update({
-                      status: 'featured'
+                  if (isFeatured) {
+                    // Remove from featured
+                    const { error } = await supabase
+                      .from('featured_courses')
+                      .update({
+                        is_featured: false,
+                        unfeatured_at: new Date().toISOString()
+                      })
+                      .eq('course_id', course.id)
+                    
+                    if (error) throw error
+                    
+                    toast({
+                      title: "Course unfeatured",
+                      description: "This course has been removed from featured courses.",
                     })
-                    .eq('id', course.id)
-                  
-                  if (error) throw error
-                  
-                  toast({
-                    title: "Course featured",
-                    description: "This course has been marked as featured in the main program.",
-                  })
+                    setIsFeatured(false)
+                  } else {
+                    // Add to featured courses
+                    const { error } = await supabase
+                      .from('featured_courses')
+                      .upsert({
+                        course_id: course.id,
+                        featured_by: (await supabase.auth.getUser()).data.user?.id,
+                        is_featured: true,
+                        featured_at: new Date().toISOString(),
+                        unfeatured_at: null
+                      })
+                    
+                    if (error) throw error
+                    
+                    toast({
+                      title: "Course featured",
+                      description: "This course has been added to featured courses.",
+                    })
+                    setIsFeatured(true)
+                  }
                   
                   onCourseUpdated()
                 } catch (error: any) {
                   toast({
-                    title: "Error featuring course",
+                    title: "Error updating featured status",
                     description: error.message,
                     variant: "destructive",
                   })
                 }
               }}
             >
-              Add as Feature
+              {isFeatured ? 'Remove Feature' : 'Add as Feature'}
             </Button>
             <div className="flex space-x-2">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
