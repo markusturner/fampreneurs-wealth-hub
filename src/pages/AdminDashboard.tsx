@@ -431,9 +431,56 @@ export default function AdminDashboard() {
       const fifteenDaysAgo = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000)
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
-      // Mock metrics for now - you can replace with actual data queries
+      // Get real coaching session data
+      const { data: groupSessions } = await supabase
+        .from('group_coaching_sessions')
+        .select('session_date, status')
+        .eq('status', 'completed')
+
+      const { data: individualSessions } = await supabase
+        .from('individual_coaching_sessions')
+        .select('session_date, status')
+        .eq('status', 'completed')
+
+      // Get actual attendance data
+      const { data: attendanceData } = await supabase
+        .from('session_attendance')
+        .select('session_type, attended, created_at')
+        .eq('attended', true)
+
+      // Calculate real metrics based on attendance data
+      const oneOnOneCalls30Days = attendanceData?.filter(a => 
+        a.session_type === 'individual' && 
+        new Date(a.created_at) >= thirtyDaysAgo
+      ).length || 0
+
+      const oneOnOneCalls15Days = attendanceData?.filter(a => 
+        a.session_type === 'individual' && 
+        new Date(a.created_at) >= fifteenDaysAgo
+      ).length || 0
+
+      const oneOnOneCallsThisMonth = attendanceData?.filter(a => 
+        a.session_type === 'individual' && 
+        new Date(a.created_at) >= startOfMonth
+      ).length || 0
+
+      const groupCalls30Days = attendanceData?.filter(a => 
+        a.session_type === 'group' && 
+        new Date(a.created_at) >= thirtyDaysAgo
+      ).length || 0
+
+      const groupCalls15Days = attendanceData?.filter(a => 
+        a.session_type === 'group' && 
+        new Date(a.created_at) >= fifteenDaysAgo
+      ).length || 0
+
+      const groupCallsThisMonth = attendanceData?.filter(a => 
+        a.session_type === 'group' && 
+        new Date(a.created_at) >= startOfMonth
+      ).length || 0
+
       setMetrics({
-        newRenewals: 12,
+        newRenewals: 12, // Keep mock data for financial metrics for now
         nonRenewals: 3,
         newUpsells: 8,
         nonUpsells: 2,
@@ -441,12 +488,12 @@ export default function AdminDashboard() {
         averageRevenue: 3750,
         renewalRate: 80,
         satisfactionScore: 4.2,
-        oneOnOneCalls30Days: 45,
-        oneOnOneCalls15Days: 25,
-        oneOnOneCallsThisMonth: 38,
-        groupCalls30Days: 12,
-        groupCalls15Days: 8,
-        groupCallsThisMonth: 10
+        oneOnOneCalls30Days,
+        oneOnOneCalls15Days,
+        oneOnOneCallsThisMonth,
+        groupCalls30Days,
+        groupCalls15Days,
+        groupCallsThisMonth
       })
     } catch (error) {
       console.error('Error loading metrics:', error)
