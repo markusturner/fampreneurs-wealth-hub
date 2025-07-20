@@ -177,10 +177,10 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
   }
 
   const handleCreateGroup = async () => {
-    if (!newGroupName.trim() || !user || !profile?.is_admin) {
+    if (!newGroupName.trim() || !user) {
       toast({
         title: "Error",
-        description: "Only administrators can create channels",
+        description: "Please provide a channel name",
         variant: "destructive"
       })
       return
