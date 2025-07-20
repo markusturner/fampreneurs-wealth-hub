@@ -241,13 +241,19 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   const updateUserRole = async (userId: string, role: string, action: 'add' | 'remove') => {
     try {
+      // Get current user ID for assigned_by field
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      if (!currentUser) {
+        throw new Error('No authenticated user found')
+      }
+
       if (action === 'add') {
         const { error } = await supabase
           .from('user_roles')
           .insert({
             user_id: userId,
             role: role as any,
-            assigned_by: userId
+            assigned_by: currentUser.id
           })
 
         if (error) throw error
