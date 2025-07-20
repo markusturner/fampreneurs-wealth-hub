@@ -75,7 +75,18 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
     if (isOpen) {
       fetchContent()
     }
-  }, [isOpen, channel.id])
+  }, [isOpen])
+
+  // Reset states when dialog opens, but preserve step during the session
+  useEffect(() => {
+    if (isOpen && currentStep === 1) {
+      setChannelName(channel.name)
+      setChannelDescription(channel.description || '')
+      setIsPrivate(channel.is_private)
+      setSelectedCourses(channel.associated_courses || [])
+      setSelectedCoachingCalls(channel.associated_group_calls || [])
+    }
+  }, [isOpen, channel])
 
   const fetchContent = async () => {
     try {
