@@ -193,27 +193,32 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   const updateActivationPoint = async (userId: string, activationPoint: string | null) => {
     try {
+      console.log('=== ACTIVATION POINT UPDATE START ===')
       console.log('Updating activation point for user:', userId, 'to:', activationPoint)
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .update({ activation_point: activationPoint } as any)
         .eq('user_id', userId)
+        .select('*')
 
       if (error) {
         console.error('Database error:', error)
         throw error
       }
 
-      console.log('Activation point updated successfully')
+      console.log('Database response:', data)
+      console.log('Activation point updated successfully in database')
 
       toast({
         title: "Activation Point Updated",
         description: `User's activation point has been set to ${activationPoint || 'None'}.`,
       })
 
+      console.log('About to call onUsersUpdated()')
       // Refresh the users data
       onUsersUpdated()
+      console.log('=== ACTIVATION POINT UPDATE END ===')
     } catch (error) {
       console.error('Error updating activation point:', error)
       toast({
