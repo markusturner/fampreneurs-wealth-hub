@@ -31,6 +31,7 @@ interface Profile {
     id: string
     full_name: string
   } | null
+  roles?: string[]
 }
 
 interface Coach {
@@ -70,6 +71,15 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
     'Offboarded/Graduation',
     'Renewals/Upsells',
     'Lost Mentee'
+  ]
+
+  const availableRoles = [
+    'member',
+    'admin', 
+    'moderator',
+    'accountability_partner',
+    'billing_manager',
+    'group_owner'
   ]
 
   const filteredUsers = users.filter(user => {
@@ -224,6 +234,49 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
       toast({
         title: "Error",
         description: "Failed to update activation point.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const updateUserRole = async (userId: string, role: string, action: 'add' | 'remove') => {
+    try {
+      if (action === 'add') {
+        const { error } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: userId,
+            role: role as any,
+            assigned_by: userId
+          })
+
+        if (error) throw error
+
+        toast({
+          title: "Role Added",
+          description: `User has been assigned the ${role} role.`,
+        })
+      } else {
+        const { error } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', userId)
+          .eq('role', role as any)
+
+        if (error) throw error
+
+        toast({
+          title: "Role Removed",
+          description: `${role} role has been removed from the user.`,
+        })
+      }
+
+      onUsersUpdated()
+    } catch (error) {
+      console.error('Error updating user role:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update user role.",
         variant: "destructive",
       })
     }
@@ -458,8 +511,55 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-              </div>
+                 </div>
+
+                 {/* Role Management */}
+                 <div className="flex-shrink-0 min-w-0 sm:w-64">
+                   <div>
+                     <Label className="text-sm font-medium">User Roles</Label>
+                     <div className="mt-1">
+                       {user.roles && user.roles.length > 0 ? (
+                         <div className="flex flex-wrap gap-1 mb-2">
+                           {user.roles.map(role => (
+                             <Badge key={role} variant="default" className="text-xs flex items-center gap-1">
+                               {role}
+                               <button
+                                 onClick={() => updateUserRole(user.user_id, role, 'remove')}
+                                 className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                                 title={`Remove ${role} role`}
+                               >
+                                 <X className="h-2 w-2" />
+                               </button>
+                             </Badge>
+                           ))}
+                         </div>
+                       ) : (
+                         <p className="text-sm text-muted-foreground mb-2">No roles assigned</p>
+                       )}
+                       
+                       <Select 
+                         value=""
+                         onValueChange={(value) => {
+                           if (value && !user.roles?.includes(value)) {
+                             updateUserRole(user.user_id, value, 'add')
+                           }
+                         }}
+                       >
+                         <SelectTrigger className="w-full">
+                           <SelectValue placeholder="Add role..." />
+                         </SelectTrigger>
+                         <SelectContent className="bg-background border shadow-lg z-50">
+                           {availableRoles.filter(role => !user.roles?.includes(role)).map((role) => (
+                             <SelectItem key={role} value={role}>
+                               {role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   </div>
+                 </div>
+               </div>
             </CardContent>
           </Card>
         ))}
