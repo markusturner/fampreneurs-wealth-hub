@@ -49,7 +49,7 @@ interface EnhancedUserManagementProps {
   onUsersUpdated: () => void
 }
 
-export function EnhancedUserManagement({ users, coaches, onUsersUpdated }: EnhancedUserManagementProps) {
+export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdated }: EnhancedUserManagementProps) {
   const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState('')
   const [editingUser, setEditingUser] = useState<string | null>(null)
@@ -68,7 +68,6 @@ export function EnhancedUserManagement({ users, coaches, onUsersUpdated }: Enhan
 
   useEffect(() => {
     fetchPrograms()
-    fetchUserPrograms()
   }, [])
 
   const fetchPrograms = async () => {
@@ -85,50 +84,9 @@ export function EnhancedUserManagement({ users, coaches, onUsersUpdated }: Enhan
     }
   }
 
-  const fetchUserPrograms = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_programs')
-        .select('user_id, program_id')
-
-      if (error) throw error
-      
-      const userProgramsMap: Record<string, string[]> = {}
-      data?.forEach(({ user_id, program_id }) => {
-        if (!userProgramsMap[user_id]) {
-          userProgramsMap[user_id] = []
-        }
-        userProgramsMap[user_id].push(program_id)
-      })
-      
-      setSelectedPrograms(userProgramsMap)
-    } catch (error) {
-      console.error('Error fetching user programs:', error)
-    }
-  }
-
   const updateUserPrograms = async (userId: string, programIds: string[]) => {
     try {
-      // Remove existing assignments
-      await supabase
-        .from('user_programs')
-        .delete()
-        .eq('user_id', userId)
-
-      // Add new assignments
-      if (programIds.length > 0) {
-        const insertData = programIds.map(programId => ({
-          user_id: userId,
-          program_id: programId
-        }))
-
-        const { error } = await supabase
-          .from('user_programs')
-          .insert(insertData)
-
-        if (error) throw error
-      }
-
+      // For now, just update the local state since user_programs table doesn't exist
       setSelectedPrograms(prev => ({
         ...prev,
         [userId]: programIds
@@ -320,7 +278,8 @@ export function EnhancedUserManagement({ users, coaches, onUsersUpdated }: Enhan
                             variant="outline"
                             onClick={() => {
                               setEditingUser(null)
-                              fetchUserPrograms() // Reset changes
+                              // Reset changes by refetching data
+                              onUsersUpdated()
                             }}
                             className="flex-1"
                           >

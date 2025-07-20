@@ -59,6 +59,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate()
   const { theme } = useTheme()
   
+  const [users, setUsers] = useState<any[]>([])
   const [courses, setCourses] = useState<Course[]>([])
   const [coaches, setCoaches] = useState<any[]>([])
   const [coachingSessions, setCoachingSessions] = useState<any[]>([])
@@ -76,6 +77,15 @@ export default function AdminDashboard() {
   const loadAdminData = async () => {
     try {
       setLoading(true)
+      
+      // Load users
+      const { data: usersData, error: usersError } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (usersError) throw usersError
+      setUsers(usersData || [])
       
       // Load courses
       const { data: coursesData, error: coursesError } = await supabase
@@ -243,7 +253,11 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4">
-            <EnhancedUserManagement />
+            <EnhancedUserManagement 
+              users={users} 
+              coaches={coaches} 
+              onUsersUpdated={loadAdminData} 
+            />
           </TabsContent>
 
           <TabsContent value="courses" className="space-y-4">
@@ -337,7 +351,7 @@ export default function AdminDashboard() {
                       Manage group and individual coaching sessions
                     </CardDescription>
                   </div>
-                  <AddCoachingSessionDialog onSessionAdded={loadAdminData} />
+                  <AddCoachingSessionDialog type="group" onSessionAdded={loadAdminData} />
                 </CardHeader>
                 <CardContent>
                   {coachingSessions.map((session) => (
