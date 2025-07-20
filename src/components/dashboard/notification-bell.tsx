@@ -38,6 +38,9 @@ export function NotificationBell() {
       setFeedbackDialogOpen(true)
     } else if (notification.notification_type === 'weekly_checkin') {
       setWeeklyCheckinDialogOpen(true)
+    } else if (notification.notification_type === 'video_call_started') {
+      // For video call notifications, navigate to the community page where the call banner appears
+      window.location.href = '/community'
     }
   }
 

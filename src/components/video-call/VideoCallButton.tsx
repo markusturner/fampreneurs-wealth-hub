@@ -75,12 +75,32 @@ export const VideoCallButton = () => {
 
       if (error) throw error;
 
+      // Send notifications to all users about the video call
+      try {
+        const { error: notificationError } = await supabase.functions.invoke('notify-video-call-start', {
+          body: {
+            callId: data.id,
+            roomName: roomName,
+            createdBy: user.id
+          }
+        });
+
+        if (notificationError) {
+          console.error('Error sending video call notifications:', notificationError);
+        } else {
+          console.log('Video call notifications sent successfully');
+        }
+      } catch (notificationError) {
+        console.error('Failed to send notifications:', notificationError);
+        // Don't fail the call creation if notifications fail
+      }
+
       setCurrentRoomId(data.id);
       setIsCallDialogOpen(true);
       
       toast({
         title: "Call Started",
-        description: "Your video call is now live!"
+        description: "Your video call is now live! Notifications sent to all users."
       });
 
       fetchActiveCalls();
