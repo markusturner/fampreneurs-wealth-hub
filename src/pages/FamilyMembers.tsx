@@ -12,7 +12,10 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useToast } from '@/hooks/use-toast'
 import { NavHeader } from '@/components/dashboard/nav-header'
-import { UserPlus, Mail, Phone, User, Edit, Trash2, Users, Crown, Plus } from 'lucide-react'
+import { FamilyOfficeSecurity } from '@/components/dashboard/family-office-security'
+import { SecureFamilyMemberCard } from '@/components/dashboard/secure-family-member-card'
+import { useFamilyOfficeSecurity } from '@/hooks/useFamilyOfficeSecurity'
+import { UserPlus, Mail, Phone, User, Edit, Trash2, Users, Crown, Plus, Shield } from 'lucide-react'
 
 interface FamilyMember {
   id: string
@@ -55,11 +58,13 @@ const trustPositions = [
 export default function FamilyMembers() {
   const { user, profile } = useAuth()
   const { toast } = useToast()
+  const { logSecurityAction } = useFamilyOfficeSecurity()
   const [members, setMembers] = useState<FamilyMember[]>([])
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [showSecurity, setShowSecurity] = useState(false)
   
   const [formData, setFormData] = useState({
     fullName: '',
@@ -258,21 +263,31 @@ export default function FamilyMembers() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold">Family Members</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Manage your family members and their roles
+              Manage your family members and their roles with enhanced security
             </p>
           </div>
           
-          <Dialog open={dialogOpen} onOpenChange={(open) => {
-            setDialogOpen(open)
-            if (!open) resetForm()
-          }}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 w-full sm:w-auto">
-                <UserPlus className="h-4 w-4" />
-                <span className="hidden sm:inline">Add Family Member</span>
-                <span className="sm:hidden">Add Member</span>
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => setShowSecurity(!showSecurity)} 
+              variant="outline" 
+              className="gap-2"
+            >
+              <Shield className="h-4 w-4" />
+              Security Settings
+            </Button>
+            
+            <Dialog open={dialogOpen} onOpenChange={(open) => {
+              setDialogOpen(open)
+              if (!open) resetForm()
+            }}>
+              <DialogTrigger asChild>
+                <Button className="gap-2 w-full sm:w-auto">
+                  <UserPlus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Add Family Member</span>
+                  <span className="sm:hidden">Add Member</span>
+                </Button>
+              </DialogTrigger>
             <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto mx-3 sm:mx-0 max-w-[calc(100vw-24px)]">
               <DialogHeader>
                 <DialogTitle className="text-lg sm:text-xl">
@@ -419,7 +434,17 @@ export default function FamilyMembers() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         </div>
+
+        {/* Security Settings Section */}
+        {showSecurity && (
+          <Card>
+            <CardContent className="p-6">
+              <FamilyOfficeSecurity />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -482,73 +507,14 @@ export default function FamilyMembers() {
             ) : (
               <div className="space-y-3">
                 {members.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={`https://ui-avatars.com/api/?name=${encodeURIComponent(member.full_name)}&background=random`} />
-                        <AvatarFallback className="bg-secondary text-secondary-foreground">
-                          {getInitials(member.full_name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-base">{member.full_name}</h3>
-                          <Badge className={`text-xs ${getStatusColor(member.status)}`}>
-                            {member.status || 'pending'}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{member.family_position}</p>
-                        {member.relationship_to_family && (
-                          <p className="text-xs text-muted-foreground">{member.relationship_to_family}</p>
-                        )}
-                        <div className="flex items-center gap-4 mt-1">
-                          {member.email && (
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Mail className="h-3 w-3" />
-                              {member.email}
-                            </div>
-                          )}
-                          {member.phone && (
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Phone className="h-3 w-3" />
-                              {member.phone}
-                            </div>
-                          )}
-                        </div>
-                        {member.trust_positions && member.trust_positions.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {member.trust_positions.map((position) => (
-                              <Badge key={position} variant="outline" className="text-xs">
-                                <Crown className="h-3 w-3 mr-1" />
-                                {position}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {canEditMember(member) && (
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditDialog(member)}
-                          className="gap-1"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteMember(member)}
-                          className="gap-1 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
+                  <SecureFamilyMemberCard
+                    key={member.id}
+                    member={member}
+                    currentUserId={user?.id || ''}
+                    isAdmin={profile?.is_admin || false}
+                    onEdit={openEditDialog}
+                    onDelete={deleteMember}
+                  />
                 ))}
               </div>
             )}

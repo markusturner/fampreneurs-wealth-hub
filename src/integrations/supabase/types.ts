@@ -922,52 +922,73 @@ export type Database = {
       }
       family_members: {
         Row: {
+          access_count: number | null
           added_by: string
+          approved_at: string | null
+          approved_by: string | null
           created_at: string | null
+          data_classification: string | null
           email: string | null
+          encrypted_notes: string | null
           family_position: string
           full_name: string
           id: string
           invitation_sent_at: string | null
           is_invited: boolean | null
           joined_at: string | null
+          last_accessed: string | null
           notes: string | null
           phone: string | null
           relationship_to_family: string | null
+          requires_approval: boolean | null
           status: string | null
           trust_positions: string[] | null
           updated_at: string | null
         }
         Insert: {
+          access_count?: number | null
           added_by: string
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string | null
+          data_classification?: string | null
           email?: string | null
+          encrypted_notes?: string | null
           family_position: string
           full_name: string
           id?: string
           invitation_sent_at?: string | null
           is_invited?: boolean | null
           joined_at?: string | null
+          last_accessed?: string | null
           notes?: string | null
           phone?: string | null
           relationship_to_family?: string | null
+          requires_approval?: boolean | null
           status?: string | null
           trust_positions?: string[] | null
           updated_at?: string | null
         }
         Update: {
+          access_count?: number | null
           added_by?: string
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string | null
+          data_classification?: string | null
           email?: string | null
+          encrypted_notes?: string | null
           family_position?: string
           full_name?: string
           id?: string
           invitation_sent_at?: string | null
           is_invited?: boolean | null
           joined_at?: string | null
+          last_accessed?: string | null
           notes?: string | null
           phone?: string | null
           relationship_to_family?: string | null
+          requires_approval?: boolean | null
           status?: string | null
           trust_positions?: string[] | null
           updated_at?: string | null
@@ -1026,6 +1047,219 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      family_office_audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string | null
+          risk_level: string | null
+          session_id: string | null
+          table_name: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          risk_level?: string | null
+          session_id?: string | null
+          table_name: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          risk_level?: string | null
+          session_id?: string | null
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      family_office_data_classification: {
+        Row: {
+          classification_level: string
+          column_name: string
+          created_at: string | null
+          id: string
+          masking_rule: string | null
+          retention_period_days: number | null
+          table_name: string
+        }
+        Insert: {
+          classification_level: string
+          column_name: string
+          created_at?: string | null
+          id?: string
+          masking_rule?: string | null
+          retention_period_days?: number | null
+          table_name: string
+        }
+        Update: {
+          classification_level?: string
+          column_name?: string
+          created_at?: string | null
+          id?: string
+          masking_rule?: string | null
+          retention_period_days?: number | null
+          table_name?: string
+        }
+        Relationships: []
+      }
+      family_office_privacy_preferences: {
+        Row: {
+          analytics_consent: boolean | null
+          consent_given_at: string | null
+          data_deletion_requested: boolean | null
+          data_deletion_requested_at: string | null
+          data_export_allowed: boolean | null
+          data_sharing_consent: boolean | null
+          id: string
+          last_updated: string | null
+          marketing_consent: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          analytics_consent?: boolean | null
+          consent_given_at?: string | null
+          data_deletion_requested?: boolean | null
+          data_deletion_requested_at?: string | null
+          data_export_allowed?: boolean | null
+          data_sharing_consent?: boolean | null
+          id?: string
+          last_updated?: string | null
+          marketing_consent?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          analytics_consent?: boolean | null
+          consent_given_at?: string | null
+          data_deletion_requested?: boolean | null
+          data_deletion_requested_at?: string | null
+          data_export_allowed?: boolean | null
+          data_sharing_consent?: boolean | null
+          id?: string
+          last_updated?: string | null
+          marketing_consent?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      family_office_secure_documents: {
+        Row: {
+          access_count: number | null
+          checksum: string | null
+          classification_level: string | null
+          created_at: string | null
+          encrypted_filename: string
+          encryption_key_id: string | null
+          expires_at: string | null
+          file_size: number | null
+          id: string
+          last_accessed: string | null
+          mime_type: string | null
+          original_filename: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_count?: number | null
+          checksum?: string | null
+          classification_level?: string | null
+          created_at?: string | null
+          encrypted_filename: string
+          encryption_key_id?: string | null
+          expires_at?: string | null
+          file_size?: number | null
+          id?: string
+          last_accessed?: string | null
+          mime_type?: string | null
+          original_filename: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_count?: number | null
+          checksum?: string | null
+          classification_level?: string | null
+          created_at?: string | null
+          encrypted_filename?: string
+          encryption_key_id?: string | null
+          expires_at?: string | null
+          file_size?: number | null
+          id?: string
+          last_accessed?: string | null
+          mime_type?: string | null
+          original_filename?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      family_office_security_settings: {
+        Row: {
+          allowed_ip_addresses: string[] | null
+          backup_frequency: string | null
+          created_at: string | null
+          data_retention_days: number | null
+          encryption_enabled: boolean | null
+          id: string
+          last_security_review: string | null
+          password_change_required_at: string | null
+          require_mfa: boolean | null
+          session_timeout_minutes: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          allowed_ip_addresses?: string[] | null
+          backup_frequency?: string | null
+          created_at?: string | null
+          data_retention_days?: number | null
+          encryption_enabled?: boolean | null
+          id?: string
+          last_security_review?: string | null
+          password_change_required_at?: string | null
+          require_mfa?: boolean | null
+          session_timeout_minutes?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          allowed_ip_addresses?: string[] | null
+          backup_frequency?: string | null
+          created_at?: string | null
+          data_retention_days?: number | null
+          encryption_enabled?: boolean | null
+          id?: string
+          last_security_review?: string | null
+          password_change_required_at?: string | null
+          require_mfa?: boolean | null
+          session_timeout_minutes?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       featured_courses: {
         Row: {
@@ -2431,6 +2665,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: number
       }
+      can_access_family_data: {
+        Args: { p_record_id: string; p_table_name: string }
+        Returns: boolean
+      }
       can_join_group: {
         Args: { group_id: string; user_id: string }
         Returns: boolean
@@ -2454,6 +2692,22 @@ export type Database = {
       is_user_admin_for_groups: {
         Args: Record<PropertyKey, never>
         Returns: boolean
+      }
+      log_family_office_action: {
+        Args: {
+          p_action: string
+          p_table_name: string
+          p_record_id?: string
+          p_old_values?: Json
+          p_new_values?: Json
+          p_risk_level?: string
+          p_metadata?: Json
+        }
+        Returns: string
+      }
+      mask_sensitive_data: {
+        Args: { p_data: string; p_masking_type?: string }
+        Returns: string
       }
       notify_family_about_meeting: {
         Args: {
