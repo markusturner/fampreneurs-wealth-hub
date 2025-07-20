@@ -62,8 +62,8 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [programs, setPrograms] = useState<Program[]>([])
   const [selectedPrograms, setSelectedPrograms] = useState<Record<string, string[]>>({})
-  const [startDate, setStartDate] = useState<Date | undefined>()
-  const [endDate, setEndDate] = useState<Date | undefined>()
+  const [userStartDates, setUserStartDates] = useState<Record<string, Date | undefined>>({})
+  const [userEndDates, setUserEndDates] = useState<Record<string, Date | undefined>>({})
   
   // Initialize persistent states from localStorage
   const [persistedActivationPoints, setPersistedActivationPoints] = useState<Record<string, string>>(() => {
@@ -119,32 +119,12 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   const filteredUsers = users.filter(user => {
     const searchLower = searchTerm.toLowerCase()
-    const nameEmailMatch = (
+    return (
       user.display_name?.toLowerCase().includes(searchLower) ||
       user.first_name?.toLowerCase().includes(searchLower) ||
       user.last_name?.toLowerCase().includes(searchLower) ||
       user.email?.toLowerCase().includes(searchLower)
     )
-
-    // Date filtering
-    if (startDate || endDate) {
-      const userCreatedAt = new Date(user.created_at)
-      
-      if (startDate && userCreatedAt < startDate) {
-        return false
-      }
-      
-      if (endDate) {
-        // Set end date to end of day for inclusive filtering
-        const endOfDay = new Date(endDate)
-        endOfDay.setHours(23, 59, 59, 999)
-        if (userCreatedAt > endOfDay) {
-          return false
-        }
-      }
-    }
-
-    return nameEmailMatch
   })
 
   useEffect(() => {
@@ -464,100 +444,24 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   return (
     <div className="space-y-6">
-      {/* Search Bar and Date Filters */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search users..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-sm"
-            />
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="h-4 w-4" />
-            <span>Total: {users.length} users</span>
-            {searchTerm && (
-              <span className="text-primary">
-                | Filtered: {filteredUsers.length}
-              </span>
-            )}
-          </div>
+      {/* Search Bar and Total Count */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-sm"
+          />
         </div>
-
-        {/* Date Range Filters */}
-        <div className="flex items-center gap-4">
-          {/* Start Date */}
-          <div className="flex items-center gap-2">
-            <Label className="text-sm font-medium">Start Date:</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-[180px] justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* End Date */}
-          <div className="flex items-center gap-2">
-            <Label className="text-sm font-medium">End Date:</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-[180px] justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={setEndDate}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Clear Filters */}
-          {(startDate || endDate) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setStartDate(undefined)
-                setEndDate(undefined)
-              }}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              Clear Dates
-            </Button>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Users className="h-4 w-4" />
+          <span>Total: {users.length} users</span>
+          {searchTerm && (
+            <span className="text-primary">
+              | Filtered: {filteredUsers.length}
+            </span>
           )}
         </div>
       </div>
@@ -601,7 +505,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                 </div>
 
                 {/* Management Sections */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
                   {/* Program Assignment */}
                   <div className="space-y-3">
                     <div>
@@ -800,6 +704,75 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                  </div>
+
+                  {/* Start and End Dates */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Program Dates</Label>
+                    
+                    {/* Start Date */}
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Start Date</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !userStartDates[user.user_id] && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-3 w-3" />
+                            {userStartDates[user.user_id] ? format(userStartDates[user.user_id]!, "MMM dd, yyyy") : <span>Pick date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={userStartDates[user.user_id]}
+                            onSelect={(date) => setUserStartDates(prev => ({
+                              ...prev,
+                              [user.user_id]: date
+                            }))}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    {/* End Date */}
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">End Date</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !userEndDates[user.user_id] && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-3 w-3" />
+                            {userEndDates[user.user_id] ? format(userEndDates[user.user_id]!, "MMM dd, yyyy") : <span>Pick date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={userEndDates[user.user_id]}
+                            onSelect={(date) => setUserEndDates(prev => ({
+                              ...prev,
+                              [user.user_id]: date
+                            }))}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
 
