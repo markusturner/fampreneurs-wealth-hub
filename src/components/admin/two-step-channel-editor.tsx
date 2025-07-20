@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Edit, ArrowLeft, ArrowRight, Plus, X, Users, BookOpen, Video } from 'lucide-react'
+import { Edit, ArrowLeft, ArrowRight, Plus, X, Users, BookOpen, Video, Trash2 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 
 interface Channel {
@@ -198,6 +198,45 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
     }
   }
 
+  const handleDeleteChannel = async () => {
+    if (!confirm(`Are you sure you want to delete the channel "${channel.name}"? This action cannot be undone.`)) {
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      // First delete all group members
+      await supabase
+        .from('group_memberships')
+        .delete()
+        .eq('group_id', channel.id)
+
+      // Then delete the channel
+      await supabase
+        .from('community_groups')
+        .delete()
+        .eq('id', channel.id)
+
+      setIsOpen(false)
+      setCurrentStep(1)
+      onChannelUpdated()
+      
+      toast({
+        title: "Success",
+        description: `Channel "${channel.name}" has been deleted successfully!`
+      })
+    } catch (error) {
+      console.error('Error deleting channel:', error)
+      toast({
+        title: "Error",
+        description: `Failed to delete channel: ${error.message || 'Unknown error'}`,
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const removeMember = async (memberId: string) => {
     try {
       const { error } = await supabase
@@ -308,8 +347,13 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
             </div>
 
             <div className="flex justify-between">
-              <Button variant="outline" onClick={resetAndClose}>
-                Cancel
+              <Button
+                variant="destructive"
+                onClick={handleDeleteChannel}
+                disabled={isLoading}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Channel
               </Button>
               <Button onClick={handleBasicInfoUpdate} disabled={isLoading}>
                 {isLoading ? 'Updating...' : 'Next: Content Management'}
@@ -462,11 +506,19 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
             <Separator />
 
             <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setCurrentStep(1)}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Previous: Basic Info
+              <Button
+                variant="destructive"
+                onClick={handleDeleteChannel}
+                disabled={isLoading}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Channel
               </Button>
               <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setCurrentStep(1)}>
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Previous: Basic Info
+                </Button>
                 <Button variant="outline" onClick={resetAndClose}>
                   Cancel
                 </Button>
