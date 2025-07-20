@@ -194,9 +194,7 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
           name: newGroupName.trim(),
           description: newGroupDescription.trim() || null,
           created_by: user.id,
-          is_private: isPrivateGroup,
-          associated_courses: selectedCourses,
-          associated_group_calls: selectedCoachingCalls
+          is_private: isPrivateGroup
         })
         .select()
         .single()
