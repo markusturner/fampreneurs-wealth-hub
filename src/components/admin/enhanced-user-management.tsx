@@ -281,6 +281,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
                         <div className="flex gap-2">
                           <Button
+                            type="button"
                             size="sm"
                             onClick={() => {
                               updateUserPrograms(user.user_id, selectedPrograms[user.user_id] || [])
@@ -292,6 +293,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                             Save
                           </Button>
                           <Button
+                            type="button"
                             size="sm"
                             variant="outline"
                             onClick={() => {
@@ -308,6 +310,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                       </div>
                     ) : (
                       <Button
+                        type="button"
                         size="sm"
                         variant="outline"
                         onClick={() => setEditingUser(user.id)}
