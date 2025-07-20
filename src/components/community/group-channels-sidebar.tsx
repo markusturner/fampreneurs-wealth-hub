@@ -124,21 +124,31 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
 
   const fetchCommunityGroups = async () => {
     try {
-      // Fetch all groups with member counts in a single query
-      const { data: groupsData, error } = await supabase
+      // Fetch all groups first
+      const { data: groupsData, error: groupsError } = await supabase
         .from('community_groups')
-        .select(`
-          *,
-          group_memberships(count)
-        `)
+        .select('*')
         .order('order_index', { ascending: true })
 
-      if (error) throw error
+      if (groupsError) throw groupsError
+
+      // Fetch member counts for all groups
+      const { data: memberCounts, error: countsError } = await supabase
+        .from('group_memberships')
+        .select('group_id')
+
+      if (countsError) throw countsError
+
+      // Count members per group
+      const memberCountMap = memberCounts?.reduce((acc, membership) => {
+        acc[membership.group_id] = (acc[membership.group_id] || 0) + 1
+        return acc
+      }, {} as Record<string, number>) || {}
 
       // Transform the data to include member counts
       const groupsWithCounts = (groupsData || []).map(group => ({
         ...group,
-        member_count: group.group_memberships?.[0]?.count || 0
+        member_count: memberCountMap[group.id] || 0
       }))
 
       setCommunityGroups(groupsWithCounts)
