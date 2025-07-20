@@ -90,7 +90,7 @@ export function AIChat() {
     <Card className="h-[600px] flex flex-col">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-primary" />
+          <Bot className="h-5 w-5 text-secondary" />
           Rachel Legacy Support Advisor
         </CardTitle>
       </CardHeader>
