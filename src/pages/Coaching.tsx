@@ -686,11 +686,11 @@ const Coaching = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-4">
-                      {loadingCoaches ? (
-                        <div className="space-y-4">
+                       {loadingCoaches ? (
+                        <div className="space-y-3 sm:space-y-4">
                           {[...Array(3)].map((_, i) => (
                             <Card key={i} className="animate-pulse">
-                              <CardContent className="p-4">
+                              <CardContent className="p-3 sm:p-4">
                                 <div className="h-4 bg-muted rounded mb-2"></div>
                                 <div className="h-3 bg-muted rounded mb-1"></div>
                                 <div className="h-3 bg-muted rounded"></div>

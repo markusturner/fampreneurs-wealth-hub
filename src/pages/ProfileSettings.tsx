@@ -57,7 +57,7 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="directory" className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2 h-auto' : 'grid-cols-4'}`}>
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2 h-auto' : 'grid-cols-3'}`}>
           <TabsTrigger 
             value="directory" 
             className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
@@ -85,15 +85,6 @@ export function ProfileSettings() {
               {isMobile ? "Affiliate" : "Affiliate Program"}
             </span>
           </TabsTrigger>
-          <TabsTrigger 
-            value="admin" 
-            className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
-          >
-            <Crown className="h-4 w-4 shrink-0" />
-            <span className={isMobile ? "text-center leading-tight" : ""}>
-              {isMobile ? "Admin" : "Admin Panel"}
-            </span>
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="directory">
@@ -106,10 +97,6 @@ export function ProfileSettings() {
 
         <TabsContent value="affiliate">
           <AffiliateProgram />
-        </TabsContent>
-
-        <TabsContent value="admin">
-          <AdminSettings />
         </TabsContent>
       </Tabs>
     </div>

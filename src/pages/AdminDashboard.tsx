@@ -66,6 +66,7 @@ import { CoachingRecordings } from '@/components/admin/coaching-recordings'
 import { FeedbackManagement } from '@/components/dashboard/feedback-management'
 import { WeeklyCheckinManagement } from '@/components/dashboard/weekly-checkin-management'
 import { EnhancedAddVideoDialog } from '@/components/courses/enhanced-add-video-dialog'
+import { EnhancedUserManagement } from '@/components/admin/enhanced-user-management'
 import { 
   DndContext, 
   DragEndEvent, 
@@ -1090,42 +1091,14 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {filteredUsers.map(user => (
-                    <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg gap-4">
-                      <UserCard 
-                        user={user} 
-                        onRolesUpdated={loadAdminData}
-                      />
-                      <div className="flex items-end gap-4 flex-shrink-0">
-                        <div>
-                          <Label className="text-sm font-medium">Assigned Coach</Label>
-                          <Select 
-                            value={user.assigned_coach?.id || 'none'}
-                            onValueChange={async (value) => {
-                              if (!value) return
-                              
-                              try {
-                                // First, deactivate any existing assignments
-                                await supabase
-                                  .from('coach_assignments')
-                                  .update({ status: 'inactive' })
-                                  .eq('user_id', user.user_id)
-                                  .eq('status', 'active')
-
-                                // If value is "none", just deactivate and don't create new assignment
-                                if (value === 'none') {
-                                  toast({
-                                    title: "Coach Unassigned",
-                                    description: "Coach has been removed from the user.",
-                                  })
-                                } else {
-                                  // Then create new assignment
-                                  const { error } = await supabase
-                                    .from('coach_assignments')
-                                    .insert({
-                                      user_id: user.user_id,
-                                      coach_id: value,
+                <EnhancedUserManagement 
+                  users={filteredUsers}
+                  coaches={coaches}
+                  onUsersUpdated={loadAdminData}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
                                       status: 'active'
                                     })
                                   
@@ -1188,11 +1161,6 @@ export default function AdminDashboard() {
                               <SelectItem value="mentee-lost">Mentee Lost</SelectItem>
                             </SelectContent>
                           </Select>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </CardContent>
             </Card>
           </TabsContent>

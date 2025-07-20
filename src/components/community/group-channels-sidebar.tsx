@@ -56,6 +56,12 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
   const [isPrivateGroup, setIsPrivateGroup] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
 
+  // Check if user has group owner role
+  const hasGroupOwnerRole = () => {
+    // Add role checking logic here if needed
+    return profile?.is_admin || false
+  }
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -122,7 +128,7 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
     if (!newGroupName.trim() || !user || !profile?.is_admin) {
       toast({
         title: "Error",
-        description: "Only administrators can create community groups",
+        description: "Only administrators can create channels",
         variant: "destructive"
       })
       return
@@ -165,13 +171,13 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
       
       toast({
         title: "Success",
-        description: "Community group created successfully!"
+        description: "Channel created successfully!"
       })
     } catch (error) {
       console.error('Error creating group:', error)
       toast({
         title: "Error",
-        description: "Failed to create community group",
+        description: "Failed to create channel",
         variant: "destructive"
       })
     } finally {
@@ -192,7 +198,7 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
 
       toast({
         title: "Success",
-        description: "Joined group successfully!"
+        description: "Joined channel successfully!"
       })
 
       fetchCommunityGroups()
@@ -200,7 +206,7 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
       console.error('Error joining group:', error)
       toast({
         title: "Error",
-        description: "Failed to join group",
+        description: "Failed to join channel",
         variant: "destructive"
       })
     }
@@ -210,13 +216,13 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
     if (!editingGroup || !user || !profile?.is_admin) {
       toast({
         title: "Error",
-        description: "Only administrators can delete groups",
+        description: "Only administrators can delete channels",
         variant: "destructive"
       })
       return
     }
 
-    if (!confirm(`Are you sure you want to delete the group "${editingGroup.name}"? This action cannot be undone.`)) {
+    if (!confirm(`Are you sure you want to delete the channel "${editingGroup.name}"? This action cannot be undone.`)) {
       return
     }
 
@@ -239,20 +245,20 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
       setEditingGroup(null)
       fetchCommunityGroups()
       
-      // If the deleted group was selected, switch to All Posts
+      // If the deleted channel was selected, clear selection
       if (selectedGroupId === editingGroup.id) {
         onGroupSelect(null)
       }
       
       toast({
         title: "Success",
-        description: `Group "${editingGroup.name}" has been deleted successfully!`
+        description: `Channel "${editingGroup.name}" has been deleted successfully!`
       })
     } catch (error) {
       console.error('Error deleting group:', error)
       toast({
         title: "Error",
-        description: `Failed to delete group: ${error.message || 'Unknown error'}`,
+        description: `Failed to delete channel: ${error.message || 'Unknown error'}`,
         variant: "destructive"
       })
     } finally {
@@ -264,7 +270,7 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
     if (!editingGroup || !newGroupName.trim() || !user || !profile?.is_admin) {
       toast({
         title: "Error", 
-        description: "Only administrators can edit groups",
+        description: "Only administrators can edit channels",
         variant: "destructive"
       })
       return
@@ -290,13 +296,13 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
       
       toast({
         title: "Success",
-        description: "Group updated successfully!"
+        description: "Channel updated successfully!"
       })
     } catch (error) {
       console.error('Error updating group:', error)
       toast({
         title: "Error",
-        description: "Failed to update group",
+        description: "Failed to update channel",
         variant: "destructive"
       })
     } finally {
@@ -307,7 +313,7 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
 
-    if (!over || active.id === over.id || !profile?.is_admin) {
+    if (!over || active.id === over.id || (!profile?.is_admin && !hasGroupOwnerRole())) {
       return
     }
 
@@ -422,8 +428,8 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
     <Card className="w-full h-fit">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-sm">Community Groups</h3>
-          {profile?.is_admin && (
+          <h3 className="font-semibold text-sm">Channels</h3>
+          {(profile?.is_admin || hasGroupOwnerRole()) && (
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
               <DialogTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
@@ -432,25 +438,25 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Create Community Group</DialogTitle>
+                  <DialogTitle>Create Channel</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="group-name">Group Name</Label>
+                    <Label htmlFor="group-name">Channel Name</Label>
                     <Input
                       id="group-name"
                       value={newGroupName}
                       onChange={(e) => setNewGroupName(e.target.value)}
-                      placeholder="Enter group name"
+                      placeholder="Enter channel name"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="group-description">Description (Optional)</Label>
+                    <Label htmlFor="group-description">Channel Description (Optional)</Label>
                     <Textarea
                       id="group-description"
                       value={newGroupDescription}
                       onChange={(e) => setNewGroupDescription(e.target.value)}
-                      placeholder="Enter group description"
+                      placeholder="Enter channel description"
                       rows={3}
                     />
                   </div>
@@ -462,7 +468,7 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
                       onCheckedChange={setIsPrivateGroup}
                     />
                     <Label htmlFor="private-group" className="text-sm">
-                      Private Group
+                      Private Channel
                     </Label>
                   </div>
                   
@@ -480,7 +486,7 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
                       onClick={handleCreateGroup}
                       disabled={isCreating || !newGroupName.trim()}
                     >
-                      {isCreating ? 'Creating...' : 'Create Group'}
+                      {isCreating ? 'Creating...' : 'Create Channel'}
                     </Button>
                   </div>
                 </div>

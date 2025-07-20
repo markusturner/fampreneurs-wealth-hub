@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { MessageCircle, Send, X, Users } from 'lucide-react'
+import { TypingIndicator } from '@/components/community/typing-indicator'
 
 interface Member {
   id: string
@@ -35,6 +36,8 @@ export function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [showMembersList, setShowMembersList] = useState(true)
+  const [isTyping, setIsTyping] = useState(false)
+  const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -93,10 +96,35 @@ export function ChatWidget() {
       if (error) throw error
       
       setNewMessage('')
+      setIsTyping(false)
+      if (typingTimeout) {
+        clearTimeout(typingTimeout)
+        setTypingTimeout(null)
+      }
       fetchMessages(selectedMember.user_id)
     } catch (error) {
       console.error('Error sending message:', error)
     }
+  }
+
+  const handleTyping = (value: string) => {
+    setNewMessage(value)
+    
+    if (value.trim() && !isTyping) {
+      setIsTyping(true)
+    }
+
+    // Clear existing timeout
+    if (typingTimeout) {
+      clearTimeout(typingTimeout)
+    }
+
+    // Set new timeout to stop typing indicator
+    const timeout = setTimeout(() => {
+      setIsTyping(false)
+    }, 2000)
+    
+    setTypingTimeout(timeout)
   }
 
   const getDisplayName = (member: Member) => {
@@ -206,11 +234,14 @@ export function ChatWidget() {
                 </div>
               </ScrollArea>
               
+              {/* Typing Indicator */}
+              <TypingIndicator isTyping={isTyping} />
+              
               <div className="p-4 border-t">
                 <div className="flex gap-2">
                   <Input
                     value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
+                    onChange={(e) => handleTyping(e.target.value)}
                     placeholder="Type a message..."
                     onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                   />
