@@ -140,7 +140,7 @@ const Contact = () => {
             <div className="space-y-2">
               <div>
                 <p className="font-medium text-red-600">Family Success Coaches</p>
-                <p className="text-primary">+1 (555) 911-HELP</p>
+                <p style={{ color: '#ffb500' }}>+1 (470) 432-0220</p>
               </div>
               <p className="text-sm text-muted-foreground">
                 Available 24/7 for critical issues only
