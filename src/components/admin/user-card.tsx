@@ -132,7 +132,7 @@ export function UserCard({ user, onRolesUpdated }: UserCardProps) {
 
       toast({
         title: "Success",
-        description: "User program updated successfully!"
+        description: `User program updated successfully! They have been automatically assigned to the ${newProgram} channel.`
       })
 
       onRolesUpdated() // Refresh the user data
