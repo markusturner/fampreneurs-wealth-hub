@@ -105,6 +105,7 @@ interface Profile {
   course_progress?: number
   group_calls_attended?: number
   one_on_one_calls_attended?: number
+  activation_point?: string | null
   assigned_coach?: {
     id: string
     full_name: string

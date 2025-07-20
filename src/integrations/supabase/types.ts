@@ -2106,6 +2106,7 @@ export type Database = {
       profiles: {
         Row: {
           accountability_specialties: string[] | null
+          activation_point: string | null
           admin_permissions: string[] | null
           avatar_url: string | null
           bio: string | null
@@ -2128,6 +2129,7 @@ export type Database = {
         }
         Insert: {
           accountability_specialties?: string[] | null
+          activation_point?: string | null
           admin_permissions?: string[] | null
           avatar_url?: string | null
           bio?: string | null
@@ -2150,6 +2152,7 @@ export type Database = {
         }
         Update: {
           accountability_specialties?: string[] | null
+          activation_point?: string | null
           admin_permissions?: string[] | null
           avatar_url?: string | null
           bio?: string | null
