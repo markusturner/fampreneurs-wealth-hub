@@ -505,7 +505,7 @@ export default function AdminDashboard() {
           </Button>
           
           <div className="flex items-center gap-2">
-            <Shield className="h-6 w-6 text-primary" />
+            <Shield className="h-6 w-6" style={{ color: '#ffb500' }} />
             <h1 className="text-xl font-semibold">Admin Dashboard</h1>
           </div>
           
