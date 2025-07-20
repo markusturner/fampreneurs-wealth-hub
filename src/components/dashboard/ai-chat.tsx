@@ -106,7 +106,7 @@ export function AIChat() {
               >
                 {message.role === 'assistant' && (
                   <Avatar className="h-8 w-8 mt-1">
-                    <AvatarFallback className="bg-primary/10">
+                    <AvatarFallback className="bg-white">
                       <Bot className="h-4 w-4 text-primary" />
                     </AvatarFallback>
                   </Avatar>
