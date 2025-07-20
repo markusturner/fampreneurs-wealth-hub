@@ -761,6 +761,30 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="users" className="space-y-4">
+            {/* Coach Performance Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Coach Performance</CardTitle>
+                <CardDescription>
+                  Client distribution across coaches
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-3">
+                  {coachData.map((coach) => (
+                    <div key={coach.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <div className="font-medium">{coach.name}</div>
+                        <div className="text-sm text-muted-foreground">Active Clients</div>
+                      </div>
+                      <div className="text-2xl font-bold">{coach.clients}</div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* User Management */}
             <EnhancedUserManagement 
               users={users} 
               coaches={coaches} 
