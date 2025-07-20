@@ -3,8 +3,13 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { 
   Users, 
   Settings, 
@@ -15,12 +20,34 @@ import {
   Database,
   FileText,
   BarChart3,
+  UserPlus,
+  Trash2,
+  Edit,
+  Eye,
+  Search,
+  Plus,
+  Save,
+  TrendingUp,
+  CalendarCheck,
+  TrendingDown,
+  DollarSign,
+  Star,
+  Phone,
+  Video,
+  Mail,
+  BarChart,
+  Activity,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Target,
   ArrowLeft,
   Home
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '@/components/theme-provider'
+import { Separator } from '@/components/ui/separator'
 import { CreateCourseDialog } from '@/components/admin/create-course-dialog'
 import { EditCourseDialog } from '@/components/admin/edit-course-dialog'
 import { UserRoleManagement } from '@/components/admin/user-role-management'
@@ -32,12 +59,59 @@ import { AddCoachDialog } from '@/components/admin/add-coach-dialog'
 import { EditCoachDialog } from '@/components/admin/edit-coach-dialog'
 import { AddCoachingSessionDialog } from '@/components/admin/add-coaching-session-dialog'
 import { EditCoachingSessionDialog } from '@/components/admin/edit-coaching-session-dialog'
+import { UserSessionQuotaDialog } from '@/components/admin/user-session-quota-dialog'
+import { AssignCoachDialog } from '@/components/admin/assign-coach-dialog'
 import { ZapierIntegration } from '@/components/admin/zapier-integration'
 import { CoachingRecordings } from '@/components/admin/coaching-recordings'
 import { FeedbackManagement } from '@/components/dashboard/feedback-management'
 import { WeeklyCheckinManagement } from '@/components/dashboard/weekly-checkin-management'
+import { EnhancedAddVideoDialog } from '@/components/courses/enhanced-add-video-dialog'
 import { EnhancedUserManagement } from '@/components/admin/enhanced-user-management'
+import { ResponsiveContainer, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
 import { format } from 'date-fns'
+
+// Video Dialog Wrapper Component
+function VideoDialogWrapper({ courseId, onVideoAdded }: { courseId: string; onVideoAdded: () => void }) {
+  const [open, setOpen] = useState(false)
+  
+  return (
+    <>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+        <Plus className="h-4 w-4 mr-2" />
+        Add Video
+      </Button>
+      <EnhancedAddVideoDialog 
+        open={open}
+        onOpenChange={setOpen}
+        courseId={courseId}
+        onVideoAdded={onVideoAdded}
+      />
+    </>
+  )
+}
+
+interface Profile {
+  id: string
+  user_id: string
+  first_name: string | null
+  last_name: string | null
+  display_name: string | null
+  email?: string
+  is_admin: boolean
+  created_at: string
+  roles?: string[]
+  avatar_url: string | null
+  fulfillment_stage?: string | null
+  course_progress?: number
+  group_calls_attended?: number
+  one_on_one_calls_attended?: number
+  assigned_coach?: {
+    id: string
+    full_name: string
+  } | null
+  program_name: string | null
+  membership_type: string | null
+}
 
 interface Course {
   id: string
@@ -53,17 +127,73 @@ interface Course {
   image_url: string | null
 }
 
+interface FulfillmentStage {
+  id: string
+  name: string
+  description: string | null
+  stage_order: number
+  color: string | null
+  created_by: string
+  created_at: string
+}
+
+interface Metrics {
+  newRenewals: number
+  nonRenewals: number
+  newUpsells: number
+  nonUpsells: number
+  totalRevenue: number
+  averageRevenue: number
+  renewalRate: number
+  satisfactionScore: number
+  oneOnOneCalls30Days: number
+  oneOnOneCalls15Days: number
+  oneOnOneCallsThisMonth: number
+  groupCalls30Days: number
+  groupCalls15Days: number
+  groupCallsThisMonth: number
+}
+
+interface CoachData {
+  id: string
+  name: string
+  clients: number
+}
+
 export default function AdminDashboard() {
   const { user, profile, signOut } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
   const { theme } = useTheme()
   
-  const [users, setUsers] = useState<any[]>([])
+  const [users, setUsers] = useState<Profile[]>([])
   const [courses, setCourses] = useState<Course[]>([])
   const [coaches, setCoaches] = useState<any[]>([])
   const [coachingSessions, setCoachingSessions] = useState<any[]>([])
+  const [fulfillmentStages, setFulfillmentStages] = useState<FulfillmentStage[]>([])
+  const [metrics, setMetrics] = useState<Metrics>({
+    newRenewals: 0,
+    nonRenewals: 0,
+    newUpsells: 0,
+    nonUpsells: 0,
+    totalRevenue: 0,
+    averageRevenue: 0,
+    renewalRate: 0,
+    satisfactionScore: 0,
+    oneOnOneCalls30Days: 0,
+    oneOnOneCalls15Days: 0,
+    oneOnOneCallsThisMonth: 0,
+    groupCalls30Days: 0,
+    groupCalls15Days: 0,
+    groupCallsThisMonth: 0
+  })
+  const [coachData, setCoachData] = useState<CoachData[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
+  const [platformSettings, setPlatformSettings] = useState({ 
+    platform_name: 'Fampreneurs', 
+    admin_email: 'admin@fampreneurs.com' 
+  })
 
   // Check admin access
   useEffect(() => {
@@ -78,14 +208,118 @@ export default function AdminDashboard() {
     try {
       setLoading(true)
       
-      // Load users
-      const { data: usersData, error: usersError } = await supabase
+      // Load platform settings
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('platform_settings')
+        .select('setting_key, setting_value')
+        .in('setting_key', ['platform_name', 'admin_email'])
+
+      if (settingsError) throw settingsError
+
+      const settings = settingsData?.reduce((acc, setting) => {
+        acc[setting.setting_key] = setting.setting_value
+        return acc
+      }, {} as any) || {}
+
+      setPlatformSettings({
+        platform_name: settings.platform_name || 'Fampreneurs',
+        admin_email: settings.admin_email || 'admin@fampreneurs.com'
+      })
+
+      // Load fulfillment stages
+      const { data: stagesData, error: stagesError } = await supabase
+        .from('fulfillment_stages')
+        .select('*')
+        .order('stage_order', { ascending: true })
+
+      if (stagesError) throw stagesError
+      setFulfillmentStages(stagesData || [])
+      
+      // Load users with fulfillment progress
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (usersError) throw usersError
-      setUsers(usersData || [])
+      if (profilesError) throw profilesError
+
+      // Load additional user data
+      const usersWithRoles = await Promise.all(
+        profilesData.map(async (profile) => {
+          // Get user roles
+          const { data: userRoles } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', profile.user_id)
+          
+          // Get fulfillment progress
+          const { data: fulfillmentProgress } = await supabase
+            .from('user_fulfillment_progress')
+            .select(`
+              stage_id,
+              fulfillment_stages (
+                name
+              )
+            `)
+            .eq('user_id', profile.user_id)
+            .order('moved_to_stage_at', { ascending: false })
+            .limit(1)
+          
+          // Get course progress
+          const { data: enrollments } = await supabase
+            .from('course_enrollments')
+            .select('progress')
+            .eq('user_id', profile.user_id)
+          
+          const avgProgress = enrollments?.length 
+            ? enrollments.reduce((sum, e) => sum + (e.progress || 0), 0) / enrollments.length 
+            : 0
+
+          // Get coaching calls attended
+          const { data: groupSessions } = await supabase
+            .from('session_enrollments')
+            .select('session_id')
+            .eq('user_id', profile.user_id)
+
+          const { data: oneOnOneSessions } = await supabase
+            .from('session_enrollments')
+            .select('session_id')
+            .eq('user_id', profile.user_id)
+
+          // Get coach assignment
+          const { data: coachAssignment } = await supabase
+            .from('coach_assignments')
+            .select('coach_id')
+            .eq('user_id', profile.user_id)
+            .eq('status', 'active')
+            .maybeSingle()
+
+          // Get coach details if assignment exists
+          let assignedCoach = null
+          if (coachAssignment?.coach_id) {
+            const { data: coachData } = await supabase
+              .from('coaches')
+              .select('id, full_name')
+              .eq('id', coachAssignment.coach_id)
+              .maybeSingle()
+            
+            assignedCoach = coachData
+          }
+          
+          return {
+            ...profile,
+            email: 'Protected',
+            roles: userRoles?.map(r => r.role) || ['member'],
+            fulfillment_stage: fulfillmentProgress?.[0]?.fulfillment_stages?.name || null,
+            course_progress: Math.round(avgProgress),
+            group_calls_attended: groupSessions?.length || 0,
+            one_on_one_calls_attended: oneOnOneSessions?.length || 0,
+            assigned_coach: assignedCoach
+          }
+        })
+      )
+
+      setUsers(usersWithRoles)
       
       // Load courses
       const { data: coursesData, error: coursesError } = await supabase
@@ -105,14 +339,49 @@ export default function AdminDashboard() {
       if (coachesError) throw coachesError
       setCoaches(coachesData || [])
 
-      // Load coaching sessions
-      const { data: sessionsData, error: sessionsError } = await supabase
-        .from('group_coaching_sessions')
-        .select('*')
-        .order('session_date', { ascending: false })
+      // Load coaching sessions (both group and individual)
+      const [groupSessionsResult, individualSessionsResult] = await Promise.all([
+        supabase
+          .from('group_coaching_sessions')
+          .select('*, coaches:coach_name')
+          .order('session_date', { ascending: false }),
+        supabase
+          .from('individual_coaching_sessions')
+          .select(`
+            *,
+            coaches:coach_id (
+              full_name
+            )
+          `)
+          .order('session_date', { ascending: false })
+      ])
 
-      if (sessionsError) throw sessionsError
-      setCoachingSessions(sessionsData || [])
+      if (groupSessionsResult.error) throw groupSessionsResult.error
+      if (individualSessionsResult.error) throw individualSessionsResult.error
+
+      // Merge and normalize both types of sessions
+      const groupSessions = (groupSessionsResult.data || []).map(session => ({
+        ...session,
+        session_type: 'group',
+        coach_name: session.coach_name,
+        max_participants: session.max_participants || 1
+      }))
+
+      const individualSessions = (individualSessionsResult.data || []).map(session => ({
+        ...session,
+        session_type: 'individual',
+        coach_name: (session as any).coaches?.full_name || 'Unknown Coach',
+        max_participants: 1
+      }))
+
+      const allSessions = [...groupSessions, ...individualSessions]
+        .sort((a, b) => new Date(b.session_date).getTime() - new Date(a.session_date).getTime())
+
+      setCoachingSessions(allSessions)
+
+      // Load metrics
+      await loadMetrics()
+      await loadCoachData()
 
     } catch (error: any) {
       toast({
@@ -122,6 +391,48 @@ export default function AdminDashboard() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadMetrics = async () => {
+    try {
+      const now = new Date()
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      const fifteenDaysAgo = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000)
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+      // Mock metrics for now - you can replace with actual data queries
+      setMetrics({
+        newRenewals: 12,
+        nonRenewals: 3,
+        newUpsells: 8,
+        nonUpsells: 2,
+        totalRevenue: 45000,
+        averageRevenue: 3750,
+        renewalRate: 80,
+        satisfactionScore: 4.2,
+        oneOnOneCalls30Days: 45,
+        oneOnOneCalls15Days: 25,
+        oneOnOneCallsThisMonth: 38,
+        groupCalls30Days: 12,
+        groupCalls15Days: 8,
+        groupCallsThisMonth: 10
+      })
+    } catch (error) {
+      console.error('Error loading metrics:', error)
+    }
+  }
+
+  const loadCoachData = async () => {
+    try {
+      // Mock coach data - replace with actual queries
+      setCoachData([
+        { id: '1', name: 'John Smith', clients: 15 },
+        { id: '2', name: 'Sarah Johnson', clients: 12 },
+        { id: '3', name: 'Mike Wilson', clients: 18 }
+      ])
+    } catch (error) {
+      console.error('Error loading coach data:', error)
     }
   }
 
@@ -212,6 +523,7 @@ export default function AdminDashboard() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
+            {/* Key Metrics Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -219,9 +531,166 @@ export default function AdminDashboard() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">Loading...</div>
+                  <div className="text-2xl font-bold">{users.length}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Active members in platform
+                  </p>
                 </CardContent>
               </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">${metrics.totalRevenue.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">
+                    +{metrics.newRenewals} renewals this month
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Coaching Calls</CardTitle>
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{metrics.oneOnOneCallsThisMonth}</div>
+                  <p className="text-xs text-muted-foreground">
+                    1-on-1 calls this month
+                  </p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Satisfaction</CardTitle>
+                  <Star className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{metrics.satisfactionScore}/5</div>
+                  <p className="text-xs text-muted-foreground">
+                    Average satisfaction score
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Revenue and Calls Charts */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Monthly Performance</CardTitle>
+                  <CardDescription>
+                    Revenue and renewal tracking
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <TrendingUp className="h-4 w-4 mr-2 text-green-600" />
+                          <span className="text-sm font-medium">New Renewals</span>
+                        </div>
+                        <div className="text-2xl font-bold text-green-600">{metrics.newRenewals}</div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <TrendingDown className="h-4 w-4 mr-2 text-red-600" />
+                          <span className="text-sm font-medium">Non-Renewals</span>
+                        </div>
+                        <div className="text-2xl font-bold text-red-600">{metrics.nonRenewals}</div>
+                      </div>
+                    </div>
+                    <Separator />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <Target className="h-4 w-4 mr-2 text-blue-600" />
+                          <span className="text-sm font-medium">New Upsells</span>
+                        </div>
+                        <div className="text-2xl font-bold text-blue-600">{metrics.newUpsells}</div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center">
+                          <Activity className="h-4 w-4 mr-2 text-orange-600" />
+                          <span className="text-sm font-medium">Renewal Rate</span>
+                        </div>
+                        <div className="text-2xl font-bold text-orange-600">{metrics.renewalRate}%</div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Coaching Activity</CardTitle>
+                  <CardDescription>
+                    Call volume and trends
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">1-on-1 Calls (30 days)</span>
+                        <span className="text-sm text-muted-foreground">{metrics.oneOnOneCalls30Days}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">1-on-1 Calls (15 days)</span>
+                        <span className="text-sm text-muted-foreground">{metrics.oneOnOneCalls15Days}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">1-on-1 Calls (This month)</span>
+                        <span className="text-sm text-muted-foreground">{metrics.oneOnOneCallsThisMonth}</span>
+                      </div>
+                    </div>
+                    <Separator />
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Group Calls (30 days)</span>
+                        <span className="text-sm text-muted-foreground">{metrics.groupCalls30Days}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Group Calls (15 days)</span>
+                        <span className="text-sm text-muted-foreground">{metrics.groupCalls15Days}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Group Calls (This month)</span>
+                        <span className="text-sm text-muted-foreground">{metrics.groupCallsThisMonth}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Coach Performance */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Coach Performance</CardTitle>
+                <CardDescription>
+                  Client distribution across coaches
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-3">
+                  {coachData.map((coach) => (
+                    <div key={coach.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <div className="font-medium">{coach.name}</div>
+                        <div className="text-sm text-muted-foreground">Active Clients</div>
+                      </div>
+                      <div className="text-2xl font-bold">{coach.clients}</div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* System Overview */}
+            <div className="grid gap-4 md:grid-cols-3">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
@@ -229,24 +698,33 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{courses.length}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Available courses
+                  </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Active Coaches</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <CalendarCheck className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{coaches.filter(c => c.is_active).length}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Available for sessions
+                  </p>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Coaching Sessions</CardTitle>
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                  <Video className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{coachingSessions.length}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Scheduled sessions
+                  </p>
                 </CardContent>
               </Card>
             </div>
