@@ -190,7 +190,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
     }
   }
 
-  const updateActivationPoint = async (userId: string, activationPoint: string) => {
+  const updateActivationPoint = async (userId: string, activationPoint: string | null) => {
     try {
       console.log('Updating activation point for user:', userId, 'to:', activationPoint)
       
@@ -208,7 +208,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
       toast({
         title: "Activation Point Updated",
-        description: `User's activation point has been set to ${activationPoint}.`,
+        description: `User's activation point has been set to ${activationPoint || 'None'}.`,
       })
 
       // Refresh the users data
@@ -410,7 +410,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                   <div>
                     <Label className="text-sm font-medium">Activation Points</Label>
                     <Select 
-                      value={user.activation_point || 'none'}
+                      value={user.activation_point ?? 'none'}
                       onValueChange={(value) => updateActivationPoint(user.user_id, value === 'none' ? null : value)}
                     >
                       <SelectTrigger className="w-full mt-1">
