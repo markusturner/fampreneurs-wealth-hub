@@ -60,6 +60,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   const [selectedPrograms, setSelectedPrograms] = useState<Record<string, string[]>>({})
   const [persistedActivationPoints, setPersistedActivationPoints] = useState<Record<string, string>>({})
   const [persistedPrograms, setPersistedPrograms] = useState<Record<string, string[]>>({})
+  const [persistedCoaches, setPersistedCoaches] = useState<Record<string, string>>({})
 
   const activationPoints = [
     'Admin Onboarding',
@@ -182,6 +183,12 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   const assignCoach = async (userId: string, coachId: string) => {
     try {
+      // Store in persisted state immediately
+      setPersistedCoaches(prev => ({
+        ...prev,
+        [userId]: coachId
+      }))
+
       // Deactivate existing assignments
       await supabase
         .from('coach_assignments')
@@ -199,7 +206,15 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
             status: 'active'
           })
 
-        if (error) throw error
+        if (error) {
+          // Revert the persisted state on error
+          setPersistedCoaches(prev => {
+            const newState = { ...prev }
+            delete newState[userId]
+            return newState
+          })
+          throw error
+        }
       }
 
       toast({
@@ -586,7 +601,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                   <div className="space-y-3">
                     <Label className="text-sm font-medium">Assigned Coach</Label>
                     <Select 
-                      value={user.assigned_coach?.id || 'none'}
+                      value={persistedCoaches[user.user_id] || user.assigned_coach?.id || 'none'}
                       onValueChange={(value) => assignCoach(user.user_id, value)}
                     >
                       <SelectTrigger className="w-full">
