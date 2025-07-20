@@ -73,6 +73,7 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
 
   useEffect(() => {
     if (isOpen) {
+      console.log('TwoStepChannelEditor opened for channel:', channel)
       fetchContent()
     }
   }, [isOpen, channel.id])
@@ -276,14 +277,25 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
     setSelectedCoachingCalls(channel.associated_group_calls || [])
   }
 
+  console.log('TwoStepChannelEditor render - user:', user, 'profile:', profile, 'isAdmin:', profile?.is_admin)
+
   if (!profile?.is_admin) {
+    console.log('TwoStepChannelEditor: User is not admin, not rendering')
     return null
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      console.log('Dialog open state changed:', open)
+      setIsOpen(open)
+    }}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="h-6 w-6 p-0"
+          onClick={() => console.log('Edit button clicked for channel:', channel.name)}
+        >
           <Edit className="h-3 w-3" />
         </Button>
       </DialogTrigger>
