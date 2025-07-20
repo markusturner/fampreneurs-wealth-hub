@@ -214,7 +214,9 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
 
       resetForm()
       setShowCreateDialog(false)
-      fetchCommunityGroups()
+      
+      // Refresh the groups list and set the new group as selected
+      await fetchCommunityGroups()
       
       // Set the new group as selected
       if (groupData) {
