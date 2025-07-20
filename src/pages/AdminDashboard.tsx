@@ -49,7 +49,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTheme } from '@/components/theme-provider'
 import { Separator } from '@/components/ui/separator'
 import { TwoStepCourseCreator } from '@/components/admin/two-step-course-creator'
-import { EditCourseDialog } from '@/components/admin/edit-course-dialog'
+import { TwoStepCourseEditor } from '@/components/admin/two-step-course-editor'
 import { UserRoleManagement } from '@/components/admin/user-role-management'
 import { UserCard } from '@/components/admin/user-card'
 import { CommunicationManagement } from '@/components/admin/communication-management'
@@ -766,7 +766,7 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <EditCourseDialog course={course} onCourseUpdated={loadAdminData} />
+                        <TwoStepCourseEditor course={course} onCourseUpdated={loadAdminData} />
                       </div>
                     </div>
                   ))}
