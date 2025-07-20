@@ -409,11 +409,9 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                   </div>
                 </div>
 
-                {/* Management Row - Wrap sections properly */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-4">
-
-                {/* Program Assignment */}
-                <div className="flex-shrink-0 min-w-0 sm:w-80">
+                {/* Management Sections */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                  {/* Program Assignment */}
                   <div className="space-y-3">
                     <div>
                       <Label className="text-sm font-medium">Assigned Programs</Label>
@@ -454,12 +452,12 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                                     }))
                                   }}
                                 />
-                                 <label
-                                   htmlFor={`${user.id}-${program.id}`}
-                                   className="text-sm cursor-pointer flex-1"
-                                 >
-                                   {program.name}
-                                 </label>
+                                <label
+                                  htmlFor={`${user.id}-${program.id}`}
+                                  className="text-sm cursor-pointer flex-1"
+                                >
+                                  {program.name}
+                                </label>
                               </div>
                             ))}
                           </div>
@@ -523,20 +521,18 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                       </Button>
                     )}
                   </div>
-                </div>
 
-                {/* Activation Point */}
-                <div className="flex-shrink-0 min-w-0 sm:w-48">
-                  <div>
+                  {/* Activation Point */}
+                  <div className="space-y-3">
                     <Label className="text-sm font-medium">Activation Points</Label>
-                     <Select 
-                       value={user.activation_point ?? 'none'}
-                       onValueChange={(value) => {
-                         console.log('Dropdown changed to:', value, 'for user:', user.display_name);
-                         updateActivationPoint(user.user_id, value === 'none' ? null : value);
-                       }}
-                     >
-                      <SelectTrigger className="w-full mt-1">
+                    <Select 
+                      value={user.activation_point ?? 'none'}
+                      onValueChange={(value) => {
+                        console.log('Dropdown changed to:', value, 'for user:', user.display_name);
+                        updateActivationPoint(user.user_id, value === 'none' ? null : value);
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select activation point" />
                       </SelectTrigger>
                       <SelectContent className="bg-background border shadow-lg z-50">
@@ -546,24 +542,22 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                             {point}
                           </SelectItem>
                         ))}
-                       </SelectContent>
-                     </Select>
+                      </SelectContent>
+                    </Select>
                   </div>
-                </div>
 
-                {/* Coach Assignment */}
-                <div className="flex-shrink-0 min-w-0 sm:w-48">
-                  <div>
+                  {/* Coach Assignment */}
+                  <div className="space-y-3">
                     <Label className="text-sm font-medium">Assigned Coach</Label>
                     <Select 
                       value={user.assigned_coach?.id || 'none'}
                       onValueChange={(value) => assignCoach(user.user_id, value)}
                     >
-                      <SelectTrigger className="w-full mt-1">
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select coach" />
                       </SelectTrigger>
-                       <SelectContent className="bg-background border shadow-lg z-50">
-                         <SelectItem value="none">No Coach</SelectItem>
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        <SelectItem value="none">No Coach</SelectItem>
                         {coaches.map((coach) => (
                           <SelectItem key={coach.id} value={coach.id}>
                             {coach.full_name}
@@ -572,96 +566,89 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                       </SelectContent>
                     </Select>
                   </div>
-                 </div>
 
                   {/* Role Management */}
-                  <div className="flex-shrink-0 min-w-0 sm:w-64">
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">User Roles</Label>
                     <div>
-                      <Label className="text-sm font-medium">User Roles</Label>
-                      <div className="mt-1">
-                        {user.roles && user.roles.length > 0 ? (
-                          <div className="flex flex-wrap gap-1 mb-2">
-                            {user.roles.map(role => (
-                              <Badge key={role} variant="default" className="text-xs flex items-center gap-1">
-                                {role}
-                                <button
-                                  onClick={() => updateUserRole(user.user_id, role, 'remove')}
-                                  className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
-                                  title={`Remove ${role} role`}
-                                >
-                                  <X className="h-2 w-2" />
-                                </button>
-                              </Badge>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground mb-2">No roles assigned</p>
-                        )}
-                        
-                        <Select 
-                          value=""
-                          onValueChange={(value) => {
-                            if (value && !user.roles?.includes(value)) {
-                              updateUserRole(user.user_id, value, 'add')
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Add role..." />
-                          </SelectTrigger>
-                          <SelectContent className="bg-background border shadow-lg z-50">
-                            {availableRoles.filter(role => !user.roles?.includes(role)).map((role) => (
-                              <SelectItem key={role} value={role}>
-                                {role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      {user.roles && user.roles.length > 0 ? (
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {user.roles.map(role => (
+                            <Badge key={role} variant="default" className="text-xs flex items-center gap-1">
+                              {role}
+                              <button
+                                onClick={() => updateUserRole(user.user_id, role, 'remove')}
+                                className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                                title={`Remove ${role} role`}
+                              >
+                                <X className="h-2 w-2" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground mb-2">No roles assigned</p>
+                      )}
+                      
+                      <Select 
+                        value=""
+                        onValueChange={(value) => {
+                          if (value && !user.roles?.includes(value)) {
+                            updateUserRole(user.user_id, value, 'add')
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Add role..." />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border shadow-lg z-50">
+                          {availableRoles.filter(role => !user.roles?.includes(role)).map((role) => (
+                            <SelectItem key={role} value={role}>
+                              {role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
                   {/* Delete User */}
-                  <div className="flex-shrink-0 min-w-0 sm:w-32">
-                    <div>
-                      <Label className="text-sm font-medium">Actions</Label>
-                      <div className="mt-1">
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              className="w-full"
-                            >
-                              <Trash2 className="h-3 w-3 mr-1" />
-                              Delete
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle className="flex items-center gap-2">
-                                <AlertTriangle className="h-5 w-5 text-destructive" />
-                                Delete User
-                              </AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete <strong>{getDisplayName(user)}</strong>? 
-                                This action cannot be undone and will permanently remove all user data, 
-                                including profiles, enrollments, and progress.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteUser(user.user_id, getDisplayName(user))}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
-                                Delete User
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </div>
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Actions</Label>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="w-full"
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="h-5 w-5 text-destructive" />
+                            Delete User
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete <strong>{getDisplayName(user)}</strong>? 
+                            This action cannot be undone and will permanently remove all user data, 
+                            including profiles, enrollments, and progress.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteUser(user.user_id, getDisplayName(user))}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete User
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </div>
