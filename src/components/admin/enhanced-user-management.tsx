@@ -140,16 +140,18 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         description: `User has been successfully assigned to ${programName || 'no program'}.`,
       })
 
-      // Clear local editing state
-      setEditingUser(null)
-      setSelectedPrograms(prev => {
-        const newState = { ...prev }
-        delete newState[userId]
-        return newState
-      })
-      
-      // Refresh users data only
+      // Refresh users data first
       onUsersUpdated()
+      
+      // Clear local editing state after a brief delay to ensure data refresh
+      setTimeout(() => {
+        setEditingUser(null)
+        setSelectedPrograms(prev => {
+          const newState = { ...prev }
+          delete newState[userId]
+          return newState
+        })
+      }, 100)
       
     } catch (error) {
       console.error('Error updating user program:', error)
