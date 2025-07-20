@@ -72,6 +72,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   // Reset editing state when component unmounts or when users prop changes
   useEffect(() => {
+    console.log('Users prop changed, resetting state. New users:', users.length)
     setEditingUser(null)
     setSelectedPrograms({})
   }, [users])
@@ -107,16 +108,21 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
       if (error) throw error
 
-      // Update local state
-      setSelectedPrograms(prev => ({
-        ...prev,
-        [userId]: programIds
-      }))
-
       toast({
         title: "Program Updated",
         description: `User has been successfully assigned to ${programName || 'no program'}.`,
       })
+
+      // Clear local state and refresh data from database
+      setSelectedPrograms(prev => {
+        const newState = { ...prev }
+        delete newState[userId]
+        return newState
+      })
+      
+      // Force refresh of users data
+      onUsersUpdated()
+      
     } catch (error) {
       console.error('Error updating user program:', error)
       toast({
