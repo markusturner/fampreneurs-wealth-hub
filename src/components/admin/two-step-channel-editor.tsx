@@ -156,7 +156,9 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
         .update({
           name: channelName.trim(),
           description: channelDescription.trim() || null,
-          is_private: isPrivate
+          is_private: isPrivate,
+          associated_courses: selectedCourses,
+          associated_group_calls: selectedCoachingCalls
         })
         .eq('id', channel.id)
 
@@ -167,7 +169,7 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
       
       toast({
         title: "Success",
-        description: "Channel updated successfully!"
+        description: "Channel and content associations updated successfully!"
       })
     } catch (error) {
       console.error('Error updating channel:', error)

@@ -408,6 +408,8 @@ export type Database = {
       }
       community_groups: {
         Row: {
+          associated_courses: string[] | null
+          associated_group_calls: string[] | null
           created_at: string
           created_by: string
           description: string | null
@@ -419,6 +421,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          associated_courses?: string[] | null
+          associated_group_calls?: string[] | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -430,6 +434,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          associated_courses?: string[] | null
+          associated_group_calls?: string[] | null
           created_at?: string
           created_by?: string
           description?: string | null
