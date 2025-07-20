@@ -338,8 +338,8 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                 {/* User Info */}
                 <div className="flex items-center gap-3 flex-1">
-                  <Avatar className="h-12 w-12 sm:h-16 sm:w-16">
-                    <AvatarImage src={user.avatar_url || ''} />
+                  <Avatar className="h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0">
+                    <AvatarImage src={user.avatar_url || ''} className="object-cover" />
                     <AvatarFallback className="bg-primary/10 text-primary font-medium">
                       {getDisplayName(user).split(' ').map(n => n.charAt(0)).join('').slice(0, 2)}
                     </AvatarFallback>
