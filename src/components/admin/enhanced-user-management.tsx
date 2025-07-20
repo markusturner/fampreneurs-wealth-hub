@@ -58,9 +58,34 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [programs, setPrograms] = useState<Program[]>([])
   const [selectedPrograms, setSelectedPrograms] = useState<Record<string, string[]>>({})
-  const [persistedActivationPoints, setPersistedActivationPoints] = useState<Record<string, string>>({})
-  const [persistedPrograms, setPersistedPrograms] = useState<Record<string, string[]>>({})
-  const [persistedCoaches, setPersistedCoaches] = useState<Record<string, string>>({})
+  
+  // Initialize persistent states from localStorage
+  const [persistedActivationPoints, setPersistedActivationPoints] = useState<Record<string, string>>(() => {
+    try {
+      const stored = localStorage.getItem('admin-persistent-activation-points')
+      return stored ? JSON.parse(stored) : {}
+    } catch {
+      return {}
+    }
+  })
+  
+  const [persistedPrograms, setPersistedPrograms] = useState<Record<string, string[]>>(() => {
+    try {
+      const stored = localStorage.getItem('admin-persistent-programs')
+      return stored ? JSON.parse(stored) : {}
+    } catch {
+      return {}
+    }
+  })
+  
+  const [persistedCoaches, setPersistedCoaches] = useState<Record<string, string>>(() => {
+    try {
+      const stored = localStorage.getItem('admin-persistent-coaches')
+      return stored ? JSON.parse(stored) : {}
+    } catch {
+      return {}
+    }
+  })
 
   const activationPoints = [
     'Admin Onboarding',
@@ -107,6 +132,19 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
     setEditingUser(null)
     setSelectedPrograms({})
   }, [users])
+
+  // Save persistent states to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('admin-persistent-activation-points', JSON.stringify(persistedActivationPoints))
+  }, [persistedActivationPoints])
+
+  useEffect(() => {
+    localStorage.setItem('admin-persistent-programs', JSON.stringify(persistedPrograms))
+  }, [persistedPrograms])
+
+  useEffect(() => {
+    localStorage.setItem('admin-persistent-coaches', JSON.stringify(persistedCoaches))
+  }, [persistedCoaches])
 
   const fetchPrograms = async () => {
     try {
