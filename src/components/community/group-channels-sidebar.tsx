@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   DndContext,
   closestCenter,
@@ -37,6 +39,18 @@ interface CommunityGroup {
   is_private: boolean
   created_by: string
   member_count?: number
+  associated_courses?: string[]
+  associated_group_calls?: string[]
+}
+
+interface Course {
+  id: string
+  title: string
+}
+
+interface CoachingCall {
+  id: string
+  title: string
 }
 
 interface GroupChannelsSidebarProps {
@@ -55,6 +69,10 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
   const [newGroupDescription, setNewGroupDescription] = useState('')
   const [isPrivateGroup, setIsPrivateGroup] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
+  const [courses, setCourses] = useState<Course[]>([])
+  const [coachingCalls, setCoachingCalls] = useState<CoachingCall[]>([])
+  const [selectedCourses, setSelectedCourses] = useState<string[]>([])
+  const [selectedCoachingCalls, setSelectedCoachingCalls] = useState<string[]>([])
 
   // Check if user has group owner role
   const hasGroupOwnerRole = () => {
@@ -72,6 +90,35 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
       coordinateGetter: sortableKeyboardCoordinates,
     })
   )
+
+  const fetchCourses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('id, title')
+        .eq('status', 'published')
+        .order('title')
+      
+      if (error) throw error
+      setCourses(data || [])
+    } catch (error) {
+      console.error('Error fetching courses:', error)
+    }
+  }
+
+  const fetchCoachingCalls = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('group_coaching_sessions')
+        .select('id, title')
+        .order('title')
+      
+      if (error) throw error
+      setCoachingCalls(data || [])
+    } catch (error) {
+      console.error('Error fetching coaching calls:', error)
+    }
+  }
 
   const fetchCommunityGroups = async () => {
     try {
@@ -114,6 +161,8 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
     setNewGroupName('')
     setNewGroupDescription('')
     setIsPrivateGroup(false)
+    setSelectedCourses([])
+    setSelectedCoachingCalls([])
   }
 
   const handleEditGroup = (group: CommunityGroup) => {
@@ -121,6 +170,8 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
     setNewGroupName(group.name)
     setNewGroupDescription(group.description || '')
     setIsPrivateGroup(group.is_private)
+    setSelectedCourses(group.associated_courses || [])
+    setSelectedCoachingCalls(group.associated_group_calls || [])
     setShowEditDialog(true)
   }
 
@@ -142,7 +193,9 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
           name: newGroupName.trim(),
           description: newGroupDescription.trim() || null,
           created_by: user.id,
-          is_private: isPrivateGroup
+          is_private: isPrivateGroup,
+          associated_courses: selectedCourses,
+          associated_group_calls: selectedCoachingCalls
         })
         .select()
         .single()
@@ -283,7 +336,9 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
         .update({
           name: newGroupName.trim(),
           description: newGroupDescription.trim() || null,
-          is_private: isPrivateGroup
+          is_private: isPrivateGroup,
+          associated_courses: selectedCourses,
+          associated_group_calls: selectedCoachingCalls
         })
         .eq('id', editingGroup.id)
 
@@ -421,7 +476,11 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
   }
 
   useEffect(() => {
-    fetchCommunityGroups()
+    if (user?.id) {
+      fetchCommunityGroups()
+      fetchCourses()
+      fetchCoachingCalls()
+    }
   }, [user?.id])
 
   return (
@@ -470,6 +529,60 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
                     <Label htmlFor="private-group" className="text-sm">
                       Private Channel
                     </Label>
+                  </div>
+
+                  <div>
+                    <Label>Associated Courses</Label>
+                    <div className="space-y-2 max-h-32 overflow-y-auto border rounded p-2">
+                      {courses.map((course) => (
+                        <div key={course.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`course-${course.id}`}
+                            checked={selectedCourses.includes(course.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedCourses([...selectedCourses, course.id])
+                              } else {
+                                setSelectedCourses(selectedCourses.filter(id => id !== course.id))
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`course-${course.id}`} className="text-sm">
+                            {course.title}
+                          </Label>
+                        </div>
+                      ))}
+                      {courses.length === 0 && (
+                        <p className="text-sm text-muted-foreground">No courses available</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label>Associated Coaching Calls</Label>
+                    <div className="space-y-2 max-h-32 overflow-y-auto border rounded p-2">
+                      {coachingCalls.map((call) => (
+                        <div key={call.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`call-${call.id}`}
+                            checked={selectedCoachingCalls.includes(call.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedCoachingCalls([...selectedCoachingCalls, call.id])
+                              } else {
+                                setSelectedCoachingCalls(selectedCoachingCalls.filter(id => id !== call.id))
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`call-${call.id}`} className="text-sm">
+                            {call.title}
+                          </Label>
+                        </div>
+                      ))}
+                      {coachingCalls.length === 0 && (
+                        <p className="text-sm text-muted-foreground">No coaching calls available</p>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="flex justify-end gap-2">
@@ -583,6 +696,60 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
               <Label htmlFor="edit-private-group" className="text-sm">
                 Private Group
               </Label>
+            </div>
+
+            <div>
+              <Label>Associated Courses</Label>
+              <div className="space-y-2 max-h-32 overflow-y-auto border rounded p-2">
+                {courses.map((course) => (
+                  <div key={course.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`edit-course-${course.id}`}
+                      checked={selectedCourses.includes(course.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedCourses([...selectedCourses, course.id])
+                        } else {
+                          setSelectedCourses(selectedCourses.filter(id => id !== course.id))
+                        }
+                      }}
+                    />
+                    <Label htmlFor={`edit-course-${course.id}`} className="text-sm">
+                      {course.title}
+                    </Label>
+                  </div>
+                ))}
+                {courses.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No courses available</p>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <Label>Associated Coaching Calls</Label>
+              <div className="space-y-2 max-h-32 overflow-y-auto border rounded p-2">
+                {coachingCalls.map((call) => (
+                  <div key={call.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`edit-call-${call.id}`}
+                      checked={selectedCoachingCalls.includes(call.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedCoachingCalls([...selectedCoachingCalls, call.id])
+                        } else {
+                          setSelectedCoachingCalls(selectedCoachingCalls.filter(id => id !== call.id))
+                        }
+                      }}
+                    />
+                    <Label htmlFor={`edit-call-${call.id}`} className="text-sm">
+                      {call.title}
+                    </Label>
+                  </div>
+                ))}
+                {coachingCalls.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No coaching calls available</p>
+                )}
+              </div>
             </div>
             
             <div className="flex justify-between">
