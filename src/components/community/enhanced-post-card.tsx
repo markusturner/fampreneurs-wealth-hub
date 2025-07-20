@@ -48,6 +48,12 @@ interface CommentReaction {
   reaction_type: string
 }
 
+interface PostReaction {
+  id: string
+  user_id: string
+  reaction_type: string
+}
+
 interface EnhancedPostCardProps {
   post: Post
   onUpdate: () => void
@@ -69,6 +75,7 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
   const { toast } = useToast()
   const [comments, setComments] = useState<Comment[]>([])
   const [commentReactions, setCommentReactions] = useState<CommentReaction[]>([])
+  const [postReactions, setPostReactions] = useState<PostReaction[]>([])
   const [showComments, setShowComments] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null)
@@ -134,10 +141,28 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
     }
   }
 
+  const fetchPostReactions = async () => {
+    if (!isComment) {
+      try {
+        const { data, error } = await supabase
+          .from('community_reactions')
+          .select('*')
+          .eq('post_id', post.id)
+
+        if (error) throw error
+        setPostReactions(data || [])
+      } catch (error) {
+        console.error('Error fetching post reactions:', error)
+      }
+    }
+  }
+
   useEffect(() => {
     fetchComments()
     if (isComment) {
       fetchCommentReactions()
+    } else {
+      fetchPostReactions()
     }
   }, [post.id, isComment])
 
@@ -179,6 +204,52 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
       fetchCommentReactions()
     } catch (error) {
       console.error('Error handling comment reaction:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update reaction. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handlePostReaction = async (reactionType: string) => {
+    if (!user || isComment) return
+
+    try {
+      const existingReaction = postReactions.find(
+        r => r.user_id === user.id && r.reaction_type === reactionType
+      )
+
+      if (existingReaction) {
+        // Remove reaction
+        const { error } = await supabase
+          .from('community_reactions')
+          .delete()
+          .eq('id', existingReaction.id)
+
+        if (error) throw error
+      } else {
+        // Remove other reactions first, then add new one
+        await supabase
+          .from('community_reactions')
+          .delete()
+          .eq('post_id', post.id)
+          .eq('user_id', user.id)
+
+        const { error } = await supabase
+          .from('community_reactions')
+          .insert({
+            post_id: post.id,
+            user_id: user.id,
+            reaction_type: reactionType
+          })
+
+        if (error) throw error
+      }
+
+      fetchPostReactions()
+    } catch (error) {
+      console.error('Error handling post reaction:', error)
       toast({
         title: "Error",
         description: "Failed to update reaction. Please try again.",
@@ -285,6 +356,12 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
 
   const userCommentReaction = commentReactions.find(r => r.user_id === user?.id)
   const commentReactionCounts = commentReactions.reduce((acc, reaction) => {
+    acc[reaction.reaction_type] = (acc[reaction.reaction_type] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  const userPostReaction = postReactions.find(r => r.user_id === user?.id)
+  const postReactionCounts = postReactions.reduce((acc, reaction) => {
     acc[reaction.reaction_type] = (acc[reaction.reaction_type] || 0) + 1
     return acc
   }, {} as Record<string, number>)
@@ -397,6 +474,22 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
           </div>
         )}
 
+        {/* Post Reactions Summary (only for original posts) */}
+        {!isComment && Object.keys(postReactionCounts).length > 0 && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              {Object.entries(postReactionCounts).map(([type, count]) => (
+                <span key={type} className="flex items-center gap-1">
+                  {reactionEmojis[type as keyof typeof reactionEmojis]} {count}
+                </span>
+              ))}
+            </div>
+            {comments.length > 0 && (
+              <span className="ml-auto">{comments.length} comments</span>
+            )}
+          </div>
+        )}
+
         {/* Comment Reactions Summary (only for comments) */}
         {isComment && Object.keys(commentReactionCounts).length > 0 && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -423,17 +516,46 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
               Like
             </Button>
           ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowComments(!showComments)}
-              className="flex-1 gap-1"
-            >
-              <MessageCircle className="h-4 w-4" />
-              Comment ({comments.length})
-            </Button>
+            <>
+              <Button
+                variant={userPostReaction ? "default" : "ghost"}
+                size="sm"
+                onClick={() => handlePostReaction('like')}
+                className="flex-1 gap-1"
+              >
+                <ThumbsUp className="h-4 w-4" />
+                Like
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowComments(!showComments)}
+                className="flex-1 gap-1"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Comment ({comments.length})
+              </Button>
+            </>
           )}
         </div>
+
+        {/* Post Reaction Options (for original posts) */}
+        {!isComment && (
+          <div className="flex items-center gap-1 flex-wrap">
+            {Object.entries(reactionEmojis).map(([type, emoji]) => (
+              <Button
+                key={type}
+                variant={userPostReaction?.reaction_type === type ? "default" : "outline"}
+                size="sm"
+                onClick={() => handlePostReaction(type)}
+                className="text-xs h-8 px-2"
+              >
+                {emoji}
+              </Button>
+            ))}
+          </div>
+        )}
+
 
         {/* Reaction Picker for Comments (shown on long press) */}
         {isComment && showReactionPicker && (
