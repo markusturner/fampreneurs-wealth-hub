@@ -410,17 +410,13 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                 <div className="flex-shrink-0 min-w-0 sm:w-48">
                   <div>
                     <Label className="text-sm font-medium">Activation Points</Label>
-                    <Select 
-                      value={(() => {
-                        const value = user.activation_point ?? 'none';
-                        console.log('Dropdown value for user', user.display_name, ':', value, 'Raw activation_point:', user.activation_point);
-                        return value;
-                      })()}
-                      onValueChange={(value) => {
-                        console.log('Dropdown changed to:', value, 'for user:', user.display_name);
-                        updateActivationPoint(user.user_id, value === 'none' ? null : value);
-                      }}
-                    >
+                     <Select 
+                       value={user.activation_point ?? 'none'}
+                       onValueChange={(value) => {
+                         console.log('Dropdown changed to:', value, 'for user:', user.display_name);
+                         updateActivationPoint(user.user_id, value === 'none' ? null : value);
+                       }}
+                     >
                       <SelectTrigger className="w-full mt-1">
                         <SelectValue placeholder="Select activation point" />
                       </SelectTrigger>
