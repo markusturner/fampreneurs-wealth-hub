@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useToast } from '@/hooks/use-toast'
-import { Edit, Save, X, Plus, Trash2, Users, Search } from 'lucide-react'
+import { Edit, Save, X, Plus, Trash2, Users, Search, AlertTriangle } from 'lucide-react'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 
 interface Profile {
   id: string
@@ -290,6 +291,44 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
     }
   }
 
+  const deleteUser = async (userId: string, userName: string) => {
+    try {
+      // Get current user to prevent self-deletion
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      if (!currentUser) {
+        throw new Error('No authenticated user found')
+      }
+
+      if (currentUser.id === userId) {
+        toast({
+          title: "Error",
+          description: "You cannot delete your own account.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Delete from auth.users which will cascade delete the profile
+      const { error } = await supabase.auth.admin.deleteUser(userId)
+
+      if (error) throw error
+
+      toast({
+        title: "User Deleted",
+        description: `${userName} has been successfully deleted.`,
+      })
+
+      onUsersUpdated()
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete user. This action requires admin privileges.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const getDisplayName = (user: Profile) => {
     return user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Anonymous'
   }
@@ -532,53 +571,96 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                   </div>
                  </div>
 
-                 {/* Role Management */}
-                 <div className="flex-shrink-0 min-w-0 sm:w-64">
-                   <div>
-                     <Label className="text-sm font-medium">User Roles</Label>
-                     <div className="mt-1">
-                       {user.roles && user.roles.length > 0 ? (
-                         <div className="flex flex-wrap gap-1 mb-2">
-                           {user.roles.map(role => (
-                             <Badge key={role} variant="default" className="text-xs flex items-center gap-1">
-                               {role}
-                               <button
-                                 onClick={() => updateUserRole(user.user_id, role, 'remove')}
-                                 className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
-                                 title={`Remove ${role} role`}
-                               >
-                                 <X className="h-2 w-2" />
-                               </button>
-                             </Badge>
-                           ))}
-                         </div>
-                       ) : (
-                         <p className="text-sm text-muted-foreground mb-2">No roles assigned</p>
-                       )}
-                       
-                       <Select 
-                         value=""
-                         onValueChange={(value) => {
-                           if (value && !user.roles?.includes(value)) {
-                             updateUserRole(user.user_id, value, 'add')
-                           }
-                         }}
-                       >
-                         <SelectTrigger className="w-full">
-                           <SelectValue placeholder="Add role..." />
-                         </SelectTrigger>
-                         <SelectContent className="bg-background border shadow-lg z-50">
-                           {availableRoles.filter(role => !user.roles?.includes(role)).map((role) => (
-                             <SelectItem key={role} value={role}>
-                               {role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                             </SelectItem>
-                           ))}
-                         </SelectContent>
-                       </Select>
-                     </div>
-                   </div>
-                 </div>
-               </div>
+                  {/* Role Management */}
+                  <div className="flex-shrink-0 min-w-0 sm:w-64">
+                    <div>
+                      <Label className="text-sm font-medium">User Roles</Label>
+                      <div className="mt-1">
+                        {user.roles && user.roles.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 mb-2">
+                            {user.roles.map(role => (
+                              <Badge key={role} variant="default" className="text-xs flex items-center gap-1">
+                                {role}
+                                <button
+                                  onClick={() => updateUserRole(user.user_id, role, 'remove')}
+                                  className="ml-1 hover:bg-destructive/20 rounded-full p-0.5"
+                                  title={`Remove ${role} role`}
+                                >
+                                  <X className="h-2 w-2" />
+                                </button>
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground mb-2">No roles assigned</p>
+                        )}
+                        
+                        <Select 
+                          value=""
+                          onValueChange={(value) => {
+                            if (value && !user.roles?.includes(value)) {
+                              updateUserRole(user.user_id, value, 'add')
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Add role..." />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background border shadow-lg z-50">
+                            {availableRoles.filter(role => !user.roles?.includes(role)).map((role) => (
+                              <SelectItem key={role} value={role}>
+                                {role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Delete User */}
+                  <div className="flex-shrink-0 min-w-0 sm:w-32">
+                    <div>
+                      <Label className="text-sm font-medium">Actions</Label>
+                      <div className="mt-1">
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="w-full"
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="flex items-center gap-2">
+                                <AlertTriangle className="h-5 w-5 text-destructive" />
+                                Delete User
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete <strong>{getDisplayName(user)}</strong>? 
+                                This action cannot be undone and will permanently remove all user data, 
+                                including profiles, enrollments, and progress.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteUser(user.user_id, getDisplayName(user))}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete User
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  </div>
+                </div>
             </CardContent>
           </Card>
         ))}
