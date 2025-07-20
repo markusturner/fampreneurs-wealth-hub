@@ -75,10 +75,6 @@ const Contact = () => {
                   <p className="font-medium">Family Success Coaches</p>
                   <p style={{ color: '#ffb500' }}>+1 (470) 432-0220</p>
                 </div>
-                <div>
-                  <p className="font-medium">General Support</p>
-                  <p style={{ color: '#ffb500' }}>+1 (555) 123-4568</p>
-                </div>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
