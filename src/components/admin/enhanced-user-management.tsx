@@ -317,7 +317,19 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                         type="button"
                         size="sm"
                         variant="outline"
-                        onClick={() => setEditingUser(user.id)}
+                        onClick={() => {
+                          // Initialize selected programs with current assignment
+                          if (user.program_name) {
+                            const programId = programs.find(p => p.name === user.program_name)?.id
+                            if (programId) {
+                              setSelectedPrograms(prev => ({
+                                ...prev,
+                                [user.user_id]: [programId]
+                              }))
+                            }
+                          }
+                          setEditingUser(user.id)
+                        }}
                         className="w-full"
                       >
                         <Edit className="h-3 w-3 mr-1" />
