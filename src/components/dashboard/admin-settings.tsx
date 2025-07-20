@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -39,6 +40,7 @@ interface ProfileWithRoles {
 export function AdminSettings() {
   const { user, profile, refreshProfile } = useAuth()
   const { toast } = useToast()
+  const navigate = useNavigate()
   const [users, setUsers] = useState<ProfileWithRoles[]>([])
   const [loading, setLoading] = useState(false)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -244,7 +246,7 @@ export function AdminSettings() {
           })
           
           if (signUpData.session) {
-            window.location.href = '/'
+            navigate('/')
           }
         }
       } else if (signInError) {
@@ -254,7 +256,7 @@ export function AdminSettings() {
           title: "Admin access granted",
           description: "Welcome back, Administrator!",
         })
-        window.location.href = '/'
+        navigate('/')
       }
     } catch (error: any) {
       toast({
