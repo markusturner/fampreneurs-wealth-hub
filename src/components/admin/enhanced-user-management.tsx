@@ -72,13 +72,15 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   const fetchPrograms = async () => {
     try {
-      const { data, error } = await supabase
-        .from('programs')
-        .select('*')
-        .order('name')
-
-      if (error) throw error
-      setPrograms(data || [])
+      // Mock programs since programs table doesn't exist
+      const mockPrograms = [
+        { id: '1', name: 'The Family Business University', description: 'Comprehensive business education' },
+        { id: '2', name: 'The Family Vault', description: 'Financial management and investment' },
+        { id: '3', name: 'The Family Business Accelerator', description: 'Business growth and scaling' },
+        { id: '4', name: 'The Family Legacy: VIP Weekend', description: 'Legacy planning workshop' },
+        { id: '5', name: 'The Family Fortune Mastermind', description: 'High-level strategic planning' }
+      ]
+      setPrograms(mockPrograms)
     } catch (error) {
       console.error('Error fetching programs:', error)
     }

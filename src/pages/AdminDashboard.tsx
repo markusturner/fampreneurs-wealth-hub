@@ -739,38 +739,50 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="courses" className="space-y-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Courses</CardTitle>
-                  <CardDescription>
-                    Manage your course library
-                  </CardDescription>
-                </div>
-                <CreateCourseDialog onCourseCreated={loadAdminData} />
-              </CardHeader>
-              <CardContent>
-                {courses.map((course) => (
-                  <div key={course.id} className="flex items-center justify-between p-4 border rounded-lg mb-2">
-                    <div>
-                      <div className="font-medium">{course.title}</div>
-                      <div className="text-sm text-muted-foreground">{course.description}</div>
-                      <div className="flex gap-2 mt-2">
-                        {course.category && (
-                          <Badge variant="secondary">{course.category}</Badge>
-                        )}
-                        {course.level && (
-                          <Badge variant="outline">{course.level}</Badge>
-                        )}
+            <div className="grid gap-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle>Courses</CardTitle>
+                    <CardDescription>
+                      Manage your course library
+                    </CardDescription>
+                  </div>
+                  <CreateCourseDialog onCourseCreated={loadAdminData} />
+                </CardHeader>
+                <CardContent>
+                  {courses.map((course) => (
+                    <div key={course.id} className="flex items-center justify-between p-4 border rounded-lg mb-2">
+                      <div>
+                        <div className="font-medium">{course.title}</div>
+                        <div className="text-sm text-muted-foreground">{course.description}</div>
+                        <div className="flex gap-2 mt-2">
+                          {course.category && (
+                            <Badge variant="secondary">{course.category}</Badge>
+                          )}
+                          {course.level && (
+                            <Badge variant="outline">{course.level}</Badge>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <EditCourseDialog course={course} onCourseUpdated={loadAdminData} />
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <EditCourseDialog course={course} onCourseUpdated={loadAdminData} />
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+                  ))}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Featured Courses</CardTitle>
+                  <CardDescription>Manage featured course selection</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">Feature management coming soon...</p>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="coaching" className="space-y-4">
@@ -866,7 +878,6 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-4">
-            <ThemeSettings />
             <Card>
               <CardHeader>
                 <CardTitle>Integrations</CardTitle>
