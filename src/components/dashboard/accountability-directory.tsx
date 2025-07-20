@@ -3,9 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { Heart, MessageCircle, Phone, Mail } from 'lucide-react'
+import { useToast } from '@/hooks/use-toast'
 
 interface AccountabilityPartner {
   id: string
@@ -20,8 +23,11 @@ interface AccountabilityPartner {
 
 export function AccountabilityDirectory() {
   const { user } = useAuth()
+  const { toast } = useToast()
   const [partners, setPartners] = useState<AccountabilityPartner[]>([])
   const [loading, setLoading] = useState(true)
+  const [messageContent, setMessageContent] = useState('')
+  const [sendingMessage, setSendingMessage] = useState(false)
 
   useEffect(() => {
     fetchAccountabilityPartners()
@@ -51,6 +57,46 @@ export function AccountabilityDirectory() {
   const getInitials = (partner: AccountabilityPartner) => {
     const name = getDisplayName(partner)
     return name.split(' ').map(n => n.charAt(0)).join('').toUpperCase()
+  }
+
+  const sendMessage = async (recipientId: string, recipientName: string) => {
+    if (!messageContent.trim() || !user) return
+
+    setSendingMessage(true)
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          sender_id: user.id,
+          recipient_id: recipientId,
+          content: messageContent.trim(),
+          read: false
+        })
+
+      if (error) throw error
+
+      toast({
+        title: "Message sent!",
+        description: `Your message has been sent to ${recipientName}.`
+      })
+
+      setMessageContent('')
+    } catch (error) {
+      console.error('Error sending message:', error)
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setSendingMessage(false)
+    }
+  }
+
+  const openEmailClient = (partnerName: string) => {
+    const subject = encodeURIComponent(`Accountability Check-in with ${partnerName}`)
+    const body = encodeURIComponent(`Hi ${partnerName},\n\nI wanted to reach out for an accountability check-in.\n\nBest regards`)
+    window.open(`mailto:?subject=${subject}&body=${body}`)
   }
 
   if (loading) {
@@ -119,11 +165,42 @@ export function AccountabilityDirectory() {
                     )}
                     
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="text-xs">
-                        <MessageCircle className="h-3 w-3 mr-1" />
-                        Message
-                      </Button>
-                      <Button size="sm" variant="outline" className="text-xs">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline" className="text-xs">
+                            <MessageCircle className="h-3 w-3 mr-1" />
+                            Message
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Send Message to {getDisplayName(partner)}</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <Textarea
+                              placeholder="Type your message here..."
+                              value={messageContent}
+                              onChange={(e) => setMessageContent(e.target.value)}
+                              rows={4}
+                            />
+                            <div className="flex gap-2">
+                              <Button 
+                                onClick={() => sendMessage(partner.user_id, getDisplayName(partner))}
+                                disabled={!messageContent.trim() || sendingMessage}
+                                className="flex-1"
+                              >
+                                {sendingMessage ? 'Sending...' : 'Send Message'}
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-xs"
+                        onClick={() => openEmailClient(getDisplayName(partner))}
+                      >
                         <Mail className="h-3 w-3 mr-1" />
                         Email
                       </Button>
