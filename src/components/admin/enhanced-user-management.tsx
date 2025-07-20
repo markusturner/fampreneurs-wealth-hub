@@ -113,14 +113,15 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         description: `User has been successfully assigned to ${programName || 'no program'}.`,
       })
 
-      // Clear local state and refresh data from database
+      // Clear local editing state
+      setEditingUser(null)
       setSelectedPrograms(prev => {
         const newState = { ...prev }
         delete newState[userId]
         return newState
       })
       
-      // Force refresh of users data
+      // Refresh users data only
       onUsersUpdated()
       
     } catch (error) {
@@ -314,8 +315,12 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                             variant="outline"
                             onClick={() => {
                               setEditingUser(null)
-                              // Reset changes by refetching data
-                              onUsersUpdated()
+                              // Reset local state without triggering full refresh
+                              setSelectedPrograms(prev => {
+                                const newState = { ...prev }
+                                delete newState[user.user_id]
+                                return newState
+                              })
                             }}
                             className="flex-1"
                           >

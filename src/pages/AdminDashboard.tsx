@@ -235,6 +235,29 @@ export default function AdminDashboard() {
       if (stagesError) throw stagesError
       setFulfillmentStages(stagesData || [])
       
+      // Load all data in parallel
+      await Promise.all([
+        loadUsers(),
+        loadCourses(),
+        loadCoaches(),
+        loadCoachingSessions(),
+        loadMetrics(),
+        loadCoachData()
+      ])
+
+    } catch (error: any) {
+      toast({
+        title: "Error loading admin data",
+        description: error.message,
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadUsers = async () => {
+    try {
       // Load users with fulfillment progress
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
@@ -320,8 +343,13 @@ export default function AdminDashboard() {
       )
 
       setUsers(usersWithRoles)
-      
-      // Load courses
+    } catch (error) {
+      console.error('Error loading users:', error)
+    }
+  }
+
+  const loadCourses = async () => {
+    try {
       const { data: coursesData, error: coursesError } = await supabase
         .from('courses')
         .select('*')
@@ -329,8 +357,13 @@ export default function AdminDashboard() {
 
       if (coursesError) throw coursesError
       setCourses(coursesData || [])
+    } catch (error) {
+      console.error('Error loading courses:', error)
+    }
+  }
 
-      // Load coaches
+  const loadCoaches = async () => {
+    try {
       const { data: coachesData, error: coachesError } = await supabase
         .from('coaches')
         .select('*')
@@ -338,7 +371,13 @@ export default function AdminDashboard() {
 
       if (coachesError) throw coachesError
       setCoaches(coachesData || [])
+    } catch (error) {
+      console.error('Error loading coaches:', error)
+    }
+  }
 
+  const loadCoachingSessions = async () => {
+    try {
       // Load coaching sessions (both group and individual)
       const [groupSessionsResult, individualSessionsResult] = await Promise.all([
         supabase
@@ -378,19 +417,8 @@ export default function AdminDashboard() {
         .sort((a, b) => new Date(b.session_date).getTime() - new Date(a.session_date).getTime())
 
       setCoachingSessions(allSessions)
-
-      // Load metrics
-      await loadMetrics()
-      await loadCoachData()
-
-    } catch (error: any) {
-      toast({
-        title: "Error loading admin data",
-        description: error.message,
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
+    } catch (error) {
+      console.error('Error loading coaching sessions:', error)
     }
   }
 
@@ -734,7 +762,7 @@ export default function AdminDashboard() {
             <EnhancedUserManagement 
               users={users} 
               coaches={coaches} 
-              onUsersUpdated={loadAdminData} 
+              onUsersUpdated={loadUsers} 
             />
           </TabsContent>
 
