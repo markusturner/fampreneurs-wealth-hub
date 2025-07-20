@@ -275,7 +275,6 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                                  <label
                                    htmlFor={`${user.id}-${program.id}`}
                                    className="text-sm cursor-pointer flex-1"
-                                   onClick={(e) => e.preventDefault()}
                                  >
                                    {program.name}
                                  </label>
