@@ -89,6 +89,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   // Reset editing state when component unmounts or when users prop changes
   useEffect(() => {
     console.log('Users prop changed, resetting state. New users:', users.length)
+    console.log('Users data:', users.map(u => ({ id: u.user_id, name: u.display_name, activation_point: u.activation_point })))
     setEditingUser(null)
     setSelectedPrograms({})
   }, [users])
