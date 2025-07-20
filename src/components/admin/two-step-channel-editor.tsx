@@ -141,16 +141,6 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
 
     setIsLoading(true)
     try {
-      // Check if user is admin first
-      if (!profile?.is_admin) {
-        setCurrentStep(2)
-        toast({
-          title: "Info",
-          description: "Proceeding to content management"
-        })
-        return
-      }
-
       const { error } = await supabase
         .from('community_groups')
         .update({
@@ -160,28 +150,21 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
         })
         .eq('id', channel.id)
 
-      if (error) {
-        // Don't throw error, just log it and proceed to step 2
-        toast({
-          title: "Warning",
-          description: "Some changes may not be saved, but proceeding to content management"
-        })
-      } else {
-        toast({
-          title: "Success",
-          description: "Channel basic information updated successfully!"
-        })
-      }
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: "Channel basic information updated successfully!"
+      })
 
       setCurrentStep(2)
       
     } catch (error) {
       console.error('Error updating channel:', error)
-      // Don't let errors prevent moving to step 2
-      setCurrentStep(2)
       toast({
-        title: "Warning",
-        description: "There was an issue updating the channel, but proceeding to content management"
+        title: "Error",
+        description: "Failed to update channel information",
+        variant: "destructive"
       })
     } finally {
       setIsLoading(false)
