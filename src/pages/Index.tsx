@@ -5,6 +5,7 @@ import { NavHeader } from "@/components/dashboard/nav-header"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { UpcomingMeetings } from "@/components/dashboard/upcoming-meetings"
+import { AIChat } from "@/components/dashboard/ai-chat"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from 'lucide-react'
@@ -59,7 +60,7 @@ const Index = () => {
         <DashboardStats />
 
         {/* Main Dashboard Grid */}
-        <div className="grid gap-4 lg:gap-6 grid-cols-1 xl:grid-cols-2">
+        <div className="grid gap-4 lg:gap-6 grid-cols-1 xl:grid-cols-3">
           {/* Quick Actions */}
           <div className="order-1">
             <QuickActions />
@@ -68,6 +69,11 @@ const Index = () => {
           {/* Upcoming Meetings */}
           <div className="order-2">
             <UpcomingMeetings />
+          </div>
+
+          {/* AI Chat */}
+          <div className="order-3">
+            <AIChat />
           </div>
         </div>
       </main>
