@@ -8,9 +8,13 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useToast } from '@/hooks/use-toast'
-import { Edit, Save, X, Plus, Trash2, Users, Search, AlertTriangle } from 'lucide-react'
+import { Edit, Save, X, Plus, Trash2, Users, Search, AlertTriangle, CalendarIcon } from 'lucide-react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import { format } from 'date-fns'
+import { cn } from '@/lib/utils'
 
 interface Profile {
   id: string
@@ -58,6 +62,8 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [programs, setPrograms] = useState<Program[]>([])
   const [selectedPrograms, setSelectedPrograms] = useState<Record<string, string[]>>({})
+  const [startDate, setStartDate] = useState<Date | undefined>()
+  const [endDate, setEndDate] = useState<Date | undefined>()
   
   // Initialize persistent states from localStorage
   const [persistedActivationPoints, setPersistedActivationPoints] = useState<Record<string, string>>(() => {
@@ -113,12 +119,32 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   const filteredUsers = users.filter(user => {
     const searchLower = searchTerm.toLowerCase()
-    return (
+    const nameEmailMatch = (
       user.display_name?.toLowerCase().includes(searchLower) ||
       user.first_name?.toLowerCase().includes(searchLower) ||
       user.last_name?.toLowerCase().includes(searchLower) ||
       user.email?.toLowerCase().includes(searchLower)
     )
+
+    // Date filtering
+    if (startDate || endDate) {
+      const userCreatedAt = new Date(user.created_at)
+      
+      if (startDate && userCreatedAt < startDate) {
+        return false
+      }
+      
+      if (endDate) {
+        // Set end date to end of day for inclusive filtering
+        const endOfDay = new Date(endDate)
+        endOfDay.setHours(23, 59, 59, 999)
+        if (userCreatedAt > endOfDay) {
+          return false
+        }
+      }
+    }
+
+    return nameEmailMatch
   })
 
   useEffect(() => {
@@ -438,24 +464,100 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   return (
     <div className="space-y-6">
-      {/* Search Bar and Total Count */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-sm"
-          />
+      {/* Search Bar and Date Filters */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Users className="h-4 w-4" />
+            <span>Total: {users.length} users</span>
+            {searchTerm && (
+              <span className="text-primary">
+                | Filtered: {filteredUsers.length}
+              </span>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Users className="h-4 w-4" />
-          <span>Total: {users.length} users</span>
-          {searchTerm && (
-            <span className="text-primary">
-              | Filtered: {filteredUsers.length}
-            </span>
+
+        {/* Date Range Filters */}
+        <div className="flex items-center gap-4">
+          {/* Start Date */}
+          <div className="flex items-center gap-2">
+            <Label className="text-sm font-medium">Start Date:</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[180px] justify-start text-left font-normal",
+                    !startDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={startDate}
+                  onSelect={setStartDate}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* End Date */}
+          <div className="flex items-center gap-2">
+            <Label className="text-sm font-medium">End Date:</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[180px] justify-start text-left font-normal",
+                    !endDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={endDate}
+                  onSelect={setEndDate}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Clear Filters */}
+          {(startDate || endDate) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setStartDate(undefined)
+                setEndDate(undefined)
+              }}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Clear Dates
+            </Button>
           )}
         </div>
       </div>
