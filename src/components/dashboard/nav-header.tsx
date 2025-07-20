@@ -130,21 +130,84 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
     fetchSearchSuggestions(value)
   }
 
-  const handleSearchSubmit = (query: string) => {
+  const handleSearchSubmit = async (query: string) => {
     setShowSuggestions(false)
     setSearchQuery(query)
     
     if (!query.trim()) return
     
-    // Navigate to appropriate page with search query
-    const currentPath = location.pathname
-    const searchParams = new URLSearchParams()
-    searchParams.set('search', query.trim())
-    
-    // Stay on current page if it's a searchable page, otherwise go to community
-    if (['/community', '/courses', '/members'].includes(currentPath)) {
-      navigate(`${currentPath}?${searchParams.toString()}`)
-    } else {
+    try {
+      // Search for exact matches first
+      const searchTerm = query.trim().toLowerCase()
+      
+      // Search in courses
+      const { data: courses } = await supabase
+        .from('courses')
+        .select('id, title, description')
+        .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
+        .limit(5)
+      
+      // Check for exact or close course matches
+      const exactCourse = courses?.find(course => 
+        course.title.toLowerCase().includes(searchTerm) ||
+        course.description?.toLowerCase().includes(searchTerm)
+      )
+      
+      if (exactCourse) {
+        navigate(`/courses?courseId=${exactCourse.id}`)
+        return
+      }
+      
+      // Search in community posts
+      const { data: posts } = await supabase
+        .from('community_posts')
+        .select('id, content, channel_id')
+        .ilike('content', `%${searchTerm}%`)
+        .limit(5)
+      
+      const exactPost = posts?.find(post => 
+        post.content.toLowerCase().includes(searchTerm)
+      )
+      
+      if (exactPost) {
+        navigate(`/community?postId=${exactPost.id}${exactPost.channel_id ? `&channelId=${exactPost.channel_id}` : ''}`)
+        return
+      }
+      
+      // Search in profiles/members
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, display_name, first_name, last_name')
+        .or(`display_name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`)
+        .limit(5)
+      
+      const exactProfile = profiles?.find(profile => 
+        profile.display_name?.toLowerCase().includes(searchTerm) ||
+        profile.first_name?.toLowerCase().includes(searchTerm) ||
+        profile.last_name?.toLowerCase().includes(searchTerm)
+      )
+      
+      if (exactProfile) {
+        navigate(`/members?memberId=${exactProfile.id}`)
+        return
+      }
+      
+      // If no exact matches found, go to current page with search results
+      const currentPath = location.pathname
+      const searchParams = new URLSearchParams()
+      searchParams.set('search', query.trim())
+      
+      if (['/community', '/courses', '/members'].includes(currentPath)) {
+        navigate(`${currentPath}?${searchParams.toString()}`)
+      } else {
+        navigate(`/community?${searchParams.toString()}`)
+      }
+      
+    } catch (error) {
+      console.error('Search error:', error)
+      // Fallback to basic search
+      const searchParams = new URLSearchParams()
+      searchParams.set('search', query.trim())
       navigate(`/community?${searchParams.toString()}`)
     }
   }
