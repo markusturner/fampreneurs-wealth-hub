@@ -26,6 +26,7 @@ interface Profile {
   course_progress?: number
   group_calls_attended?: number
   one_on_one_calls_attended?: number
+  activation_point?: string | null
   assigned_coach?: {
     id: string
     full_name: string
@@ -55,6 +56,21 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [programs, setPrograms] = useState<Program[]>([])
   const [selectedPrograms, setSelectedPrograms] = useState<Record<string, string[]>>({})
+
+  const activationPoints = [
+    'Admin Onboarding',
+    'Onboarding Call',
+    'Credit Repair',
+    'Credit Funding',
+    'Pending Account',
+    '3 Trusts Approved',
+    'First Asset Funded',
+    'Digital Family Office Online',
+    'Schedule 1st Family Legacy Meeting',
+    'Offboarded/Graduation',
+    'Renewals/Upsells',
+    'Lost Mentee'
+  ]
 
   const filteredUsers = users.filter(user => {
     const searchLower = searchTerm.toLowerCase()
@@ -169,6 +185,31 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
       toast({
         title: "Error",
         description: "Failed to assign coach.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const updateActivationPoint = async (userId: string, activationPoint: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ activation_point: activationPoint })
+        .eq('user_id', userId)
+
+      if (error) throw error
+
+      toast({
+        title: "Activation Point Updated",
+        description: `User's activation point has been set to ${activationPoint}.`,
+      })
+
+      onUsersUpdated()
+    } catch (error) {
+      console.error('Error updating activation point:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update activation point.",
         variant: "destructive",
       })
     }
@@ -353,6 +394,29 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                         Edit Programs
                       </Button>
                     )}
+                  </div>
+                </div>
+
+                {/* Activation Point */}
+                <div className="flex-shrink-0 min-w-0 sm:w-48">
+                  <div>
+                    <Label className="text-sm font-medium">Activation Points</Label>
+                    <Select 
+                      value={user.activation_point || 'none'}
+                      onValueChange={(value) => updateActivationPoint(user.user_id, value === 'none' ? '' : value)}
+                    >
+                      <SelectTrigger className="w-full mt-1">
+                        <SelectValue placeholder="Select activation point" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No Activation Point</SelectItem>
+                        {activationPoints.map((point) => (
+                          <SelectItem key={point} value={point}>
+                            {point}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
