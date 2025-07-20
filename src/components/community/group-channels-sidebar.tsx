@@ -123,21 +123,15 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
 
   const fetchCommunityGroups = async () => {
     try {
+      // Fetch all groups first
       const { data: groupsData, error } = await supabase
         .from('community_groups')
-        .select(`
-          *,
-          group_memberships!inner (
-            user_id,
-            role
-          )
-        `)
-        .eq('group_memberships.user_id', user?.id)
+        .select('*')
         .order('created_at', { ascending: true })
 
       if (error) throw error
 
-      // Get member counts for each group
+      // Get member counts and check membership for each group
       const groupsWithCounts = await Promise.all(
         (groupsData || []).map(async (group) => {
           const { count } = await supabase
