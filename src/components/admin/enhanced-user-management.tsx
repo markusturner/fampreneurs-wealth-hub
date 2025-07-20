@@ -88,21 +88,37 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   const updateUserPrograms = async (userId: string, programIds: string[]) => {
     try {
-      // For now, just update the local state since user_programs table doesn't exist
+      // Get the program name from the selected programs
+      const programName = programIds.length > 0 
+        ? programs.find(p => p.id === programIds[0])?.name || null
+        : null
+
+      // Update the user's program in the database
+      const { error } = await supabase
+        .from('profiles')
+        .update({ program_name: programName })
+        .eq('user_id', userId)
+
+      if (error) throw error
+
+      // Update local state
       setSelectedPrograms(prev => ({
         ...prev,
         [userId]: programIds
       }))
 
+      // Refresh users data to show the change
+      onUsersUpdated()
+
       toast({
-        title: "Programs Updated",
-        description: "User programs have been successfully updated.",
+        title: "Program Updated",
+        description: `User has been successfully assigned to ${programName || 'no program'}.`,
       })
     } catch (error) {
-      console.error('Error updating user programs:', error)
+      console.error('Error updating user program:', error)
       toast({
         title: "Error",
-        description: "Failed to update user programs.",
+        description: "Failed to update user program.",
         variant: "destructive",
       })
     }
