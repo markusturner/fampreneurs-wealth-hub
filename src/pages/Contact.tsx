@@ -91,6 +91,7 @@ const Contact = () => {
               </p>
               <Button 
                 className="w-full"
+                style={{ backgroundColor: '#ffb500', color: '#290a52' }}
                 onClick={() => setIsChatOpen(true)}
               >
                 Start Live Chat
