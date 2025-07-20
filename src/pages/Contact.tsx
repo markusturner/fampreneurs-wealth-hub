@@ -50,10 +50,6 @@ const Contact = () => {
                   <p className="font-medium">General Support</p>
                   <p style={{ color: '#ffb500' }}>info@fampreneurs.com</p>
                 </div>
-                <div>
-                  <p className="font-medium">Technical Issues</p>
-                  <p style={{ color: '#ffb500' }}>info@fampreneurs.com</p>
-                </div>
               </div>
             </CardContent>
           </Card>
