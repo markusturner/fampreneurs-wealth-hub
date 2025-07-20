@@ -411,7 +411,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                     <Label className="text-sm font-medium">Activation Points</Label>
                     <Select 
                       value={user.activation_point || 'none'}
-                      onValueChange={(value) => updateActivationPoint(user.user_id, value === 'none' ? '' : value)}
+                      onValueChange={(value) => updateActivationPoint(user.user_id, value === 'none' ? null : value)}
                     >
                       <SelectTrigger className="w-full mt-1">
                         <SelectValue placeholder="Select activation point" />
