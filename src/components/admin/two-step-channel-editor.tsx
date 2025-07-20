@@ -130,6 +130,8 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
   }
 
   const handleBasicInfoUpdate = async () => {
+    console.log('handleBasicInfoUpdate called', { channelName, channelDescription, isPrivate, channelId: channel.id })
+    
     if (!channelName.trim()) {
       toast({
         title: "Error",
@@ -141,6 +143,7 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
 
     setIsLoading(true)
     try {
+      console.log('Attempting to update channel...')
       const { error } = await supabase
         .from('community_groups')
         .update({
@@ -150,8 +153,12 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
         })
         .eq('id', channel.id)
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
 
+      console.log('Channel updated successfully, moving to step 2')
       toast({
         title: "Success",
         description: "Channel basic information updated successfully!"
