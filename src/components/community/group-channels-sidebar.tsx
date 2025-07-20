@@ -482,6 +482,31 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
     }
   }, [user?.id])
 
+  // Set up real-time subscription to refresh member counts when memberships change
+  useEffect(() => {
+    if (!user?.id) return
+
+    const channel = supabase
+      .channel('group-memberships-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'group_memberships'
+        },
+        () => {
+          // Refresh community groups when membership changes
+          fetchCommunityGroups()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user?.id])
+
   return (
     <Card className="w-full h-fit">
       <CardHeader className="pb-3">
