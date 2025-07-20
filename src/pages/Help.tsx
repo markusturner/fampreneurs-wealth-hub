@@ -80,7 +80,7 @@ const Help = () => {
         <div className="mb-8">
           <Button
             variant="ghost"
-            onClick={() => navigate('/investments')}
+            onClick={() => navigate('/community')}
             className="mb-4 gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
