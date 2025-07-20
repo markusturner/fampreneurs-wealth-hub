@@ -58,6 +58,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   const [editingUser, setEditingUser] = useState<string | null>(null)
   const [programs, setPrograms] = useState<Program[]>([])
   const [selectedPrograms, setSelectedPrograms] = useState<Record<string, string[]>>({})
+  const [persistedActivationPoints, setPersistedActivationPoints] = useState<Record<string, string>>({})
 
   const activationPoints = [
     'Admin Onboarding',
@@ -209,6 +210,12 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
       console.log('=== ACTIVATION POINT UPDATE START ===')
       console.log('Updating activation point for user:', userId, 'to:', activationPoint)
       
+      // Store in persisted state immediately
+      setPersistedActivationPoints(prev => ({
+        ...prev,
+        [userId]: activationPoint || 'none'
+      }))
+      
       const { data, error } = await supabase
         .from('profiles')
         .update({ activation_point: activationPoint } as any)
@@ -217,6 +224,12 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
       if (error) {
         console.error('Database error:', error)
+        // Revert the persisted state on error
+        setPersistedActivationPoints(prev => {
+          const newState = { ...prev }
+          delete newState[userId]
+          return newState
+        })
         throw error
       }
 
@@ -526,7 +539,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                   <div className="space-y-3">
                     <Label className="text-sm font-medium">Activation Points</Label>
                     <Select 
-                      value={user.activation_point ?? 'none'}
+                      value={persistedActivationPoints[user.user_id] || user.activation_point || 'none'}
                       onValueChange={(value) => {
                         console.log('Dropdown changed to:', value, 'for user:', user.display_name);
                         updateActivationPoint(user.user_id, value === 'none' ? null : value);
