@@ -5,13 +5,11 @@ import { useAuth } from '@/contexts/AuthContext'
 export interface Notification {
   id: string
   user_id: string
-  family_member_id: string | null
+  sender_id: string
   notification_type: string
   title: string
   message: string
-  meeting_id: string | null
-  meeting_date: string | null
-  meeting_time: string | null
+  reference_id: string | null
   is_read: boolean
   created_at: string
   updated_at: string
@@ -33,7 +31,7 @@ export function useNotifications() {
 
     try {
       const { data, error } = await supabase
-        .from('family_notifications')
+        .from('notifications')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
@@ -58,7 +56,7 @@ export function useNotifications() {
 
     try {
       const { error } = await supabase
-        .from('family_notifications')
+        .from('notifications')
         .update({ is_read: true })
         .eq('id', notificationId)
         .eq('user_id', user.id)
@@ -79,7 +77,7 @@ export function useNotifications() {
 
     try {
       const { error } = await supabase
-        .from('family_notifications')
+        .from('notifications')
         .update({ is_read: true })
         .eq('user_id', user.id)
         .eq('is_read', false)
@@ -100,7 +98,7 @@ export function useNotifications() {
 
     try {
       const { error } = await supabase
-        .from('family_notifications')
+        .from('notifications')
         .delete()
         .eq('id', notificationId)
         .eq('user_id', user.id)
@@ -129,7 +127,7 @@ export function useNotifications() {
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'family_notifications',
+          table: 'notifications',
           filter: `user_id=eq.${user?.id}`
         },
         () => {
