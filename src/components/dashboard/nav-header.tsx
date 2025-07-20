@@ -133,8 +133,20 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
   const handleSearchSubmit = (query: string) => {
     setShowSuggestions(false)
     setSearchQuery(query)
-    // Here you would implement the actual search functionality
-    console.log('Searching for:', query)
+    
+    if (!query.trim()) return
+    
+    // Navigate to appropriate page with search query
+    const currentPath = location.pathname
+    const searchParams = new URLSearchParams()
+    searchParams.set('search', query.trim())
+    
+    // Stay on current page if it's a searchable page, otherwise go to community
+    if (['/community', '/courses', '/members'].includes(currentPath)) {
+      navigate(`${currentPath}?${searchParams.toString()}`)
+    } else {
+      navigate(`/community?${searchParams.toString()}`)
+    }
   }
 
   return (
