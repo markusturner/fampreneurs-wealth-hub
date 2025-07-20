@@ -417,6 +417,7 @@ export type Database = {
           is_premium: boolean
           is_private: boolean
           name: string
+          order_index: number | null
           program_id: string | null
           updated_at: string
         }
@@ -430,6 +431,7 @@ export type Database = {
           is_premium?: boolean
           is_private?: boolean
           name: string
+          order_index?: number | null
           program_id?: string | null
           updated_at?: string
         }
@@ -443,6 +445,7 @@ export type Database = {
           is_premium?: boolean
           is_private?: boolean
           name?: string
+          order_index?: number | null
           program_id?: string | null
           updated_at?: string
         }

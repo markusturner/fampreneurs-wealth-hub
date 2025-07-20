@@ -39,6 +39,7 @@ interface CommunityGroup {
   description: string | null
   is_private: boolean
   created_by: string
+  order_index?: number
   member_count?: number
   associated_courses?: string[]
   associated_group_calls?: string[]
@@ -123,11 +124,11 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
 
   const fetchCommunityGroups = async () => {
     try {
-      // Fetch all groups first
+      // Fetch all groups first, ordered by order_index for drag and drop
       const { data: groupsData, error } = await supabase
         .from('community_groups')
         .select('*')
-        .order('created_at', { ascending: true })
+        .order('order_index', { ascending: true })
 
       if (error) throw error
 
@@ -182,13 +183,23 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
 
     setIsCreating(true)
     try {
+      // Get the current max order_index to append new channel at the end
+      const { data: maxOrderData } = await supabase
+        .from('community_groups')
+        .select('order_index')
+        .order('order_index', { ascending: false })
+        .limit(1)
+
+      const nextOrderIndex = (maxOrderData?.[0]?.order_index ?? -1) + 1
+
       const { data: groupData, error } = await supabase
         .from('community_groups')
         .insert({
           name: newGroupName.trim(),
           description: newGroupDescription.trim() || null,
           created_by: user.id,
-          is_private: isPrivateGroup
+          is_private: isPrivateGroup,
+          order_index: nextOrderIndex
         })
         .select()
         .single()
@@ -384,7 +395,7 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
         for (const update of updates) {
           await supabase
             .from('community_groups')
-            .update({ order_index: update.order_index } as any)
+            .update({ order_index: update.order_index })
             .eq('id', update.id)
         }
       } catch (error) {
