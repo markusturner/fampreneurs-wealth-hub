@@ -131,7 +131,22 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   useEffect(() => {
     fetchPrograms()
     fetchUserAttendanceData()
+    initializeUserStartDates()
   }, [users])
+
+  const initializeUserStartDates = () => {
+    const newStartDates: Record<string, Date | undefined> = {}
+    users.forEach(user => {
+      // Auto-populate start date with user's account creation date if not already set
+      if (!userStartDates[user.user_id] && user.created_at) {
+        newStartDates[user.user_id] = new Date(user.created_at)
+      }
+    })
+    
+    if (Object.keys(newStartDates).length > 0) {
+      setUserStartDates(prev => ({ ...prev, ...newStartDates }))
+    }
+  }
 
   // Reset editing state when component unmounts or when users prop changes
   useEffect(() => {
