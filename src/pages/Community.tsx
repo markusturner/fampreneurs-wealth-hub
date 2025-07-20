@@ -11,6 +11,7 @@ import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/ui/app-sidebar'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { VideoCallButton } from '@/components/video-call/VideoCallButton'
+import { VideoCallBanner } from '@/components/video-call/VideoCallBanner'
 
 const Community = () => {
   const { user, profile, loading } = useAuth()
@@ -101,6 +102,9 @@ const Community = () => {
         
         <SidebarInset className="flex-1">
           <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+          
+          {/* Video Call Banner */}
+          <VideoCallBanner />
           
           <main className="w-full">
             {/* Mobile Channel Navigation */}

@@ -124,31 +124,52 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
 
   const fetchCommunityGroups = async () => {
     try {
-      // Fetch all groups first
+      // Fetch all groups with member counts in a single query
       const { data: groupsData, error: groupsError } = await supabase
         .from('community_groups')
-        .select('*')
+        .select(`
+          *,
+          group_memberships!inner(count)
+        `)
         .order('order_index', { ascending: true })
 
-      if (groupsError) throw groupsError
+      if (groupsError) {
+        console.log('Error with join query, falling back to separate queries:', groupsError)
+        
+        // Fallback to separate queries
+        const { data: groups } = await supabase
+          .from('community_groups')
+          .select('*')
+          .order('order_index', { ascending: true })
+        
+        if (!groups) {
+          setCommunityGroups([])
+          return
+        }
 
-      // Fetch member counts for all groups
-      const { data: memberCounts, error: countsError } = await supabase
-        .from('group_memberships')
-        .select('group_id')
+        // Fetch member counts for each group individually
+        const groupsWithCounts = await Promise.all(
+          groups.map(async (group) => {
+            const { count } = await supabase
+              .from('group_memberships')
+              .select('*', { count: 'exact', head: true })
+              .eq('group_id', group.id)
+            
+            return {
+              ...group,
+              member_count: count || 0
+            }
+          })
+        )
 
-      if (countsError) throw countsError
-
-      // Count members per group
-      const memberCountMap = memberCounts?.reduce((acc, membership) => {
-        acc[membership.group_id] = (acc[membership.group_id] || 0) + 1
-        return acc
-      }, {} as Record<string, number>) || {}
+        setCommunityGroups(groupsWithCounts)
+        return
+      }
 
       // Transform the data to include member counts
       const groupsWithCounts = (groupsData || []).map(group => ({
         ...group,
-        member_count: memberCountMap[group.id] || 0
+        member_count: group.group_memberships?.[0]?.count || 0
       }))
 
       setCommunityGroups(groupsWithCounts)
