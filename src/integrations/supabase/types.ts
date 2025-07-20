@@ -2387,6 +2387,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_2fa_settings: {
+        Row: {
+          created_at: string
+          email: string
+          enabled: boolean
+          id: string
+          method: string
+          phone_number: string | null
+          secret: string | null
+          updated_at: string
+          verified_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          enabled?: boolean
+          id?: string
+          method: string
+          phone_number?: string | null
+          secret?: string | null
+          updated_at?: string
+          verified_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          enabled?: boolean
+          id?: string
+          method?: string
+          phone_number?: string | null
+          secret?: string | null
+          updated_at?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
       user_course_lists: {
         Row: {
           added_at: string
@@ -2509,6 +2545,39 @@ export type Database = {
           program_id?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      verification_codes: {
+        Row: {
+          code: string
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          method: string
+          phone_number: string | null
+          verified: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          email: string
+          expires_at: string
+          id?: string
+          method: string
+          phone_number?: string | null
+          verified?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          method?: string
+          phone_number?: string | null
+          verified?: boolean
         }
         Relationships: []
       }
@@ -2672,6 +2741,10 @@ export type Database = {
       can_join_group: {
         Args: { group_id: string; user_id: string }
         Returns: boolean
+      }
+      cleanup_expired_verification_codes: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       generate_certificate_number: {
         Args: Record<PropertyKey, never>

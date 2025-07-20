@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useNavigate } from 'react-router-dom'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
+import { TwoFactorSetup } from '@/components/auth/two-factor-setup'
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false)
@@ -25,6 +26,8 @@ export default function Auth() {
   const [membershipType, setMembershipType] = useState('free')
   const [customPrice, setCustomPrice] = useState('')
   const [selectedProgram, setSelectedProgram] = useState('')
+  const [showTwoFactor, setShowTwoFactor] = useState(false)
+  const [signupEmail, setSignupEmail] = useState('')
   
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -231,9 +234,10 @@ export default function Auth() {
         return
       }
 
-      if (data.user) {
-        // Note: Profile photo will be required after login
-
+        if (data.user) {
+        // Store email for 2FA setup
+        setSignupEmail(email)
+        
         // Update profile with program and membership info
         await supabase
           .from('profiles')
@@ -269,17 +273,13 @@ export default function Auth() {
           }
         }
 
+        // Show 2FA setup instead of immediate redirect
         toast({
           title: "Account created!",
-          description: membershipType === 'paid' ? 
-            "Please complete payment in the opened window, then check your email to verify your account." :
-            "Please check your email to verify your account, or you can continue if email confirmation is disabled.",
+          description: "Now let's secure your account with two-factor authentication.",
         })
         
-        // If user is immediately confirmed, redirect
-        if (data.session) {
-          window.location.href = '/'
-        }
+        setShowTwoFactor(true)
       }
     } catch (error) {
       toast({
@@ -422,6 +422,34 @@ export default function Auth() {
     }
   }
 
+  const handleTwoFactorComplete = (method: string) => {
+    toast({
+      title: "Security setup complete!",
+      description: `Two-factor authentication enabled using ${method}. Your account is now secure.`,
+    })
+    window.location.href = '/'
+  }
+
+  const handleTwoFactorSkip = () => {
+    toast({
+      title: "Account ready!",
+      description: "You can enable two-factor authentication later in your security settings.",
+    })
+    window.location.href = '/'
+  }
+
+  // Show 2FA setup if user just signed up
+  if (showTwoFactor) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+        <TwoFactorSetup 
+          email={signupEmail}
+          onComplete={handleTwoFactorComplete}
+          onSkip={handleTwoFactorSkip}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
