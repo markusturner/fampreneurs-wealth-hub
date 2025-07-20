@@ -424,15 +424,15 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                       <SelectTrigger className="w-full mt-1">
                         <SelectValue placeholder="Select activation point" />
                       </SelectTrigger>
-                       <SelectContent className="bg-background border shadow-lg z-50">
-                         <SelectItem value="none">No Activation Point</SelectItem>
-                         {activationPoints.map((point) => (
-                           <SelectItem key={point} value={point}>
-                             {point}
-                           </SelectItem>
-                         ))}
+                      <SelectContent className="bg-background border shadow-lg z-50">
+                        <SelectItem value="none">No Activation Point</SelectItem>
+                        {activationPoints.map((point) => (
+                          <SelectItem key={point} value={point}>
+                            {point}
+                          </SelectItem>
+                        ))}
                        </SelectContent>
-                    </Select>
+                     </Select>
                   </div>
                 </div>
 
