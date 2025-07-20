@@ -308,15 +308,26 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   return (
     <div className="space-y-6">
-      {/* Search Bar */}
-      <div className="flex items-center gap-2">
-        <Search className="h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search users..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
+      {/* Search Bar and Total Count */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-sm"
+          />
+        </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Users className="h-4 w-4" />
+          <span>Total: {users.length} users</span>
+          {searchTerm && (
+            <span className="text-primary">
+              | Filtered: {filteredUsers.length}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Users Grid */}
