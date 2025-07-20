@@ -70,6 +70,12 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
     fetchPrograms()
   }, [])
 
+  // Reset editing state when component unmounts or when users prop changes
+  useEffect(() => {
+    setEditingUser(null)
+    setSelectedPrograms({})
+  }, [users])
+
   const fetchPrograms = async () => {
     try {
       // Mock programs since programs table doesn't exist
