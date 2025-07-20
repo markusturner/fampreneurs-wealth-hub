@@ -2280,6 +2280,27 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_videos: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          video_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          video_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+          video_id?: string
+        }
+        Relationships: []
+      }
       session_attendance: {
         Row: {
           attendance_duration_minutes: number | null
@@ -2581,6 +2602,36 @@ export type Database = {
         }
         Relationships: []
       }
+      video_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          parent_id: string | null
+          updated_at: string
+          user_id: string
+          video_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          updated_at?: string
+          user_id: string
+          video_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string
+          video_id?: string
+        }
+        Relationships: []
+      }
       video_documents: {
         Row: {
           created_at: string
@@ -2613,6 +2664,27 @@ export type Database = {
           mime_type?: string | null
           updated_at?: string
           uploaded_by?: string
+          video_id?: string
+        }
+        Relationships: []
+      }
+      video_likes: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          video_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          video_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
           video_id?: string
         }
         Relationships: []

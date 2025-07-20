@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Play, Clock, Edit, Trash2, ChevronDown } from 'lucide-react'
 import { VideoDocuments } from './video-documents'
 import { EditVideoDialog } from './edit-video-dialog'
+import { VideoInteractions } from './video-interactions'
 import { useToast } from '@/hooks/use-toast'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -307,6 +308,9 @@ export function CourseVideoList({ courseId, isCreator = false }: CourseVideoList
                   <VideoDocuments videoId={selectedVideo.id} />
                 </CardContent>
               </Card>
+              
+              {/* Video Interactions - Comments, Likes, Save */}
+              <VideoInteractions videoId={selectedVideo.id} />
             </>
           )}
         </div>
