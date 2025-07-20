@@ -48,7 +48,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '@/components/theme-provider'
 import { Separator } from '@/components/ui/separator'
-import { CreateCourseDialog } from '@/components/admin/create-course-dialog'
+import { TwoStepCourseCreator } from '@/components/admin/two-step-course-creator'
 import { EditCourseDialog } from '@/components/admin/edit-course-dialog'
 import { UserRoleManagement } from '@/components/admin/user-role-management'
 import { UserCard } from '@/components/admin/user-card'
@@ -748,7 +748,7 @@ export default function AdminDashboard() {
                       Manage your course library
                     </CardDescription>
                   </div>
-                  <CreateCourseDialog onCourseCreated={loadAdminData} />
+                  <TwoStepCourseCreator onCourseCreated={loadAdminData} />
                 </CardHeader>
                 <CardContent>
                   {courses.map((course) => (
