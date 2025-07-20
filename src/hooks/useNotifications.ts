@@ -28,6 +28,7 @@ export function useNotifications() {
     }
 
     console.log('useNotifications: Fetching notifications for user:', user.id)
+    console.log('useNotifications: User email:', user.email)
 
     try {
       const { data, error } = await supabase
