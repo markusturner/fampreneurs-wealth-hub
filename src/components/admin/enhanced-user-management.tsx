@@ -59,6 +59,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   const [programs, setPrograms] = useState<Program[]>([])
   const [selectedPrograms, setSelectedPrograms] = useState<Record<string, string[]>>({})
   const [persistedActivationPoints, setPersistedActivationPoints] = useState<Record<string, string>>({})
+  const [persistedPrograms, setPersistedPrograms] = useState<Record<string, string[]>>({})
 
   const activationPoints = [
     'Admin Onboarding',
@@ -124,6 +125,12 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   const updateUserPrograms = async (userId: string, programIds: string[]) => {
     try {
+      // Store in persisted state immediately
+      setPersistedPrograms(prev => ({
+        ...prev,
+        [userId]: programIds
+      }))
+
       // Get the program name from the selected programs
       const programName = programIds.length > 0 
         ? programs.find(p => p.id === programIds[0])?.name || null
@@ -135,7 +142,15 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         .update({ program_name: programName })
         .eq('user_id', userId)
 
-      if (error) throw error
+      if (error) {
+        // Revert the persisted state on error
+        setPersistedPrograms(prev => {
+          const newState = { ...prev }
+          delete newState[userId]
+          return newState
+        })
+        throw error
+      }
 
       toast({
         title: "Program Updated",
@@ -347,7 +362,15 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   }
 
   const getProgramNames = (userId: string) => {
-    // First check if there are locally selected programs for this user
+    // First check if there are persisted programs for this user
+    const persistedProgramIds = persistedPrograms[userId] || []
+    if (persistedProgramIds.length > 0) {
+      return programs
+        .filter(program => persistedProgramIds.includes(program.id))
+        .map(program => program.name)
+    }
+
+    // Then check if there are locally selected programs for this user
     const userProgramIds = selectedPrograms[userId] || []
     if (userProgramIds.length > 0) {
       return programs
