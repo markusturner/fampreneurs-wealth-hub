@@ -455,14 +455,45 @@ export default function AdminDashboard() {
 
   const loadCoachData = async () => {
     try {
-      // Mock coach data - replace with actual queries
-      setCoachData([
-        { id: '1', name: 'John Smith', clients: 15 },
-        { id: '2', name: 'Sarah Johnson', clients: 12 },
-        { id: '3', name: 'Mike Wilson', clients: 18 }
-      ])
+      // Get all coaches
+      const { data: coachesData, error: coachesError } = await supabase
+        .from('coaches')
+        .select('id, full_name')
+        .eq('is_active', true)
+
+      if (coachesError) throw coachesError
+
+      // Get coach assignments and count active clients for each coach
+      const coachDataWithClients = await Promise.all(
+        (coachesData || []).map(async (coach) => {
+          const { data: assignments, error: assignmentsError } = await supabase
+            .from('coach_assignments')
+            .select('user_id')
+            .eq('coach_id', coach.id)
+            .eq('status', 'active')
+
+          if (assignmentsError) {
+            console.error('Error loading assignments for coach:', coach.full_name, assignmentsError)
+            return {
+              id: coach.id,
+              name: coach.full_name,
+              clients: 0
+            }
+          }
+
+          return {
+            id: coach.id,
+            name: coach.full_name,
+            clients: assignments?.length || 0
+          }
+        })
+      )
+
+      setCoachData(coachDataWithClients)
     } catch (error) {
       console.error('Error loading coach data:', error)
+      // Fallback to empty array on error
+      setCoachData([])
     }
   }
 
