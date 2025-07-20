@@ -124,57 +124,56 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
 
   const fetchCommunityGroups = async () => {
     try {
-      // Fetch all groups with member counts in a single query
-      const { data: groupsData, error: groupsError } = await supabase
+      console.log('Fetching community groups with member counts...')
+      
+      // First, get all groups
+      const { data: groups, error: groupsError } = await supabase
         .from('community_groups')
-        .select(`
-          *,
-          group_memberships!inner(count)
-        `)
+        .select('*')
         .order('order_index', { ascending: true })
-
+      
       if (groupsError) {
-        console.log('Error with join query, falling back to separate queries:', groupsError)
-        
-        // Fallback to separate queries
-        const { data: groups } = await supabase
-          .from('community_groups')
-          .select('*')
-          .order('order_index', { ascending: true })
-        
-        if (!groups) {
-          setCommunityGroups([])
-          return
-        }
+        console.error('Error fetching groups:', groupsError)
+        throw groupsError
+      }
 
-        // Fetch member counts for each group individually
-        const groupsWithCounts = await Promise.all(
-          groups.map(async (group) => {
-            const { count } = await supabase
-              .from('group_memberships')
-              .select('*', { count: 'exact', head: true })
-              .eq('group_id', group.id)
-            
-            return {
-              ...group,
-              member_count: count || 0
-            }
-          })
-        )
-
-        setCommunityGroups(groupsWithCounts)
+      if (!groups || groups.length === 0) {
+        console.log('No groups found')
+        setCommunityGroups([])
         return
       }
 
-      // Transform the data to include member counts
-      const groupsWithCounts = (groupsData || []).map(group => ({
-        ...group,
-        member_count: group.group_memberships?.[0]?.count || 0
-      }))
+      console.log('Found groups:', groups.length)
 
+      // Then fetch member counts for each group individually with proper counting
+      const groupsWithCounts = await Promise.all(
+        groups.map(async (group) => {
+          console.log(`Fetching member count for group: ${group.name} (${group.id})`)
+          
+          const { count, error: countError } = await supabase
+            .from('group_memberships')
+            .select('*', { count: 'exact', head: true })
+            .eq('group_id', group.id)
+          
+          if (countError) {
+            console.error(`Error counting members for group ${group.id}:`, countError)
+          }
+          
+          const memberCount = count || 0
+          console.log(`Group ${group.name} has ${memberCount} members`)
+          
+          return {
+            ...group,
+            member_count: memberCount
+          }
+        })
+      )
+
+      console.log('Groups with member counts:', groupsWithCounts)
       setCommunityGroups(groupsWithCounts)
     } catch (error) {
       console.error('Error fetching community groups:', error)
+      setCommunityGroups([])
     }
   }
 
