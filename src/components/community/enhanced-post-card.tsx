@@ -539,22 +539,6 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
           )}
         </div>
 
-        {/* Post Reaction Options (for original posts) */}
-        {!isComment && (
-          <div className="flex items-center gap-1 flex-wrap">
-            {Object.entries(reactionEmojis).map(([type, emoji]) => (
-              <Button
-                key={type}
-                variant={userPostReaction?.reaction_type === type ? "default" : "outline"}
-                size="sm"
-                onClick={() => handlePostReaction(type)}
-                className="text-xs h-8 px-2"
-              >
-                {emoji}
-              </Button>
-            ))}
-          </div>
-        )}
 
 
         {/* Reaction Picker for Comments (shown on long press) */}
