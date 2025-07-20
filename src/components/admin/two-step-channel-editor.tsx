@@ -301,7 +301,7 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep >= 1 ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
               1
             </div>
-            <span className="text-sm font-medium" style={{ color: '#ffb500' }}>Basic Information</span>
+            <span className="text-sm font-medium">Basic Information</span>
           </div>
           
           <ArrowRight className="h-4 w-4 text-muted-foreground" />
