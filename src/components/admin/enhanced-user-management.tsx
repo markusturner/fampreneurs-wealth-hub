@@ -64,6 +64,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   const [selectedPrograms, setSelectedPrograms] = useState<Record<string, string[]>>({})
   const [userStartDates, setUserStartDates] = useState<Record<string, Date | undefined>>({})
   const [userEndDates, setUserEndDates] = useState<Record<string, Date | undefined>>({})
+  const [userAttendance, setUserAttendance] = useState<Record<string, { group: number, individual: number, courseProgress: number }>>({})
   
   // Initialize persistent states from localStorage
   const [persistedActivationPoints, setPersistedActivationPoints] = useState<Record<string, string>>(() => {
@@ -129,7 +130,8 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   useEffect(() => {
     fetchPrograms()
-  }, [])
+    fetchUserAttendanceData()
+  }, [users])
 
   // Reset editing state when component unmounts or when users prop changes
   useEffect(() => {
@@ -165,6 +167,53 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
       setPrograms(mockPrograms)
     } catch (error) {
       console.error('Error fetching programs:', error)
+    }
+  }
+
+  const fetchUserAttendanceData = async () => {
+    try {
+      // Fetch real attendance data for all users
+      const { data: attendanceData, error } = await supabase
+        .from('session_attendance')
+        .select('user_id, session_type, attended')
+        .eq('attended', true)
+
+      if (error) throw error
+
+      // Fetch course enrollment data
+      const { data: enrollmentData, error: enrollmentError } = await supabase
+        .from('course_enrollments')
+        .select('user_id, progress')
+
+      if (enrollmentError) throw enrollmentError
+
+      // Process attendance data by user
+      const userAttendanceMap: Record<string, { group: number, individual: number, courseProgress: number }> = {}
+
+      // Calculate attendance counts
+      attendanceData?.forEach(attendance => {
+        if (!userAttendanceMap[attendance.user_id]) {
+          userAttendanceMap[attendance.user_id] = { group: 0, individual: 0, courseProgress: 0 }
+        }
+        
+        if (attendance.session_type === 'group') {
+          userAttendanceMap[attendance.user_id].group++
+        } else if (attendance.session_type === 'individual') {
+          userAttendanceMap[attendance.user_id].individual++
+        }
+      })
+
+      // Calculate average course progress for each user
+      enrollmentData?.forEach(enrollment => {
+        if (!userAttendanceMap[enrollment.user_id]) {
+          userAttendanceMap[enrollment.user_id] = { group: 0, individual: 0, courseProgress: 0 }
+        }
+        userAttendanceMap[enrollment.user_id].courseProgress = enrollment.progress || 0
+      })
+
+      setUserAttendance(userAttendanceMap)
+    } catch (error) {
+      console.error('Error fetching user attendance data:', error)
     }
   }
 
@@ -492,13 +541,13 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                     {/* Stats */}
                     <div className="flex flex-wrap gap-2 mt-2">
                       <Badge variant="outline" className="text-xs">
-                        Progress: {user.course_progress || 0}%
+                        Progress: {Math.round(userAttendance[user.user_id]?.courseProgress || user.course_progress || 0)}%
                       </Badge>
                       <Badge variant="outline" className="text-xs">
-                        Group: {user.group_calls_attended || 0}
+                        Group: {userAttendance[user.user_id]?.group || user.group_calls_attended || 0}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
-                        1-on-1: {user.one_on_one_calls_attended || 0}
+                        1-on-1: {userAttendance[user.user_id]?.individual || user.one_on_one_calls_attended || 0}
                       </Badge>
                     </div>
                   </div>
