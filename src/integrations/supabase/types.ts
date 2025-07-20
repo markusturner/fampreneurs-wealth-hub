@@ -2644,6 +2644,39 @@ export type Database = {
         }
         Relationships: []
       }
+      video_call_rooms: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          privacy: string
+          room_name: string
+          room_url: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          privacy?: string
+          room_name: string
+          room_url: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          privacy?: string
+          room_name?: string
+          room_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       video_comments: {
         Row: {
           content: string

@@ -10,6 +10,7 @@ import { Menu, Loader2, Hash, ArrowLeft } from 'lucide-react'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/ui/app-sidebar'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { VideoCallButton } from '@/components/video-call/VideoCallButton'
 
 const Community = () => {
   const { user, profile, loading } = useAuth()
@@ -160,15 +161,18 @@ const Community = () => {
                         Connect with other like minded first generation wealth builders
                       </p>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowChannels(true)}
-                      className="flex items-center gap-2 w-fit"
-                    >
-                      <Hash className="h-4 w-4" />
-                      Channels
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <VideoCallButton />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowChannels(true)}
+                        className="flex items-center gap-2"
+                      >
+                        <Hash className="h-4 w-4" />
+                        Channels
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -186,6 +190,7 @@ const Community = () => {
                       Connect with other like minded first generation wealth builders
                     </p>
                   </div>
+                  <VideoCallButton />
                 </div>
               </div>
             </div>

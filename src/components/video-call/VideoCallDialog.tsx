@@ -5,11 +5,12 @@ import { Video, VideoOff, Mic, MicOff, Phone, PhoneOff, Settings } from 'lucide-
 import { useToast } from '@/hooks/use-toast'
 
 interface VideoCallDialogProps {
-  roomId: string
-  onEndCall: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  roomId?: string;
 }
 
-export const VideoCallDialog = ({ roomId, onEndCall }: VideoCallDialogProps) => {
+export const VideoCallDialog = ({ isOpen, onClose, roomId = "default-room" }: VideoCallDialogProps) => {
   const { toast } = useToast()
   const [isVideoEnabled, setIsVideoEnabled] = useState(true)
   const [isAudioEnabled, setIsAudioEnabled] = useState(true)
@@ -99,7 +100,7 @@ export const VideoCallDialog = ({ roomId, onEndCall }: VideoCallDialogProps) => 
 
   const endCall = () => {
     cleanup()
-    onEndCall()
+    onClose()
   }
 
   const cleanup = () => {
@@ -111,6 +112,8 @@ export const VideoCallDialog = ({ roomId, onEndCall }: VideoCallDialogProps) => 
     }
     setIsCallActive(false)
   }
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
