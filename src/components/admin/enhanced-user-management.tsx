@@ -501,8 +501,8 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                       <SelectTrigger className="w-full mt-1">
                         <SelectValue placeholder="Select coach" />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No Coach</SelectItem>
+                       <SelectContent className="bg-background border shadow-lg z-50">
+                         <SelectItem value="none">No Coach</SelectItem>
                         {coaches.map((coach) => (
                           <SelectItem key={coach.id} value={coach.id}>
                             {coach.full_name}
