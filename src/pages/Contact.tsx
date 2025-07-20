@@ -68,7 +68,7 @@ const Contact = () => {
               <div className="space-y-2">
                 <div>
                   <p className="font-medium">Family Success Coaches</p>
-                   <p style={{ color: '#ffb500' }}>to contact the family success coaches</p>
+                   <p style={{ color: '#ffb500' }}>contact via text</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
