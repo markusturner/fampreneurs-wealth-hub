@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
+import { TwoStepChannelEditor } from '@/components/admin/two-step-channel-editor'
 import {
   DndContext,
   closestCenter,
@@ -459,17 +460,10 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
         </div>
         
         {canEdit && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
-            onClick={(e) => {
-              e.stopPropagation()
-              onEditGroup(group)
-            }}
-          >
-            <Edit className="h-3 w-3" />
-          </Button>
+          <TwoStepChannelEditor
+            channel={group}
+            onChannelUpdated={fetchCommunityGroups}
+          />
         )}
       </div>
     )
