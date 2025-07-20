@@ -1,11 +1,14 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Mail, Phone, MessageSquare, Clock, MapPin } from 'lucide-react'
+import { ChatSupportDialog } from '@/components/chat/ChatSupportDialog'
 
 const Contact = () => {
   const navigate = useNavigate()
+  const [isChatOpen, setIsChatOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-background">
@@ -96,10 +99,7 @@ const Contact = () => {
               </p>
               <Button 
                 className="w-full"
-                onClick={() => {
-                  // Simple chat implementation - opens mailto as fallback
-                  window.open('mailto:info@fampreneurs.com?subject=Live Chat Support Request', '_blank')
-                }}
+                onClick={() => setIsChatOpen(true)}
               >
                 Start Live Chat
               </Button>
@@ -157,6 +157,11 @@ const Contact = () => {
           </CardContent>
         </Card>
       </main>
+
+      <ChatSupportDialog 
+        open={isChatOpen} 
+        onOpenChange={setIsChatOpen} 
+      />
     </div>
   )
 }
