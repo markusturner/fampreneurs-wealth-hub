@@ -73,7 +73,6 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
 
   useEffect(() => {
     if (isOpen) {
-      console.log('TwoStepChannelEditor opened for channel:', channel)
       fetchContent()
     }
   }, [isOpen, channel.id])
@@ -131,8 +130,6 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
   }
 
   const handleBasicInfoUpdate = async () => {
-    console.log('handleBasicInfoUpdate called with:', { channelName, channelDescription, isPrivate })
-    
     if (!channelName.trim()) {
       toast({
         title: "Error",
@@ -144,11 +141,8 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
 
     setIsLoading(true)
     try {
-      console.log('Attempting to update channel:', channel.id)
-      
       // Check if user is admin first
       if (!profile?.is_admin) {
-        console.log('User is not admin, skipping database update')
         setCurrentStep(2)
         toast({
           title: "Info",
@@ -167,35 +161,29 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
         .eq('id', channel.id)
 
       if (error) {
-        console.error('Supabase error:', error)
         // Don't throw error, just log it and proceed to step 2
-        console.log('Database update failed, but proceeding to step 2 anyway')
         toast({
           title: "Warning",
           description: "Some changes may not be saved, but proceeding to content management"
         })
       } else {
-        console.log('Update successful')
         toast({
           title: "Success",
           description: "Channel basic information updated successfully!"
         })
       }
 
-      console.log('Setting currentStep to 2')
       setCurrentStep(2)
       
     } catch (error) {
       console.error('Error updating channel:', error)
       // Don't let errors prevent moving to step 2
-      console.log('Caught error, but still proceeding to step 2')
       setCurrentStep(2)
       toast({
         title: "Warning",
         description: "There was an issue updating the channel, but proceeding to content management"
       })
     } finally {
-      console.log('Setting isLoading to false')
       setIsLoading(false)
     }
   }
@@ -306,25 +294,14 @@ export function TwoStepChannelEditor({ channel, onChannelUpdated }: TwoStepChann
     setSelectedCoachingCalls(channel.associated_group_calls || [])
   }
 
-  console.log('TwoStepChannelEditor render - user:', user, 'profile:', profile, 'isAdmin:', profile?.is_admin)
-
   if (!profile?.is_admin) {
-    console.log('TwoStepChannelEditor: User is not admin, not rendering')
     return null
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      console.log('Dialog open state changed:', open)
-      setIsOpen(open)
-    }}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-6 w-6 p-0"
-          onClick={() => console.log('Edit button clicked for channel:', channel.name)}
-        >
+        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
           <Edit className="h-3 w-3" />
         </Button>
       </DialogTrigger>

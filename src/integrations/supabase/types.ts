@@ -2442,6 +2442,10 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      is_user_admin_for_groups: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       notify_family_about_meeting: {
         Args: {
           meeting_title: string
