@@ -194,7 +194,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ activation_point: activationPoint })
+        .update({ activation_point: activationPoint } as any)
         .eq('user_id', userId)
 
       if (error) throw error
