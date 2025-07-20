@@ -376,9 +376,9 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         {filteredUsers.map(user => (
           <Card key={user.id} className="overflow-hidden">
             <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-                {/* User Info */}
-                <div className="flex items-center gap-3 flex-1">
+              <div className="flex flex-col gap-4">
+                {/* User Info Row */}
+                <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0">
                     <AvatarImage src={user.avatar_url || ''} className="object-cover" />
                     <AvatarFallback className="bg-primary/10 text-primary font-medium">
@@ -408,6 +408,9 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                     </div>
                   </div>
                 </div>
+
+                {/* Management Row - Wrap sections properly */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-4">
 
                 {/* Program Assignment */}
                 <div className="flex-shrink-0 min-w-0 sm:w-80">
@@ -661,6 +664,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                     </div>
                   </div>
                 </div>
+              </div>
             </CardContent>
           </Card>
         ))}
