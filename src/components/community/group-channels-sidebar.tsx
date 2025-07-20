@@ -605,21 +605,6 @@ export const GroupChannelsSidebar = ({ selectedGroupId, onGroupSelect }: GroupCh
       
       <CardContent className="pt-0">
         <div className="space-y-1">
-          {/* All Posts option */}
-          <div
-            className={`
-              flex items-center px-2 py-1.5 rounded cursor-pointer transition-colors text-sm
-              ${selectedGroupId === null 
-                ? 'bg-primary text-primary-foreground' 
-                : 'hover:bg-muted/50'
-              }
-            `}
-            onClick={() => onGroupSelect(null)}
-          >
-            <Hash className="h-3 w-3 mr-1.5 flex-shrink-0" />
-            <span className="truncate font-medium">All Posts</span>
-          </div>
-
           {/* Community Groups */}
           <DndContext
             sensors={sensors}
