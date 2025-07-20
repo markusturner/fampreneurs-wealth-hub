@@ -107,9 +107,6 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         [userId]: programIds
       }))
 
-      // Refresh users data to show the change
-      onUsersUpdated()
-
       toast({
         title: "Program Updated",
         description: `User has been successfully assigned to ${programName || 'no program'}.`,
@@ -169,10 +166,17 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   }
 
   const getProgramNames = (userId: string) => {
+    // First check if there are locally selected programs for this user
     const userProgramIds = selectedPrograms[userId] || []
-    return programs
-      .filter(program => userProgramIds.includes(program.id))
-      .map(program => program.name)
+    if (userProgramIds.length > 0) {
+      return programs
+        .filter(program => userProgramIds.includes(program.id))
+        .map(program => program.name)
+    }
+    
+    // Otherwise, show the user's actual assigned program from the database
+    const user = users.find(u => u.user_id === userId)
+    return user?.program_name ? [user.program_name] : []
   }
 
   return (
@@ -268,12 +272,13 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                                     }))
                                   }}
                                 />
-                                <Label
-                                  htmlFor={`${user.id}-${program.id}`}
-                                  className="text-sm cursor-pointer flex-1"
-                                >
-                                  {program.name}
-                                </Label>
+                                 <label
+                                   htmlFor={`${user.id}-${program.id}`}
+                                   className="text-sm cursor-pointer flex-1"
+                                   onClick={(e) => e.preventDefault()}
+                                 >
+                                   {program.name}
+                                 </label>
                               </div>
                             ))}
                           </div>
