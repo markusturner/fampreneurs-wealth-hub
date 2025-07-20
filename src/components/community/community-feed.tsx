@@ -182,7 +182,7 @@ export function CommunityFeed() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Megaphone className="h-5 w-5 text-primary" />
+                    <Megaphone className="h-5 w-5 text-secondary" />
                     <h3 className="font-semibold">Announcements</h3>
                   </div>
                   <CreateAnnouncement onAnnouncementCreated={fetchAnnouncements} />
