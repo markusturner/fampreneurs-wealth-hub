@@ -338,7 +338,8 @@ export default function AdminDashboard() {
             course_progress: Math.round(avgProgress),
             group_calls_attended: groupSessions?.length || 0,
             one_on_one_calls_attended: oneOnOneSessions?.length || 0,
-            assigned_coach: assignedCoach
+            assigned_coach: assignedCoach,
+            activation_point: profile.activation_point
           }
         })
       )
