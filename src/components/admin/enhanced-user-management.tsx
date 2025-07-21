@@ -457,8 +457,8 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
       if (error) throw error
 
       toast({
-        title: "Investment Amount Updated",
-        description: `Investment amount has been set to $${numericAmount.toLocaleString()}.`,
+        title: "Frontend Cash Collected Updated",
+        description: `Frontend cash collected has been set to $${numericAmount.toLocaleString()}.`,
       })
 
       setEditingInvestment(null)
@@ -473,7 +473,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
       console.error('Error updating investment amount:', error)
       toast({
         title: "Error",
-        description: "Failed to update investment amount.",
+        description: "Failed to update frontend cash collected.",
         variant: "destructive",
       })
     }
@@ -899,9 +899,9 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                     </div>
                   </div>
 
-                  {/* Investment Amount */}
+                  {/* Frontend Cash Collected */}
                   <div className="space-y-3">
-                    <Label className="text-sm font-medium">Investment Amount</Label>
+                    <Label className="text-sm font-medium">Frontend Cash Collected</Label>
                     
                     <div className="space-y-2">
                       <div className="text-sm font-medium text-green-600">
