@@ -496,14 +496,20 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         return
       }
 
-      // Instead of using admin.deleteUser (which requires service role), 
-      // just delete the profile which will effectively remove the user from the system
+      console.log('Deleting user profile for userId:', userId)
+      
+      // Delete the user's profile (this removes them from the system effectively)
       const { error } = await supabase
         .from('profiles')
         .delete()
         .eq('user_id', userId)
 
-      if (error) throw error
+      if (error) {
+        console.error('Profile deletion error:', error)
+        throw error
+      }
+
+      console.log('User profile deleted successfully')
 
       toast({
         title: "User Deleted",
@@ -519,8 +525,6 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         variant: "destructive",
       })
     }
-  }
-
   const getDisplayName = (user: Profile) => {
     return user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Anonymous'
   }
