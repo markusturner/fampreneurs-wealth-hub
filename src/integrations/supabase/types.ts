@@ -2154,6 +2154,7 @@ export type Database = {
           family_role: string | null
           first_name: string | null
           id: string
+          investment_amount: number | null
           is_accountability_partner: boolean | null
           is_admin: boolean | null
           is_moderator: boolean | null
@@ -2177,6 +2178,7 @@ export type Database = {
           family_role?: string | null
           first_name?: string | null
           id?: string
+          investment_amount?: number | null
           is_accountability_partner?: boolean | null
           is_admin?: boolean | null
           is_moderator?: boolean | null
@@ -2200,6 +2202,7 @@ export type Database = {
           family_role?: string | null
           first_name?: string | null
           id?: string
+          investment_amount?: number | null
           is_accountability_partner?: boolean | null
           is_admin?: boolean | null
           is_moderator?: boolean | null

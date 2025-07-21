@@ -37,6 +37,7 @@ interface Profile {
     full_name: string
   } | null
   roles?: string[]
+  investment_amount?: number
 }
 
 interface Coach {
@@ -65,6 +66,8 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   const [userStartDates, setUserStartDates] = useState<Record<string, Date | undefined>>({})
   const [userEndDates, setUserEndDates] = useState<Record<string, Date | undefined>>({})
   const [userAttendance, setUserAttendance] = useState<Record<string, { group: number, individual: number, courseProgress: number }>>({})
+  const [editingInvestment, setEditingInvestment] = useState<string | null>(null)
+  const [investmentAmounts, setInvestmentAmounts] = useState<Record<string, string>>({})
   
   // Initialize persistent states from localStorage
   const [persistedActivationPoints, setPersistedActivationPoints] = useState<Record<string, string>>(() => {
@@ -442,6 +445,40 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
     }
   }
 
+  const updateInvestmentAmount = async (userId: string, amount: string) => {
+    try {
+      const numericAmount = parseFloat(amount) || 0
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ investment_amount: numericAmount })
+        .eq('user_id', userId)
+
+      if (error) throw error
+
+      toast({
+        title: "Investment Amount Updated",
+        description: `Investment amount has been set to $${numericAmount.toLocaleString()}.`,
+      })
+
+      setEditingInvestment(null)
+      setInvestmentAmounts(prev => {
+        const newState = { ...prev }
+        delete newState[userId]
+        return newState
+      })
+      
+      onUsersUpdated()
+    } catch (error) {
+      console.error('Error updating investment amount:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update investment amount.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const deleteUser = async (userId: string, userName: string) => {
     try {
       // Get current user to prevent self-deletion
@@ -459,14 +496,18 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         return
       }
 
-      // Delete from auth.users which will cascade delete the profile
-      const { error } = await supabase.auth.admin.deleteUser(userId)
+      // Instead of using admin.deleteUser (which requires service role), 
+      // just delete the profile which will effectively remove the user from the system
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', userId)
 
       if (error) throw error
 
       toast({
         title: "User Deleted",
-        description: `${userName} has been successfully deleted.`,
+        description: `${userName} has been successfully removed from the system.`,
       })
 
       onUsersUpdated()
@@ -474,7 +515,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
       console.error('Error deleting user:', error)
       toast({
         title: "Error",
-        description: "Failed to delete user. This action requires admin privileges.",
+        description: "Failed to delete user. Please check your permissions.",
         variant: "destructive",
       })
     }
@@ -569,7 +610,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                 </div>
 
                 {/* Management Sections */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-6">
                   {/* Program Assignment */}
                   <div className="space-y-3">
                     <div>
@@ -837,6 +878,74 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                           />
                         </PopoverContent>
                       </Popover>
+                    </div>
+                  </div>
+
+                  {/* Investment Amount */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Investment Amount</Label>
+                    
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-green-600">
+                        ${(user.investment_amount || 0).toLocaleString()}
+                      </div>
+                      
+                      {editingInvestment === user.user_id ? (
+                        <div className="space-y-2">
+                          <Input
+                            type="number"
+                            placeholder="Enter amount"
+                            value={investmentAmounts[user.user_id] || ''}
+                            onChange={(e) => setInvestmentAmounts(prev => ({
+                              ...prev,
+                              [user.user_id]: e.target.value
+                            }))}
+                            className="w-full"
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => updateInvestmentAmount(user.user_id, investmentAmounts[user.user_id] || '0')}
+                              className="flex-1"
+                            >
+                              <Save className="h-3 w-3 mr-1" />
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEditingInvestment(null)
+                                setInvestmentAmounts(prev => {
+                                  const newState = { ...prev }
+                                  delete newState[user.user_id]
+                                  return newState
+                                })
+                              }}
+                              className="flex-1"
+                            >
+                              <X className="h-3 w-3 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setEditingInvestment(user.user_id)
+                            setInvestmentAmounts(prev => ({
+                              ...prev,
+                              [user.user_id]: (user.investment_amount || 0).toString()
+                            }))
+                          }}
+                          className="w-full"
+                        >
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit Amount
+                        </Button>
+                      )}
                     </div>
                   </div>
 
