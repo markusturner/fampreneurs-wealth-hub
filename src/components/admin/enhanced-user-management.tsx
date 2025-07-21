@@ -496,24 +496,36 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         return
       }
 
-      console.log('Deleting user profile for userId:', userId)
+      console.log('Deleting user via edge function:', userId)
       
-      // Delete the user's profile (this removes them from the system effectively)
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('user_id', userId)
+      // Get the current session token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('No active session')
+      }
+
+      // Call the edge function to delete the user
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { userId },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      })
 
       if (error) {
-        console.error('Profile deletion error:', error)
+        console.error('Edge function error:', error)
         throw error
       }
 
-      console.log('User profile deleted successfully')
+      if (data?.error) {
+        throw new Error(data.error)
+      }
+
+      console.log('User deleted successfully:', data)
 
       toast({
         title: "User Deleted",
-        description: `${userName} has been successfully removed from the system.`,
+        description: `${userName} has been permanently removed from the system.`,
       })
 
       onUsersUpdated()
@@ -521,10 +533,12 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
       console.error('Error deleting user:', error)
       toast({
         title: "Error",
-        description: "Failed to delete user. Please check your permissions.",
+        description: error.message || "Failed to delete user. Please check your permissions.",
         variant: "destructive",
       })
     }
+  }
+
   const getDisplayName = (user: Profile) => {
     return user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Anonymous'
   }
