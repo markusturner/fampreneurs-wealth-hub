@@ -448,13 +448,20 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   const updateInvestmentAmount = async (userId: string, amount: string) => {
     try {
       const numericAmount = parseFloat(amount) || 0
+      console.log('Updating investment amount for user:', userId, 'to:', numericAmount)
       
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from('profiles')
         .update({ investment_amount: numericAmount })
         .eq('user_id', userId)
+        .select()
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
+
+      console.log('Update successful:', data)
 
       toast({
         title: "Frontend Cash Collected Updated",
