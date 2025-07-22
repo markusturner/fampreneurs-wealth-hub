@@ -237,55 +237,52 @@ export function CategorySelector({
           </Button>
         </div>
       ) : !isCreating ? (
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <Select value={value} onValueChange={onValueChange} required={required}>
-              <SelectTrigger className="flex-1">
-                <SelectValue placeholder={placeholder} />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.name}>
+        <div className="flex gap-2">
+          <Select value={value} onValueChange={onValueChange} required={required}>
+            <SelectTrigger className="flex-1">
+              <SelectValue placeholder={placeholder} />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((cat) => (
+                <div key={cat.id} className="flex items-center group">
+                  <SelectItem 
+                    value={cat.name}
+                    className="flex-1 cursor-pointer"
+                  >
                     {cat.name}
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setIsCreating(true)}
-              className="shrink-0"
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          {categories.length > 0 && (
-            <div className="space-y-1">
-              <div className="text-xs text-muted-foreground">Manage categories:</div>
-              <div className="flex flex-wrap gap-1">
-                {categories.map((cat) => (
-                  <div key={cat.id} className="flex items-center gap-1 bg-muted rounded-md px-2 py-1 text-xs">
-                    <span>{cat.name}</span>
+                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-4 w-4 p-0 hover:bg-background"
+                          className="h-6 w-6 p-0 hover:bg-muted"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                          }}
                         >
-                          <MoreVertical className="h-2 w-2" />
+                          <MoreVertical className="h-3 w-3" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-32">
-                        <DropdownMenuItem onClick={() => startEdit(cat)}>
+                        <DropdownMenuItem 
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            startEdit(cat)
+                          }}
+                        >
                           <Edit className="mr-2 h-3 w-3" />
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                          onClick={() => deleteCategory(cat)}
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            deleteCategory(cat)
+                          }}
                           className="text-destructive"
                         >
                           <Trash2 className="mr-2 h-3 w-3" />
@@ -294,10 +291,19 @@ export function CategorySelector({
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setIsCreating(true)}
+            className="shrink-0"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
       ) : (
         <div className="flex gap-2">
