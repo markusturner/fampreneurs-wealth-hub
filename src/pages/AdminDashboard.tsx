@@ -635,6 +635,29 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleDeleteCoach = async (coachId: string) => {
+    const { error } = await supabase
+      .from('coaches')
+      .delete()
+      .eq('id', coachId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete coach",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: "Coach deleted successfully"
+    });
+    
+    loadAdminData();
+  };
+
   const handleSignOut = async () => {
     try {
       await signOut()
@@ -1070,6 +1093,13 @@ export default function AdminDashboard() {
                           {coach.is_active ? "Active" : "Inactive"}
                         </Badge>
                         <EditCoachDialog coach={coach} onCoachUpdated={loadAdminData} />
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteCoach(coach.id)}
+                        >
+                          Delete
+                        </Button>
                       </div>
                     </div>
                   ))}
