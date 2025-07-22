@@ -1018,6 +1018,18 @@ export default function AdminDashboard() {
                   ))}
                 </CardContent>
               </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Coaching Call Recordings</CardTitle>
+                  <CardDescription>
+                    Manage and view coaching call recordings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <CoachingRecordings />
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
 
@@ -1038,15 +1050,6 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <ZapierIntegration />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Coaching Recordings</CardTitle>
-                <CardDescription>Manage coaching call recordings</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <CoachingRecordings />
               </CardContent>
             </Card>
           </TabsContent>
