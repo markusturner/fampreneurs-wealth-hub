@@ -237,73 +237,77 @@ export function CategorySelector({
           </Button>
         </div>
       ) : !isCreating ? (
-        <div className="flex gap-2">
-          <Select value={value} onValueChange={onValueChange} required={required}>
-            <SelectTrigger className="flex-1">
-              <SelectValue placeholder={placeholder} />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((cat) => (
-                <div key={cat.id} className="flex items-center group">
-                  <SelectItem 
-                    value={cat.name}
-                    className="flex-1 cursor-pointer"
-                  >
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Select value={value} onValueChange={onValueChange} required={required}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder={placeholder} />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.name}>
                     {cat.name}
                   </SelectItem>
-                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0 hover:bg-muted"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                          }}
-                        >
-                          <MoreVertical className="h-3 w-3" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-32">
-                        <DropdownMenuItem 
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            startEdit(cat)
-                          }}
-                        >
-                          <Edit className="mr-2 h-3 w-3" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            deleteCategory(cat)
-                          }}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-3 w-3" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setIsCreating(true)}
-            className="shrink-0"
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
+                ))}
+              </SelectContent>
+            </Select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => setIsCreating(true)}>
+                  <Plus className="mr-2 h-3 w-3" />
+                  Add Category
+                </DropdownMenuItem>
+                {categories.length > 0 && (
+                  <>
+                    <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                      Manage Categories
+                    </div>
+                    {categories.map((cat) => (
+                      <div key={cat.id} className="group">
+                        <div className="flex items-center justify-between px-2 py-1 text-sm hover:bg-muted rounded-sm mx-1">
+                          <span className="truncate">{cat.name}</span>
+                          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 w-5 p-0"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                startEdit(cat)
+                              }}
+                            >
+                              <Edit className="h-2.5 w-2.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 w-5 p-0 text-destructive hover:text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                deleteCategory(cat)
+                              }}
+                            >
+                              <Trash2 className="h-2.5 w-2.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       ) : (
         <div className="flex gap-2">
