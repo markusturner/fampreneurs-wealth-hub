@@ -536,9 +536,6 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         console.log('🔍 Verification - Updated value in DB:', verifyData)
       }
 
-      // Call refresh to update the UI with the new data
-      onUsersUpdated()
-
       toast({
         title: "Backend Cash Collected Updated",
         description: `Backend cash collected has been set to $${numericAmount.toLocaleString()}.`,
@@ -553,6 +550,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
       
       console.log('🔄 Calling onUsersUpdated() to refresh UI')
       onUsersUpdated()
+      console.log('🔍 onUsersUpdated() called - checking if users array will update')
       
       // Small delay then log current users state to see if it updated
       setTimeout(() => {
