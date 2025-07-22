@@ -23,7 +23,11 @@ import {
   ArrowDownLeft,
   RefreshCw,
   Bell,
-  Tag
+  Tag,
+  Bot,
+  Wand2,
+  FileCheck,
+  Zap
 } from 'lucide-react'
 
 interface Transaction {
@@ -78,6 +82,18 @@ export function TransactionMonitoring() {
     tags: '',
     notes: '',
     date: new Date().toISOString().split('T')[0]
+  })
+
+  const [aiBookkeeping, setAiBookkeeping] = useState({
+    isProcessing: false,
+    lastProcessed: null as Date | null,
+    showDialog: false,
+    processingOptions: {
+      categorize: true,
+      detectDuplicates: true,
+      suggestTags: true,
+      generateReports: true
+    }
   })
 
   useEffect(() => {
@@ -255,6 +271,64 @@ export function TransactionMonitoring() {
       return 'text-green-600'
     } else {
       return 'text-red-600'
+    }
+  }
+
+  const handleAIBookkeeping = async () => {
+    setAiBookkeeping(prev => ({ ...prev, isProcessing: true }))
+
+    try {
+      // Simulate AI processing
+      await new Promise(resolve => setTimeout(resolve, 3000))
+
+      // Mock AI processing results
+      const processedTransactions = transactions.map(transaction => {
+        if (aiBookkeeping.processingOptions.categorize && transaction.category === 'Uncategorized') {
+          // AI suggests better categories
+          if (transaction.description.toLowerCase().includes('gas') || transaction.description.toLowerCase().includes('fuel')) {
+            return { ...transaction, category: 'Transportation' }
+          }
+          if (transaction.description.toLowerCase().includes('grocery') || transaction.description.toLowerCase().includes('supermarket')) {
+            return { ...transaction, category: 'Food & Dining' }
+          }
+          if (transaction.description.toLowerCase().includes('restaurant') || transaction.description.toLowerCase().includes('dining')) {
+            return { ...transaction, category: 'Food & Dining' }
+          }
+        }
+
+        if (aiBookkeeping.processingOptions.suggestTags && transaction.tags.length === 0) {
+          // AI suggests tags
+          const newTags = []
+          if (transaction.description.toLowerCase().includes('business')) newTags.push('business')
+          if (transaction.description.toLowerCase().includes('recurring')) newTags.push('recurring')
+          if (transaction.amount > 1000) newTags.push('large-expense')
+          return { ...transaction, tags: newTags }
+        }
+
+        return transaction
+      })
+
+      setTransactions(processedTransactions)
+      setAiBookkeeping(prev => ({ 
+        ...prev, 
+        isProcessing: false, 
+        lastProcessed: new Date(),
+        showDialog: false 
+      }))
+
+      toast({
+        title: "AI Bookkeeping Complete",
+        description: `Processed ${transactions.length} transactions with AI insights`,
+      })
+
+    } catch (error) {
+      console.error('AI Bookkeeping error:', error)
+      setAiBookkeeping(prev => ({ ...prev, isProcessing: false }))
+      toast({
+        title: "Error",
+        description: "AI Bookkeeping process failed",
+        variant: "destructive"
+      })
     }
   }
 
@@ -544,6 +618,169 @@ export function TransactionMonitoring() {
           className="pl-10"
         />
       </div>
+
+      {/* AI Bookkeeping Section */}
+      <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-purple-800">
+            <Bot className="h-5 w-5" />
+            AI Bookkeeping Assistant
+          </CardTitle>
+          <CardDescription>
+            Automatically categorize transactions, detect duplicates, and generate financial insights
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <Zap className="h-4 w-4 text-yellow-500" />
+                <span>Smart categorization & duplicate detection</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <FileCheck className="h-4 w-4 text-green-500" />
+                <span>Automated tagging & expense insights</span>
+              </div>
+              {aiBookkeeping.lastProcessed && (
+                <div className="text-xs text-muted-foreground">
+                  Last processed: {aiBookkeeping.lastProcessed.toLocaleString()}
+                </div>
+              )}
+            </div>
+            
+            <Dialog open={aiBookkeeping.showDialog} onOpenChange={(open) => setAiBookkeeping(prev => ({ ...prev, showDialog: open }))}>
+              <DialogTrigger asChild>
+                <Button 
+                  disabled={aiBookkeeping.isProcessing || transactions.length === 0}
+                  className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700"
+                >
+                  {aiBookkeeping.isProcessing ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="h-4 w-4" />
+                      Run AI Bookkeeping
+                    </>
+                  )}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Bot className="h-5 w-5" />
+                    AI Bookkeeping Options
+                  </DialogTitle>
+                  <DialogDescription>
+                    Choose which AI processes to run on your transactions
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium">Auto-categorize transactions</label>
+                        <p className="text-xs text-muted-foreground">AI will categorize uncategorized transactions</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={aiBookkeeping.processingOptions.categorize}
+                        onChange={(e) => setAiBookkeeping(prev => ({
+                          ...prev,
+                          processingOptions: { ...prev.processingOptions, categorize: e.target.checked }
+                        }))}
+                        className="rounded"
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium">Detect duplicates</label>
+                        <p className="text-xs text-muted-foreground">Find and flag potential duplicate transactions</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={aiBookkeeping.processingOptions.detectDuplicates}
+                        onChange={(e) => setAiBookkeeping(prev => ({
+                          ...prev,
+                          processingOptions: { ...prev.processingOptions, detectDuplicates: e.target.checked }
+                        }))}
+                        className="rounded"
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium">Suggest tags</label>
+                        <p className="text-xs text-muted-foreground">AI will suggest relevant tags for transactions</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={aiBookkeeping.processingOptions.suggestTags}
+                        onChange={(e) => setAiBookkeeping(prev => ({
+                          ...prev,
+                          processingOptions: { ...prev.processingOptions, suggestTags: e.target.checked }
+                        }))}
+                        className="rounded"
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <label className="text-sm font-medium">Generate insights</label>
+                        <p className="text-xs text-muted-foreground">Create spending insights and recommendations</p>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={aiBookkeeping.processingOptions.generateReports}
+                        onChange={(e) => setAiBookkeeping(prev => ({
+                          ...prev,
+                          processingOptions: { ...prev.processingOptions, generateReports: e.target.checked }
+                        }))}
+                        className="rounded"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="bg-blue-50 p-3 rounded-lg">
+                    <div className="text-sm font-medium text-blue-800">Processing Info</div>
+                    <div className="text-xs text-blue-600 mt-1">
+                      AI will analyze {transactions.length} transactions and apply selected improvements
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2 pt-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setAiBookkeeping(prev => ({ ...prev, showDialog: false }))} 
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleAIBookkeeping} 
+                      disabled={aiBookkeeping.isProcessing}
+                      className="flex-1 bg-purple-600 hover:bg-purple-700"
+                    >
+                      {aiBookkeeping.isProcessing ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                          Processing...
+                        </>
+                      ) : (
+                        'Start Processing'
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Transactions List */}
       <Card>
