@@ -197,6 +197,7 @@ export default function AdminDashboard() {
   const [coachData, setCoachData] = useState<CoachData[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
+  const [featuredCourses, setFeaturedCourses] = useState<string[]>([])
   const [platformSettings, setPlatformSettings] = useState({ 
     platform_name: 'Fampreneurs', 
     admin_email: 'admin@fampreneurs.com' 
@@ -249,7 +250,8 @@ export default function AdminDashboard() {
         loadCoaches(),
         loadCoachingSessions(),
         loadMetrics(),
-        loadCoachData()
+        loadCoachData(),
+        loadFeaturedCourses()
       ])
 
     } catch (error: any) {
@@ -570,6 +572,66 @@ export default function AdminDashboard() {
       console.error('Error loading coach data:', error)
       // Fallback to empty array on error
       setCoachData([])
+    }
+  }
+
+  const loadFeaturedCourses = async () => {
+    try {
+      const { data: featuredData, error } = await supabase
+        .from('featured_courses')
+        .select('course_id')
+        .eq('is_featured', true)
+      
+      if (error) throw error
+      setFeaturedCourses(featuredData?.map(f => f.course_id) || [])
+    } catch (error) {
+      console.error('Error loading featured courses:', error)
+      setFeaturedCourses([])
+    }
+  }
+
+  const handleToggleFeatured = async (courseId: string) => {
+    try {
+      const isFeatured = featuredCourses.includes(courseId)
+      
+      if (isFeatured) {
+        // Remove from featured
+        const { error } = await supabase
+          .from('featured_courses')
+          .delete()
+          .eq('course_id', courseId)
+        
+        if (error) throw error
+        
+        setFeaturedCourses(prev => prev.filter(id => id !== courseId))
+        toast({
+          title: "Course unfeatured",
+          description: "Course has been removed from featured courses.",
+        })
+      } else {
+        // Add to featured
+        const { error } = await supabase
+          .from('featured_courses')
+          .insert({
+            course_id: courseId,
+            featured_by: user?.id,
+            is_featured: true
+          })
+        
+        if (error) throw error
+        
+        setFeaturedCourses(prev => [...prev, courseId])
+        toast({
+          title: "Course featured",
+          description: "Course has been added to featured courses.",
+        })
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error updating featured status",
+        description: error.message,
+        variant: "destructive",
+      })
     }
   }
 
@@ -920,7 +982,47 @@ export default function AdminDashboard() {
                   <CardDescription>Manage featured course selection</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">Feature management coming soon...</p>
+                  <div className="space-y-4">
+                    {courses.map((course) => (
+                      <div key={course.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          {course.image_url && (
+                            <img 
+                              src={course.image_url} 
+                              alt={course.title} 
+                              className="w-12 h-12 rounded object-cover"
+                            />
+                          )}
+                          <div>
+                            <div className="font-medium">{course.title}</div>
+                            <div className="text-sm text-muted-foreground">{course.description}</div>
+                            <div className="flex gap-2 mt-1">
+                              {course.category && (
+                                <Badge variant="secondary" className="text-xs">{course.category}</Badge>
+                              )}
+                              {course.level && (
+                                <Badge variant="outline" className="text-xs">{course.level}</Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {featuredCourses.includes(course.id) && (
+                            <Badge variant="default" className="bg-yellow-500 text-black">
+                              Featured
+                            </Badge>
+                          )}
+                          <Button
+                            variant={featuredCourses.includes(course.id) ? "destructive" : "outline"}
+                            size="sm"
+                            onClick={() => handleToggleFeatured(course.id)}
+                          >
+                            {featuredCourses.includes(course.id) ? "Remove Featured" : "Feature Course"}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </div>
