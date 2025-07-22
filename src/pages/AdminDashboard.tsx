@@ -156,6 +156,7 @@ interface Metrics {
   groupCalls15Days: number
   groupCallsThisMonth: number
   totalFrontendCashCollected: number
+  totalBackendCashCollected: number
 }
 
 interface CoachData {
@@ -190,7 +191,8 @@ export default function AdminDashboard() {
     groupCalls30Days: 0,
     groupCalls15Days: 0,
     groupCallsThisMonth: 0,
-    totalFrontendCashCollected: 0
+    totalFrontendCashCollected: 0,
+    totalBackendCashCollected: 0
   })
   const [coachData, setCoachData] = useState<CoachData[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -494,6 +496,16 @@ export default function AdminDashboard() {
          return total + (user.investment_amount || 0)
        }, 0) || 0
 
+       // Calculate total backend cash collected from users over past 12 months
+       const { data: usersWithBackendCash } = await supabase
+         .from('profiles')
+         .select('backend_cash_collected, created_at')
+         .gte('created_at', twelveMonthsAgo.toISOString())
+
+       const totalBackendCashCollected = usersWithBackendCash?.reduce((total, user) => {
+         return total + (user.backend_cash_collected || 0)
+       }, 0) || 0
+
        setMetrics({
          newRenewals: 12, // Keep mock data for financial metrics for now
          nonRenewals: 3,
@@ -509,7 +521,8 @@ export default function AdminDashboard() {
          groupCalls30Days,
          groupCalls15Days,
          groupCallsThisMonth,
-         totalFrontendCashCollected
+         totalFrontendCashCollected,
+         totalBackendCashCollected
        })
     } catch (error) {
       console.error('Error loading metrics:', error)
@@ -675,13 +688,13 @@ export default function AdminDashboard() {
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Backend Revenue</CardTitle>
+                  <CardTitle className="text-sm font-medium">Backend Cash Collected</CardTitle>
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">$0</div>
+                  <div className="text-2xl font-bold">${metrics.totalBackendCashCollected.toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">
-                    Backend system revenue
+                    Past 12 months from all users
                   </p>
                 </CardContent>
               </Card>
