@@ -635,7 +635,7 @@ export function TransactionMonitoring() {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
                 <Zap className="h-4 w-4 text-yellow-500" />
-                <span>Smart categorization & duplicate detection</span>
+                <span style={{ color: '#290a52' }}>Smart categorization & duplicate detection</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <FileCheck className="h-4 w-4 text-green-500" />
