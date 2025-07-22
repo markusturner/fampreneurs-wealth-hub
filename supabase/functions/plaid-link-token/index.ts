@@ -51,7 +51,7 @@ serve(async (req) => {
     }
 
     const plaidClientId = Deno.env.get('PLAID_CLIENT_ID');
-    const plaidSecret = Deno.env.get('PLAID_SECRET') || Deno.env.get('PLAID_SECRET_KEY');
+    const plaidSecret = Deno.env.get('PLAID_SECRET');
 
     console.log('Plaid credentials check:', {
       hasClientId: !!plaidClientId,
@@ -61,8 +61,17 @@ serve(async (req) => {
     });
 
     if (!plaidClientId || !plaidSecret) {
-      console.error('Missing Plaid credentials');
-      return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+      console.error('Missing Plaid credentials', {
+        PLAID_CLIENT_ID: !!plaidClientId,
+        PLAID_SECRET: !!plaidSecret
+      });
+      return new Response(JSON.stringify({ 
+        error: 'Server configuration error - missing Plaid credentials',
+        debug: {
+          hasClientId: !!plaidClientId,
+          hasSecret: !!plaidSecret
+        }
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
