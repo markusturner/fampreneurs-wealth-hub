@@ -1075,7 +1075,10 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                           <div className="flex gap-2">
                             <Button
                               size="sm"
-                              onClick={() => updateBackendCashAmount(user.user_id, backendCashAmounts[user.user_id] || '0')}
+                              onClick={() => {
+                                console.log('🔥 SAVE BUTTON CLICKED for user:', user.user_id, 'amount:', backendCashAmounts[user.user_id])
+                                updateBackendCashAmount(user.user_id, backendCashAmounts[user.user_id] || '0')
+                              }}
                               className="flex-1"
                             >
                               <Save className="h-3 w-3 mr-1" />
