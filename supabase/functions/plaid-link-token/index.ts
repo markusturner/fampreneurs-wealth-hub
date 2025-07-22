@@ -49,6 +49,13 @@ serve(async (req) => {
     const plaidClientId = Deno.env.get('PLAID_CLIENT_ID');
     const plaidSecret = Deno.env.get('PLAID_SECRET') || Deno.env.get('PLAID_SECRET_KEY');
 
+    console.log('Plaid credentials check:', {
+      hasClientId: !!plaidClientId,
+      hasSecret: !!plaidSecret,
+      clientIdLength: plaidClientId?.length || 0,
+      secretLength: plaidSecret?.length || 0
+    });
+
     if (!plaidClientId || !plaidSecret) {
       console.error('Missing Plaid credentials');
       return new Response(JSON.stringify({ error: 'Server configuration error' }), {
@@ -76,6 +83,7 @@ serve(async (req) => {
     };
 
     console.log('Creating link token for user:', user.id);
+    console.log('Link token request payload:', JSON.stringify(linkTokenRequest, null, 2));
 
     // Call Plaid API to create link token
     const response = await fetch('https://production.plaid.com/link/token/create', {
@@ -86,7 +94,9 @@ serve(async (req) => {
       body: JSON.stringify(linkTokenRequest),
     });
 
+    console.log('Plaid API response status:', response.status);
     const plaidResponse = await response.json();
+    console.log('Plaid API response body:', JSON.stringify(plaidResponse, null, 2));
 
     if (!response.ok) {
       console.error('Plaid API error:', plaidResponse);
