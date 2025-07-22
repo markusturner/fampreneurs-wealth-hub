@@ -62,7 +62,7 @@ serve(async (req) => {
     }
 
     const plaidClientId = Deno.env.get('PLAID_CLIENT_ID');
-    const plaidSecret = Deno.env.get('PLAID_SECRET');
+    const plaidSecret = Deno.env.get('PLAID_SECRET_KEY');
 
     console.log('Plaid credentials check:', {
       hasClientId: !!plaidClientId,
