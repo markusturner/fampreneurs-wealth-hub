@@ -626,7 +626,7 @@ export function TransactionMonitoring() {
             <Bot className="h-5 w-5" />
             AI Bookkeeping Assistant
           </CardTitle>
-          <CardDescription>
+          <CardDescription style={{ color: '#290a52' }}>
             Automatically categorize transactions, detect duplicates, and generate financial insights
           </CardDescription>
         </CardHeader>
