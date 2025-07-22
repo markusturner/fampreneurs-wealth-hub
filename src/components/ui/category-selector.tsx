@@ -5,8 +5,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useToast } from '@/hooks/use-toast'
-import { Plus, Check } from 'lucide-react'
+import { Plus, Check, MoreVertical, Edit, Trash2 } from 'lucide-react'
+
+interface Category {
+  id: string
+  name: string
+}
 
 interface CategorySelectorProps {
   value: string
@@ -27,10 +33,12 @@ export function CategorySelector({
 }: CategorySelectorProps) {
   const { user } = useAuth()
   const { toast } = useToast()
-  const [categories, setCategories] = useState<string[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [isCreating, setIsCreating] = useState(false)
   const [newCategory, setNewCategory] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [editCategoryName, setEditCategoryName] = useState('')
 
   useEffect(() => {
     fetchCategories()
@@ -40,13 +48,13 @@ export function CategorySelector({
     try {
       const { data, error } = await supabase
         .from('categories')
-        .select('name')
+        .select('id, name')
         .eq('type', type)
         .order('name')
 
       if (error) throw error
 
-      setCategories(data?.map(cat => cat.name) || [])
+      setCategories(data || [])
     } catch (error) {
       console.error('Error fetching categories:', error)
     }
@@ -100,14 +108,95 @@ export function CategorySelector({
     }
   }
 
+  const updateCategory = async () => {
+    if (!editCategoryName.trim() || !editingCategory) return
+
+    setIsLoading(true)
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .update({ name: editCategoryName.trim() })
+        .eq('id', editingCategory.id)
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: "Category updated successfully!"
+      })
+
+      // Update categories and select the updated one if it was selected
+      await fetchCategories()
+      if (value === editingCategory.name) {
+        onValueChange(editCategoryName.trim())
+      }
+      setEditingCategory(null)
+      setEditCategoryName('')
+
+    } catch (error) {
+      console.error('Error updating category:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update category. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const deleteCategory = async (category: Category) => {
+    setIsLoading(true)
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', category.id)
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: "Category deleted successfully!"
+      })
+
+      // Update categories and clear selection if deleted category was selected
+      await fetchCategories()
+      if (value === category.name) {
+        onValueChange('')
+      }
+
+    } catch (error) {
+      console.error('Error deleting category:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete category. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const startEdit = (category: Category) => {
+    setEditingCategory(category)
+    setEditCategoryName(category.name)
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      createCategory()
+      if (editingCategory) {
+        updateCategory()
+      } else {
+        createCategory()
+      }
     }
     if (e.key === 'Escape') {
       setIsCreating(false)
       setNewCategory('')
+      setEditingCategory(null)
+      setEditCategoryName('')
     }
   }
 
@@ -115,29 +204,100 @@ export function CategorySelector({
     <div className="space-y-2">
       <Label htmlFor="category">{label} {required && '*'}</Label>
       
-      {!isCreating ? (
+      {editingCategory ? (
         <div className="flex gap-2">
-          <Select value={value} onValueChange={onValueChange} required={required}>
-            <SelectTrigger className="flex-1">
-              <SelectValue placeholder={placeholder} />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Input
+            value={editCategoryName}
+            onChange={(e) => setEditCategoryName(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Enter category name"
+            className="flex-1"
+            autoFocus
+          />
+          <Button
+            type="button"
+            size="sm"
+            onClick={updateCategory}
+            disabled={!editCategoryName.trim() || isLoading}
+            className="shrink-0"
+          >
+            <Check className="h-4 w-4" />
+          </Button>
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => setIsCreating(true)}
+            onClick={() => {
+              setEditingCategory(null)
+              setEditCategoryName('')
+            }}
             className="shrink-0"
           >
-            <Plus className="h-4 w-4" />
+            Cancel
           </Button>
+        </div>
+      ) : !isCreating ? (
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Select value={value} onValueChange={onValueChange} required={required}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder={placeholder} />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.name}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCreating(true)}
+              className="shrink-0"
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          {categories.length > 0 && (
+            <div className="space-y-1">
+              <div className="text-xs text-muted-foreground">Manage categories:</div>
+              <div className="flex flex-wrap gap-1">
+                {categories.map((cat) => (
+                  <div key={cat.id} className="flex items-center gap-1 bg-muted rounded-md px-2 py-1 text-xs">
+                    <span>{cat.name}</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-background"
+                        >
+                          <MoreVertical className="h-2 w-2" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-32">
+                        <DropdownMenuItem onClick={() => startEdit(cat)}>
+                          <Edit className="mr-2 h-3 w-3" />
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => deleteCategory(cat)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-3 w-3" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex gap-2">
