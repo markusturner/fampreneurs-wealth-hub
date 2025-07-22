@@ -122,7 +122,7 @@ export const VideoCallBanner = () => {
   useEffect(() => {
     fetchActiveCalls();
     
-    // Set up real-time subscription for active calls
+    // Set up real-time subscription for active calls with debouncing
     const channel = supabase
       .channel('video_calls_banner')
       .on(
@@ -133,7 +133,10 @@ export const VideoCallBanner = () => {
           table: 'video_call_rooms'
         },
         () => {
-          fetchActiveCalls();
+          // Debounce the fetch to prevent multiple rapid calls
+          setTimeout(() => {
+            fetchActiveCalls();
+          }, 500);
         }
       )
       .subscribe();
