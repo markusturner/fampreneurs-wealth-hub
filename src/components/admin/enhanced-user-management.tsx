@@ -641,46 +641,46 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         </div>
       </div>
 
-      {/* Users Grid */}
-      <div className="grid gap-4 sm:gap-6">
+      {/* Users Grid - Compact Layout */}
+      <div className="grid gap-3">
         {filteredUsers.map(user => (
           <Card key={user.id} className="overflow-hidden">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col gap-4">
-                {/* User Info Row */}
+            <CardContent className="p-3">
+              <div className="flex flex-col gap-3">
+                {/* User Info Row - More Compact */}
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12 sm:h-16 sm:w-16 flex-shrink-0">
+                  <Avatar className="h-10 w-10 flex-shrink-0">
                     <AvatarImage src={user.avatar_url || ''} className="object-cover" />
-                    <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                    <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
                       {getDisplayName(user).split(' ').map(n => n.charAt(0)).join('').slice(0, 2)}
                     </AvatarFallback>
                   </Avatar>
                   
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg truncate">
+                    <h3 className="font-medium text-base truncate">
                       {getDisplayName(user)}
                     </h3>
-                    <p className="text-sm text-muted-foreground truncate">
+                    <p className="text-xs text-muted-foreground truncate">
                       {user.email || 'No email'}
                     </p>
-                    
-                    {/* Stats */}
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      <Badge variant="outline" className="text-xs">
-                        Progress: {Math.round(userAttendance[user.user_id]?.courseProgress || user.course_progress || 0)}%
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        Group: {userAttendance[user.user_id]?.group || user.group_calls_attended || 0}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        1-on-1: {userAttendance[user.user_id]?.individual || user.one_on_one_calls_attended || 0}
-                      </Badge>
-                    </div>
+                  </div>
+
+                  {/* Stats - Inline */}
+                  <div className="flex gap-2 text-xs">
+                    <Badge variant="outline" className="text-xs px-2 py-1">
+                      {Math.round(userAttendance[user.user_id]?.courseProgress || user.course_progress || 0)}%
+                    </Badge>
+                    <Badge variant="outline" className="text-xs px-2 py-1">
+                      G:{userAttendance[user.user_id]?.group || user.group_calls_attended || 0}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs px-2 py-1">
+                      1:1:{userAttendance[user.user_id]?.individual || user.one_on_one_calls_attended || 0}
+                    </Badge>
                   </div>
                 </div>
 
-                {/* Management Sections */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-6">
+                {/* Management Sections - Horizontal Layout */}
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 gap-3 text-sm">
                   {/* Program Assignment */}
                   <div className="space-y-3">
                     <div>
