@@ -112,6 +112,8 @@ interface Profile {
   } | null
   program_name: string | null
   membership_type: string | null
+  investment_amount?: number
+  backend_cash_collected?: number
 }
 
 interface Course {
@@ -153,6 +155,7 @@ interface Metrics {
   groupCalls30Days: number
   groupCalls15Days: number
   groupCallsThisMonth: number
+  totalFrontendCashCollected: number
 }
 
 interface CoachData {
@@ -186,7 +189,8 @@ export default function AdminDashboard() {
     oneOnOneCallsThisMonth: 0,
     groupCalls30Days: 0,
     groupCalls15Days: 0,
-    groupCallsThisMonth: 0
+    groupCallsThisMonth: 0,
+    totalFrontendCashCollected: 0
   })
   const [coachData, setCoachData] = useState<CoachData[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -474,27 +478,39 @@ export default function AdminDashboard() {
         new Date(a.created_at) >= fifteenDaysAgo
       ).length || 0
 
-      const groupCallsThisMonth = attendanceData?.filter(a => 
-        a.session_type === 'group' && 
-        new Date(a.created_at) >= startOfMonth
-      ).length || 0
+       const groupCallsThisMonth = attendanceData?.filter(a => 
+         a.session_type === 'group' && 
+         new Date(a.created_at) >= startOfMonth
+       ).length || 0
 
-      setMetrics({
-        newRenewals: 12, // Keep mock data for financial metrics for now
-        nonRenewals: 3,
-        newUpsells: 8,
-        nonUpsells: 2,
-        totalRevenue: 45000,
-        averageRevenue: 3750,
-        renewalRate: 80,
-        satisfactionScore: 4.2,
-        oneOnOneCalls30Days,
-        oneOnOneCalls15Days,
-        oneOnOneCallsThisMonth,
-        groupCalls30Days,
-        groupCalls15Days,
-        groupCallsThisMonth
-      })
+       // Calculate total frontend cash collected from users over past 12 months
+       const twelveMonthsAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
+       const { data: usersWithInvestments } = await supabase
+         .from('profiles')
+         .select('investment_amount, created_at')
+         .gte('created_at', twelveMonthsAgo.toISOString())
+
+       const totalFrontendCashCollected = usersWithInvestments?.reduce((total, user) => {
+         return total + (user.investment_amount || 0)
+       }, 0) || 0
+
+       setMetrics({
+         newRenewals: 12, // Keep mock data for financial metrics for now
+         nonRenewals: 3,
+         newUpsells: 8,
+         nonUpsells: 2,
+         totalRevenue: 45000,
+         averageRevenue: 3750,
+         renewalRate: 80,
+         satisfactionScore: 4.2,
+         oneOnOneCalls30Days,
+         oneOnOneCalls15Days,
+         oneOnOneCallsThisMonth,
+         groupCalls30Days,
+         groupCalls15Days,
+         groupCallsThisMonth,
+         totalFrontendCashCollected
+       })
     } catch (error) {
       console.error('Error loading metrics:', error)
     }
@@ -647,13 +663,13 @@ export default function AdminDashboard() {
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Frontend Revenue</CardTitle>
+                  <CardTitle className="text-sm font-medium">Frontend Cash Collected</CardTitle>
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${metrics.totalRevenue.toLocaleString()}</div>
+                  <div className="text-2xl font-bold">${metrics.totalFrontendCashCollected.toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">
-                    +{metrics.newRenewals} renewals this month
+                    Past 12 months from all users
                   </p>
                 </CardContent>
               </Card>
