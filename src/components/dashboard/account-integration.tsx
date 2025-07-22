@@ -234,12 +234,12 @@ export function AccountIntegration() {
     },
   })
 
-  // Auto-open Plaid Link when token is ready
+  // Auto-open Plaid Link when token is ready and dialog is open
   useEffect(() => {
-    if (linkToken && ready) {
+    if (linkToken && ready && showAddDialog) {
       open()
     }
-  }, [linkToken, ready, open])
+  }, [linkToken, ready, open, showAddDialog])
 
   const handleAddAccount = async () => {
     if (!newAccount.name || !newAccount.provider) {
