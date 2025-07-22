@@ -884,7 +884,10 @@ export default function AdminDashboard() {
             <EnhancedUserManagement 
               users={users} 
               coaches={coaches} 
-              onUsersUpdated={loadUsers} 
+              onUsersUpdated={() => {
+                loadUsers()
+                loadMetrics()
+              }} 
             />
           </TabsContent>
 
