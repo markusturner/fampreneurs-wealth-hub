@@ -492,20 +492,45 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   const updateBackendCashAmount = async (userId: string, amount: string) => {
     try {
       const numericAmount = parseFloat(amount) || 0
-      console.log('Updating backend cash amount for user:', userId, 'to:', numericAmount)
+      console.log('🔧 Starting backend cash update for user:', userId, 'to:', numericAmount)
+      
+      // First verify the user exists
+      const { data: existingUser, error: userError } = await supabase
+        .from('profiles')
+        .select('user_id, backend_cash_collected')
+        .eq('user_id', userId)
+        .single()
+
+      if (userError) {
+        console.error('❌ Error finding user:', userError)
+        throw userError
+      }
+
+      console.log('📋 Current user data:', existingUser)
       
       const { error, data } = await supabase
         .from('profiles')
         .update({ backend_cash_collected: numericAmount })
         .eq('user_id', userId)
-        .select()
+        .select('user_id, backend_cash_collected')
 
       if (error) {
-        console.error('Supabase error updating backend cash:', error)
+        console.error('❌ Supabase error updating backend cash:', error)
         throw error
       }
 
-      console.log('Backend cash update successful:', data)
+      console.log('✅ Backend cash update successful:', data)
+
+      // Verify the update worked by reading it back
+      const { data: verifyData, error: verifyError } = await supabase
+        .from('profiles')
+        .select('user_id, backend_cash_collected')
+        .eq('user_id', userId)
+        .single()
+
+      if (!verifyError) {
+        console.log('🔍 Verification - Updated value in DB:', verifyData)
+      }
 
       toast({
         title: "Backend Cash Collected Updated",
@@ -519,10 +544,17 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         return newState
       })
       
-      console.log('Calling onUsersUpdated() for backend cash update')
+      console.log('🔄 Calling onUsersUpdated() to refresh UI')
       onUsersUpdated()
+      
+      // Small delay then log current users state to see if it updated
+      setTimeout(() => {
+        console.log('🕐 Users state after update (delayed check):', 
+          users.find(u => u.user_id === userId)?.backend_cash_collected)
+      }, 1000)
+      
     } catch (error) {
-      console.error('Error updating backend cash amount:', error)
+      console.error('❌ Error updating backend cash amount:', error)
       toast({
         title: "Error",
         description: "Failed to update backend cash collected.",
