@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,6 +34,7 @@ export function TwoStepCourseEditor({ course, onCourseUpdated }: TwoStepCourseEd
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [coaches, setCoaches] = useState<Array<{id: string, full_name: string}>>([])
   const [imageTab, setImageTab] = useState<'upload' | 'url'>('url')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imageUrl, setImageUrl] = useState(course.image_url || '')
@@ -48,6 +49,28 @@ export function TwoStepCourseEditor({ course, onCourseUpdated }: TwoStepCourseEd
     status: (course as any).status || 'published'
   })
   const { toast } = useToast()
+
+  // Fetch coaches when component mounts
+  useEffect(() => {
+    const fetchCoaches = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('coaches')
+          .select('id, full_name')
+          .eq('is_active', true)
+          .order('full_name')
+
+        if (error) throw error
+        setCoaches(data || [])
+      } catch (error) {
+        console.error('Error fetching coaches:', error)
+      }
+    }
+
+    if (open) {
+      fetchCoaches()
+    }
+  }, [open])
 
   const uploadImage = async (file: File): Promise<string | null> => {
     try {
@@ -225,11 +248,22 @@ export function TwoStepCourseEditor({ course, onCourseUpdated }: TwoStepCourseEd
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="instructor">Instructor</Label>
-                <Input
-                  id="instructor"
-                  value={formData.instructor}
-                  onChange={(e) => setFormData(prev => ({ ...prev, instructor: e.target.value }))}
-                />
+                <Select 
+                  value={formData.instructor} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, instructor: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select instructor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No instructor</SelectItem>
+                    {coaches.map((coach) => (
+                      <SelectItem key={coach.id} value={coach.full_name}>
+                        {coach.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="space-y-2">
