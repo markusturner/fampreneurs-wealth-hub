@@ -121,7 +121,7 @@ serve(async (req) => {
     console.log('Exchanging public token for access token');
 
     // Exchange public token for access token
-    const exchangeResponse = await fetch('https://sandbox.plaid.com/link/token/exchange', {
+    const exchangeResponse = await fetch('https://production.plaid.com/link/token/exchange', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -148,7 +148,7 @@ serve(async (req) => {
     console.log('Access token obtained, fetching accounts');
 
     // Get accounts information
-    const accountsResponse = await fetch('https://sandbox.plaid.com/accounts/get', {
+    const accountsResponse = await fetch('https://production.plaid.com/accounts/get', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -78,7 +78,7 @@ serve(async (req) => {
     console.log('Creating link token for user:', user.id);
 
     // Call Plaid API to create link token
-    const response = await fetch('https://sandbox.plaid.com/link/token/create', {
+    const response = await fetch('https://production.plaid.com/link/token/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
