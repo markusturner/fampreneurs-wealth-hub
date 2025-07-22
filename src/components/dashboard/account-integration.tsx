@@ -234,12 +234,13 @@ export function AccountIntegration() {
     },
   })
 
-  // Auto-open Plaid Link when token is ready and dialog is open
+  // Auto-open Plaid Link when token is ready
   useEffect(() => {
-    if (linkToken && ready && showAddDialog) {
+    if (linkToken && ready) {
+      setShowAddDialog(false)
       open()
     }
-  }, [linkToken, ready, open, showAddDialog])
+  }, [linkToken, ready, open])
 
   const handleAddAccount = async () => {
     if (!newAccount.name || !newAccount.provider) {
@@ -410,10 +411,13 @@ export function AccountIntegration() {
 
   const handleConnectRealAccount = async (accountType: string) => {
     if (accountType === 'plaid') {
-      // Close the dialog before opening Plaid to prevent z-index conflicts
-      setShowAddDialog(false)
       if (!linkToken) {
         await createLinkToken()
+      }
+      // Open Plaid Link immediately if token is ready
+      if (linkToken && ready) {
+        setShowAddDialog(false)
+        open()
       }
     } else if (accountType === 'google_sheets') {
       const sheetUrl = prompt('Enter your Google Sheets URL:')
