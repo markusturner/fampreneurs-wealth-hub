@@ -410,6 +410,8 @@ export function AccountIntegration() {
 
   const handleConnectRealAccount = async (accountType: string) => {
     if (accountType === 'plaid') {
+      // Close the dialog before opening Plaid to prevent z-index conflicts
+      setShowAddDialog(false)
       if (!linkToken) {
         await createLinkToken()
       }
