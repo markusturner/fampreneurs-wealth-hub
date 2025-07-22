@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.ai-chat]
 verify_jwt = false
+
+[functions.plaid-link-token]
+verify_jwt = true
+
+[functions.plaid-exchange-token]
+verify_jwt = true

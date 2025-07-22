@@ -21,7 +21,18 @@ serve(async (req) => {
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('Handling CORS preflight');
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Add a test response to verify function is working
+  if (req.url.includes('?test=true')) {
+    return new Response(JSON.stringify({ 
+      message: 'Function is working',
+      timestamp: new Date().toISOString()
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
