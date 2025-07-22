@@ -558,10 +558,10 @@ const Coaching = () => {
                                   <span className="font-medium">{coach.years_experience || 'N/A'} years</span>
                                 </div>
                                 
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm font-bold" style={{ color: '#ffb500' }}>
-                                    ${coach.hourly_rate || '300'}/hr
-                                  </span>
+                                 <div className="flex items-center justify-between">
+                                   <span className="text-sm font-bold" style={{ color: '#ffb500' }}>
+                                     ${coach.hourly_rate ?? '300'}/hr
+                                   </span>
                                   <Button 
                                     size="sm" 
                                     className="gap-2 text-xs flex-shrink-0" 
