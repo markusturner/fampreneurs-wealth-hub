@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { Edit, ArrowLeft, ArrowRight } from 'lucide-react'
 import { CourseContentManager } from './course-content-manager'
+import { CategorySelector } from '@/components/ui/category-selector'
 
 interface Course {
   id: string
@@ -232,11 +233,12 @@ export function TwoStepCourseEditor({ course, onCourseUpdated }: TwoStepCourseEd
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Input
-                  id="category"
+                <CategorySelector
+                  type="course"
+                  label="Category"
                   value={formData.category}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                  placeholder="Select or create category"
                 />
               </div>
             </div>
