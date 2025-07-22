@@ -620,7 +620,7 @@ export function TransactionMonitoring() {
       </div>
 
       {/* AI Bookkeeping Section */}
-      <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
+      <Card className="border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50" style={{ borderColor: '#ffb500', background: 'linear-gradient(to right, #fffbeb, #fef3c7)' }}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-purple-800">
             <Bot className="h-5 w-5" />
