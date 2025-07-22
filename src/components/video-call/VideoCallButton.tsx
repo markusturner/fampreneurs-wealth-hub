@@ -58,9 +58,20 @@ export const VideoCallButton = () => {
 
   // Start a new call
   const startNewCall = async () => {
-    if (!user) return;
+    console.log('startNewCall clicked!');
+    
+    if (!user) {
+      console.error('No user found');
+      toast({
+        title: "Error",
+        description: "You must be logged in to start a video call",
+        variant: "destructive"
+      });
+      return;
+    }
 
     try {
+      console.log('Creating new call...');
       const roomName = `call-${Date.now()}`;
       const { data, error } = await supabase
         .from('video_call_rooms')
@@ -73,7 +84,12 @@ export const VideoCallButton = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      console.log('Call created successfully:', data);
 
       // Send notifications to all users about the video call
       try {
@@ -95,6 +111,7 @@ export const VideoCallButton = () => {
         // Don't fail the call creation if notifications fail
       }
 
+      console.log('Setting room ID and opening dialog:', data.id);
       setCurrentRoomId(data.id);
       setIsCallDialogOpen(true);
       
