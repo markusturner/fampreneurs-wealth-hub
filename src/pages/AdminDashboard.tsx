@@ -1147,7 +1147,7 @@ export default function AdminDashboard() {
                         <div className="text-sm text-muted-foreground">
                           {format(new Date(session.session_date), 'MMM d, yyyy')} • {session.coach_name}
                         </div>
-                        <Badge variant="outline" className="mt-1" style={{ backgroundColor: '#ffb500', borderColor: '#ffb500', color: 'white' }}>
+                        <Badge variant="outline" className="mt-1" style={{ backgroundColor: '#ffb500', borderColor: '#ffb500', color: '#290a52' }}>
                           Group Session
                         </Badge>
                       </div>
