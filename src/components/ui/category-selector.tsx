@@ -283,6 +283,7 @@ export function CategorySelector({
                               className="h-5 w-5 p-0"
                               onClick={(e) => {
                                 e.stopPropagation()
+                                console.log('Edit clicked for:', cat.name)
                                 startEdit(cat)
                               }}
                             >
@@ -294,7 +295,10 @@ export function CategorySelector({
                               className="h-5 w-5 p-0 text-destructive hover:text-destructive"
                               onClick={(e) => {
                                 e.stopPropagation()
-                                deleteCategory(cat)
+                                console.log('Delete clicked for:', cat.name)
+                                if (confirm(`Are you sure you want to delete "${cat.name}"?`)) {
+                                  deleteCategory(cat)
+                                }
                               }}
                             >
                               <Trash2 className="h-2.5 w-2.5" />
