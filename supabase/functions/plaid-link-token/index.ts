@@ -15,6 +15,10 @@ interface Database {
 }
 
 serve(async (req) => {
+  console.log('=== Plaid Link Token Function Started ===');
+  console.log('Request method:', req.method);
+  console.log('Request URL:', req.url);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
