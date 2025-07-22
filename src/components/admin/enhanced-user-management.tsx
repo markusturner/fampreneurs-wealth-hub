@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -154,12 +154,16 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
     }
   }
 
-  // Reset editing state when component unmounts or when users prop changes
+  // Only reset when users list actually changes (not just data updates)
+  const usersRef = useRef(users.length)
   useEffect(() => {
-    console.log('Users prop changed, resetting state. New users:', users.length)
-    console.log('Users data:', users.map(u => ({ id: u.user_id, name: u.display_name, activation_point: u.activation_point })))
-    setEditingUser(null)
-    setSelectedPrograms({})
+    if (users.length !== usersRef.current) {
+      console.log('Users prop changed, resetting state. New users:', users.length)
+      console.log('Users data:', users.map(u => ({ id: u.user_id, name: u.display_name, activation_point: u.activation_point })))
+      setEditingUser(null)
+      setSelectedPrograms({})
+      usersRef.current = users.length
+    }
   }, [users])
 
   // Save persistent states to localStorage whenever they change
