@@ -249,14 +249,14 @@ export function TwoStepCourseEditor({ course, onCourseUpdated }: TwoStepCourseEd
               <div className="space-y-2">
                 <Label htmlFor="instructor">Instructor</Label>
                 <Select 
-                  value={formData.instructor} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, instructor: value }))}
+                  value={formData.instructor || 'none'} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, instructor: value === 'none' ? '' : value }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select instructor" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No instructor</SelectItem>
+                    <SelectItem value="none">No instructor</SelectItem>
                     {coaches.map((coach) => (
                       <SelectItem key={coach.id} value={coach.full_name}>
                         {coach.full_name}
