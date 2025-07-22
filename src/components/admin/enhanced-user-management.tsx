@@ -492,6 +492,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   const updateBackendCashAmount = async (userId: string, amount: string) => {
     try {
       const numericAmount = parseFloat(amount) || 0
+      console.log('Updating backend cash amount for user:', userId, 'to:', numericAmount)
       
       const { error, data } = await supabase
         .from('profiles')
@@ -500,9 +501,11 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         .select()
 
       if (error) {
-        console.error('Supabase error:', error)
+        console.error('Supabase error updating backend cash:', error)
         throw error
       }
+
+      console.log('Backend cash update successful:', data)
 
       toast({
         title: "Backend Cash Collected Updated",
@@ -516,6 +519,7 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         return newState
       })
       
+      console.log('Calling onUsersUpdated() for backend cash update')
       onUsersUpdated()
     } catch (error) {
       console.error('Error updating backend cash amount:', error)
