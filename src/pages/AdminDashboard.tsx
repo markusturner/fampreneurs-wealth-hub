@@ -658,6 +658,29 @@ export default function AdminDashboard() {
     loadAdminData();
   };
 
+  const handleDeleteCoachingSession = async (sessionId: string) => {
+    const { error } = await supabase
+      .from('group_coaching_sessions')
+      .delete()
+      .eq('id', sessionId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete coaching session",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: "Coaching session deleted successfully"
+    });
+    
+    loadAdminData();
+  };
+
   const handleSignOut = async () => {
     try {
       await signOut()
@@ -1133,6 +1156,13 @@ export default function AdminDashboard() {
                           {session.current_participants || 0}/{session.max_participants} participants
                         </span>
                         <EditCoachingSessionDialog session={session} onSessionUpdated={loadAdminData} />
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteCoachingSession(session.id)}
+                        >
+                          Delete
+                        </Button>
                       </div>
                     </div>
                   ))}
