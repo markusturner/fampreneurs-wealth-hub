@@ -244,6 +244,8 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
 
   const updateUserPrograms = async (userId: string, programIds: string[]) => {
     try {
+      console.log('🔧 Starting program update for user:', userId, 'programs:', programIds)
+      
       // Store in persisted state immediately
       setPersistedPrograms(prev => ({
         ...prev,
@@ -255,13 +257,17 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         ? programs.find(p => p.id === programIds[0])?.name || null
         : null
 
+      console.log('📋 Updating to program name:', programName)
+
       // Update the user's program in the database
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from('profiles')
         .update({ program_name: programName })
         .eq('user_id', userId)
+        .select('user_id, program_name')
 
       if (error) {
+        console.error('❌ Supabase error updating program:', error)
         // Revert the persisted state on error
         setPersistedPrograms(prev => {
           const newState = { ...prev }
@@ -271,16 +277,22 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         throw error
       }
 
+      console.log('✅ Program update successful:', data)
+
       toast({
         title: "Program Updated",
         description: `User has been successfully assigned to ${programName || 'no program'}.`,
       })
 
+      console.log('🔄 Calling onUsersUpdated() to refresh UI')
       // Refresh users data first
       onUsersUpdated()
+      console.log('🔍 onUsersUpdated() called - checking if users array will update')
       
       // Clear local editing state after a brief delay to ensure data refresh
       setTimeout(() => {
+        console.log('🕐 Program state after update (delayed check):', 
+          users.find(u => u.user_id === userId)?.program_name)
         setEditingUser(null)
         setSelectedPrograms(prev => {
           const newState = { ...prev }
