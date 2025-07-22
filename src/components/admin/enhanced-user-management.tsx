@@ -536,6 +536,9 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
         console.log('🔍 Verification - Updated value in DB:', verifyData)
       }
 
+      // Call refresh to update the UI with the new data
+      onUsersUpdated()
+
       toast({
         title: "Backend Cash Collected Updated",
         description: `Backend cash collected has been set to $${numericAmount.toLocaleString()}.`,
