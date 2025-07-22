@@ -2148,6 +2148,7 @@ export type Database = {
           activation_point: string | null
           admin_permissions: string[] | null
           avatar_url: string | null
+          backend_cash_collected: number | null
           bio: string | null
           created_at: string
           display_name: string | null
@@ -2172,6 +2173,7 @@ export type Database = {
           activation_point?: string | null
           admin_permissions?: string[] | null
           avatar_url?: string | null
+          backend_cash_collected?: number | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
@@ -2196,6 +2198,7 @@ export type Database = {
           activation_point?: string | null
           admin_permissions?: string[] | null
           avatar_url?: string | null
+          backend_cash_collected?: number | null
           bio?: string | null
           created_at?: string
           display_name?: string | null

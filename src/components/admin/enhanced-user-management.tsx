@@ -38,6 +38,7 @@ interface Profile {
   } | null
   roles?: string[]
   investment_amount?: number
+  backend_cash_collected?: number
 }
 
 interface Coach {
@@ -68,6 +69,8 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
   const [userAttendance, setUserAttendance] = useState<Record<string, { group: number, individual: number, courseProgress: number }>>({})
   const [editingInvestment, setEditingInvestment] = useState<string | null>(null)
   const [investmentAmounts, setInvestmentAmounts] = useState<Record<string, string>>({})
+  const [editingBackendCash, setEditingBackendCash] = useState<string | null>(null)
+  const [backendCashAmounts, setBackendCashAmounts] = useState<Record<string, string>>({})
   
   // Initialize persistent states from localStorage
   const [persistedActivationPoints, setPersistedActivationPoints] = useState<Record<string, string>>(() => {
@@ -481,6 +484,44 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
       toast({
         title: "Error",
         description: "Failed to update frontend cash collected.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const updateBackendCashAmount = async (userId: string, amount: string) => {
+    try {
+      const numericAmount = parseFloat(amount) || 0
+      
+      const { error, data } = await supabase
+        .from('profiles')
+        .update({ backend_cash_collected: numericAmount })
+        .eq('user_id', userId)
+        .select()
+
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
+
+      toast({
+        title: "Backend Cash Collected Updated",
+        description: `Backend cash collected has been set to $${numericAmount.toLocaleString()}.`,
+      })
+
+      setEditingBackendCash(null)
+      setBackendCashAmounts(prev => {
+        const newState = { ...prev }
+        delete newState[userId]
+        return newState
+      })
+      
+      onUsersUpdated()
+    } catch (error) {
+      console.error('Error updating backend cash amount:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update backend cash collected.",
         variant: "destructive",
       })
     }
@@ -963,6 +1004,74 @@ export function EnhancedUserManagement({ users = [], coaches = [], onUsersUpdate
                             setInvestmentAmounts(prev => ({
                               ...prev,
                               [user.user_id]: (user.investment_amount || 0).toString()
+                            }))
+                          }}
+                          className="w-full"
+                        >
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit Amount
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Backend Cash Collected */}
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Backend Cash Collected</Label>
+                    
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium text-blue-600">
+                        ${(user.backend_cash_collected || 0).toLocaleString()}
+                      </div>
+                      
+                      {editingBackendCash === user.user_id ? (
+                        <div className="space-y-2">
+                          <Input
+                            type="number"
+                            placeholder="Enter amount"
+                            value={backendCashAmounts[user.user_id] || ''}
+                            onChange={(e) => setBackendCashAmounts(prev => ({
+                              ...prev,
+                              [user.user_id]: e.target.value
+                            }))}
+                            className="w-full"
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => updateBackendCashAmount(user.user_id, backendCashAmounts[user.user_id] || '0')}
+                              className="flex-1"
+                            >
+                              <Save className="h-3 w-3 mr-1" />
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setEditingBackendCash(null)
+                                setBackendCashAmounts(prev => {
+                                  const newState = { ...prev }
+                                  delete newState[user.user_id]
+                                  return newState
+                                })
+                              }}
+                              className="flex-1"
+                            >
+                              <X className="h-3 w-3 mr-1" />
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setEditingBackendCash(user.user_id)
+                            setBackendCashAmounts(prev => ({
+                              ...prev,
+                              [user.user_id]: (user.backend_cash_collected || 0).toString()
                             }))
                           }}
                           className="w-full"
