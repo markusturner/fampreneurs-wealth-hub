@@ -198,30 +198,6 @@ export function CommunityFeed() {
         {/* Right Sidebar */}
         <div className="hidden xl:block w-80 fixed right-0 top-0 h-full bg-card border-l border-border overflow-y-auto">
           <div className="p-4 space-y-6">
-            {/* Friend Requests */}
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-foreground">Friend requests</h3>
-                <span className="text-sm text-primary cursor-pointer hover:underline">See all</span>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500" />
-                  <div className="flex-1">
-                    <p className="font-medium">New Member</p>
-                    <p className="text-sm text-muted-foreground">1w</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button className="px-4 py-1 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90">
-                      Confirm
-                    </button>
-                    <button className="px-4 py-1 bg-muted text-muted-foreground rounded-md text-sm font-medium hover:bg-muted/80">
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Birthdays */}
             <div>
