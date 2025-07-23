@@ -126,46 +126,6 @@ export function CommunityFeed() {
       <div className="flex w-full">
         {/* Left Navigation Sidebar */}
         <div className="hidden lg:block w-80 fixed left-0 top-0 h-full bg-card border-r border-border overflow-y-auto">
-          <div className="p-4 space-y-2">
-            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <span className="text-sm font-semibold text-primary">
-                  {profile?.display_name?.[0] || profile?.first_name?.[0] || 'U'}
-                </span>
-              </div>
-              <span className="font-medium">{getDisplayName(profile)}</span>
-            </div>
-            
-            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
-              <MessageSquare className="w-6 h-6 text-blue-500" />
-              <span className="font-medium">Community AI</span>
-            </div>
-            
-            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
-              <Users className="w-6 h-6 text-green-500" />
-              <span className="font-medium">Friends</span>
-            </div>
-            
-            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
-              <Calendar className="w-6 h-6 text-purple-500" />
-              <span className="font-medium">Events</span>
-            </div>
-            
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/50 cursor-pointer">
-              <Users className="w-6 h-6 text-blue-600" />
-              <span className="font-medium text-primary">Groups</span>
-            </div>
-            
-            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
-              <BookOpen className="w-6 h-6 text-orange-500" />
-              <span className="font-medium">Courses</span>
-            </div>
-            
-            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
-              <Home className="w-6 h-6 text-red-500" />
-              <span className="font-medium">Family Office</span>
-            </div>
-          </div>
           
           <div className="border-t border-border mt-4 pt-4 px-4">
             <h3 className="text-sm font-semibold text-muted-foreground mb-3">Your Shortcuts</h3>
