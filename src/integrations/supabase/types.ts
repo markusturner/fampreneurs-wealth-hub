@@ -1432,6 +1432,33 @@ export type Database = {
         }
         Relationships: []
       }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       fulfillment_stages: {
         Row: {
           color: string | null
@@ -2150,16 +2177,21 @@ export type Database = {
           avatar_url: string | null
           backend_cash_collected: number | null
           bio: string | null
+          cover_photo_url: string | null
           created_at: string
           display_name: string | null
+          facebook_url: string | null
           family_role: string | null
           first_name: string | null
           id: string
+          instagram_url: string | null
           investment_amount: number | null
           is_accountability_partner: boolean | null
           is_admin: boolean | null
           is_moderator: boolean | null
           last_name: string | null
+          linkedin_url: string | null
+          location: string | null
           membership_type: string | null
           occupation: string | null
           phone: string | null
@@ -2167,6 +2199,8 @@ export type Database = {
           program_name: string | null
           updated_at: string
           user_id: string
+          website: string | null
+          youtube_url: string | null
         }
         Insert: {
           accountability_specialties?: string[] | null
@@ -2175,16 +2209,21 @@ export type Database = {
           avatar_url?: string | null
           backend_cash_collected?: number | null
           bio?: string | null
+          cover_photo_url?: string | null
           created_at?: string
           display_name?: string | null
+          facebook_url?: string | null
           family_role?: string | null
           first_name?: string | null
           id?: string
+          instagram_url?: string | null
           investment_amount?: number | null
           is_accountability_partner?: boolean | null
           is_admin?: boolean | null
           is_moderator?: boolean | null
           last_name?: string | null
+          linkedin_url?: string | null
+          location?: string | null
           membership_type?: string | null
           occupation?: string | null
           phone?: string | null
@@ -2192,6 +2231,8 @@ export type Database = {
           program_name?: string | null
           updated_at?: string
           user_id: string
+          website?: string | null
+          youtube_url?: string | null
         }
         Update: {
           accountability_specialties?: string[] | null
@@ -2200,16 +2241,21 @@ export type Database = {
           avatar_url?: string | null
           backend_cash_collected?: number | null
           bio?: string | null
+          cover_photo_url?: string | null
           created_at?: string
           display_name?: string | null
+          facebook_url?: string | null
           family_role?: string | null
           first_name?: string | null
           id?: string
+          instagram_url?: string | null
           investment_amount?: number | null
           is_accountability_partner?: boolean | null
           is_admin?: boolean | null
           is_moderator?: boolean | null
           last_name?: string | null
+          linkedin_url?: string | null
+          location?: string | null
           membership_type?: string | null
           occupation?: string | null
           phone?: string | null
@@ -2217,6 +2263,8 @@ export type Database = {
           program_name?: string | null
           updated_at?: string
           user_id?: string
+          website?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }

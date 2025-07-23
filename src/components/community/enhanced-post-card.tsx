@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -381,7 +382,10 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
       <CardHeader className="pb-3 p-4 sm:p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="h-10 w-10 flex-shrink-0 rounded-full overflow-hidden bg-muted">
+            <Link 
+              to={`/member/${post.user_id}`}
+              className="h-10 w-10 flex-shrink-0 rounded-full overflow-hidden bg-muted hover:opacity-80 transition-opacity"
+            >
               {authorAvatar ? (
                 <img 
                   src={authorAvatar} 
@@ -393,9 +397,14 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
                   {authorName.charAt(0).toUpperCase()}
                 </div>
               )}
-            </div>
+            </Link>
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-sm truncate">{authorName}</p>
+              <Link 
+                to={`/member/${post.user_id}`}
+                className="font-semibold text-sm truncate hover:underline"
+              >
+                {authorName}
+              </Link>
               <p className="text-xs text-muted-foreground">
                 {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
               </p>

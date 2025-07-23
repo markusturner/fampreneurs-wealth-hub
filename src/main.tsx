@@ -21,6 +21,7 @@ import Investments from "./pages/Investments";
 import ProfileSettings from "./pages/ProfileSettings";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
+import MemberProfile from "./pages/MemberProfile";
 import { MobileNavigation } from "@/components/ui/mobile-navigation";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
@@ -39,6 +40,7 @@ function AppWithNotifications() {
       <Route path="/admin" element={<AdminDashboard />} />
       <Route path="/documents" element={<Documents />} />
       <Route path="/community" element={<Community />} />
+      <Route path="/member/:userId" element={<MemberProfile />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/coaching" element={<Coaching />} />
       <Route path="/members" element={<TeamMembers />} />
