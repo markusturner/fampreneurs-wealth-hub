@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
-import { Megaphone } from 'lucide-react'
+import { Megaphone, MessageSquare, Users, Calendar, BookOpen, Home } from 'lucide-react'
 import { EnhancedPostCard } from './enhanced-post-card'
 import { EnhancedCreatePost } from './enhanced-create-post'
 import { GroupChannelsSidebar } from './group-channels-sidebar'
@@ -62,16 +62,13 @@ export function CommunityFeed() {
         .is('parent_id', null)
         .order('created_at', { ascending: false })
 
-      // Filter by channel if selected
       if (selectedChannelId) {
         query = query.eq('channel_id', selectedChannelId)
       }
 
       const { data: postsData, error: postsError } = await query
-
       if (postsError) throw postsError
 
-      // Fetch profiles separately for each post
       const postsWithProfiles = await Promise.all(
         (postsData || []).map(async (post) => {
           const { data: profile } = await supabase
@@ -80,10 +77,7 @@ export function CommunityFeed() {
             .eq('user_id', post.user_id)
             .single()
 
-          return {
-            ...post,
-            profiles: profile || null
-          }
+          return { ...post, profiles: profile || null }
         })
       )
 
@@ -103,7 +97,6 @@ export function CommunityFeed() {
 
       if (announcementsError) throw announcementsError
 
-      // Fetch profiles separately for each announcement
       const announcementsWithProfiles = await Promise.all(
         (announcementsData || []).map(async (announcement) => {
           const { data: profile } = await supabase
@@ -112,10 +105,7 @@ export function CommunityFeed() {
             .eq('user_id', announcement.created_by)
             .single()
 
-          return {
-            ...announcement,
-            profiles: profile || null
-          }
+          return { ...announcement, profiles: profile || null }
         })
       )
 
@@ -125,7 +115,6 @@ export function CommunityFeed() {
     }
   }
 
-
   const getDisplayName = (user: any) => {
     if (user?.display_name) return user.display_name
     if (user?.first_name) return user.first_name
@@ -133,62 +122,179 @@ export function CommunityFeed() {
   }
 
   return (
-    <div className="w-full">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 px-4 py-6">
-        {/* Channels Sidebar - Hidden on mobile, 3 columns on large screens */}
-        <div className="hidden lg:block lg:col-span-3">
-          <div className="sticky top-24">
-              <GroupChannelsSidebar
-                selectedGroupId={selectedChannelId}
-                onGroupSelect={setSelectedChannelId}
-              />
+    <div className="min-h-screen bg-background">
+      <div className="flex w-full">
+        {/* Left Navigation Sidebar */}
+        <div className="hidden lg:block w-80 fixed left-0 top-0 h-full bg-card border-r border-border overflow-y-auto">
+          <div className="p-4 space-y-2">
+            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <span className="text-sm font-semibold text-primary">
+                  {profile?.display_name?.[0] || profile?.first_name?.[0] || 'U'}
+                </span>
+              </div>
+              <span className="font-medium">{getDisplayName(profile)}</span>
+            </div>
+            
+            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
+              <MessageSquare className="w-6 h-6 text-blue-500" />
+              <span className="font-medium">Community AI</span>
+            </div>
+            
+            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
+              <Users className="w-6 h-6 text-green-500" />
+              <span className="font-medium">Friends</span>
+            </div>
+            
+            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
+              <Calendar className="w-6 h-6 text-purple-500" />
+              <span className="font-medium">Events</span>
+            </div>
+            
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/50 cursor-pointer">
+              <Users className="w-6 h-6 text-blue-600" />
+              <span className="font-medium text-primary">Groups</span>
+            </div>
+            
+            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
+              <BookOpen className="w-6 h-6 text-orange-500" />
+              <span className="font-medium">Courses</span>
+            </div>
+            
+            <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer">
+              <Home className="w-6 h-6 text-red-500" />
+              <span className="font-medium">Family Office</span>
+            </div>
+          </div>
+          
+          <div className="border-t border-border mt-4 pt-4 px-4">
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3">Your Shortcuts</h3>
+            <GroupChannelsSidebar
+              selectedGroupId={selectedChannelId}
+              onGroupSelect={setSelectedChannelId}
+            />
           </div>
         </div>
 
-        {/* Main Feed - Full width on mobile, 6 columns on large screens */}
-        <div className="col-span-1 lg:col-span-6 space-y-6">
-          {/* Create Post */}
-          <Card>
-            <CardContent className="p-4 lg:p-6">
-              <EnhancedCreatePost 
-                onPostCreated={fetchPosts} 
-                channelId={selectedChannelId}
-              />
-            </CardContent>
-          </Card>
-
-          {/* Posts */}
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <EnhancedPostCard key={post.id} post={post} onUpdate={fetchPosts} />
-            ))}
+        {/* Main Content Area */}
+        <div className="flex-1 lg:ml-80">
+          {/* Stories Section */}
+          <div className="bg-card border-b border-border p-4">
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {/* Create Story */}
+              <div className="flex-shrink-0 w-28 h-40 bg-gradient-to-b from-muted to-muted/50 rounded-xl relative overflow-hidden cursor-pointer hover:scale-105 transition-transform">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                <div className="absolute top-3 left-3 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <span className="text-xs font-bold text-primary-foreground">+</span>
+                </div>
+                <div className="absolute bottom-3 left-3 right-3">
+                  <p className="text-xs text-white font-medium">Create story</p>
+                </div>
+              </div>
+              
+              {/* Sample Stories */}
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="flex-shrink-0 w-28 h-40 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl relative overflow-hidden cursor-pointer hover:scale-105 transition-transform">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute top-3 left-3 w-8 h-8 bg-primary rounded-full border-2 border-white" />
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <p className="text-xs text-white font-medium">Member {i}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {posts.length === 0 && (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <p className="text-muted-foreground">
-                  {selectedChannelId ? 'No posts in this channel yet.' : 'No posts yet. Be the first to share!'}
-                </p>
+          {/* Feed Content */}
+          <div className="max-w-2xl mx-auto p-4 space-y-4">
+            {/* Create Post */}
+            <Card className="border-border">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="text-sm font-semibold text-primary">
+                      {profile?.display_name?.[0] || profile?.first_name?.[0] || 'U'}
+                    </span>
+                  </div>
+                  <div className="flex-1 bg-muted rounded-full px-4 py-2 cursor-pointer hover:bg-muted/80">
+                    <span className="text-muted-foreground">What's on your mind, {profile?.first_name || 'there'}?</span>
+                  </div>
+                </div>
+                <EnhancedCreatePost 
+                  onPostCreated={fetchPosts} 
+                  channelId={selectedChannelId}
+                />
               </CardContent>
             </Card>
-          )}
+
+            {/* Posts */}
+            <div className="space-y-4">
+              {posts.map((post) => (
+                <EnhancedPostCard key={post.id} post={post} onUpdate={fetchPosts} />
+              ))}
+            </div>
+
+            {posts.length === 0 && (
+              <Card className="border-border">
+                <CardContent className="p-8 text-center">
+                  <p className="text-muted-foreground">
+                    {selectedChannelId ? 'No posts in this channel yet.' : 'No posts yet. Be the first to share!'}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
 
-        {/* Announcements Panel - Hidden on mobile, 3 columns on large screens */}
-        <div className="hidden lg:block lg:col-span-3">
-          <div className="sticky top-6">
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Megaphone className="h-5 w-5 text-secondary" />
-                    <h3 className="font-semibold">Announcements</h3>
+        {/* Right Sidebar */}
+        <div className="hidden xl:block w-80 fixed right-0 top-0 h-full bg-card border-l border-border overflow-y-auto">
+          <div className="p-4 space-y-6">
+            {/* Friend Requests */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-foreground">Friend requests</h3>
+                <span className="text-sm text-primary cursor-pointer hover:underline">See all</span>
+              </div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500" />
+                  <div className="flex-1">
+                    <p className="font-medium">New Member</p>
+                    <p className="text-sm text-muted-foreground">1w</p>
                   </div>
-                  <CreateAnnouncement onAnnouncementCreated={fetchAnnouncements} />
+                  <div className="flex gap-2">
+                    <button className="px-4 py-1 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90">
+                      Confirm
+                    </button>
+                    <button className="px-4 py-1 bg-muted text-muted-foreground rounded-md text-sm font-medium hover:bg-muted/80">
+                      Delete
+                    </button>
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
+              </div>
+            </div>
+
+            {/* Birthdays */}
+            <div>
+              <h3 className="font-semibold text-foreground mb-3">Birthdays</h3>
+              <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <span className="text-lg">🎁</span>
+                </div>
+                <span className="text-sm">3 members have birthdays today</span>
+              </div>
+            </div>
+
+            {/* Announcements */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Megaphone className="h-4 w-4 text-secondary" />
+                  <h3 className="font-semibold">Announcements</h3>
+                </div>
+                <CreateAnnouncement onAnnouncementCreated={fetchAnnouncements} />
+              </div>
+              <div className="space-y-3">
                 {announcements.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">
                     No announcements yet
@@ -202,8 +308,27 @@ export function CommunityFeed() {
                     />
                   ))
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+
+            {/* Contacts */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-foreground">Contacts</h3>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="space-y-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer">
+                    <div className="relative">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500" />
+                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                    </div>
+                    <span className="text-sm font-medium">Member {i}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
