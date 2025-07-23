@@ -125,20 +125,8 @@ export function CommunityFeed() {
   return (
     <div className="min-h-screen bg-background">
       <div className="flex w-full">
-        {/* Left Navigation Sidebar */}
-        <div className="hidden lg:block w-80 fixed left-0 top-0 h-full bg-card border-r border-border overflow-y-auto">
-          
-          <div className="border-t border-border mt-4 pt-4 px-4">
-            <h3 className="text-sm font-semibold text-muted-foreground mb-3">Your Shortcuts</h3>
-            <GroupChannelsSidebar
-              selectedGroupId={selectedChannelId}
-              onGroupSelect={setSelectedChannelId}
-            />
-          </div>
-        </div>
-
         {/* Main Content Area */}
-        <div className="flex-1 lg:ml-80">
+        <div className="flex-1">
           {/* Stories Section */}
           <div className="bg-card border-b border-border p-4">
             <div className="flex gap-4 overflow-x-auto pb-2">
