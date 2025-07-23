@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -23,7 +23,8 @@ import {
   Instagram,
   Youtube,
   Facebook,
-  Linkedin
+  Linkedin,
+  ArrowLeft
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -77,6 +78,7 @@ export default function MemberProfile() {
   const { userId } = useParams()
   const { user } = useAuth()
   const { toast } = useToast()
+  const navigate = useNavigate()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [posts, setPosts] = useState<Post[]>([])
   const [friendship, setFriendship] = useState<Friendship | null>(null)
@@ -332,6 +334,19 @@ export default function MemberProfile() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Back Button */}
+      <div className="absolute top-4 left-4 z-10">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/community')}
+          className="bg-background/80 backdrop-blur-sm"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Community
+        </Button>
+      </div>
+      
       {/* Cover Photo */}
       <div className="relative h-80 bg-gradient-to-br from-primary to-primary-variant overflow-hidden">
         {profile.cover_photo_url ? (
