@@ -84,6 +84,7 @@ export default function MemberProfile() {
   const [friendship, setFriendship] = useState<Friendship | null>(null)
   const [friendsCount, setFriendsCount] = useState(0)
   const [postsCount, setPostsCount] = useState(0)
+  const [isUpdating, setIsUpdating] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const isOwnProfile = user?.id === userId
@@ -182,6 +183,64 @@ export default function MemberProfile() {
       setPostsCount(postsCount || 0)
     } catch (error) {
       console.error('Error fetching stats:', error)
+    }
+  }
+
+  const handleCoverPhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    setIsUpdating(true)
+    try {
+      // Generate a unique filename
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${user?.id}/cover-${Date.now()}.${fileExt}`
+
+      // Upload to Supabase storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('cover-photos')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        })
+
+      if (uploadError) throw uploadError
+
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('cover-photos')
+        .getPublicUrl(fileName)
+
+      // Update the profile with the new cover photo URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ 
+          cover_photo_url: publicUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user?.id)
+
+      if (updateError) throw updateError
+
+      setProfile(prev => prev ? ({
+        ...prev,
+        cover_photo_url: publicUrl
+      }) : null)
+
+      toast({
+        title: "Cover photo updated",
+        description: "Your cover photo has been successfully updated.",
+      })
+
+    } catch (error) {
+      console.error('Error uploading cover photo:', error)
+      toast({
+        title: "Upload failed",
+        description: "Failed to update cover photo. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUpdating(false)
     }
   }
 
@@ -359,14 +418,24 @@ export default function MemberProfile() {
           <div className="w-full h-full bg-gradient-to-br from-blue-500 via-purple-600 to-blue-800" />
         )}
         {isOwnProfile && (
-          <Button
-            variant="secondary"
-            size="sm"
-            className="absolute top-4 right-4"
-          >
-            <Camera className="w-4 h-4 mr-2" />
-            Edit cover photo
-          </Button>
+          <div className="relative">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleCoverPhotoUpload}
+              className="hidden"
+              id="cover-photo-upload"
+            />
+            <Button
+              variant="secondary"
+              size="sm"
+              className="absolute top-4 right-4"
+              onClick={() => document.getElementById('cover-photo-upload')?.click()}
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              Edit cover photo
+            </Button>
+          </div>
         )}
       </div>
 
