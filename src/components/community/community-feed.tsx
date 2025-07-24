@@ -314,7 +314,7 @@ export function CommunityFeed() {
             </div>
 
             {/* Right Sidebar */}
-            <div className="w-80 bg-card border border-border rounded-lg overflow-y-auto sticky top-4 h-fit">
+            <div className="w-80 bg-card border border-border rounded-lg overflow-y-auto sticky top-4 h-fit mt-4">
               <div className="p-4 space-y-6">
                 {/* Announcements */}
                 <div>
