@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
-import { Megaphone, MessageSquare, Users, Calendar, BookOpen, Home } from 'lucide-react'
+import { Megaphone, MessageSquare, Users, Calendar, BookOpen, Home, Video, Image as ImageIcon, Mic } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { EnhancedPostCard } from './enhanced-post-card'
 import { EnhancedCreatePost } from './enhanced-create-post'
@@ -168,6 +168,22 @@ export function CommunityFeed() {
                   <div className="flex-1 bg-muted rounded-full px-4 py-2 cursor-pointer hover:bg-muted/80">
                     <span className="text-muted-foreground">What's on your mind, {profile?.first_name || 'there'}?</span>
                   </div>
+                </div>
+                
+                {/* Action buttons */}
+                <div className="flex items-center gap-2 pt-3 border-t border-border">
+                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground">
+                    <Video className="h-4 w-4" />
+                    <span className="text-sm">Live video</span>
+                  </button>
+                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground">
+                    <ImageIcon className="h-4 w-4" />
+                    <span className="text-sm">Photo/video</span>
+                  </button>
+                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground">
+                    <Mic className="h-4 w-4" />
+                    <span className="text-sm">Audio</span>
+                  </button>
                 </div>
               </CardContent>
             </Card>
