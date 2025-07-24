@@ -50,6 +50,7 @@ export function CommunityFeed() {
   const { toast } = useToast()
   const [posts, setPosts] = useState<Post[]>([])
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
+  const [members, setMembers] = useState<any[]>([])
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
 
   const handleVideoClick = () => {
@@ -116,6 +117,7 @@ export function CommunityFeed() {
   useEffect(() => {
     fetchPosts()
     fetchAnnouncements()
+    fetchMembers()
   }, [selectedChannelId])
 
   const fetchPosts = async () => {
@@ -176,6 +178,21 @@ export function CommunityFeed() {
       setAnnouncements(announcementsWithProfiles)
     } catch (error) {
       console.error('Error fetching announcements:', error)
+    }
+  }
+
+  const fetchMembers = async () => {
+    try {
+      const { data: membersData, error: membersError } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, first_name, avatar_url')
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (membersError) throw membersError
+      setMembers(membersData || [])
+    } catch (error) {
+      console.error('Error fetching members:', error)
     }
   }
 
@@ -324,22 +341,33 @@ export function CommunityFeed() {
               </div>
             </div>
 
-            {/* Contacts */}
+            {/* Members */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-foreground">Contacts</h3>
+                <h3 className="font-semibold text-foreground">Members</h3>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="space-y-2">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer">
-                    <div className="relative">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-blue-500" />
-                      <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                {members.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    No members yet
+                  </p>
+                ) : (
+                  members.map((member) => (
+                    <div key={member.user_id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer">
+                      <div className="relative">
+                        <Avatar className="w-8 h-8">
+                          <AvatarImage src={member.avatar_url || undefined} alt="Member" className="object-cover" />
+                          <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                            {getDisplayName(member)?.[0] || 'M'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+                      </div>
+                      <span className="text-sm font-medium">{getDisplayName(member)}</span>
                     </div>
-                    <span className="text-sm font-medium">Member {i}</span>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
