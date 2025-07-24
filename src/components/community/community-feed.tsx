@@ -196,7 +196,7 @@ export function CommunityFeed() {
         </div>
 
         {/* Right Sidebar */}
-        <div className="hidden xl:block w-80 fixed right-0 top-0 h-full bg-card border-l border-border overflow-y-auto">
+        <div className="hidden xl:block w-80 fixed right-0 top-16 h-[calc(100vh-4rem)] bg-card border-l border-border overflow-y-auto">
           <div className="p-4 space-y-6">
 
 
