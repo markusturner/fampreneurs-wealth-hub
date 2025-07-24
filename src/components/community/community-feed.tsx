@@ -238,13 +238,6 @@ export function CommunityFeed() {
                 {/* Action buttons */}
                 <div className="flex items-center gap-2 pt-3 border-t border-border flex-wrap">
                   <button 
-                    onClick={handleVideoClick}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
-                  >
-                    <VideoIcon className="h-4 w-4" />
-                    <span className="text-sm">Live video</span>
-                  </button>
-                  <button 
                     onClick={handlePhotoVideoClick}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
                   >
