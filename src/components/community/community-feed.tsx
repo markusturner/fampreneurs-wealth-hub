@@ -13,6 +13,8 @@ import { GroupChannelsSidebar } from './group-channels-sidebar'
 import { CreateAnnouncement } from './create-announcement'
 import { AnnouncementCard } from './announcement-card'
 import { PollCreationDialog } from './poll-creation-dialog'
+import { CreateStoryDialog } from './create-story-dialog'
+import { StoryViewer } from './story-viewer'
 
 interface Post {
   id: string
@@ -45,13 +47,30 @@ interface Announcement {
   } | null
 }
 
+interface Story {
+  id: string
+  user_id: string
+  content_type: 'image' | 'video'
+  content_url: string
+  caption: string | null
+  created_at: string
+  profiles: {
+    display_name: string | null
+    first_name: string | null
+    avatar_url: string | null
+  } | null
+}
+
 export function CommunityFeed() {
   const { user, profile } = useAuth()
   const { toast } = useToast()
   const [posts, setPosts] = useState<Post[]>([])
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [members, setMembers] = useState<any[]>([])
+  const [stories, setStories] = useState<Story[]>([])
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
+  const [storyViewerOpen, setStoryViewerOpen] = useState(false)
+  const [selectedStoryIndex, setSelectedStoryIndex] = useState(0)
 
   const handleVideoClick = () => {
     toast({
@@ -118,6 +137,7 @@ export function CommunityFeed() {
     fetchPosts()
     fetchAnnouncements()
     fetchMembers()
+    fetchStories()
   }, [selectedChannelId])
 
   const fetchPosts = async () => {
@@ -196,6 +216,68 @@ export function CommunityFeed() {
     }
   }
 
+  const fetchStories = async () => {
+    try {
+      const { data: storiesData, error: storiesError } = await supabase
+        .from('stories')
+        .select('*')
+        .eq('is_active', true)
+        .gte('expires_at', new Date().toISOString())
+        .order('created_at', { ascending: false })
+
+      if (storiesError) throw storiesError
+
+      const storiesWithProfiles = await Promise.all(
+        (storiesData || []).map(async (story) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('display_name, first_name, avatar_url')
+            .eq('user_id', story.user_id)
+            .single()
+
+          return { 
+            ...story, 
+            content_type: story.content_type as 'image' | 'video',
+            profiles: profile || null 
+          }
+        })
+      )
+
+      setStories(storiesWithProfiles)
+    } catch (error) {
+      console.error('Error fetching stories:', error)
+    }
+  }
+
+  const handleStoryView = async (storyId: string) => {
+    if (!user) return
+
+    try {
+      await supabase
+        .from('story_views')
+        .upsert({
+          story_id: storyId,
+          viewer_id: user.id
+        })
+
+      // Update view count
+      const { data: story } = await supabase
+        .from('stories')
+        .select('view_count')
+        .eq('id', storyId)
+        .single()
+
+      if (story) {
+        await supabase
+          .from('stories')
+          .update({ view_count: (story.view_count || 0) + 1 })
+          .eq('id', storyId)
+      }
+    } catch (error) {
+      console.error('Error recording story view:', error)
+    }
+  }
+
   const getDisplayName = (user: any) => {
     if (user?.display_name) return user.display_name
     if (user?.first_name) return user.first_name
@@ -208,23 +290,53 @@ export function CommunityFeed() {
       <div className="w-full bg-card border-b border-border p-4">
         <div className="flex gap-4 overflow-x-auto pb-2">
           {/* Create Story */}
-          <div className="flex-shrink-0 w-28 h-40 bg-gradient-to-b from-muted to-muted/50 rounded-xl relative overflow-hidden cursor-pointer hover:scale-105 transition-transform">
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <div className="absolute top-3 left-3 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-              <span className="text-xs font-bold text-primary-foreground">+</span>
-            </div>
-            <div className="absolute bottom-3 left-3 right-3">
-              <p className="text-xs text-white font-medium">Create story</p>
-            </div>
-          </div>
-          
-          {/* Sample Stories */}
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="flex-shrink-0 w-28 h-40 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl relative overflow-hidden cursor-pointer hover:scale-105 transition-transform">
+          <CreateStoryDialog onStoryCreated={fetchStories}>
+            <div className="flex-shrink-0 w-28 h-40 bg-gradient-to-b from-muted to-muted/50 rounded-xl relative overflow-hidden cursor-pointer hover:scale-105 transition-transform">
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute top-3 left-3 w-8 h-8 bg-primary rounded-full border-2 border-white" />
+              <div className="absolute top-3 left-3 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                <span className="text-xs font-bold text-primary-foreground">+</span>
+              </div>
               <div className="absolute bottom-3 left-3 right-3">
-                <p className="text-xs text-white font-medium">Member {i}</p>
+                <p className="text-xs text-white font-medium">Create story</p>
+              </div>
+            </div>
+          </CreateStoryDialog>
+          
+          {/* User Stories */}
+          {stories.map((story, index) => (
+            <div 
+              key={story.id} 
+              className="flex-shrink-0 w-28 h-40 rounded-xl relative overflow-hidden cursor-pointer hover:scale-105 transition-transform"
+              onClick={() => {
+                setSelectedStoryIndex(index)
+                setStoryViewerOpen(true)
+              }}
+            >
+              {story.content_type === 'image' ? (
+                <img 
+                  src={story.content_url} 
+                  alt="Story" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <video 
+                  src={story.content_url} 
+                  className="w-full h-full object-cover"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute top-3 left-3 w-8 h-8 rounded-full border-2 border-white overflow-hidden">
+                <Avatar className="w-full h-full">
+                  <AvatarImage src={story.profiles?.avatar_url || undefined} />
+                  <AvatarFallback className="text-xs">
+                    {getDisplayName(story.profiles)?.[0]}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              <div className="absolute bottom-3 left-3 right-3">
+                <p className="text-xs text-white font-medium truncate">
+                  {getDisplayName(story.profiles)}
+                </p>
               </div>
             </div>
           ))}
@@ -378,6 +490,15 @@ export function CommunityFeed() {
           </div>
         </div>
       </div>
+
+      {/* Story Viewer */}
+      <StoryViewer
+        stories={stories}
+        initialStoryIndex={selectedStoryIndex}
+        open={storyViewerOpen}
+        onOpenChange={setStoryViewerOpen}
+        onViewStory={handleStoryView}
+      />
     </div>
   )
 }
