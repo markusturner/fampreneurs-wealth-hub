@@ -356,7 +356,7 @@ export function CommunityFeed() {
                     members.map((member) => (
                       <Link
                         key={member.user_id}
-                        to={`/member-profile?id=${member.user_id}`}
+                        to={`/member/${member.user_id}`}
                         className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
                       >
                         <div className="relative">
