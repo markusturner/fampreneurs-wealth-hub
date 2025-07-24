@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
-import { Megaphone, MessageSquare, Users, Calendar, BookOpen, Home, VideoIcon, ImageIcon, MicIcon } from 'lucide-react'
+import { Megaphone, MessageSquare, Users, Calendar, BookOpen, Home, VideoIcon, ImageIcon, MicIcon, FileText, BarChart3, MapPin } from 'lucide-react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Link } from 'react-router-dom'
 import { EnhancedPostCard } from './enhanced-post-card'
@@ -50,6 +50,67 @@ export function CommunityFeed() {
   const [posts, setPosts] = useState<Post[]>([])
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
+
+  const handleVideoClick = () => {
+    toast({
+      title: "Live Video",
+      description: "Video feature coming soon!",
+    })
+  }
+
+  const handlePhotoVideoClick = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*,video/*'
+    input.click()
+  }
+
+  const handleAudioClick = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'audio/*'
+    input.click()
+  }
+
+  const handleDocumentClick = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.pdf,.doc,.docx,.txt'
+    input.click()
+  }
+
+  const handlePollClick = () => {
+    toast({
+      title: "Create Poll",
+      description: "Poll feature coming soon!",
+    })
+  }
+
+  const handleLocationClick = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          toast({
+            title: "Location Shared",
+            description: `Lat: ${position.coords.latitude.toFixed(4)}, Lng: ${position.coords.longitude.toFixed(4)}`,
+          })
+        },
+        () => {
+          toast({
+            title: "Location Error",
+            description: "Unable to get your location",
+            variant: "destructive",
+          })
+        }
+      )
+    } else {
+      toast({
+        title: "Location Not Supported",
+        description: "Geolocation is not supported by this browser",
+        variant: "destructive",
+      })
+    }
+  }
 
   useEffect(() => {
     fetchPosts()
@@ -175,18 +236,48 @@ export function CommunityFeed() {
                 </div>
                 
                 {/* Action buttons */}
-                <div className="flex items-center gap-2 pt-3 border-t border-border">
-                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground">
+                <div className="flex items-center gap-2 pt-3 border-t border-border flex-wrap">
+                  <button 
+                    onClick={handleVideoClick}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                  >
                     <VideoIcon className="h-4 w-4" />
                     <span className="text-sm">Live video</span>
                   </button>
-                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground">
+                  <button 
+                    onClick={handlePhotoVideoClick}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                  >
                     <ImageIcon className="h-4 w-4" />
                     <span className="text-sm">Photo/video</span>
                   </button>
-                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground">
+                  <button 
+                    onClick={handleAudioClick}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                  >
                     <MicIcon className="h-4 w-4" />
                     <span className="text-sm">Audio</span>
+                  </button>
+                  <button 
+                    onClick={handleDocumentClick}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span className="text-sm">Document</span>
+                  </button>
+                  <button 
+                    onClick={handlePollClick}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    <span className="text-sm">Poll</span>
+                  </button>
+                  <button 
+                    onClick={handleLocationClick}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    <span className="text-sm">Location</span>
                   </button>
                 </div>
               </CardContent>
