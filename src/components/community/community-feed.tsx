@@ -169,10 +169,6 @@ export function CommunityFeed() {
                     <span className="text-muted-foreground">What's on your mind, {profile?.first_name || 'there'}?</span>
                   </div>
                 </div>
-                <EnhancedCreatePost 
-                  onPostCreated={fetchPosts} 
-                  channelId={selectedChannelId}
-                />
               </CardContent>
             </Card>
 
