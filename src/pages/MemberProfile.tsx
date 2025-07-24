@@ -418,7 +418,7 @@ export default function MemberProfile() {
           <div className="w-full h-full bg-gradient-to-br from-blue-500 via-purple-600 to-blue-800" />
         )}
         {isOwnProfile && (
-          <div className="relative">
+          <>
             <input
               type="file"
               accept="image/*"
@@ -429,13 +429,13 @@ export default function MemberProfile() {
             <Button
               variant="secondary"
               size="sm"
-              className="absolute top-4 right-4"
+              className="absolute top-4 right-4 z-10"
               onClick={() => document.getElementById('cover-photo-upload')?.click()}
             >
               <Camera className="w-4 h-4 mr-2" />
               Edit cover photo
             </Button>
-          </div>
+          </>
         )}
       </div>
 
