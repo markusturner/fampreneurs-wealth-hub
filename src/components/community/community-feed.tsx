@@ -344,11 +344,9 @@ export function CommunityFeed() {
       </div>
 
       {/* Main Content */}
-      <div className="flex w-full max-w-7xl mx-auto gap-6 p-4">
-        {/* Feed Content */}
-        <div className="flex gap-6">
-          {/* Posts Section */}
-          <div className="flex-1 max-w-2xl p-4 space-y-4">
+      <div className="flex justify-center w-full p-4">
+        {/* Feed Content - Centered */}
+        <div className="w-full max-w-2xl space-y-4">
             {/* Create Post */}
             <Card className="border-border">
               <CardContent className="p-4">
@@ -422,72 +420,6 @@ export function CommunityFeed() {
                 </CardContent>
               </Card>
             )}
-          </div>
-
-          {/* Right Sidebar */}
-          <div className="w-80 bg-card border border-border rounded-lg overflow-y-auto sticky top-4 h-fit mt-4">
-            <div className="p-4 space-y-6">
-              {/* Announcements */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Megaphone className="h-4 w-4 text-secondary" />
-                    <h3 className="font-semibold">Announcements</h3>
-                  </div>
-                  <CreateAnnouncement onAnnouncementCreated={fetchAnnouncements} />
-                </div>
-                <div className="space-y-3">
-                  {announcements.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No announcements yet
-                    </p>
-                  ) : (
-                    announcements.map((announcement) => (
-                      <AnnouncementCard 
-                        key={announcement.id} 
-                        announcement={announcement} 
-                        onUpdate={fetchAnnouncements} 
-                      />
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Members */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-foreground">Members</h3>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="space-y-2">
-                  {members.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      No members yet
-                    </p>
-                  ) : (
-                    members.map((member) => (
-                      <Link
-                        key={member.user_id}
-                        to={`/member/${member.user_id}`}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                      >
-                        <div className="relative">
-                          <Avatar className="w-8 h-8">
-                            <AvatarImage src={member.avatar_url || undefined} alt="Member" className="object-cover" />
-                            <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                              {getDisplayName(member)?.[0] || 'M'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
-                        </div>
-                        <span className="text-sm font-medium">{getDisplayName(member)}</span>
-                      </Link>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
