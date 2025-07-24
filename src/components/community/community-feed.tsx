@@ -162,7 +162,7 @@ export function CommunityFeed() {
               <CardContent className="p-4">
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar className="w-10 h-10">
-                    <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" />
+                    <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" className="object-cover" />
                     <AvatarFallback className="bg-primary/20 text-primary">
                       {profile?.display_name?.[0] || profile?.first_name?.[0] || 'U'}
                     </AvatarFallback>
