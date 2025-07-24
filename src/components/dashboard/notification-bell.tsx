@@ -136,6 +136,17 @@ export function NotificationBell() {
             </div>
           )}
           
+          {/* Birthdays */}
+          <div className="p-4 border-t">
+            <h3 className="font-semibold text-foreground mb-3">Birthdays</h3>
+            <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
+              <div className="w-8 h-8 flex items-center justify-center">
+                <span className="text-lg">🎁</span>
+              </div>
+              <span className="text-sm">3 members have birthdays today</span>
+            </div>
+          </div>
+
           {/* Friend Requests */}
           <div className="p-4 border-t">
             <div className="flex items-center justify-between mb-3">

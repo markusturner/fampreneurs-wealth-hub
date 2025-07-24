@@ -199,16 +199,6 @@ export function CommunityFeed() {
         <div className="hidden xl:block w-80 fixed right-0 top-0 h-full bg-card border-l border-border overflow-y-auto">
           <div className="p-4 space-y-6">
 
-            {/* Birthdays */}
-            <div>
-              <h3 className="font-semibold text-foreground mb-3">Birthdays</h3>
-              <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50">
-                <div className="w-8 h-8 flex items-center justify-center">
-                  <span className="text-lg">🎁</span>
-                </div>
-                <span className="text-sm">3 members have birthdays today</span>
-              </div>
-            </div>
 
             {/* Announcements */}
             <div>
