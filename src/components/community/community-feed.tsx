@@ -204,172 +204,170 @@ export function CommunityFeed() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="flex w-full max-w-7xl mx-auto gap-6 p-4">
-        {/* Main Content Area */}
-        <div className="flex-1">
-          {/* Stories Section */}
-          <div className="bg-card border-b border-border p-4">
-            <div className="flex gap-4 overflow-x-auto pb-2">
-              {/* Create Story */}
-              <div className="flex-shrink-0 w-28 h-40 bg-gradient-to-b from-muted to-muted/50 rounded-xl relative overflow-hidden cursor-pointer hover:scale-105 transition-transform">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                <div className="absolute top-3 left-3 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-xs font-bold text-primary-foreground">+</span>
-                </div>
-                <div className="absolute bottom-3 left-3 right-3">
-                  <p className="text-xs text-white font-medium">Create story</p>
-                </div>
-              </div>
-              
-              {/* Sample Stories */}
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="flex-shrink-0 w-28 h-40 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl relative overflow-hidden cursor-pointer hover:scale-105 transition-transform">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute top-3 left-3 w-8 h-8 bg-primary rounded-full border-2 border-white" />
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <p className="text-xs text-white font-medium">Member {i}</p>
-                  </div>
-                </div>
-              ))}
+      {/* Stories Section - Full Width */}
+      <div className="w-full bg-card border-b border-border p-4">
+        <div className="flex gap-4 overflow-x-auto pb-2">
+          {/* Create Story */}
+          <div className="flex-shrink-0 w-28 h-40 bg-gradient-to-b from-muted to-muted/50 rounded-xl relative overflow-hidden cursor-pointer hover:scale-105 transition-transform">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute top-3 left-3 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+              <span className="text-xs font-bold text-primary-foreground">+</span>
+            </div>
+            <div className="absolute bottom-3 left-3 right-3">
+              <p className="text-xs text-white font-medium">Create story</p>
             </div>
           </div>
-
-          {/* Feed Content */}
-          <div className="flex gap-6">
-            {/* Posts Section */}
-            <div className="flex-1 max-w-2xl p-4 space-y-4">
-              {/* Create Post */}
-              <Card className="border-border">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" className="object-cover" />
-                      <AvatarFallback className="bg-primary/20 text-primary">
-                        {profile?.display_name?.[0] || profile?.first_name?.[0] || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    <input 
-                      type="text"
-                      placeholder={`What's on your mind, ${profile?.first_name || 'there'}?`}
-                      className="flex-1 bg-muted rounded-full px-4 py-2 border-none outline-none text-foreground placeholder:text-muted-foreground"
-                    />
-                  </div>
-                  
-                  {/* Action buttons */}
-                  <div className="flex items-center gap-2 pt-3 border-t border-border flex-wrap">
-                    <button 
-                      onClick={handlePhotoVideoClick}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
-                    >
-                      <ImageIcon className="h-4 w-4" />
-                      <span className="text-sm">Photo/video</span>
-                    </button>
-                    <button 
-                      onClick={handleAudioClick}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
-                    >
-                      <MicIcon className="h-4 w-4" />
-                      <span className="text-sm">Audio</span>
-                    </button>
-                    <button 
-                      onClick={handleDocumentClick}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
-                    >
-                      <FileText className="h-4 w-4" />
-                      <span className="text-sm">Document</span>
-                    </button>
-                    <PollCreationDialog onPollCreated={fetchPosts}>
-                      <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors">
-                        <BarChart3 className="h-4 w-4" />
-                        <span className="text-sm">Poll</span>
-                      </button>
-                    </PollCreationDialog>
-                    <button 
-                      onClick={handleLocationClick}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
-                    >
-                      <MapPin className="h-4 w-4" />
-                      <span className="text-sm">Location</span>
-                    </button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Posts */}
-              <div className="space-y-4">
-                {posts.map((post) => (
-                  <EnhancedPostCard key={post.id} post={post} onUpdate={fetchPosts} />
-                ))}
+          
+          {/* Sample Stories */}
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="flex-shrink-0 w-28 h-40 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl relative overflow-hidden cursor-pointer hover:scale-105 transition-transform">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute top-3 left-3 w-8 h-8 bg-primary rounded-full border-2 border-white" />
+              <div className="absolute bottom-3 left-3 right-3">
+                <p className="text-xs text-white font-medium">Member {i}</p>
               </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-              {posts.length === 0 && (
-                <Card className="border-border">
-                  <CardContent className="p-8 text-center">
-                    <p className="text-muted-foreground">
-                      {selectedChannelId ? 'No posts in this channel yet.' : 'No posts yet. Be the first to share!'}
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
+      {/* Main Content */}
+      <div className="flex w-full max-w-7xl mx-auto gap-6 p-4">
+        {/* Feed Content */}
+        <div className="flex gap-6">
+          {/* Posts Section */}
+          <div className="flex-1 max-w-2xl p-4 space-y-4">
+            {/* Create Post */}
+            <Card className="border-border">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3 mb-4">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" className="object-cover" />
+                    <AvatarFallback className="bg-primary/20 text-primary">
+                      {profile?.display_name?.[0] || profile?.first_name?.[0] || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <input 
+                    type="text"
+                    placeholder={`What's on your mind, ${profile?.first_name || 'there'}?`}
+                    className="flex-1 bg-muted rounded-full px-4 py-2 border-none outline-none text-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
+                
+                {/* Action buttons */}
+                <div className="flex items-center gap-2 pt-3 border-t border-border flex-wrap">
+                  <button 
+                    onClick={handlePhotoVideoClick}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                  >
+                    <ImageIcon className="h-4 w-4" />
+                    <span className="text-sm">Photo/video</span>
+                  </button>
+                  <button 
+                    onClick={handleAudioClick}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                  >
+                    <MicIcon className="h-4 w-4" />
+                    <span className="text-sm">Audio</span>
+                  </button>
+                  <button 
+                    onClick={handleDocumentClick}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span className="text-sm">Document</span>
+                  </button>
+                  <PollCreationDialog onPollCreated={fetchPosts}>
+                    <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors">
+                      <BarChart3 className="h-4 w-4" />
+                      <span className="text-sm">Poll</span>
+                    </button>
+                  </PollCreationDialog>
+                  <button 
+                    onClick={handleLocationClick}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    <span className="text-sm">Location</span>
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Posts */}
+            <div className="space-y-4">
+              {posts.map((post) => (
+                <EnhancedPostCard key={post.id} post={post} onUpdate={fetchPosts} />
+              ))}
             </div>
 
-            {/* Right Sidebar */}
-            <div className="w-80 bg-card border border-border rounded-lg overflow-y-auto sticky top-4 h-fit mt-4">
-              <div className="p-4 space-y-6">
-                {/* Announcements */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <Megaphone className="h-4 w-4 text-secondary" />
-                      <h3 className="font-semibold">Announcements</h3>
-                    </div>
-                    <CreateAnnouncement onAnnouncementCreated={fetchAnnouncements} />
-                  </div>
-                  <div className="space-y-3">
-                    {announcements.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">
-                        No announcements yet
-                      </p>
-                    ) : (
-                      announcements.map((announcement) => (
-                        <AnnouncementCard 
-                          key={announcement.id} 
-                          announcement={announcement} 
-                          onUpdate={fetchAnnouncements} 
-                        />
-                      ))
-                    )}
-                  </div>
-                </div>
+            {posts.length === 0 && (
+              <Card className="border-border">
+                <CardContent className="p-8 text-center">
+                  <p className="text-muted-foreground">
+                    {selectedChannelId ? 'No posts in this channel yet.' : 'No posts yet. Be the first to share!'}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
 
-                {/* Members */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-foreground">Members</h3>
-                    <Users className="h-4 w-4 text-muted-foreground" />
+          {/* Right Sidebar */}
+          <div className="w-80 bg-card border border-border rounded-lg overflow-y-auto sticky top-4 h-fit mt-4">
+            <div className="p-4 space-y-6">
+              {/* Announcements */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Megaphone className="h-4 w-4 text-secondary" />
+                    <h3 className="font-semibold">Announcements</h3>
                   </div>
-                  <div className="space-y-2">
-                    {members.length === 0 ? (
-                      <p className="text-sm text-muted-foreground text-center py-4">
-                        No members yet
-                      </p>
-                    ) : (
-                      members.map((member) => (
-                        <div key={member.user_id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer">
-                          <div className="relative">
-                            <Avatar className="w-8 h-8">
-                              <AvatarImage src={member.avatar_url || undefined} alt="Member" className="object-cover" />
-                              <AvatarFallback className="bg-primary/20 text-primary text-xs">
-                                {getDisplayName(member)?.[0] || 'M'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
-                          </div>
-                          <span className="text-sm font-medium">{getDisplayName(member)}</span>
+                  <CreateAnnouncement onAnnouncementCreated={fetchAnnouncements} />
+                </div>
+                <div className="space-y-3">
+                  {announcements.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No announcements yet
+                    </p>
+                  ) : (
+                    announcements.map((announcement) => (
+                      <AnnouncementCard 
+                        key={announcement.id} 
+                        announcement={announcement} 
+                        onUpdate={fetchAnnouncements} 
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Members */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-foreground">Members</h3>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="space-y-2">
+                  {members.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No members yet
+                    </p>
+                  ) : (
+                    members.map((member) => (
+                      <div key={member.user_id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer">
+                        <div className="relative">
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={member.avatar_url || undefined} alt="Member" className="object-cover" />
+                            <AvatarFallback className="bg-primary/20 text-primary text-xs">
+                              {getDisplayName(member)?.[0] || 'M'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                         </div>
-                      ))
-                    )}
-                  </div>
+                        <span className="text-sm font-medium">{getDisplayName(member)}</span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
