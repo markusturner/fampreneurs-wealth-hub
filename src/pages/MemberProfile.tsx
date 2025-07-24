@@ -248,18 +248,32 @@ export default function MemberProfile() {
     if (!user?.id) return
 
     try {
-      const { error } = await supabase
+      const { data: friendshipData, error } = await supabase
         .from('friendships')
         .insert({
           requester_id: user.id,
           addressee_id: userId,
           status: 'pending'
         })
+        .select()
+        .single()
 
       if (error) throw error
 
+      // Create notification for the recipient
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: userId,
+          sender_id: user.id,
+          notification_type: 'friend_request',
+          title: 'New Friend Request',
+          message: `${profile?.display_name || profile?.first_name || 'Someone'} sent you a friend request`,
+          reference_id: friendshipData.id
+        })
+
       setFriendship({
-        id: '',
+        id: friendshipData.id,
         requester_id: user.id,
         addressee_id: userId!,
         status: 'pending',
@@ -275,6 +289,40 @@ export default function MemberProfile() {
       toast({
         title: "Error",
         description: "Failed to send friend request.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const cancelFriendRequest = async () => {
+    if (!friendship || !user?.id) return
+
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .delete()
+        .eq('id', friendship.id)
+
+      if (error) throw error
+
+      // Remove the notification
+      await supabase
+        .from('notifications')
+        .delete()
+        .eq('reference_id', friendship.id)
+        .eq('notification_type', 'friend_request')
+
+      setFriendship(null)
+
+      toast({
+        title: "Friend request cancelled",
+        description: "Your friend request has been cancelled."
+      })
+    } catch (error) {
+      console.error('Error cancelling friend request:', error)
+      toast({
+        title: "Error",
+        description: "Failed to cancel friend request.",
         variant: "destructive"
       })
     }
@@ -300,6 +348,27 @@ export default function MemberProfile() {
 
         if (error) throw error
         setFriendship({ ...friendship, status: action === 'accept' ? 'accepted' : 'declined' })
+
+        // Remove the original friend request notification
+        await supabase
+          .from('notifications')
+          .delete()
+          .eq('reference_id', friendship.id)
+          .eq('notification_type', 'friend_request')
+
+        // Send notification to the requester about the action
+        if (action === 'accept') {
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: friendship.requester_id,
+              sender_id: user?.id,
+              notification_type: 'friend_request_accepted',
+              title: 'Friend Request Accepted',
+              message: `${profile?.display_name || profile?.first_name || 'Someone'} accepted your friend request`,
+              reference_id: friendship.id
+            })
+        }
       }
 
       fetchStats()
@@ -338,9 +407,9 @@ export default function MemberProfile() {
       case 'pending':
         if (friendship.requester_id === user?.id) {
           return (
-            <Button variant="outline" disabled>
-              <UserCheck className="w-4 h-4 mr-2" />
-              Request Sent
+            <Button variant="outline" onClick={cancelFriendRequest}>
+              <UserX className="w-4 h-4 mr-2" />
+              Cancel Request
             </Button>
           )
         } else {
