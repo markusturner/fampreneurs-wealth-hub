@@ -186,7 +186,7 @@ export function CommunityFeed() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="flex w-full">
+      <div className="flex w-full max-w-7xl mx-auto gap-6 p-4">
         {/* Main Content Area */}
         <div className="flex-1">
           {/* Stories Section */}
@@ -296,10 +296,8 @@ export function CommunityFeed() {
         </div>
 
         {/* Right Sidebar */}
-        <div className="hidden xl:block w-80 fixed right-0 top-16 h-[calc(100vh-4rem)] bg-card border-l border-border overflow-y-auto">
+        <div className="w-80 bg-card border border-border rounded-lg overflow-y-auto sticky top-4 h-fit">
           <div className="p-4 space-y-6">
-
-
             {/* Announcements */}
             <div>
               <div className="flex items-center justify-between mb-3">
