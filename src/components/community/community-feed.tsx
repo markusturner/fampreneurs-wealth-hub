@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
 import { Megaphone, MessageSquare, Users, Calendar, BookOpen, Home, VideoIcon, ImageIcon, MicIcon } from 'lucide-react'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Link } from 'react-router-dom'
 import { EnhancedPostCard } from './enhanced-post-card'
 import { EnhancedCreatePost } from './enhanced-create-post'
@@ -160,11 +161,12 @@ export function CommunityFeed() {
             <Card className="border-border">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-primary">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" />
+                    <AvatarFallback className="bg-primary/20 text-primary">
                       {profile?.display_name?.[0] || profile?.first_name?.[0] || 'U'}
-                    </span>
-                  </div>
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex-1 bg-muted rounded-full px-4 py-2 cursor-pointer hover:bg-muted/80">
                     <span className="text-muted-foreground">What's on your mind, {profile?.first_name || 'there'}?</span>
                   </div>
