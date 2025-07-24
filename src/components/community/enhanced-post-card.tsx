@@ -483,21 +483,6 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
           </div>
         )}
 
-        {/* Post Reactions Summary (only for original posts) */}
-        {!isComment && Object.keys(postReactionCounts).length > 0 && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              {Object.entries(postReactionCounts).map(([type, count]) => (
-                <span key={type} className="flex items-center gap-1">
-                  {reactionEmojis[type as keyof typeof reactionEmojis]} {count}
-                </span>
-              ))}
-            </div>
-            {comments.length > 0 && (
-              <span className="ml-auto">{comments.length} comments</span>
-            )}
-          </div>
-        )}
 
         {/* Comment Reactions Summary (only for comments) */}
         {isComment && Object.keys(commentReactionCounts).length > 0 && (
