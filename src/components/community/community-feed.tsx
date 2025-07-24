@@ -345,10 +345,9 @@ export function CommunityFeed() {
 
       {/* Main Content */}
       <div className="flex justify-center w-full p-4">
-        {/* Feed Content - Centered */}
         <div className="w-full max-w-2xl space-y-4">
-            {/* Create Post */}
-            <Card className="border-border">
+          {/* Create Post */}
+          <Card className="border-border">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar className="w-10 h-10">
