@@ -522,7 +522,7 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
               className="flex-1 gap-1"
             >
               <ThumbsUp className="h-4 w-4" />
-              Like
+              Like {commentReactionCounts.like || 0 > 0 && `(${commentReactionCounts.like || 0})`}
             </Button>
           ) : (
             <>
@@ -533,7 +533,7 @@ export const EnhancedPostCard = ({ post, onUpdate, isComment = false, depth = 0 
                 className="flex-1 gap-1"
               >
                 <ThumbsUp className="h-4 w-4" />
-                Like
+                Like {postReactionCounts.like || 0 > 0 && `(${postReactionCounts.like || 0})`}
               </Button>
               <Button
                 variant="ghost"
