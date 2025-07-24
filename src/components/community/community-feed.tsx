@@ -167,9 +167,11 @@ export function CommunityFeed() {
                       {profile?.display_name?.[0] || profile?.first_name?.[0] || 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 bg-muted rounded-full px-4 py-2 cursor-pointer hover:bg-muted/80">
-                    <span className="text-muted-foreground">What's on your mind, {profile?.first_name || 'there'}?</span>
-                  </div>
+                  <input 
+                    type="text"
+                    placeholder={`What's on your mind, ${profile?.first_name || 'there'}?`}
+                    className="flex-1 bg-muted rounded-full px-4 py-2 border-none outline-none text-foreground placeholder:text-muted-foreground"
+                  />
                 </div>
                 
                 {/* Action buttons */}
