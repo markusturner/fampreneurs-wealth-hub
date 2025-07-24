@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
-import { Megaphone, MessageSquare, Users, Calendar, BookOpen, Home, Video, Image as ImageIcon, Mic } from 'lucide-react'
+import { Megaphone, MessageSquare, Users, Calendar, BookOpen, Home, VideoIcon, ImageIcon, MicIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { EnhancedPostCard } from './enhanced-post-card'
 import { EnhancedCreatePost } from './enhanced-create-post'
@@ -173,7 +173,7 @@ export function CommunityFeed() {
                 {/* Action buttons */}
                 <div className="flex items-center gap-2 pt-3 border-t border-border">
                   <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground">
-                    <Video className="h-4 w-4" />
+                    <VideoIcon className="h-4 w-4" />
                     <span className="text-sm">Live video</span>
                   </button>
                   <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground">
@@ -181,7 +181,7 @@ export function CommunityFeed() {
                     <span className="text-sm">Photo/video</span>
                   </button>
                   <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground">
-                    <Mic className="h-4 w-4" />
+                    <MicIcon className="h-4 w-4" />
                     <span className="text-sm">Audio</span>
                   </button>
                 </div>
