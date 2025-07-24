@@ -12,6 +12,7 @@ import { EnhancedCreatePost } from './enhanced-create-post'
 import { GroupChannelsSidebar } from './group-channels-sidebar'
 import { CreateAnnouncement } from './create-announcement'
 import { AnnouncementCard } from './announcement-card'
+import { PollCreationDialog } from './poll-creation-dialog'
 
 interface Post {
   id: string
@@ -258,13 +259,12 @@ export function CommunityFeed() {
                     <FileText className="h-4 w-4" />
                     <span className="text-sm">Document</span>
                   </button>
-                  <button 
-                    onClick={handlePollClick}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
-                  >
-                    <BarChart3 className="h-4 w-4" />
-                    <span className="text-sm">Poll</span>
-                  </button>
+                  <PollCreationDialog onPollCreated={fetchPosts}>
+                    <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors">
+                      <BarChart3 className="h-4 w-4" />
+                      <span className="text-sm">Poll</span>
+                    </button>
+                  </PollCreationDialog>
                   <button 
                     onClick={handleLocationClick}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
