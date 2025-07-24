@@ -74,21 +74,13 @@ export function PollCreationDialog({ children, onPollCreated }: PollCreationDial
 
     try {
       // Create the poll post with poll data in content
-      const pollData = {
-        question: question.trim(),
-        options: validOptions.map((option, index) => ({
-          id: index,
-          text: option.trim(),
-          votes: 0
-        }))
-      }
+      const pollContent = `POLL: ${question.trim()}\n\nOptions:\n${validOptions.map((option, index) => `${index + 1}. ${option.trim()}`).join('\n')}`
 
       const { error } = await supabase
         .from('community_posts')
         .insert({
           user_id: user.id,
-          content: `POLL: ${question.trim()}`,
-          poll_data: pollData
+          content: pollContent
         })
 
       if (error) throw error
