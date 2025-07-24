@@ -354,7 +354,11 @@ export function CommunityFeed() {
                     </p>
                   ) : (
                     members.map((member) => (
-                      <div key={member.user_id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer">
+                      <Link
+                        key={member.user_id}
+                        to={`/member-profile?id=${member.user_id}`}
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                      >
                         <div className="relative">
                           <Avatar className="w-8 h-8">
                             <AvatarImage src={member.avatar_url || undefined} alt="Member" className="object-cover" />
@@ -365,7 +369,7 @@ export function CommunityFeed() {
                           <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
                         </div>
                         <span className="text-sm font-medium">{getDisplayName(member)}</span>
-                      </div>
+                      </Link>
                     ))
                   )}
                 </div>
