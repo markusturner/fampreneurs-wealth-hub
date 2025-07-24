@@ -344,9 +344,8 @@ export function CommunityFeed() {
       </div>
 
       {/* Main Content */}
-      <div className="flex justify-center w-full p-4">
-        <div className="flex gap-6 w-full max-w-7xl">
-          {/* Feed Content - Centered */}
+      <div className="flex w-full max-w-7xl mx-auto gap-6 p-4">
+        {/* Feed Content */}
           <div className="flex-1 max-w-2xl space-y-4">
             {/* Create Post */}
             <Card className="border-border">
@@ -487,10 +486,8 @@ export function CommunityFeed() {
               </div>
             </div>
           </div>
-        </div>
       </div>
 
-      {/* Story Viewer */}
       <StoryViewer
         stories={stories}
         initialStoryIndex={selectedStoryIndex}
