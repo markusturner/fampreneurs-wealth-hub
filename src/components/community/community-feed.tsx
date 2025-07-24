@@ -346,7 +346,7 @@ export function CommunityFeed() {
       {/* Main Content */}
       <div className="flex w-full max-w-7xl mx-auto gap-6 p-4">
         {/* Feed Content */}
-          <div className="flex-1 max-w-2xl space-y-4">
+        <div className="flex-1 max-w-2xl space-y-4">
             {/* Create Post */}
             <Card className="border-border">
               <CardContent className="p-4">
