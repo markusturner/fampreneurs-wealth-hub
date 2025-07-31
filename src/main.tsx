@@ -22,7 +22,7 @@ import ProfileSettings from "./pages/ProfileSettings";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
 import MemberProfile from "./pages/MemberProfile";
-import { MobileNavigation } from "@/components/ui/mobile-navigation";
+import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
 
@@ -62,7 +62,7 @@ createRoot(document.getElementById("root")!).render(
           <AuthProvider>
             <MeetingsProvider>
                 <AppWithNotifications />
-              <MobileNavigation />
+              <MobileBottomNav />
               <Toaster />
             </MeetingsProvider>
           </AuthProvider>

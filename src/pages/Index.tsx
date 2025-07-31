@@ -60,23 +60,26 @@ const Index = () => {
         <DashboardStats />
 
         {/* Main Dashboard Grid */}
-        <div className="grid gap-4 lg:gap-6 grid-cols-1 xl:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
           {/* Quick Actions */}
-          <div className="order-1">
+          <div className="order-1 lg:order-1">
             <QuickActions />
           </div>
 
           {/* Upcoming Meetings */}
-          <div className="order-2">
+          <div className="order-2 lg:order-2">
             <UpcomingMeetings />
           </div>
 
           {/* AI Chat */}
-          <div className="order-3">
+          <div className="order-3 lg:order-3 lg:col-span-2 xl:col-span-1">
             <AIChat />
           </div>
         </div>
       </main>
+      
+      {/* Mobile Bottom Navigation */}
+      <div className="pb-16 md:pb-0" />
     </div>
   );
 };

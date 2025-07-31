@@ -859,6 +859,9 @@ const Coaching = () => {
           )}
         </DialogContent>
       </Dialog>
+      
+      {/* Mobile Bottom Navigation */}
+      <div className="pb-16 md:pb-0" />
     </div>
   )
 }

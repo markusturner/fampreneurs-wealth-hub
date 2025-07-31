@@ -76,7 +76,7 @@ const Help = () => {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <main className="container max-w-4xl mx-auto px-4 py-8">
+      <main className="container max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <div className="mb-8">
           <Button
             variant="ghost"
@@ -174,6 +174,9 @@ const Help = () => {
           </CardContent>
         </Card>
       </main>
+      
+      {/* Mobile Bottom Navigation */}
+      <div className="pb-16 md:pb-0" />
     </div>
   )
 }

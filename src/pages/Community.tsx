@@ -108,9 +108,9 @@ const Community = () => {
           
           <main className="w-full">
             {/* Mobile Channel Navigation */}
-            <div className="block lg:hidden">
+            <div className="block lg:hidden px-3 sm:px-4">
               {showChannels ? (
-                <div className="px-4 py-6 border-b bg-background/80 backdrop-blur-sm">
+                <div className="py-4 sm:py-6 border-b bg-background/80 backdrop-blur-sm">
                   <div className="flex items-center justify-between mb-4">
                     <Button
                       variant="ghost"
@@ -119,9 +119,10 @@ const Community = () => {
                       className="flex items-center gap-2"
                     >
                       <ArrowLeft className="h-4 w-4" />
-                      Back to Feed
+                      <span className="hidden sm:inline">Back to Feed</span>
+                      <span className="sm:hidden">Back</span>
                     </Button>
-                    <h1 className="text-lg font-bold text-foreground">
+                    <h1 className="text-lg sm:text-xl font-bold text-foreground">
                       Community Groups
                     </h1>
                     <div></div>
@@ -129,7 +130,7 @@ const Community = () => {
                   <div className="space-y-2">
                     <Button
                       variant={selectedChannelId === null ? "default" : "ghost"}
-                      className="w-full justify-start gap-3"
+                      className="w-full justify-start gap-3 text-sm"
                       onClick={() => {
                         setSelectedChannelId(null)
                         setShowChannels(false)
@@ -142,7 +143,7 @@ const Community = () => {
                       <Button
                         key={channel.id}
                         variant={selectedChannelId === channel.id ? "default" : "ghost"}
-                        className="w-full justify-start gap-3"
+                        className="w-full justify-start gap-3 text-sm"
                         onClick={() => {
                           setSelectedChannelId(channel.id)
                           setShowChannels(false)
@@ -155,13 +156,13 @@ const Community = () => {
                   </div>
                 </div>
               ) : (
-                <div className="px-4 py-6 border-b bg-background/80 backdrop-blur-sm">
-                  <div className="space-y-4">
+                <div className="py-4 sm:py-6 border-b bg-background/80 backdrop-blur-sm">
+                  <div className="space-y-3 sm:space-y-4">
                     <div>
-                      <h1 className="text-2xl font-bold text-foreground">
+                      <h1 className="text-xl sm:text-2xl font-bold text-foreground">
                         Community Feed
                       </h1>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                         Connect with other like minded first generation wealth builders
                       </p>
                     </div>
@@ -171,10 +172,11 @@ const Community = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => setShowChannels(true)}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 text-xs sm:text-sm"
                       >
                         <Hash className="h-4 w-4" />
-                        Channels
+                        <span className="hidden sm:inline">Channels</span>
+                        <span className="sm:hidden">Groups</span>
                       </Button>
                     </div>
                   </div>
@@ -183,14 +185,14 @@ const Community = () => {
             </div>
 
             {/* Desktop Header */}
-            <div className="hidden lg:block px-4 py-6 border-b bg-background/80 backdrop-blur-sm">
+            <div className="hidden lg:block px-4 xl:px-6 py-6 border-b bg-background/80 backdrop-blur-sm">
               <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+                    <h1 className="text-2xl xl:text-3xl font-bold text-foreground">
                       Community Feed
                     </h1>
-                    <p className="text-sm sm:text-base text-muted-foreground mt-1">
+                    <p className="text-sm xl:text-base text-muted-foreground mt-1">
                       Connect with other like minded first generation wealth builders
                     </p>
                   </div>
@@ -206,6 +208,9 @@ const Community = () => {
           <ChatWidget />
         </SidebarInset>
       </div>
+      
+      {/* Mobile Bottom Navigation */}
+      <div className="pb-16 md:pb-0" />
     </SidebarProvider>
   )
 }

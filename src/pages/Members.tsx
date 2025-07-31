@@ -348,11 +348,11 @@ const Members = () => {
           </div>
         </div>
 
-        {/* Split Layout - Desktop */}
-        <div className={`${isMobileView ? 'block' : 'flex gap-4 h-[600px]'}`}>
+        {/* Split Layout - Desktop/Mobile Adaptive */}
+        <div className={`${isMobileView ? 'block' : 'flex gap-4 lg:gap-6 h-[500px] sm:h-[600px] lg:h-[700px]'}`}>
           {/* Left Sidebar - Members List */}
-          <div className={`${isMobileView ? 'w-full' : 'w-80'} flex flex-col ${isMobileView && showMobileChat ? 'hidden' : ''}`}>
-            <Card className={`shadow-soft ${isMobileView ? 'h-[500px]' : 'h-full'} flex flex-col`}>
+          <div className={`${isMobileView ? 'w-full' : 'w-72 lg:w-80 xl:w-96'} flex flex-col ${isMobileView && showMobileChat ? 'hidden' : ''}`}>
+            <Card className={`shadow-soft ${isMobileView ? 'h-[450px] sm:h-[500px]' : 'h-full'} flex flex-col`}>
               <CardHeader className="p-4 border-b">
                 <CardTitle className="text-lg font-bold flex items-center gap-2">
                   <MessageCircle className="h-5 w-5" />
@@ -578,6 +578,9 @@ const Members = () => {
           </div>
         </div>
       </main>
+      
+      {/* Mobile Bottom Navigation */}
+      <div className="pb-16 md:pb-0" />
     </div>
   )
 }

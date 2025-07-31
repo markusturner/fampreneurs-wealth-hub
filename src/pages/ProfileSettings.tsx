@@ -22,7 +22,7 @@ export function ProfileSettings() {
   }
 
   return (
-    <div className="container mx-auto py-3 md:py-6 px-4 space-y-4 md:space-y-6">
+    <div className="container mx-auto py-3 md:py-6 px-3 sm:px-4 space-y-4 md:space-y-6 pb-16 md:pb-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
           <Button 

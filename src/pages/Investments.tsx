@@ -245,22 +245,22 @@ export default function FamilyOffice() {
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm">
-            <TabsTrigger value="overview" className="px-2 sm:px-4">
+        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
+            <TabsTrigger value="overview" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Overview</span>
               <span className="sm:hidden">Home</span>
             </TabsTrigger>
-            <TabsTrigger value="accounts" className="px-2 sm:px-4">
+            <TabsTrigger value="accounts" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Accounts</span>
               <span className="sm:hidden">Accts</span>
             </TabsTrigger>
-            <TabsTrigger value="transactions" className="px-2 sm:px-4">
+            <TabsTrigger value="transactions" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Transactions</span>
               <span className="sm:hidden">Trans</span>
             </TabsTrigger>
-            <TabsTrigger value="budget" className="px-2 sm:px-4">Budget</TabsTrigger>
-            <TabsTrigger value="reports" className="px-2 sm:px-4">Reports</TabsTrigger>
+            <TabsTrigger value="budget" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">Budget</TabsTrigger>
+            <TabsTrigger value="reports" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">Reports</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -268,17 +268,17 @@ export default function FamilyOffice() {
             {(connectedAccounts.length > 0 || investments.length > 0) ? (
               <>
                 {/* Executive Summary */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
                   <Card>
-                    <CardHeader className="pb-2 sm:pb-3">
-                      <CardTitle className="text-xs sm:text-sm font-medium flex items-center gap-1 sm:gap-2">
+                    <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4 lg:p-6">
+                      <CardTitle className="text-xs sm:text-sm lg:text-base font-medium flex items-center gap-1 sm:gap-2">
                         <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
                         <span className="hidden sm:inline">Net Worth</span>
                         <span className="sm:hidden">Net</span>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="text-lg sm:text-2xl font-bold">{formatCurrency(getAccountsBalance() + getTotalPortfolioValue())}</div>
+                    <CardContent className="pt-0 p-3 sm:p-4 lg:p-6">
+                      <div className="text-sm sm:text-lg lg:text-2xl font-bold">{formatCurrency(getAccountsBalance() + getTotalPortfolioValue())}</div>
                       <div className="text-xs sm:text-sm text-green-600 flex items-center gap-1">
                         <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3" />
                         <span className="hidden sm:inline">Total Assets</span>
@@ -780,6 +780,9 @@ export default function FamilyOffice() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Mobile Bottom Navigation */}
+      <div className="pb-16 md:pb-0" />
     </div>
   )
 }
