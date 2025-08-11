@@ -736,34 +736,34 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-6">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3 lg:gap-4 overflow-x-auto scrollbar-hide -mx-2 px-2">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <Home className="h-4 w-4" />
-              Overview
+          <TabsList className="grid w-full grid-cols-7 sm:grid-cols-7 md:grid-cols-7 lg:grid-cols-7 gap-1 sm:gap-2 overflow-x-auto scrollbar-hide -mx-2 px-2">
+            <TabsTrigger value="overview" className="flex items-center justify-center p-2">
+              <Home className="h-5 w-5" aria-hidden="true" />
+              <span className="sr-only">Overview</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Users
+            <TabsTrigger value="users" className="flex items-center justify-center p-2">
+              <Users className="h-5 w-5" aria-hidden="true" />
+              <span className="sr-only">Users</span>
             </TabsTrigger>
-            <TabsTrigger value="courses" className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              Courses
+            <TabsTrigger value="courses" className="flex items-center justify-center p-2">
+              <BookOpen className="h-5 w-5" aria-hidden="true" />
+              <span className="sr-only">Courses</span>
             </TabsTrigger>
-            <TabsTrigger value="coaching" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Coaching
+            <TabsTrigger value="coaching" className="flex items-center justify-center p-2">
+              <Calendar className="h-5 w-5" aria-hidden="true" />
+              <span className="sr-only">Coaching</span>
             </TabsTrigger>
-            <TabsTrigger value="communications" className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              Communications
+            <TabsTrigger value="communications" className="flex items-center justify-center p-2">
+              <MessageSquare className="h-5 w-5" aria-hidden="true" />
+              <span className="sr-only">Communications</span>
             </TabsTrigger>
-            <TabsTrigger value="feedback" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Feedback
+            <TabsTrigger value="feedback" className="flex items-center justify-center p-2">
+              <FileText className="h-5 w-5" aria-hidden="true" />
+              <span className="sr-only">Feedback</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Settings
+            <TabsTrigger value="settings" className="flex items-center justify-center p-2">
+              <Settings className="h-5 w-5" aria-hidden="true" />
+              <span className="sr-only">Settings</span>
             </TabsTrigger>
           </TabsList>
 
