@@ -196,7 +196,7 @@ const Community = () => {
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-3 sm:px-4">
+        <div className="max-w-7xl mx-auto w-full px-3 sm:px-4 pb-20 md:pb-6 overflow-x-hidden">
           {!showChannels && <CommunityFeed />}
         </div>
       </main>
