@@ -55,6 +55,8 @@ interface Story {
   content_url: string
   caption: string | null
   created_at: string
+  expires_at: string
+  is_active?: boolean
   profiles: {
     display_name: string | null
     first_name: string | null
@@ -141,6 +143,21 @@ export function CommunityFeed() {
     fetchMembers()
     fetchStories()
   }, [selectedChannelId])
+
+  // Automatically refresh stories when the next one expires so they disappear after 24 hours without a page reload
+  useEffect(() => {
+    if (!stories || stories.length === 0) return
+    const now = Date.now()
+    const futureTimes = stories
+      .map((s) => new Date(s.expires_at).getTime() - now)
+      .filter((ms) => ms > 0)
+    if (futureTimes.length === 0) return
+    const msUntilNextExpiry = Math.min(...futureTimes)
+    const id = window.setTimeout(() => {
+      fetchStories()
+    }, Math.min(msUntilNextExpiry + 1000, 24 * 60 * 60 * 1000))
+    return () => clearTimeout(id)
+  }, [stories])
 
   const fetchPosts = async () => {
     try {
