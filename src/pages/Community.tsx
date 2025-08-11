@@ -98,7 +98,7 @@ const Community = () => {
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         {/* Sidebar - only show on iPad/tablet */}
-        {isMobile && <AppSidebar />}
+        {!isMobile && <AppSidebar />}
         
         <SidebarInset className="flex-1">
           <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
@@ -106,11 +106,11 @@ const Community = () => {
           {/* Video Call Banner */}
           <VideoCallBanner />
           
-          <main className="w-full">
+          <main className="w-full animate-fade-in">
             {/* Mobile Channel Navigation */}
             <div className="block lg:hidden px-3 sm:px-4">
               {showChannels ? (
-                <div className="py-4 sm:py-6 border-b bg-background/80 backdrop-blur-sm">
+                <div className="py-4 sm:py-6 border-b bg-background/80 backdrop-blur-sm sticky top-0 z-40">
                   <div className="flex items-center justify-between mb-4">
                     <Button
                       variant="ghost"
@@ -127,7 +127,7 @@ const Community = () => {
                     </h1>
                     <div></div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1 scrollbar-hide">
                     <Button
                       variant={selectedChannelId === null ? "default" : "ghost"}
                       className="w-full justify-start gap-3 text-sm"
@@ -156,7 +156,7 @@ const Community = () => {
                   </div>
                 </div>
               ) : (
-                <div className="py-4 sm:py-6 border-b bg-background/80 backdrop-blur-sm">
+                <div className="py-4 sm:py-6 border-b bg-background/80 backdrop-blur-sm sticky top-0 z-40">
                   <div className="space-y-3 sm:space-y-4">
                     <div>
                       <h1 className="text-xl sm:text-2xl font-bold text-foreground">
