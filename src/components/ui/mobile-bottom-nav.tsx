@@ -141,7 +141,7 @@ export function MobileBottomNav() {
             )
           })
         ) : (
-          itemsWithBadges.map((item) => {
+          itemsWithBadges.slice(0, -1).map((item) => {
             const isActive = location.pathname === item.href
             const Icon = item.icon
             
