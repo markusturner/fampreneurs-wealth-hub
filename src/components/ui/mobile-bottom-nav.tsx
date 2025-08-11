@@ -106,7 +106,7 @@ export function MobileBottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border md:hidden">
-      <nav className="flex items-center justify-around px-1 py-2 max-w-md mx-auto">
+      <nav className="flex items-center justify-between px-2 py-2 max-w-xl mx-auto gap-1 mobile-safe-padding">
         {itemsWithBadges.map((item) => {
           const isActive = location.pathname === item.href
           const Icon = item.icon
@@ -131,14 +131,7 @@ export function MobileBottomNav() {
                   </span>
                 )}
               </div>
-              <span 
-                className={cn(
-                  "truncate max-w-full transition-colors duration-200",
-                  isActive && "text-[#ffb500] font-semibold"
-                )}
-              >
-                {item.name}
-              </span>
+              <span className="sr-only">{item.name}</span>
             </NavLink>
           )
         })}
