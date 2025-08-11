@@ -734,9 +734,9 @@ export default function AdminDashboard() {
       </header>
 
       {/* Main Content */}
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-6">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3 lg:gap-4">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3 lg:gap-4 overflow-x-auto scrollbar-hide -mx-2 px-2">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Home className="h-4 w-4" />
               Overview
@@ -769,7 +769,7 @@ export default function AdminDashboard() {
 
           <TabsContent value="overview" className="space-y-4">
             {/* Key Metrics Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -821,7 +821,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Revenue and Calls Charts */}
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card>
                 <CardHeader>
                   <CardTitle>Monthly Performance</CardTitle>
@@ -831,7 +831,7 @@ export default function AdminDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <div className="flex items-center">
                           <TrendingUp className="h-4 w-4 mr-2 text-green-600" />
@@ -848,7 +848,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <Separator />
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <div className="flex items-center">
                           <Target className="h-4 w-4 mr-2 text-blue-600" />
@@ -920,7 +920,7 @@ export default function AdminDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 md:grid-cols-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {coachData.map((coach) => (
                     <div key={coach.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
@@ -935,7 +935,7 @@ export default function AdminDashboard() {
             </Card>
 
             {/* System Overview */}
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
