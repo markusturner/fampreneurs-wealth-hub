@@ -123,15 +123,7 @@ export function MobileBottomNav() {
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95"
               )}
             >
-              <div className="relative">
                 <Icon className={cn("h-5 w-5", isActive && "text-[#ffb500]")} />
-                {item.badge && item.badge > 0 && (
-                  <span
-                    className="absolute -top-1.5 -right-1.5 h-2.5 w-2.5 rounded-full bg-destructive"
-                    aria-hidden="true"
-                  />
-                )}
-              </div>
               <span className="sr-only">{item.name}</span>
             </NavLink>
           )
