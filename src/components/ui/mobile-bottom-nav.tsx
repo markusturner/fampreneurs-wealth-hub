@@ -141,27 +141,39 @@ export function MobileBottomNav() {
             )
           })
         ) : (
-          itemsWithBadges.slice(0, -1).map((item) => {
-            const isActive = location.pathname === item.href
-            const Icon = item.icon
-            
-            return (
-              <NavLink
-                key={item.name}
-                to={item.href}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1 p-2 rounded-lg transition-all duration-200",
-                  "min-w-0 flex-1 text-xs font-medium relative",
-                  isActive 
-                    ? "text-[#ffb500] bg-[#ffb500]/10 scale-105" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95"
-                )}
-              >
-                <Icon className={cn("h-5 w-5", isActive && "text-[#ffb500]")} />
-                <span className="sr-only">{item.name}</span>
-              </NavLink>
-            )
-          })
+          (() => {
+            const base = itemsWithBadges.slice(0, -1)
+            const pick = (href: string) => base.find(i => i.href === href)
+            const ordered = [
+              pick('/community'),
+              pick('/coaching'),
+              pick('/'),
+              pick('/courses'),
+              pick('/members'),
+            ].filter(Boolean) as any[]
+
+            return ordered.map((item) => {
+              const isActive = location.pathname === item.href
+              const Icon = item.icon
+
+              return (
+                <NavLink
+                  key={item.name}
+                  to={item.href}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1 p-2 rounded-lg transition-all duration-200",
+                    "min-w-0 flex-1 text-xs font-medium relative",
+                    isActive 
+                      ? "text-[#ffb500] bg-[#ffb500]/10 scale-105" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95"
+                  )}
+                >
+                  <Icon className={cn("h-5 w-5", isActive && "text-[#ffb500]")} />
+                  <span className="sr-only">{item.name}</span>
+                </NavLink>
+              )
+            })
+          })()
         )}
       </nav>
     </div>
