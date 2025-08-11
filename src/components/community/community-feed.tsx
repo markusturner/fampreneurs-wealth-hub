@@ -344,9 +344,9 @@ export function CommunityFeed() {
       </div>
 
       {/* Main Content */}
-      <div className="flex w-full max-w-7xl mx-auto gap-6 p-4">
+      <div className="flex w-full max-w-7xl mx-auto gap-6 p-4 flex-col lg:flex-row">
         {/* Feed Content */}
-        <div className="flex-1 max-w-2xl space-y-4">
+        <div className="w-full lg:flex-1 lg:max-w-2xl space-y-4">
             {/* Create Post */}
             <Card className="border-border">
               <CardContent className="p-4">
@@ -423,7 +423,7 @@ export function CommunityFeed() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="w-80 bg-card border border-border rounded-lg overflow-y-auto sticky top-4 h-fit">
+          <div className="w-full lg:w-80 bg-card border border-border rounded-lg overflow-y-visible lg:overflow-y-auto lg:sticky lg:top-4 h-fit mt-4 lg:mt-0">
             <div className="p-4 space-y-6">
               {/* Announcements */}
               <div>
