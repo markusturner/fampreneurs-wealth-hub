@@ -15,6 +15,7 @@ import { AnnouncementCard } from './announcement-card'
 import { PollCreationDialog } from './poll-creation-dialog'
 import { CreateStoryDialog } from './create-story-dialog'
 import { StoryViewer } from './story-viewer'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 interface Post {
   id: string
@@ -71,6 +72,7 @@ export function CommunityFeed() {
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null)
   const [storyViewerOpen, setStoryViewerOpen] = useState(false)
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(0)
+  const [composerOpen, setComposerOpen] = useState(false)
 
   const handleVideoClick = () => {
     toast({
@@ -290,59 +292,43 @@ export function CommunityFeed() {
         <div className="p-4 lg:hidden">
           <Card className="border-border">
             <CardContent className="p-4">
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3">
                 <Avatar className="w-10 h-10">
                   <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" className="object-cover" />
                   <AvatarFallback className="bg-primary/20 text-primary">
                     {profile?.display_name?.[0] || profile?.first_name?.[0] || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                <input 
-                  type="text"
-                  placeholder={`What's on your mind, ${profile?.first_name || 'there'}?`}
-                  className="flex-1 bg-muted rounded-full px-4 py-2 border-none outline-none text-foreground placeholder:text-muted-foreground"
-                />
-              </div>
-              {/* Action buttons */}
-              <div className="flex items-center gap-2 pt-3 border-t border-border flex-wrap">
-                <button 
-                  onClick={handlePhotoVideoClick}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                <button
+                  type="button"
+                  onClick={() => setComposerOpen(true)}
+                  className="flex-1 bg-muted rounded-full px-4 py-2 text-left text-muted-foreground hover:bg-muted/70 transition-colors"
                 >
-                  <ImageIcon className="h-4 w-4" />
-                  <span className="text-sm">Photo/video</span>
-                </button>
-                <button 
-                  onClick={handleAudioClick}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
-                >
-                  <MicIcon className="h-4 w-4" />
-                  <span className="text-sm">Audio</span>
-                </button>
-                <button 
-                  onClick={handleDocumentClick}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
-                >
-                  <FileText className="h-4 w-4" />
-                  <span className="text-sm">Document</span>
-                </button>
-                <PollCreationDialog onPollCreated={fetchPosts}>
-                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors">
-                    <BarChart3 className="h-4 w-4" />
-                    <span className="text-sm">Poll</span>
-                  </button>
-                </PollCreationDialog>
-                <button 
-                  onClick={handleLocationClick}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
-                >
-                  <MapPin className="h-4 w-4" />
-                  <span className="text-sm">Location</span>
+                  {`What's on your mind, ${profile?.first_name || 'there'}?`}
                 </button>
               </div>
             </CardContent>
           </Card>
         </div>
+
+        <Dialog open={composerOpen} onOpenChange={setComposerOpen}>
+          <DialogContent className="sm:max-w-[560px]">
+            <DialogHeader>
+              <DialogTitle>Share an update</DialogTitle>
+            </DialogHeader>
+            <EnhancedCreatePost 
+              onPostCreated={() => { setComposerOpen(false); fetchPosts(); }}
+              channelId={selectedChannelId}
+            />
+            <div className="pt-2 lg:hidden">
+              <PollCreationDialog onPollCreated={() => { setComposerOpen(false); fetchPosts(); }}>
+                <button className="w-full text-sm text-center text-primary underline underline-offset-2">
+                  Create a poll
+                </button>
+              </PollCreationDialog>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Mobile Announcements at top */}
         <div className="px-4 lg:hidden">
