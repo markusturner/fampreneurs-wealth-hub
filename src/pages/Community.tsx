@@ -163,16 +163,6 @@ const Community = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <VideoCallButton />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowChannels(true)}
-                    className="flex items-center gap-2 text-xs sm:text-sm"
-                  >
-                    <Hash className="h-4 w-4" />
-                    <span className="hidden sm:inline">Channels</span>
-                    <span className="sm:hidden">Groups</span>
-                  </Button>
                 </div>
               </div>
             </div>
