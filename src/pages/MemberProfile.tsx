@@ -463,7 +463,13 @@ export default function MemberProfile() {
   return (
     <div className="min-h-screen bg-background">
       {/* Back Button */}
-      <div className="absolute top-4 left-4 z-10">
+      <div
+        className="fixed z-20"
+        style={{
+          top: "calc(env(safe-area-inset-top, 0px) + 1rem)",
+          left: "calc(env(safe-area-inset-left, 0px) + 1rem)"
+        }}
+      >
         <Button
           variant="outline"
           size="sm"
