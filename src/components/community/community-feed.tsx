@@ -331,7 +331,7 @@ export function CommunityFeed() {
         </Dialog>
 
         {/* Mobile Announcements at top */}
-        <div className="px-4 lg:hidden">
+        <div className="px-4 lg:hidden mb-4">
           <div className="bg-card border border-border rounded-lg p-3">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
@@ -355,7 +355,7 @@ export function CommunityFeed() {
         </div>
 
         {/* Stories Section - Full Width */}
-      <div className="w-full bg-card border-b border-border p-4">
+      <div className="w-full bg-card border-b border-border p-4 mt-2">
         <div className="flex gap-4 overflow-x-auto pb-2">
           {/* Create Story */}
           <CreateStoryDialog onStoryCreated={fetchStories}>
