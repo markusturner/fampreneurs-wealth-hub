@@ -205,7 +205,7 @@ const Community = () => {
       <ChatWidget />
 
       {/* Mobile Bottom Navigation space */}
-      <div className="pb-16 md:pb-0" />
+      <div className="pb-0 md:pb-0" />
     </div>
   )
 }
