@@ -106,7 +106,7 @@ export function MobileBottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border md:hidden">
-      <nav className="flex items-center justify-between px-2 py-2 max-w-xl mx-auto gap-1 mobile-safe-padding">
+      <nav className="flex items-center justify-between px-2 py-2 max-w-xl mx-auto gap-1">
         {itemsWithBadges.map((item) => {
           const isActive = location.pathname === item.href
           const Icon = item.icon
@@ -126,9 +126,10 @@ export function MobileBottomNav() {
               <div className="relative">
                 <Icon className={cn("h-5 w-5", isActive && "text-[#ffb500]")} />
                 {item.badge && item.badge > 0 && (
-                  <span className="absolute -top-2 -right-2 h-4 w-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center min-w-4">
-                    {item.badge > 9 ? '9+' : item.badge}
-                  </span>
+                  <span
+                    className="absolute -top-1.5 -right-1.5 h-2.5 w-2.5 rounded-full bg-destructive"
+                    aria-hidden="true"
+                  />
                 )}
               </div>
               <span className="sr-only">{item.name}</span>
