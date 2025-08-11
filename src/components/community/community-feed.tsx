@@ -285,8 +285,90 @@ export function CommunityFeed() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Stories Section - Full Width */}
+      <div className="min-h-screen bg-background">
+        {/* Mobile Composer (top) */}
+        <div className="p-4 lg:hidden">
+          <Card className="border-border">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-4">
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={profile?.avatar_url || undefined} alt="Profile" className="object-cover" />
+                  <AvatarFallback className="bg-primary/20 text-primary">
+                    {profile?.display_name?.[0] || profile?.first_name?.[0] || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <input 
+                  type="text"
+                  placeholder={`What's on your mind, ${profile?.first_name || 'there'}?`}
+                  className="flex-1 bg-muted rounded-full px-4 py-2 border-none outline-none text-foreground placeholder:text-muted-foreground"
+                />
+              </div>
+              {/* Action buttons */}
+              <div className="flex items-center gap-2 pt-3 border-t border-border flex-wrap">
+                <button 
+                  onClick={handlePhotoVideoClick}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                >
+                  <ImageIcon className="h-4 w-4" />
+                  <span className="text-sm">Photo/video</span>
+                </button>
+                <button 
+                  onClick={handleAudioClick}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                >
+                  <MicIcon className="h-4 w-4" />
+                  <span className="text-sm">Audio</span>
+                </button>
+                <button 
+                  onClick={handleDocumentClick}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span className="text-sm">Document</span>
+                </button>
+                <PollCreationDialog onPollCreated={fetchPosts}>
+                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors">
+                    <BarChart3 className="h-4 w-4" />
+                    <span className="text-sm">Poll</span>
+                  </button>
+                </PollCreationDialog>
+                <button 
+                  onClick={handleLocationClick}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted/50 text-muted-foreground transition-colors"
+                >
+                  <MapPin className="h-4 w-4" />
+                  <span className="text-sm">Location</span>
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Mobile Announcements at top */}
+        <div className="px-4 lg:hidden">
+          <div className="bg-card border border-border rounded-lg p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Megaphone className="h-4 w-4 text-secondary" />
+                <h3 className="font-semibold">Announcements</h3>
+              </div>
+              <CreateAnnouncement onAnnouncementCreated={fetchAnnouncements} />
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
+              {announcements.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-2">No announcements yet</p>
+              ) : (
+                announcements.map((announcement) => (
+                  <div key={announcement.id} className="min-w-[85%]">
+                    <AnnouncementCard announcement={announcement} onUpdate={fetchAnnouncements} />
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Stories Section - Full Width */}
       <div className="w-full bg-card border-b border-border p-4">
         <div className="flex gap-4 overflow-x-auto pb-2">
           {/* Create Story */}
@@ -343,12 +425,16 @@ export function CommunityFeed() {
         </div>
       </div>
 
+      {/* Moved: Mobile composer now rendered above */}
+
+      {/* Moved: Mobile announcements now rendered above */}
+
       {/* Main Content */}
       <div className="flex w-full max-w-7xl mx-auto gap-6 p-4 flex-col lg:flex-row">
         {/* Feed Content */}
         <div className="w-full lg:flex-1 lg:max-w-2xl space-y-4">
             {/* Create Post */}
-            <Card className="border-border">
+            <Card className="border-border hidden lg:block">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar className="w-10 h-10">
