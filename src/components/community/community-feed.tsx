@@ -495,7 +495,7 @@ export function CommunityFeed() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="w-full lg:w-80 bg-card border border-border rounded-lg overflow-y-visible lg:overflow-y-auto lg:sticky lg:top-4 h-fit mt-4 lg:mt-0">
+          <div className="hidden lg:block lg:w-80 bg-card border border-border rounded-lg overflow-y-visible lg:overflow-y-auto lg:sticky lg:top-4 h-fit mt-4 lg:mt-0">
             <div className="p-4 space-y-6">
               {/* Announcements */}
               <div>
