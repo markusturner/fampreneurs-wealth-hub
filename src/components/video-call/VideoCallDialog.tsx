@@ -23,11 +23,12 @@ export const VideoCallDialog = ({ isOpen, onClose, roomId = "default-room" }: Vi
   const localStreamRef = useRef<MediaStream | null>(null)
 
   useEffect(() => {
+    if (!isOpen) return;
     initializeCall()
     return () => {
       cleanup()
     }
-  }, [])
+  }, [isOpen])
 
   const initializeCall = async () => {
     try {
