@@ -1,23 +1,58 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useNotifications } from "@/hooks/useNotifications"
 import { FeedbackDialog } from "@/components/dashboard/feedback-dialog"
 import { WeeklyCheckinDialog } from "@/components/dashboard/weekly-checkin-dialog"
 import { cn } from "@/lib/utils"
-
+import { supabase } from "@/integrations/supabase/client"
+import { useAuth } from "@/contexts/AuthContext"
+import { useToast } from "@/hooks/use-toast"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { formatDistanceToNow } from "date-fns"
 export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
   const [weeklyCheckinDialogOpen, setWeeklyCheckinDialogOpen] = useState(false)
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications()
+  const { user } = useAuth()
+  const { toast } = useToast()
+  const [friendRequests, setFriendRequests] = useState<Array<{ id: string; requester_id: string; created_at: string; profile?: { display_name: string | null; first_name: string | null; avatar_url: string | null } }>>([])
+
+  const fetchFriendRequests = async () => {
+    if (!user?.id) return
+    const { data, error } = await supabase
+      .from('friendships')
+      .select('*')
+      .eq('addressee_id', user.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching friend requests:', error)
+      return
+    }
+
+    const withProfiles = await Promise.all(
+      (data || []).map(async (req: any) => {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name, first_name, avatar_url')
+          .eq('user_id', req.requester_id)
+          .maybeSingle()
+        return { ...req, profile: profile || null }
+      })
+    )
+
+    setFriendRequests(withProfiles as any)
+  }
+
+  useEffect(() => {
+    if (open) fetchFriendRequests()
+  }, [open, user?.id])
 
   console.log('NotificationBell: notifications:', notifications)
   console.log('NotificationBell: unreadCount:', unreadCount)
@@ -44,6 +79,39 @@ export function NotificationBell() {
     }
   }
 
+  const handleRequestAction = async (id: string, requesterId: string, action: 'accept' | 'decline') => {
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .update({ status: action === 'accept' ? 'accepted' : 'declined' })
+        .eq('id', id)
+
+      if (error) throw error
+
+      await supabase
+        .from('notifications')
+        .delete()
+        .eq('reference_id', id)
+        .eq('notification_type', 'friend_request')
+
+      if (action === 'accept') {
+        await supabase.from('notifications').insert({
+          user_id: requesterId,
+          sender_id: user?.id,
+          notification_type: 'friend_request_accepted',
+          title: 'Friend Request Accepted',
+          message: 'Your friend request was accepted',
+          reference_id: id
+        })
+      }
+
+      setFriendRequests((prev) => prev.filter((r) => r.id !== id))
+      toast({ title: action === 'accept' ? 'Friend request accepted' : 'Friend request declined' })
+    } catch (e) {
+      console.error('Error updating friendship:', e)
+      toast({ title: 'Error', description: 'Failed to update friend request.', variant: 'destructive' })
+    }
+  }
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -151,24 +219,45 @@ export function NotificationBell() {
           <div className="p-4 border-t">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-foreground">Friend requests</h3>
-              <span className="text-sm text-primary cursor-pointer hover:underline">See all</span>
+              <span className="text-sm text-muted-foreground">{friendRequests.length} pending</span>
             </div>
             <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-purple-500" />
-                <div className="flex-1">
-                  <p className="font-medium">New Member</p>
-                  <p className="text-sm text-muted-foreground">1w</p>
-                </div>
-                <div className="flex gap-2">
-                  <button className="px-4 py-1 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90">
-                    Confirm
-                  </button>
-                  <button className="px-4 py-1 bg-muted text-muted-foreground rounded-md text-sm font-medium hover:bg-muted/80">
-                    Delete
-                  </button>
-                </div>
-              </div>
+              {friendRequests.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No pending requests</p>
+              ) : (
+                friendRequests.map((req) => (
+                  <div key={req.id} className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={req.profile?.avatar_url || undefined} alt={(req.profile?.display_name || req.profile?.first_name || 'Member') + ' avatar'} />
+                      <AvatarFallback>
+                        {(req.profile?.display_name || req.profile?.first_name || 'M').slice(0,1)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-medium">
+                        {req.profile?.display_name || req.profile?.first_name || 'Member'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatDistanceToNow(new Date(req.created_at), { addSuffix: true })}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleRequestAction(req.id, req.requester_id, 'accept') }}
+                        className="px-4 py-1 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90"
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleRequestAction(req.id, req.requester_id, 'decline') }}
+                        className="px-4 py-1 bg-muted text-muted-foreground rounded-md text-sm font-medium hover:bg-muted/80"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </ScrollArea>
