@@ -330,30 +330,7 @@ export function CommunityFeed() {
           </DialogContent>
         </Dialog>
 
-        {/* Mobile Announcements at top */}
-        <div className="px-4 lg:hidden mb-8">
-          <div className="bg-card border border-border rounded-lg p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Megaphone className="h-4 w-4 text-secondary" />
-                <h3 className="font-semibold">Announcements</h3>
-              </div>
-              <CreateAnnouncement onAnnouncementCreated={fetchAnnouncements} />
-            </div>
-            <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
-              {announcements.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-2">No announcements yet</p>
-              ) : (
-                announcements.map((announcement) => (
-                  <div key={announcement.id} className="min-w-[85%]">
-                    <AnnouncementCard announcement={announcement} onUpdate={fetchAnnouncements} />
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-
+        {/* Mobile Announcements at top - REMOVED and moved into feed content as compact widget */}
         {/* Stories Section - Full Width */}
       <div className="w-full bg-card border-b border-border p-4 mt-2">
         <div className="flex gap-4 overflow-x-auto pb-2">
@@ -411,14 +388,34 @@ export function CommunityFeed() {
         </div>
       </div>
 
-      {/* Moved: Mobile composer now rendered above */}
-
-      {/* Moved: Mobile announcements now rendered above */}
-
       {/* Main Content */}
       <div className="flex w-full max-w-7xl mx-auto gap-6 p-4 flex-col lg:flex-row">
         {/* Feed Content */}
         <div className="w-full lg:flex-1 lg:max-w-2xl space-y-4">
+            {/* Compact Mobile Announcements inside feed */}
+            <div className="lg:hidden">
+              <div className="bg-card border border-border rounded-lg p-2">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Megaphone className="h-3 w-3 text-secondary" />
+                    <h3 className="text-sm font-semibold">Announcements</h3>
+                  </div>
+                  <CreateAnnouncement onAnnouncementCreated={fetchAnnouncements} />
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                  {announcements.length === 0 ? (
+                    <p className="text-xs text-muted-foreground py-2">No announcements yet</p>
+                  ) : (
+                    announcements.map((announcement) => (
+                      <div key={announcement.id} className="min-w-[70%]">
+                        <AnnouncementCard announcement={announcement} onUpdate={fetchAnnouncements} />
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Create Post */}
             <Card className="border-border hidden lg:block">
               <CardContent className="p-4">
