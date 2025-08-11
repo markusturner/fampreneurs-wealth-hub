@@ -734,9 +734,9 @@ export default function AdminDashboard() {
       </header>
 
       {/* Main Content */}
-      <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-6">
+      <div className="container mx-auto px-3 sm:px-6 py-4 sm:py-6 pb-20 md:pb-6">
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7 sm:grid-cols-7 md:grid-cols-7 lg:grid-cols-7 gap-1 sm:gap-2 overflow-x-auto scrollbar-hide -mx-2 px-2">
+          <TabsList className="fixed bottom-0 left-0 right-0 z-40 md:static grid w-full grid-cols-7 sm:grid-cols-7 md:grid-cols-7 lg:grid-cols-7 gap-1 sm:gap-2 overflow-x-auto scrollbar-hide bg-background/95 backdrop-blur-sm border-t border-border px-2 py-2 md:py-0">
             <TabsTrigger value="overview" className="flex items-center justify-center p-2">
               <Home className="h-5 w-5" aria-hidden="true" />
               <span className="sr-only">Overview</span>
