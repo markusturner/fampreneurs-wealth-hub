@@ -331,7 +331,7 @@ export function CommunityFeed() {
         </Dialog>
 
         {/* Mobile Announcements at top */}
-        <div className="px-4 lg:hidden mb-4">
+        <div className="px-4 lg:hidden mb-8">
           <div className="bg-card border border-border rounded-lg p-3">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
