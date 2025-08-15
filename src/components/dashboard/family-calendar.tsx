@@ -47,14 +47,14 @@ export function FamilyCalendar() {
             }}
             modifiersStyles={{
               groupCoaching: {
-                backgroundColor: 'hsl(43 100% 50%)',
-                color: 'white',
+                backgroundColor: 'hsl(var(--primary))',
+                color: 'hsl(var(--primary-foreground))',
                 borderRadius: '4px',
                 fontWeight: 'bold'
               },
               otherMeeting: {
-                backgroundColor: 'hsl(270 50% 60%)',
-                color: 'white',
+                backgroundColor: 'hsl(var(--secondary))',
+                color: 'hsl(var(--secondary-foreground))',
                 borderRadius: '4px',
                 fontWeight: 'bold'
               }

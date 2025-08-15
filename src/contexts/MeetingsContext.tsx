@@ -27,20 +27,6 @@ const initialMeetings: Meeting[] = [
     date: '2024-12-20',
     time: '10:00',
     type: 'Quarterly Reviews'
-  },
-  {
-    id: '2',
-    title: 'Estate Planning Discussion',
-    date: '2024-12-22',
-    time: '14:30',
-    type: 'Family Legacy Meetings'
-  },
-  {
-    id: '3',
-    title: 'Annual Family Meeting',
-    date: '2024-12-28',
-    time: '16:00',
-    type: 'Annual Meetings'
   }
 ]
 
