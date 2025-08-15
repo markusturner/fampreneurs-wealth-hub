@@ -40,7 +40,7 @@ export function FamilyCalendar() {
             mode="single"
             selected={selectedDate}
             onSelect={setSelectedDate}
-            className="rounded-md border pointer-events-auto w-full"
+            className="rounded-md border pointer-events-auto w-full [&_.rdp-day]:h-12 [&_.rdp-day]:w-12 [&_.rdp-day]:text-base [&_.rdp-button]:h-12 [&_.rdp-button]:w-12"
             modifiers={{
               groupCoaching: groupCoachingDates,
               otherMeeting: otherMeetingDates
