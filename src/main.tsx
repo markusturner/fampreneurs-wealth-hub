@@ -14,12 +14,17 @@ import Courses from "./pages/Courses";
 import Documents from "./pages/Documents";
 import Members from "./pages/Members";
 import Calendar from "./pages/Calendar";
-
 import Investments from "./pages/Investments";
 import ProfileSettings from "./pages/ProfileSettings";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
 import MemberProfile from "./pages/MemberProfile";
+import EstatePlanning from "./pages/EstatePlanning";
+import TaxPlanning from "./pages/TaxPlanning";
+import Philanthropy from "./pages/Philanthropy";
+import RiskManagement from "./pages/RiskManagement";
+import FamilyGovernance from "./pages/FamilyGovernance";
+import ProfessionalServices from "./pages/ProfessionalServices";
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
@@ -43,6 +48,12 @@ function AppWithNotifications() {
       <Route path="/members" element={<Members />} />
       
       <Route path="/investments" element={<Investments />} />
+      <Route path="/estate-planning" element={<EstatePlanning />} />
+      <Route path="/tax-planning" element={<TaxPlanning />} />
+      <Route path="/philanthropy" element={<Philanthropy />} />
+      <Route path="/risk-management" element={<RiskManagement />} />
+      <Route path="/family-governance" element={<FamilyGovernance />} />
+      <Route path="/professional-services" element={<ProfessionalServices />} />
       <Route path="/profile-settings" element={<ProfileSettings />} />
       <Route path="/help" element={<Help />} />
       <Route path="/contact" element={<Contact />} />
