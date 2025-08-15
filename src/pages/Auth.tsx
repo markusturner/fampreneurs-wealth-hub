@@ -28,10 +28,10 @@ export default function Auth() {
   const [selectedProgram, setSelectedProgram] = useState('')
   const [showTwoFactor, setShowTwoFactor] = useState(false)
   const [signupEmail, setSignupEmail] = useState('')
+  const [userType, setUserType] = useState<'family_office' | 'family_member'>('family_office')
   
   const { toast } = useToast()
   const navigate = useNavigate()
-
   useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
@@ -476,6 +476,28 @@ export default function Auth() {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
+                  <Label>Login as</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      variant={userType === 'family_office' ? 'default' : 'outline'}
+                      onClick={() => setUserType('family_office')}
+                    >
+                      Family Office
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={userType === 'family_member' ? 'default' : 'outline'}
+                      onClick={() => setUserType('family_member')}
+                    >
+                      Family Member
+                    </Button>
+                  </div>
+                  {userType === 'family_member' && (
+                    <p className="text-xs text-muted-foreground">Use the credentials sent to your email by your Family Office.</p>
+                  )}
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
                   <Input
                     id="signin-email"
@@ -510,7 +532,7 @@ export default function Auth() {
                   disabled={isLoading}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign In
+                  Sign In {userType === 'family_member' ? '(Family Member)' : '(Family Office)'}
                 </Button>
               </form>
               
