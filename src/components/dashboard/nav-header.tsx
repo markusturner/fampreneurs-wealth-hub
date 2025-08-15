@@ -234,9 +234,9 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             variant={location.pathname === '/' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/')}
-            className="gap-2 h-9 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 dark:from-green-950/50 dark:to-emerald-950/50 border border-green-200/50 dark:border-green-800/50 text-green-800 dark:text-green-200 font-medium"
+            className="gap-2 h-9"
           >
-            <Home className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <Home className="h-4 w-4" />
             Family Office
           </Button>
           <Button
