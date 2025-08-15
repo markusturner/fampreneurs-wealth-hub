@@ -19,10 +19,10 @@ import { Badge } from "@/components/ui/badge"
 
 const mainItems = [
   { title: "Overview", url: "/", icon: Home },
-  { title: "Income Statement", url: "/income", icon: TrendingUp },
-  { title: "Balance Sheet", url: "/balance", icon: Calculator },
-  { title: "Tax Center", url: "/tax", icon: FileText },
-  { title: "My Books", url: "/documents", icon: BookOpen },
+  { title: "Investments", url: "/investments", icon: TrendingUp },
+  { title: "Family Office & Family Member", url: "/family-members", icon: Users },
+  { title: "Schedule Meeting", url: "/schedule-meeting", icon: Calculator },
+  { title: "Upload Documents", url: "/documents", icon: FileText },
 ]
 
 const secondaryItems = [

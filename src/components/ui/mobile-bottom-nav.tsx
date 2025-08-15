@@ -15,6 +15,8 @@ interface NavItem {
 const allNavigationItems: NavItem[] = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Investments', href: '/investments', icon: TrendingUp },
+  { name: 'Family', href: '/family-members', icon: Users },
+  { name: 'Meeting', href: '/schedule-meeting', icon: Calendar },
   { name: 'Documents', href: '/documents', icon: FileText },
 ]
 

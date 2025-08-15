@@ -16,6 +16,7 @@ import ProfileSettings from "./pages/ProfileSettings";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
 import MemberProfile from "./pages/MemberProfile";
+import ScheduleMeeting from "./pages/ScheduleMeeting";
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
@@ -35,6 +36,7 @@ function AppWithNotifications() {
       <Route path="/member/:userId" element={<MemberProfile />} />
       <Route path="/family-members" element={<FamilyMembers />} />
       <Route path="/investments" element={<Investments />} />
+      <Route path="/schedule-meeting" element={<ScheduleMeeting />} />
       <Route path="/profile-settings" element={<ProfileSettings />} />
       <Route path="/help" element={<Help />} />
       <Route path="/contact" element={<Contact />} />
