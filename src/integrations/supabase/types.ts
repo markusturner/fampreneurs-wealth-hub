@@ -2969,7 +2969,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          display_name: string | null
+          first_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          first_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          first_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assign_accountability_role: {
@@ -3015,6 +3038,10 @@ export type Database = {
       generate_certificate_number: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_public_profile: {
+        Args: { target_user_id: string }
+        Returns: Json
       }
       is_current_user_accountability_partner: {
         Args: Record<PropertyKey, never>
