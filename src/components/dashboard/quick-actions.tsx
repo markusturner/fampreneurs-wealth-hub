@@ -11,13 +11,6 @@ import { InvestmentIntegrationDialog } from "./investment-integration-dialog"
 
 const quickActions = [
   {
-    title: "Add Investment",
-    description: "Connect financial accounts",
-    icon: TrendingUp,
-    variant: "premium" as const,
-    action: () => window.location.href = "/investments"
-  },
-  {
     title: "Upload Document",
     description: "Add trust or family documents",
     icon: Upload,
