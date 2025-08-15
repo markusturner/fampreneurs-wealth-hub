@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { NavHeader } from "@/components/dashboard/nav-header"
 import { FamilyCalendar } from "@/components/dashboard/family-calendar"
 import { UpcomingMeetings } from "@/components/dashboard/upcoming-meetings"
 import { ScheduleMeetingDialog } from "@/components/dashboard/schedule-meeting-dialog"
@@ -9,7 +10,9 @@ export default function Calendar() {
   const [isScheduleMeetingOpen, setIsScheduleMeetingOpen] = useState(false)
 
   return (
-    <div className="container mx-auto p-4 lg:p-6 space-y-6">
+    <div className="min-h-screen bg-background">
+      <NavHeader />
+      <div className="container mx-auto p-4 lg:p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold">Family Calendar</h1>
@@ -39,6 +42,7 @@ export default function Calendar() {
         open={isScheduleMeetingOpen}
         onOpenChange={setIsScheduleMeetingOpen}
       />
+      </div>
     </div>
   )
 }
