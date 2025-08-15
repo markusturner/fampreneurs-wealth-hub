@@ -3026,6 +3026,30 @@ export type Database = {
         }
         Relationships: []
       }
+      safe_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          display_name: string | null
+          first_initial: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          first_initial?: never
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          first_initial?: never
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assign_accountability_role: {
