@@ -255,7 +255,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             className="gap-2 h-9"
           >
             <BookOpen className="h-4 w-4" />
-            Courses
+            Documents
           </Button>
           <Button
             variant={location.pathname === '/coaching' ? "default" : "ghost"}
