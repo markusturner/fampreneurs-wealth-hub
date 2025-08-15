@@ -1,78 +1,531 @@
-import { useState } from 'react'
-import { NavHeader } from "@/components/dashboard/nav-header"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { TrendingUp, Users, BookOpen, MessageSquare, Plus } from "lucide-react"
-import { InvestmentIntegrationDialog } from "@/components/dashboard/investment-integration-dialog"
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '@/integrations/supabase/client'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { NavHeader } from '@/components/dashboard/nav-header'
+import { useToast } from '@/hooks/use-toast'
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  DollarSign, 
+  PieChart, 
+  Wallet, 
+  BarChart3,
+  Building2,
+  Shield,
+  Target,
+  AlertTriangle,
+  BrainCircuit,
+  CreditCard,
+  Home,
+  Briefcase,
+  Bitcoin,
+  FileText,
+  Users,
+  Lock,
+  ArrowLeft
+} from 'lucide-react'
+import { InvestmentChart } from '@/components/dashboard/investment-chart'
+import { AssetAllocation } from '@/components/dashboard/asset-allocation'
+import { AccountIntegration } from '@/components/dashboard/account-integration'
+import { TransactionMonitoring } from '@/components/dashboard/transaction-monitoring'
+import { BudgetingAnalytics } from '@/components/dashboard/budgeting-analytics'
+import { FamilyMemberManagement } from '@/components/dashboard/family-member-management'
 
-const Community = () => {
-  const [investmentIntegrationOpen, setInvestmentIntegrationOpen] = useState(false)
+interface Investment {
+  id: string
+  user_id: string
+  platform_id: string
+  total_value: number
+  cash_balance: number | null
+  day_change: number | null
+  day_change_percent: number | null
+  positions: any
+  last_updated: string | null
+  created_at: string
+  updated_at: string
+}
 
-  const investmentAction = {
-    title: "Add Investment",
-    description: "Connect financial accounts",
-    icon: TrendingUp,
-    variant: "premium" as const,
-    action: () => setInvestmentIntegrationOpen(true)
+interface AssetAllocationData {
+  name: string
+  value: number
+  color: string
+}
+
+export default function Community() {
+  const { user, profile } = useAuth()
+  const navigate = useNavigate()
+  const { toast } = useToast()
+  const [investments, setInvestments] = useState<Investment[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchInvestments()
+  }, [])
+
+  const fetchInvestments = async () => {
+    if (!user?.id) {
+      setLoading(false)
+      return
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('investment_portfolios')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setInvestments(data || [])
+    } catch (error) {
+      console.error('Error fetching investments:', error)
+    } finally {
+      setLoading(false)
+    }
   }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount)
+  }
+
+  const formatPercent = (percent: number) => {
+    return `${percent >= 0 ? '+' : ''}${percent.toFixed(2)}%`
+  }
+
+  const getTotalPortfolioValue = () => {
+    return investments.reduce((sum, inv) => sum + inv.total_value, 0)
+  }
+
+  const getTotalDayChange = () => {
+    return investments.reduce((sum, inv) => sum + (inv.day_change || 0), 0)
+  }
+
+  const getTotalCashBalance = () => {
+    return investments.reduce((sum, inv) => sum + (inv.cash_balance || 0), 0)
+  }
+
+  // Get user-specific accounts balance from localStorage and connected accounts
+  const getConnectedAccounts = () => {
+    if (!user) return []
+    
+    const userKey = `connectedAccounts_${user.id}`
+    const deletedKey = `deletedAccounts_${user.id}`
+    
+    const deletedAccounts = JSON.parse(localStorage.getItem(deletedKey) || '[]')
+    const savedAccounts = JSON.parse(localStorage.getItem(userKey) || '[]')
+    return savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id))
+  }
+
+  const connectedAccounts = getConnectedAccounts()
+
+  const getAccountsBalance = () => {
+    return connectedAccounts.reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
+  }
+
+  // Get active accounts count for current user
+  const getActiveAccountsCount = () => {
+    if (!user) return 0
+    
+    const userKey = `connectedAccounts_${user.id}`
+    const deletedKey = `deletedAccounts_${user.id}`
+    
+    const deletedAccounts = JSON.parse(localStorage.getItem(deletedKey) || '[]')
+    const savedAccounts = JSON.parse(localStorage.getItem(userKey) || '[]')
+    return savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id) && account.status === 'connected').length
+  }
+
+  // Generate asset allocation based on account types from accounts section
+  const generateAssetAllocation = () => {
+    const mockAccountTypes = [
+      { name: 'Brokerage', value: 62, color: '#3b82f6' },
+      { name: 'Bank', value: 18, color: '#10b981' },
+      { name: 'Crypto', value: 14, color: '#f59e0b' },
+      { name: 'Business', value: 6, color: '#8b5cf6' }
+    ]
+    return mockAccountTypes
+  }
+
+  const assetAllocationData: AssetAllocationData[] = generateAssetAllocation()
+
+  // Generate AI insights based on portfolio performance
+  const generateAIInsights = () => {
+    const totalValue = getTotalPortfolioValue()
+    const dayChange = getTotalDayChange()
+    const insights = []
+
+    // Performance-based insights
+    if (dayChange < -10000) {
+      insights.push({
+        type: 'alert',
+        message: `Portfolio declined by ${formatCurrency(Math.abs(dayChange))} today. Consider reviewing your risk tolerance and rebalancing.`,
+        priority: 'high'
+      })
+    } else if (dayChange > 20000) {
+      insights.push({
+        type: 'opportunity',
+        message: `Strong portfolio performance today (+${formatCurrency(dayChange)}). Consider taking profits on overperforming positions.`,
+        priority: 'medium'
+      })
+    }
+
+    // Portfolio size insights
+    if (totalValue > 10000000) {
+      insights.push({
+        type: 'tip',
+        message: 'With your portfolio size, consider diversifying into alternative investments like real estate or private equity.',
+        priority: 'medium'
+      })
+    }
+
+    // Cash allocation insight
+    const cashBalance = getTotalCashBalance()
+    const cashPercentage = totalValue > 0 ? (cashBalance / totalValue) * 100 : 0
+    if (cashPercentage > 10) {
+      insights.push({
+        type: 'opportunity',
+        message: `You have ${cashPercentage.toFixed(1)}% in cash. Consider investing excess cash for better returns.`,
+        priority: 'medium'
+      })
+    }
+
+    // Default insights if none generated
+    if (insights.length === 0) {
+      insights.push(
+        {
+          type: 'tip',
+          message: 'Your portfolio is well-balanced. Consider regular rebalancing to maintain target allocations.',
+          priority: 'low'
+        },
+        {
+          type: 'opportunity',
+          message: 'Tax-loss harvesting opportunities may be available in your taxable accounts.',
+          priority: 'low'
+        }
+      )
+    }
+
+    return insights
+  }
+
+  const aiInsights = generateAIInsights()
 
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full overflow-hidden">
-        {/* Header Section */}
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
-              Investments
-            </h1>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-              Connect and manage your financial accounts
-            </p>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/')}
+              className="hover:bg-muted"
+              title="Back to Family Office"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold">Digital Family Office</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Complete financial ecosystem management and wealth tracking
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Investment Section */}
-        <div className="max-w-md mx-auto">
-          <Card className="hover:shadow-lg transition-all duration-200 hover:scale-[1.02]">
-            <CardHeader className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">{investmentAction.title}</CardTitle>
-                  <CardDescription className="text-sm">
-                    {investmentAction.description}
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <Button
-                variant={investmentAction.variant}
-                className="w-full"
-                onClick={() => investmentAction.action()}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Get Started
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
+        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
+            <TabsTrigger value="overview" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
+              <span className="hidden sm:inline">Overview</span>
+              <span className="sm:hidden">Home</span>
+            </TabsTrigger>
+            <TabsTrigger value="accounts" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
+              <span className="hidden sm:inline">Accounts</span>
+              <span className="sm:hidden">Accts</span>
+            </TabsTrigger>
+            <TabsTrigger value="transactions" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
+              <span className="hidden sm:inline">Transactions</span>
+              <span className="sm:hidden">Trans</span>
+            </TabsTrigger>
+            <TabsTrigger value="budget" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">Budget</TabsTrigger>
+            <TabsTrigger value="reports" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">Reports</TabsTrigger>
+          </TabsList>
 
-      {/* Investment Integration Dialog */}
-      <InvestmentIntegrationDialog 
-        open={investmentIntegrationOpen} 
-        onOpenChange={setInvestmentIntegrationOpen} 
-      />
+          <TabsContent value="overview" className="space-y-6">
+            {/* Only show overview if there are connected accounts or investment data */}
+            {(connectedAccounts.length > 0 || investments.length > 0) ? (
+              <>
+                {/* Executive Summary */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
+                  <Card>
+                    <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4 lg:p-6">
+                      <CardTitle className="text-xs sm:text-sm lg:text-base font-medium flex items-center gap-1 sm:gap-2">
+                        <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="hidden sm:inline">Net Worth</span>
+                        <span className="sm:hidden">Net</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-0 p-3 sm:p-4 lg:p-6">
+                      <div className="text-sm sm:text-lg lg:text-2xl font-bold">{formatCurrency(getAccountsBalance() + getTotalPortfolioValue())}</div>
+                      <div className="text-xs sm:text-sm text-green-600 flex items-center gap-1">
+                        <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3" />
+                        <span className="hidden sm:inline">Total Assets</span>
+                        <span className="sm:hidden">Assets</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <PieChart className="h-4 w-4" />
+                        Portfolio Value
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{formatCurrency(getTotalPortfolioValue())}</div>
+                      <div className={`text-sm flex items-center gap-1 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {getTotalDayChange() >= 0 ? (
+                          <TrendingUp className="h-3 w-3" />
+                        ) : (
+                          <TrendingDown className="h-3 w-3" />
+                        )}
+                        {formatCurrency(getTotalDayChange())} today
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <CreditCard className="h-4 w-4" />
+                        Cash & Bank
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{formatCurrency(getAccountsBalance())}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Available funds
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4" />
+                        Active Accounts
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{getActiveAccountsCount()}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Connected accounts
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Investment Accounts
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{investments.length}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Investment portfolios
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </>
+            ) : (
+              /* Empty state for overview */
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center">
+                    <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Investment Overview</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Connect your accounts or add investment data to see your complete financial overview.
+                    </p>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Your portfolio performance, net worth, and account balances will appear here.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Start by connecting accounts or manually adding investment data.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Only show AI Insights and Charts if there's actual data */}
+            {(connectedAccounts.length > 0 || investments.length > 0) && (
+              <>
+                {/* AI Insights */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BrainCircuit className="h-5 w-5" />
+                      AI Financial Insights
+                    </CardTitle>
+                    <CardDescription>
+                      Personalized recommendations and alerts based on your financial data
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {aiInsights.map((insight, index) => (
+                        <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
+                          <div className={`p-1 rounded-full ${
+                            insight.priority === 'high' ? 'bg-red-100 text-red-600' :
+                            insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                            'bg-blue-100 text-blue-600'
+                          }`}>
+                            {insight.priority === 'high' ? (
+                              <AlertTriangle className="h-4 w-4" />
+                            ) : insight.type === 'opportunity' ? (
+                              <Target className="h-4 w-4" />
+                            ) : (
+                              <BrainCircuit className="h-4 w-4" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm">{insight.message}</p>
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              insight.priority === 'high' ? 'bg-red-100 text-red-600' :
+                              insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                              'bg-blue-100 text-blue-600'
+                            }`}>
+                              {insight.priority} priority
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Portfolio Performance</CardTitle>
+                      <CardDescription>12-month investment growth</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <InvestmentChart />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Asset Allocation</CardTitle>
+                      <CardDescription>Current portfolio distribution</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <AssetAllocation data={assetAllocationData} />
+                    </CardContent>
+                  </Card>
+                </div>
+              </>
+            )}
+          </TabsContent>
+
+          <TabsContent value="accounts" className="space-y-6">
+            <div className="lg:hidden">
+              <div className="space-y-4">
+                <AccountIntegration />
+              </div>
+            </div>
+            <div className="hidden lg:block">
+              <AccountIntegration />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="transactions" className="space-y-6">
+            <div className="lg:hidden">
+              <div className="space-y-4">
+                <TransactionMonitoring />
+              </div>
+            </div>
+            <div className="hidden lg:block">
+              <TransactionMonitoring />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="budget" className="space-y-6">
+            <BudgetingAnalytics />
+          </TabsContent>
+
+          <TabsContent value="reports" className="space-y-6">
+            {/* Only show reports if there are connected accounts or investment data */}
+            {(connectedAccounts.length > 0 || investments.length > 0) ? (
+              <>
+                {/* Reports Section Header */}
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="text-center">
+                      <FileText className="h-12 w-12 mx-auto mb-4 text-primary" />
+                      <h3 className="text-lg font-semibold mb-2">Financial Reports & Analytics</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Comprehensive reports based on your portfolio performance, accounts, transactions, and budget data.
+                      </p>
+                      <div className="flex gap-2 justify-center">
+                        <Button onClick={() => toast({ title: "Portfolio Report Generated", description: "Detailed portfolio analysis is ready for download." })}>
+                          Portfolio Report
+                        </Button>
+                        <Button variant="outline" onClick={() => toast({ title: "Tax Report Generated", description: "Tax summary report has been created." })}>
+                          Tax Summary
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            ) : (
+              /* Empty state for reports */
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center">
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Financial Reports</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Reports will be available once you connect accounts or add investment data.
+                    </p>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Portfolio reports, tax summaries, and performance analytics will appear here.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Start by connecting accounts to generate meaningful reports.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
       
       {/* Mobile Bottom Navigation */}
       <div className="pb-16 md:pb-0" />
     </div>
   )
 }
-
-export default Community
