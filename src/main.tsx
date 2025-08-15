@@ -10,6 +10,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Community from "./pages/Community";
+import Courses from "./pages/Courses";
 import Documents from "./pages/Documents";
 import FamilyMembers from "./pages/FamilyMembers";
 import Investments from "./pages/Investments";
@@ -33,6 +34,7 @@ function AppWithNotifications() {
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/community" element={<Community />} />
+      <Route path="/courses" element={<Courses />} />
       <Route path="/documents" element={<Documents />} />
       <Route path="/member/:userId" element={<MemberProfile />} />
       <Route path="/family-members" element={<FamilyMembers />} />
