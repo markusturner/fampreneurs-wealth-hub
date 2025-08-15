@@ -109,9 +109,9 @@ export default function Courses() {
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Documents</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Family Documents</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Manage your family documents
+              Manage your family documents and trust materials
             </p>
           </div>
         </div>
