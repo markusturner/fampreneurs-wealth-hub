@@ -3108,6 +3108,24 @@ export type Database = {
         Args: { coach_id: string }
         Returns: Json
       }
+      get_community_profile: {
+        Args: { target_user_id: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          first_initial: string
+          user_id: string
+        }[]
+      }
+      get_community_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar_url: string
+          display_name: string
+          first_initial: string
+          user_id: string
+        }[]
+      }
       get_public_profile: {
         Args: { target_user_id: string }
         Returns: Json
