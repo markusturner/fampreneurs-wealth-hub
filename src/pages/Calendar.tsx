@@ -3,7 +3,6 @@ import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { FamilyCalendar } from "@/components/dashboard/family-calendar"
-import { UpcomingMeetings } from "@/components/dashboard/upcoming-meetings"
 import { ScheduleMeetingDialog } from "@/components/dashboard/schedule-meeting-dialog"
 
 export default function Calendar() {
@@ -29,14 +28,7 @@ export default function Calendar() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2">
-          <FamilyCalendar />
-        </div>
-        <div className="xl:col-span-1">
-          <UpcomingMeetings />
-        </div>
-      </div>
+      <FamilyCalendar />
 
       <ScheduleMeetingDialog 
         open={isScheduleMeetingOpen}
