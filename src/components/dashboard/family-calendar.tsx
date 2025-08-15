@@ -24,7 +24,7 @@ export function FamilyCalendar() {
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0]
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
       <Card className="shadow-soft lg:col-span-1">
         <CardHeader className="p-4 lg:p-6">
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -63,7 +63,7 @@ export function FamilyCalendar() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-soft lg:col-span-2">
+      <Card className="shadow-soft lg:col-span-1">
         <CardHeader className="p-4 lg:p-6">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Clock className="h-5 w-5" />
