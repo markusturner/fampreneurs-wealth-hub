@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -2974,25 +2974,25 @@ export type Database = {
     Functions: {
       assign_accountability_role: {
         Args: {
-          target_user_id: string
           assigner_user_id: string
           specialties?: string[]
+          target_user_id: string
         }
         Returns: undefined
       }
       assign_admin_role: {
-        Args: { target_user_id: string; assigner_user_id: string }
+        Args: { assigner_user_id: string; target_user_id: string }
         Returns: undefined
       }
       assign_moderator_role: {
-        Args: { target_user_id: string; assigner_user_id: string }
+        Args: { assigner_user_id: string; target_user_id: string }
         Returns: undefined
       }
       assign_user_role: {
         Args: {
-          target_user_id: string
-          new_role: Database["public"]["Enums"]["member_role"]
           assigner_user_id: string
+          new_role: Database["public"]["Enums"]["member_role"]
+          target_user_id: string
         }
         Returns: undefined
       }
@@ -3016,6 +3016,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      is_current_user_accountability_partner: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_current_user_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_family_office_only_user: {
         Args: { user_id: string }
         Returns: boolean
@@ -3035,12 +3043,12 @@ export type Database = {
       log_family_office_action: {
         Args: {
           p_action: string
-          p_table_name: string
-          p_record_id?: string
-          p_old_values?: Json
-          p_new_values?: Json
-          p_risk_level?: string
           p_metadata?: Json
+          p_new_values?: Json
+          p_old_values?: Json
+          p_record_id?: string
+          p_risk_level?: string
+          p_table_name: string
         }
         Returns: string
       }
@@ -3050,27 +3058,27 @@ export type Database = {
       }
       notify_family_about_meeting: {
         Args: {
-          meeting_title: string
           meeting_date: string
           meeting_details?: string
+          meeting_title: string
         }
         Returns: Json
       }
       notify_family_members_about_meeting: {
         Args: {
-          meeting_title: string
-          meeting_date: string
-          meeting_time: string
-          meeting_id: string
           creator_user_id: string
+          meeting_date: string
+          meeting_id: string
+          meeting_time: string
+          meeting_title: string
         }
         Returns: number
       }
       remove_user_role: {
         Args: {
-          target_user_id: string
-          role_to_remove: Database["public"]["Enums"]["member_role"]
           remover_user_id: string
+          role_to_remove: Database["public"]["Enums"]["member_role"]
+          target_user_id: string
         }
         Returns: undefined
       }
