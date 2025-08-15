@@ -13,6 +13,7 @@ import Community from "./pages/Community";
 import Courses from "./pages/Courses";
 import Documents from "./pages/Documents";
 import Members from "./pages/Members";
+import Calendar from "./pages/Calendar";
 
 import Investments from "./pages/Investments";
 import ProfileSettings from "./pages/ProfileSettings";
@@ -37,6 +38,7 @@ function AppWithNotifications() {
       <Route path="/community" element={<Community />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/documents" element={<Documents />} />
+      <Route path="/calendar" element={<Calendar />} />
       <Route path="/member/:userId" element={<MemberProfile />} />
       <Route path="/members" element={<Members />} />
       
