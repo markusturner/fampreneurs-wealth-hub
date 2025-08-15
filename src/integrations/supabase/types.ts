@@ -2969,83 +2969,20 @@ export type Database = {
       }
     }
     Views: {
-      coaches_public: {
+      community_profiles: {
         Row: {
           avatar_url: string | null
-          bio: string | null
-          created_at: string | null
-          full_name: string | null
-          id: string | null
-          is_active: boolean | null
-          specialties: string[] | null
-          years_experience: number | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          specialties?: string[] | null
-          years_experience?: number | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string | null
-          full_name?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          specialties?: string[] | null
-          years_experience?: number | null
-        }
-        Relationships: []
-      }
-      public_profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string | null
           display_name: string | null
-          first_name: string | null
           user_id: string | null
         }
         Insert: {
           avatar_url?: string | null
-          created_at?: string | null
           display_name?: string | null
-          first_name?: string | null
           user_id?: string | null
         }
         Update: {
           avatar_url?: string | null
-          created_at?: string | null
           display_name?: string | null
-          first_name?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      safe_profiles: {
-        Row: {
-          avatar_url: string | null
-          created_at: string | null
-          display_name: string | null
-          first_initial: string | null
-          user_id: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          first_initial?: never
-          user_id?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          first_initial?: never
           user_id?: string | null
         }
         Relationships: []
