@@ -3072,6 +3072,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_account_summary: {
+        Args: { target_user_id?: string }
+        Returns: Json
+      }
       get_coach_admin_details: {
         Args: { coach_id: string }
         Returns: Json
