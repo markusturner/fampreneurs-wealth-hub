@@ -28,7 +28,7 @@ export default function Auth() {
   const [selectedProgram, setSelectedProgram] = useState('')
   const [showTwoFactor, setShowTwoFactor] = useState(false)
   const [signupEmail, setSignupEmail] = useState('')
-  const [userType, setUserType] = useState<'family_office' | 'family_member'>('family_office')
+  const [userType, setUserType] = useState<'family_office' | 'family_member' | 'mentee'>('family_office')
   
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -477,11 +477,12 @@ export default function Auth() {
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
                   <Label>Login as</Label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <Button
                       type="button"
                       variant={userType === 'family_office' ? 'default' : 'outline'}
                       onClick={() => setUserType('family_office')}
+                      className="text-xs"
                     >
                       Family Office
                     </Button>
@@ -489,12 +490,24 @@ export default function Auth() {
                       type="button"
                       variant={userType === 'family_member' ? 'default' : 'outline'}
                       onClick={() => setUserType('family_member')}
+                      className="text-xs"
                     >
                       Family Member
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={userType === 'mentee' ? 'default' : 'outline'}
+                      onClick={() => setUserType('mentee')}
+                      className="text-xs"
+                    >
+                      Mentee
                     </Button>
                   </div>
                   {userType === 'family_member' && (
                     <p className="text-xs text-muted-foreground">Use the credentials sent to your email by your Family Office.</p>
+                  )}
+                  {userType === 'mentee' && (
+                    <p className="text-xs text-muted-foreground">Use your mentee program credentials.</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -532,7 +545,7 @@ export default function Auth() {
                   disabled={isLoading}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign In {userType === 'family_member' ? '(Family Member)' : '(Family Office)'}
+                  Sign In {userType === 'family_member' ? '(Family Member)' : userType === 'mentee' ? '(Mentee)' : '(Family Office)'}
                 </Button>
               </form>
               
