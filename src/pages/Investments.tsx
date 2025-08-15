@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { NavHeader } from '@/components/dashboard/nav-header'
@@ -221,201 +222,245 @@ export default function FamilyOffice() {
   const aiInsights = generateAIInsights()
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <NavHeader />
       
-      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/')}
-              className="hover:bg-muted"
-              title="Back to Family Office"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">Digital Family Office</h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Complete financial ecosystem management and wealth tracking
-              </p>
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-primary/10 via-background to-secondary/10 border-b">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+        <div className="container mx-auto px-4 lg:px-8 py-8 relative">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                  <Building2 className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                    Digital Family Office
+                  </h1>
+                  <p className="text-lg text-muted-foreground">
+                    Comprehensive wealth management and financial oversight
+                  </p>
+                </div>
+              </div>
+              
+              {/* Quick Stats */}
+              <div className="flex flex-wrap gap-4 pt-4">
+                <div className="flex items-center gap-2 bg-background/50 backdrop-blur-sm rounded-lg px-3 py-2 border">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium">Live Data</span>
+                </div>
+                <div className="flex items-center gap-2 bg-background/50 backdrop-blur-sm rounded-lg px-3 py-2 border">
+                  <Shield className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-medium">Bank-Level Security</span>
+                </div>
+                <div className="flex items-center gap-2 bg-background/50 backdrop-blur-sm rounded-lg px-3 py-2 border">
+                  <BrainCircuit className="h-4 w-4 text-purple-600" />
+                  <span className="text-sm font-medium">AI-Powered Insights</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Total Net Worth Display */}
+            <div className="lg:text-right">
+              <p className="text-sm text-muted-foreground mb-2">Total Net Worth</p>
+              <div className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                {formatCurrency(getAccountsBalance() + getTotalPortfolioValue())}
+              </div>
+              <div className={`flex items-center justify-end gap-2 mt-2 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {getTotalDayChange() >= 0 ? (
+                  <TrendingUp className="h-4 w-4" />
+                ) : (
+                  <TrendingDown className="h-4 w-4" />
+                )}
+                <span className="font-medium">{formatCurrency(getTotalDayChange())} today</span>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
-            <TabsTrigger value="overview" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              <span className="hidden sm:inline">Overview</span>
-              <span className="sm:hidden">Home</span>
-            </TabsTrigger>
-            <TabsTrigger value="accounts" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              <span className="hidden sm:inline">Accounts</span>
-              <span className="sm:hidden">Accts</span>
-            </TabsTrigger>
-            <TabsTrigger value="transactions" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              <span className="hidden sm:inline">Transactions</span>
-              <span className="sm:hidden">Trans</span>
-            </TabsTrigger>
-            <TabsTrigger value="budget" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">Budget</TabsTrigger>
-            <TabsTrigger value="reports" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">Reports</TabsTrigger>
-          </TabsList>
+      <div className="container mx-auto px-4 lg:px-8 py-8 space-y-8">
+        {/* Navigation Tabs */}
+        <Tabs defaultValue="overview" className="space-y-8">
+          <div className="flex justify-center">
+            <TabsList className="grid grid-cols-5 bg-muted/50 backdrop-blur-sm border rounded-xl p-1 w-full max-w-2xl">
+              <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <Home className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Overview</span>
+              </TabsTrigger>
+              <TabsTrigger value="accounts" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <Wallet className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Accounts</span>
+              </TabsTrigger>
+              <TabsTrigger value="transactions" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Activity</span>
+              </TabsTrigger>
+              <TabsTrigger value="budget" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <Target className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Budget</span>
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                <FileText className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Reports</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <TabsContent value="overview" className="space-y-6">
-            {/* Only show overview if there are connected accounts or investment data */}
+          <TabsContent value="overview" className="space-y-8">
+            {/* Financial Overview Cards */}
             {(connectedAccounts.length > 0 || investments.length > 0) ? (
               <>
-                {/* Executive Summary */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
-                  <Card>
-                    <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4 lg:p-6">
-                      <CardTitle className="text-xs sm:text-sm lg:text-base font-medium flex items-center gap-1 sm:gap-2">
-                        <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
-                        <span className="hidden sm:inline">Net Worth</span>
-                        <span className="sm:hidden">Net</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 p-3 sm:p-4 lg:p-6">
-                      <div className="text-sm sm:text-lg lg:text-2xl font-bold">{formatCurrency(getAccountsBalance() + getTotalPortfolioValue())}</div>
-                      <div className="text-xs sm:text-sm text-green-600 flex items-center gap-1">
-                        <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3" />
-                        <span className="hidden sm:inline">Total Assets</span>
-                        <span className="sm:hidden">Assets</span>
+                {/* Key Metrics Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/30">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full -mr-10 -mt-10"></div>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-blue-700 dark:text-blue-300">Portfolio Value</p>
+                          <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">{formatCurrency(getTotalPortfolioValue())}</p>
+                          <div className={`flex items-center gap-1 mt-2 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {getTotalDayChange() >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                            <span className="text-xs font-medium">{formatCurrency(getTotalDayChange())} today</span>
+                          </div>
+                        </div>
+                        <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
+                          <TrendingUp className="h-6 w-6 text-blue-600" />
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium flex items-center gap-2">
-                        <PieChart className="h-4 w-4" />
-                        Portfolio Value
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{formatCurrency(getTotalPortfolioValue())}</div>
-                      <div className={`text-sm flex items-center gap-1 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {getTotalDayChange() >= 0 ? (
-                          <TrendingUp className="h-3 w-3" />
-                        ) : (
-                          <TrendingDown className="h-3 w-3" />
-                        )}
-                        {formatCurrency(getTotalDayChange())} today
+                  <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-950/50 dark:to-green-900/30">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full -mr-10 -mt-10"></div>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-green-700 dark:text-green-300">Cash & Bank</p>
+                          <p className="text-2xl font-bold text-green-900 dark:text-green-100">{formatCurrency(getAccountsBalance())}</p>
+                          <p className="text-xs text-green-600 dark:text-green-400 mt-2">Liquid assets</p>
+                        </div>
+                        <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
+                          <Wallet className="h-6 w-6 text-green-600" />
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium flex items-center gap-2">
-                        <CreditCard className="h-4 w-4" />
-                        Cash & Bank
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{formatCurrency(getAccountsBalance())}</div>
-                      <div className="text-xs text-muted-foreground">
-                        Available funds
+                  <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/50 dark:to-purple-900/30">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 rounded-full -mr-10 -mt-10"></div>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Active Accounts</p>
+                          <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">{getActiveAccountsCount()}</p>
+                          <p className="text-xs text-purple-600 dark:text-purple-400 mt-2">Connected institutions</p>
+                        </div>
+                        <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
+                          <CreditCard className="h-6 w-6 text-purple-600" />
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4" />
-                        Active Accounts
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{getActiveAccountsCount()}</div>
-                      <div className="text-xs text-muted-foreground">
-                        Connected accounts
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4" />
-                        Investment Accounts
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{investments.length}</div>
-                      <div className="text-xs text-muted-foreground">
-                        Investment portfolios
+                  <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/50 dark:to-orange-900/30">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-orange-500/10 rounded-full -mr-10 -mt-10"></div>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-orange-700 dark:text-orange-300">Portfolios</p>
+                          <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{investments.length}</p>
+                          <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">Investment accounts</p>
+                        </div>
+                        <div className="w-12 h-12 bg-orange-500/20 rounded-full flex items-center justify-center">
+                          <PieChart className="h-6 w-6 text-orange-600" />
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
               </>
             ) : (
-              /* Empty state for overview */
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-center">
-                    <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Investment Overview</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Connect your accounts or add investment data to see your complete financial overview.
-                    </p>
+              /* Enhanced Empty State */
+              <Card className="border-dashed border-2">
+                <CardContent className="p-12">
+                  <div className="text-center space-y-6">
+                    <div className="w-20 h-20 bg-muted/50 rounded-full flex items-center justify-center mx-auto">
+                      <Building2 className="h-10 w-10 text-muted-foreground" />
+                    </div>
                     <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        Your portfolio performance, net worth, and account balances will appear here.
+                      <h3 className="text-xl font-semibold">Welcome to Your Family Office</h3>
+                      <p className="text-muted-foreground max-w-md mx-auto">
+                        Connect your financial accounts to get started with comprehensive wealth management and oversight.
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        Start by connecting accounts or manually adding investment data.
-                      </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      <Button className="gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        Connect Accounts
+                      </Button>
+                      <Button variant="outline" className="gap-2">
+                        <FileText className="h-4 w-4" />
+                        Learn More
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Only show AI Insights and Charts if there's actual data */}
+            {/* Charts and Analytics Section */}
             {(connectedAccounts.length > 0 || investments.length > 0) && (
               <>
-                {/* AI Insights */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BrainCircuit className="h-5 w-5" />
-                      AI Financial Insights
-                    </CardTitle>
-                    <CardDescription>
-                      Personalized recommendations and alerts based on your financial data
-                    </CardDescription>
+                {/* AI Insights Card */}
+                <Card className="border-0 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-violet-500 to-purple-500 rounded-xl flex items-center justify-center">
+                          <BrainCircuit className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">AI Financial Insights</CardTitle>
+                          <CardDescription>Personalized recommendations powered by AI</CardDescription>
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300">
+                        Live Analysis
+                      </Badge>
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
+                    <div className="grid gap-4">
                       {aiInsights.map((insight, index) => (
-                        <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
-                          <div className={`p-1 rounded-full ${
-                            insight.priority === 'high' ? 'bg-red-100 text-red-600' :
-                            insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                            'bg-blue-100 text-blue-600'
+                        <div key={index} className="flex items-start gap-4 p-4 rounded-xl bg-background/80 backdrop-blur-sm border shadow-sm">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                            insight.priority === 'high' ? 'bg-red-100 dark:bg-red-900/30' :
+                            insight.priority === 'medium' ? 'bg-amber-100 dark:bg-amber-900/30' :
+                            'bg-blue-100 dark:bg-blue-900/30'
                           }`}>
                             {insight.priority === 'high' ? (
-                              <AlertTriangle className="h-4 w-4" />
+                              <AlertTriangle className={`h-4 w-4 ${insight.priority === 'high' ? 'text-red-600 dark:text-red-400' : ''}`} />
                             ) : insight.type === 'opportunity' ? (
-                              <Target className="h-4 w-4" />
+                              <Target className={`h-4 w-4 ${insight.priority === 'medium' ? 'text-amber-600 dark:text-amber-400' : 'text-blue-600 dark:text-blue-400'}`} />
                             ) : (
-                              <BrainCircuit className="h-4 w-4" />
+                              <BrainCircuit className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                             )}
                           </div>
-                          <div className="flex-1">
-                            <p className="text-sm">{insight.message}</p>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              insight.priority === 'high' ? 'bg-red-100 text-red-600' :
-                              insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                              'bg-blue-100 text-blue-600'
-                            }`}>
-                              {insight.priority} priority
-                            </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium leading-relaxed">{insight.message}</p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <Badge variant="outline" className={`text-xs ${
+                                insight.priority === 'high' ? 'border-red-200 text-red-700 dark:border-red-800 dark:text-red-300' :
+                                insight.priority === 'medium' ? 'border-amber-200 text-amber-700 dark:border-amber-800 dark:text-amber-300' :
+                                'border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-300'
+                              }`}>
+                                {insight.priority} priority
+                              </Badge>
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -423,24 +468,38 @@ export default function FamilyOffice() {
                   </CardContent>
                 </Card>
 
-                {/* Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Portfolio Performance</CardTitle>
-                      <CardDescription>12-month investment growth</CardDescription>
+                {/* Charts Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <Card className="border-0 shadow-lg">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                          <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">Portfolio Performance</CardTitle>
+                          <CardDescription>12-month investment trajectory</CardDescription>
+                        </div>
+                      </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-0">
                       <InvestmentChart />
                     </CardContent>
                   </Card>
 
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Asset Allocation</CardTitle>
-                      <CardDescription>Current portfolio distribution</CardDescription>
+                  <Card className="border-0 shadow-lg">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                          <PieChart className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg">Asset Allocation</CardTitle>
+                          <CardDescription>Current portfolio distribution</CardDescription>
+                        </div>
+                      </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-0">
                       <AssetAllocation data={assetAllocationData} />
                     </CardContent>
                   </Card>
