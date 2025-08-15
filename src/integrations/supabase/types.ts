@@ -2969,6 +2969,39 @@ export type Database = {
       }
     }
     Views: {
+      coaches_public: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          is_active: boolean | null
+          specialties: string[] | null
+          years_experience: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          specialties?: string[] | null
+          years_experience?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          specialties?: string[] | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       public_profiles: {
         Row: {
           avatar_url: string | null
@@ -3038,6 +3071,14 @@ export type Database = {
       generate_certificate_number: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_coach_admin_details: {
+        Args: { coach_id: string }
+        Returns: Json
+      }
+      get_coach_for_booking: {
+        Args: { coach_id: string }
+        Returns: Json
       }
       get_public_profile: {
         Args: { target_user_id: string }
