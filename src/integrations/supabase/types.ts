@@ -3088,6 +3088,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      get_safe_profile_info: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       is_current_user_accountability_partner: {
         Args: Record<PropertyKey, never>
         Returns: boolean
