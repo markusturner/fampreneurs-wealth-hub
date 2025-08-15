@@ -264,7 +264,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             className="gap-2 h-9"
           >
             <Calendar className="h-4 w-4" />
-            Calendar
+            Members
           </Button>
           <Button
             variant={location.pathname === '/members' ? "default" : "ghost"}
