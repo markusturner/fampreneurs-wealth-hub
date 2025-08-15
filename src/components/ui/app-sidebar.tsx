@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge"
 const mainItems = [
   { title: "Overview", url: "/", icon: Home },
   { title: "Investments", url: "/investments", icon: TrendingUp },
-  { title: "Family Office & Family Member", url: "/family-members", icon: Users },
+  { title: "Family Office", url: "/investments", icon: Users },
   { title: "Schedule Meeting", url: "/schedule-meeting", icon: Calculator },
   { title: "Upload Documents", url: "/documents", icon: FileText },
 ]
