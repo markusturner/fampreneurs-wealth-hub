@@ -237,7 +237,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             className="gap-2 h-9"
           >
             <Home className="h-4 w-4" />
-            Family Office
+            Dashboard
           </Button>
           <Button
             variant={location.pathname === '/community' ? "default" : "ghost"}
