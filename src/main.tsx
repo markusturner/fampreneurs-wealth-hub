@@ -12,6 +12,7 @@ import Auth from "./pages/Auth";
 import Community from "./pages/Community";
 import Courses from "./pages/Courses";
 import Documents from "./pages/Documents";
+import Members from "./pages/Members";
 import FamilyMembers from "./pages/FamilyMembers";
 import Investments from "./pages/Investments";
 import ProfileSettings from "./pages/ProfileSettings";
@@ -37,6 +38,7 @@ function AppWithNotifications() {
       <Route path="/courses" element={<Courses />} />
       <Route path="/documents" element={<Documents />} />
       <Route path="/member/:userId" element={<MemberProfile />} />
+      <Route path="/members" element={<Members />} />
       <Route path="/family-members" element={<FamilyMembers />} />
       <Route path="/investments" element={<Investments />} />
       <Route path="/profile-settings" element={<ProfileSettings />} />

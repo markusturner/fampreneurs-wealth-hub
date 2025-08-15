@@ -258,22 +258,13 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             Documents
           </Button>
           <Button
-            variant={location.pathname === '/coaching' ? "default" : "ghost"}
-            size="sm"
-            onClick={() => navigate('/coaching')}
-            className="gap-2 h-9"
-          >
-            <Calendar className="h-4 w-4" />
-            Members
-          </Button>
-          <Button
             variant={location.pathname === '/members' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/members')}
             className="gap-2 h-9"
           >
             <Users className="h-4 w-4" />
-            Scoreboard
+            Members
           </Button>
         </div>
 
