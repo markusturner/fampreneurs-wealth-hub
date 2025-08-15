@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
-import { EnhancedPostCard } from '@/components/community/enhanced-post-card'
+// Removed community functionality
 import { 
   MapPin, 
   Link as LinkIcon, 
@@ -452,8 +452,8 @@ export default function MemberProfile() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Profile not found</h1>
-          <Link to="/community">
-            <Button>Back to Community</Button>
+          <Link to="/">
+            <Button>Back to Home</Button>
           </Link>
         </div>
       </div>
@@ -473,11 +473,11 @@ export default function MemberProfile() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => navigate('/community')}
+          onClick={() => navigate('/')}
           className="bg-background/80 backdrop-blur-sm"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Community
+          Back to Home
         </Button>
       </div>
       
@@ -671,17 +671,11 @@ export default function MemberProfile() {
               {/* Main Content */}
               <div className="lg:col-span-2">
                 <TabsContent value="posts" className="space-y-4">
-                  {posts.length === 0 ? (
-                    <Card>
-                      <CardContent className="p-8 text-center">
-                        <p className="text-muted-foreground">No posts yet.</p>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    posts.map((post) => (
-                      <EnhancedPostCard key={post.id} post={post} onUpdate={fetchPosts} />
-                    ))
-                  )}
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <p className="text-muted-foreground">Posts functionality has been removed.</p>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 <TabsContent value="about">

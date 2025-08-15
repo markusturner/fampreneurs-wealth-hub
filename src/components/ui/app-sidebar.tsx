@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Home, Users, Calendar, BookOpen, MessageSquare, Crown } from "lucide-react"
+import { Home, TrendingUp, FileText } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
 import {
@@ -18,10 +18,8 @@ import { useAuth } from "@/contexts/AuthContext"
 
 const mainItems = [
   { title: "Family Office", url: "/", icon: Home },
-  { title: "Community", url: "/community", icon: MessageSquare },
-  { title: "Courses", url: "/courses", icon: BookOpen },
-  { title: "Calendar", url: "/coaching", icon: Calendar },
-  { title: "Scoreboard", url: "/members", icon: Users },
+  { title: "Investments", url: "/investments", icon: TrendingUp },
+  { title: "Documents", url: "/documents", icon: FileText },
 ]
 
 export function AppSidebar() {
