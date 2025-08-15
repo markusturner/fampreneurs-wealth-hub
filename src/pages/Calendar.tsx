@@ -30,10 +30,13 @@ export default function Calendar() {
 
       <FamilyCalendar />
 
-      <ScheduleMeetingDialog 
-        open={isScheduleMeetingOpen}
-        onOpenChange={setIsScheduleMeetingOpen}
-      />
+      {isScheduleMeetingOpen && (
+        <ScheduleMeetingDialog 
+          open={isScheduleMeetingOpen}
+          onOpenChange={setIsScheduleMeetingOpen}
+        />
+      )}
+
       </div>
     </div>
   )
