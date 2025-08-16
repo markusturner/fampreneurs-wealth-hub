@@ -245,7 +245,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             onClick={() => navigate('/community')}
             className="gap-2 h-9"
           >
-            <Users className="h-4 w-4" />
+            <Home className="h-4 w-4" />
             Family Office
           </Button>
           <Button
