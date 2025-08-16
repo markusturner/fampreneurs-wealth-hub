@@ -1906,6 +1906,57 @@ export type Database = {
         }
         Relationships: []
       }
+      meetings: {
+        Row: {
+          attendees: string[] | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          location: string | null
+          meeting_date: string
+          meeting_time: string
+          meeting_type: string | null
+          scribe_id: string | null
+          scribe_notes: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          attendees?: string[] | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          meeting_date: string
+          meeting_time: string
+          meeting_type?: string | null
+          scribe_id?: string | null
+          scribe_notes?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          attendees?: string[] | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          meeting_date?: string
+          meeting_time?: string
+          meeting_type?: string | null
+          scribe_id?: string | null
+          scribe_notes?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       message_mentions: {
         Row: {
           created_at: string
