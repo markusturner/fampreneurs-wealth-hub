@@ -3,7 +3,6 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,7 +15,6 @@ import { NavHeader } from '@/components/dashboard/nav-header'
 import { FamilyOfficeSecurity } from '@/components/dashboard/family-office-security'
 import { SecureFamilyMemberCard } from '@/components/dashboard/secure-family-member-card'
 import { useFamilyOfficeSecurity } from '@/hooks/useFamilyOfficeSecurity'
-import { Scoreboard } from '@/components/dashboard/scoreboard'
 import { UserPlus, Mail, Phone, User, Edit, Trash2, Users, Crown, Plus, Shield } from 'lucide-react'
 
 interface FamilyMember {
@@ -246,158 +244,152 @@ export default function Members() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold">Family Members</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Manage your family office members and accountability scoreboard
+              Manage your family office members
             </p>
           </div>
         </div>
 
-        <Tabs defaultValue="members" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="members">Family Members</TabsTrigger>
-            <TabsTrigger value="scoreboard">Scoreboard</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="members" className="space-y-6">
-            {/* Family Member Management */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-lg sm:text-xl font-semibold">Family Office Members</h2>
-                <p className="text-sm text-muted-foreground">
-                  Add and manage members of your family office
-                </p>
-              </div>
-              
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="flex items-center gap-2">
-                    <UserPlus className="h-4 w-4" />
-                    Add Member
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Add Family Member</DialogTitle>
-                    <DialogDescription>
-                      Add a new member to your family office
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="full_name">Full Name *</Label>
-                      <Input
-                        id="full_name"
-                        value={newMember.full_name}
-                        onChange={(e) => setNewMember(prev => ({ ...prev, full_name: e.target.value }))}
-                        placeholder="Enter full name"
-                      />
-                    </div>
-                    
-                    <div className="grid gap-2">
-                      <Label htmlFor="family_position">Family Position *</Label>
-                      <Select
-                        value={newMember.family_position}
-                        onValueChange={(value) => setNewMember(prev => ({ ...prev, family_position: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select family position" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {familyPositions.map(position => (
-                            <SelectItem key={position} value={position}>
-                              {position}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="grid gap-2">
-                      <Label htmlFor="relationship">Relationship to Family</Label>
-                      <Input
-                        id="relationship"
-                        value={newMember.relationship_to_family}
-                        onChange={(e) => setNewMember(prev => ({ ...prev, relationship_to_family: e.target.value }))}
-                        placeholder="e.g., Blood relative, Spouse, etc."
-                      />
-                    </div>
-                    
-                    <div className="grid gap-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={newMember.email}
-                        onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))}
-                        placeholder="Enter email address"
-                      />
-                    </div>
-                    
-                    <div className="grid gap-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        value={newMember.phone}
-                        onChange={(e) => setNewMember(prev => ({ ...prev, phone: e.target.value }))}
-                        placeholder="Enter phone number"
-                      />
-                    </div>
-                    
-                    <div className="grid gap-2">
-                      <Label>Trust Positions</Label>
-                      <div className="grid grid-cols-1 gap-2">
-                        {trustPositions.map(position => (
-                          <label key={position} className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              checked={newMember.trust_positions.includes(position)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setNewMember(prev => ({
-                                    ...prev,
-                                    trust_positions: [...prev.trust_positions, position]
-                                  }))
-                                } else {
-                                  setNewMember(prev => ({
-                                    ...prev,
-                                    trust_positions: prev.trust_positions.filter(p => p !== position)
-                                  }))
-                                }
-                              }}
-                              className="rounded"
-                            />
-                            <span className="text-sm">{position}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="grid gap-2">
-                      <Label htmlFor="notes">Notes</Label>
-                      <Textarea
-                        id="notes"
-                        value={newMember.notes}
-                        onChange={(e) => setNewMember(prev => ({ ...prev, notes: e.target.value }))}
-                        placeholder="Additional notes about this family member"
-                        rows={3}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-end space-x-2">
-                    <DialogTrigger asChild>
-                      <Button variant="outline">Cancel</Button>
-                    </DialogTrigger>
-                    <Button onClick={handleAddMember} disabled={isAddingMember}>
-                      {isAddingMember ? 'Adding...' : 'Add Member'}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+        <div className="space-y-4 sm:space-y-6">
+          {/* Family Member Management */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg sm:text-xl font-semibold">Family Office Members</h2>
+              <p className="text-sm text-muted-foreground">
+                Add and manage members of your family office
+              </p>
             </div>
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Add Member
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Add Family Member</DialogTitle>
+                  <DialogDescription>
+                    Add a new member to your family office
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="full_name">Full Name *</Label>
+                    <Input
+                      id="full_name"
+                      value={newMember.full_name}
+                      onChange={(e) => setNewMember(prev => ({ ...prev, full_name: e.target.value }))}
+                      placeholder="Enter full name"
+                    />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="family_position">Family Position *</Label>
+                    <Select
+                      value={newMember.family_position}
+                      onValueChange={(value) => setNewMember(prev => ({ ...prev, family_position: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select family position" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {familyPositions.map(position => (
+                          <SelectItem key={position} value={position}>
+                            {position}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="relationship">Relationship to Family</Label>
+                    <Input
+                      id="relationship"
+                      value={newMember.relationship_to_family}
+                      onChange={(e) => setNewMember(prev => ({ ...prev, relationship_to_family: e.target.value }))}
+                      placeholder="e.g., Blood relative, Spouse, etc."
+                    />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={newMember.email}
+                      onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="Enter email address"
+                    />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      value={newMember.phone}
+                      onChange={(e) => setNewMember(prev => ({ ...prev, phone: e.target.value }))}
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label>Trust Positions</Label>
+                    <div className="grid grid-cols-1 gap-2">
+                      {trustPositions.map(position => (
+                        <label key={position} className="flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={newMember.trust_positions.includes(position)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setNewMember(prev => ({
+                                  ...prev,
+                                  trust_positions: [...prev.trust_positions, position]
+                                }))
+                              } else {
+                                setNewMember(prev => ({
+                                  ...prev,
+                                  trust_positions: prev.trust_positions.filter(p => p !== position)
+                                }))
+                              }
+                            }}
+                            className="rounded"
+                          />
+                          <span className="text-sm">{position}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="notes">Notes</Label>
+                    <Textarea
+                      id="notes"
+                      value={newMember.notes}
+                      onChange={(e) => setNewMember(prev => ({ ...prev, notes: e.target.value }))}
+                      placeholder="Additional notes about this family member"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-2">
+                  <DialogTrigger asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogTrigger>
+                  <Button onClick={handleAddMember} disabled={isAddingMember}>
+                    {isAddingMember ? 'Adding...' : 'Add Member'}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
 
-            {/* Family Members List */}
-            <div className="grid gap-4">
+          {/* Family Members List */}
+          <div className="grid gap-4">
               {loading ? (
                 <div className="space-y-4">
                   {[1, 2, 3].map(i => (
@@ -519,15 +511,10 @@ export default function Members() {
               )}
             </div>
 
-            {isSecurityEnabled && (
-              <FamilyOfficeSecurity />
-            )}
-          </TabsContent>
-
-          <TabsContent value="scoreboard" className="space-y-6">
-            <Scoreboard />
-          </TabsContent>
-        </Tabs>
+          {isSecurityEnabled && (
+            <FamilyOfficeSecurity />
+          )}
+        </div>
       </div>
 
       {/* Edit Member Dialog */}
