@@ -213,17 +213,17 @@ export function AIChat() {
                       >
                         {message.content}
                         {message.showOptions && (
-                          <div className="mt-3 space-y-2">
+                          <div className="mt-3 space-y-1.5">
                             {chatOptions.map((option) => (
                               <Button
                                 key={option.label}
                                 variant="outline"
                                 size="sm"
-                                className="w-full justify-start text-xs h-8"
+                                className="w-full justify-start text-xs h-7 px-2"
                                 onClick={() => handleOptionClick(option.label)}
                               >
-                                <option.icon className="h-3 w-3 mr-2" />
-                                {option.label}
+                                <option.icon className="h-3 w-3 mr-1.5 flex-shrink-0" />
+                                <span className="truncate">{option.label}</span>
                               </Button>
                             ))}
                           </div>
