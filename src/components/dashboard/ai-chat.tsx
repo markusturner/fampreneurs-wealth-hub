@@ -107,7 +107,7 @@ export function AIChat() {
     let assistantResponse = ""
     
     switch (option) {
-      case 'Business Structure Analysis':
+      case 'Business Structure':
         assistantResponse = "Great choice! I'll help you optimize your business structure using The F.L.I.P. Formula™. This comprehensive analysis will help you identify tax savings opportunities, optimize family employment, and protect your assets.\n\nTo get started, could you tell me:\n1. How many LLCs do you currently have?\n2. What industries are your businesses in?\n3. Are any family members involved in your businesses?\n\nOr feel free to ask me any specific questions about business structure optimization!"
         break
       case 'Investment Strategy':
@@ -134,7 +134,7 @@ export function AIChat() {
   }
 
   const chatOptions = [
-    { label: 'Business Structure Analysis', icon: Building2 },
+    { label: 'Business Structure', icon: Building2 },
     { label: 'Investment Strategy', icon: TrendingUp },
     { label: 'Estate Planning', icon: FileText },
     { label: 'Family Governance', icon: Users }
