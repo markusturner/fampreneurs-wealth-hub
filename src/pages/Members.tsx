@@ -3,19 +3,14 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { NavHeader } from '@/components/dashboard/nav-header'
-import { FamilyOfficeSecurity } from '@/components/dashboard/family-office-security'
-import { SecureFamilyMemberCard } from '@/components/dashboard/secure-family-member-card'
-import { useFamilyOfficeSecurity } from '@/hooks/useFamilyOfficeSecurity'
-import { UserPlus, Mail, Phone, User, Edit, Trash2, Users, Crown, Plus, Shield } from 'lucide-react'
+import { AddFamilyMemberDialog } from '@/components/dashboard/add-family-member-dialog'
+import { AddFamilyOfficeMemberDialog } from '@/components/dashboard/add-family-office-member-dialog'
+import { UserPlus, Mail, Phone, User, Edit, Trash2, Users, Crown, Building2, Briefcase } from 'lucide-react'
 
 interface FamilyMember {
   id: string
@@ -28,6 +23,23 @@ interface FamilyMember {
   trust_positions: string[] | null
   status: string | null
   is_invited: boolean | null
+  notes: string | null
+  created_at: string
+  updated_at: string | null
+}
+
+interface FamilyOfficeMember {
+  id: string
+  added_by: string
+  full_name: string
+  email: string
+  phone: string | null
+  role: string | null
+  company: string | null
+  department: string | null
+  access_level: string | null
+  specialties: string[] | null
+  status: string
   notes: string | null
   created_at: string
   updated_at: string | null
@@ -58,22 +70,11 @@ const trustPositions = [
 export default function Members() {
   const { user } = useAuth()
   const { toast } = useToast()
-  const { securitySettings } = useFamilyOfficeSecurity()
-  const isSecurityEnabled = false // Simplified for now
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
+  const [officeMembers, setOfficeMembers] = useState<FamilyOfficeMember[]>([])
   const [loading, setLoading] = useState(true)
-  const [isAddingMember, setIsAddingMember] = useState(false)
-  const [editingMember, setEditingMember] = useState<FamilyMember | null>(null)
-  const [newMember, setNewMember] = useState({
-    full_name: '',
-    family_position: '',
-    relationship_to_family: '',
-    email: '',
-    phone: '',
-    trust_positions: [] as string[],
-    status: 'active',
-    notes: ''
-  })
+  const [showAddFamilyDialog, setShowAddFamilyDialog] = useState(false)
+  const [showAddOfficeDialog, setShowAddOfficeDialog] = useState(false)
 
   useEffect(() => {
     fetchFamilyMembers()
