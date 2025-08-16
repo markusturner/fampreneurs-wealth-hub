@@ -110,7 +110,7 @@ export function AIChat() {
           <CardHeader className="pb-2 px-4 py-3 border-b">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-sm">
-                <Bot className="h-4 w-4 text-primary" />
+                <Bot className="h-4 w-4" style={{ color: '#ffb500' }} />
                 Rachel AI Assistant
               </CardTitle>
               <div className="flex gap-1">
