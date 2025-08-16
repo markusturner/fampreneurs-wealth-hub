@@ -217,6 +217,10 @@ export default function Calendar() {
             !isSameMonth(day, monthStart) && "bg-muted/20 text-muted-foreground",
             isSameDay(day, new Date()) && "bg-primary/10"
           )}
+          onClick={() => {
+            setNewMeeting(prev => ({ ...prev, meeting_date: cloneDay }))
+            setIsCreateMeetingOpen(true)
+          }}
         >
           <div className={cn(
             "text-sm font-medium mb-2",
