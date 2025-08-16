@@ -3177,10 +3177,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      is_current_user_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
       is_family_office_only_user: {
         Args: { user_id: string }
         Returns: boolean
@@ -3190,7 +3186,7 @@ export type Database = {
         Returns: boolean
       }
       is_user_admin: {
-        Args: { user_id: string }
+        Args: { user_id?: string }
         Returns: boolean
       }
       is_user_admin_for_groups: {
