@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Send, Bot, User, Loader2, MessageCircle, X, Minimize2 } from 'lucide-react'
+import { Send, Bot, User, Loader2, MessageCircle, X, Minimize2, Building2, TrendingUp, FileText, Users } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -13,6 +13,7 @@ interface Message {
   content: string
   role: 'user' | 'assistant'
   timestamp: Date
+  showOptions?: boolean
 }
 
 export function AIChat() {
@@ -21,9 +22,10 @@ export function AIChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: "Hello! I'm Rachel, your Family Office AI assistant. I can help you with:\n\n• Business Structure Analysis using The F.L.I.P. Formula™\n• Investment strategies and wealth management\n• Estate planning and family governance\n• Tax optimization strategies\n\nJust ask me about business structure analysis to get started with personalized recommendations, or ask me anything else about family office management!",
+      content: "Hello! I'm Rachel, your Family Office AI assistant. What would you like help with today?",
       role: 'assistant',
-      timestamp: new Date()
+      timestamp: new Date(),
+      showOptions: true
     }
   ])
   const [input, setInput] = useState('')
@@ -87,6 +89,56 @@ export function AIChat() {
       sendMessage()
     }
   }
+
+  const handleOptionClick = (option: string) => {
+    // Remove options from the initial message
+    setMessages(prev => prev.map(msg => 
+      msg.id === '1' ? { ...msg, showOptions: false } : msg
+    ))
+
+    // Add user selection
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: option,
+      role: 'user',
+      timestamp: new Date()
+    }
+
+    let assistantResponse = ""
+    
+    switch (option) {
+      case 'Business Structure Analysis':
+        assistantResponse = "Great choice! I'll help you optimize your business structure using The F.L.I.P. Formula™. This comprehensive analysis will help you identify tax savings opportunities, optimize family employment, and protect your assets.\n\nTo get started, could you tell me:\n1. How many LLCs do you currently have?\n2. What industries are your businesses in?\n3. Are any family members involved in your businesses?\n\nOr feel free to ask me any specific questions about business structure optimization!"
+        break
+      case 'Investment Strategy':
+        assistantResponse = "I'd be happy to help with your investment strategy! I can assist with asset allocation, portfolio diversification, family office investment approaches, and long-term wealth preservation strategies.\n\nWhat specific area of investment planning would you like to focus on?"
+        break
+      case 'Estate Planning':
+        assistantResponse = "Estate planning is crucial for family wealth preservation. I can help you understand trust structures, succession planning, tax-efficient wealth transfer strategies, and multi-generational planning.\n\nWhat aspect of estate planning are you most interested in discussing?"
+        break
+      case 'Family Governance':
+        assistantResponse = "Family governance helps ensure smooth operations and clear communication across generations. I can help with family employment policies, decision-making structures, conflict resolution, and establishing family values and mission.\n\nWhat family governance topic would you like to explore?"
+        break
+      default:
+        assistantResponse = "I'm here to help with all aspects of family office management. Feel free to ask me anything!"
+    }
+
+    const assistantMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      content: assistantResponse,
+      role: 'assistant',
+      timestamp: new Date()
+    }
+
+    setMessages(prev => [...prev, userMessage, assistantMessage])
+  }
+
+  const chatOptions = [
+    { label: 'Business Structure Analysis', icon: Building2 },
+    { label: 'Investment Strategy', icon: TrendingUp },
+    { label: 'Estate Planning', icon: FileText },
+    { label: 'Family Governance', icon: Users }
+  ]
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
@@ -160,6 +212,22 @@ export function AIChat() {
                         }`}
                       >
                         {message.content}
+                        {message.showOptions && (
+                          <div className="mt-3 space-y-2">
+                            {chatOptions.map((option) => (
+                              <Button
+                                key={option.label}
+                                variant="outline"
+                                size="sm"
+                                className="w-full justify-start text-xs h-8"
+                                onClick={() => handleOptionClick(option.label)}
+                              >
+                                <option.icon className="h-3 w-3 mr-2" />
+                                {option.label}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       {message.role === 'user' && (
                         <Avatar className="h-6 w-6 mt-0.5">
