@@ -95,7 +95,8 @@ export function AIChat() {
         <Button
           onClick={() => setIsOpen(true)}
           size="lg"
-          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-primary hover:bg-primary/90"
+          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+          style={{ backgroundColor: '#ffb500', color: 'white' }}
         >
           <MessageCircle className="h-6 w-6" />
         </Button>
