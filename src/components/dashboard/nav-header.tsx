@@ -1,4 +1,4 @@
-import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar as CalendarIcon, Crown, MessageSquare, PanelLeft, FileText, Building2 } from "lucide-react"
+import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar as CalendarIcon, Crown, MessageSquare, PanelLeft, FileText, Building2, LayoutDashboard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -236,7 +236,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             onClick={() => navigate('/')}
             className="gap-2 h-9"
           >
-            <Home className="h-4 w-4" />
+            <LayoutDashboard className="h-4 w-4" />
             Dashboard
           </Button>
           <Button
