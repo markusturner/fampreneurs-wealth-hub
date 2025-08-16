@@ -21,7 +21,7 @@ export function AIChat() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: "Hello! I'm your Family Office AI assistant. I can help you with questions about wealth management, investment strategies, estate planning, and family governance. How can I assist you today?",
+      content: "Hello! I'm Rachel, your Family Office AI assistant. I can help you with:\n\n• Business Structure Analysis using The F.L.I.P. Formula™\n• Investment strategies and wealth management\n• Estate planning and family governance\n• Tax optimization strategies\n\nJust ask me about business structure analysis to get started with personalized recommendations, or ask me anything else about family office management!",
       role: 'assistant',
       timestamp: new Date()
     }
@@ -55,7 +55,7 @@ export function AIChat() {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
         body: { 
           message: input.trim(),
-          context: 'family_office' 
+          context: 'family_office_business_structure'
         }
       })
 
