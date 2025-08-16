@@ -124,7 +124,7 @@ export default function Courses() {
               <Card key={category.title} className="shadow-soft">
                 <CardHeader className="pb-3 sm:pb-6">
                   <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
-                    <CategoryIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                    <CategoryIcon className="h-4 w-4 sm:h-5 sm:w-5 text-accent-foreground" />
                     <span>{category.title}</span>
                   </CardTitle>
                 </CardHeader>
@@ -140,7 +140,7 @@ export default function Courses() {
                           className="flex items-center justify-between p-2 sm:p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
                         >
                           <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                            <DocumentIcon className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                            <DocumentIcon className="h-3 w-3 sm:h-4 sm:w-4 text-secondary-foreground flex-shrink-0" />
                             <span className="text-xs sm:text-sm font-medium truncate">
                               {document.name}
                             </span>

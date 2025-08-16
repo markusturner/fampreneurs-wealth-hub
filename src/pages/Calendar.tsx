@@ -218,7 +218,7 @@ export default function Calendar() {
             isSameDay(day, new Date()) && "bg-primary/10"
           )}
           onClick={() => {
-            setNewMeeting(prev => ({ ...prev, meeting_date: cloneDay }))
+            setNewMeeting(prev => ({ ...prev, meeting_date: day }))
             setIsCreateMeetingOpen(true)
           }}
         >
