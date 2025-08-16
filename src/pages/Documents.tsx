@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Upload, Download, FileText, Building, Shield, Landmark, Crown, Phone, MapPin, Hash, Video, Heart, Scroll } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { Upload, Download, FileText, Building, Shield, Landmark, Crown, Phone, MapPin, Hash, Video, Heart, Scroll } from "lucide-react"
+import { NavHeader } from "@/components/dashboard/nav-header"
 
 const documentCategories = [
   {
@@ -63,7 +63,6 @@ const documentCategories = [
 ]
 
 export default function Documents() {
-  const navigate = useNavigate()
   const [uploadingDocument, setUploadingDocument] = useState<string | null>(null)
 
   const handleUpload = (documentName: string) => {
@@ -81,26 +80,16 @@ export default function Documents() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      <NavHeader />
+
+      {/* Page Header */}
       <div className="border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => navigate("/")}
-              className="text-muted-foreground hover:text-foreground self-start"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Back to Dashboard</span>
-              <span className="sm:hidden">Back</span>
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Family Documents</h1>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Manage your trust and family documents securely
-              </p>
-            </div>
+          <div className="flex-1">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Family Documents</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Manage your trust and family documents securely
+            </p>
           </div>
         </div>
       </div>
