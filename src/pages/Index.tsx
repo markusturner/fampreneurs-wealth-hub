@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
-import { QuickActions } from "@/components/dashboard/quick-actions"
+
 import { AIChat } from "@/components/dashboard/ai-chat"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -60,14 +60,9 @@ const Index = () => {
         <DashboardStats />
 
         {/* Main Dashboard Grid */}
-        <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-2">
-          {/* Quick Actions */}
-          <div className="order-1 lg:order-1">
-            <QuickActions />
-          </div>
-
+        <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1">
           {/* AI Chat */}
-          <div className="order-2 lg:order-2">
+          <div className="order-1">
             <AIChat />
           </div>
         </div>
