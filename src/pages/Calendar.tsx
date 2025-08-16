@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns"
 import { cn } from "@/lib/utils"
 import { NavHeader } from "@/components/dashboard/nav-header"
+import { MeetingTypesManager } from "@/components/dashboard/meeting-types-manager"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
@@ -32,10 +33,19 @@ interface Meeting {
   updated_at: string
 }
 
+interface MeetingType {
+  id: string
+  name: string
+  color: string
+  description: string | null
+  is_active: boolean
+}
+
 export default function Calendar() {
   const { user } = useAuth()
   const { toast } = useToast()
   const [meetings, setMeetings] = useState<Meeting[]>([])
+  const [meetingTypes, setMeetingTypes] = useState<MeetingType[]>([])
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
@@ -51,33 +61,45 @@ export default function Calendar() {
     attendees: ''
   })
 
-  const meetingTypes = [
-    'Live Trading',
-    'Q&A Session', 
-    'YouTube Live',
-    'Family Function',
-    'Trust Coaching',
-    'Board Meeting',
-    'Investment Review',
-    'Estate Planning',
-    'Other'
-  ]
-
-  const meetingColors = {
-    'Live Trading': 'bg-blue-500 text-white',
-    'Q&A Session': 'bg-purple-500 text-white',
-    'YouTube Live': 'bg-red-500 text-white',
-    'Family Function': 'bg-green-500 text-white',
-    'Trust Coaching': 'bg-orange-500 text-white',
-    'Board Meeting': 'bg-indigo-500 text-white',
-    'Investment Review': 'bg-yellow-500 text-white',
-    'Estate Planning': 'bg-pink-500 text-white',
-    'Other': 'bg-gray-500 text-white'
-  }
-
   useEffect(() => {
     fetchMeetings()
+    fetchMeetingTypes()
   }, [])
+
+  const fetchMeetingTypes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('meeting_types')
+        .select('*')
+        .eq('is_active', true)
+        .order('name', { ascending: true })
+
+      if (error) throw error
+      setMeetingTypes(data || [])
+    } catch (error) {
+      console.error('Error fetching meeting types:', error)
+    }
+  }
+
+  const getMeetingTypeColor = (meetingTypeName: string | null) => {
+    if (!meetingTypeName) return 'bg-gray-500 text-white'
+    
+    const meetingType = meetingTypes.find(type => type.name === meetingTypeName)
+    if (meetingType) {
+      return `text-white`
+    }
+    return 'bg-gray-500 text-white'
+  }
+
+  const getMeetingTypeStyle = (meetingTypeName: string | null) => {
+    if (!meetingTypeName) return { backgroundColor: '#6b7280' }
+    
+    const meetingType = meetingTypes.find(type => type.name === meetingTypeName)
+    if (meetingType) {
+      return { backgroundColor: meetingType.color }
+    }
+    return { backgroundColor: '#6b7280' }
+  }
 
   const fetchMeetings = async () => {
     try {
@@ -234,8 +256,9 @@ export default function Calendar() {
                 key={meeting.id}
                 className={cn(
                   "text-xs p-1 rounded truncate cursor-pointer",
-                  meetingColors[meeting.meeting_type as keyof typeof meetingColors] || meetingColors.Other
+                  getMeetingTypeColor(meeting.meeting_type)
                 )}
+                style={getMeetingTypeStyle(meeting.meeting_type)}
                 onClick={(e) => {
                   e.stopPropagation()
                   setSelectedMeeting(meeting)
@@ -315,114 +338,125 @@ export default function Calendar() {
             </div>
           </div>
           
-          <Dialog open={isCreateMeetingOpen} onOpenChange={setIsCreateMeetingOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Schedule New Meeting</DialogTitle>
-                <DialogDescription>
-                  Create a new meeting for your family office
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="title">Meeting Title *</Label>
-                  <Input
-                    id="title"
-                    value={newMeeting.title}
-                    onChange={(e) => setNewMeeting(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="Enter meeting title"
-                  />
-                </div>
+          <div className="flex items-center gap-3">
+            <MeetingTypesManager onMeetingTypesChange={fetchMeetingTypes} />
+            
+            <Dialog open={isCreateMeetingOpen} onOpenChange={setIsCreateMeetingOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Schedule Meeting
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Schedule New Meeting</DialogTitle>
+                  <DialogDescription>
+                    Create a new meeting for your family office
+                  </DialogDescription>
+                </DialogHeader>
                 
-                <div className="grid gap-2">
-                  <Label htmlFor="type">Meeting Type</Label>
-                  <Select value={newMeeting.meeting_type} onValueChange={(value) => setNewMeeting(prev => ({ ...prev, meeting_type: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select meeting type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {meetingTypes.map(type => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
-                    <Label>Meeting Date *</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="justify-start text-left font-normal"
-                        >
-                          {format(newMeeting.meeting_date, "PPP")}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComponent
-                          mode="single"
-                          selected={newMeeting.meeting_date}
-                          onSelect={(date) => setNewMeeting(prev => ({ ...prev, meeting_date: date || new Date() }))}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
+                    <Label htmlFor="title">Meeting Title *</Label>
+                    <Input
+                      id="title"
+                      value={newMeeting.title}
+                      onChange={(e) => setNewMeeting(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="Enter meeting title"
+                    />
                   </div>
                   
                   <div className="grid gap-2">
-                    <Label htmlFor="time">Meeting Time *</Label>
+                    <Label htmlFor="type">Meeting Type</Label>
+                    <Select value={newMeeting.meeting_type} onValueChange={(value) => setNewMeeting(prev => ({ ...prev, meeting_type: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select meeting type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {meetingTypes.map(type => (
+                          <SelectItem key={type.id} value={type.name}>
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-3 h-3 rounded"
+                                style={{ backgroundColor: type.color }}
+                              />
+                              {type.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label>Meeting Date *</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="justify-start text-left font-normal"
+                          >
+                            {format(newMeeting.meeting_date, "PPP")}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={newMeeting.meeting_date}
+                            onSelect={(date) => setNewMeeting(prev => ({ ...prev, meeting_date: date || new Date() }))}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label htmlFor="time">Meeting Time *</Label>
+                      <Input
+                        id="time"
+                        type="time"
+                        value={newMeeting.meeting_time}
+                        onChange={(e) => setNewMeeting(prev => ({ ...prev, meeting_time: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="location">Location</Label>
                     <Input
-                      id="time"
-                      type="time"
-                      value={newMeeting.meeting_time}
-                      onChange={(e) => setNewMeeting(prev => ({ ...prev, meeting_time: e.target.value }))}
+                      id="location"
+                      value={newMeeting.location}
+                      onChange={(e) => setNewMeeting(prev => ({ ...prev, location: e.target.value }))}
+                      placeholder="Meeting location or video link"
+                    />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea
+                      id="description"
+                      value={newMeeting.description}
+                      onChange={(e) => setNewMeeting(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="Meeting description or agenda"
+                      rows={3}
                     />
                   </div>
                 </div>
                 
-                <div className="grid gap-2">
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    value={newMeeting.location}
-                    onChange={(e) => setNewMeeting(prev => ({ ...prev, location: e.target.value }))}
-                    placeholder="Meeting location or video link"
-                  />
+                <div className="flex justify-end space-x-2">
+                  <Button variant="outline" onClick={() => setIsCreateMeetingOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCreateMeeting}>
+                    Create Meeting
+                  </Button>
                 </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={newMeeting.description}
-                    onChange={(e) => setNewMeeting(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Meeting description or agenda"
-                    rows={3}
-                  />
-                </div>
-              </div>
-              
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsCreateMeetingOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCreateMeeting}>
-                  Create Meeting
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
 
         {/* Calendar Grid */}
@@ -446,10 +480,8 @@ export default function Calendar() {
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <div 
-                    className={cn(
-                      "w-3 h-3 rounded-full",
-                      meetingColors[selectedMeeting.meeting_type as keyof typeof meetingColors]?.replace('text-white', '') || 'bg-gray-500'
-                    )}
+                    className="w-3 h-3 rounded-full"
+                    style={getMeetingTypeStyle(selectedMeeting.meeting_type)}
                   />
                   {selectedMeeting.title}
                 </DialogTitle>
