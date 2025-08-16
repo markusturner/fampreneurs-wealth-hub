@@ -1,11 +1,10 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Upload, UserPlus, Users, FileText, Settings, TrendingUp, Shield, Calendar, Building2 } from "lucide-react"
+import { Plus, Upload, UserPlus, Users, FileText, Settings, TrendingUp, Shield, Calendar } from "lucide-react"
 import { ScheduleMeetingDialog } from "./schedule-meeting-dialog"
 import { GoogleSheetsIntegration } from "./google-sheets-integration"
 import { AddFamilyMemberDialog } from "./add-family-member-dialog"
-import { BusinessStructureDialog } from "./business-structure-dialog"
 import { InvestmentIntegrationDialog } from "./investment-integration-dialog"
 
 
@@ -31,20 +30,12 @@ const quickActions = [
     variant: "default" as const,
     action: () => window.location.href = "/family-members"
   },
-  {
-    title: "Business Structure",
-    description: "Entity structure analysis",
-    icon: Building2,
-    variant: "secondary" as const,
-    action: "business_structure" as const
-  }
 ]
 
 export function QuickActions() {
   const [meetingDialogOpen, setMeetingDialogOpen] = useState(false)
   const [googleSheetsDialogOpen, setGoogleSheetsDialogOpen] = useState(false)
   const [addFamilyMemberDialogOpen, setAddFamilyMemberDialogOpen] = useState(false)
-  const [businessStructureDialogOpen, setBusinessStructureDialogOpen] = useState(false)
   const [investmentIntegrationOpen, setInvestmentIntegrationOpen] = useState(false)
 
   const handleScheduleMeeting = () => {
@@ -54,8 +45,6 @@ export function QuickActions() {
   const handleAction = (action: string | (() => void)) => {
     if (action === "google_sheets") {
       setGoogleSheetsDialogOpen(true)
-    } else if (action === "business_structure") {
-      setBusinessStructureDialogOpen(true)
     } else if (typeof action === "function") {
       action()
     }
@@ -66,7 +55,6 @@ export function QuickActions() {
       <ScheduleMeetingDialog open={meetingDialogOpen} onOpenChange={setMeetingDialogOpen} />
       <GoogleSheetsIntegration open={googleSheetsDialogOpen} onOpenChange={setGoogleSheetsDialogOpen} />
       <AddFamilyMemberDialog open={addFamilyMemberDialogOpen} onOpenChange={setAddFamilyMemberDialogOpen} />
-      <BusinessStructureDialog open={businessStructureDialogOpen} onOpenChange={setBusinessStructureDialogOpen} />
       <InvestmentIntegrationDialog open={investmentIntegrationOpen} onOpenChange={setInvestmentIntegrationOpen} />
     <Card className="col-span-4 lg:col-span-1 shadow-soft">
       <CardHeader className="p-4 sm:p-6">

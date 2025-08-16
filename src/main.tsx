@@ -15,6 +15,7 @@ import Documents from "./pages/Documents";
 import Members from "./pages/Members";
 import Calendar from "./pages/Calendar";
 import Investments from "./pages/Investments";
+import Structure from "./pages/Structure";
 import ProfileSettings from "./pages/ProfileSettings";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
@@ -48,6 +49,7 @@ function AppWithNotifications() {
       <Route path="/members" element={<Members />} />
       
       <Route path="/investments" element={<Investments />} />
+      <Route path="/structure" element={<Structure />} />
       <Route path="/estate-planning" element={<EstatePlanning />} />
       <Route path="/tax-planning" element={<TaxPlanning />} />
       <Route path="/philanthropy" element={<Philanthropy />} />

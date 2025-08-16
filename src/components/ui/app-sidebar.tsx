@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Home, TrendingUp, FileText, Shield, Calculator, Heart, Users, UserCheck, Scale } from "lucide-react"
+import { Home, TrendingUp, FileText, Shield, Calculator, Heart, Users, UserCheck, Scale, Building2 } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
 import {
@@ -20,6 +20,7 @@ const mainItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Investments", url: "/investments", icon: TrendingUp },
   { title: "Documents", url: "/documents", icon: FileText },
+  { title: "Structure", url: "/structure", icon: Building2 },
 ]
 
 const planningItems = [
