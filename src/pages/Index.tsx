@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
-
+import { InvestmentChart } from "@/components/dashboard/investment-chart"
+import { AssetAllocation } from "@/components/dashboard/asset-allocation"
 import { AIChat } from "@/components/dashboard/ai-chat"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -60,9 +61,29 @@ const Index = () => {
         <DashboardStats />
 
         {/* Main Dashboard Grid */}
-        <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1">
+        <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-2">
+          {/* Investment Overview */}
+          <div className="lg:col-span-2">
+            <InvestmentChart />
+          </div>
+          
+          {/* Asset Allocation */}
+          <div className="order-2">
+            <Card className="shadow-soft">
+              <CardHeader>
+                <CardTitle>Asset Allocation</CardTitle>
+                <CardDescription>
+                  Your portfolio distribution across asset classes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AssetAllocation />
+              </CardContent>
+            </Card>
+          </div>
+
           {/* AI Chat */}
-          <div className="order-1">
+          <div className="order-3">
             <AIChat />
           </div>
         </div>

@@ -18,8 +18,11 @@ import { useAuth } from "@/contexts/AuthContext"
 
 const mainItems = [
   { title: "Dashboard", url: "/", icon: Home },
-  { title: "Investments", url: "/investments", icon: TrendingUp },
   { title: "Documents", url: "/documents", icon: FileText },
+]
+
+const investmentItems = [
+  { title: "Portfolio Overview", url: "/investments", icon: TrendingUp },
 ]
 
 const planningItems = [
@@ -66,6 +69,24 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} className={getNavClass(item.url)}>
+                      <item.icon className="mr-2 h-4 w-4" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Investments</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {investmentItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavClass(item.url)}>
