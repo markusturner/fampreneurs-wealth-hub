@@ -1,4 +1,4 @@
-import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar as CalendarIcon, Crown, MessageSquare, PanelLeft } from "lucide-react"
+import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar as CalendarIcon, Crown, MessageSquare, PanelLeft, FileText, Building2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -249,13 +249,22 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             Family Office
           </Button>
           <Button
-            variant={location.pathname === '/courses' ? "default" : "ghost"}
+            variant={location.pathname === '/documents' ? "default" : "ghost"}
             size="sm"
-            onClick={() => navigate('/courses')}
+            onClick={() => navigate('/documents')}
             className="gap-2 h-9"
           >
-            <BookOpen className="h-4 w-4" />
+            <FileText className="h-4 w-4" />
             Documents
+          </Button>
+          <Button
+            variant={location.pathname === '/structure' ? "default" : "ghost"}
+            size="sm"
+            onClick={() => navigate('/structure')}
+            className="gap-2 h-9"
+          >
+            <Building2 className="h-4 w-4" />
+            Structure
           </Button>
           <Button
             variant={location.pathname === '/calendar' ? "default" : "ghost"}
