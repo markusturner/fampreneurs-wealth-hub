@@ -1,16 +1,14 @@
 import { useState, useEffect } from "react"
-import { Plus, FileText, Clock, CalendarIcon, User, Edit, Save, X } from "lucide-react"
+import { Plus, ChevronLeft, ChevronRight, FileText, Edit, Save, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { format } from "date-fns"
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns"
 import { cn } from "@/lib/utils"
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { useAuth } from "@/contexts/AuthContext"
@@ -39,8 +37,10 @@ export default function Calendar() {
   const { toast } = useToast()
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentDate, setCurrentDate] = useState(new Date())
+  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
   const [isCreateMeetingOpen, setIsCreateMeetingOpen] = useState(false)
-  const [editingNotes, setEditingNotes] = useState<string | null>(null)
+  const [editingNotes, setEditingNotes] = useState(false)
   const [newMeeting, setNewMeeting] = useState({
     title: '',
     description: '',
@@ -52,15 +52,28 @@ export default function Calendar() {
   })
 
   const meetingTypes = [
+    'Live Trading',
+    'Q&A Session', 
+    'YouTube Live',
+    'Family Function',
+    'Trust Coaching',
     'Board Meeting',
-    'Family Meeting',
     'Investment Review',
     'Estate Planning',
-    'Tax Planning',
-    'Philanthropy',
-    'Team Meeting',
     'Other'
   ]
+
+  const meetingColors = {
+    'Live Trading': 'bg-blue-500 text-white',
+    'Q&A Session': 'bg-purple-500 text-white',
+    'YouTube Live': 'bg-red-500 text-white',
+    'Family Function': 'bg-green-500 text-white',
+    'Trust Coaching': 'bg-orange-500 text-white',
+    'Board Meeting': 'bg-indigo-500 text-white',
+    'Investment Review': 'bg-yellow-500 text-white',
+    'Estate Planning': 'bg-pink-500 text-white',
+    'Other': 'bg-gray-500 text-white'
+  }
 
   useEffect(() => {
     fetchMeetings()
@@ -161,8 +174,13 @@ export default function Calendar() {
         description: "Meeting notes updated successfully"
       })
 
-      setEditingNotes(null)
+      setEditingNotes(false)
       fetchMeetings()
+      
+      // Update selected meeting if it's the one being edited
+      if (selectedMeeting?.id === meetingId) {
+        setSelectedMeeting(prev => prev ? { ...prev, scribe_notes: notes.trim() || null } : null)
+      }
     } catch (error) {
       console.error('Error updating notes:', error)
       toast({
@@ -173,14 +191,76 @@ export default function Calendar() {
     }
   }
 
-  const getStatusColor = (status: string) => {
-    const colors = {
-      'scheduled': 'bg-blue-100 text-blue-800',
-      'in-progress': 'bg-yellow-100 text-yellow-800',
-      'completed': 'bg-green-100 text-green-800',
-      'cancelled': 'bg-red-100 text-red-800'
+  // Calendar grid logic
+  const monthStart = startOfMonth(currentDate)
+  const monthEnd = endOfMonth(monthStart)
+  const startDate = startOfWeek(monthStart)
+  const endDate = endOfWeek(monthEnd)
+
+  const dateFormat = "d"
+  const rows = []
+  let days = []
+  let day = startDate
+
+  while (day <= endDate) {
+    for (let i = 0; i < 7; i++) {
+      const cloneDay = day
+      const dayMeetings = meetings.filter(meeting => 
+        isSameDay(new Date(meeting.meeting_date), cloneDay)
+      )
+
+      days.push(
+        <div
+          key={day.toString()}
+          className={cn(
+            "min-h-[120px] border-r border-b border-border p-2 cursor-pointer hover:bg-muted/50",
+            !isSameMonth(day, monthStart) && "bg-muted/20 text-muted-foreground",
+            isSameDay(day, new Date()) && "bg-primary/10"
+          )}
+        >
+          <div className={cn(
+            "text-sm font-medium mb-2",
+            isSameDay(day, new Date()) && "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center"
+          )}>
+            {format(cloneDay, dateFormat)}
+          </div>
+          <div className="space-y-1">
+            {dayMeetings.slice(0, 3).map((meeting) => (
+              <div
+                key={meeting.id}
+                className={cn(
+                  "text-xs p-1 rounded truncate cursor-pointer",
+                  meetingColors[meeting.meeting_type as keyof typeof meetingColors] || meetingColors.Other
+                )}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedMeeting(meeting)
+                }}
+              >
+                {meeting.meeting_time} - {meeting.title}
+              </div>
+            ))}
+            {dayMeetings.length > 3 && (
+              <div className="text-xs text-muted-foreground">
+                +{dayMeetings.length - 3} more
+              </div>
+            )}
+          </div>
+        </div>
+      )
+      day = addDays(day, 1)
     }
-    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+    rows.push(
+      <div key={day.toString()} className="grid grid-cols-7">
+        {days}
+      </div>
+    )
+    days = []
+  }
+
+  const getCurrentTime = () => {
+    const now = new Date()
+    return format(now, 'h:mmaaa') + ' New York time'
   }
 
   if (loading) {
@@ -188,15 +268,9 @@ export default function Calendar() {
       <div className="min-h-screen bg-background">
         <NavHeader />
         <div className="container mx-auto p-4 lg:p-6">
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="p-6">
-                  <div className="h-4 bg-muted rounded w-1/3 mb-4"></div>
-                  <div className="h-3 bg-muted rounded w-2/3"></div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-muted rounded w-1/4"></div>
+            <div className="h-96 bg-muted rounded"></div>
           </div>
         </div>
       </div>
@@ -207,18 +281,40 @@ export default function Calendar() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       <div className="container mx-auto p-4 lg:p-6 space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold">Meeting Calendar</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage meetings and scribe notes for your family office
-            </p>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" onClick={() => setCurrentDate(new Date())}>
+              Today
+            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setCurrentDate(subMonths(currentDate, 1))}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <h1 className="text-2xl font-bold min-w-[200px] text-center">
+                {format(currentDate, 'MMMM yyyy')}
+              </h1>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setCurrentDate(addMonths(currentDate, 1))}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {getCurrentTime()}
+            </div>
           </div>
+          
           <Dialog open={isCreateMeetingOpen} onOpenChange={setIsCreateMeetingOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
-                Schedule Meeting
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
@@ -241,14 +337,19 @@ export default function Calendar() {
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={newMeeting.description}
-                    onChange={(e) => setNewMeeting(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Meeting description or agenda"
-                    rows={3}
-                  />
+                  <Label htmlFor="type">Meeting Type</Label>
+                  <Select value={newMeeting.meeting_type} onValueChange={(value) => setNewMeeting(prev => ({ ...prev, meeting_type: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select meeting type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {meetingTypes.map(type => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -258,13 +359,9 @@ export default function Calendar() {
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
-                          className={cn(
-                            "justify-start text-left font-normal",
-                            !newMeeting.meeting_date && "text-muted-foreground"
-                          )}
+                          className="justify-start text-left font-normal"
                         >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {newMeeting.meeting_date ? format(newMeeting.meeting_date, "PPP") : "Pick a date"}
+                          {format(newMeeting.meeting_date, "PPP")}
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
@@ -291,22 +388,6 @@ export default function Calendar() {
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="type">Meeting Type</Label>
-                  <Select value={newMeeting.meeting_type} onValueChange={(value) => setNewMeeting(prev => ({ ...prev, meeting_type: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select meeting type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {meetingTypes.map(type => (
-                        <SelectItem key={type} value={type}>
-                          {type}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="grid gap-2">
                   <Label htmlFor="location">Location</Label>
                   <Input
                     id="location"
@@ -317,12 +398,13 @@ export default function Calendar() {
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="attendees">Attendees</Label>
-                  <Input
-                    id="attendees"
-                    value={newMeeting.attendees}
-                    onChange={(e) => setNewMeeting(prev => ({ ...prev, attendees: e.target.value }))}
-                    placeholder="Comma-separated list of attendees"
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={newMeeting.description}
+                    onChange={(e) => setNewMeeting(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Meeting description or agenda"
+                    rows={3}
                   />
                 </div>
               </div>
@@ -339,132 +421,110 @@ export default function Calendar() {
           </Dialog>
         </div>
 
-        <div className="space-y-4">
-          {meetings.length === 0 ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-lg font-medium mb-2">No meetings scheduled</h3>
-                <p className="text-muted-foreground mb-4">
-                  Create your first meeting to get started
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            meetings.map((meeting) => (
-              <Card key={meeting.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-lg">{meeting.title}</CardTitle>
-                      {meeting.description && (
-                        <CardDescription>{meeting.description}</CardDescription>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs ${getStatusColor(meeting.status)}`}
-                      >
-                        {meeting.status}
-                      </Badge>
-                      {meeting.meeting_type && (
-                        <Badge variant="secondary" className="text-xs">
-                          {meeting.meeting_type}
-                        </Badge>
-                      )}
-                    </div>
+        {/* Calendar Grid */}
+        <div className="border border-border rounded-lg overflow-hidden">
+          {/* Day headers */}
+          <div className="grid grid-cols-7 bg-muted/50">
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+              <div key={day} className="p-4 text-center font-medium border-r border-border last:border-r-0">
+                {day}
+              </div>
+            ))}
+          </div>
+          {/* Calendar rows */}
+          {rows}
+        </div>
+
+        {/* Meeting Detail Dialog */}
+        {selectedMeeting && (
+          <Dialog open={!!selectedMeeting} onOpenChange={() => setSelectedMeeting(null)}>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <div 
+                    className={cn(
+                      "w-3 h-3 rounded-full",
+                      meetingColors[selectedMeeting.meeting_type as keyof typeof meetingColors]?.replace('text-white', '') || 'bg-gray-500'
+                    )}
+                  />
+                  {selectedMeeting.title}
+                </DialogTitle>
+                <DialogDescription>
+                  {format(new Date(selectedMeeting.meeting_date), 'EEEE, MMMM d, yyyy')} at {selectedMeeting.meeting_time}
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                {selectedMeeting.description && (
+                  <div>
+                    <h4 className="font-medium mb-2">Description</h4>
+                    <p className="text-sm text-muted-foreground">{selectedMeeting.description}</p>
                   </div>
-                </CardHeader>
+                )}
                 
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                      <span>{new Date(meeting.meeting_date).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span>{meeting.meeting_time}</span>
-                    </div>
-                    {meeting.location && (
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span>{meeting.location}</span>
-                      </div>
+                {selectedMeeting.location && (
+                  <div>
+                    <h4 className="font-medium mb-2">Location</h4>
+                    <p className="text-sm text-muted-foreground">{selectedMeeting.location}</p>
+                  </div>
+                )}
+                
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Scribe Notes
+                    </h4>
+                    {!editingNotes && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingNotes(true)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
                     )}
                   </div>
                   
-                  {meeting.attendees && meeting.attendees.length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-medium mb-2">Attendees:</h4>
-                      <div className="flex flex-wrap gap-1">
-                        {meeting.attendees.map((attendee, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {attendee}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="border-t pt-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-medium flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        Scribe Notes
-                      </h4>
-                      {editingNotes !== meeting.id && (
+                  {editingNotes ? (
+                    <div className="space-y-2">
+                      <Textarea
+                        defaultValue={selectedMeeting.scribe_notes || ''}
+                        placeholder="Add meeting notes..."
+                        rows={6}
+                        id="meeting-notes"
+                      />
+                      <div className="flex justify-end gap-2">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setEditingNotes(meeting.id)}
+                          onClick={() => setEditingNotes(false)}
                         >
-                          <Edit className="h-4 w-4" />
+                          <X className="h-4 w-4" />
+                          Cancel
                         </Button>
-                      )}
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            const textarea = document.getElementById('meeting-notes') as HTMLTextAreaElement
+                            handleUpdateNotes(selectedMeeting.id, textarea.value)
+                          }}
+                        >
+                          <Save className="h-4 w-4" />
+                          Save Notes
+                        </Button>
+                      </div>
                     </div>
-                    
-                    {editingNotes === meeting.id ? (
-                      <div className="space-y-2">
-                        <Textarea
-                          defaultValue={meeting.scribe_notes || ''}
-                          placeholder="Add meeting notes..."
-                          rows={4}
-                          id={`notes-${meeting.id}`}
-                        />
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setEditingNotes(null)}
-                          >
-                            <X className="h-4 w-4" />
-                            Cancel
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              const textarea = document.getElementById(`notes-${meeting.id}`) as HTMLTextAreaElement
-                              handleUpdateNotes(meeting.id, textarea.value)
-                            }}
-                          >
-                            <Save className="h-4 w-4" />
-                            Save Notes
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-md">
-                        {meeting.scribe_notes || 'No notes added yet. Click the edit button to add notes.'}
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-md">
+                      {selectedMeeting.scribe_notes || 'No notes added yet. Click the edit button to add notes.'}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </div>
   )
