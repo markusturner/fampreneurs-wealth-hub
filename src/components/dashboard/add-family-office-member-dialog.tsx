@@ -128,8 +128,9 @@ export function AddFamilyOfficeMemberDialog({
 
     setLoading(true)
     try {
+      // Note: family_office_members table will be available after Supabase types regeneration
       const { error } = await supabase
-        .from('family_office_members')
+        .from('family_office_members' as any)
         .insert({
           added_by: user?.id,
           full_name: formData.fullName.trim(),

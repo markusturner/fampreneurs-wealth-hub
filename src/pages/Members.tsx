@@ -10,7 +10,18 @@ import { useToast } from '@/hooks/use-toast'
 import { NavHeader } from '@/components/dashboard/nav-header'
 import { AddFamilyMemberDialog } from '@/components/dashboard/add-family-member-dialog'
 import { AddFamilyOfficeMemberDialog } from '@/components/dashboard/add-family-office-member-dialog'
-import { UserPlus, Mail, Phone, User, Edit, Trash2, Users, Crown, Building2, Briefcase } from 'lucide-react'
+import { 
+  UserPlus, 
+  Mail, 
+  Phone, 
+  User, 
+  Edit, 
+  Trash2, 
+  Users, 
+  Crown, 
+  Building2, 
+  Briefcase 
+} from 'lucide-react'
 
 interface FamilyMember {
   id: string
@@ -45,28 +56,6 @@ interface FamilyOfficeMember {
   updated_at: string | null
 }
 
-const familyPositions = [
-  'Head of Family',
-  'Spouse',
-  'Child',
-  'Parent',
-  'Sibling',
-  'Grandparent',
-  'Grandchild',
-  'Uncle/Aunt',
-  'Cousin',
-  'Other'
-]
-
-const trustPositions = [
-  'Trustee',
-  'Beneficiary',
-  'Protector',
-  'Investment Committee Member',
-  'Distribution Committee Member',
-  'Advisory Board Member'
-]
-
 export default function Members() {
   const { user } = useAuth()
   const { toast } = useToast()
@@ -77,29 +66,41 @@ export default function Members() {
   const [showAddOfficeDialog, setShowAddOfficeDialog] = useState(false)
 
   useEffect(() => {
-    fetchFamilyMembers()
+    fetchMembers()
   }, [])
 
-  const fetchFamilyMembers = async () => {
+  const fetchMembers = async () => {
     if (!user?.id) {
       setLoading(false)
       return
     }
 
     try {
-      const { data, error } = await supabase
+      // Fetch family members
+      const { data: familyData, error: familyError } = await supabase
         .from('family_members')
         .select('*')
         .eq('added_by', user.id)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
-      setFamilyMembers(data || [])
+      if (familyError) throw familyError
+
+      // Fetch family office members (using type casting until types are regenerated)
+      const { data: officeData, error: officeError } = await supabase
+        .from('family_office_members' as any)
+        .select('*')
+        .eq('added_by', user.id)
+        .order('created_at', { ascending: false })
+
+      if (officeError) throw officeError
+
+      setFamilyMembers(familyData || [])
+      setOfficeMembers((officeData as unknown as FamilyOfficeMember[]) || [])
     } catch (error) {
-      console.error('Error fetching family members:', error)
+      console.error('Error fetching members:', error)
       toast({
         title: "Error",
-        description: "Failed to fetch family members",
+        description: "Failed to fetch members",
         variant: "destructive"
       })
     } finally {
@@ -107,99 +108,7 @@ export default function Members() {
     }
   }
 
-  const handleAddMember = async () => {
-    if (!user?.id || !newMember.full_name || !newMember.family_position) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      })
-      return
-    }
-
-    setIsAddingMember(true)
-    try {
-      const { data, error } = await supabase
-        .from('family_members')
-        .insert([{
-          ...newMember,
-          added_by: user.id,
-          trust_positions: newMember.trust_positions.length > 0 ? newMember.trust_positions : null
-        }])
-        .select()
-
-      if (error) throw error
-
-      setFamilyMembers(prev => [data[0], ...prev])
-      setNewMember({
-        full_name: '',
-        family_position: '',
-        relationship_to_family: '',
-        email: '',
-        phone: '',
-        trust_positions: [],
-        status: 'active',
-        notes: ''
-      })
-
-      toast({
-        title: "Success",
-        description: "Family member added successfully"
-      })
-    } catch (error) {
-      console.error('Error adding family member:', error)
-      toast({
-        title: "Error",
-        description: "Failed to add family member",
-        variant: "destructive"
-      })
-    } finally {
-      setIsAddingMember(false)
-    }
-  }
-
-  const handleUpdateMember = async () => {
-    if (!editingMember) return
-
-    try {
-      const { error } = await supabase
-        .from('family_members')
-        .update({
-          full_name: editingMember.full_name,
-          family_position: editingMember.family_position,
-          relationship_to_family: editingMember.relationship_to_family,
-          email: editingMember.email,
-          phone: editingMember.phone,
-          trust_positions: editingMember.trust_positions,
-          status: editingMember.status,
-          notes: editingMember.notes
-        })
-        .eq('id', editingMember.id)
-
-      if (error) throw error
-
-      setFamilyMembers(prev => 
-        prev.map(member => 
-          member.id === editingMember.id ? editingMember : member
-        )
-      )
-      setEditingMember(null)
-
-      toast({
-        title: "Success",
-        description: "Family member updated successfully"
-      })
-    } catch (error) {
-      console.error('Error updating family member:', error)
-      toast({
-        title: "Error",
-        description: "Failed to update family member",
-        variant: "destructive"
-      })
-    }
-  }
-
-  const handleDeleteMember = async (memberId: string) => {
+  const handleDeleteFamilyMember = async (memberId: string) => {
     try {
       const { error } = await supabase
         .from('family_members')
@@ -209,7 +118,6 @@ export default function Members() {
       if (error) throw error
 
       setFamilyMembers(prev => prev.filter(member => member.id !== memberId))
-
       toast({
         title: "Success",
         description: "Family member deleted successfully"
@@ -219,6 +127,30 @@ export default function Members() {
       toast({
         title: "Error",
         description: "Failed to delete family member",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleDeleteOfficeMember = async (memberId: string) => {
+    try {
+      const { error } = await supabase
+        .from('family_office_members' as any)
+        .delete()
+        .eq('id', memberId)
+
+      if (error) throw error
+
+      setOfficeMembers(prev => prev.filter(member => member.id !== memberId))
+      toast({
+        title: "Success",
+        description: "Family office member deleted successfully"
+      })
+    } catch (error) {
+      console.error('Error deleting family office member:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete family office member",
         variant: "destructive"
       })
     }
@@ -236,6 +168,55 @@ export default function Members() {
     return colors[position as keyof typeof colors] || 'bg-gray-100 text-gray-800'
   }
 
+  const getAccessLevelColor = (level: string) => {
+    const colors = {
+      'Full Access': 'bg-red-100 text-red-800',
+      'Financial Reports Only': 'bg-blue-100 text-blue-800',
+      'Investment Data Only': 'bg-green-100 text-green-800',
+      'Administrative Access': 'bg-purple-100 text-purple-800',
+      'Limited Access': 'bg-yellow-100 text-yellow-800',
+      'View Only': 'bg-gray-100 text-gray-800'
+    }
+    return colors[level as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+  }
+
+  const LoadingSkeleton = () => (
+    <div className="space-y-4">
+      {[1, 2, 3].map(i => (
+        <Card key={i} className="animate-pulse">
+          <CardContent className="p-6">
+            <div className="h-4 bg-muted rounded w-1/3 mb-4"></div>
+            <div className="h-3 bg-muted rounded w-2/3"></div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  )
+
+  const EmptyState = ({ type }: { type: 'family' | 'office' }) => (
+    <Card>
+      <CardContent className="p-8 text-center">
+        {type === 'family' ? (
+          <>
+            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-lg font-medium mb-2">No family members added</h3>
+            <p className="text-muted-foreground mb-4">
+              Start building your family directory by adding your first member
+            </p>
+          </>
+        ) : (
+          <>
+            <Briefcase className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-lg font-medium mb-2">No family office members added</h3>
+            <p className="text-muted-foreground mb-4">
+              Build your professional team by adding family office members
+            </p>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  )
+
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
@@ -243,403 +224,258 @@ export default function Members() {
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Family Members</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Members</h1>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Manage your family office members
+              Manage your family and professional team members
             </p>
           </div>
         </div>
 
-        <div className="space-y-4 sm:space-y-6">
-          {/* Family Member Management */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold">Family Office Members</h2>
-              <p className="text-sm text-muted-foreground">
-                Add and manage members of your family office
-              </p>
-            </div>
-            
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Add Member
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>Add Family Member</DialogTitle>
-                  <DialogDescription>
-                    Add a new member to your family office
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="full_name">Full Name *</Label>
-                    <Input
-                      id="full_name"
-                      value={newMember.full_name}
-                      onChange={(e) => setNewMember(prev => ({ ...prev, full_name: e.target.value }))}
-                      placeholder="Enter full name"
-                    />
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label htmlFor="family_position">Family Position *</Label>
-                    <Select
-                      value={newMember.family_position}
-                      onValueChange={(value) => setNewMember(prev => ({ ...prev, family_position: value }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select family position" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {familyPositions.map(position => (
-                          <SelectItem key={position} value={position}>
-                            {position}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label htmlFor="relationship">Relationship to Family</Label>
-                    <Input
-                      id="relationship"
-                      value={newMember.relationship_to_family}
-                      onChange={(e) => setNewMember(prev => ({ ...prev, relationship_to_family: e.target.value }))}
-                      placeholder="e.g., Blood relative, Spouse, etc."
-                    />
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={newMember.email}
-                      onChange={(e) => setNewMember(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="Enter email address"
-                    />
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      value={newMember.phone}
-                      onChange={(e) => setNewMember(prev => ({ ...prev, phone: e.target.value }))}
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label>Trust Positions</Label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {trustPositions.map(position => (
-                        <label key={position} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={newMember.trust_positions.includes(position)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setNewMember(prev => ({
-                                  ...prev,
-                                  trust_positions: [...prev.trust_positions, position]
-                                }))
-                              } else {
-                                setNewMember(prev => ({
-                                  ...prev,
-                                  trust_positions: prev.trust_positions.filter(p => p !== position)
-                                }))
-                              }
-                            }}
-                            className="rounded"
-                          />
-                          <span className="text-sm">{position}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label htmlFor="notes">Notes</Label>
-                    <Textarea
-                      id="notes"
-                      value={newMember.notes}
-                      onChange={(e) => setNewMember(prev => ({ ...prev, notes: e.target.value }))}
-                      placeholder="Additional notes about this family member"
-                      rows={3}
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex justify-end space-x-2">
-                  <DialogTrigger asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </DialogTrigger>
-                  <Button onClick={handleAddMember} disabled={isAddingMember}>
-                    {isAddingMember ? 'Adding...' : 'Add Member'}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
+        <Tabs defaultValue="family" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="family" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Family Members
+              <Badge variant="secondary" className="ml-2">
+                {familyMembers.length}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger value="office" className="flex items-center gap-2">
+              <Building2 className="h-4 w-4" />
+              Family Office
+              <Badge variant="secondary" className="ml-2">
+                {officeMembers.length}
+              </Badge>
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Family Members List */}
-          <div className="grid gap-4">
+          <TabsContent value="family" className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg sm:text-xl font-semibold">Family Members</h2>
+                <p className="text-sm text-muted-foreground">
+                  Manage your family directory and relationships
+                </p>
+              </div>
+              
+              <Button 
+                onClick={() => setShowAddFamilyDialog(true)} 
+                className="flex items-center gap-2"
+              >
+                <UserPlus className="h-4 w-4" />
+                Add Family Member
+              </Button>
+            </div>
+
+            <div className="grid gap-4">
               {loading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map(i => (
-                    <Card key={i} className="animate-pulse">
-                      <CardContent className="p-6">
-                        <div className="h-4 bg-muted rounded w-1/3 mb-4"></div>
-                        <div className="h-3 bg-muted rounded w-2/3"></div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                <LoadingSkeleton />
               ) : familyMembers.length === 0 ? (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                    <h3 className="text-lg font-medium mb-2">No family members added</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Start building your family office by adding your first member
-                    </p>
-                  </CardContent>
-                </Card>
+                <EmptyState type="family" />
               ) : (
                 familyMembers.map((member) => (
-                  isSecurityEnabled ? (
-                    <SecureFamilyMemberCard
-                      key={member.id}
-                      member={member}
-                      currentUserId={user?.id || ''}
-                      isAdmin={true}
-                      onEdit={() => setEditingMember(member)}
-                      onDelete={() => handleDeleteMember(member.id)}
-                    />
-                  ) : (
-                    <Card key={member.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center space-x-4">
-                            <Avatar className="h-12 w-12">
-                              <AvatarImage src="" />
-                              <AvatarFallback className="bg-primary/10">
-                                {member.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
+                  <Card key={member.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center space-x-4">
+                          <Avatar className="h-12 w-12">
+                            <AvatarImage src="" />
+                            <AvatarFallback className="bg-primary/10">
+                              {member.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <div className="space-y-1">
+                            <div className="flex items-center space-x-2">
+                              <h3 className="font-semibold">{member.full_name}</h3>
+                              {member.family_position === 'Head of Family' && (
+                                <Crown className="h-4 w-4 text-yellow-500" />
+                              )}
+                            </div>
                             
-                            <div className="space-y-1">
-                              <div className="flex items-center space-x-2">
-                                <h3 className="font-semibold">{member.full_name}</h3>
-                                {member.family_position === 'Head of Family' && (
-                                  <Crown className="h-4 w-4 text-yellow-500" />
-                                )}
-                              </div>
-                              
-                              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                              {member.family_position && (
                                 <Badge variant="secondary">{member.family_position}</Badge>
-                                {member.relationship_to_family && (
-                                  <span>• {member.relationship_to_family}</span>
-                                )}
+                              )}
+                              {member.relationship_to_family && (
+                                <span>• {member.relationship_to_family}</span>
+                              )}
+                            </div>
+                            
+                            {member.trust_positions && member.trust_positions.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {member.trust_positions.map(position => (
+                                  <Badge
+                                    key={position}
+                                    variant="outline"
+                                    className={`text-xs ${getTrustPositionColor(position)}`}
+                                  >
+                                    {position}
+                                  </Badge>
+                                ))}
                               </div>
-                              
-                              {member.trust_positions && member.trust_positions.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mt-2">
-                                  {member.trust_positions.map(position => (
-                                    <Badge
-                                      key={position}
-                                      variant="outline"
-                                      className={`text-xs ${getTrustPositionColor(position)}`}
-                                    >
-                                      {position}
-                                    </Badge>
-                                  ))}
+                            )}
+
+                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                              {member.email && (
+                                <div className="flex items-center space-x-1">
+                                  <Mail className="h-3 w-3" />
+                                  <span>{member.email}</span>
                                 </div>
                               )}
-                              
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
-                                {member.email && (
-                                  <div className="flex items-center gap-1">
-                                    <Mail className="h-3 w-3" />
-                                    <span>{member.email}</span>
-                                  </div>
-                                )}
-                                {member.phone && (
-                                  <div className="flex items-center gap-1">
-                                    <Phone className="h-3 w-3" />
-                                    <span>{member.phone}</span>
-                                  </div>
-                                )}
-                              </div>
+                              {member.phone && (
+                                <div className="flex items-center space-x-1">
+                                  <Phone className="h-3 w-3" />
+                                  <span>{member.phone}</span>
+                                </div>
+                              )}
                             </div>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setEditingMember(member)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteMember(member.id)}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
                           </div>
                         </div>
                         
-                        {member.notes && (
-                          <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-                            <p className="text-sm text-muted-foreground">{member.notes}</p>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteFamilyMember(member.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))
               )}
             </div>
+          </TabsContent>
 
-          {isSecurityEnabled && (
-            <FamilyOfficeSecurity />
-          )}
-        </div>
+          <TabsContent value="office" className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg sm:text-xl font-semibold">Family Office Team</h2>
+                <p className="text-sm text-muted-foreground">
+                  Manage your professional advisors and staff
+                </p>
+              </div>
+              
+              <Button 
+                onClick={() => setShowAddOfficeDialog(true)} 
+                className="flex items-center gap-2"
+              >
+                <UserPlus className="h-4 w-4" />
+                Add Team Member
+              </Button>
+            </div>
+
+            <div className="grid gap-4">
+              {loading ? (
+                <LoadingSkeleton />
+              ) : officeMembers.length === 0 ? (
+                <EmptyState type="office" />
+              ) : (
+                officeMembers.map((member) => (
+                  <Card key={member.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center space-x-4">
+                          <Avatar className="h-12 w-12">
+                            <AvatarImage src="" />
+                            <AvatarFallback className="bg-primary/10">
+                              {member.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <div className="space-y-1">
+                            <div className="flex items-center space-x-2">
+                              <h3 className="font-semibold">{member.full_name}</h3>
+                              <Badge variant="outline" className="text-xs">
+                                {member.status}
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                              {member.role && (
+                                <Badge variant="secondary">{member.role}</Badge>
+                              )}
+                              {member.company && (
+                                <span>• {member.company}</span>
+                              )}
+                              {member.department && (
+                                <span>• {member.department}</span>
+                              )}
+                            </div>
+                            
+                            {member.access_level && (
+                              <div className="mt-2">
+                                <Badge
+                                  variant="outline"
+                                  className={`text-xs ${getAccessLevelColor(member.access_level)}`}
+                                >
+                                  {member.access_level}
+                                </Badge>
+                              </div>
+                            )}
+
+                            {member.specialties && member.specialties.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {member.specialties.map(specialty => (
+                                  <Badge
+                                    key={specialty}
+                                    variant="outline"
+                                    className="text-xs bg-blue-50 text-blue-700"
+                                  >
+                                    {specialty}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+
+                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                              <div className="flex items-center space-x-1">
+                                <Mail className="h-3 w-3" />
+                                <span>{member.email}</span>
+                              </div>
+                              {member.phone && (
+                                <div className="flex items-center space-x-1">
+                                  <Phone className="h-3 w-3" />
+                                  <span>{member.phone}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteOfficeMember(member.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Dialogs */}
+        <AddFamilyMemberDialog 
+          open={showAddFamilyDialog} 
+          onOpenChange={setShowAddFamilyDialog}
+        />
+        
+        <AddFamilyOfficeMemberDialog 
+          open={showAddOfficeDialog} 
+          onOpenChange={setShowAddOfficeDialog}
+          onMemberAdded={fetchMembers}
+        />
       </div>
-
-      {/* Edit Member Dialog */}
-      {editingMember && (
-        <Dialog open={!!editingMember} onOpenChange={() => setEditingMember(null)}>
-          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Edit Family Member</DialogTitle>
-              <DialogDescription>
-                Update family member information
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit_full_name">Full Name *</Label>
-                <Input
-                  id="edit_full_name"
-                  value={editingMember.full_name}
-                  onChange={(e) => setEditingMember(prev => prev ? { ...prev, full_name: e.target.value } : null)}
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="edit_family_position">Family Position *</Label>
-                <Select
-                  value={editingMember.family_position}
-                  onValueChange={(value) => setEditingMember(prev => prev ? { ...prev, family_position: value } : null)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {familyPositions.map(position => (
-                      <SelectItem key={position} value={position}>
-                        {position}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="edit_relationship">Relationship to Family</Label>
-                <Input
-                  id="edit_relationship"
-                  value={editingMember.relationship_to_family || ''}
-                  onChange={(e) => setEditingMember(prev => prev ? { ...prev, relationship_to_family: e.target.value } : null)}
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="edit_email">Email</Label>
-                <Input
-                  id="edit_email"
-                  type="email"
-                  value={editingMember.email || ''}
-                  onChange={(e) => setEditingMember(prev => prev ? { ...prev, email: e.target.value } : null)}
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="edit_phone">Phone Number</Label>
-                <Input
-                  id="edit_phone"
-                  value={editingMember.phone || ''}
-                  onChange={(e) => setEditingMember(prev => prev ? { ...prev, phone: e.target.value } : null)}
-                />
-              </div>
-              
-              <div className="grid gap-2">
-                <Label>Trust Positions</Label>
-                <div className="grid grid-cols-1 gap-2">
-                  {trustPositions.map(position => (
-                    <label key={position} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={editingMember.trust_positions?.includes(position) || false}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setEditingMember(prev => prev ? {
-                              ...prev,
-                              trust_positions: [...(prev.trust_positions || []), position]
-                            } : null)
-                          } else {
-                            setEditingMember(prev => prev ? {
-                              ...prev,
-                              trust_positions: prev.trust_positions?.filter(p => p !== position) || null
-                            } : null)
-                          }
-                        }}
-                        className="rounded"
-                      />
-                      <span className="text-sm">{position}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="edit_notes">Notes</Label>
-                <Textarea
-                  id="edit_notes"
-                  value={editingMember.notes || ''}
-                  onChange={(e) => setEditingMember(prev => prev ? { ...prev, notes: e.target.value } : null)}
-                  rows={3}
-                />
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setEditingMember(null)}>
-                Cancel
-              </Button>
-              <Button onClick={handleUpdateMember}>
-                Update Member
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
-      
-      {/* Mobile Bottom Navigation Spacing */}
-      <div className="pb-16 md:pb-0" />
     </div>
   )
 }

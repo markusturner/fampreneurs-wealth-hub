@@ -1126,6 +1126,57 @@ export type Database = {
         }
         Relationships: []
       }
+      family_office_members: {
+        Row: {
+          access_level: string | null
+          added_by: string
+          company: string | null
+          created_at: string
+          department: string | null
+          email: string
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          role: string | null
+          specialties: string[] | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          access_level?: string | null
+          added_by: string
+          company?: string | null
+          created_at?: string
+          department?: string | null
+          email: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          specialties?: string[] | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          access_level?: string | null
+          added_by?: string
+          company?: string | null
+          created_at?: string
+          department?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          specialties?: string[] | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       family_office_privacy_preferences: {
         Row: {
           analytics_consent: boolean | null
