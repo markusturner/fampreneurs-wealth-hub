@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Send, Bot, User, Loader2 } from 'lucide-react'
+import { Send, Bot, User, Loader2, MessageCircle, X, Minimize2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -16,6 +16,8 @@ interface Message {
 }
 
 export function AIChat() {
+  const [isOpen, setIsOpen] = useState(false)
+  const [isMinimized, setIsMinimized] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -87,81 +89,123 @@ export function AIChat() {
   }
 
   return (
-    <Card className="h-[600px] flex flex-col">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-secondary" />
-          Rachel Legacy Support Advisor
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 flex flex-col gap-4 p-4">
-        <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${
-                  message.role === 'user' ? 'justify-end' : 'justify-start'
-                }`}
-              >
-                {message.role === 'assistant' && (
-                  <Avatar className="h-8 w-8 mt-1">
-                    <AvatarFallback className="bg-white">
-                      <Bot className="h-4 w-4 text-primary" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
-                <div
-                  className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-foreground ml-12'
-                      : 'bg-muted'
-                  }`}
+    <div className="fixed bottom-4 right-4 z-50">
+      {/* Chat Widget Button */}
+      {!isOpen && (
+        <Button
+          onClick={() => setIsOpen(true)}
+          size="lg"
+          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 bg-primary hover:bg-primary/90"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </Button>
+      )}
+
+      {/* Chat Widget */}
+      {isOpen && (
+        <Card className={`w-80 shadow-2xl transition-all duration-200 ${
+          isMinimized ? 'h-14' : 'h-96'
+        }`}>
+          <CardHeader className="pb-2 px-4 py-3 border-b">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-sm">
+                <Bot className="h-4 w-4 text-primary" />
+                Rachel AI Assistant
+              </CardTitle>
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsMinimized(!isMinimized)}
+                  className="h-6 w-6 p-0"
                 >
-                  {message.content}
-                </div>
-                {message.role === 'user' && (
-                  <Avatar className="h-8 w-8 mt-1">
-                    <AvatarFallback className="bg-secondary">
-                      <User className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                )}
+                  <Minimize2 className="h-3 w-3" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsOpen(false)}
+                  className="h-6 w-6 p-0"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
               </div>
-            ))}
-            {isLoading && (
-              <div className="flex gap-3 justify-start">
-                <Avatar className="h-8 w-8 mt-1">
-                  <AvatarFallback className="bg-primary/10">
-                    <Bot className="h-4 w-4 text-primary" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="bg-muted rounded-lg px-3 py-2 text-sm">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+            </div>
+          </CardHeader>
+          
+          {!isMinimized && (
+            <CardContent className="flex flex-col h-80 p-0">
+              <ScrollArea className="flex-1 px-4 py-2" ref={scrollAreaRef}>
+                <div className="space-y-3">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex gap-2 ${
+                        message.role === 'user' ? 'justify-end' : 'justify-start'
+                      }`}
+                    >
+                      {message.role === 'assistant' && (
+                        <Avatar className="h-6 w-6 mt-0.5">
+                          <AvatarFallback className="bg-primary/10">
+                            <Bot className="h-3 w-3 text-primary" />
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                      <div
+                        className={`max-w-[75%] rounded-lg px-3 py-2 text-xs ${
+                          message.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted'
+                        }`}
+                      >
+                        {message.content}
+                      </div>
+                      {message.role === 'user' && (
+                        <Avatar className="h-6 w-6 mt-0.5">
+                          <AvatarFallback className="bg-secondary">
+                            <User className="h-3 w-3" />
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                    </div>
+                  ))}
+                  {isLoading && (
+                    <div className="flex gap-2 justify-start">
+                      <Avatar className="h-6 w-6 mt-0.5">
+                        <AvatarFallback className="bg-primary/10">
+                          <Bot className="h-3 w-3 text-primary" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="bg-muted rounded-lg px-3 py-2 text-xs">
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      </div>
+                    </div>
+                  )}
                 </div>
+              </ScrollArea>
+              
+              <div className="flex gap-2 p-3 border-t">
+                <Input
+                  placeholder="Ask me anything..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  disabled={isLoading}
+                  className="flex-1 h-8 text-xs"
+                />
+                <Button
+                  onClick={sendMessage}
+                  disabled={!input.trim() || isLoading}
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                >
+                  <Send className="h-3 w-3" />
+                </Button>
               </div>
-            )}
-          </div>
-        </ScrollArea>
-        
-        <div className="flex gap-2">
-          <Input
-            placeholder="Ask me anything about family office management..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button
-            onClick={sendMessage}
-            disabled={!input.trim() || isLoading}
-            size="icon"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+            </CardContent>
+          )}
+        </Card>
+      )}
+    </div>
   )
 }
