@@ -20,7 +20,6 @@ const mainItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Investments", url: "/investments", icon: TrendingUp },
   { title: "Documents", url: "/documents", icon: FileText },
-  { title: "Structure", url: "/structure", icon: Building2 },
 ]
 
 const planningItems = [
