@@ -33,32 +33,34 @@ const initialMeetings: Meeting[] = [
 export function MeetingsProvider({ children }: { children: React.ReactNode }) {
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [loading, setLoading] = useState(true)
-  const { user } = useAuth()
+  const auth = useAuth()
 
   // Load meetings from user's localStorage and database
   useEffect(() => {
-    if (user) {
+    if (auth && auth.user) {
       loadMeetings()
+    } else {
+      setLoading(false) // Stop loading if no user
     }
-  }, [user])
+  }, [auth?.user])
 
   const loadMeetings = async () => {
-    if (!user) return
+    if (!auth?.user) return
 
     try {
       // For now, we'll use localStorage since we don't have a meetings table yet
       // but we'll include the user_id in the key for user-specific data
-      const storedMeetings = localStorage.getItem(`meetings_${user.id}`)
+      const storedMeetings = localStorage.getItem(`meetings_${auth.user.id}`)
       if (storedMeetings) {
         setMeetings(JSON.parse(storedMeetings))
       } else {
         // Set initial meetings for this user
         const userInitialMeetings = initialMeetings.map(meeting => ({
           ...meeting,
-          user_id: user.id
+          user_id: auth.user.id
         }))
         setMeetings(userInitialMeetings)
-        localStorage.setItem(`meetings_${user.id}`, JSON.stringify(userInitialMeetings))
+        localStorage.setItem(`meetings_${auth.user.id}`, JSON.stringify(userInitialMeetings))
       }
     } catch (error) {
       console.error('Error loading meetings:', error)
@@ -69,17 +71,17 @@ export function MeetingsProvider({ children }: { children: React.ReactNode }) {
   }
 
   const addMeeting = async (meetingData: Omit<Meeting, 'id'>) => {
-    if (!user) {
+    if (!auth?.user) {
       console.log('MeetingsContext: No user found when adding meeting')
       return
     }
 
-    console.log('MeetingsContext: Adding meeting for user:', user.id, meetingData)
+    console.log('MeetingsContext: Adding meeting for user:', auth.user.id, meetingData)
 
     const newMeeting: Meeting = {
       ...meetingData,
       id: Date.now().toString(),
-      user_id: user.id
+      user_id: auth.user.id
     }
 
     try {
@@ -88,7 +90,7 @@ export function MeetingsProvider({ children }: { children: React.ReactNode }) {
       setMeetings(updatedMeetings)
       
       // Save to localStorage
-      localStorage.setItem(`meetings_${user.id}`, JSON.stringify(updatedMeetings))
+      localStorage.setItem(`meetings_${auth.user.id}`, JSON.stringify(updatedMeetings))
 
       console.log('MeetingsContext: About to call notify_family_members_about_meeting')
       
@@ -98,7 +100,7 @@ export function MeetingsProvider({ children }: { children: React.ReactNode }) {
         meeting_date: meetingData.date,
         meeting_time: meetingData.time,
         meeting_id: newMeeting.id,
-        creator_user_id: user.id
+        creator_user_id: auth.user.id
       })
 
       if (error) {
