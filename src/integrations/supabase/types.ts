@@ -3192,6 +3192,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      get_public_profile_safe: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       get_safe_profile_info: {
         Args: { target_user_id: string }
         Returns: Json
