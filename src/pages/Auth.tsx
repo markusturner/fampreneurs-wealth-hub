@@ -469,7 +469,7 @@ export default function Auth() {
           </div>
           <CardTitle className="text-2xl font-bold">TruHeirs</CardTitle>
           <CardDescription>
-            Where family and wealth meets
+            Where family and wealth unite
           </CardDescription>
         </CardHeader>
         <CardContent>
