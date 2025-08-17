@@ -328,7 +328,18 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-primary/20">
+              <div 
+                className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  if (!profile?.avatar_url) {
+                    // Open profile photo upload dialog
+                    const event = new CustomEvent('openProfilePhotoUpload')
+                    window.dispatchEvent(event)
+                  }
+                }}
+              >
                 {profile?.avatar_url ? (
                   <img 
                     src={profile.avatar_url} 
@@ -336,7 +347,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-primary text-primary-foreground flex items-center justify-center text-xs">
+                  <div className="w-full h-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
                     {getInitials()}
                   </div>
                 )}
@@ -359,6 +370,15 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              {!profile?.avatar_url && (
+                <DropdownMenuItem onClick={() => {
+                  const event = new CustomEvent('openProfilePhotoUpload')
+                  window.dispatchEvent(event)
+                }}>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Upload Profile Photo</span>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => navigate('/profile-settings')}>
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Profile Settings</span>

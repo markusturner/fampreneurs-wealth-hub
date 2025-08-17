@@ -86,6 +86,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   useEffect(() => {
+    // Listen for profile photo upload events
+    const handleOpenProfilePhotoUpload = () => {
+      setShowPhotoUpload(true)
+    }
+    
+    window.addEventListener('openProfilePhotoUpload', handleOpenProfilePhotoUpload)
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -119,7 +126,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      window.removeEventListener('openProfilePhotoUpload', handleOpenProfilePhotoUpload)
+    }
   }, [])
 
   const signOut = async () => {
