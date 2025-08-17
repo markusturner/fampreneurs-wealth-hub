@@ -95,9 +95,10 @@ serve(async (req) => {
       access_token: account.plaid_access_token,
       start_date: startDate,
       end_date: endDate,
-      account_ids: [account.external_account_id],
+      options: {
+        account_ids: [account.external_account_id],
+      },
     };
-
     console.log(`Fetching transactions for account: ${account.external_account_id} from ${startDate} to ${endDate}`);
 
     const plaidResponse = await fetch(`${plaidBaseUrl}/transactions/get`, {
