@@ -105,6 +105,13 @@ export function TransactionMonitoring() {
     fetchConnectedAccountsAndTransactions()
   }, [user])
 
+  // Auto-sync connected accounts on load
+  useEffect(() => {
+    if (user && connectedAccounts.length > 0) {
+      syncAllAccounts()
+    }
+  }, [user, connectedAccounts])
+
   const fetchConnectedAccountsAndTransactions = async () => {
     try {
       setLoading(true)
@@ -247,6 +254,58 @@ export function TransactionMonitoring() {
       })
     } finally {
       setUploading(false)
+    }
+  }
+
+  const syncAllAccounts = async () => {
+    if (!user || !connectedAccounts.length) return
+
+    const plaidAccounts = connectedAccounts.filter(acc => acc.provider === 'plaid')
+    if (plaidAccounts.length === 0) return
+
+    console.log(`Auto-syncing ${plaidAccounts.length} Plaid accounts`)
+
+    for (const account of plaidAccounts) {
+      try {
+        const { data, error } = await supabase.functions.invoke('plaid-fetch-transactions', {
+          body: { account_id: account.id }
+        })
+
+        if (error) {
+          console.error(`Error syncing account ${account.account_name}:`, error)
+        } else {
+          console.log(`Synced ${data.transactions?.length || 0} transactions for ${account.account_name}`)
+        }
+      } catch (error) {
+        console.error(`Error syncing account ${account.account_name}:`, error)
+      }
+    }
+
+    // Refresh transactions after sync
+    await fetchTransactions()
+  }
+
+  const handleManualSync = async () => {
+    if (loading) return
+    
+    setLoading(true)
+    
+    try {
+      await syncAllAccounts()
+      
+      toast({
+        title: "Sync Complete",
+        description: "All connected accounts have been synced",
+      })
+    } catch (error) {
+      console.error('Error during manual sync:', error)
+      toast({
+        title: "Sync Failed", 
+        description: "Failed to sync some accounts",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -597,9 +656,16 @@ export function TransactionMonitoring() {
             </DialogContent>
           </Dialog>
           
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            Export
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-2"
+            onClick={handleManualSync}
+            disabled={loading || connectedAccounts.length === 0}
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Sync Accounts
           </Button>
           
           <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
