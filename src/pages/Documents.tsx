@@ -135,7 +135,7 @@ export default function Documents() {
                 <Card key={module.title} className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <Icon className="h-8 w-8 text-primary" />
+                      <Icon className="h-8 w-8 text-blue-600" />
                       <Badge variant="secondary">{module.status}</Badge>
                     </div>
                     <CardTitle className="text-base">{module.title}</CardTitle>
@@ -177,8 +177,8 @@ export default function Documents() {
                 <Card key={branch.title} className="border-2">
                   <CardHeader>
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <Icon className="h-6 w-6 text-primary" />
+                      <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
+                        <Icon className="h-6 w-6 text-emerald-600" />
                       </div>
                       <div>
                         <CardTitle className="text-lg">{branch.title}</CardTitle>
@@ -218,8 +218,8 @@ export default function Documents() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-full bg-primary/10">
-                    <MessageCircle className="h-6 w-6 text-primary" />
+                  <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/30">
+                    <MessageCircle className="h-6 w-6 text-purple-600" />
                   </div>
                   <div>
                     <h3 className="font-semibold">Family Group Chat</h3>
@@ -255,8 +255,8 @@ export default function Documents() {
                 <Card key={resource.title} className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="p-2 rounded-lg bg-secondary">
-                        <Icon className="h-6 w-6" />
+                      <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+                        <Icon className="h-6 w-6 text-orange-600" />
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold mb-1">{resource.title}</h3>
@@ -289,8 +289,8 @@ export default function Documents() {
           
           <Card className="border-2 border-dashed border-muted-foreground/30">
             <CardContent className="p-8 text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
-                <Lock className="h-6 w-6 text-muted-foreground" />
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
+                <Lock className="h-6 w-6 text-red-600" />
               </div>
               <h3 className="font-semibold mb-2">Secure Access Required</h3>
               <p className="text-sm text-muted-foreground mb-4">
