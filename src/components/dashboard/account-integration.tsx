@@ -313,22 +313,68 @@ export function AccountIntegration() {
   }
 
   const handleSync = async (accountId: string) => {
+    const account = accounts.find(acc => acc.id === accountId)
+    if (!account) return
+
     setAccounts(prev => prev.map(acc => 
       acc.id === accountId ? { ...acc, status: 'syncing' } : acc
     ))
 
-    // Simulate sync
-    setTimeout(() => {
+    try {
+      if (user && account.provider === 'plaid') {
+        // Fetch transactions for Plaid accounts
+        const { data, error } = await supabase.functions.invoke('plaid-fetch-transactions', {
+          body: { account_id: accountId },
+        })
+
+        if (error) {
+          console.error('Error syncing transactions:', error)
+          toast({
+            title: "Sync Failed",
+            description: "Failed to sync transactions",
+            variant: "destructive"
+          })
+          
+          // Revert status
+          setAccounts(prev => prev.map(acc =>
+            acc.id === accountId ? { ...acc, status: 'connected' } : acc
+          ))
+          return
+        }
+
+        toast({
+          title: "Transactions Synced",
+          description: `Successfully synced ${data.transactions?.length || 0} transactions`,
+        })
+      } else {
+        // Simulate sync for non-Plaid accounts
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        toast({
+          title: "Sync Complete",
+          description: "Account data has been updated",
+        })
+      }
+
+      // Update sync status
       setAccounts(prev => prev.map(acc => 
         acc.id === accountId 
           ? { ...acc, status: 'connected', lastSync: new Date().toISOString() }
           : acc
       ))
+      
+    } catch (error) {
+      console.error('Error during sync:', error)
       toast({
-        title: "Sync Complete",
-        description: "Account data has been updated",
+        title: "Sync Failed",
+        description: "An error occurred while syncing",
+        variant: "destructive"
       })
-    }, 2000)
+      
+      // Revert status
+      setAccounts(prev => prev.map(acc =>
+        acc.id === accountId ? { ...acc, status: 'connected' } : acc
+      ))
+    }
   }
 
   const formatCurrency = (amount: number) => {
