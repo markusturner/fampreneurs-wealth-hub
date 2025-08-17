@@ -104,7 +104,7 @@ export function MobileBottomNav() {
   // Add unread count to Members nav item
   const itemsWithBadges = navigationItems.map(item => ({
     ...item,
-    badge: item.href === '/members' ? unreadCount : undefined
+    badge: item.href === '/members' && unreadCount > 0 ? unreadCount : undefined
   }))
 
   const isAdminRoute = false // Admin functionality removed
