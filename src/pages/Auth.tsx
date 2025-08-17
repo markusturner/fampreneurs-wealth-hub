@@ -561,7 +561,7 @@ export default function Auth() {
             </TabsContent>
 
             <TabsContent value="signup">
-              <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border mb-4">
+              <div className="space-y-4 p-4 bg-destructive/20 rounded-lg border border-destructive mb-4">
                 <div className="text-center">
                   <h3 className="font-semibold text-foreground">Family Admin Registration Only</h3>
                   <p className="text-sm text-muted-foreground mt-1">
