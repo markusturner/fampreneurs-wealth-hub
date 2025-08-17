@@ -3192,6 +3192,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_portfolio_summary: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       get_public_profile: {
         Args: { target_user_id: string }
         Returns: Json
