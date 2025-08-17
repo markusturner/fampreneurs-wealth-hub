@@ -1,26 +1,19 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { NavHeader } from "@/components/dashboard/nav-header"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft, Mail, Phone, MessageSquare, Clock, MapPin } from 'lucide-react'
-import { ChatSupportDialog } from '@/components/chat/ChatSupportDialog'
-
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { NavHeader } from "@/components/dashboard/nav-header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Mail, Phone, MessageSquare, Clock, MapPin } from 'lucide-react';
+import { ChatSupportDialog } from '@/components/chat/ChatSupportDialog';
 const Contact = () => {
-  const navigate = useNavigate()
-  const [isChatOpen, setIsChatOpen] = useState(false)
-
-  return (
-    <div className="min-h-screen bg-background">
+  const navigate = useNavigate();
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  return <div className="min-h-screen bg-background">
       <NavHeader />
       
       <main className="container max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-16 md:pb-8">
         <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/help')}
-            className="mb-4 gap-2"
-          >
+          <Button variant="ghost" onClick={() => navigate('/help')} className="mb-4 gap-2">
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
@@ -48,7 +41,9 @@ const Contact = () => {
               <div className="space-y-2">
                 <div>
                   <p className="font-medium">General Support</p>
-                  <p style={{ color: '#ffb500' }}>info@fampreneurs.com</p>
+                  <p style={{
+                  color: '#ffb500'
+                }}>info@fampreneurs.com</p>
                 </div>
               </div>
             </CardContent>
@@ -68,7 +63,9 @@ const Contact = () => {
               <div className="space-y-2">
                 <div>
                   <p className="font-medium">Family Success Coaches</p>
-                   <p style={{ color: '#ffb500' }}>contact via text</p>
+                   <p style={{
+                  color: '#ffb500'
+                }}>contact via text</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -89,14 +86,13 @@ const Contact = () => {
               <p className="text-muted-foreground">
                 Get instant help through our live chat feature.
               </p>
-              <Button 
-                className="w-full"
-                style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent('ai-chat:open'))
-                  ;(window as any).openAIChat?.()
-                }}
-              >
+              <Button className="w-full" style={{
+              backgroundColor: '#ffb500',
+              color: '#290a52'
+            }} onClick={() => {
+              window.dispatchEvent(new CustomEvent('ai-chat:open'));
+              (window as any).openAIChat?.();
+            }}>
                 Start Live Chat
               </Button>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -143,8 +139,10 @@ const Contact = () => {
             </p>
             <div className="space-y-2">
               <div>
-                <p className="font-medium text-red-600">Family Success Coaches</p>
-                <p style={{ color: '#ffb500' }}>+1 (470) 432-0220</p>
+                <p className="font-medium text-red-600">Contact your Mentor "The Fampreneurs"</p>
+                <p style={{
+                color: '#ffb500'
+              }}>+1 (470) 432-0220</p>
               </div>
               <p className="text-sm text-muted-foreground">
                 Available 24/7 for critical issues only
@@ -154,12 +152,7 @@ const Contact = () => {
         </Card>
       </main>
 
-      <ChatSupportDialog 
-        open={isChatOpen} 
-        onOpenChange={setIsChatOpen} 
-      />
-    </div>
-  )
-}
-
-export default Contact
+      <ChatSupportDialog open={isChatOpen} onOpenChange={setIsChatOpen} />
+    </div>;
+};
+export default Contact;
