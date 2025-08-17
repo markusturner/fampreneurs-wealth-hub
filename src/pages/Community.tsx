@@ -563,14 +563,14 @@ function DocumentsContent() {
       documents: [
         { name: "Family Trust Document", icon: FileText, type: "file" },
         { name: "Business Trust Document", icon: Building2, type: "file" },
-        { name: "Tax-Exempt Trust Document", icon: Shield, type: "file" },
-        { name: "Power of Attorney Document", icon: FileText, type: "file" }
+        { name: "Tax-Exempt Trust Document", icon: Shield, type: "file" }
       ]
     },
     {
       title: "Certificates & Legal",
       icon: Shield,
       documents: [
+        { name: "Power of Attorney Document", icon: FileText, type: "file" },
         { name: "Trademark Certificate", icon: Crown, type: "file" },
         { name: "Family Constitution", icon: Scroll, type: "file" },
         { name: "Family Crest", icon: Crown, type: "file" }
