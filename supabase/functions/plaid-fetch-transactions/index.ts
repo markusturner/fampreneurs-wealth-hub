@@ -73,29 +73,59 @@ serve(async (req) => {
       });
     }
 
+    // Determine Plaid environment based on access token prefix
+    const plaidEnv = account.plaid_access_token.startsWith('access-sandbox') ? 'sandbox' : 
+                     account.plaid_access_token.startsWith('access-development') ? 'development' : 'production';
+    
+    const plaidBaseUrl = {
+      sandbox: 'https://sandbox.plaid.com',
+      development: 'https://development.plaid.com', 
+      production: 'https://production.plaid.com'
+    }[plaidEnv];
+
+    console.log(`Using Plaid ${plaidEnv} environment for account ${account.account_name}`);
+
     // Fetch transactions from Plaid - 12 months of data
     const endDate = new Date().toISOString().split('T')[0];
     const startDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 12 months ago
 
-    const plaidResponse = await fetch('https://production.plaid.com/transactions/get', {
+    const requestBody = {
+      client_id: plaidClientId,
+      secret: plaidSecret,
+      access_token: account.plaid_access_token,
+      start_date: startDate,
+      end_date: endDate,
+      account_ids: [account.external_account_id],
+    };
+
+    console.log(`Fetching transactions for account: ${account.external_account_id} from ${startDate} to ${endDate}`);
+
+    const plaidResponse = await fetch(`${plaidBaseUrl}/transactions/get`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        client_id: plaidClientId,
-        secret: plaidSecret,
-        access_token: account.plaid_access_token,
-        start_date: startDate,
-        end_date: endDate,
-        account_ids: [account.external_account_id],
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!plaidResponse.ok) {
-      const error = await plaidResponse.text();
-      console.error('Plaid API error:', error);
-      return new Response(JSON.stringify({ error: 'Failed to fetch transactions from Plaid' }), {
+      const errorText = await plaidResponse.text();
+      console.error('Plaid API error:', {
+        status: plaidResponse.status,
+        statusText: plaidResponse.statusText,
+        error: errorText,
+        environment: plaidEnv,
+        account_id: account.external_account_id
+      });
+      
+      return new Response(JSON.stringify({ 
+        error: 'Failed to fetch transactions from Plaid',
+        details: {
+          status: plaidResponse.status,
+          message: errorText,
+          environment: plaidEnv
+        }
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
