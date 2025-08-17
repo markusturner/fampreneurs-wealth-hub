@@ -2315,6 +2315,7 @@ export type Database = {
           cover_photo_url: string | null
           created_at: string
           display_name: string | null
+          email: string | null
           facebook_url: string | null
           family_role: string | null
           first_name: string | null
@@ -2347,6 +2348,7 @@ export type Database = {
           cover_photo_url?: string | null
           created_at?: string
           display_name?: string | null
+          email?: string | null
           facebook_url?: string | null
           family_role?: string | null
           first_name?: string | null
@@ -2379,6 +2381,7 @@ export type Database = {
           cover_photo_url?: string | null
           created_at?: string
           display_name?: string | null
+          email?: string | null
           facebook_url?: string | null
           family_role?: string | null
           first_name?: string | null
