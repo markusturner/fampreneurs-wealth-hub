@@ -21,6 +21,7 @@ import Help from "./pages/Help";
 import Contact from "./pages/Contact";
 import MemberProfile from "./pages/MemberProfile";
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
+import { AIChat } from "@/components/dashboard/ai-chat";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
 
@@ -58,8 +59,9 @@ createRoot(document.getElementById("root")!).render(
         <ThemeProvider defaultTheme="light" storageKey="family-dashboard-theme">
           <AuthProvider>
             <MeetingsProvider>
-                <AppWithNotifications />
+              <AppWithNotifications />
               <MobileBottomNav />
+              <AIChat />
               <Toaster />
             </MeetingsProvider>
           </AuthProvider>
