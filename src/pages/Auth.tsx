@@ -509,6 +509,9 @@ export default function Auth() {
                       Family Admin
                     </Button>
                   </div>
+                  {userType === 'family_office' && (
+                    <p className="text-xs text-muted-foreground">Full access to manage your family office and wealth portfolio.</p>
+                  )}
                   {userType === 'family_member' && (
                     <p className="text-xs text-muted-foreground">Use the credentials sent to your email by your Family Office.</p>
                   )}
