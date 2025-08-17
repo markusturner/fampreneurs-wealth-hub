@@ -30,6 +30,25 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
   const location = useLocation()
   const isMobile = useIsMobile()
 
+  // Global keyboard shortcut for search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement
+        if (searchInput) {
+          searchInput.focus()
+        } else {
+          // If no search input visible, navigate to search page
+          navigate('/search')
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [navigate])
+
   const handleFeedbackClick = () => {
     setFeedbackDialogOpen(true)
     markFeedbackShown()
@@ -315,7 +334,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
               )}
               
               <div className="hidden lg:flex items-center gap-1 px-2 py-1 rounded border bg-muted/50 text-xs text-muted-foreground">
-                <span>Ctrl</span>
+                <span>{navigator.platform.toLowerCase().includes('mac') ? '⌘' : 'Ctrl'}</span>
                 <span>K</span>
               </div>
             </div>
