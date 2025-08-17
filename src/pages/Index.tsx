@@ -72,7 +72,7 @@ const Index = () => {
               Welcome back, {displayName}
             </h1>
             <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-              Here's what's happening with your family office today
+              Here's what's happening with your family wealth today
             </p>
           </div>
         </div>
