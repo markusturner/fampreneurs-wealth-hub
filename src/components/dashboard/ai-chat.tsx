@@ -39,6 +39,34 @@ export function AIChat() {
     }
   }, [messages])
 
+  // Expose programmatic controls and event listeners for opening the chat
+  useEffect(() => {
+    const open = () => setIsOpen(true)
+    const close = () => setIsOpen(false)
+    const toggle = () => setIsOpen(prev => !prev)
+
+    ;(window as any).openAIChat = open
+    ;(window as any).closeAIChat = close
+    ;(window as any).toggleAIChat = toggle
+
+    const openHandler = () => open()
+    const closeHandler = () => close()
+    const toggleHandler = () => toggle()
+
+    window.addEventListener('ai-chat:open', openHandler as EventListener)
+    window.addEventListener('ai-chat:close', closeHandler as EventListener)
+    window.addEventListener('ai-chat:toggle', toggleHandler as EventListener)
+
+    return () => {
+      window.removeEventListener('ai-chat:open', openHandler as EventListener)
+      window.removeEventListener('ai-chat:close', closeHandler as EventListener)
+      window.removeEventListener('ai-chat:toggle', toggleHandler as EventListener)
+      delete (window as any).openAIChat
+      delete (window as any).closeAIChat
+      delete (window as any).toggleAIChat
+    }
+  }, [])
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return
 
