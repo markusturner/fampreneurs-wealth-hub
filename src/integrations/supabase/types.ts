@@ -3222,6 +3222,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_community_profile_safe: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       get_community_profiles: {
         Args: Record<PropertyKey, never>
         Returns: {
