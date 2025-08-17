@@ -104,8 +104,8 @@ export function MobileBottomNav() {
   const isAdminRoute = false // Admin functionality removed
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border md:hidden">
-      <nav className="flex items-center justify-between px-2 py-2 max-w-xl mx-auto gap-1">
+    <div className="fixed bottom-0 left-0 right-0 z-50 mobile-nav-blur border-t border-border/50 md:hidden mobile-safe-bottom">
+      <nav className="flex items-center justify-center px-4 py-2 max-w-2xl mx-auto gap-2">
         {itemsWithBadges.map((item) => {
           const isActive = location.pathname === item.href
           const Icon = item.icon
@@ -115,17 +115,26 @@ export function MobileBottomNav() {
               key={item.name}
               to={item.href}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 p-2 rounded-lg transition-all duration-200",
-                "min-w-0 flex-1 text-xs font-medium relative",
+                "flex flex-col items-center justify-center gap-1 rounded-xl transition-all duration-300 touch-optimized smooth-transform",
+                "min-w-0 flex-1 relative touch-target mobile-card",
+                "px-3 py-2.5 max-w-[80px]",
                 isActive 
-                  ? "text-[#ffb500] bg-[#ffb500]/10 scale-105" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95"
+                  ? "text-[#ffb500] bg-[#ffb500]/15 shadow-md transform scale-105" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60 active:scale-95"
               )}
             >
-              <Icon className={cn("h-5 w-5", isActive && "text-[#ffb500]")} />
-              <span className="sr-only">{item.name}</span>
+              <Icon className={cn(
+                "h-5 w-5 transition-all duration-200", 
+                isActive && "text-[#ffb500] drop-shadow-sm"
+              )} />
+              <span className={cn(
+                "text-[10px] font-medium leading-tight transition-all duration-200",
+                isActive ? "text-[#ffb500]" : "text-muted-foreground"
+              )}>
+                {item.name}
+              </span>
               {item.badge && item.badge > 0 && (
-                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-background shadow-sm">
                   {item.badge > 99 ? '99+' : item.badge}
                 </span>
               )}

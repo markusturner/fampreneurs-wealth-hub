@@ -213,17 +213,25 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-soft">
-      <div className="container flex h-14 sm:h-16 items-center px-3 sm:px-4">
-        <div className="flex items-center gap-1 sm:gap-2">
-          
+    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 shadow-sm mobile-safe-top">
+      <div className="container flex h-14 sm:h-16 lg:h-18 items-center mobile-container">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden sm:block">
-              <h1 className="text-lg sm:text-xl font-oswald font-bold tracking-wide" style={{color: '#ffb500'}}>THE FAMPRENEURS</h1>
-              <p className="text-xs text-muted-foreground">BUILDING STRONG LEGACIES</p>
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-oswald font-bold tracking-wide text-[#ffb500]">
+                THE FAMPRENEURS
+              </h1>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+                BUILDING STRONG LEGACIES
+              </p>
             </div>
             <div className="sm:hidden">
-              <h1 className="text-base font-oswald font-bold tracking-wide" style={{color: '#ffb500'}}>FAMPRENEURS</h1>
+              <h1 className="text-sm font-oswald font-bold tracking-wide text-[#ffb500]">
+                FAMPRENEURS
+              </h1>
+              <p className="text-[10px] text-muted-foreground font-medium">
+                STRONG LEGACIES
+              </p>
             </div>
           </div>
         </div>
@@ -234,46 +242,41 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             variant={location.pathname === '/' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/')}
-            className="gap-2 h-9"
+            className="gap-2 h-9 px-3 xl:px-4 text-sm font-medium"
           >
             <LayoutDashboard className="h-4 w-4" />
-            Dashboard
+            <span className="hidden xl:inline">Dashboard</span>
+            <span className="xl:hidden">Home</span>
           </Button>
           <Button
             variant={location.pathname === '/community' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/community')}
-            className="gap-2 h-9"
+            className="gap-2 h-9 px-3 xl:px-4 text-sm font-medium"
           >
             <Home className="h-4 w-4" />
-            Family Office
+            <span className="hidden xl:inline">Family Office</span>
+            <span className="xl:hidden">Office</span>
+          </Button>
+          <Button
+            variant={location.pathname === '/investments' ? "default" : "ghost"}
+            size="sm"
+            onClick={() => navigate('/investments')}
+            className="gap-2 h-9 px-3 xl:px-4 text-sm font-medium"
+          >
+            <FileText className="h-4 w-4" />
+            <span className="hidden xl:inline">Investments</span>
+            <span className="xl:hidden">Invest</span>
           </Button>
           <Button
             variant={location.pathname === '/documents' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/documents')}
-            className="gap-2 h-9"
+            className="gap-2 h-9 px-3 xl:px-4 text-sm font-medium"
           >
             <FileText className="h-4 w-4" />
-            Documents
-          </Button>
-          <Button
-            variant={location.pathname === '/calendar' ? "default" : "ghost"}
-            size="sm"
-            onClick={() => navigate('/calendar')}
-            className="gap-2 h-9"
-          >
-            <CalendarIcon className="h-4 w-4" />
-            Calendar
-          </Button>
-          <Button
-            variant={location.pathname === '/members' ? "default" : "ghost"}
-            size="sm"
-            onClick={() => navigate('/members')}
-            className="gap-2 h-9"
-          >
-            <Users className="h-4 w-4" />
-            Members
+            <span className="hidden xl:inline">Documents</span>
+            <span className="xl:hidden">Docs</span>
           </Button>
         </div>
 
