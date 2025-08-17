@@ -108,6 +108,7 @@ export function TransactionMonitoring() {
   const [showEnableDialog, setShowEnableDialog] = useState(false)
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null)
   const [linkToken, setLinkToken] = useState<string | null>(null)
+  const [transactionsEnabled, setTransactionsEnabled] = useState(false)
 
   const [aiBookkeeping, setAiBookkeeping] = useState({
     isProcessing: false,
@@ -815,8 +816,9 @@ export function TransactionMonitoring() {
                 toast({ title: 'Plaid updated', description: 'Syncing transactions...' });
                 try {
                   if (selectedAccountId) {
-                    await supabase.functions.invoke('plaid-fetch-transactions', { body: { account_id: selectedAccountId }});
+                     await supabase.functions.invoke('plaid-fetch-transactions', { body: { account_id: selectedAccountId }});
                     await fetchTransactions();
+                    setTransactionsEnabled(true);
                     toast({ title: 'Sync complete', description: 'Transactions have been updated.' });
                   }
                 } catch (err) {
@@ -843,13 +845,13 @@ export function TransactionMonitoring() {
           </Button>
           
           <Button 
-            variant="outline" 
+            variant={transactionsEnabled ? "secondary" : "outline"}
             size="sm" 
             className="flex items-center gap-2"
             onClick={handleEnableTransactions}
           >
             <Zap className="h-4 w-4" />
-            Enable Transactions
+            {transactionsEnabled ? "Transactions Enabled" : "Enable Transactions"}
           </Button>
           
           <Button 
