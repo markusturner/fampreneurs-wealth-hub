@@ -101,6 +101,9 @@ export function TransactionMonitoring() {
     }
   })
 
+  const [refreshing, setRefreshing] = useState(false)
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null)
+
   useEffect(() => {
     fetchConnectedAccountsAndTransactions()
   }, [user])
@@ -319,6 +322,32 @@ export function TransactionMonitoring() {
     }
   }
 
+  const handleRefresh = async () => {
+    if (refreshing) return
+    
+    setRefreshing(true)
+    
+    try {
+      // Refresh connected accounts first
+      await fetchConnectedAccountsAndTransactions()
+      setLastRefreshed(new Date())
+      
+      toast({
+        title: "Refresh Complete",
+        description: "All transaction data has been refreshed",
+      })
+    } catch (error) {
+      console.error('Error during refresh:', error)
+      toast({
+        title: "Refresh Failed", 
+        description: "Failed to refresh transaction data",
+        variant: "destructive"
+      })
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
   const handleAddTransaction = async () => {
     if (!newTransaction.description || !newTransaction.amount) {
       toast({
@@ -498,7 +527,13 @@ export function TransactionMonitoring() {
           </p>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {lastRefreshed && (
+            <div className="text-xs text-muted-foreground">
+              Last refreshed: {lastRefreshed.toLocaleTimeString()}
+            </div>
+          )}
+          
           <Dialog open={showFilterDialog} onOpenChange={setShowFilterDialog}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="flex items-center gap-2">
@@ -666,6 +701,17 @@ export function TransactionMonitoring() {
             </DialogContent>
           </Dialog>
           
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-2"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
           
           <Button 
             variant="outline" 
