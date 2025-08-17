@@ -235,7 +235,7 @@ export default function Community() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-5 gap-1 p-1 bg-muted/50 rounded-xl">
+          <TabsList className="grid w-full grid-cols-6 gap-1 p-1 bg-muted/50 rounded-xl">
             <TabsTrigger 
               value="overview" 
               className="text-responsive-xs font-medium px-2 py-3 rounded-lg transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-sm"
@@ -262,6 +262,12 @@ export default function Community() {
               className="text-responsive-xs font-medium px-2 py-3 rounded-lg transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-sm"
             >
               Budget
+            </TabsTrigger>
+            <TabsTrigger 
+              value="family" 
+              className="text-responsive-xs font-medium px-2 py-3 rounded-lg transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+            >
+              Family
             </TabsTrigger>
             <TabsTrigger 
               value="reports" 
@@ -499,6 +505,10 @@ export default function Community() {
 
           <TabsContent value="budget" className="space-y-6">
             <BudgetingAnalytics />
+          </TabsContent>
+
+          <TabsContent value="family" className="space-y-6">
+            <FamilyMemberManagement />
           </TabsContent>
 
           <TabsContent value="reports" className="space-y-6">
