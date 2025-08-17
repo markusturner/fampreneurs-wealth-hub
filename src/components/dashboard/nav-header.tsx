@@ -255,7 +255,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             className="gap-2 h-9"
           >
             <FileText className="h-4 w-4" />
-            Documents
+            Family Roundtable
           </Button>
           <Button
             variant={location.pathname === '/calendar' ? "default" : "ghost"}
