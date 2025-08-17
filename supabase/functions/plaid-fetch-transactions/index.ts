@@ -73,9 +73,9 @@ serve(async (req) => {
       });
     }
 
-    // Fetch transactions from Plaid
+    // Fetch transactions from Plaid - 12 months of data
     const endDate = new Date().toISOString().split('T')[0];
-    const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 30 days ago
+    const startDate = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]; // 12 months ago
 
     const plaidResponse = await fetch('https://production.plaid.com/transactions/get', {
       method: 'POST',

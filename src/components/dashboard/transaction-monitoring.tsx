@@ -60,6 +60,8 @@ export function TransactionMonitoring() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [connectedAccounts, setConnectedAccounts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showFilterDialog, setShowFilterDialog] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -141,7 +143,7 @@ export function TransactionMonitoring() {
     }
   }
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = async (offset = 0, append = false) => {
     try {
       if (user) {
         // For authenticated users, fetch from Supabase
@@ -150,11 +152,11 @@ export function TransactionMonitoring() {
           .select('*')
           .eq('user_id', user.id)
           .order('transaction_date', { ascending: false })
-          .limit(50)
+          .range(offset, offset + 49)
 
         if (error) {
           console.error('Error fetching transactions:', error)
-          setTransactions([])
+          if (!append) setTransactions([])
           return
         }
 
@@ -172,17 +174,33 @@ export function TransactionMonitoring() {
           status: tx.pending ? 'pending' : 'completed'
         }))
 
-        setTransactions(transformedTransactions)
+        if (append) {
+          setTransactions(prev => [...prev, ...transformedTransactions])
+        } else {
+          setTransactions(transformedTransactions)
+        }
+
+        // Check if there are more transactions
+        setHasMore(transformedTransactions.length === 50)
       } else {
         // For non-authenticated users, only show transactions if they manually added them
         const storedTransactions = localStorage.getItem('manualTransactions')
         const manualTransactions = storedTransactions ? JSON.parse(storedTransactions) : []
         setTransactions(manualTransactions)
+        setHasMore(false)
       }
     } catch (error) {
       console.error('Error fetching transactions:', error)
-      setTransactions([])
+      if (!append) setTransactions([])
     }
+  }
+
+  const loadMoreTransactions = async () => {
+    if (loadingMore || !hasMore || !user) return
+    
+    setLoadingMore(true)
+    await fetchTransactions(transactions.length, true)
+    setLoadingMore(false)
   }
 
   const handleAddTransaction = async () => {
@@ -843,6 +861,30 @@ export function TransactionMonitoring() {
                   </div>
                 </div>
               ))}
+              
+              {/* Load More Button */}
+              {hasMore && user && filteredTransactions.length > 0 && (
+                <div className="text-center pt-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={loadMoreTransactions}
+                    disabled={loadingMore}
+                    className="flex items-center gap-2"
+                  >
+                    {loadingMore ? (
+                      <>
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <ArrowDownLeft className="h-4 w-4" />
+                        Load More Transactions
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
