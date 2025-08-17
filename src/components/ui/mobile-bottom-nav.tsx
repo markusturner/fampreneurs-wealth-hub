@@ -13,19 +13,14 @@ interface NavItem {
 }
 
 const allNavigationItems: NavItem[] = [
-  { name: 'Family Office', href: '/community', icon: Home },
+  { name: 'Home', href: '/', icon: Home },
   { name: 'Investments', href: '/investments', icon: TrendingUp },
-  { name: 'Dashboard', href: '/', icon: Settings },
-  { name: 'Calendar', href: '/coaching', icon: Calendar },
   { name: 'Documents', href: '/documents', icon: FileText },
 ]
 
 const familyOfficeOnlyItems: NavItem[] = [
-  { name: 'Family Office', href: '/community', icon: Home },
+  { name: 'Home', href: '/', icon: Home },
   { name: 'Investments', href: '/investments', icon: TrendingUp },
-  { name: 'Dashboard', href: '/', icon: Settings },
-  { name: 'Calendar', href: '/coaching', icon: Calendar },
-  { name: 'Documents', href: '/documents', icon: FileText },
 ]
 
 export function MobileBottomNav() {
@@ -109,50 +104,35 @@ export function MobileBottomNav() {
   const isAdminRoute = false // Admin functionality removed
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 mobile-nav-blur md:hidden">
-      <div className="px-2 pb-safe">
-        <nav className="flex items-center justify-center py-2 max-w-md mx-auto gap-1">
-          {itemsWithBadges.map((item, index) => {
-            const isActive = location.pathname === item.href
-            const Icon = item.icon
-            const isDashboard = item.name === 'Dashboard'
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border md:hidden">
+      <nav className="flex items-center justify-between px-2 py-2 max-w-xl mx-auto gap-1">
+        {itemsWithBadges.map((item) => {
+          const isActive = location.pathname === item.href
+          const Icon = item.icon
 
-            return (
-              <NavLink
-                key={item.name}
-                to={item.href}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1 rounded-2xl transition-all duration-300 touch-optimized",
-                  "min-w-0 flex-1 relative touch-target",
-                  "px-2 py-3 max-w-[75px]",
-                  isDashboard && "mx-1", // Extra spacing for center dashboard
-                  isActive 
-                    ? "text-[#ffb500] bg-[#ffb500]/20 shadow-lg transform scale-105 border border-[#ffb500]/30" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/70 active:scale-95 hover:shadow-md"
-                )}
-              >
-                <Icon className={cn(
-                  "transition-all duration-300", 
-                  isDashboard ? "h-6 w-6" : "h-5 w-5",
-                  isActive && "text-[#ffb500] drop-shadow-md scale-110"
-                )} />
-                <span className={cn(
-                  "text-[9px] font-semibold leading-tight transition-all duration-300 text-center",
-                  isDashboard && "text-[8px]",
-                  isActive ? "text-[#ffb500]" : "text-muted-foreground"
-                )}>
-                  {item.name}
+          return (
+            <NavLink
+              key={item.name}
+              to={item.href}
+              className={cn(
+                "flex flex-col items-center justify-center gap-1 p-2 rounded-lg transition-all duration-200",
+                "min-w-0 flex-1 text-xs font-medium relative",
+                isActive 
+                  ? "text-[#ffb500] bg-[#ffb500]/10 scale-105" 
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95"
+              )}
+            >
+              <Icon className={cn("h-5 w-5", isActive && "text-[#ffb500]")} />
+              <span className="sr-only">{item.name}</span>
+              {item.badge && item.badge > 0 && (
+                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {item.badge > 99 ? '99+' : item.badge}
                 </span>
-                {item.badge && item.badge > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[8px] font-bold rounded-full h-4 w-4 flex items-center justify-center border-2 border-background shadow-lg pulse">
-                    {item.badge > 99 ? '99+' : item.badge}
-                  </span>
-                )}
-              </NavLink>
-            )
-          })}
-        </nav>
-      </div>
+              )}
+            </NavLink>
+          )
+        })}
+      </nav>
     </div>
   )
 }

@@ -26,8 +26,7 @@ import {
   FileText,
   Users,
   Lock,
-  ArrowLeft,
-  Calendar as CalendarIcon
+  ArrowLeft
 } from 'lucide-react'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
 import { AssetAllocation } from '@/components/dashboard/asset-allocation'
@@ -223,57 +222,34 @@ export default function Community() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-        <div className="mobile-container mx-auto py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 lg:space-y-10 max-w-7xl mobile-safe-bottom">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
-          <div className="space-y-2">
-            <h1 className="text-responsive-xl font-bold gradient-text tracking-tight">Digital Family Office</h1>
-            <p className="text-responsive-sm text-muted-foreground">
-              Complete financial ecosystem management and wealth tracking
-            </p>
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold">Digital Family Office</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Complete financial ecosystem management and wealth tracking
+              </p>
+            </div>
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6 sm:space-y-8">
-          <TabsList className="grid w-full grid-cols-6 gap-1 p-1.5 bg-muted/60 rounded-2xl shadow-sm">
-            <TabsTrigger 
-              value="overview" 
-              className="text-responsive-xs font-semibold px-3 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary touch-optimized"
-            >
+        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
+            <TabsTrigger value="overview" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Overview</span>
               <span className="sm:hidden">Home</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="accounts" 
-              className="text-responsive-xs font-semibold px-3 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary touch-optimized"
-            >
+            <TabsTrigger value="accounts" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Accounts</span>
               <span className="sm:hidden">Accts</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="transactions" 
-              className="text-responsive-xs font-semibold px-3 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary touch-optimized"
-            >
+            <TabsTrigger value="transactions" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Transactions</span>
               <span className="sm:hidden">Trans</span>
             </TabsTrigger>
-            <TabsTrigger 
-              value="calendar" 
-              className="text-responsive-xs font-semibold px-3 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary touch-optimized"
-            >
-              Calendar
-            </TabsTrigger>
-            <TabsTrigger 
-              value="budget" 
-              className="text-responsive-xs font-semibold px-3 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary touch-optimized"
-            >
-              Budget
-            </TabsTrigger>
-            <TabsTrigger 
-              value="reports" 
-              className="text-responsive-xs font-semibold px-3 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary touch-optimized"
-            >
-              Reports
-            </TabsTrigger>
+            <TabsTrigger value="budget" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">Budget</TabsTrigger>
+            <TabsTrigger value="reports" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">Reports</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -281,104 +257,86 @@ export default function Community() {
             {(connectedAccounts.length > 0 || investments.length > 0) ? (
               <>
                 {/* Executive Summary */}
-                <div className="stats-grid">
-                  <Card className="mobile-card touch-optimized">
-                    <CardHeader className="mobile-card-padding pb-2">
-                      <CardTitle className="text-responsive-xs font-medium flex items-center gap-2">
-                        <Wallet className="h-4 w-4 text-primary" />
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
+                  <Card>
+                    <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4 lg:p-6">
+                      <CardTitle className="text-xs sm:text-sm lg:text-base font-medium flex items-center gap-1 sm:gap-2">
+                        <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
                         <span className="hidden sm:inline">Net Worth</span>
                         <span className="sm:hidden">Net</span>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="mobile-card-padding pt-0">
-                      <div className="text-responsive-base font-bold text-foreground">
-                        {formatCurrency(getAccountsBalance() + getTotalPortfolioValue())}
-                      </div>
-                      <div className="text-responsive-xs text-green-600 flex items-center gap-1 mt-1">
-                        <TrendingUp className="h-3 w-3" />
+                    <CardContent className="pt-0 p-3 sm:p-4 lg:p-6">
+                      <div className="text-sm sm:text-lg lg:text-2xl font-bold">{formatCurrency(getAccountsBalance() + getTotalPortfolioValue())}</div>
+                      <div className="text-xs sm:text-sm text-green-600 flex items-center gap-1">
+                        <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3" />
                         <span className="hidden sm:inline">Total Assets</span>
                         <span className="sm:hidden">Assets</span>
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="mobile-card touch-optimized">
-                    <CardHeader className="mobile-card-padding pb-2">
-                      <CardTitle className="text-responsive-xs font-medium flex items-center gap-2">
-                        <PieChart className="h-4 w-4 text-primary" />
-                        <span className="hidden lg:inline">Portfolio Value</span>
-                        <span className="lg:hidden">Portfolio</span>
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <PieChart className="h-4 w-4" />
+                        Portfolio Value
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="mobile-card-padding pt-0">
-                      <div className="text-responsive-base font-bold text-foreground">
-                        {formatCurrency(getTotalPortfolioValue())}
-                      </div>
-                      <div className={`text-responsive-xs flex items-center gap-1 mt-1 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{formatCurrency(getTotalPortfolioValue())}</div>
+                      <div className={`text-sm flex items-center gap-1 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {getTotalDayChange() >= 0 ? (
                           <TrendingUp className="h-3 w-3" />
                         ) : (
                           <TrendingDown className="h-3 w-3" />
                         )}
-                        <span className="hidden sm:inline">{formatCurrency(getTotalDayChange())} today</span>
-                        <span className="sm:hidden">{formatCurrency(getTotalDayChange())}</span>
+                        {formatCurrency(getTotalDayChange())} today
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="mobile-card touch-optimized">
-                    <CardHeader className="mobile-card-padding pb-2">
-                      <CardTitle className="text-responsive-xs font-medium flex items-center gap-2">
-                        <CreditCard className="h-4 w-4 text-primary" />
-                        <span className="hidden sm:inline">Cash & Bank</span>
-                        <span className="sm:hidden">Cash</span>
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <CreditCard className="h-4 w-4" />
+                        Cash & Bank
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="mobile-card-padding pt-0">
-                      <div className="text-responsive-base font-bold text-foreground">
-                        {formatCurrency(getAccountsBalance())}
-                      </div>
-                      <div className="text-responsive-xs text-muted-foreground mt-1">
-                        <span className="hidden sm:inline">Available funds</span>
-                        <span className="sm:hidden">Available</span>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{formatCurrency(getAccountsBalance())}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Available funds
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="mobile-card touch-optimized">
-                    <CardHeader className="mobile-card-padding pb-2">
-                      <CardTitle className="text-responsive-xs font-medium flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4 text-primary" />
-                        <span className="hidden lg:inline">Active Accounts</span>
-                        <span className="lg:hidden">Accounts</span>
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <BarChart3 className="h-4 w-4" />
+                        Active Accounts
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="mobile-card-padding pt-0">
-                      <div className="text-responsive-base font-bold text-foreground">
-                        {getActiveAccountsCount()}
-                      </div>
-                      <div className="text-responsive-xs text-muted-foreground mt-1">
-                        <span className="hidden sm:inline">Connected accounts</span>
-                        <span className="sm:hidden">Connected</span>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{getActiveAccountsCount()}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Connected accounts
                       </div>
                     </CardContent>
                   </Card>
 
-                  <Card className="mobile-card touch-optimized">
-                    <CardHeader className="mobile-card-padding pb-2">
-                      <CardTitle className="text-responsive-xs font-medium flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-primary" />
-                        <span className="hidden lg:inline">Investment Accounts</span>
-                        <span className="lg:hidden">Investments</span>
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Investment Accounts
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="mobile-card-padding pt-0">
-                      <div className="text-responsive-base font-bold text-foreground">
-                        {investments.length}
-                      </div>
-                      <div className="text-responsive-xs text-muted-foreground mt-1">
-                        <span className="hidden sm:inline">Investment portfolios</span>
-                        <span className="sm:hidden">Portfolios</span>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{investments.length}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Investment portfolios
                       </div>
                     </CardContent>
                   </Card>
@@ -455,23 +413,23 @@ export default function Community() {
                 </Card>
 
                 {/* Charts */}
-                <div className="card-grid">
-                  <Card className="mobile-card">
-                    <CardHeader className="mobile-card-padding">
-                      <CardTitle className="text-responsive-base">Portfolio Performance</CardTitle>
-                      <CardDescription className="text-responsive-xs">12-month investment growth</CardDescription>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Portfolio Performance</CardTitle>
+                      <CardDescription>12-month investment growth</CardDescription>
                     </CardHeader>
-                    <CardContent className="mobile-card-padding pt-0">
+                    <CardContent>
                       <InvestmentChart />
                     </CardContent>
                   </Card>
 
-                  <Card className="mobile-card">
-                    <CardHeader className="mobile-card-padding">
-                      <CardTitle className="text-responsive-base">Asset Allocation</CardTitle>
-                      <CardDescription className="text-responsive-xs">Current portfolio distribution</CardDescription>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Asset Allocation</CardTitle>
+                      <CardDescription>Current portfolio distribution</CardDescription>
                     </CardHeader>
-                    <CardContent className="mobile-card-padding pt-0">
+                    <CardContent>
                       <AssetAllocation data={assetAllocationData} />
                     </CardContent>
                   </Card>
@@ -501,28 +459,6 @@ export default function Community() {
               <TransactionMonitoring />
             </div>
           </TabsContent>
-
-            <TabsContent value="calendar" className="space-y-6">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-center">
-                    <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Family Calendar</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Schedule and manage family meetings, appointments, and important events.
-                    </p>
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        Your upcoming meetings and scheduled activities will appear here.
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Connect with family office advisors and schedule consultations.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
 
           <TabsContent value="budget" className="space-y-6">
             <BudgetingAnalytics />
