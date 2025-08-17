@@ -790,14 +790,34 @@ export function TransactionMonitoring() {
                   <Button 
                     className="flex-1"
                     onClick={async () => {
-                      if (!selectedAccountId) { toast({ title: 'Select an account', description: 'Please pick a Plaid account.' }); return; }
+                      if (!selectedAccountId) { 
+                        toast({ title: 'Select an account', description: 'Please pick a Plaid account.' }); 
+                        return; 
+                      }
                       try {
                         const { data, error } = await supabase.functions.invoke('plaid-link-update-token', { body: { account_id: selectedAccountId } });
-                        if (error || (data as any)?.error) { throw new Error((data as any)?.error || (error as any)?.message || 'Failed to create update link'); }
+                        if (error || (data as any)?.error) { 
+                          // Check if it's a Transactions not enabled error
+                          if ((data as any)?.error?.includes('INVALID_PRODUCT') || (data as any)?.error?.includes('transactions')) {
+                            toast({ 
+                              title: 'Transactions Not Available', 
+                              description: 'Your Plaid app needs to enable Transactions in production. Contact Plaid support to enable this feature.',
+                              variant: 'destructive' 
+                            });
+                            setShowEnableDialog(false);
+                            return;
+                          }
+                          throw new Error((data as any)?.error || (error as any)?.message || 'Failed to create update link'); 
+                        }
                         setLinkToken((data as any).link_token);
                       } catch (e) {
                         console.error('Enable Transactions error:', e);
-                        toast({ title: 'Enable failed', description: e instanceof Error ? e.message : 'Could not start Plaid update flow', variant: 'destructive' });
+                        toast({ 
+                          title: 'Enable failed', 
+                          description: e instanceof Error ? e.message : 'Could not start Plaid update flow', 
+                          variant: 'destructive' 
+                        });
+                        setShowEnableDialog(false);
                       }
                     }}
                   >
