@@ -431,10 +431,18 @@ export function AccountIntegration() {
           return
         }
 
-        toast({
-          title: "Transactions Synced",
-          description: `Successfully synced ${data.transactions?.length || 0} transactions`,
-        })
+        // Detect environments where Transactions isn't enabled
+        if ((data as any)?.skipped && (data as any)?.reason === 'INVALID_PRODUCT') {
+          toast({
+            title: 'Transactions not enabled',
+            description: 'Enable via Settings (gear) → Enable Transactions, then sync again.',
+          })
+        } else {
+          toast({
+            title: "Transactions Synced",
+            description: `Successfully synced ${(data as any)?.transactions?.length || 0} transactions`,
+          })
+        }
       } else {
         // Simulate sync for non-Plaid accounts
         await new Promise(resolve => setTimeout(resolve, 2000))

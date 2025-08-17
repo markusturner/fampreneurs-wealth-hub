@@ -262,12 +262,15 @@ export function TransactionMonitoring() {
   }
 
   const syncAllAccounts = async () => {
-    if (!user || !connectedAccounts.length) return
+    if (!user || !connectedAccounts.length) return { hadSkipped: false, totalSynced: 0 }
 
     const plaidAccounts = connectedAccounts.filter(acc => acc.provider === 'plaid')
-    if (plaidAccounts.length === 0) return
+    if (plaidAccounts.length === 0) return { hadSkipped: false, totalSynced: 0 }
 
     console.log(`Auto-syncing ${plaidAccounts.length} Plaid accounts`)
+
+    let hadSkipped = false
+    let totalSynced = 0
 
     for (const account of plaidAccounts) {
       try {
@@ -278,7 +281,7 @@ export function TransactionMonitoring() {
         if (error || (data as any)?.error) {
           const details = (data as any)?.details?.message || (error as any)?.message || 'Unknown error'
           const hint = details.includes('INVALID_PRODUCT')
-            ? 'Plaid Transactions is not enabled for your environment. Please re-link accounts after we updated settings, or contact support to enable Transactions in Plaid.'
+            ? 'Plaid Transactions is not enabled for your environment. Use Settings (gear) → Enable Transactions, then sync again.'
             : undefined
           console.error(`Error syncing account ${account.account_name}:`, details)
           toast({
@@ -286,8 +289,15 @@ export function TransactionMonitoring() {
             description: hint || details,
             variant: 'destructive'
           })
+        } else if ((data as any)?.skipped && (data as any)?.reason === 'INVALID_PRODUCT') {
+          hadSkipped = true
+          toast({
+            title: `Transactions not enabled: ${account.account_name}`,
+            description: 'Open account Settings (gear) → Enable Transactions to fetch data.',
+          })
         } else {
-          console.log(`Synced ${data.transactions?.length || 0} transactions for ${account.account_name}`)
+          totalSynced += (data as any)?.transactions?.length || 0
+          console.log(`Synced ${(data as any)?.transactions?.length || 0} transactions for ${account.account_name}`)
         }
       } catch (error) {
         console.error(`Error syncing account ${account.account_name}:`, error)
@@ -296,6 +306,7 @@ export function TransactionMonitoring() {
 
     // Refresh transactions after sync
     await fetchTransactions()
+    return { hadSkipped, totalSynced }
   }
 
   const handleManualSync = async () => {
@@ -304,18 +315,24 @@ export function TransactionMonitoring() {
     setLoading(true)
     
     try {
-      await syncAllAccounts()
-      
-      toast({
-        title: "Sync Complete",
-        description: "All connected accounts have been synced",
-      })
+      const result = await syncAllAccounts()
+      if (result?.hadSkipped) {
+        toast({
+          title: 'Sync complete (setup needed)',
+          description: 'Enable Transactions on your linked bank (gear → Enable Transactions), then sync again.',
+        })
+      } else {
+        toast({
+          title: 'Sync Complete',
+          description: 'All connected accounts have been synced',
+        })
+      }
     } catch (error) {
       console.error('Error during manual sync:', error)
       toast({
-        title: "Sync Failed", 
-        description: "Failed to sync some accounts",
-        variant: "destructive"
+        title: 'Sync Failed', 
+        description: 'Failed to sync some accounts',
+        variant: 'destructive'
       })
     } finally {
       setLoading(false)
