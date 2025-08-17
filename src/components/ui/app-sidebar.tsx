@@ -1,5 +1,4 @@
-import { useState } from "react"
-import { Home, TrendingUp, FileText, Shield, Calculator, Heart, Users, UserCheck, Scale, Building2 } from "lucide-react"
+import { Home, TrendingUp, FileText } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
 import {
@@ -25,17 +24,6 @@ const investmentItems = [
   { title: "Portfolio Overview", url: "/investments", icon: TrendingUp },
 ]
 
-const planningItems = [
-  { title: "Estate Planning", url: "/estate-planning", icon: Scale },
-  { title: "Tax Planning", url: "/tax-planning", icon: Calculator },
-  { title: "Risk Management", url: "/risk-management", icon: Shield },
-]
-
-const managementItems = [
-  { title: "Philanthropy", url: "/philanthropy", icon: Heart },
-  { title: "Family Governance", url: "/family-governance", icon: Users },
-  { title: "Professional Services", url: "/professional-services", icon: UserCheck },
-]
 
 export function AppSidebar() {
   const { state } = useSidebar()
@@ -100,41 +88,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Planning</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {planningItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavClass(item.url)}>
-                      <item.icon className="mr-2 h-4 w-4" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Management</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {managementItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className={getNavClass(item.url)}>
-                      <item.icon className="mr-2 h-4 w-4" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   )
