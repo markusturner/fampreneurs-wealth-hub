@@ -580,18 +580,6 @@ export default function Auth() {
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="occupation">Occupation *</Label>
-                  <Input
-                    id="occupation"
-                    type="text"
-                    placeholder="Enter your occupation"
-                    value={occupation}
-                    onChange={(e) => setOccupation(e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
 
 
                 
