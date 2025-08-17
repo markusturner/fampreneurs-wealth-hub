@@ -794,7 +794,7 @@ export function AccountIntegration() {
             <Checkbox 
               checked={selectedAccounts.size === accounts.length}
               onCheckedChange={handleSelectAll}
-              className="border-2"
+              className="border-2 border-white"
             />
             <span className="text-sm font-medium">
               {selectedAccounts.size > 0 ? `${selectedAccounts.size} selected` : 'Select all'}
