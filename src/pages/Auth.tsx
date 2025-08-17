@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
 import { TwoFactorSetup } from '@/components/auth/two-factor-setup'
+import { ProfilePhotoUpload } from '@/components/auth/ProfilePhotoUpload'
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false)
@@ -157,19 +158,10 @@ export default function Auth() {
     e.preventDefault()
     
     // Validate required fields
-    if (!firstName || !lastName || !occupation) {
+    if (!firstName || !lastName) {
       toast({
         title: "Missing required fields",
-        description: "Please fill in your full name and occupation.",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!selectedProgram) {
-      toast({
-        title: "Program required",
-        description: "Please select a program.",
+        description: "Please fill in your full name.",
         variant: "destructive",
       })
       return
@@ -238,12 +230,26 @@ export default function Auth() {
         // Store email for 2FA setup
         setSignupEmail(email)
         
+        // Upload profile photo if selected
+        let avatarUrl = null
+        if (profilePhoto) {
+          avatarUrl = await uploadProfilePhoto(profilePhoto, data.user.id)
+          if (!avatarUrl) {
+            toast({
+              title: "Photo upload failed",
+              description: "Your account was created but the profile photo failed to upload.",
+              variant: "destructive",
+            })
+          }
+        }
+        
         // Update profile with program and membership info
         await supabase
           .from('profiles')
           .update({
             program_name: selectedProgram,
-            membership_type: membershipType
+            membership_type: membershipType,
+            ...(avatarUrl && { avatar_url: avatarUrl })
           })
           .eq('user_id', data.user.id)
 
@@ -580,7 +586,14 @@ export default function Auth() {
                   </div>
                 </div>
                 
-
+                {/* Profile Photo Upload */}
+                <ProfilePhotoUpload
+                  onPhotoSelected={(file, url) => {
+                    setProfilePhoto(file)
+                    setProfilePhotoUrl(url)
+                  }}
+                  currentPhotoUrl={profilePhotoUrl}
+                />
 
                 
                 <div className="space-y-2">
@@ -650,7 +663,7 @@ export default function Auth() {
                    type="submit" 
                    className="w-full" 
                    style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                   disabled={isLoading || !firstName || !lastName || !occupation || !selectedProgram || (membershipType === 'paid' && !customPrice)}
+                   disabled={isLoading || !firstName || !lastName || (membershipType === 'paid' && !customPrice)}
                  >
                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                    {membershipType === 'paid' ? 'Create Account & Pay' : 'Create Account'}
