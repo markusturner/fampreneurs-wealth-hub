@@ -12,21 +12,20 @@ interface NavItem {
   badge?: number
 }
 
-// 5 navigation items with Home/Dashboard in center
-const allNavigationItems: NavItem[] = [
+// Navigation for family office members (full access)
+const familyOfficeItems: NavItem[] = [
   { name: 'Community', href: '/community', icon: MessageSquare },
-  { name: 'Calendar', href: '/calendar', icon: Calendar },
+  { name: 'Investments', href: '/investments', icon: TrendingUp },
   { name: 'Home', href: '/', icon: Home },
   { name: 'Courses', href: '/courses', icon: BookOpen },
   { name: 'Members', href: '/members', icon: Users },
 ]
 
-const familyOfficeOnlyItems: NavItem[] = [
+// Navigation for family members (limited access)
+const familyMemberItems: NavItem[] = [
   { name: 'Documents', href: '/documents', icon: FileText },
   { name: 'Calendar', href: '/calendar', icon: Calendar },
   { name: 'Home', href: '/', icon: Home },
-  { name: 'Investments', href: '/investments', icon: TrendingUp },
-  { name: 'Settings', href: '/profile-settings', icon: Settings },
 ]
 
 export function MobileBottomNav() {
@@ -99,7 +98,7 @@ export function MobileBottomNav() {
     }
   }, [user?.id])
 
-  const navigationItems = isFamilyOfficeOnly ? familyOfficeOnlyItems : allNavigationItems
+  const navigationItems = isFamilyOfficeOnly ? familyMemberItems : familyOfficeItems
 
   // Add unread count to Members nav item
   const itemsWithBadges = navigationItems.map(item => ({

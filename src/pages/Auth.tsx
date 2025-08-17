@@ -558,6 +558,15 @@ export default function Auth() {
             </TabsContent>
 
             <TabsContent value="signup">
+              <div className="space-y-4 p-4 bg-muted/50 rounded-lg border border-border mb-4">
+                <div className="text-center">
+                  <h3 className="font-semibold text-foreground">Family Admin Registration Only</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Only family administrators can create accounts. Family members will receive access through their admin.
+                  </p>
+                </div>
+              </div>
+              
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-2">
