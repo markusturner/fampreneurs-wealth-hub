@@ -41,10 +41,10 @@ export function ProfileSettings() {
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 shrink-0">
-          {profile?.is_accountability_partner && (
+          {profile && (
             <Badge variant="secondary" className="text-xs">
-              <Heart className="h-3 w-3 mr-1" />
-              {isMobile ? "Partner" : "Accountability Partner"}
+              <User className="h-3 w-3 mr-1" />
+              {profile.display_name || profile.first_name || 'User'}
             </Badge>
           )}
         </div>
