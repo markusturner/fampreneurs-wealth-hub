@@ -840,7 +840,7 @@ export function AccountIntegration() {
                     <Checkbox 
                       checked={selectedAccounts.has(account.id)}
                       onCheckedChange={(checked) => handleSelectAccount(account.id, checked as boolean)}
-                      className="border-2"
+                      className="border-2 border-white"
                     />
                     {getAccountIcon(account.type)}
                     <div>
