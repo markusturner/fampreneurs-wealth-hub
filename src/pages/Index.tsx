@@ -88,7 +88,7 @@ const Index = () => {
           </div>
           
           {/* Asset Allocation */}
-          <div className="order-2">
+          <div className="order-2 lg:col-span-2">
             <Card className="shadow-soft">
               <CardHeader>
                 <CardTitle>Asset Allocation</CardTitle>
