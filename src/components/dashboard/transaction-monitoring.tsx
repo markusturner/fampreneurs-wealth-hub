@@ -272,8 +272,17 @@ export function TransactionMonitoring() {
           body: { account_id: account.id }
         })
 
-        if (error) {
-          console.error(`Error syncing account ${account.account_name}:`, error)
+        if (error || (data as any)?.error) {
+          const details = (data as any)?.details?.message || (error as any)?.message || 'Unknown error'
+          const hint = details.includes('INVALID_PRODUCT')
+            ? 'Plaid Transactions is not enabled for your environment. Please re-link accounts after we updated settings, or contact support to enable Transactions in Plaid.'
+            : undefined
+          console.error(`Error syncing account ${account.account_name}:`, details)
+          toast({
+            title: `Sync failed: ${account.account_name}`,
+            description: hint || details,
+            variant: 'destructive'
+          })
         } else {
           console.log(`Synced ${data.transactions?.length || 0} transactions for ${account.account_name}`)
         }
