@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
+import { usePlaidLink } from 'react-plaid-link'
 import { 
   Plus, 
   Filter, 
@@ -29,6 +30,21 @@ import {
   FileCheck,
   Zap
 } from 'lucide-react'
+
+// Small helper component to launch Plaid Link update flow
+function PlaidUpdateLink({ token, onSuccess, onExit }: { token: string; onSuccess: () => void; onExit: () => void }) {
+  const { open, ready } = usePlaidLink({
+    token,
+    onSuccess: () => onSuccess(),
+    onExit: () => onExit(),
+  } as any)
+
+  useEffect(() => {
+    if (ready) open()
+  }, [ready, open])
+
+  return null
+}
 
 interface Transaction {
   id: string
@@ -88,6 +104,10 @@ export function TransactionMonitoring() {
     notes: '',
     date: new Date().toISOString().split('T')[0]
   })
+
+  const [showEnableDialog, setShowEnableDialog] = useState(false)
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null)
+  const [linkToken, setLinkToken] = useState<string | null>(null)
 
   const [aiBookkeeping, setAiBookkeeping] = useState({
     isProcessing: false,
@@ -310,10 +330,16 @@ export function TransactionMonitoring() {
   }
 
   const handleEnableTransactions = () => {
-    toast({
-      title: 'Enable Transactions',
-      description: 'Go to Family Office → Account Integration, then click the gear icon (⚙️) next to each Plaid account to enable transactions.',
-    })
+    const plaidAccs = connectedAccounts.filter(acc => acc.provider === 'plaid')
+    if (plaidAccs.length === 0) {
+      toast({
+        title: 'No Plaid accounts',
+        description: 'Please link a bank account first in Account Integration.',
+      })
+      return
+    }
+    setSelectedAccountId(plaidAccs[0].id)
+    setShowEnableDialog(true)
   }
 
   const handleManualSync = async () => {
@@ -724,8 +750,87 @@ export function TransactionMonitoring() {
               </div>
             </DialogContent>
           </Dialog>
-          
-          
+
+          {/* Enable Transactions (Plaid Update) Dialog */}
+          <Dialog open={showEnableDialog} onOpenChange={(open) => {
+            setShowEnableDialog(open);
+            if (!open) { setLinkToken(null); setSelectedAccountId(null); }
+          }}>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Enable Transactions</DialogTitle>
+                <DialogDescription>
+                  Select a connected Plaid account to enable Transactions.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Account</Label>
+                  <Select value={selectedAccountId || ''} onValueChange={(v) => setSelectedAccountId(v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose an account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {connectedAccounts.filter(acc => acc.provider === 'plaid').map(acc => (
+                        <SelectItem key={acc.id} value={acc.id}>
+                          {acc.account_name || acc.external_account_id}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {connectedAccounts.filter(acc => acc.provider === 'plaid').length === 0 && (
+                    <p className="text-sm text-muted-foreground">No Plaid accounts found. Link a bank first.</p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => setShowEnableDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    className="flex-1"
+                    onClick={async () => {
+                      if (!selectedAccountId) { toast({ title: 'Select an account', description: 'Please pick a Plaid account.' }); return; }
+                      try {
+                        const { data, error } = await supabase.functions.invoke('plaid-link-update-token', { body: { account_id: selectedAccountId } });
+                        if (error || (data as any)?.error) { throw new Error((data as any)?.error || (error as any)?.message || 'Failed to create update link'); }
+                        setLinkToken((data as any).link_token);
+                      } catch (e) {
+                        console.error('Enable Transactions error:', e);
+                        toast({ title: 'Enable failed', description: e instanceof Error ? e.message : 'Could not start Plaid update flow', variant: 'destructive' });
+                      }
+                    }}
+                  >
+                    Continue
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Hidden launcher for Plaid Link */}
+          {linkToken ? (
+            <PlaidUpdateLink
+              token={linkToken}
+              onSuccess={async () => {
+                toast({ title: 'Plaid updated', description: 'Syncing transactions...' });
+                try {
+                  if (selectedAccountId) {
+                    await supabase.functions.invoke('plaid-fetch-transactions', { body: { account_id: selectedAccountId }});
+                    await fetchTransactions();
+                    toast({ title: 'Sync complete', description: 'Transactions have been updated.' });
+                  }
+                } catch (err) {
+                  console.error('Auto-sync after Plaid update failed:', err);
+                  toast({ title: 'Sync failed', description: 'Please try manual sync.', variant: 'destructive' });
+                } finally {
+                  setLinkToken(null);
+                  setShowEnableDialog(false);
+                }
+              }}
+              onExit={() => { setLinkToken(null); }}
+            />
+          ) : null }
+
           <Button 
             variant="outline" 
             size="sm" 
