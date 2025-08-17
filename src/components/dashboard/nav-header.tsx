@@ -277,14 +277,14 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           </Button>
         </div>
 
-        {/* Search Bar - Desktop only */}
+        {/* Enhanced Search Bar - Desktop only */}
         <div className="hidden md:flex flex-1 max-w-lg mx-2 sm:mx-3 xl:mx-4">
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search posts, courses, members..."
-              className="pl-10 bg-muted/50 border-none focus:bg-background text-sm h-9 w-full"
+              placeholder="Search posts, courses, members... (Ctrl+K)"
+              className="pl-10 pr-20 bg-muted/50 border-none focus:bg-background text-sm h-9 w-full"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
               onFocus={() => setShowSuggestions(true)}
@@ -292,22 +292,60 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   handleSearchSubmit(searchQuery)
+                } else if (e.key === 'Escape') {
+                  setShowSuggestions(false)
+                  e.currentTarget.blur()
                 }
               }}
             />
             
-            {/* Search Suggestions */}
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={() => {
+                    setSearchQuery('')
+                    setSearchSuggestions([])
+                  }}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
+              
+              <div className="hidden lg:flex items-center gap-1 px-2 py-1 rounded border bg-muted/50 text-xs text-muted-foreground">
+                <span>Ctrl</span>
+                <span>K</span>
+              </div>
+            </div>
+            
+            {/* Enhanced Search Suggestions */}
             {showSuggestions && searchSuggestions.length > 0 && (
               <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-md shadow-lg mt-1 z-50 max-h-60 overflow-y-auto">
+                <div className="p-2 border-b border-border">
+                  <p className="text-xs text-muted-foreground">Quick suggestions</p>
+                </div>
                 {searchSuggestions.map((suggestion, index) => (
                   <div
                     key={index}
-                    className="px-3 py-2 hover:bg-muted cursor-pointer text-sm"
+                    className="px-3 py-2 hover:bg-muted cursor-pointer text-sm flex items-center gap-2 transition-colors"
                     onClick={() => handleSearchSubmit(suggestion)}
                   >
-                    {suggestion}
+                    <Search className="h-3 w-3 text-muted-foreground" />
+                    <span>{suggestion}</span>
                   </div>
                 ))}
+                <div className="p-2 border-t border-border">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs"
+                    onClick={() => navigate(`/search?q=${encodeURIComponent(searchQuery)}`)}
+                  >
+                    View all results for "{searchQuery}"
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -315,7 +353,12 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
         
         {/* Mobile Search Button */}
         <div className="md:hidden flex-1 flex justify-end pr-4">
-          <Button variant="ghost" size="icon" className="h-9 w-9">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-9 w-9"
+            onClick={() => navigate('/search')}
+          >
             <Search className="h-4 w-4" />
           </Button>
         </div>
