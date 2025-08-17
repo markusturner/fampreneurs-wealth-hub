@@ -2,6 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
 import { useEffect, useState } from "react"
+import { useAuth } from "@/contexts/AuthContext"
+import { supabase } from "@/integrations/supabase/client"
 
 const initialPortfolioData = [
   { 
@@ -87,38 +89,225 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export function InvestmentChart() {
+  const { user } = useAuth()
   const [portfolioData, setPortfolioData] = useState(initialPortfolioData)
+  const [realPortfolios, setRealPortfolios] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [hasRealData, setHasRealData] = useState(false)
 
-  useEffect(() => {
-    // Simulate real-time investment API data updates
-    const updatePortfolioData = () => {
-      // This would come from your investment API
-      const latestData = {
-        month: "Current",
-        crypto: 1620000,
-        stocks: 5680000,
-        etfs: 3720000,
-        houseEquity: 2040000,
-        business: 540000
-      }
-      
-      setPortfolioData(prev => [...prev.slice(-7), latestData])
+  const fetchPortfolioData = async () => {
+    if (!user) {
+      setLoading(false)
+      return
     }
 
-    updatePortfolioData()
-    
-    // Update every 60 seconds to simulate API updates
-    const interval = setInterval(updatePortfolioData, 60000)
-    return () => clearInterval(interval)
-  }, [])
+    try {
+      const { data, error } = await supabase
+        .from('investment_portfolios')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('last_updated', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching portfolio data:', error)
+        setHasRealData(false)
+      } else if (data && data.length > 0) {
+        setRealPortfolios(data)
+        setHasRealData(true)
+      } else {
+        setHasRealData(false)
+      }
+    } catch (error) {
+      console.error('Error fetching portfolio data:', error)
+      setHasRealData(false)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchPortfolioData()
+  }, [user])
 
   const currentData = portfolioData[portfolioData.length - 1]
   const previousData = portfolioData[portfolioData.length - 2]
   
-  const currentTotal = currentData.crypto + currentData.stocks + currentData.etfs + currentData.houseEquity + currentData.business
-  const previousTotal = previousData.crypto + previousData.stocks + previousData.etfs + previousData.houseEquity + previousData.business
-  const growth = ((currentTotal - previousTotal) / previousTotal) * 100
+  let currentTotal, previousTotal, growth
 
+  if (hasRealData && realPortfolios.length > 0) {
+    // Use real portfolio data
+    currentTotal = realPortfolios.reduce((sum, portfolio) => sum + Number(portfolio.total_value), 0)
+    previousTotal = currentTotal * 0.95 // Simulate 5% growth for display
+    growth = ((currentTotal - previousTotal) / previousTotal) * 100
+  } else {
+    // Use mock data
+    currentTotal = currentData.crypto + currentData.stocks + currentData.etfs + currentData.houseEquity + currentData.business
+    previousTotal = previousData.crypto + previousData.stocks + previousData.etfs + previousData.houseEquity + previousData.business
+    growth = ((currentTotal - previousTotal) / previousTotal) * 100
+  }
+
+  if (loading) {
+    return (
+      <Card className="shadow-soft w-full">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold">Portfolio Performance</CardTitle>
+          <CardDescription>Loading your investment data...</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0 p-2 sm:p-6">
+          <div className="h-[250px] sm:h-[350px] flex items-center justify-center">
+            <div className="text-muted-foreground">Loading...</div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (!user) {
+    return (
+      <Card className="shadow-soft w-full">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold">Portfolio Performance</CardTitle>
+          <CardDescription>
+            Sign in to view your real investment data
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0 p-2 sm:p-6">
+          <div className="h-[250px] sm:h-[350px] flex flex-col items-center justify-center text-center">
+            <div className="text-muted-foreground mb-4">
+              Connect your investment accounts to see real portfolio performance
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Sign in and link your brokerage accounts to get started
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (!hasRealData) {
+    return (
+      <Card className="shadow-soft w-full">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl font-bold">Portfolio Performance</CardTitle>
+              <CardDescription>
+                No investment data found - showing demo data
+              </CardDescription>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-muted-foreground mb-2">Demo Portfolio</div>
+              <div className="text-2xl font-bold text-foreground">
+                ${currentTotal.toLocaleString()}
+              </div>
+              <Badge variant="secondary" className="bg-muted text-muted-foreground">
+                Demo Data
+              </Badge>
+            </div>
+          </div>
+          
+          {/* Legend */}
+          <div className="flex flex-wrap gap-2 sm:gap-4 mt-4 pt-4 border-t border-border">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: '#2eb2ff' }}></div>
+              <span className="text-xs sm:text-sm font-medium">Stocks</span>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--accent))' }}></div>
+              <span className="text-xs sm:text-sm font-medium">ETFs</span>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--secondary))' }}></div>
+              <span className="text-xs sm:text-sm font-medium">Crypto</span>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(270 50% 60%)' }}></div>
+              <span className="text-xs sm:text-sm font-medium">House Equity</span>
+            </div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(0 70% 50%)' }}></div>
+              <span className="text-xs sm:text-sm font-medium">Business</span>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0 p-2 sm:p-6">
+          <div className="h-[250px] sm:h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={portfolioData}>
+                <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                <XAxis 
+                  dataKey="month" 
+                  className="text-foreground"
+                  tick={{ fontSize: 10, fill: 'hsl(var(--foreground))' }}
+                  interval={0}
+                />
+                <YAxis 
+                  className="text-foreground"
+                  tick={{ fontSize: 10, fill: 'hsl(var(--foreground))' }}
+                  tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+                  width={50}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                
+                {/* Stocks Line */}
+                <Line
+                  type="monotone"
+                  dataKey="stocks"
+                  stroke="#2eb2ff"
+                  strokeWidth={3}
+                  dot={false}
+                  name="Stocks"
+                />
+                
+                {/* ETFs Line */}
+                <Line
+                  type="monotone"
+                  dataKey="etfs"
+                  stroke="hsl(var(--accent))"
+                  strokeWidth={3}
+                  dot={false}
+                  name="ETFs"
+                />
+                
+                {/* Crypto Line */}
+                <Line
+                  type="monotone"
+                  dataKey="crypto"
+                  stroke="hsl(var(--secondary))"
+                  strokeWidth={3}
+                  dot={false}
+                  name="Crypto"
+                />
+                
+                {/* House Equity Line */}
+                <Line
+                  type="monotone"
+                  dataKey="houseEquity"
+                  stroke="hsl(270 50% 60%)"
+                  strokeWidth={3}
+                  dot={false}
+                  name="House Equity"
+                />
+                
+                {/* Business Line */}
+                <Line
+                  type="monotone"
+                  dataKey="business"
+                  stroke="hsl(0 70% 50%)"
+                  strokeWidth={3}
+                  dot={false}
+                  name="Business"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Real data view
   return (
     <Card className="shadow-soft w-full">
       <CardHeader>
@@ -126,113 +315,49 @@ export function InvestmentChart() {
           <div>
             <CardTitle className="text-xl font-bold">Portfolio Performance</CardTitle>
             <CardDescription>
-              Your investment growth over the past 8 months
+              Your real investment portfolio ({realPortfolios.length} {realPortfolios.length === 1 ? 'account' : 'accounts'})
             </CardDescription>
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold text-foreground">
               ${currentTotal.toLocaleString()}
             </div>
-            <Badge variant="default" className="bg-accent text-accent-foreground">
-              +{growth.toFixed(1)}% this month
+            <Badge variant="default" className="bg-green-500 text-white">
+              Live Data
             </Badge>
           </div>
         </div>
         
-        {/* Legend */}
-        <div className="flex flex-wrap gap-2 sm:gap-4 mt-4 pt-4 border-t border-border">
-          <div className="flex items-center gap-1 sm:gap-2">
-            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: '#2eb2ff' }}></div>
-            <span className="text-xs sm:text-sm font-medium">Stocks</span>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--accent))' }}></div>
-            <span className="text-xs sm:text-sm font-medium">ETFs</span>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(var(--secondary))' }}></div>
-            <span className="text-xs sm:text-sm font-medium">Crypto</span>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(270 50% 60%)' }}></div>
-            <span className="text-xs sm:text-sm font-medium">House Equity</span>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full" style={{ backgroundColor: 'hsl(0 70% 50%)' }}></div>
-            <span className="text-xs sm:text-sm font-medium">Business</span>
+        {/* Portfolio breakdown */}
+        <div className="mt-4 pt-4 border-t border-border">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {realPortfolios.map((portfolio, index) => (
+              <div key={portfolio.id} className="text-center">
+                <div className="text-sm text-muted-foreground">{portfolio.platform_id}</div>
+                <div className="font-medium">${Number(portfolio.total_value).toLocaleString()}</div>
+                {portfolio.day_change && (
+                  <div className={`text-xs ${Number(portfolio.day_change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {Number(portfolio.day_change) >= 0 ? '+' : ''}${Number(portfolio.day_change).toFixed(2)}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0 p-2 sm:p-6">
-        <div className="h-[250px] sm:h-[350px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={portfolioData}>
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis 
-                dataKey="month" 
-                className="text-foreground"
-                tick={{ fontSize: 10, fill: 'hsl(var(--foreground))' }}
-                interval={0}
-              />
-              <YAxis 
-                className="text-foreground"
-                tick={{ fontSize: 10, fill: 'hsl(var(--foreground))' }}
-                tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
-                width={50}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              
-              {/* Stocks Line */}
-              <Line
-                type="monotone"
-                dataKey="stocks"
-                stroke="#2eb2ff"
-                strokeWidth={3}
-                dot={false}
-                name="Stocks"
-              />
-              
-              {/* ETFs Line */}
-              <Line
-                type="monotone"
-                dataKey="etfs"
-                stroke="hsl(var(--accent))"
-                strokeWidth={3}
-                dot={false}
-                name="ETFs"
-              />
-              
-              {/* Crypto Line */}
-              <Line
-                type="monotone"
-                dataKey="crypto"
-                stroke="hsl(var(--secondary))"
-                strokeWidth={3}
-                dot={false}
-                name="Crypto"
-              />
-              
-              {/* House Equity Line */}
-              <Line
-                type="monotone"
-                dataKey="houseEquity"
-                stroke="hsl(270 50% 60%)"
-                strokeWidth={3}
-                dot={false}
-                name="House Equity"
-              />
-              
-              {/* Business Line */}
-              <Line
-                type="monotone"
-                dataKey="business"
-                stroke="hsl(0 70% 50%)"
-                strokeWidth={3}
-                dot={false}
-                name="Business"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="h-[250px] sm:h-[350px] flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-lg font-medium text-foreground mb-2">
+              Total Portfolio Value
+            </div>
+            <div className="text-3xl font-bold text-foreground mb-4">
+              ${currentTotal.toLocaleString()}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Last updated: {new Date(realPortfolios[0]?.last_updated).toLocaleString()}
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
