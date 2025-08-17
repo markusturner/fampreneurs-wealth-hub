@@ -7,13 +7,16 @@ import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { InvestmentChart } from "@/components/dashboard/investment-chart"
 import { AssetAllocation } from "@/components/dashboard/asset-allocation"
 import { AIChat } from "@/components/dashboard/ai-chat"
+import { FamilyMemberDashboard } from "@/components/dashboard/family-member-dashboard"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from 'lucide-react'
 import { useState } from "react"
+import { useUserRole } from "@/hooks/useUserRole"
 
 const Index = () => {
   const { user, profile, loading } = useAuth()
+  const { isFamilyOfficeOnly, isLoading: roleLoading } = useUserRole()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -23,7 +26,7 @@ const Index = () => {
     }
   }, [user, loading, navigate])
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
         <div className="text-center">
@@ -40,6 +43,23 @@ const Index = () => {
 
   const displayName = profile?.display_name || profile?.first_name || 'Family'
 
+  // Render family member dashboard for limited access users
+  if (isFamilyOfficeOnly) {
+    return (
+      <div className="min-h-screen bg-background">
+        <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        
+        <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+          <FamilyMemberDashboard />
+        </main>
+        
+        {/* Mobile Bottom Navigation */}
+        <div className="pb-16 md:pb-0" />
+      </div>
+    )
+  }
+
+  // Render full admin dashboard for family office administrators
   return (
     <div className="min-h-screen bg-background">
       <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />

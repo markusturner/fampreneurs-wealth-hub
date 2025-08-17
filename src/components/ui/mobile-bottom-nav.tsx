@@ -12,15 +12,21 @@ interface NavItem {
   badge?: number
 }
 
+// 5 navigation items with Home/Dashboard in center
 const allNavigationItems: NavItem[] = [
+  { name: 'Community', href: '/community', icon: MessageSquare },
+  { name: 'Calendar', href: '/coaching', icon: Calendar },
   { name: 'Home', href: '/', icon: Home },
-  { name: 'Investments', href: '/investments', icon: TrendingUp },
-  { name: 'Documents', href: '/documents', icon: FileText },
+  { name: 'Courses', href: '/courses', icon: BookOpen },
+  { name: 'Members', href: '/members', icon: Users },
 ]
 
 const familyOfficeOnlyItems: NavItem[] = [
+  { name: 'Documents', href: '/documents', icon: FileText },
+  { name: 'Calendar', href: '/coaching', icon: Calendar },
   { name: 'Home', href: '/', icon: Home },
   { name: 'Investments', href: '/investments', icon: TrendingUp },
+  { name: 'Settings', href: '/profile-settings', icon: Settings },
 ]
 
 export function MobileBottomNav() {
