@@ -3162,6 +3162,10 @@ export type Database = {
         Args: { target_user_id?: string }
         Returns: Json
       }
+      get_admin_profile_data: {
+        Args: { target_user_id: string }
+        Returns: Json
+      }
       get_coach_admin_details: {
         Args: { coach_id: string }
         Returns: Json
