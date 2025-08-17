@@ -15,6 +15,7 @@ import Documents from "./pages/Documents";
 import Members from "./pages/Members";
 import Calendar from "./pages/Calendar";
 import Investments from "./pages/Investments";
+import FamilyRoundtable from "./pages/FamilyRoundtable";
 
 import ProfileSettings from "./pages/ProfileSettings";
 import Help from "./pages/Help";
@@ -39,6 +40,7 @@ function AppWithNotifications() {
       <Route path="/community" element={<Community />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/documents" element={<Documents />} />
+      <Route path="/family-roundtable" element={<FamilyRoundtable />} />
       <Route path="/calendar" element={<Calendar />} />
       
       <Route path="/members" element={<Members />} />

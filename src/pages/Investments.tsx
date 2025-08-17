@@ -34,6 +34,7 @@ import { AccountIntegration } from '@/components/dashboard/account-integration'
 import { TransactionMonitoring } from '@/components/dashboard/transaction-monitoring'
 import { BudgetingAnalytics } from '@/components/dashboard/budgeting-analytics'
 import { FamilyMemberManagement } from '@/components/dashboard/family-member-management'
+import { FamilyDocumentsTab } from '@/components/dashboard/family-documents-tab'
 
 interface Investment {
   id: string
@@ -246,7 +247,7 @@ export default function FamilyOffice() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
+          <TabsList className="grid w-full grid-cols-6 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
             <TabsTrigger value="overview" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Overview</span>
               <span className="sm:hidden">Home</span>
@@ -261,6 +262,10 @@ export default function FamilyOffice() {
             </TabsTrigger>
             <TabsTrigger value="budget" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">Budget</TabsTrigger>
             <TabsTrigger value="reports" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">Reports</TabsTrigger>
+            <TabsTrigger value="documents" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
+              <span className="hidden sm:inline">Documents</span>
+              <span className="sm:hidden">Docs</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -777,6 +782,10 @@ export default function FamilyOffice() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="documents" className="space-y-6">
+            <FamilyDocumentsTab />
           </TabsContent>
         </Tabs>
       </div>
