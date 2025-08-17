@@ -77,8 +77,7 @@ export function MeetingTypesManager({ onMeetingTypesChange }: MeetingTypesManage
         .insert({
           name: newType.name.trim(),
           color: newType.color,
-          description: newType.description.trim() || null,
-          created_by: (await supabase.auth.getUser()).data.user?.id || ''
+          description: newType.description.trim() || null
         })
 
       if (error) throw error
