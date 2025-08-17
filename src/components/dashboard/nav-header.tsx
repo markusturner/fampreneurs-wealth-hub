@@ -1,4 +1,4 @@
-import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar as CalendarIcon, MessageSquare, PanelLeft, FileText, Building2, LayoutDashboard } from "lucide-react"
+import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar as CalendarIcon, MessageSquare, PanelLeft, FileText, Building2, LayoutDashboard, Command } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"

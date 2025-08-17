@@ -16,6 +16,7 @@ import Members from "./pages/Members";
 import Calendar from "./pages/Calendar";
 import Investments from "./pages/Investments";
 import FamilyRoundtable from "./pages/FamilyRoundtable";
+import Search from "./pages/Search";
 
 import ProfileSettings from "./pages/ProfileSettings";
 import Help from "./pages/Help";
@@ -27,6 +28,15 @@ import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
 
 const queryClient = new QueryClient();
+
+// Global keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  // Ctrl+K or Cmd+K to open search
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault()
+    window.location.href = '/search'
+  }
+})
 
 // Initialize mobile services
 initializeMobileServices();
@@ -42,14 +52,12 @@ function AppWithNotifications() {
       <Route path="/documents" element={<Documents />} />
       <Route path="/family-roundtable" element={<FamilyRoundtable />} />
       <Route path="/calendar" element={<Calendar />} />
-      
       <Route path="/members" element={<Members />} />
-      
       <Route path="/investments" element={<Investments />} />
-      
       <Route path="/profile-settings" element={<ProfileSettings />} />
       <Route path="/help" element={<Help />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/search" element={<Search />} />
     </Routes>
   )
 }

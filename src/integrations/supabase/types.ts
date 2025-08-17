@@ -3265,6 +3265,26 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       is_current_user_accountability_partner: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -3330,6 +3350,18 @@ export type Database = {
           target_user_id: string
         }
         Returns: undefined
+      }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
       }
       user_has_premium_subscription: {
         Args: { user_id: string }
