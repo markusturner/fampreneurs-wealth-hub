@@ -33,16 +33,7 @@ const initialMeetings: Meeting[] = [
 export function MeetingsProvider({ children }: { children: React.ReactNode }) {
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [loading, setLoading] = useState(true)
-  
-  // Use a try-catch to handle cases where AuthProvider isn't ready
-  let user = null
-  try {
-    const auth = useAuth()
-    user = auth.user
-  } catch (error) {
-    // AuthProvider not ready yet, user will be null
-    console.log('AuthProvider not ready yet, will retry when available')
-  }
+  const { user } = useAuth()
 
   // Load meetings from user's localStorage and database
   useEffect(() => {
