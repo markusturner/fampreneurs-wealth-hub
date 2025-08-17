@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AdminSettings } from '@/components/dashboard/admin-settings'
+
 import { AccountabilityDirectory } from '@/components/dashboard/accountability-directory'
 import { AffiliateProgram } from '@/components/dashboard/affiliate-program'
 import { AccountSettings } from '@/components/dashboard/account-settings'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Settings, Crown, Heart, Users, ArrowLeft, User } from 'lucide-react'
+import { Settings, Heart, Users, ArrowLeft, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 
@@ -41,12 +41,6 @@ export function ProfileSettings() {
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 shrink-0">
-          {profile?.is_admin && (
-            <Badge variant="destructive" className="text-xs">
-              <Crown className="h-3 w-3 mr-1" />
-              {isMobile ? "Admin" : "Admin"}
-            </Badge>
-          )}
           {profile?.is_accountability_partner && (
             <Badge variant="secondary" className="text-xs">
               <Heart className="h-3 w-3 mr-1" />

@@ -1,4 +1,4 @@
-import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar as CalendarIcon, Crown, MessageSquare, PanelLeft, FileText, Building2, LayoutDashboard } from "lucide-react"
+import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar as CalendarIcon, MessageSquare, PanelLeft, FileText, Building2, LayoutDashboard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -362,12 +362,6 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                 <MessageSquare className="mr-2 h-4 w-4" />
                 <span>Help</span>
               </DropdownMenuItem>
-              {profile?.is_admin && (
-                <DropdownMenuItem onClick={() => navigate('/admin')}>
-                  <Crown className="mr-2 h-4 w-4" />
-                  <span>Admin Dashboard</span>
-                </DropdownMenuItem>
-              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut}>
                 <LogOut className="mr-2 h-4 w-4" />
