@@ -3107,15 +3107,7 @@ export type Database = {
       }
     }
     Views: {
-      community_profiles_secure: {
-        Row: {
-          avatar_url: string | null
-          display_name: string | null
-          first_initial: string | null
-          user_id: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       assign_accountability_role: {
@@ -3188,15 +3180,6 @@ export type Database = {
         }[]
       }
       get_community_profiles: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          avatar_url: string
-          display_name: string
-          first_initial: string
-          user_id: string
-        }[]
-      }
-      get_community_profiles_secure: {
         Args: Record<PropertyKey, never>
         Returns: {
           avatar_url: string
