@@ -115,6 +115,45 @@ export type Database = {
         }
         Relationships: []
       }
+      bank_statement_uploads: {
+        Row: {
+          error_message: string | null
+          file_path: string
+          file_size: number | null
+          filename: string
+          id: string
+          processed_at: string | null
+          processing_status: string | null
+          transactions_extracted: number | null
+          uploaded_at: string | null
+          user_id: string
+        }
+        Insert: {
+          error_message?: string | null
+          file_path: string
+          file_size?: number | null
+          filename: string
+          id?: string
+          processed_at?: string | null
+          processing_status?: string | null
+          transactions_extracted?: number | null
+          uploaded_at?: string | null
+          user_id: string
+        }
+        Update: {
+          error_message?: string | null
+          file_path?: string
+          file_size?: number | null
+          filename?: string
+          id?: string
+          processed_at?: string | null
+          processing_status?: string | null
+          transactions_extracted?: number | null
+          uploaded_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
