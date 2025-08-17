@@ -222,50 +222,48 @@ export default function Community() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-        <div className="mobile-container mx-auto py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8 max-w-7xl mobile-safe-bottom">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div>
-              <h1 className="text-responsive-lg font-bold gradient-text">Digital Family Office</h1>
-              <p className="text-responsive-sm text-muted-foreground mt-2">
-                Complete financial ecosystem management and wealth tracking
-              </p>
-            </div>
+        <div className="mobile-container mx-auto py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 lg:space-y-10 max-w-7xl mobile-safe-bottom">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
+          <div className="space-y-2">
+            <h1 className="text-responsive-xl font-bold gradient-text tracking-tight">Digital Family Office</h1>
+            <p className="text-responsive-sm text-muted-foreground">
+              Complete financial ecosystem management and wealth tracking
+            </p>
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-5 gap-1 p-1 bg-muted/50 rounded-xl">
+        <Tabs defaultValue="overview" className="space-y-6 sm:space-y-8">
+          <TabsList className="grid w-full grid-cols-5 gap-1 p-1.5 bg-muted/60 rounded-2xl shadow-sm">
             <TabsTrigger 
               value="overview" 
-              className="text-responsive-xs font-medium px-2 py-3 rounded-lg transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              className="text-responsive-xs font-semibold px-3 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary touch-optimized"
             >
               <span className="hidden sm:inline">Overview</span>
               <span className="sm:hidden">Home</span>
             </TabsTrigger>
             <TabsTrigger 
               value="accounts" 
-              className="text-responsive-xs font-medium px-2 py-3 rounded-lg transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              className="text-responsive-xs font-semibold px-3 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary touch-optimized"
             >
               <span className="hidden sm:inline">Accounts</span>
               <span className="sm:hidden">Accts</span>
             </TabsTrigger>
             <TabsTrigger 
               value="transactions" 
-              className="text-responsive-xs font-medium px-2 py-3 rounded-lg transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              className="text-responsive-xs font-semibold px-3 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary touch-optimized"
             >
               <span className="hidden sm:inline">Transactions</span>
               <span className="sm:hidden">Trans</span>
             </TabsTrigger>
             <TabsTrigger 
               value="budget" 
-              className="text-responsive-xs font-medium px-2 py-3 rounded-lg transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              className="text-responsive-xs font-semibold px-3 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary touch-optimized"
             >
               Budget
             </TabsTrigger>
             <TabsTrigger 
               value="reports" 
-              className="text-responsive-xs font-medium px-2 py-3 rounded-lg transition-all duration-200 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              className="text-responsive-xs font-semibold px-3 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary touch-optimized"
             >
               Reports
             </TabsTrigger>

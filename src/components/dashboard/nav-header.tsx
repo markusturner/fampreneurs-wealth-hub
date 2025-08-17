@@ -213,23 +213,23 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 shadow-sm mobile-safe-top">
-      <div className="container flex h-14 sm:h-16 lg:h-18 items-center mobile-container">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2 sm:gap-3">
+    <header className="sticky top-0 z-50 w-full border-b border-border/30 bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70 shadow-lg mobile-safe-top">
+      <div className="container flex h-16 sm:h-18 lg:h-20 items-center mobile-container px-4 sm:px-6">
+        <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-4">
             <div className="hidden sm:block">
-              <h1 className="text-lg sm:text-xl lg:text-2xl font-oswald font-bold tracking-wide text-[#ffb500]">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-oswald font-bold tracking-wide text-[#ffb500] drop-shadow-sm">
                 THE FAMPRENEURS
               </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+              <p className="text-sm sm:text-base text-muted-foreground font-semibold">
                 BUILDING STRONG LEGACIES
               </p>
             </div>
             <div className="sm:hidden">
-              <h1 className="text-sm font-oswald font-bold tracking-wide text-[#ffb500]">
+              <h1 className="text-base font-oswald font-bold tracking-wide text-[#ffb500] drop-shadow-sm">
                 FAMPRENEURS
               </h1>
-              <p className="text-[10px] text-muted-foreground font-medium">
+              <p className="text-xs text-muted-foreground font-semibold">
                 STRONG LEGACIES
               </p>
             </div>
@@ -317,21 +317,23 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
         </div>
         
         {/* Mobile Search Button */}
-        <div className="md:hidden flex-1 flex justify-end pr-4">
-          <Button variant="ghost" size="icon" className="h-9 w-9">
-            <Search className="h-4 w-4" />
+        <div className="md:hidden flex-1 flex justify-end pr-2">
+          <Button variant="ghost" size="icon" className="h-10 w-10 touch-optimized rounded-xl">
+            <Search className="h-5 w-5" />
           </Button>
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 ml-auto">
-          <ThemeToggle />
+        <div className="flex items-center gap-3 sm:gap-4 ml-auto">
+          <div className="hidden sm:block">
+            <ThemeToggle />
+          </div>
           
           {/* Single Notification Bell for all notifications */}
           <NotificationBell />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="relative w-8 h-8 rounded-full overflow-hidden border-2 border-primary/20">
+              <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-primary/30 touch-optimized hover:border-primary/60 transition-all duration-200 shadow-md">
                 {profile?.avatar_url ? (
                   <img 
                     src={profile.avatar_url} 
@@ -339,7 +341,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-primary text-primary-foreground flex items-center justify-center text-xs">
+                  <div className="w-full h-full bg-gradient-to-br from-primary to-primary/80 text-primary-foreground flex items-center justify-center text-sm font-semibold">
                     {getInitials()}
                   </div>
                 )}
