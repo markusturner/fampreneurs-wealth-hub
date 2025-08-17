@@ -105,10 +105,11 @@ export function TransactionMonitoring() {
     fetchConnectedAccountsAndTransactions()
   }, [user])
 
-  // Auto-sync connected accounts on load
+  // Auto-sync connected accounts on load with loading state
   useEffect(() => {
     if (user && connectedAccounts.length > 0) {
-      syncAllAccounts()
+      setLoading(true)
+      syncAllAccounts().finally(() => setLoading(false))
     }
   }, [user, connectedAccounts])
 
