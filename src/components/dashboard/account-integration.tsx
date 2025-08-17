@@ -56,6 +56,7 @@ export function AccountIntegration() {
   const [selectedAccountType, setSelectedAccountType] = useState<string>('')
   const [realTimeUpdates, setRealTimeUpdates] = useState(true)
   const [linkToken, setLinkToken] = useState<string | null>(null)
+  const [updateLinkToken, setUpdateLinkToken] = useState<string | null>(null)
   const [selectedAccounts, setSelectedAccounts] = useState<Set<string>>(new Set())
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
   const [newAccount, setNewAccount] = useState<{
@@ -238,13 +239,32 @@ export function AccountIntegration() {
     },
   })
 
-  // Auto-open Plaid Link when token is ready
+  // Auto-open Plaid Link when token is ready (new connections)
   useEffect(() => {
     if (linkToken && ready) {
       setShowAddDialog(false)
       open()
     }
   }, [linkToken, ready, open])
+
+  // Update-mode Plaid Link for upgrading existing items
+  const { open: openUpdate, ready: readyUpdate } = usePlaidLink({
+    token: updateLinkToken || undefined,
+    onSuccess: () => {
+      toast({
+        title: 'Transactions Enabled',
+        description: 'Connection updated. Now click Sync to fetch transactions.',
+      })
+      setUpdateLinkToken(null)
+    },
+    onExit: () => setUpdateLinkToken(null),
+  })
+
+  useEffect(() => {
+    if (updateLinkToken && readyUpdate) {
+      openUpdate()
+    }
+  }, [updateLinkToken, readyUpdate, openUpdate])
 
   // Bulk selection handlers
   const handleSelectAccount = (accountId: string, checked: boolean) => {
@@ -523,8 +543,32 @@ export function AccountIntegration() {
       })
     }
   }
+ 
+  // Create an update-mode link token to enable Transactions on an existing Plaid item
+  const enableTransactions = async (accountId: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
 
-  const handleConnectRealAccount = async (accountType: string) => {
+      const { data, error } = await supabase.functions.invoke('plaid-link-update-token', {
+        body: { account_id: accountId },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+
+      if (error) {
+        console.error('Error creating update link token:', error)
+        toast({ title: 'Error', description: 'Failed to initialize account update', variant: 'destructive' })
+        return
+      }
+
+      setUpdateLinkToken((data as any).link_token)
+    } catch (err) {
+      console.error('enableTransactions error:', err)
+      toast({ title: 'Error', description: 'Could not start update flow', variant: 'destructive' })
+    }
+  }
+ 
+   const handleConnectRealAccount = async (accountType: string) => {
     if (accountType === 'plaid') {
       if (!linkToken) {
         await createLinkToken()
@@ -872,6 +916,17 @@ export function AccountIntegration() {
                       >
                         <RefreshCw className={`h-4 w-4 ${account.status === 'syncing' ? 'animate-spin' : ''}`} />
                       </Button>
+
+                      {account.provider === 'plaid' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => enableTransactions(account.id)}
+                          title="Enable Plaid Transactions for this account"
+                        >
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      )}
 
                       <Button
                         variant="outline"
