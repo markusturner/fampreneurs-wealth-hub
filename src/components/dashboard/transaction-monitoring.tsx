@@ -309,6 +309,13 @@ export function TransactionMonitoring() {
     return { hadSkipped, totalSynced }
   }
 
+  const handleEnableTransactions = () => {
+    toast({
+      title: 'Enable Transactions',
+      description: 'Go to Family Office → Account Integration, then click the gear icon (⚙️) next to each Plaid account to enable transactions.',
+    })
+  }
+
   const handleManualSync = async () => {
     if (loading) return
     
@@ -728,6 +735,16 @@ export function TransactionMonitoring() {
           >
             <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-2"
+            onClick={handleEnableTransactions}
+          >
+            <Zap className="h-4 w-4" />
+            Enable Transactions
           </Button>
           
           <Button 
