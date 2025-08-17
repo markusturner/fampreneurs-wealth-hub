@@ -19,7 +19,7 @@ import Investments from "./pages/Investments";
 import ProfileSettings from "./pages/ProfileSettings";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
-import MemberProfile from "./pages/MemberProfile";
+
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { AIChat } from "@/components/dashboard/ai-chat";
 import { initializeMobileServices } from "./lib/mobile";
@@ -40,7 +40,7 @@ function AppWithNotifications() {
       <Route path="/courses" element={<Courses />} />
       <Route path="/documents" element={<Documents />} />
       <Route path="/calendar" element={<Calendar />} />
-      <Route path="/member/:userId" element={<MemberProfile />} />
+      
       <Route path="/members" element={<Members />} />
       
       <Route path="/investments" element={<Investments />} />
