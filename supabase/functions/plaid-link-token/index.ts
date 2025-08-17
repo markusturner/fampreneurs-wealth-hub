@@ -109,8 +109,8 @@ serve(async (req) => {
     console.log('Creating link token for user:', user.id);
     console.log('Link token request payload:', JSON.stringify(linkTokenRequest, null, 2));
 
-    // Call Plaid API to create link token
-    const response = await fetch('https://production.plaid.com/link/token/create', {
+    // Call Plaid API to create link token (requesting transactions)
+    const initialResponse = await fetch('https://production.plaid.com/link/token/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -118,11 +118,43 @@ serve(async (req) => {
       body: JSON.stringify(linkTokenRequest),
     });
 
-    console.log('Plaid API response status:', response.status);
-    const plaidResponse = await response.json();
+    console.log('Plaid API response status:', initialResponse.status);
+    let plaidResponse = await initialResponse.json();
     console.log('Plaid API response body:', JSON.stringify(plaidResponse, null, 2));
 
-    if (!response.ok) {
+    // Fallback: if Transactions product isn't enabled, retry without it so linking can proceed
+    if (!initialResponse.ok && plaidResponse?.error_code === 'INVALID_PRODUCT' &&
+        (plaidResponse?.error_message?.includes('transactions') || JSON.stringify(plaidResponse).includes('transactions'))) {
+      console.warn('Transactions not enabled for this Plaid app. Falling back to auth-only link token.');
+      const fallbackRequest = { ...linkTokenRequest, products: ['auth'] as const };
+      const fallbackResp = await fetch('https://production.plaid.com/link/token/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fallbackRequest),
+      });
+      const fallbackBody = await fallbackResp.json();
+      console.log('Fallback Plaid response status:', fallbackResp.status);
+      console.log('Fallback Plaid response body:', JSON.stringify(fallbackBody, null, 2));
+
+      if (!fallbackResp.ok) {
+        console.error('Plaid API error after fallback:', fallbackBody);
+        return new Response(JSON.stringify({ error: 'Failed to create link token', details: fallbackBody }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      console.log('Auth-only link token created successfully');
+      return new Response(JSON.stringify({
+        link_token: fallbackBody.link_token,
+        expiration: fallbackBody.expiration,
+        warning: 'Plaid Transactions not enabled for this app. Created auth-only link token.'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!initialResponse.ok) {
       console.error('Plaid API error:', plaidResponse);
       return new Response(JSON.stringify({ error: 'Failed to create link token', details: plaidResponse }), {
         status: 500,

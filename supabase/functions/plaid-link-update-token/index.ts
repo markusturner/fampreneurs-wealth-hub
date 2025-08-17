@@ -106,14 +106,53 @@ serve(async (req) => {
 
     console.log('Requesting update-mode link token for account', account_id, '(', account.account_name, ')');
 
-    const response = await fetch('https://production.plaid.com/link/token/create', {
+    // Infer Plaid environment from access token prefix
+    const inferPlaidBaseUrl = (accessToken: string): string => {
+      if (accessToken.startsWith('access-sandbox')) return 'https://sandbox.plaid.com';
+      if (accessToken.startsWith('access-development')) return 'https://development.plaid.com';
+      return 'https://production.plaid.com';
+    };
+    const baseUrl = inferPlaidBaseUrl(account.plaid_access_token);
+
+    // First attempt: request update-mode link token including Transactions
+    let response = await fetch(`${baseUrl}/link/token/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
 
-    const plaidResponse = await response.json();
+    let plaidResponse = await response.json();
     console.log('Plaid update token response status:', response.status);
+
+    if (!response.ok && plaidResponse?.error_code === 'INVALID_PRODUCT' &&
+        (plaidResponse?.error_message?.includes('transactions') || JSON.stringify(plaidResponse).includes('transactions'))) {
+      console.warn('Transactions not enabled for this Plaid app. Falling back to update link without requesting new products.');
+      // Omit products to avoid requesting an unauthorized upgrade
+      const { products, ...fallbackBody } = body as Record<string, unknown>;
+      response = await fetch(`${baseUrl}/link/token/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fallbackBody),
+      });
+      plaidResponse = await response.json();
+      console.log('Fallback update token response status:', response.status);
+
+      if (!response.ok) {
+        console.error('Plaid update token error after fallback:', plaidResponse);
+        return new Response(JSON.stringify({ error: 'Failed to create update link token', details: plaidResponse }), {
+          status: response.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify({
+        link_token: plaidResponse.link_token,
+        expiration: plaidResponse.expiration,
+        warning: 'Plaid Transactions not enabled. Created update link without product upgrade.'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     if (!response.ok) {
       console.error('Plaid update token error:', plaidResponse);
