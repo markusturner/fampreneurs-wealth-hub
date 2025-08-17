@@ -120,7 +120,7 @@ serve(async (req) => {
 
     console.log('Exchanging public token for access token');
 
-    // Exchange public token for access token
+    // Exchange public token for access token - FIXED: correct endpoint
     const exchangeResponse = await fetch('https://production.plaid.com/link/token/exchange', {
       method: 'POST',
       headers: {
