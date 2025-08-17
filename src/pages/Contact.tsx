@@ -92,7 +92,13 @@ const Contact = () => {
               <Button 
                 className="w-full"
                 style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                onClick={() => setIsChatOpen(true)}
+                onClick={() => {
+                  // Trigger the global AI chat widget
+                  const chatButton = document.querySelector('[style*="background-color: rgb(255, 181, 0)"]') as HTMLButtonElement;
+                  if (chatButton && chatButton.style.backgroundColor === 'rgb(255, 181, 0)') {
+                    chatButton.click();
+                  }
+                }}
               >
                 Start Live Chat
               </Button>
