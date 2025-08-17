@@ -72,17 +72,16 @@ export function MeetingTypesManager({ onMeetingTypesChange }: MeetingTypesManage
     }
 
     try {
-      const user = await supabase.auth.getUser()
-      const { error } = await supabase
-        .from('meeting_types')
-        .insert({
+      const { data, error } = await supabase.functions.invoke('create-meeting-type', {
+        body: {
           name: newType.name.trim(),
           color: newType.color,
           description: newType.description.trim() || null,
-          created_by: user.data.user?.id
-        })
+        },
+      })
 
-      if (error) throw error
+      if (error) throw new Error(error.message)
+
 
       toast({
         title: "Success",
