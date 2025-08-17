@@ -593,21 +593,6 @@ export default function Auth() {
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="program">Program *</Label>
-                  <Select value={selectedProgram} onValueChange={setSelectedProgram}>
-                    <SelectTrigger id="program">
-                      <SelectValue placeholder="Select a program" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="The Family Business University">The Family Business University</SelectItem>
-                      <SelectItem value="The Family Vault">The Family Vault</SelectItem>
-                      <SelectItem value="The Family Business Accelerator">The Family Business Accelerator</SelectItem>
-                      <SelectItem value="The Family Legacy: VIP Weekend">The Family Legacy: VIP Weekend</SelectItem>
-                      <SelectItem value="The Family Fortune Mastermind">The Family Fortune Mastermind</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
                 
                 <div className="space-y-2">
