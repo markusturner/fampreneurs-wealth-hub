@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
 import { usePlaidLink } from 'react-plaid-link'
 import { 
@@ -28,7 +29,8 @@ import {
   Eye,
   DollarSign,
   Calendar,
-  MapPin
+  MapPin,
+  X
 } from 'lucide-react'
 
 interface ConnectedAccount {
@@ -54,6 +56,8 @@ export function AccountIntegration() {
   const [selectedAccountType, setSelectedAccountType] = useState<string>('')
   const [realTimeUpdates, setRealTimeUpdates] = useState(true)
   const [linkToken, setLinkToken] = useState<string | null>(null)
+  const [selectedAccounts, setSelectedAccounts] = useState<Set<string>>(new Set())
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
   const [newAccount, setNewAccount] = useState<{
     name: string
     type: 'bank' | 'brokerage' | 'crypto' | 'business'
@@ -241,6 +245,71 @@ export function AccountIntegration() {
       open()
     }
   }, [linkToken, ready, open])
+
+  // Bulk selection handlers
+  const handleSelectAccount = (accountId: string, checked: boolean) => {
+    const newSelected = new Set(selectedAccounts)
+    if (checked) {
+      newSelected.add(accountId)
+    } else {
+      newSelected.delete(accountId)
+    }
+    setSelectedAccounts(newSelected)
+  }
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedAccounts(new Set(accounts.map(acc => acc.id)))
+    } else {
+      setSelectedAccounts(new Set())
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    try {
+      const accountIds = Array.from(selectedAccounts)
+      
+      if (user) {
+        // Delete from Supabase for authenticated users
+        const { error } = await supabase
+          .from('connected_accounts')
+          .delete()
+          .in('id', accountIds)
+          .eq('user_id', user.id)
+
+        if (error) {
+          console.error('Error deleting accounts from Supabase:', error)
+          toast({
+            title: "Error",
+            description: "Failed to delete some accounts",
+            variant: "destructive",
+          })
+          return
+        }
+      } else {
+        // For mock accounts, use localStorage deletion tracking
+        const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
+        deletedAccounts.push(...accountIds)
+        localStorage.setItem('deletedAccounts', JSON.stringify(deletedAccounts))
+      }
+      
+      setAccounts(prev => prev.filter(acc => !selectedAccounts.has(acc.id)))
+      setSelectedAccounts(new Set())
+      setShowBulkDeleteDialog(false)
+      
+      toast({
+        title: "Accounts Deleted",
+        description: `Successfully deleted ${accountIds.length} account(s)`,
+      })
+    } catch (error) {
+      console.error('Error deleting accounts:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete accounts",
+        variant: "destructive",
+      })
+    }
+  }
 
   const handleAddAccount = async () => {
     if (!newAccount.name || !newAccount.provider) {
@@ -571,123 +640,181 @@ export function AccountIntegration() {
             />
             <span className="text-sm">Real-time updates</span>
           </Label>
-        </div>
-        
-        
-        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Add Account
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Add Account</DialogTitle>
-              <DialogDescription>
-                Connect your real financial accounts for automatic data synchronization
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-              <div className="space-y-2">
-                <h3 className="font-semibold">Bank & Investment Accounts</h3>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => handleConnectRealAccount('plaid')}
-                  disabled={loading}
-                >
-                  <Building2 className="w-4 h-4 mr-2" />
-                  Connect via Plaid
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  Securely connect bank and brokerage accounts
-                </p>
-              </div>
 
-              <div className="space-y-2">
-                <h3 className="font-semibold">Business Accounts</h3>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => handleConnectRealAccount('google_sheets')}
-                >
-                  <Building2 className="w-4 h-4 mr-2" />
-                  Connect Google Sheets
+          <div className="flex items-center gap-2">
+            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Account
                 </Button>
-                <p className="text-xs text-muted-foreground">
-                  Import data from Google Sheets
-                </p>
-              </div>
-            </div>
-
-            <div className="border-t pt-4">
-              <h3 className="font-semibold mb-2">Manual Account Setup</h3>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="type">Account Type</Label>
-                  <Select 
-                    value={newAccount.type} 
-                    onValueChange={(value: any) => {
-                      setNewAccount(prev => ({ ...prev, type: value, provider: '' }))
-                      setSelectedAccountType(value)
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="bank">Bank Account</SelectItem>
-                      <SelectItem value="brokerage">Brokerage Account</SelectItem>
-                      <SelectItem value="crypto">Cryptocurrency</SelectItem>
-                      <SelectItem value="business">Business Account</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                {selectedAccountType && (
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Add Account</DialogTitle>
+                  <DialogDescription>
+                    Connect your real financial accounts for automatic data synchronization
+                  </DialogDescription>
+                </DialogHeader>
+              
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="provider">Provider</Label>
-                    <Select 
-                      value={newAccount.provider} 
-                      onValueChange={(value) => setNewAccount(prev => ({ ...prev, provider: value }))}
+                    <h3 className="font-semibold">Bank & Investment Accounts</h3>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => handleConnectRealAccount('plaid')}
+                      disabled={loading}
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select provider" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {accountProviders[newAccount.type as keyof typeof accountProviders]?.map((provider) => (
-                          <SelectItem key={provider} value={provider}>{provider}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                      <Building2 className="w-4 h-4 mr-2" />
+                      Connect via Plaid
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Securely connect bank and brokerage accounts
+                    </p>
                   </div>
-                )}
-                
-                <div className="space-y-2">
-                  <Label htmlFor="name">Account Name</Label>
-                  <Input
-                    id="name"
-                    value={newAccount.name}
-                    onChange={(e) => setNewAccount(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="e.g., Primary Checking, Investment Portfolio"
-                  />
+
+                  <div className="space-y-2">
+                    <h3 className="font-semibold">Business Accounts</h3>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => handleConnectRealAccount('google_sheets')}
+                    >
+                      <Building2 className="w-4 h-4 mr-2" />
+                      Connect Google Sheets
+                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      Import data from Google Sheets
+                    </p>
+                  </div>
                 </div>
-                
-                <div className="flex gap-2 pt-4">
-                  <Button variant="outline" onClick={() => { setShowAddDialog(false); resetForm() }} className="flex-1">
-                    Cancel
-                  </Button>
-                  <Button onClick={handleAddAccount} className="flex-1">
-                    Connect Account
-                  </Button>
+
+                <div className="border-t pt-4">
+                  <h3 className="font-semibold mb-2">Manual Account Setup</h3>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="type">Account Type</Label>
+                      <Select 
+                        value={newAccount.type} 
+                        onValueChange={(value: any) => {
+                          setNewAccount(prev => ({ ...prev, type: value, provider: '' }))
+                          setSelectedAccountType(value)
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="bank">Bank Account</SelectItem>
+                          <SelectItem value="brokerage">Brokerage Account</SelectItem>
+                          <SelectItem value="crypto">Cryptocurrency</SelectItem>
+                          <SelectItem value="business">Business Account</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    {selectedAccountType && (
+                      <div className="space-y-2">
+                        <Label htmlFor="provider">Provider</Label>
+                        <Select 
+                          value={newAccount.provider} 
+                          onValueChange={(value) => setNewAccount(prev => ({ ...prev, provider: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select provider" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {accountProviders[newAccount.type as keyof typeof accountProviders]?.map((provider) => (
+                              <SelectItem key={provider} value={provider}>{provider}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Account Name</Label>
+                      <Input
+                        id="name"
+                        value={newAccount.name}
+                        onChange={(e) => setNewAccount(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="e.g., Primary Checking, Investment Portfolio"
+                      />
+                    </div>
+                    
+                    <div className="flex gap-2 pt-4">
+                      <Button variant="outline" onClick={() => { setShowAddDialog(false); resetForm() }} className="flex-1">
+                        Cancel
+                      </Button>
+                      <Button onClick={handleAddAccount} className="flex-1">
+                        Connect Account
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+              </DialogContent>
+            </Dialog>
+            
+            {selectedAccounts.size > 0 && (
+              <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="flex items-center gap-2">
+                    <Trash2 className="h-4 w-4" />
+                    Delete Selected ({selectedAccounts.size})
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Selected Accounts</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete {selectedAccounts.size} selected account(s)? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleBulkDelete}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete {selectedAccounts.size} Account(s)
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Bulk Selection Controls */}
+      {accounts.length > 0 && (
+        <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Checkbox 
+              checked={selectedAccounts.size === accounts.length}
+              onCheckedChange={handleSelectAll}
+              className="border-2"
+            />
+            <span className="text-sm font-medium">
+              {selectedAccounts.size > 0 ? `${selectedAccounts.size} selected` : 'Select all'}
+            </span>
+          </div>
+          
+          {selectedAccounts.size > 0 && (
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setSelectedAccounts(new Set())}
+              >
+                <X className="h-4 w-4 mr-1" />
+                Clear
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid gap-4">
         {loading ? (
@@ -706,10 +833,15 @@ export function AccountIntegration() {
           </Card>
         ) : (
           accounts.map((account) => (
-            <Card key={account.id}>
+            <Card key={account.id} className={selectedAccounts.has(account.id) ? 'ring-2 ring-primary' : ''}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
+                    <Checkbox 
+                      checked={selectedAccounts.has(account.id)}
+                      onCheckedChange={(checked) => handleSelectAccount(account.id, checked as boolean)}
+                      className="border-2"
+                    />
                     {getAccountIcon(account.type)}
                     <div>
                       <h3 className="font-semibold">{account.name}</h3>
