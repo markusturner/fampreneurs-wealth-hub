@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -132,6 +132,7 @@ export const ProfilePhotoUpload = ({ isOpen, onClose }: ProfilePhotoUploadProps)
             <User className="h-5 w-5" />
             Upload Profile Photo (Required)
           </DialogTitle>
+          <DialogDescription>Upload a profile photo for your account.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">

@@ -370,15 +370,13 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {!profile?.avatar_url && (
-                <DropdownMenuItem onClick={() => {
-                  const event = new CustomEvent('openProfilePhotoUpload')
-                  window.dispatchEvent(event)
-                }}>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Upload Profile Photo</span>
-                </DropdownMenuItem>
-              )}
+              <DropdownMenuItem onClick={() => {
+                const event = new CustomEvent('openProfilePhotoUpload')
+                window.dispatchEvent(event)
+              }}>
+                <User className="mr-2 h-4 w-4" />
+                <span>{profile?.avatar_url ? 'Change Profile Photo' : 'Upload Profile Photo'}</span>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/profile-settings')}>
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Profile Settings</span>
