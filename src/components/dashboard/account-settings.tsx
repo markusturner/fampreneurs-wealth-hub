@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Upload, User, Mail, Lock, Loader2 } from 'lucide-react'
+import { Upload, User, Mail, Lock, Loader2, Calendar, Clock, Shield } from 'lucide-react'
 
 export function AccountSettings() {
   const { user, profile, refreshProfile } = useAuth()
@@ -328,6 +328,73 @@ export function AccountSettings() {
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Update Email
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Account Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Account Information
+          </CardTitle>
+          <CardDescription>
+            View your account details and security information
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-sm font-medium">Account Created</Label>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {user?.created_at 
+                  ? new Date(user.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })
+                  : 'Unknown'
+                }
+              </p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-sm font-medium">Last Login</Label>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {user?.last_sign_in_at 
+                  ? new Date(user.last_sign_in_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })
+                  : 'Never'
+                }
+              </p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Lock className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-sm font-medium">Password Changed</Label>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {user?.updated_at && user.updated_at !== user.created_at
+                  ? new Date(user.updated_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })
+                  : 'Never changed'
+                }
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
