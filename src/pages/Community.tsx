@@ -26,7 +26,8 @@ import {
   FileText,
   Users,
   Lock,
-  ArrowLeft
+  ArrowLeft,
+  Calendar as CalendarIcon
 } from 'lucide-react'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
 import { AssetAllocation } from '@/components/dashboard/asset-allocation'
@@ -233,7 +234,7 @@ export default function Community() {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6 sm:space-y-8">
-          <TabsList className="grid w-full grid-cols-5 gap-1 p-1.5 bg-muted/60 rounded-2xl shadow-sm">
+          <TabsList className="grid w-full grid-cols-6 gap-1 p-1.5 bg-muted/60 rounded-2xl shadow-sm">
             <TabsTrigger 
               value="overview" 
               className="text-responsive-xs font-semibold px-3 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary touch-optimized"
@@ -254,6 +255,12 @@ export default function Community() {
             >
               <span className="hidden sm:inline">Transactions</span>
               <span className="sm:hidden">Trans</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="calendar" 
+              className="text-responsive-xs font-semibold px-3 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-background data-[state=active]:shadow-md data-[state=active]:text-primary touch-optimized"
+            >
+              Calendar
             </TabsTrigger>
             <TabsTrigger 
               value="budget" 
@@ -494,6 +501,28 @@ export default function Community() {
               <TransactionMonitoring />
             </div>
           </TabsContent>
+
+            <TabsContent value="calendar" className="space-y-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center">
+                    <CalendarIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">Family Calendar</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Schedule and manage family meetings, appointments, and important events.
+                    </p>
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Your upcoming meetings and scheduled activities will appear here.
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Connect with family office advisors and schedule consultations.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
           <TabsContent value="budget" className="space-y-6">
             <BudgetingAnalytics />
