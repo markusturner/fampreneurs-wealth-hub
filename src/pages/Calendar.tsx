@@ -235,7 +235,7 @@ export default function Calendar() {
         <div
           key={day.toString()}
           className={cn(
-            "min-h-[120px] border-r border-b border-border p-2 cursor-pointer hover:bg-muted/50",
+            "min-h-[80px] sm:min-h-[120px] border-r border-b border-border p-1 sm:p-2 cursor-pointer hover:bg-muted/50 touch-optimized transition-smooth",
             !isSameMonth(day, monthStart) && "bg-muted/20 text-muted-foreground",
             isSameDay(day, new Date()) && "bg-primary/10"
           )}
@@ -245,17 +245,17 @@ export default function Calendar() {
           }}
         >
           <div className={cn(
-            "text-sm font-medium mb-2",
-            isSameDay(day, new Date()) && "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center"
+            "text-xs sm:text-sm font-medium mb-1 sm:mb-2",
+            isSameDay(day, new Date()) && "bg-primary text-primary-foreground rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-xs"
           )}>
             {format(cloneDay, dateFormat)}
           </div>
-          <div className="space-y-1">
-            {dayMeetings.slice(0, 3).map((meeting) => (
+          <div className="space-y-0.5 sm:space-y-1">
+            {dayMeetings.slice(0, window.innerWidth < 640 ? 2 : 3).map((meeting) => (
               <div
                 key={meeting.id}
                 className={cn(
-                  "text-xs p-1 rounded truncate cursor-pointer",
+                  "text-[10px] sm:text-xs p-0.5 sm:p-1 rounded truncate cursor-pointer touch-target",
                   getMeetingTypeColor(meeting.meeting_type)
                 )}
                 style={getMeetingTypeStyle(meeting.meeting_type)}
@@ -264,12 +264,13 @@ export default function Calendar() {
                   setSelectedMeeting(meeting)
                 }}
               >
-                {meeting.meeting_time} - {meeting.title}
+                <span className="hidden sm:inline">{meeting.meeting_time} - </span>
+                {meeting.title}
               </div>
             ))}
-            {dayMeetings.length > 3 && (
-              <div className="text-xs text-muted-foreground">
-                +{dayMeetings.length - 3} more
+            {dayMeetings.length > (window.innerWidth < 640 ? 2 : 3) && (
+              <div className="text-[10px] sm:text-xs text-muted-foreground">
+                +{dayMeetings.length - (window.innerWidth < 640 ? 2 : 3)} more
               </div>
             )}
           </div>
@@ -307,45 +308,57 @@ export default function Calendar() {
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
-      <div className="container mx-auto p-4 lg:p-6 space-y-6">
+      <div className="container mx-auto mobile-container space-y-4 sm:space-y-6 px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={() => setCurrentDate(new Date())}>
-              Today
-            </Button>
-            <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <div className="flex items-center justify-between sm:justify-start gap-2">
               <Button 
-                variant="ghost" 
+                variant="outline" 
                 size="sm"
-                onClick={() => setCurrentDate(subMonths(currentDate, 1))}
+                onClick={() => setCurrentDate(new Date())}
+                className="touch-target"
               >
-                <ChevronLeft className="h-4 w-4" />
+                Today
               </Button>
-              <h1 className="text-2xl font-bold min-w-[200px] text-center">
-                {format(currentDate, 'MMMM yyyy')}
-              </h1>
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setCurrentDate(subMonths(currentDate, 1))}
+                  className="touch-target"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <h1 className="text-lg sm:text-2xl font-bold min-w-[140px] sm:min-w-[200px] text-center">
+                  {format(currentDate, 'MMM yyyy')}
+                </h1>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setCurrentDate(addMonths(currentDate, 1))}
+                  className="touch-target"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
               {getCurrentTime()}
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
-            <MeetingTypesManager onMeetingTypesChange={fetchMeetingTypes} />
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <div className="hidden sm:block">
+              <MeetingTypesManager onMeetingTypesChange={fetchMeetingTypes} />
+            </div>
             
             <Dialog open={isCreateMeetingOpen} onOpenChange={setIsCreateMeetingOpen}>
               <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
+                <Button className="flex items-center gap-2 touch-target" size="sm">
                   <Plus className="h-4 w-4" />
-                  Schedule Meeting
+                  <span className="hidden sm:inline">Schedule Meeting</span>
+                  <span className="sm:hidden">New</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]">
@@ -463,15 +476,21 @@ export default function Calendar() {
         <div className="border border-border rounded-lg overflow-hidden">
           {/* Day headers */}
           <div className="grid grid-cols-7 bg-muted/50">
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-              <div key={day} className="p-4 text-center font-medium border-r border-border last:border-r-0">
-                {day}
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
+              <div key={day} className="p-2 sm:p-4 text-center font-medium border-r border-border last:border-r-0">
+                <span className="text-xs sm:text-sm">
+                  <span className="sm:hidden">{day.slice(0, 1)}</span>
+                  <span className="hidden sm:inline">{day}</span>
+                </span>
               </div>
             ))}
           </div>
           {/* Calendar rows */}
           {rows}
         </div>
+        
+        {/* Mobile Bottom Spacing */}
+        <div className="pb-16 md:pb-0" />
 
         {/* Meeting Detail Dialog */}
         {selectedMeeting && (
