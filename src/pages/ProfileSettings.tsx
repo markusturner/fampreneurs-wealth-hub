@@ -3,12 +3,12 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-import { AccountabilityDirectory } from '@/components/dashboard/accountability-directory'
+
 import { AffiliateProgram } from '@/components/dashboard/affiliate-program'
 import { AccountSettings } from '@/components/dashboard/account-settings'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Settings, Heart, Users, ArrowLeft, User } from 'lucide-react'
+import { Settings, Heart, ArrowLeft, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 
@@ -50,17 +50,8 @@ export function ProfileSettings() {
         </div>
       </div>
 
-      <Tabs defaultValue="directory" className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2 h-auto' : 'grid-cols-3'}`}>
-          <TabsTrigger 
-            value="directory" 
-            className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
-          >
-            <Users className="h-4 w-4 shrink-0" />
-            <span className={isMobile ? "text-center leading-tight" : ""}>
-              {isMobile ? "Directory" : "Accountability Directory"}
-            </span>
-          </TabsTrigger>
+      <Tabs defaultValue="account" className="space-y-4 md:space-y-6">
+        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2 h-auto' : 'grid-cols-2'}`}>
           <TabsTrigger 
             value="account" 
             className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
@@ -81,9 +72,6 @@ export function ProfileSettings() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="directory">
-          <AccountabilityDirectory />
-        </TabsContent>
 
         <TabsContent value="account">
           <AccountSettings />
