@@ -3239,6 +3239,20 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      get_public_advisor_listing: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          bio: string
+          company: string
+          full_name: string
+          id: string
+          is_active: boolean
+          specialties: string[]
+          title: string
+          website: string
+          years_experience: number
+        }[]
+      }
       get_public_profile: {
         Args: { target_user_id: string }
         Returns: Json
