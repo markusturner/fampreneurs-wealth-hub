@@ -1,166 +1,319 @@
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Upload, Download, FileText, Building, Shield, Landmark, Crown, Phone, MapPin, Hash, Video, Heart, Scroll } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { 
+  BookOpen, 
+  Crown, 
+  Users, 
+  MessageCircle, 
+  Image, 
+  TreePine, 
+  Lock, 
+  Scroll,
+  Building2,
+  Scale,
+  Shield,
+  GraduationCap,
+  ArrowLeft,
+  Heart,
+  FileText,
+  Video
+} from "lucide-react"
 import { NavHeader } from "@/components/dashboard/nav-header"
+import { useNavigate } from "react-router-dom"
 
-const documentCategories = [
+const familyEducationModules = [
   {
-    title: "Trust Documents",
-    icon: Landmark,
-    documents: [
-      { name: "Family Trust Document", icon: FileText, type: "file" },
-      { name: "Business Trust Document", icon: Building, type: "file" },
-      { name: "Tax-Exempt Trust Document", icon: Shield, type: "file" },
-      { name: "Power of Attorney Document", icon: FileText, type: "file" }
-    ]
+    title: "Family Business Education",
+    description: "Learn the fundamentals of running a successful family business",
+    icon: Building2,
+    status: "Available",
+    lessons: 12,
+    duration: "3 hours"
   },
   {
-    title: "Certificates & Legal",
-    icon: Shield,
-    documents: [
-      { name: "Trademark Certificate", icon: Crown, type: "file" },
-      { name: "Family Constitution", icon: Scroll, type: "file" },
-      { name: "Family Crest", icon: Crown, type: "file" }
-    ]
+    title: "Family Constitution",
+    description: "Understanding and implementing your family's core values and principles",
+    icon: Scroll,
+    status: "Available",
+    lessons: 8,
+    duration: "2 hours"
   },
   {
-    title: "EIN Numbers",
-    icon: Hash,
-    documents: [
-      { name: "Family Trust EIN Number", icon: Hash, type: "text" },
-      { name: "Business Trust EIN Number", icon: Hash, type: "text" },
-      { name: "Tax-Exempt EIN Number", icon: Hash, type: "text" }
-    ]
+    title: "Family Governance Framework",
+    description: "The three branches of family government and their roles",
+    icon: Scale,
+    status: "Available",
+    lessons: 15,
+    duration: "4 hours"
+  }
+]
+
+const governanceBranches = [
+  {
+    title: "The Family Council",
+    description: "Executive branch responsible for day-to-day family business decisions",
+    icon: Crown,
+    members: "5 Active Members",
+    role: "Decision Making & Strategy"
   },
   {
-    title: "Addresses",
-    icon: MapPin,
-    documents: [
-      { name: "Family Trust Address", icon: MapPin, type: "text" },
-      { name: "Business Trust Address", icon: MapPin, type: "text" },
-      { name: "Tax-Exempt Address", icon: MapPin, type: "text" }
-    ]
+    title: "Council of Elders",
+    description: "Advisory branch providing wisdom and guidance based on experience",
+    icon: Users,
+    members: "3 Elder Members",
+    role: "Guidance & Mentorship"
   },
   {
-    title: "Phone Numbers",
-    icon: Phone,
-    documents: [
-      { name: "Family Trust Phone Number", icon: Phone, type: "text" },
-      { name: "Business Trust Phone Number", icon: Phone, type: "text" },
-      { name: "Tax-Exempt Phone Number", icon: Phone, type: "text" }
-    ]
+    title: "Family Assembly",
+    description: "Legislative branch representing all family members' voices",
+    icon: Scale,
+    members: "All Family Members",
+    role: "Voting & Policy Making"
+  }
+]
+
+const heritageResources = [
+  {
+    title: "Family Crest & Seal",
+    description: "Explore the history and meaning behind your family symbols",
+    icon: Crown,
+    type: "Interactive Gallery"
   },
   {
-    title: "Legacy Documents",
-    icon: Heart,
-    documents: [
-      { name: "Legacy Video", icon: Video, type: "file" },
-      { name: "The Life-Legacy Letter", icon: Heart, type: "file" },
-      { name: "Sorry I Died On You Letter", icon: Heart, type: "file" }
-    ]
+    title: "Family Portrait Gallery",
+    description: "View the commissioned family portrait painting",
+    icon: Image,
+    type: "Digital Gallery"
+  },
+  {
+    title: "Family Tree Explorer",
+    description: "Interactive genealogy and family lineage",
+    icon: TreePine,
+    type: "Interactive Map"
+  },
+  {
+    title: "Family Identity Manual",
+    description: "Comprehensive guide to family values, mission, and vision",
+    icon: FileText,
+    type: "Digital Handbook"
   }
 ]
 
 export default function Documents() {
-  const [uploadingDocument, setUploadingDocument] = useState<string | null>(null)
-
-  const handleUpload = (documentName: string) => {
-    setUploadingDocument(documentName)
-    // TODO: Implement actual upload logic
-    setTimeout(() => {
-      setUploadingDocument(null)
-    }, 2000)
-  }
-
-  const handleDownload = (documentName: string) => {
-    // TODO: Implement actual download logic
-    console.log("Downloading:", documentName)
-  }
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
-
-      {/* Page Header */}
-      <div className="border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50">
-        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <div className="flex-1">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">Family Documents</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Manage your trust and family documents securely
+      
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+            className="hover:bg-muted"
+            title="Back to Dashboard"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold">The Family Roundtable</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Family education, governance, and heritage management center
             </p>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
-        <div className="grid gap-4 sm:gap-6">
-          {documentCategories.map((category) => {
-            const CategoryIcon = category.icon
-            
-            return (
-              <Card key={category.title} className="shadow-soft">
-                <CardHeader className="pb-3 sm:pb-6">
-                  <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
-                    <CategoryIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-                    <span>{category.title}</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="grid gap-2 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {category.documents.map((document) => {
-                      const DocumentIcon = document.icon
-                      const isUploading = uploadingDocument === document.name
-                      
-                      return (
-                        <div
-                          key={document.name}
-                          className="flex items-center justify-between p-2 sm:p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                        >
-                          <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                            <DocumentIcon className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                            <span className="text-xs sm:text-sm font-medium truncate">
-                              {document.name}
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center space-x-1 sm:space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleUpload(document.name)}
-                              disabled={isUploading}
-                              className="h-7 px-2 sm:h-8 sm:px-3"
-                              title="Upload"
-                            >
-                              {isUploading ? (
-                                <div className="h-2 w-2 sm:h-3 sm:w-3 animate-spin rounded-full border border-current border-t-transparent" />
-                              ) : (
-                                <Upload className="h-2 w-2 sm:h-3 sm:w-3" />
-                              )}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDownload(document.name)}
-                              className="h-7 px-2 sm:h-8 sm:px-3"
-                              title="Download"
-                            >
-                              <Download className="h-2 w-2 sm:h-3 sm:w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      )
-                    })}
+        {/* Family Education Modules */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+              <GraduationCap className="h-5 w-5" />
+              Family Education Center
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Comprehensive courses designed to educate family members about business, governance, and values
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {familyEducationModules.map((module) => {
+              const Icon = module.icon
+              return (
+                <Card key={module.title} className="hover:shadow-md transition-shadow cursor-pointer">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <Icon className="h-8 w-8 text-primary" />
+                      <Badge variant="secondary">{module.status}</Badge>
+                    </div>
+                    <CardTitle className="text-base">{module.title}</CardTitle>
+                    <CardDescription className="text-sm">
+                      {module.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>{module.lessons} lessons</span>
+                      <span>{module.duration}</span>
+                    </div>
+                    <Button className="w-full mt-3" size="sm">
+                      Start Learning
+                    </Button>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </section>
+
+        {/* Family Governance */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+              <Scale className="h-5 w-5" />
+              Family Governance Structure
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              The three branches of government that guide our family's decision-making process
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {governanceBranches.map((branch) => {
+              const Icon = branch.icon
+              return (
+                <Card key={branch.title} className="border-2">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <Icon className="h-6 w-6 text-primary" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{branch.title}</CardTitle>
+                        <CardDescription className="text-xs">
+                          {branch.members}
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      {branch.description}
+                    </p>
+                    <Badge variant="outline" className="text-xs">
+                      {branch.role}
+                    </Badge>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </section>
+
+        {/* Communication Hub */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+              <MessageCircle className="h-5 w-5" />
+              Family Communication Hub
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Stay connected with family members through our secure communication platform
+            </p>
+          </div>
+          
+          <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-full bg-primary/10">
+                    <MessageCircle className="h-6 w-6 text-primary" />
                   </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      </main>
+                  <div>
+                    <h3 className="font-semibold">Family Group Chat</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Secure messaging platform for all family members
+                    </p>
+                  </div>
+                </div>
+                <Button>
+                  Access Chat
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Heritage & Identity */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+              <Heart className="h-5 w-5" />
+              Family Heritage & Identity
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Explore your family's rich history, traditions, and cultural identity
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {heritageResources.map((resource) => {
+              const Icon = resource.icon
+              return (
+                <Card key={resource.title} className="hover:shadow-md transition-shadow cursor-pointer">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="p-2 rounded-lg bg-secondary">
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold mb-1">{resource.title}</h3>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {resource.description}
+                        </p>
+                        <Badge variant="outline" className="text-xs">
+                          {resource.type}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        </section>
+
+        {/* Family Secret Codes */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+              <Lock className="h-5 w-5" />
+              Family Secret Codes
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Secure access system for sensitive family information and resources
+            </p>
+          </div>
+          
+          <Card className="border-2 border-dashed border-muted-foreground/30">
+            <CardContent className="p-8 text-center">
+              <div className="mx-auto w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+                <Lock className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <h3 className="font-semibold mb-2">Secure Access Required</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Enter your family access code to view sensitive family information
+              </p>
+              <Button variant="outline">
+                Enter Access Code
+              </Button>
+            </CardContent>
+          </Card>
+        </section>
+      </div>
     </div>
   )
 }

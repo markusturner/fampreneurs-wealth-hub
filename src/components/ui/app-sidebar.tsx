@@ -17,7 +17,7 @@ import { useAuth } from "@/contexts/AuthContext"
 
 const mainItems = [
   { title: "Dashboard", url: "/", icon: Home },
-  { title: "The Family Roundtable", url: "/family-roundtable", icon: FileText },
+  { title: "The Family Roundtable", url: "/documents", icon: FileText },
 ]
 
 const investmentItems = [
