@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Plus, ChevronLeft, ChevronRight, FileText, Edit, Save, X } from "lucide-react"
+import { Plus, ChevronLeft, ChevronRight, FileText, Edit, Save, X, Clock, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns"
+import { formatInTimeZone } from "date-fns-tz"
 import { cn } from "@/lib/utils"
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { MeetingTypesManager } from "@/components/dashboard/meeting-types-manager"
@@ -51,6 +52,7 @@ export default function Calendar() {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
   const [isCreateMeetingOpen, setIsCreateMeetingOpen] = useState(false)
   const [editingNotes, setEditingNotes] = useState(false)
+  const [selectedTimezone, setSelectedTimezone] = useState('America/New_York')
   const [newMeeting, setNewMeeting] = useState({
     title: '',
     description: '',
@@ -60,6 +62,33 @@ export default function Calendar() {
     location: '',
     attendees: ''
   })
+
+  // Common timezones list
+  const timezones = [
+    { value: 'America/New_York', label: 'Eastern Time (ET)' },
+    { value: 'America/Chicago', label: 'Central Time (CT)' },
+    { value: 'America/Denver', label: 'Mountain Time (MT)' },
+    { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+    { value: 'America/Phoenix', label: 'Arizona Time (MST)' },
+    { value: 'America/Anchorage', label: 'Alaska Time (AKST)' },
+    { value: 'Pacific/Honolulu', label: 'Hawaii Time (HST)' },
+    { value: 'Europe/London', label: 'London (GMT/BST)' },
+    { value: 'Europe/Paris', label: 'Paris (CET/CEST)' },
+    { value: 'Europe/Berlin', label: 'Berlin (CET/CEST)' },
+    { value: 'Europe/Rome', label: 'Rome (CET/CEST)' },
+    { value: 'Europe/Madrid', label: 'Madrid (CET/CEST)' },
+    { value: 'Europe/Moscow', label: 'Moscow (MSK)' },
+    { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
+    { value: 'Asia/Shanghai', label: 'Shanghai (CST)' },
+    { value: 'Asia/Hong_Kong', label: 'Hong Kong (HKT)' },
+    { value: 'Asia/Singapore', label: 'Singapore (SGT)' },
+    { value: 'Asia/Dubai', label: 'Dubai (GST)' },
+    { value: 'Asia/Kolkata', label: 'Mumbai (IST)' },
+    { value: 'Australia/Sydney', label: 'Sydney (AEDT/AEST)' },
+    { value: 'Australia/Melbourne', label: 'Melbourne (AEDT/AEST)' },
+    { value: 'Pacific/Auckland', label: 'Auckland (NZDT/NZST)' },
+    { value: 'UTC', label: 'UTC (Coordinated Universal Time)' }
+  ]
 
   useEffect(() => {
     fetchMeetings()
@@ -285,7 +314,9 @@ export default function Calendar() {
 
   const getCurrentTime = () => {
     const now = new Date()
-    return format(now, 'h:mmaaa') + ' New York time'
+    const selectedTz = timezones.find(tz => tz.value === selectedTimezone)
+    const timeString = formatInTimeZone(now, selectedTimezone, 'h:mm aaa')
+    return `${timeString} ${selectedTz?.label.split(' ')[0] || selectedTimezone}`
   }
 
   if (loading) {
@@ -340,8 +371,43 @@ export default function Calendar() {
                 </Button>
               </div>
             </div>
-            <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
-              {getCurrentTime()}
+            <div className="flex items-center gap-3">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2 text-xs sm:text-sm text-muted-foreground hover:text-foreground">
+                    <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span>{getCurrentTime()}</span>
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-0" align="start">
+                  <div className="p-3 border-b">
+                    <h4 className="font-medium text-sm">Select Timezone</h4>
+                    <p className="text-xs text-muted-foreground">Choose your preferred timezone for calendar display</p>
+                  </div>
+                  <div className="max-h-60 overflow-y-auto">
+                    {timezones.map((timezone) => (
+                      <button
+                        key={timezone.value}
+                        className={cn(
+                          "w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors",
+                          selectedTimezone === timezone.value && "bg-muted font-medium"
+                        )}
+                        onClick={() => {
+                          setSelectedTimezone(timezone.value)
+                        }}
+                      >
+                        <div className="flex justify-between items-center">
+                          <span>{timezone.label}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatInTimeZone(new Date(), timezone.value, 'HH:mm')}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
           
