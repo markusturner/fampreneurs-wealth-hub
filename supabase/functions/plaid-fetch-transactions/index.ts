@@ -101,13 +101,30 @@ serve(async (req) => {
     };
     console.log(`Fetching transactions for account: ${account.external_account_id} from ${startDate} to ${endDate}`);
 
-    const plaidResponse = await fetch(`${plaidBaseUrl}/transactions/get`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
+    // Call Plaid API to fetch transactions with retry logic
+    let plaidResponse;
+    let attempt = 0;
+    const maxRetries = 3;
+    
+    while (attempt < maxRetries) {
+      plaidResponse = await fetch(`${plaidBaseUrl}/transactions/get`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+      
+      if (plaidResponse.status === 429) {
+        attempt++;
+        if (attempt < maxRetries) {
+          console.log(`Rate limited, retrying in ${attempt * 2} seconds...`);
+          await new Promise(resolve => setTimeout(resolve, attempt * 2000));
+          continue;
+        }
+      }
+      break;
+    }
 
     if (!plaidResponse.ok) {
       const errorText = await plaidResponse.text();
