@@ -348,6 +348,11 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                   <p className="text-sm font-medium leading-none">
                     {profile?.display_name || 'User'}
                   </p>
+                  {!profile?.avatar_url && (
+                    <p className="text-xs text-muted-foreground">
+                      Click to upload profile photo
+                    </p>
+                  )}
                   <p className="text-xs leading-none text-muted-foreground">
                     {profile?.family_role || 'Family Member'}
                   </p>
