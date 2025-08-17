@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, Settings, Save, X } from "lucide-react"
+import { Plus, Edit, Trash2, Settings, Save, X, GripVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
@@ -7,6 +7,25 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import {
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface MeetingType {
   id: string
@@ -23,6 +42,153 @@ interface MeetingTypesManagerProps {
   onMeetingTypesChange?: () => void
 }
 
+interface SortableItemProps {
+  type: MeetingType
+  editingType: MeetingType | null
+  setEditingType: (type: MeetingType | null) => void
+  handleUpdateType: (id: string, updates: Partial<MeetingType>) => void
+  handleToggleActive: (id: string, isActive: boolean) => void
+  handleDeleteType: (id: string) => void
+  colorOptions: string[]
+}
+
+function SortableItem({ 
+  type, 
+  editingType, 
+  setEditingType, 
+  handleUpdateType, 
+  handleToggleActive, 
+  handleDeleteType,
+  colorOptions 
+}: SortableItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: type.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between p-3 border rounded-lg bg-background"
+    >
+      <div className="flex items-center gap-3 flex-1">
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing"
+        >
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <div
+          className="w-4 h-4 rounded"
+          style={{ backgroundColor: type.color }}
+        />
+        <div className="flex-1 min-w-0">
+          {editingType?.id === type.id ? (
+            <div className="space-y-2">
+              <Input
+                value={editingType.name}
+                onChange={(e) => {
+                  if (editingType) {
+                    setEditingType({ ...editingType, name: e.target.value })
+                  }
+                }}
+                className="h-8"
+              />
+              <div className="flex flex-wrap gap-1">
+                {colorOptions.map(color => (
+                  <button
+                    key={color}
+                    type="button"
+                    className={`w-6 h-6 rounded border ${
+                      editingType.color === color ? 'border-foreground border-2' : 'border-border'
+                    }`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => {
+                      if (editingType) {
+                        setEditingType({ ...editingType, color })
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div>
+              <div className="font-medium">{type.name}</div>
+              {type.description && (
+                <div className="text-sm text-muted-foreground">{type.description}</div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        {editingType?.id === type.id ? (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleUpdateType(type.id, {
+                name: editingType.name.trim(),
+                color: editingType.color,
+                description: editingType.description?.trim() || null
+              })}
+            >
+              <Save className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setEditingType(null)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setEditingType({ ...type })}
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleToggleActive(type.id, type.is_active)}
+              className={type.is_active ? "text-green-600" : "text-red-600"}
+            >
+              {type.is_active ? "Active" : "Inactive"}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDeleteType(type.id)}
+              className="text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function MeetingTypesManager({ onMeetingTypesChange }: MeetingTypesManagerProps) {
   const { toast } = useToast()
   const [meetingTypes, setMeetingTypes] = useState<MeetingType[]>([])
@@ -35,6 +201,26 @@ export function MeetingTypesManager({ onMeetingTypesChange }: MeetingTypesManage
     color: '#3b82f6',
     description: ''
   })
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (over && active.id !== over.id) {
+      setMeetingTypes((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id)
+        const newIndex = items.findIndex((item) => item.id === over.id)
+
+        return arrayMove(items, oldIndex, newIndex)
+      })
+    }
+  }
 
   useEffect(() => {
     fetchMeetingTypes()
@@ -266,105 +452,31 @@ export function MeetingTypesManager({ onMeetingTypesChange }: MeetingTypesManage
             ) : meetingTypes.length === 0 ? (
               <div className="text-center text-muted-foreground">No meeting types found</div>
             ) : (
-              meetingTypes.map((type) => (
-                <div
-                  key={type.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={meetingTypes.map(type => type.id)}
+                  strategy={verticalListSortingStrategy}
                 >
-                  <div className="flex items-center gap-3 flex-1">
-                    <div
-                      className="w-4 h-4 rounded"
-                      style={{ backgroundColor: type.color }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      {editingType?.id === type.id ? (
-                        <div className="space-y-2">
-                          <Input
-                            value={editingType.name}
-                            onChange={(e) => setEditingType(prev => 
-                              prev ? { ...prev, name: e.target.value } : null
-                            )}
-                            className="h-8"
-                          />
-                          <div className="flex flex-wrap gap-1">
-                            {colorOptions.map(color => (
-                              <button
-                                key={color}
-                                type="button"
-                                className={`w-6 h-6 rounded border ${
-                                  editingType.color === color ? 'border-foreground border-2' : 'border-border'
-                                }`}
-                                style={{ backgroundColor: color }}
-                                onClick={() => setEditingType(prev => 
-                                  prev ? { ...prev, color } : null
-                                )}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="font-medium">{type.name}</div>
-                          {type.description && (
-                            <div className="text-sm text-muted-foreground">{type.description}</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                  <div className="space-y-2">
+                    {meetingTypes.map((type) => (
+                      <SortableItem
+                        key={type.id}
+                        type={type}
+                        editingType={editingType}
+                        setEditingType={setEditingType}
+                        handleUpdateType={handleUpdateType}
+                        handleToggleActive={handleToggleActive}
+                        handleDeleteType={handleDeleteType}
+                        colorOptions={colorOptions}
+                      />
+                    ))}
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    {editingType?.id === type.id ? (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleUpdateType(type.id, {
-                            name: editingType.name.trim(),
-                            color: editingType.color,
-                            description: editingType.description?.trim() || null
-                          })}
-                        >
-                          <Save className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingType(null)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingType({ ...type })}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleActive(type.id, type.is_active)}
-                          className={type.is_active ? "text-green-600" : "text-red-600"}
-                        >
-                          {type.is_active ? "Active" : "Inactive"}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteType(type.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))
+                </SortableContext>
+              </DndContext>
             )}
           </div>
         </div>
