@@ -127,26 +127,50 @@ serve(async (req) => {
     }
 
     if (!plaidResponse.ok) {
-      const errorText = await plaidResponse.text();
+      let errorBody: any = null;
+      try {
+        errorBody = await plaidResponse.json();
+      } catch (_) {
+        // Fallback to text if JSON parsing fails
+      }
+
+      const errorCode = errorBody?.error_code;
+      const errorMsg = errorBody ? JSON.stringify(errorBody) : await plaidResponse.text();
+
       console.error('Plaid API error:', {
         status: plaidResponse.status,
         statusText: plaidResponse.statusText,
-        error: errorText,
+        error: errorMsg,
         environment: plaidEnv,
         account_id: account.external_account_id
       });
-      
-      return new Response(JSON.stringify({ 
-        error: 'Failed to fetch transactions from Plaid',
-        details: {
-          status: plaidResponse.status,
-          message: errorText,
-          environment: plaidEnv
-        }
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+
+      // Gracefully handle when Transactions product isn't enabled
+      if (errorCode === 'INVALID_PRODUCT') {
+        console.warn('Plaid Transactions not enabled for this environment. Returning empty set.');
+        return new Response(
+          JSON.stringify({
+            success: true,
+            transactions: [],
+            skipped: true,
+            reason: 'INVALID_PRODUCT',
+            message: 'Plaid Transactions product is not enabled for this environment.'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          error: 'Failed to fetch transactions from Plaid',
+          details: {
+            status: plaidResponse.status,
+            message: errorMsg,
+            environment: plaidEnv,
+          },
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const plaidData = await plaidResponse.json();

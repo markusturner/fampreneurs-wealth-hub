@@ -228,13 +228,10 @@ export function MeetingTypesManager({ onMeetingTypesChange }: MeetingTypesManage
 
   const fetchMeetingTypes = async () => {
     try {
-      const { data, error } = await supabase
-        .from('meeting_types')
-        .select('*')
-        .order('name', { ascending: true })
-
+      const { data, error } = await supabase.functions.invoke('get-meeting-types')
       if (error) throw error
-      setMeetingTypes(data || [])
+      const list = (data as any)?.meeting_types || []
+      setMeetingTypes(list)
     } catch (error) {
       console.error('Error fetching meeting types:', error)
       toast({
