@@ -1004,7 +1004,17 @@ export function TransactionMonitoring() {
             <div className="text-center text-muted-foreground py-8">Loading transactions...</div>
           ) : filteredTransactions.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
-              No transactions found. Try adjusting your search or filters.
+              <div className="space-y-2">
+                <p>No transactions available</p>
+                <p className="text-sm">
+                  This may be because:
+                </p>
+                <ul className="text-sm space-y-1">
+                  <li>• Plaid transactions product is not enabled for your account</li>
+                  <li>• Your connected accounts don't have recent transactions</li>
+                  <li>• Try adjusting your search or date filters</li>
+                </ul>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
