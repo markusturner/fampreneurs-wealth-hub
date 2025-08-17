@@ -10,10 +10,11 @@ import {
 
 export function Toaster() {
   const { toasts } = useToast()
+  const visibleToasts = toasts.filter(t => t.title || t.description || t.action)
 
   return (
     <ToastProvider>
-      {toasts.map(function ({ id, title, description, action, ...props }) {
+      {visibleToasts.map(function ({ id, title, description, action, ...props }) {
         return (
           <Toast key={id} {...props}>
             <div className="grid gap-1">
