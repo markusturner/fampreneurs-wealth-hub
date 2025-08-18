@@ -47,8 +47,8 @@ export function AppSidebar() {
 
   const getNavClass = (path: string) => {
     return isActive(path) 
-      ? "bg-primary text-primary-foreground font-medium rounded-md" 
-      : "hover:bg-accent hover:text-accent-foreground rounded-md transition-colors"
+      ? "bg-primary text-primary-foreground font-medium" 
+      : "hover:bg-muted/50"
   }
 
   // Choose navigation items based on user role
@@ -56,26 +56,22 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      className={state === "collapsed" ? "w-14" : "w-64"}
-      collapsible="icon"
-      variant="sidebar"
+      className={state === "collapsed" ? "w-14" : "w-60"}
+      collapsible="offcanvas"
     >
-      <SidebarContent className="gap-0">
-        <SidebarGroup className="px-0">
-          <SidebarGroupLabel className={`px-4 py-2 text-sm font-semibold tracking-tight ${state === "collapsed" ? "hidden" : ""}`}>
-            TruHeirs
-          </SidebarGroupLabel>
-          <SidebarGroupContent className="px-2">
-            <SidebarMenu className="gap-1">
+      <SidebarTrigger className="m-2 self-end" />
+      
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
               {navigationItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      className={`${getNavClass(item.url)} w-full justify-start px-3 py-2 h-10`}
-                    >
-                      <item.icon className={`h-4 w-4 ${state === "collapsed" ? "" : "mr-3"}`} />
-                      {state !== "collapsed" && <span className="text-sm">{item.title}</span>}
+                    <NavLink to={item.url} className={getNavClass(item.url)}>
+                      <item.icon className="mr-2 h-4 w-4" />
+                      <span>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

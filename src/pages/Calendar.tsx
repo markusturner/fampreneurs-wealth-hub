@@ -624,14 +624,8 @@ export default function Calendar() {
                         <Button
                           size="sm"
                           onClick={() => {
-                            try {
-                              const textarea = document.getElementById('meeting-notes') as HTMLTextAreaElement
-                              if (textarea && document.body.contains(textarea)) {
-                                handleUpdateNotes(selectedMeeting.id, textarea.value)
-                              }
-                            } catch (error) {
-                              console.error('Failed to update notes:', error)
-                            }
+                            const textarea = document.getElementById('meeting-notes') as HTMLTextAreaElement
+                            handleUpdateNotes(selectedMeeting.id, textarea.value)
                           }}
                         >
                           <Save className="h-4 w-4" />

@@ -23,7 +23,7 @@ import ProfileSettings from "./pages/ProfileSettings";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
 
-import { MainLayout } from "@/components/layout/MainLayout";
+import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { AIChat } from "@/components/dashboard/ai-chat";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
@@ -46,22 +46,20 @@ function AppWithNotifications() {
   useZapierNotifications()
   return (
     <Routes>
+      <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
-      <Route path="/" element={<MainLayout />}>
-        <Route index element={<Index />} />
-        <Route path="/community" element={<Community />} />
-        <Route path="/courses" element={<Courses />} />
-        <Route path="/documents" element={<Documents />} />
-        <Route path="/family-roundtable" element={<FamilyRoundtable />} />
-        <Route path="/family-governance" element={<FamilyGovernance />} />
-        <Route path="/calendar" element={<Calendar />} />
-        <Route path="/members" element={<Members />} />
-        <Route path="/investments" element={<Investments />} />
-        <Route path="/profile-settings" element={<ProfileSettings />} />
-        <Route path="/help" element={<Help />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/search" element={<Search />} />
-      </Route>
+      <Route path="/community" element={<Community />} />
+      <Route path="/courses" element={<Courses />} />
+      <Route path="/documents" element={<Documents />} />
+      <Route path="/family-roundtable" element={<FamilyRoundtable />} />
+      <Route path="/family-governance" element={<FamilyGovernance />} />
+      <Route path="/calendar" element={<Calendar />} />
+      <Route path="/members" element={<Members />} />
+      <Route path="/investments" element={<Investments />} />
+      <Route path="/profile-settings" element={<ProfileSettings />} />
+      <Route path="/help" element={<Help />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/search" element={<Search />} />
     </Routes>
   )
 }
@@ -74,6 +72,7 @@ createRoot(document.getElementById("root")!).render(
           <AuthProvider>
             <MeetingsProvider>
               <AppWithNotifications />
+              <MobileBottomNav />
               <AIChat />
               <Toaster />
             </MeetingsProvider>

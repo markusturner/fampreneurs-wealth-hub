@@ -406,24 +406,10 @@ function DocumentsContent() {
   const handleDownload = (documentName: string) => {
     const documentData = uploadedDocuments[documentName]
     if (documentData) {
-      try {
-        const link = document.createElement('a')
-        link.href = documentData.url
-        link.download = documentData.name
-        link.style.display = 'none'
-        
-        document.body.appendChild(link)
-        link.click()
-        
-        // Clean up safely
-        setTimeout(() => {
-          if (document.body.contains(link)) {
-            document.body.removeChild(link)
-          }
-        }, 100)
-      } catch (error) {
-        console.error('Download failed:', error)
-      }
+      const link = document.createElement('a')
+      link.href = documentData.url
+      link.download = documentData.name
+      link.click()
     } else {
       console.log("No file uploaded for:", documentName)
     }

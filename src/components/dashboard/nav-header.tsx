@@ -35,25 +35,18 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        try {
-          const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement
-          if (searchInput && document.body.contains(searchInput)) {
-            searchInput.focus()
-          } else {
-            // If no search input visible, navigate to search page
-            navigate('/search')
-          }
-        } catch (error) {
-          // Fallback to navigation if DOM query fails
+        const searchInput = document.querySelector('input[type="search"]') as HTMLInputElement
+        if (searchInput) {
+          searchInput.focus()
+        } else {
+          // If no search input visible, navigate to search page
           navigate('/search')
         }
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
+    return () => document.removeEventListener('keydown', handleKeyDown)
   }, [navigate])
 
   const handleFeedbackClick = () => {

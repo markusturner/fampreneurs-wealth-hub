@@ -267,10 +267,6 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     padding-bottom: max(4rem, env(safe-area-inset-bottom));
   }
 
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
   .mobile-container {
     padding-left: max(0.75rem, env(safe-area-inset-left));
     padding-right: max(0.75rem, env(safe-area-inset-right));
@@ -280,35 +276,6 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
   .touch-target {
     min-height: 44px;
     min-width: 44px;
-  }
-
-  /* Responsive Layout Utilities */
-  .desktop-only {
-    @apply hidden md:block;
-  }
-
-  .mobile-only {
-    @apply block md:hidden;
-  }
-
-  .tablet-up {
-    @apply hidden sm:block;
-  }
-
-  /* Enhanced Touch Interactions */
-  @media (hover: none) and (pointer: coarse) {
-    .touch-hover {
-      @apply active:scale-95 active:bg-accent/50;
-    }
-  }
-
-  /* Improved Accessibility */
-  @media (prefers-reduced-motion: reduce) {
-    .transition-all,
-    .transition-transform,
-    .transition-colors {
-      @apply transition-none;
-    }
   }
 
   /* Mobile-optimized cards */

@@ -319,28 +319,13 @@ export function useFamilyOfficeSecurity() {
       // Download as JSON file
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
-      
-      // Create and trigger download safely
-      try {
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `family-office-data-export-${new Date().toISOString().split('T')[0]}.json`
-        a.style.display = 'none'
-        
-        document.body.appendChild(a)
-        a.click()
-        
-        // Clean up immediately
-        setTimeout(() => {
-          if (document.body.contains(a)) {
-            document.body.removeChild(a)
-          }
-          URL.revokeObjectURL(url)
-        }, 100)
-      } catch (error) {
-        URL.revokeObjectURL(url)
-        throw error
-      }
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `family-office-data-export-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
 
       toast({
         title: "Data Exported",
