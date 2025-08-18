@@ -1041,7 +1041,7 @@ function ServicesContent() {
                             <ServiceIcon className={`h-5 w-5 ${category.color} group-hover:scale-110 transition-transform`} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm sm:text-base group-hover:text-primary transition-colors">
+                            <h4 className="font-medium text-sm sm:text-base text-white hover:text-purple-500 transition-colors">
                               {service.name}
                             </h4>
                             <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
