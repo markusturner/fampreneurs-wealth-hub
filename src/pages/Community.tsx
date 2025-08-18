@@ -542,18 +542,49 @@ export default function Community() {
 // Documents content component (moved from Documents page)
 function DocumentsContent() {
   const [uploadingDocument, setUploadingDocument] = useState<string | null>(null)
+  const [uploadedDocuments, setUploadedDocuments] = useState<{[key: string]: {url: string, name: string, type: string}}>({})
 
   const handleUpload = (documentName: string) => {
-    setUploadingDocument(documentName)
-    // TODO: Implement actual upload logic
-    setTimeout(() => {
-      setUploadingDocument(null)
-    }, 2000)
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.pdf,.doc,.docx,.png,.jpg,.jpeg,.mp4,.mov'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) {
+        setUploadingDocument(documentName)
+        
+        // Simulate upload delay
+        setTimeout(() => {
+          const url = URL.createObjectURL(file)
+          setUploadedDocuments(prev => ({
+            ...prev,
+            [documentName]: {
+              url,
+              name: file.name,
+              type: file.type
+            }
+          }))
+          setUploadingDocument(null)
+        }, 1500)
+      }
+    }
+    input.click()
   }
 
   const handleDownload = (documentName: string) => {
-    // TODO: Implement actual download logic
-    console.log("Downloading:", documentName)
+    const documentData = uploadedDocuments[documentName]
+    if (documentData) {
+      const link = document.createElement('a')
+      link.href = documentData.url
+      link.download = documentData.name
+      link.click()
+    } else {
+      console.log("No file uploaded for:", documentName)
+    }
+  }
+
+  const handleReplace = (documentName: string) => {
+    handleUpload(documentName) // Reuse upload logic to replace
   }
 
   const documentCategories = [
@@ -640,43 +671,71 @@ function DocumentsContent() {
                   {category.documents.map((document) => {
                     const DocumentIcon = document.icon
                     const isUploading = uploadingDocument === document.name
+                    const isUploaded = uploadedDocuments[document.name]
                     
                     return (
                       <div
                         key={document.name}
-                        className="flex items-center justify-between p-2 sm:p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                        className={`flex items-center justify-between p-2 sm:p-3 rounded-lg border transition-colors ${
+                          isUploaded 
+                            ? 'bg-green-50 border-green-200 hover:bg-green-100' 
+                            : 'bg-card hover:bg-accent/50'
+                        }`}
                       >
                         <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                          <DocumentIcon className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                          <span className="text-xs sm:text-sm font-medium truncate">
-                            {document.name}
-                          </span>
+                          <DocumentIcon className={`h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 ${
+                            isUploaded ? 'text-green-600' : 'text-muted-foreground'
+                          }`} />
+                          <div className="min-w-0 flex-1">
+                            <span className="text-xs sm:text-sm font-medium truncate block">
+                              {document.name}
+                            </span>
+                            {isUploaded && (
+                              <span className="text-xs text-green-600 truncate block">
+                                {uploadedDocuments[document.name].name}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         
                         <div className="flex items-center space-x-1 sm:space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleUpload(document.name)}
-                            disabled={isUploading}
-                            className="h-7 px-2 sm:h-8 sm:px-3"
-                            title="Upload"
-                          >
-                            {isUploading ? (
-                              <div className="h-2 w-2 sm:h-3 sm:w-3 animate-spin rounded-full border border-current border-t-transparent" />
-                            ) : (
-                              <Upload className="h-2 w-2 sm:h-3 sm:w-3" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDownload(document.name)}
-                            className="h-7 px-2 sm:h-8 sm:px-3"
-                            title="Download"
-                          >
-                            <Download className="h-2 w-2 sm:h-3 sm:w-3" />
-                          </Button>
+                          {isUploaded ? (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleReplace(document.name)}
+                                className="h-7 px-2 sm:h-8 sm:px-3"
+                                title="Replace"
+                              >
+                                <Upload className="h-2 w-2 sm:h-3 sm:w-3" />
+                              </Button>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleDownload(document.name)}
+                                className="h-7 px-2 sm:h-8 sm:px-3"
+                                title="Download"
+                              >
+                                <Download className="h-2 w-2 sm:h-3 sm:w-3" />
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleUpload(document.name)}
+                              disabled={isUploading}
+                              className="h-7 px-2 sm:h-8 sm:px-3"
+                              title="Upload"
+                            >
+                              {isUploading ? (
+                                <div className="h-2 w-2 sm:h-3 sm:w-3 animate-spin rounded-full border border-current border-t-transparent" />
+                              ) : (
+                                <Upload className="h-2 w-2 sm:h-3 sm:w-3" />
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     )
