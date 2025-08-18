@@ -61,13 +61,34 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
         const xPosition = (index - (members.length - 1) / 2) * 200
         const yPosition = generation * 150
 
+        // Determine relationship label based on generation and family structure
+        let relationshipLabel = ''
+        if (generation === 0) {
+          relationshipLabel = member.children && member.children.length > 0 ? 'Grandparent' : 'Elder'
+        } else if (generation === 1) {
+          if (member.parents && member.parents.length > 0 && member.children && member.children.length > 0) {
+            relationshipLabel = 'Parent'
+          } else if (member.children && member.children.length > 0) {
+            relationshipLabel = 'Parent'
+          } else if (member.parents && member.parents.length > 0) {
+            relationshipLabel = 'Child'
+          } else {
+            relationshipLabel = 'Family Member'
+          }
+        } else {
+          relationshipLabel = member.parents && member.parents.length > 0 ? 'Child/Grandchild' : 'Descendant'
+        }
+
         nodes.push({
           id: member.id,
           type: 'default',
           position: { x: xPosition, y: yPosition },
           data: { 
             label: (
-              <div className="text-center font-semibold" style={{ color: '#290a52' }}>{member.name}</div>
+              <div className="text-center p-1">
+                <div className="font-semibold text-sm" style={{ color: '#290a52' }}>{member.name}</div>
+                <div className="text-xs" style={{ color: '#6b46c1' }}>{relationshipLabel}</div>
+              </div>
             )
           },
           style: {
