@@ -634,18 +634,6 @@ export default function Auth() {
                    />
                   </div>
 
-                  {/* Occupation */}
-                  <div className="space-y-2">
-                    <Label htmlFor="occupation">Occupation</Label>
-                    <Input
-                      id="occupation"
-                      type="text"
-                      placeholder="Your occupation (optional)"
-                      value={occupation}
-                      onChange={(e) => setOccupation(e.target.value)}
-                      disabled={isLoading}
-                    />
-                  </div>
 
                   {/* Program Selection */}
                   <div className="space-y-2">
