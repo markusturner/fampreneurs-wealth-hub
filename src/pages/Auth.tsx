@@ -650,27 +650,6 @@ export default function Auth() {
                     </Select>
                   </div>
 
-                 {/* Custom Price (only for paid) */}
-                 {membershipType === 'paid' && (
-                   <div className="space-y-2">
-                     <Label htmlFor="customPrice">Custom Price (USD) *</Label>
-                     <div className="relative">
-                       <CreditCard className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                       <Input
-                         id="customPrice"
-                         type="number"
-                         placeholder="Enter price (e.g., 99.99)"
-                         value={customPrice}
-                         onChange={(e) => setCustomPrice(e.target.value)}
-                         className="pl-10"
-                         min="0"
-                         step="0.01"
-                         required={membershipType === 'paid'}
-                         disabled={isLoading}
-                       />
-                     </div>
-                   </div>
-                 )}
 
                 
                  <Button 
