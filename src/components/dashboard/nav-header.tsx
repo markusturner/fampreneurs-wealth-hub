@@ -245,51 +245,56 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
         </div>
 
         {/* Navigation Links - Desktop & Tablet */}
-        <div className="hidden md:flex items-center gap-1 mx-4 xl:mx-6">
+        <div className="hidden md:flex items-center gap-0.5 lg:gap-1 mx-2 lg:mx-4 xl:mx-6">
           <Button
             variant={location.pathname === '/' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/')}
-            className="gap-2 h-9"
+            className="gap-1 lg:gap-2 h-8 lg:h-9 px-2 lg:px-3 text-xs lg:text-sm"
           >
-            <LayoutDashboard className="h-4 w-4" />
-            Dashboard
+            <LayoutDashboard className="h-3 w-3 lg:h-4 lg:w-4" />
+            <span className="hidden lg:inline">Dashboard</span>
+            <span className="lg:hidden">Dash</span>
           </Button>
           <Button
             variant={location.pathname === '/community' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/community')}
-            className="gap-2 h-9"
+            className="gap-1 lg:gap-2 h-8 lg:h-9 px-2 lg:px-3 text-xs lg:text-sm"
           >
-            <Home className="h-4 w-4" />
-            Family Office
+            <Home className="h-3 w-3 lg:h-4 lg:w-4" />
+            <span className="hidden lg:inline">Family Office</span>
+            <span className="lg:hidden">Office</span>
           </Button>
           <Button
             variant={location.pathname === '/documents' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/documents')}
-            className="gap-2 h-9"
+            className="gap-1 lg:gap-2 h-8 lg:h-9 px-2 lg:px-3 text-xs lg:text-sm"
           >
-            <FileText className="h-4 w-4" />
-            Family Roundtable
+            <FileText className="h-3 w-3 lg:h-4 lg:w-4" />
+            <span className="hidden lg:inline">Family Roundtable</span>
+            <span className="lg:hidden">Round</span>
           </Button>
           <Button
             variant={location.pathname === '/calendar' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/calendar')}
-            className="gap-2 h-9"
+            className="gap-1 lg:gap-2 h-8 lg:h-9 px-2 lg:px-3 text-xs lg:text-sm"
           >
-            <CalendarIcon className="h-4 w-4" />
-            Calendar
+            <CalendarIcon className="h-3 w-3 lg:h-4 lg:w-4" />
+            <span className="hidden lg:inline">Calendar</span>
+            <span className="lg:hidden">Cal</span>
           </Button>
           <Button
             variant={location.pathname === '/members' ? "default" : "ghost"}
             size="sm"
             onClick={() => navigate('/members')}
-            className="gap-2 h-9"
+            className="gap-1 lg:gap-2 h-8 lg:h-9 px-2 lg:px-3 text-xs lg:text-sm"
           >
-            <Users className="h-4 w-4" />
-            Members
+            <Users className="h-3 w-3 lg:h-4 lg:w-4" />
+            <span className="hidden lg:inline">Members</span>
+            <span className="lg:hidden">Mem</span>
           </Button>
         </div>
 
