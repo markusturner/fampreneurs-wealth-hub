@@ -757,7 +757,7 @@ function ServicesContent() {
                     return (
                       <div
                         key={service.name}
-                        className="group p-4 rounded-lg border border-border hover:border-primary/50 transition-all cursor-pointer hover:shadow-md"
+                        className="group p-4 rounded-lg border border-border hover:border-[#ffb500] transition-all cursor-pointer"
                         onClick={() => handleServiceClick(service.name)}
                       >
                         <div className="flex items-start space-x-3">
