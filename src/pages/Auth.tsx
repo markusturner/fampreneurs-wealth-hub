@@ -636,19 +636,6 @@ export default function Auth() {
 
 
 
-                  {/* Membership Type */}
-                  <div className="space-y-2">
-                    <Label htmlFor="membershipType">Membership Type *</Label>
-                    <Select value={membershipType} onValueChange={setMembershipType}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select membership type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="free">Free</SelectItem>
-                        <SelectItem value="paid">Paid</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
 
 
                 
