@@ -185,6 +185,9 @@ export default function Documents() {
   const [showCoursePlayer, setShowCoursePlayer] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState<any>(null)
   const [showMessagingCenter, setShowMessagingCenter] = useState(false)
+  const [messages, setMessages] = useState<any[]>([])
+  const [newMessage, setNewMessage] = useState('')
+  const [loadingMessages, setLoadingMessages] = useState(false)
 
   const isAdmin = profile?.is_admin || false
 
@@ -229,7 +232,84 @@ export default function Documents() {
 
   const handleAccessChat = () => {
     setShowMessagingCenter(true)
+    fetchMessages()
   }
+
+  // Add messaging functions
+  const fetchMessages = async () => {
+    if (!user) return
+    
+    setLoadingMessages(true)
+    try {
+      const { data, error } = await supabase
+        .from('family_messages')
+        .select(`
+          *,
+          profiles:sender_id (
+            display_name,
+            first_name,
+            last_name,
+            avatar_url
+          )
+        `)
+        .order('created_at', { ascending: true })
+      
+      if (error) throw error
+      setMessages(data || [])
+    } catch (error) {
+      console.error('Error fetching messages:', error)
+      toast.error('Failed to load messages')
+    } finally {
+      setLoadingMessages(false)
+    }
+  }
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !user) return
+    
+    try {
+      const { error } = await supabase
+        .from('family_messages')
+        .insert({
+          sender_id: user.id,
+          content: newMessage.trim()
+        })
+      
+      if (error) throw error
+      
+      setNewMessage('')
+      // Refresh messages to show the new one
+      fetchMessages()
+    } catch (error) {
+      console.error('Error sending message:', error)
+      toast.error('Failed to send message')
+    }
+  }
+
+  // Set up real-time subscription for messages
+  useEffect(() => {
+    if (!showMessagingCenter || !user) return
+
+    const channel = supabase
+      .channel('family-messages')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'family_messages'
+        },
+        () => {
+          // Refresh messages when changes occur
+          fetchMessages()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [showMessagingCenter, user])
 
   const handleHeritageResource = (resourceTitle: string) => {
     if (resourceTitle === "Family Tree Explorer") {
@@ -1133,41 +1213,60 @@ export default function Documents() {
             <div className="flex-1 flex flex-col min-h-0">
               {/* Message Area */}
               <div className="flex-1 overflow-y-auto border rounded-lg p-4 bg-muted/20 mb-4 space-y-4">
-                {/* Sample messages */}
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold">
-                    JD
+                {loadingMessages ? (
+                  <div className="text-center text-sm text-muted-foreground py-4">
+                    Loading messages...
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-sm">John Doe</span>
-                      <span className="text-xs text-muted-foreground">2:30 PM</span>
-                    </div>
-                    <p className="text-sm bg-white dark:bg-slate-800 rounded-lg p-3 shadow-sm">
-                      Welcome to our family messaging center! This is a secure space for all family communications.
-                    </p>
+                ) : messages.length > 0 ? (
+                  messages.map((message) => {
+                    const senderName = message.profiles?.display_name || 
+                                     `${message.profiles?.first_name || ''} ${message.profiles?.last_name || ''}`.trim() ||
+                                     'Unknown User'
+                    const isOwnMessage = message.sender_id === user?.id
+                    const initials = senderName.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+                    
+                    return (
+                      <div key={message.id} className={`flex items-start gap-3 ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white ${
+                          isOwnMessage ? 'bg-primary' : 'bg-blue-500'
+                        }`}>
+                          {message.profiles?.avatar_url ? (
+                            <img 
+                              src={message.profiles.avatar_url} 
+                              alt={senderName} 
+                              className="w-8 h-8 rounded-full object-cover"
+                            />
+                          ) : (
+                            initials
+                          )}
+                        </div>
+                        <div className={`flex-1 ${isOwnMessage ? 'text-right' : ''}`}>
+                          <div className={`flex items-center gap-2 mb-1 ${isOwnMessage ? 'justify-end' : ''}`}>
+                            <span className="font-semibold text-sm">{isOwnMessage ? 'You' : senderName}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(message.created_at).toLocaleTimeString([], { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </span>
+                          </div>
+                          <p className={`text-sm rounded-lg p-3 shadow-sm max-w-xs ${
+                            isOwnMessage 
+                              ? 'bg-primary text-primary-foreground ml-auto' 
+                              : 'bg-white dark:bg-slate-800'
+                          }`}>
+                            {message.content}
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  })
+                ) : (
+                  <div className="text-center text-sm text-muted-foreground py-4">
+                    <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    No messages yet. Start a conversation with your family members!
                   </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-semibold">
-                    MS
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-sm">Mary Smith</span>
-                      <span className="text-xs text-muted-foreground">2:45 PM</span>
-                    </div>
-                    <p className="text-sm bg-white dark:bg-slate-800 rounded-lg p-3 shadow-sm">
-                      Thanks for setting this up! Looking forward to staying connected with everyone.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-center text-sm text-muted-foreground py-4">
-                  <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  Start a conversation with your family members
-                </div>
+                )}
               </div>
               
               {/* Message Input */}
@@ -1175,14 +1274,16 @@ export default function Documents() {
                 <Input
                   placeholder="Type your message..."
                   className="flex-1"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault()
-                      // Add message functionality here
+                      sendMessage()
                     }
                   }}
                 />
-                <Button>
+                <Button onClick={sendMessage} disabled={!newMessage.trim()}>
                   Send
                 </Button>
               </div>
