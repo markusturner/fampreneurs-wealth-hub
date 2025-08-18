@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.ai-chat]
 verify_jwt = false
 
+[functions.validate-family-code]
+verify_jwt = false
+
 [functions.plaid-link-token]
 verify_jwt = true
 

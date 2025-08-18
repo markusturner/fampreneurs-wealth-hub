@@ -19,6 +19,7 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [familySecretCode, setFamilySecretCode] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [occupation, setOccupation] = useState('')
@@ -68,6 +69,38 @@ export default function Auth() {
         await supabase.auth.signOut({ scope: 'global' })
       } catch (err) {
         // Continue even if this fails
+      }
+
+      // For family members, validate the family secret code first
+      if (userType === 'family_member' && familySecretCode) {
+        try {
+          const { data: codeValidation, error: codeError } = await supabase.functions.invoke(
+            'validate-family-code',
+            {
+              body: {
+                code: familySecretCode.toUpperCase().trim(),
+                ip_address: null,
+                user_agent: navigator.userAgent
+              }
+            }
+          )
+
+          if (codeError || !codeValidation?.success) {
+            toast({
+              title: "Invalid Family Code",
+              description: codeValidation?.message || "The family secret code is invalid or has expired.",
+              variant: "destructive",
+            })
+            return
+          }
+        } catch (codeError) {
+          toast({
+            title: "Code Validation Failed",
+            description: "Unable to validate family secret code. Please try again.",
+            variant: "destructive",
+          })
+          return
+        }
       }
 
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -543,6 +576,28 @@ export default function Auth() {
                     disabled={isLoading}
                   />
                 </div>
+                
+                {/* Family Secret Code Field - Only for family members */}
+                {userType === 'family_member' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="family-secret-code">Family Secret Code *</Label>
+                    <Input
+                      id="family-secret-code"
+                      type="text"
+                      placeholder="Enter family secret code"
+                      value={familySecretCode}
+                      onChange={(e) => setFamilySecretCode(e.target.value.toUpperCase())}
+                      required={userType === 'family_member'}
+                      disabled={isLoading}
+                      className="font-mono"
+                      maxLength={12}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      This code was provided by your family administrator
+                    </p>
+                  </div>
+                )}
+                
                 <div className="flex justify-center">
                   <RecoveryDialog />
                 </div>

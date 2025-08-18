@@ -598,18 +598,19 @@ export default function Documents() {
         </section>
 
         {/* Family Secret Codes */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                <Lock className="h-5 w-5" />
-                Family Secret Codes
-              </h2>
-              <p className="text-muted-foreground text-sm">
-                Secure access system for sensitive family information and resources
-              </p>
-            </div>
-            {isAdmin && (
+        {/* Family Secret Codes - Admin Only */}
+        {isAdmin && (
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                  <Lock className="h-5 w-5" />
+                  Family Secret Codes Management
+                </h2>
+                <p className="text-muted-foreground text-sm">
+                  Create and manage family access codes for secure authentication
+                </p>
+              </div>
               <Button
                 variant="outline"
                 onClick={() => setShowAdminPanel(!showAdminPanel)}
@@ -617,37 +618,36 @@ export default function Documents() {
                 <Settings className="h-4 w-4 mr-2" />
                 {showAdminPanel ? 'Hide Admin' : 'Admin Panel'}
               </Button>
-            )}
-          </div>
+            </div>
 
-          {showAdminPanel && isAdmin ? (
-            <FamilySecretCodesAdmin />
-          ) : (
-            <>
-              {/* Active Codes Display for Admins */}
-              {isAdmin && availableCodes.length > 0 && (
-                <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <Eye className="h-5 w-5" />
-                      Active Family Codes ({availableCodes.length})
-                    </CardTitle>
-                    <CardDescription>
-                      As an admin, you can view all active family codes
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-3">
-                      {availableCodes.map((code) => (
-                        <div key={code.id} className="flex items-center justify-between p-3 bg-background rounded-lg border">
-                          <div>
-                            <div className="font-mono text-sm font-semibold">{code.code}</div>
-                            <div className="text-xs text-muted-foreground">{code.description}</div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge variant={
-                              code.access_level === 'admin' ? 'destructive' :
-                              code.access_level === 'legacy' ? 'default' :
+            {showAdminPanel ? (
+              <FamilySecretCodesAdmin />
+            ) : (
+              <>
+                {/* Active Codes Display for Admins */}
+                {availableCodes.length > 0 && (
+                  <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Eye className="h-5 w-5" />
+                        Active Family Codes ({availableCodes.length})
+                      </CardTitle>
+                      <CardDescription>
+                        Family secret codes for member authentication
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid gap-3">
+                        {availableCodes.map((code) => (
+                          <div key={code.id} className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                            <div>
+                              <div className="font-mono text-sm font-semibold">{code.code}</div>
+                              <div className="text-xs text-muted-foreground">{code.description}</div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Badge variant={
+                                code.access_level === 'admin' ? 'destructive' :
+                                code.access_level === 'legacy' ? 'default' :
                               code.access_level === 'trust' ? 'secondary' : 'outline'
                             }>
                               {code.access_level}
@@ -741,8 +741,9 @@ export default function Documents() {
                 </CardContent>
               </Card>
             </>
-          )}
-        </section>
+            )}
+          </section>
+        )}
 
         {/* Business Courses Dialog */}
         <Dialog open={showCoursesDialog} onOpenChange={setShowCoursesDialog}>
