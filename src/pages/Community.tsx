@@ -655,14 +655,23 @@ function DocumentsContent() {
       </div>
       
       <div className="grid gap-4 sm:gap-6">
-        {documentCategories.map((category) => {
+        {documentCategories.map((category, categoryIndex) => {
           const CategoryIcon = category.icon
+          const iconColors = [
+            'text-blue-600',      // Trust Documents
+            'text-green-600',     // Certificates & Legal  
+            'text-purple-600',    // EIN Numbers
+            'text-orange-600',    // Addresses
+            'text-red-600',       // Phone Numbers
+            'text-pink-600'       // Legacy Documents
+          ]
+          const iconColor = iconColors[categoryIndex] || 'text-primary'
           
           return (
             <Card key={category.title} className="shadow-soft">
               <CardHeader className="pb-3 sm:pb-6">
                 <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
-                  <CategoryIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  <CategoryIcon className={`h-4 w-4 sm:h-5 sm:w-5 ${iconColor}`} />
                   <span>{category.title}</span>
                 </CardTitle>
               </CardHeader>
