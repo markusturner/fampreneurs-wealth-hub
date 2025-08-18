@@ -705,6 +705,7 @@ function DocumentsContent() {
                             ? 'bg-green-50 border-green-200 hover:bg-green-100' 
                             : 'bg-card hover:bg-accent/50'
                         }`}
+                        style={isUploaded ? { color: '#290a52' } : {}}
                       >
                         <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                           <DocumentIcon className={`h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 ${
