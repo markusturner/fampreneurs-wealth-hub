@@ -805,7 +805,7 @@ function DocumentsContent() {
 
       {/* Preview Dialog */}
       <Dialog open={!!previewDocument} onOpenChange={() => setPreviewDocument(null)}>
-        <DialogContent className="sm:max-w-4xl h-[80vh]">
+        <DialogContent className="sm:max-w-4xl h-[80vh] flex flex-col" >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Eye className="h-5 w-5" />
@@ -815,7 +815,7 @@ function DocumentsContent() {
               Preview of uploaded document: {previewDocument?.name}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-auto">
+          <div className="flex-1 overflow-auto min-h-0">
             {previewDocument && (
               <div className="w-full h-full">
                 {previewDocument.type.startsWith('image/') ? (
