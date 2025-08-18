@@ -67,7 +67,7 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
           position: { x: xPosition, y: yPosition },
           data: { 
             label: (
-              <div className="text-center font-semibold text-gray-900 dark:text-white">{member.name}</div>
+              <div className="text-center font-semibold" style={{ color: '#290a52' }}>{member.name}</div>
             )
           },
           style: {
@@ -77,7 +77,7 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
             width: 160,
             height: 80,
             fontSize: '14px',
-            color: '#111827'
+            color: '#290a52'
           }
         })
       })
