@@ -561,15 +561,16 @@ function DocumentsContent() {
       if (file) {
         console.log('File selected for upload:', file.name, 'Type:', file.type)
         setUploadingDocument(documentName)
-        
-        // Simulate upload delay
-        setTimeout(() => {
-          const url = URL.createObjectURL(file)
-          console.log('Created URL for file:', url)
+
+        // Read file as Data URL (base64) so it persists across navigation/reloads
+        const reader = new FileReader()
+        reader.onload = () => {
+          const url = reader.result as string
+          console.log('Created Data URL for file:', url?.slice(0, 64) + '...')
           const documentData = {
             url,
             name: file.name,
-            type: file.type
+            type: file.type || 'application/octet-stream'
           }
           setUploadedDocuments(prev => {
             const updated = {
@@ -577,15 +578,18 @@ function DocumentsContent() {
               [documentName]: documentData
             }
             console.log('Updated uploaded documents:', updated)
-            
             // Save to localStorage
             localStorage.setItem('uploadedDocuments', JSON.stringify(updated))
-            
             return updated
           })
           setUploadingDocument(null)
           console.log('Upload completed for:', documentName)
-        }, 1500)
+        }
+        reader.onerror = (err) => {
+          console.error('Failed to read file', err)
+          setUploadingDocument(null)
+        }
+        reader.readAsDataURL(file)
       }
     }
     input.click()
