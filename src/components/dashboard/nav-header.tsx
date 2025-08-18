@@ -211,23 +211,20 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
         return
       }
       
-      // If no exact matches found, go to current page with search results
+      // If no exact matches found, go to search page or current page with search results
       const currentPath = location.pathname
       const searchParams = new URLSearchParams()
       searchParams.set('search', query.trim())
       
-      if (['/community', '/courses', '/members'].includes(currentPath)) {
-        navigate(`${currentPath}?${searchParams.toString()}`)
-      } else {
-        navigate(`/community?${searchParams.toString()}`)
-      }
+      // Always offer search page as an option - navigate there by default
+      navigate(`/search?${searchParams.toString()}`)
       
     } catch (error) {
       console.error('Search error:', error)
-      // Fallback to basic search
+      // Fallback to search page
       const searchParams = new URLSearchParams()
       searchParams.set('search', query.trim())
-      navigate(`/community?${searchParams.toString()}`)
+      navigate(`/search?${searchParams.toString()}`)
     }
   }
 
