@@ -184,6 +184,7 @@ export default function Documents() {
   const [courseModules, setCourseModules] = useState<any[]>([{ name: '', description: '', videos: [] }])
   const [showCoursePlayer, setShowCoursePlayer] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState<any>(null)
+  const [showMessagingCenter, setShowMessagingCenter] = useState(false)
 
   const isAdmin = profile?.is_admin || false
 
@@ -227,8 +228,7 @@ export default function Documents() {
   }
 
   const handleAccessChat = () => {
-    // Navigate to community page for family communication
-    navigate('/community')
+    setShowMessagingCenter(true)
   }
 
   const handleHeritageResource = (resourceTitle: string) => {
@@ -372,6 +372,40 @@ export default function Documents() {
           </p>
         </div>
 
+        {/* Communication Hub */}
+        <section className="space-y-4">
+          <div>
+            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+              <MessageCircle className="h-5 w-5" />
+              Family Communication Hub
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Stay connected with family members through our secure communication platform
+            </p>
+          </div>
+          
+          <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/30">
+                    <MessageCircle className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Family Group Chat</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Secure messaging platform for all family members
+                    </p>
+                  </div>
+                </div>
+                <Button onClick={handleAccessChat}>
+                  Access Chat
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
         {/* Family Education Modules */}
         <section className="space-y-4">
           <div>
@@ -431,39 +465,6 @@ export default function Documents() {
         </section>
 
 
-        {/* Communication Hub */}
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
-              <MessageCircle className="h-5 w-5" />
-              Family Communication Hub
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Stay connected with family members through our secure communication platform
-            </p>
-          </div>
-          
-          <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900/30">
-                    <MessageCircle className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Family Group Chat</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Secure messaging platform for all family members
-                    </p>
-                  </div>
-                </div>
-                <Button onClick={handleAccessChat}>
-                  Access Chat
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
 
         {/* Heritage & Identity */}
         <section className="space-y-4">
@@ -1112,6 +1113,78 @@ export default function Documents() {
                   these principles and working together to build a lasting legacy that honors our 
                   ancestors and serves future generations.
                 </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Messaging Center Dialog */}
+        <Dialog open={showMessagingCenter} onOpenChange={setShowMessagingCenter}>
+          <DialogContent className="sm:max-w-4xl h-[80vh] flex flex-col">
+            <DialogHeader className="flex-shrink-0">
+              <DialogTitle className="flex items-center gap-2">
+                <MessageCircle className="h-5 w-5" />
+                Family Messaging Center
+              </DialogTitle>
+              <DialogDescription>
+                Secure communication platform for family members
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex-1 flex flex-col min-h-0">
+              {/* Message Area */}
+              <div className="flex-1 overflow-y-auto border rounded-lg p-4 bg-muted/20 mb-4 space-y-4">
+                {/* Sample messages */}
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm font-semibold">
+                    JD
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-sm">John Doe</span>
+                      <span className="text-xs text-muted-foreground">2:30 PM</span>
+                    </div>
+                    <p className="text-sm bg-white dark:bg-slate-800 rounded-lg p-3 shadow-sm">
+                      Welcome to our family messaging center! This is a secure space for all family communications.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-semibold">
+                    MS
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-sm">Mary Smith</span>
+                      <span className="text-xs text-muted-foreground">2:45 PM</span>
+                    </div>
+                    <p className="text-sm bg-white dark:bg-slate-800 rounded-lg p-3 shadow-sm">
+                      Thanks for setting this up! Looking forward to staying connected with everyone.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-center text-sm text-muted-foreground py-4">
+                  <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  Start a conversation with your family members
+                </div>
+              </div>
+              
+              {/* Message Input */}
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Type your message..."
+                  className="flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      // Add message functionality here
+                    }
+                  }}
+                />
+                <Button>
+                  Send
+                </Button>
               </div>
             </div>
           </DialogContent>
