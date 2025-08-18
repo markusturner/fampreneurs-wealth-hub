@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { 
   BookOpen, 
@@ -27,7 +28,8 @@ import {
   CheckCircle,
   Key,
   Edit,
-  Trash2
+  Trash2,
+  FileCheck
 } from "lucide-react"
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { FamilySecretCodesAdmin } from "@/components/dashboard/family-secret-codes-admin"
@@ -116,6 +118,7 @@ const businessCourses = [
     instructor: "Dr. Sarah Johnson",
     duration: "4 weeks",
     description: "Essential principles for successful family business management",
+    status: "published",
     videos: [
       "https://youtu.be/example1",
       "https://youtu.be/example2"
@@ -131,6 +134,7 @@ const businessCourses = [
     instructor: "Michael Thompson",
     duration: "6 weeks",
     description: "Advanced strategies for multi-generational wealth management",
+    status: "published",
     videos: [
       "https://youtu.be/example3",
       "https://youtu.be/example4"
@@ -146,6 +150,7 @@ const businessCourses = [
     instructor: "Jennifer Lee",
     duration: "8 weeks", 
     description: "Developing the next generation of family business leaders",
+    status: "draft",
     videos: [
       "https://youtu.be/example5",
       "https://youtu.be/example6"
@@ -175,7 +180,7 @@ export default function Documents() {
   const [showCreateCourseDialog, setShowCreateCourseDialog] = useState(false)
   const [showEditCourseDialog, setShowEditCourseDialog] = useState(false)
   const [editingCourseIndex, setEditingCourseIndex] = useState<number | null>(null)
-  const [newCourse, setNewCourse] = useState({ title: '', instructor: '', duration: '', description: '' })
+  const [newCourse, setNewCourse] = useState({ title: '', instructor: '', duration: '', description: '', status: 'draft' })
   const [videoUrls, setVideoUrls] = useState<string[]>([''])
   const [courseModules, setCourseModules] = useState<Array<{name: string, duration: string}>>([{name: '', duration: ''}])
   const [showMessagesDialog, setShowMessagesDialog] = useState(false)
@@ -354,7 +359,7 @@ export default function Documents() {
 
     businessCourses.push(course)
     
-    setNewCourse({ title: '', instructor: '', duration: '', description: '' })
+    setNewCourse({ title: '', instructor: '', duration: '', description: '', status: 'draft' })
     setVideoUrls([''])
     setCourseModules([{ name: '', duration: '' }])
     setShowCreateCourseDialog(false)
@@ -368,7 +373,8 @@ export default function Documents() {
       title: course.title,
       instructor: course.instructor,
       duration: course.duration,
-      description: course.description
+      description: course.description,
+      status: course.status
     })
     setVideoUrls(course.videos?.length ? course.videos : [''])
     setCourseModules(course.modules?.length ? course.modules : [{ name: '', duration: '' }])
@@ -390,7 +396,7 @@ export default function Documents() {
 
     businessCourses[editingCourseIndex] = updatedCourse
     
-    setNewCourse({ title: '', instructor: '', duration: '', description: '' })
+    setNewCourse({ title: '', instructor: '', duration: '', description: '', status: 'draft' })
     setVideoUrls([''])
     setCourseModules([{ name: '', duration: '' }])
     setEditingCourseIndex(null)
@@ -455,12 +461,12 @@ export default function Documents() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {businessCourses.slice(0, 4).map((course, index) => (
+            {businessCourses.filter(course => course.status === 'published').slice(0, 4).map((course, index) => (
               <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedCourse(course)}>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <Building2 className="h-8 w-8 text-blue-600" />
-                    <Badge variant="secondary">Available</Badge>
+                    <Badge variant="secondary">Published</Badge>
                   </div>
                   <CardTitle className="text-lg">{course.title}</CardTitle>
                   <CardDescription>{course.description}</CardDescription>
@@ -473,10 +479,10 @@ export default function Documents() {
                 </CardContent>
               </Card>
             ))}
-            {businessCourses.length === 0 && (
+            {businessCourses.filter(course => course.status === 'published').length === 0 && (
               <div className="col-span-full text-center py-8 text-muted-foreground">
                 <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No courses available yet.</p>
+                <p>No published courses available yet.</p>
                 {isAdmin && (
                   <Button 
                     variant="outline" 
@@ -609,7 +615,22 @@ export default function Documents() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-lg mb-1">{course.title}</h3>
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-lg">{course.title}</h3>
+                          <Badge variant={course.status === 'published' ? 'default' : 'secondary'}>
+                            {course.status === 'published' ? (
+                              <>
+                                <FileCheck className="h-3 w-3 mr-1" />
+                                Published
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-3 w-3 mr-1" />
+                                Draft
+                              </>
+                            )}
+                          </Badge>
+                        </div>
                         <p className="text-sm text-muted-foreground mb-2">{course.description}</p>
                         <div className="flex items-center gap-4 text-sm">
                           <span className="flex items-center gap-1">
@@ -777,6 +798,29 @@ export default function Documents() {
               </div>
               
               <div>
+                <Label htmlFor="course-status">Status</Label>
+                <Select value={newCourse.status} onValueChange={(value) => setNewCourse(prev => ({ ...prev, status: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">
+                      <div className="flex items-center gap-2">
+                        <Eye className="h-4 w-4" />
+                        Draft
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="published">
+                      <div className="flex items-center gap-2">
+                        <FileCheck className="h-4 w-4" />
+                        Published
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
                 <Label>Video URLs</Label>
                 <div className="space-y-2">
                   {videoUrls.map((url, index) => (
@@ -902,6 +946,29 @@ export default function Documents() {
                   onChange={(e) => setNewCourse(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Enter course description"
                 />
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-course-status">Status</Label>
+                <Select value={newCourse.status} onValueChange={(value) => setNewCourse(prev => ({ ...prev, status: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">
+                      <div className="flex items-center gap-2">
+                        <Eye className="h-4 w-4" />
+                        Draft
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="published">
+                      <div className="flex items-center gap-2">
+                        <FileCheck className="h-4 w-4" />
+                        Published
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div>
