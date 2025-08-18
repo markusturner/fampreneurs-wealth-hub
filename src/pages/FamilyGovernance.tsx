@@ -135,14 +135,20 @@ export default function FamilyGovernance() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {governancePrinciples.map((principle) => {
+            {governancePrinciples.map((principle, index) => {
               const Icon = principle.icon
+              const iconColors = [
+                "text-blue-600",
+                "text-emerald-600", 
+                "text-purple-600",
+                "text-orange-600"
+              ]
               return (
                 <Card key={principle.title} className="text-center">
                   <CardContent className="p-4">
                     <div className="flex justify-center mb-3">
                       <div className="p-2 rounded-lg bg-primary/10">
-                        <Icon className="h-6 w-6 text-primary" />
+                        <Icon className={`h-6 w-6 ${iconColors[index]}`} />
                       </div>
                     </div>
                     <h3 className="font-semibold mb-2">{principle.title}</h3>
