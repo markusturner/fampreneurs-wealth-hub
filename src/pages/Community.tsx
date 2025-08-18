@@ -638,9 +638,7 @@ function DocumentsContent() {
       documents: [
         { name: "Power of Attorney Document", icon: FileText, type: "file" },
         { name: "Trademark Certificate", icon: Crown, type: "file" },
-        { name: "Family Constitution", icon: Scroll, type: "file" },
-        { name: "Family Crest", icon: Crown, type: "file" },
-        { name: "Family Corporate Seal", icon: Shield, type: "file" }
+        { name: "Family Constitution", icon: Scroll, type: "file" }
       ]
     },
     {
@@ -676,7 +674,9 @@ function DocumentsContent() {
       documents: [
         { name: "Legacy Video", icon: Video, type: "file" },
         { name: "The Life-Legacy Letter", icon: Heart, type: "file" },
-        { name: "Sorry I Died On You Letter", icon: Heart, type: "file" }
+        { name: "Sorry I Died On You Letter", icon: Heart, type: "file" },
+        { name: "Family Crest", icon: Crown, type: "file" },
+        { name: "Family Corporate Seal", icon: Shield, type: "file" }
       ]
     }
   ]
