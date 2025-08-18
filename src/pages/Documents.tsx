@@ -649,7 +649,7 @@ export default function Documents() {
                   <FamilyTreeTextInput onGenerate={setFamilyData} />
                 </div>
               </div>
-              <div className="relative border rounded-lg overflow-hidden h-full min-h-[480px]">
+              <div className="relative border rounded-lg overflow-hidden h-full min-h-[560px]">
                 <DynamicFamilyTreeVisualization familyMembers={familyData} />
               </div>
             </div>

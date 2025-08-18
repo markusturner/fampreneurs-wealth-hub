@@ -113,19 +113,26 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
 
   return (
     <div className="h-full w-full">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        fitView
-        fitViewOptions={{ padding: 50 }}
-        attributionPosition="bottom-left"
-      >
-        <Controls />
-        <Background gap={12} size={1} />
-      </ReactFlow>
+      {nodes.length === 0 ? (
+        <div className="h-full w-full flex items-center justify-center text-sm text-muted-foreground">
+          No family members generated yet. Click “Generate Family Tree”.
+        </div>
+      ) : (
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          fitView
+          fitViewOptions={{ padding: 50 }}
+          attributionPosition="bottom-left"
+          style={{ width: '100%', height: '100%' }}
+        >
+          <Controls />
+          <Background gap={12} size={1} />
+        </ReactFlow>
+      )}
     </div>
   )
 }

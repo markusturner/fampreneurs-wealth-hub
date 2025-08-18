@@ -159,8 +159,9 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
   }
 
   const handleGenerate = () => {
-    const familyData = parseFamilyText(textInput)
-    onGenerate(familyData)
+    const data = parseFamilyText(textInput)
+    console.log('FamilyTree Generate clicked. Members:', data.length, data)
+    onGenerate(data)
   }
 
   const callAiAssistant = async (assistanceType: 'expand' | 'format' | 'suggest') => {
