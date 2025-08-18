@@ -60,6 +60,51 @@ const familyEducationModules = [
   }
 ]
 
+const businessCourses = [
+  {
+    title: "Financial Management",
+    description: "Learn budgeting, cash flow, and financial planning for families",
+    lessons: 8,
+    duration: "2.5 hours",
+    level: "Beginner"
+  },
+  {
+    title: "Relationship Building",
+    description: "Strengthen family bonds and communication skills",
+    lessons: 6,
+    duration: "2 hours",
+    level: "All Levels"
+  },
+  {
+    title: "Investment Fundamentals",
+    description: "Basic principles of wealth building and investment strategies",
+    lessons: 10,
+    duration: "3 hours",
+    level: "Intermediate"
+  },
+  {
+    title: "Estate Planning",
+    description: "Protecting and transferring family wealth across generations",
+    lessons: 12,
+    duration: "4 hours",
+    level: "Advanced"
+  },
+  {
+    title: "Family Communication",
+    description: "Effective communication strategies for family meetings",
+    lessons: 5,
+    duration: "1.5 hours",
+    level: "All Levels"
+  },
+  {
+    title: "Conflict Resolution",
+    description: "Managing disagreements and finding common ground",
+    lessons: 7,
+    duration: "2.5 hours",
+    level: "Intermediate"
+  }
+]
+
 const governanceBranches = [
   {
     title: "The Family Council",
@@ -119,6 +164,7 @@ export default function Documents() {
   const [showAdminPanel, setShowAdminPanel] = useState(false)
   const [availableCodes, setAvailableCodes] = useState<any[]>([])
   const [userAccess, setUserAccess] = useState<string[]>([])
+  const [showCoursesDialog, setShowCoursesDialog] = useState(false)
 
   const isAdmin = profile?.is_admin || false
 
@@ -143,8 +189,12 @@ export default function Documents() {
   }
 
   const handleStartLearning = (moduleTitle: string) => {
-    // Navigate to courses page with the specific module
-    navigate('/courses', { state: { searchTerm: moduleTitle } })
+    if (moduleTitle === 'Family Business Education') {
+      setShowCoursesDialog(true)
+    } else {
+      // Navigate to courses page with the specific module
+      navigate('/courses', { state: { searchTerm: moduleTitle } })
+    }
   }
 
   const handleAccessChat = () => {
@@ -546,6 +596,59 @@ export default function Documents() {
             </>
           )}
         </section>
+
+        {/* Business Courses Dialog */}
+        <Dialog open={showCoursesDialog} onOpenChange={setShowCoursesDialog}>
+          <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Family Business Education Courses
+              </DialogTitle>
+              <DialogDescription>
+                Choose from our comprehensive business education curriculum
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              {businessCourses.map((course, index) => (
+                <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg mb-1">{course.title}</h3>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {course.description}
+                        </p>
+                      </div>
+                      <Badge variant={
+                        course.level === 'Beginner' ? 'secondary' :
+                        course.level === 'Intermediate' ? 'default' :
+                        course.level === 'Advanced' ? 'destructive' : 'outline'
+                      }>
+                        {course.level}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex gap-4 text-xs text-muted-foreground">
+                        <span>{course.lessons} lessons</span>
+                        <span>{course.duration}</span>
+                      </div>
+                      <Button 
+                        size="sm"
+                        onClick={() => {
+                          navigate('/courses', { state: { searchTerm: course.title } })
+                          setShowCoursesDialog(false)
+                        }}
+                      >
+                        Start Course
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )
