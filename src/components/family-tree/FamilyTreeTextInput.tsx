@@ -37,49 +37,114 @@ export function FamilyTreeTextInput({ onFamilyDataChange }: FamilyTreeTextInputP
     const members: FamilyMember[] = []
     const relationships: { [key: string]: { parents: string[], children: string[] } } = {}
 
-    // Simple parsing - extract names and relationships
+    // Enhanced parsing for natural language
     lines.forEach(line => {
       const cleanLine = line.replace(/[├─└│]/g, '').trim()
       
-      if (cleanLine.includes('married to')) {
-        const [person1, person2] = cleanLine.split('married to').map(s => s.trim())
-        if (person1 && person2) {
-          if (!relationships[person1]) relationships[person1] = { parents: [], children: [] }
-          if (!relationships[person2]) relationships[person2] = { parents: [], children: [] }
+      // Handle different relationship patterns
+      if (cleanLine.includes('married to') || cleanLine.includes('married')) {
+        const marriageMatch = cleanLine.match(/(.+?)\s+(?:married to|married)\s+(.+?)(?:\.|$|,)/i)
+        if (marriageMatch) {
+          const [, person1, person2] = marriageMatch
+          const p1 = person1.trim().replace(/^(my |the |his |her )/i, '')
+          const p2 = person2.trim().replace(/^(my |the |his |her )/i, '')
+          if (!relationships[p1]) relationships[p1] = { parents: [], children: [] }
+          if (!relationships[p2]) relationships[p2] = { parents: [], children: [] }
         }
-      } else if (cleanLine.includes('children:')) {
-        // Skip the "children:" line itself
-        return
-      } else if (cleanLine.includes('parents:')) {
-        const [person, parentsStr] = cleanLine.split('parents:').map(s => s.trim())
-        if (person && parentsStr) {
-          const parents = parentsStr.split(',').map(p => p.trim())
-          if (!relationships[person]) relationships[person] = { parents: [], children: [] }
-          relationships[person].parents = parents
+      }
+      
+      // Handle children patterns
+      const childrenPatterns = [
+        /(?:had|have)\s+(?:children|kids):\s*(.+?)(?:\.|$)/i,
+        /(?:children|kids):\s*(.+?)(?:\.|$)/i,
+        /(?:had|have)\s+(?:\d+\s+)?(?:children|kids):\s*(.+?)(?:\.|$)/i
+      ]
+      
+      childrenPatterns.forEach(pattern => {
+        const childrenMatch = cleanLine.match(pattern)
+        if (childrenMatch) {
+          const childrenStr = childrenMatch[1]
+          const children = childrenStr.split(/,|\sand\s/).map(c => c.trim().replace(/^(my |the |his |her )/i, ''))
+          
+          // Try to find the parent in the same line
+          const parentMatch = cleanLine.match(/(.+?)\s+(?:had|have)/i)
+          if (parentMatch) {
+            const parent = parentMatch[1].trim().replace(/^(my |the |his |her )/i, '')
+            if (!relationships[parent]) relationships[parent] = { parents: [], children: [] }
+            relationships[parent].children = [...(relationships[parent].children || []), ...children]
+            
+            children.forEach(child => {
+              if (!relationships[child]) relationships[child] = { parents: [], children: [] }
+              if (!relationships[child].parents.includes(parent)) {
+                relationships[child].parents.push(parent)
+              }
+            })
+          }
+        }
+      })
+      
+      // Handle explicit parent statements
+      const parentPatterns = [
+        /(.+?)\s+(?:parents are|parents:)\s*(.+?)(?:\.|$)/i,
+        /(?:parents of|parents for)\s+(.+?)\s+are\s+(.+?)(?:\.|$)/i
+      ]
+      
+      parentPatterns.forEach(pattern => {
+        const parentMatch = cleanLine.match(pattern)
+        if (parentMatch) {
+          const [, person, parentsStr] = parentMatch
+          const p = person.trim().replace(/^(my |the |his |her )/i, '')
+          const parents = parentsStr.split(/,|\sand\s/).map(p => p.trim().replace(/^(my |the |his |her )/i, ''))
+          
+          if (!relationships[p]) relationships[p] = { parents: [], children: [] }
+          relationships[p].parents = [...(relationships[p].parents || []), ...parents]
           
           parents.forEach(parent => {
             if (!relationships[parent]) relationships[parent] = { parents: [], children: [] }
-            if (!relationships[parent].children.includes(person)) {
-              relationships[parent].children.push(person)
+            if (!relationships[parent].children.includes(p)) {
+              relationships[parent].children.push(p)
             }
           })
         }
-      } else if (cleanLine && !cleanLine.includes(':')) {
-        // This is likely a person's name
-        const names = cleanLine.split(',').map(s => s.trim()).filter(Boolean)
-        names.forEach(name => {
-          if (!relationships[name]) relationships[name] = { parents: [], children: [] }
-        })
-      }
+      })
+      
+      // Extract names from natural sentences
+      const namePatterns = [
+        /(?:my\s+)?(?:grandfather|grandmother|father|mother|dad|mom|son|daughter|brother|sister|uncle|aunt)\s+(\w+(?:\s+\w+)?)/gi,
+        /(\w+(?:\s+\w+)?)\s+(?:is|was)\s+(?:my|the)/gi,
+        /(?:called|named)\s+(\w+(?:\s+\w+)?)/gi
+      ]
+      
+      namePatterns.forEach(pattern => {
+        let match
+        while ((match = pattern.exec(cleanLine)) !== null) {
+          const name = match[1].trim()
+          if (name && name.length > 1 && !relationships[name]) {
+            relationships[name] = { parents: [], children: [] }
+          }
+        }
+      })
     })
 
-    // Convert to FamilyMember objects
+    // Convert to FamilyMember objects with better generation calculation
     Object.keys(relationships).forEach((name, index) => {
       const rel = relationships[name]
-      // Simple generation calculation based on parent/child relationships
-      let generation = 1
-      if (rel.parents.length > 0) generation = 2
-      if (rel.children.length > 0 && rel.parents.length === 0) generation = 0
+      
+      // Calculate generation based on relationships
+      let generation = 1 // Default middle generation
+      
+      // If has parents but no children = younger generation
+      if (rel.parents.length > 0 && rel.children.length === 0) {
+        generation = 2
+      }
+      // If has children but no parents = older generation  
+      else if (rel.children.length > 0 && rel.parents.length === 0) {
+        generation = 0
+      }
+      // If has both = middle generation
+      else if (rel.parents.length > 0 && rel.children.length > 0) {
+        generation = 1
+      }
 
       members.push({
         id: `person-${index}`,
