@@ -181,6 +181,8 @@ export default function Documents() {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [videoUrls, setVideoUrls] = useState<string[]>([''])
   const [courseModules, setCourseModules] = useState<any[]>([{ name: '', description: '', videos: [] }])
+  const [showCoursePlayer, setShowCoursePlayer] = useState(false)
+  const [selectedCourse, setSelectedCourse] = useState<any>(null)
 
   const isAdmin = profile?.is_admin || false
 
@@ -729,7 +731,8 @@ export default function Documents() {
                         <Button 
                           size="sm"
                           onClick={() => {
-                            navigate('/courses', { state: { searchTerm: course.title } })
+                            setSelectedCourse(course)
+                            setShowCoursePlayer(true)
                             setShowCoursesDialog(false)
                           }}
                         >
@@ -765,6 +768,76 @@ export default function Documents() {
               <div className="relative border rounded-lg overflow-hidden h-full min-h-[560px]">
                 <DynamicFamilyTreeVisualization familyMembers={familyData} />
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Course Player Dialog */}
+        <Dialog open={showCoursePlayer} onOpenChange={setShowCoursePlayer}>
+          <DialogContent className="sm:max-w-6xl h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader className="flex-shrink-0">
+              <DialogTitle className="flex items-center gap-2">
+                <Video className="h-5 w-5" />
+                {selectedCourse?.title}
+              </DialogTitle>
+              <DialogDescription>
+                {selectedCourse?.description}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex-1 overflow-y-auto space-y-6">
+              {/* Course Videos */}
+              {selectedCourse?.videos && selectedCourse.videos.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Video className="h-5 w-5" />
+                    Course Videos
+                  </h3>
+                  <div className="grid gap-4">
+                    {selectedCourse.videos.map((videoUrl: string, index: number) => (
+                      <div key={index} className="aspect-video bg-muted rounded-lg overflow-hidden">
+                        <iframe
+                          src={videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                          className="w-full h-full"
+                          allowFullScreen
+                          title={`Course video ${index + 1}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Course Modules */}
+              {selectedCourse?.modules && selectedCourse.modules.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <BookOpen className="h-5 w-5" />
+                    Course Modules
+                  </h3>
+                  <div className="grid gap-4">
+                    {selectedCourse.modules.map((module: any, index: number) => (
+                      <Card key={index}>
+                        <CardHeader>
+                          <CardTitle className="text-base">Module {index + 1}: {module.name}</CardTitle>
+                          <CardDescription>{module.description}</CardDescription>
+                        </CardHeader>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {(!selectedCourse?.videos || selectedCourse.videos.length === 0) && 
+               (!selectedCourse?.modules || selectedCourse.modules.length === 0) && (
+                <div className="text-center py-12">
+                  <Video className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No Content Available</h3>
+                  <p className="text-muted-foreground">
+                    This course doesn't have any videos or modules yet. Use the edit button to add content.
+                  </p>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
