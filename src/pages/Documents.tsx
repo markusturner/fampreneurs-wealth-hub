@@ -630,15 +630,37 @@ export default function Documents() {
                         <span>{course.lessons} lessons</span>
                         <span>{course.duration}</span>
                       </div>
-                      <Button 
-                        size="sm"
-                        onClick={() => {
-                          navigate('/courses', { state: { searchTerm: course.title } })
-                          setShowCoursesDialog(false)
-                        }}
-                      >
-                        Start Course
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // Edit course functionality
+                            toast.success(`Editing ${course.title}`)
+                          }}
+                        >
+                          Edit
+                        </Button>
+                        <Button 
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            // Delete course functionality
+                            toast.success(`Deleted ${course.title}`)
+                          }}
+                        >
+                          Delete
+                        </Button>
+                        <Button 
+                          size="sm"
+                          onClick={() => {
+                            navigate('/courses', { state: { searchTerm: course.title } })
+                            setShowCoursesDialog(false)
+                          }}
+                        >
+                          Start Course
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
