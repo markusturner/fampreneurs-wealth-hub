@@ -205,6 +205,76 @@ export default function Members() {
     }
   }
 
+  const handleResendInvitation = async (member: FamilyMember) => {
+    if (!member.email) {
+      toast({
+        title: "Error",
+        description: "No email address available for this member",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      console.log('Resending invitation for:', member.full_name)
+      
+      // Generate new temporary password
+      const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8).toUpperCase()
+      
+      // Send family member invitation email
+      const { data, error } = await supabase.functions.invoke('send-family-member-invitation', {
+        body: {
+          familyMemberId: member.id,
+          email: member.email,
+          firstName: member.full_name.split(' ')[0],
+          lastName: member.full_name.split(' ').slice(1).join(' '),
+          familyPosition: member.family_position || 'Family Member',
+          tempPassword: tempPassword
+        }
+      })
+
+      if (error) {
+        console.error('Error resending invitation:', error)
+        throw error
+      }
+
+      // Update the invitation timestamp
+      const { error: updateError } = await supabase
+        .from('family_members')
+        .update({
+          invitation_sent_at: new Date().toISOString(),
+          is_invited: true
+        })
+        .eq('id', member.id)
+
+      if (updateError) {
+        console.error('Error updating invitation status:', updateError)
+      }
+
+      // Update local state
+      setFamilyMembers(prev => 
+        prev.map(m => 
+          m.id === member.id 
+            ? { ...m, invitation_sent_at: new Date().toISOString(), is_invited: true }
+            : m
+        )
+      )
+
+      toast({
+        title: "Invitation Resent",
+        description: `Invitation email has been resent to ${member.full_name}`,
+      })
+
+    } catch (error) {
+      console.error('Error resending invitation:', error)
+      toast({
+        title: "Error",
+        description: "Failed to resend invitation. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
   const handleDeleteOfficeMember = async (memberId: string) => {
     try {
       const { error } = await supabase
@@ -408,6 +478,17 @@ export default function Members() {
                         </div>
                         
                         <div className="flex items-center space-x-2">
+                          {member.email && member.status !== 'active' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleResendInvitation(member)}
+                              className="text-xs"
+                            >
+                              <Mail className="h-4 w-4 mr-1" />
+                              Resend Invitation
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
