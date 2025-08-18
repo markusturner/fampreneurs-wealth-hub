@@ -711,17 +711,17 @@ function DocumentsContent() {
 
       {/* Preview Dialog */}
       <Dialog open={!!previewDocument} onOpenChange={(open) => { if (!open) { if (previewDocument?.url?.startsWith('blob:')) { URL.revokeObjectURL(previewDocument.url) } setPreviewDocument(null) } }}>
-        <DialogContent className="sm:max-w-4xl h-[80vh] flex flex-col" >
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+        <DialogContent className="sm:max-w-4xl h-[80vh] flex flex-col bg-background border">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="flex items-center gap-2 text-foreground">
               <Eye className="h-5 w-5" />
               {previewDocument?.name}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-muted-foreground">
               Preview of uploaded document: {previewDocument?.name}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-auto min-h-0">
+          <div className="flex-1 overflow-auto min-h-0 bg-background border rounded-md p-4">
             {previewDocument && (
               <div className="w-full h-full">
                 {previewDocument.type.startsWith('image/') ? (
