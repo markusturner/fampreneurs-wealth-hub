@@ -32,6 +32,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
+import { FamilyTreeVisualization } from "@/components/family-tree/FamilyTreeVisualization"
 
 const familyEducationModules = [
   {
@@ -165,6 +166,7 @@ export default function Documents() {
   const [availableCodes, setAvailableCodes] = useState<any[]>([])
   const [userAccess, setUserAccess] = useState<string[]>([])
   const [showCoursesDialog, setShowCoursesDialog] = useState(false)
+  const [showFamilyTreeDialog, setShowFamilyTreeDialog] = useState(false)
 
   const isAdmin = profile?.is_admin || false
 
@@ -220,16 +222,18 @@ export default function Documents() {
   }
 
   const handleHeritageResource = (resourceTitle: string) => {
-    // For now, show a toast message - you can implement specific pages later
-    const messages = {
-      "Family Crest & Seal": "Opening interactive family crest gallery...",
-      "Family Portrait Gallery": "Viewing commissioned family portraits...",
-      "Family Tree Explorer": "Loading interactive family tree...",
-      "Family Identity Manual": "Opening family values handbook..."
+    if (resourceTitle === "Family Tree Explorer") {
+      setShowFamilyTreeDialog(true)
+    } else {
+      // For other resources, show a toast message
+      const messages = {
+        "Family Crest & Seal": "Opening interactive family crest gallery...",
+        "Family Portrait Gallery": "Viewing commissioned family portraits...",
+        "Family Identity Manual": "Opening family values handbook..."
+      }
+      
+      alert(messages[resourceTitle as keyof typeof messages] || "Opening resource...")
     }
-    
-    // You could create specific pages for each resource
-    alert(messages[resourceTitle as keyof typeof messages] || "Opening resource...")
   }
 
   const handleEnterAccessCode = async () => {
@@ -620,6 +624,24 @@ export default function Documents() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Family Tree Dialog */}
+        <Dialog open={showFamilyTreeDialog} onOpenChange={setShowFamilyTreeDialog}>
+          <DialogContent className="sm:max-w-6xl max-h-[90vh] overflow-hidden">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <TreePine className="h-5 w-5" />
+                Family Tree Explorer
+              </DialogTitle>
+              <DialogDescription>
+                Interactive visualization of your family lineage and relationships
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              <FamilyTreeVisualization />
             </div>
           </DialogContent>
         </Dialog>
