@@ -38,7 +38,16 @@ import {
   Landmark,
   Crown,
   Eye,
-  X
+  X,
+  TrendingUpIcon,
+  LifeBuoy,
+  Building,
+  Globe,
+  ArrowUpRight,
+  ExternalLink,
+  Star,
+  CheckCircle,
+  ArrowRight
 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
@@ -248,7 +257,7 @@ export default function Community() {
         </div>
 
         <Tabs defaultValue="accounts" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
+          <TabsList className="grid w-full grid-cols-6 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
             <TabsTrigger value="accounts" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Accounts</span>
               <span className="sm:hidden">Accts</span>
@@ -262,6 +271,10 @@ export default function Community() {
             <TabsTrigger value="documents" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Documents</span>
               <span className="sm:hidden">Docs</span>
+            </TabsTrigger>
+            <TabsTrigger value="services" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
+              <span className="hidden sm:inline">Services</span>
+              <span className="sm:hidden">Svcs</span>
             </TabsTrigger>
           </TabsList>
 
@@ -308,6 +321,10 @@ export default function Community() {
 
           <TabsContent value="documents" className="space-y-6">
             <DocumentsContent />
+          </TabsContent>
+
+          <TabsContent value="services" className="space-y-6">
+            <ServicesContent />
           </TabsContent>
         </Tabs>
       </div>
@@ -632,6 +649,165 @@ function DocumentsContent() {
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  )
+}
+
+// Services content component
+function ServicesContent() {
+  const { toast } = useToast()
+
+  const handleServiceClick = (serviceName: string) => {
+    toast({
+      title: "Service Request",
+      description: `${serviceName} service request submitted. We'll contact you within 24 hours.`,
+    })
+  }
+
+  const serviceCategories = [
+    {
+      title: "Insurance Services",
+      icon: LifeBuoy,
+      color: "text-blue-600",
+      services: [
+        { name: "Life Insurance", icon: Heart, description: "Comprehensive life insurance policies for family protection" },
+        { name: "Health Insurance", icon: Shield, description: "Medical coverage and health protection plans" },
+        { name: "Property Insurance", icon: Home, description: "Home, auto, and asset protection insurance" }
+      ]
+    },
+    {
+      title: "Financial Services",
+      icon: DollarSign,
+      color: "text-green-600",
+      services: [
+        { name: "Credit Funding", icon: CreditCard, description: "Business and personal credit funding solutions" },
+        { name: "Forex Trading", icon: Globe, description: "Foreign exchange trading and currency management" },
+        { name: "Stock Trading", icon: TrendingUp, description: "Equity trading and investment management" },
+        { name: "Crypto Trading", icon: Bitcoin, description: "Cryptocurrency trading and digital asset management" }
+      ]
+    },
+    {
+      title: "Business Services",
+      icon: Building2,
+      color: "text-purple-600",
+      services: [
+        { name: "Nonprofit Creation", icon: Building, description: "501(c)(3) nonprofit organization setup and compliance" },
+        { name: "Business Formation", icon: Briefcase, description: "LLC, Corporation, and business entity formation" },
+        { name: "Tax Planning", icon: Target, description: "Strategic tax planning and optimization services" }
+      ]
+    },
+    {
+      title: "Legacy Services",
+      icon: Crown,
+      color: "text-orange-600",
+      services: [
+        { name: "Family Crest Design", icon: Crown, description: "Custom family crest design and heraldry services" },
+        { name: "Estate Planning", icon: Scroll, description: "Comprehensive estate planning and trust services" },
+        { name: "Wealth Transfer", icon: ArrowUpRight, description: "Generational wealth transfer strategies" }
+      ]
+    },
+    {
+      title: "Technology Services",
+      icon: BrainCircuit,
+      color: "text-red-600",
+      services: [
+        { name: "Family Office Software", icon: Building2, description: "Custom family office management platforms" },
+        { name: "Investment Analytics", icon: BarChart3, description: "Advanced portfolio analytics and reporting" },
+        { name: "Security Services", icon: Lock, description: "Cybersecurity and digital asset protection" }
+      ]
+    },
+    {
+      title: "Concierge Services",
+      icon: Star,
+      color: "text-pink-600",
+      services: [
+        { name: "Personal Assistant", icon: Users, description: "Dedicated personal and family assistance" },
+        { name: "Travel Planning", icon: Globe, description: "Luxury travel and vacation planning services" },
+        { name: "Event Management", icon: Video, description: "Family events and special occasion planning" }
+      ]
+    }
+  ]
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-xl font-semibold mb-2">Family Office Services</h3>
+        <p className="text-muted-foreground text-sm mb-6">
+          Comprehensive services to support your family's financial and personal needs
+        </p>
+      </div>
+      
+      <div className="grid gap-6">
+        {serviceCategories.map((category, categoryIndex) => {
+          const CategoryIcon = category.icon
+          
+          return (
+            <Card key={category.title} className="shadow-soft border-l-4" style={{ borderLeftColor: 'hsl(var(--primary))' }}>
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center space-x-3 text-lg">
+                  <CategoryIcon className={`h-6 w-6 ${category.color}`} />
+                  <span>{category.title}</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {category.services.map((service) => {
+                    const ServiceIcon = service.icon
+                    
+                    return (
+                      <div
+                        key={service.name}
+                        className="group p-4 rounded-lg border border-border hover:border-primary/50 transition-all cursor-pointer hover:shadow-md"
+                        onClick={() => handleServiceClick(service.name)}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div className="flex-shrink-0">
+                            <ServiceIcon className={`h-5 w-5 ${category.color} group-hover:scale-110 transition-transform`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-sm sm:text-base group-hover:text-primary transition-colors">
+                              {service.name}
+                            </h4>
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
+                              {service.description}
+                            </p>
+                            <div className="flex items-center mt-3 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span>Request Service</span>
+                              <ArrowRight className="h-3 w-3 ml-1" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
+      {/* Premium Services Notice */}
+      <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-4">
+            <div className="flex-shrink-0">
+              <Star className="h-8 w-8 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-lg mb-2">Premium Service Guarantee</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                All services are provided by vetted professionals with extensive experience in high-net-worth family office management. 
+                We guarantee white-glove service and complete confidentiality.
+              </p>
+              <div className="flex items-center space-x-2 text-sm">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <span>24/7 Support Available</span>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
