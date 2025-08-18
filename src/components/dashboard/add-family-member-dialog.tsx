@@ -150,33 +150,33 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
               description: `${formData.fullName} has been added but login credentials could not be created. You can create them manually later.`,
               variant: "destructive"
             });
-          } else {
-            // Send login credentials via email
-            try {
-              await supabase.functions.invoke('send-login-credentials', {
-                body: {
-                  email: formData.email.trim(),
-                  firstName: formData.fullName.split(' ')[0],
-                  lastName: formData.fullName.split(' ').slice(1).join(' '),
-                  tempPassword: tempPassword,
-                  loginUrl: `${window.location.origin}/auth`,
-                  memberType: 'family'
-                }
-              });
+            } else {
+              // Send family member invitation email
+              try {
+                await supabase.functions.invoke('send-family-member-invitation', {
+                  body: {
+                    familyMemberId: familyMemberData.id,
+                    email: formData.email.trim(),
+                    firstName: formData.fullName.split(' ')[0],
+                    lastName: formData.fullName.split(' ').slice(1).join(' '),
+                    familyPosition: formData.familyPosition || 'Family Member',
+                    tempPassword: tempPassword
+                  }
+                });
 
-              toast({
-                title: "Family Member Added Successfully",
-                description: `${formData.fullName} has been added with Family Office access. Login credentials have been sent to their email.`,
-              });
-            } catch (emailError) {
-              console.error('Error sending login credentials email:', emailError);
-              toast({
-                title: "Family Member Added",
-                description: `${formData.fullName} has been added with login access, but the email with credentials could not be sent. Temporary password: ${tempPassword}`,
-                variant: "destructive"
-              });
+                toast({
+                  title: "Family Member Added Successfully",
+                  description: `${formData.fullName} has been added and invitation email sent with login credentials.`,
+                });
+              } catch (emailError) {
+                console.error('Error sending family member invitation email:', emailError);
+                toast({
+                  title: "Family Member Added",
+                  description: `${formData.fullName} has been added with login access, but the invitation email could not be sent. Temporary password: ${tempPassword}`,
+                  variant: "destructive"
+                });
+              }
             }
-          }
         } catch (credentialsError) {
           console.error('Error with credentials function:', credentialsError);
           toast({
