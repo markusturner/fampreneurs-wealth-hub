@@ -454,7 +454,14 @@ export default function Documents() {
                 <Card 
                   key={resource.title} 
                   className="hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => handleHeritageResource(resource.title)}
+                  onClick={() => {
+                    if (resource.title === "Legacy Documents") {
+                      // Navigate to Family Office documents section
+                      navigate('/family-office/documents')
+                    } else {
+                      handleHeritageResource(resource.title)
+                    }
+                  }}
                 >
                   <CardHeader className="pb-3">
                     <Icon className={`h-8 w-8 ${resource.color} mx-auto`} />
