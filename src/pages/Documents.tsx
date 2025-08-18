@@ -175,6 +175,7 @@ export default function Documents() {
   const [userAccess, setUserAccess] = useState<string[]>([])
   const [showCoursesDialog, setShowCoursesDialog] = useState(false)
   const [showFamilyTreeDialog, setShowFamilyTreeDialog] = useState(false)
+  const [showConstitutionDialog, setShowConstitutionDialog] = useState(false)
   const [familyData, setFamilyData] = useState<any[]>([])
   const [businessCourses, setBusinessCourses] = useState(initialBusinessCourses)
   const [editingCourse, setEditingCourse] = useState<any>(null)
@@ -222,14 +223,7 @@ export default function Documents() {
   }
 
   const handleOpenFamilyConstitution = () => {
-    // For now, navigate to family members page where the documents are located
-    // You could also implement a direct document viewer here
-    navigate('/family-members', { 
-      state: { 
-        openDocument: 'Family Constitution',
-        tab: 'documents' 
-      } 
-    })
+    setShowConstitutionDialog(true)
   }
 
   const handleAccessChat = () => {
@@ -1024,6 +1018,102 @@ export default function Documents() {
                 </div>
               </div>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Family Constitution Dialog */}
+        <Dialog open={showConstitutionDialog} onOpenChange={setShowConstitutionDialog}>
+          <DialogContent className="sm:max-w-4xl h-[90vh] overflow-hidden flex flex-col">
+            <DialogHeader className="flex-shrink-0">
+              <DialogTitle className="flex items-center gap-2">
+                <Scroll className="h-5 w-5" />
+                Family Constitution
+              </DialogTitle>
+              <DialogDescription>
+                Our family's core values, principles, and guiding document
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex-1 overflow-y-auto space-y-6 p-6">
+              <div className="prose prose-slate max-w-none">
+                <h2>Preamble</h2>
+                <p>
+                  We, the members of this family, recognize that our greatest asset is not our financial wealth, 
+                  but our relationships with each other and our shared commitment to our values. This Constitution 
+                  serves as our guiding document, establishing the principles by which we conduct our family affairs 
+                  and make decisions that affect our collective future.
+                </p>
+
+                <h2>Article I: Mission Statement</h2>
+                <p>
+                  Our family's mission is to preserve and grow our legacy through multiple generations while 
+                  maintaining strong family bonds, fostering individual growth, and contributing positively 
+                  to our community and society at large.
+                </p>
+
+                <h2>Article II: Core Values</h2>
+                <ul>
+                  <li><strong>Integrity:</strong> We conduct ourselves with honesty and moral uprightness in all dealings</li>
+                  <li><strong>Respect:</strong> We treat each family member with dignity and value diverse perspectives</li>
+                  <li><strong>Stewardship:</strong> We responsibly manage our resources for current and future generations</li>
+                  <li><strong>Excellence:</strong> We strive for the highest standards in our personal and professional endeavors</li>
+                  <li><strong>Compassion:</strong> We support each other and extend kindness to our community</li>
+                  <li><strong>Learning:</strong> We commit to continuous education and personal development</li>
+                </ul>
+
+                <h2>Article III: Family Governance</h2>
+                <p>
+                  Our family shall be governed by a three-branch system consisting of:
+                </p>
+                <ul>
+                  <li><strong>The Family Council:</strong> Executive decision-making body</li>
+                  <li><strong>Council of Elders:</strong> Advisory body providing wisdom and guidance</li>
+                  <li><strong>Family Assembly:</strong> Legislative body representing all family members</li>
+                </ul>
+
+                <h2>Article IV: Communication Principles</h2>
+                <ul>
+                  <li>Open and honest communication is encouraged and valued</li>
+                  <li>Disagreements will be addressed respectfully and constructively</li>
+                  <li>All family members have the right to be heard</li>
+                  <li>Confidential family matters remain within the family</li>
+                </ul>
+
+                <h2>Article V: Financial Stewardship</h2>
+                <p>
+                  We commit to responsible financial management, including:
+                </p>
+                <ul>
+                  <li>Transparent reporting of family assets and investments</li>
+                  <li>Prudent investment strategies aligned with our values</li>
+                  <li>Support for family members' education and development</li>
+                  <li>Charitable giving to causes that reflect our values</li>
+                </ul>
+
+                <h2>Article VI: Next Generation Development</h2>
+                <p>
+                  We are committed to preparing the next generation through:
+                </p>
+                <ul>
+                  <li>Educational opportunities and mentorship</li>
+                  <li>Gradual assumption of family responsibilities</li>
+                  <li>Exposure to family business operations</li>
+                  <li>Character development and values training</li>
+                </ul>
+
+                <h2>Article VII: Amendment Process</h2>
+                <p>
+                  This Constitution may be amended by a two-thirds majority vote of the Family Assembly, 
+                  with proposed amendments circulated at least 30 days prior to voting.
+                </p>
+
+                <h2>Article VIII: Commitment</h2>
+                <p>
+                  By participating in our family governance structure, we each commit to upholding 
+                  these principles and working together to build a lasting legacy that honors our 
+                  ancestors and serves future generations.
+                </p>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
