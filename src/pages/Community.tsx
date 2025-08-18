@@ -545,7 +545,11 @@ export default function Community() {
 // Documents content component (moved from Documents page)
 function DocumentsContent() {
   const [uploadingDocument, setUploadingDocument] = useState<string | null>(null)
-  const [uploadedDocuments, setUploadedDocuments] = useState<{[key: string]: {url: string, name: string, type: string}}>({})
+  const [uploadedDocuments, setUploadedDocuments] = useState<{[key: string]: {url: string, name: string, type: string}}>(() => {
+    // Load from localStorage on initialization
+    const saved = localStorage.getItem('uploadedDocuments')
+    return saved ? JSON.parse(saved) : {}
+  })
   const [previewDocument, setPreviewDocument] = useState<{name: string, url: string, type: string} | null>(null)
 
   const handleUpload = (documentName: string) => {
@@ -573,6 +577,10 @@ function DocumentsContent() {
               [documentName]: documentData
             }
             console.log('Updated uploaded documents:', updated)
+            
+            // Save to localStorage
+            localStorage.setItem('uploadedDocuments', JSON.stringify(updated))
+            
             return updated
           })
           setUploadingDocument(null)
