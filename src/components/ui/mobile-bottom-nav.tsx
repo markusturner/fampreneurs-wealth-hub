@@ -106,38 +106,51 @@ export function MobileBottomNav() {
     badge: item.href === '/members' && unreadCount > 0 ? unreadCount : undefined
   }))
 
-  const isAdminRoute = false // Admin functionality removed
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border md:hidden">
-      <nav className="flex items-center justify-between px-2 py-2 max-w-xl mx-auto gap-1">
-        {itemsWithBadges.map((item) => {
-          const isActive = location.pathname === item.href
-          const Icon = item.icon
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-t border-border md:hidden">
+      <div className="safe-area-bottom">
+        <div className="flex justify-around items-center py-1 px-2 max-w-lg mx-auto">
+          {itemsWithBadges.map((item) => {
+            const isActive = location.pathname === item.href || 
+              (item.href === "/" && location.pathname === "/")
 
-          return (
-            <NavLink
-              key={item.name}
-              to={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center gap-1 p-2 rounded-lg transition-all duration-200",
-                "min-w-0 flex-1 text-xs font-medium relative",
-                isActive 
-                  ? "text-[#ffb500] bg-[#ffb500]/10 scale-105" 
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95"
-              )}
-            >
-              <Icon className={cn("h-5 w-5", isActive && "text-[#ffb500]")} />
-              <span className="sr-only">{item.name}</span>
-              {item.badge && item.badge > 0 && (
-                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {item.badge > 99 ? '99+' : item.badge}
+            return (
+              <NavLink
+                key={item.name}
+                to={item.href}
+                className={cn(
+                  "flex flex-col items-center justify-center min-w-0 flex-1 py-1.5 px-1 relative",
+                  "text-xs font-medium transition-all duration-200 rounded-lg touch-target",
+                  "active:scale-95 touch-manipulation",
+                  isActive 
+                    ? "text-primary bg-primary/10" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                )}
+              >
+                <div className="relative flex items-center justify-center mb-0.5">
+                  <item.icon 
+                    className={cn(
+                      "h-5 w-5 transition-all duration-200",
+                      isActive ? "text-primary scale-110" : "text-muted-foreground"
+                    )} 
+                  />
+                  {item.badge && item.badge > 0 && (
+                    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center font-semibold animate-pulse">
+                      {item.badge > 99 ? '99+' : item.badge}
+                    </span>
+                  )}
+                </div>
+                <span className={cn(
+                  "text-xs truncate max-w-full transition-all duration-200 leading-tight",
+                  isActive ? "text-primary font-semibold" : "text-muted-foreground"
+                )}>
+                  {item.name}
                 </span>
-              )}
-            </NavLink>
-          )
-        })}
-      </nav>
-    </div>
+              </NavLink>
+            )
+          })}
+        </div>
+      </div>
+    </nav>
   )
 }
