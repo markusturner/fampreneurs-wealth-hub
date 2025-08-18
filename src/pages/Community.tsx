@@ -639,7 +639,8 @@ function DocumentsContent() {
         { name: "Power of Attorney Document", icon: FileText, type: "file" },
         { name: "Trademark Certificate", icon: Crown, type: "file" },
         { name: "Family Constitution", icon: Scroll, type: "file" },
-        { name: "Family Crest", icon: Crown, type: "file" }
+        { name: "Family Crest", icon: Crown, type: "file" },
+        { name: "Family Corporate Seal", icon: Shield, type: "file" }
       ]
     },
     {
