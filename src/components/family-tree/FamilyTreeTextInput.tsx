@@ -230,6 +230,11 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
     return members
   }
 
+  const handleClear = () => {
+    onGenerate([])
+    toast.success('Family tree diagram cleared')
+  }
+
   const handleGenerate = () => {
     const data = parseFamilyText(textInput)
     console.log('FamilyTree Generate clicked. Members:', data.length, data)
@@ -367,14 +372,23 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
           onChange={(e) => setTextInput(e.target.value)}
           className="min-h-[300px] font-mono text-sm"
         />
-        <Button 
-          onClick={handleGenerate}
-          className="w-full mt-2"
-          size="lg"
-        >
-          <Sparkles className="h-4 w-4 mr-2" />
-          Generate Family Tree
-        </Button>
+        <div className="flex gap-2 mt-2">
+          <Button 
+            onClick={handleGenerate}
+            className="flex-1"
+            size="lg"
+          >
+            <Sparkles className="h-4 w-4 mr-2" />
+            Generate Family Tree
+          </Button>
+          <Button 
+            onClick={handleClear}
+            variant="outline"
+            size="lg"
+          >
+            Clear
+          </Button>
+        </div>
       </div>
     </div>
   )
