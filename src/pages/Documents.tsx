@@ -191,10 +191,24 @@ export default function Documents() {
   const handleStartLearning = (moduleTitle: string) => {
     if (moduleTitle === 'Family Business Education') {
       setShowCoursesDialog(true)
+    } else if (moduleTitle === 'Family Constitution') {
+      // Open the Family Constitution document
+      handleOpenFamilyConstitution()
     } else {
       // Navigate to courses page with the specific module
       navigate('/courses', { state: { searchTerm: moduleTitle } })
     }
+  }
+
+  const handleOpenFamilyConstitution = () => {
+    // For now, navigate to family members page where the documents are located
+    // You could also implement a direct document viewer here
+    navigate('/family-members', { 
+      state: { 
+        openDocument: 'Family Constitution',
+        tab: 'documents' 
+      } 
+    })
   }
 
   const handleAccessChat = () => {
