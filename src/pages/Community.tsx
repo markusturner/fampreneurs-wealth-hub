@@ -39,7 +39,6 @@ import {
   Crown,
   Eye,
   X,
-  TrendingUpIcon,
   LifeBuoy,
   Building,
   Globe,
