@@ -481,6 +481,49 @@ export default function Documents() {
           </div>
         </section>
 
+        {/* Family Governance Section */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                <Scale className="h-5 w-5 text-indigo-600" />
+                Family Governance
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Establish and maintain effective governance structures for your family enterprise
+              </p>
+            </div>
+            
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/family-governance')}
+              className="gap-2"
+            >
+              <Scale className="h-4 w-4" />
+              View Governance
+            </Button>
+          </div>
+
+          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/family-governance')}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <Scale className="h-8 w-8 text-indigo-600" />
+                <Badge variant="secondary">Active</Badge>
+              </div>
+              <CardTitle className="text-lg">Family Governance Framework</CardTitle>
+              <CardDescription>
+                Access governance policies, decision-making frameworks, and family charter documents
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>Governance Tools</span>
+                <span>Family Charter & Policies</span>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
 
         {/* Family Secret Codes - Admin Only */}
         {isAdmin && (
