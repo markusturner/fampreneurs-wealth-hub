@@ -484,10 +484,10 @@ export default function Members() {
                               size="sm"
                               onClick={() => handleResendInvitation(member)}
                               className="text-xs"
-                              disabled={member.status === 'active'}
+                              disabled={!!member.joined_at}
                             >
                               <Mail className="h-4 w-4 mr-1" />
-                              {member.status === 'active' ? 'Accepted' : 'Resend Invitation'}
+                              {member.joined_at ? 'Accepted' : 'Resend Invitation'}
                             </Button>
                           )}
                           <Button
