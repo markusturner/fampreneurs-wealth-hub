@@ -270,189 +270,20 @@ export default function Community() {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {/* Only show overview if there are connected accounts or investment data */}
-            {(connectedAccounts.length > 0 || investments.length > 0) ? (
-              <>
-                {/* Executive Summary */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
-                  <Card>
-                    <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4 lg:p-6">
-                      <CardTitle className="text-xs sm:text-sm lg:text-base font-medium flex items-center gap-1 sm:gap-2">
-                        <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
-                        <span className="hidden sm:inline">Net Worth</span>
-                        <span className="sm:hidden">Net</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-0 p-3 sm:p-4 lg:p-6">
-                      <div className="text-sm sm:text-lg lg:text-2xl font-bold">{formatCurrency(getAccountsBalance() + getTotalPortfolioValue())}</div>
-                      <div className="text-xs sm:text-sm text-green-600 flex items-center gap-1">
-                        <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3" />
-                        <span className="hidden sm:inline">Total Assets</span>
-                        <span className="sm:hidden">Assets</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium flex items-center gap-2">
-                        <PieChart className="h-4 w-4" />
-                        Portfolio Value
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{formatCurrency(getTotalPortfolioValue())}</div>
-                      <div className={`text-sm flex items-center gap-1 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {getTotalDayChange() >= 0 ? (
-                          <TrendingUp className="h-3 w-3" />
-                        ) : (
-                          <TrendingDown className="h-3 w-3" />
-                        )}
-                        {formatCurrency(getTotalDayChange())} today
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium flex items-center gap-2">
-                        <CreditCard className="h-4 w-4" />
-                        Cash & Bank
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{formatCurrency(getAccountsBalance())}</div>
-                      <div className="text-xs text-muted-foreground">
-                        Available funds
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium flex items-center gap-2">
-                        <BarChart3 className="h-4 w-4" />
-                        Active Accounts
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{getActiveAccountsCount()}</div>
-                      <div className="text-xs text-muted-foreground">
-                        Connected accounts
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4" />
-                        Investment Accounts
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{investments.length}</div>
-                      <div className="text-xs text-muted-foreground">
-                        Investment portfolios
-                      </div>
-                    </CardContent>
-                  </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Overview Moved</h3>
+                  <p className="text-muted-foreground mb-4">
+                    The overview section has been moved to the main dashboard for better navigation.
+                  </p>
+                  <Button onClick={() => navigate('/')}>
+                    Go to Dashboard
+                  </Button>
                 </div>
-              </>
-            ) : (
-              /* Empty state for overview */
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-center">
-                    <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Investment Overview</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Connect your accounts or add investment data to see your complete financial overview.
-                    </p>
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        Your portfolio performance, net worth, and account balances will appear here.
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Start by connecting accounts or manually adding investment data.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Only show AI Insights and Charts if there's actual data */}
-            {(connectedAccounts.length > 0 || investments.length > 0) && (
-              <>
-                {/* AI Insights */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BrainCircuit className="h-5 w-5" />
-                      AI Financial Insights
-                    </CardTitle>
-                    <CardDescription>
-                      Personalized recommendations and alerts based on your financial data
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {aiInsights.map((insight, index) => (
-                        <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
-                          <div className={`p-1 rounded-full ${
-                            insight.priority === 'high' ? 'bg-red-100 text-red-600' :
-                            insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                            'bg-blue-100 text-blue-600'
-                          }`}>
-                            {insight.priority === 'high' ? (
-                              <AlertTriangle className="h-4 w-4" />
-                            ) : insight.type === 'opportunity' ? (
-                              <Target className="h-4 w-4" />
-                            ) : (
-                              <BrainCircuit className="h-4 w-4" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm">{insight.message}</p>
-                            <span className={`text-xs px-2 py-1 rounded-full ${
-                              insight.priority === 'high' ? 'bg-red-100 text-red-600' :
-                              insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                              'bg-blue-100 text-blue-600'
-                            }`}>
-                              {insight.priority} priority
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Portfolio Performance</CardTitle>
-                      <CardDescription>12-month investment growth</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <InvestmentChart />
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Asset Allocation</CardTitle>
-                      <CardDescription>Current portfolio distribution</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <AssetAllocation data={assetAllocationData} />
-                    </CardContent>
-                  </Card>
-                </div>
-              </>
-            )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="accounts" className="space-y-6">
@@ -482,52 +313,17 @@ export default function Community() {
           </TabsContent>
 
           <TabsContent value="reports" className="space-y-6">
-            {/* Only show reports if there are connected accounts or investment data */}
-            {(connectedAccounts.length > 0 || investments.length > 0) ? (
-              <>
-                {/* Reports Section Header */}
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="text-center">
-                      <FileText className="h-12 w-12 mx-auto mb-4 text-primary" />
-                      <h3 className="text-lg font-semibold mb-2">Financial Reports & Analytics</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Comprehensive reports based on your portfolio performance, accounts, transactions, and budget data.
-                      </p>
-                      <div className="flex gap-2 justify-center">
-                        <Button onClick={() => toast({ title: "Portfolio Report Generated", description: "Detailed portfolio analysis is ready for download." })}>
-                          Portfolio Report
-                        </Button>
-                        <Button variant="outline" onClick={() => toast({ title: "Tax Report Generated", description: "Tax summary report has been created." })}>
-                          Tax Summary
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </>
-            ) : (
-              /* Empty state for reports */
-              <Card>
-                <CardContent className="p-6">
-                  <div className="text-center">
-                    <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold mb-2">Financial Reports</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Reports will be available once you connect accounts or add investment data.
-                    </p>
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">
-                        Portfolio reports, tax summaries, and performance analytics will appear here.
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Start by connecting accounts to generate meaningful reports.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Financial Reports</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Reports will be available once you connect accounts or add investment data.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="documents" className="space-y-6">

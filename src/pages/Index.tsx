@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2 } from 'lucide-react'
 import { useState } from "react"
 import { useUserRole } from "@/hooks/useUserRole"
+import { OverviewSection } from "@/components/dashboard/overview-section"
 
 const Index = () => {
   const { user, profile, loading } = useAuth()
@@ -79,6 +80,9 @@ const Index = () => {
 
         {/* Key Metrics */}
         <DashboardStats />
+
+        {/* Overview Section */}
+        <OverviewSection />
 
         {/* Main Dashboard Grid */}
         <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-2">
