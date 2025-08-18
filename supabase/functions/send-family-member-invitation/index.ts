@@ -62,7 +62,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send the invitation email
     const emailResponse = await resend.emails.send({
-      from: 'Family Office <onboarding@resend.dev>',
+      from: 'Family Office <info@fampreneurs.com>',
       to: [email],
       subject: `Family Office Invitation - Welcome ${firstName}!`,
       html: `
