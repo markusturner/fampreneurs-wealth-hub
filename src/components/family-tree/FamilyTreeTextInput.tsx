@@ -139,6 +139,15 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
       })
     })
 
+    // Ensure we include standalone names not captured by patterns
+    const allNameMatches = Array.from(text.matchAll(/[A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)*/g))
+      .map(m => sanitizeName(m[0]))
+      .filter(n => n && n.length > 1)
+
+    allNameMatches.forEach(n => {
+      if (!relationships[n]) relationships[n] = { parents: [], children: [] }
+    })
+
     // Convert to FamilyMember objects with better generation calculation
     Object.keys(relationships).forEach((name, index) => {
       const rel = relationships[name]
