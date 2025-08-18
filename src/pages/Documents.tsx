@@ -243,15 +243,7 @@ export default function Documents() {
     try {
       const { data, error } = await supabase
         .from('family_messages')
-        .select(`
-          *,
-          profiles:sender_id (
-            display_name,
-            first_name,
-            last_name,
-            avatar_url
-          )
-        `)
+        .select('*')
         .order('created_at', { ascending: true })
       
       if (error) throw error
