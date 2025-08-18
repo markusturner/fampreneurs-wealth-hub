@@ -3,7 +3,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Info } from 'lucide-react'
+import { Info, Sparkles, Wand2, Lightbulb } from 'lucide-react'
+import { supabase } from '@/integrations/supabase/client'
+import { toast } from 'sonner'
 
 interface FamilyMember {
   id: string
@@ -27,6 +29,8 @@ export function FamilyTreeTextInput({ onFamilyDataChange }: FamilyTreeTextInputP
 │  └─ Lisa Smith
 │     └─ children: Michael Brown
 └─ parents: Robert Smith, Helen Smith`)
+  
+  const [isAiLoading, setIsAiLoading] = useState(false)
 
   const parseFamilyText = (text: string): FamilyMember[] => {
     const lines = text.split('\n').filter(line => line.trim())
@@ -94,6 +98,44 @@ export function FamilyTreeTextInput({ onFamilyDataChange }: FamilyTreeTextInputP
     onFamilyDataChange(familyData)
   }, [textInput, onFamilyDataChange])
 
+  const callAiAssistant = async (assistanceType: 'expand' | 'format' | 'suggest') => {
+    if (!textInput.trim()) {
+      toast.error('Please enter some family information first')
+      return
+    }
+
+    setIsAiLoading(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-family-tree-assistant', {
+        body: { 
+          familyText: textInput,
+          assistanceType 
+        }
+      })
+
+      if (error) throw error
+
+      if (data.success) {
+        if (assistanceType === 'suggest') {
+          toast.success('AI Suggestions', {
+            description: data.response,
+            duration: 10000,
+          })
+        } else {
+          setTextInput(data.response)
+          toast.success(`Family tree ${assistanceType === 'expand' ? 'expanded' : 'formatted'} successfully`)
+        }
+      } else {
+        throw new Error(data.error)
+      }
+    } catch (error) {
+      console.error('AI Assistant Error:', error)
+      toast.error('Failed to get AI assistance. Please try again.')
+    } finally {
+      setIsAiLoading(false)
+    }
+  }
+
   const handleExampleLoad = () => {
     setTextInput(`The Johnson Family
 ├─ William Johnson (Great Grandfather)
@@ -123,19 +165,54 @@ export function FamilyTreeTextInput({ onFamilyDataChange }: FamilyTreeTextInputP
           <p>• Add "married to [spouse name]" for marriages</p>
           <p>• Add "children: [name1], [name2]" for children</p>
           <p>• Add "parents: [parent1], [parent2]" for parents</p>
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={handleExampleLoad}
-            className="mt-2"
-          >
-            Load Example
-          </Button>
+          <div className="flex flex-wrap gap-2 mt-3">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={handleExampleLoad}
+            >
+              Load Example
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
-      <div className="space-y-2">
-        <Label htmlFor="family-text">Describe Your Family Tree</Label>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="family-text">Describe Your Family Tree</Label>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => callAiAssistant('suggest')}
+              disabled={isAiLoading}
+              className="text-xs"
+            >
+              <Lightbulb className="h-3 w-3 mr-1" />
+              Get Suggestions
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => callAiAssistant('format')}
+              disabled={isAiLoading}
+              className="text-xs"
+            >
+              <Wand2 className="h-3 w-3 mr-1" />
+              Format
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => callAiAssistant('expand')}
+              disabled={isAiLoading}
+              className="text-xs"
+            >
+              <Sparkles className="h-3 w-3 mr-1" />
+              {isAiLoading ? 'Expanding...' : 'Expand with AI'}
+            </Button>
+          </div>
+        </div>
         <Textarea
           id="family-text"
           placeholder="Enter your family information here..."
