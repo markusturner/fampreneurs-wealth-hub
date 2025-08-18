@@ -254,7 +254,6 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           >
             <LayoutDashboard className="h-3 w-3 lg:h-4 lg:w-4" />
             <span className="hidden lg:inline">Dashboard</span>
-            <span className="lg:hidden">Dash</span>
           </Button>
           <Button
             variant={location.pathname === '/community' ? "default" : "ghost"}
@@ -264,7 +263,6 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           >
             <Home className="h-3 w-3 lg:h-4 lg:w-4" />
             <span className="hidden lg:inline">Family Office</span>
-            <span className="lg:hidden">Office</span>
           </Button>
           <Button
             variant={location.pathname === '/documents' ? "default" : "ghost"}
@@ -274,7 +272,6 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           >
             <FileText className="h-3 w-3 lg:h-4 lg:w-4" />
             <span className="hidden lg:inline">Family Roundtable</span>
-            <span className="lg:hidden">Round</span>
           </Button>
           <Button
             variant={location.pathname === '/calendar' ? "default" : "ghost"}
@@ -284,7 +281,6 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           >
             <CalendarIcon className="h-3 w-3 lg:h-4 lg:w-4" />
             <span className="hidden lg:inline">Calendar</span>
-            <span className="lg:hidden">Cal</span>
           </Button>
           <Button
             variant={location.pathname === '/members' ? "default" : "ghost"}
@@ -294,7 +290,6 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           >
             <Users className="h-3 w-3 lg:h-4 lg:w-4" />
             <span className="hidden lg:inline">Members</span>
-            <span className="lg:hidden">Mem</span>
           </Button>
         </div>
 
