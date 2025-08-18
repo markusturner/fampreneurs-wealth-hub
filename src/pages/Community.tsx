@@ -36,8 +36,11 @@ import {
   Heart,
   Scroll,
   Landmark,
-  Crown
+  Crown,
+  Eye,
+  X
 } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
 import { AssetAllocation } from '@/components/dashboard/asset-allocation'
 import { AccountIntegration } from '@/components/dashboard/account-integration'
@@ -543,6 +546,7 @@ export default function Community() {
 function DocumentsContent() {
   const [uploadingDocument, setUploadingDocument] = useState<string | null>(null)
   const [uploadedDocuments, setUploadedDocuments] = useState<{[key: string]: {url: string, name: string, type: string}}>({})
+  const [previewDocument, setPreviewDocument] = useState<{name: string, url: string, type: string} | null>(null)
 
   const handleUpload = (documentName: string) => {
     const input = document.createElement('input')
@@ -585,6 +589,17 @@ function DocumentsContent() {
 
   const handleReplace = (documentName: string) => {
     handleUpload(documentName) // Reuse upload logic to replace
+  }
+
+  const handlePreview = (documentName: string) => {
+    const documentData = uploadedDocuments[documentName]
+    if (documentData) {
+      setPreviewDocument({
+        name: documentName,
+        url: documentData.url,
+        type: documentData.type
+      })
+    }
   }
 
   const documentCategories = [
@@ -711,6 +726,15 @@ function DocumentsContent() {
                           {isUploaded ? (
                             <>
                               <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handlePreview(document.name)}
+                                className="h-7 px-2 sm:h-8 sm:px-3"
+                                title="Preview"
+                              >
+                                <Eye className="h-2 w-2 sm:h-3 sm:w-3" />
+                              </Button>
+                              <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleReplace(document.name)}
@@ -755,6 +779,56 @@ function DocumentsContent() {
           )
         })}
       </div>
+
+      {/* Preview Dialog */}
+      <Dialog open={!!previewDocument} onOpenChange={() => setPreviewDocument(null)}>
+        <DialogContent className="sm:max-w-4xl h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              {previewDocument?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto">
+            {previewDocument && (
+              <div className="w-full h-full">
+                {previewDocument.type.startsWith('image/') ? (
+                  <img 
+                    src={previewDocument.url} 
+                    alt={previewDocument.name}
+                    className="max-w-full h-auto mx-auto"
+                  />
+                ) : previewDocument.type.startsWith('video/') ? (
+                  <video 
+                    src={previewDocument.url} 
+                    controls
+                    className="max-w-full h-auto mx-auto"
+                  />
+                ) : previewDocument.type === 'application/pdf' ? (
+                  <embed 
+                    src={previewDocument.url} 
+                    type="application/pdf"
+                    className="w-full h-full min-h-[600px]"
+                  />
+                ) : (
+                  <div className="text-center py-12">
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground">
+                      Preview not available for this file type. Use the download button to view the file.
+                    </p>
+                    <Button 
+                      onClick={() => handleDownload(previewDocument.name)}
+                      className="mt-4"
+                    >
+                      Download File
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
