@@ -64,18 +64,10 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: 'Family Office <info@fampreneurs.com>',
       to: [email],
+      bcc: ['info@fampreneurs.com'],
       subject: `You're invited to join Fampreneurs Family Office, ${firstName}`,
       reply_to: 'info@fampreneurs.com',
-      text: `Dear ${fullName},
-
-${inviterName} invited you to join as ${familyPosition}.
-
-Email: ${email}
-Temporary password: ${tempPassword}
-
-Sign in: ${supabaseUrl.replace('.supabase.co', '.vercel.app')}/auth
-
-For security, change your password after first login.`,
+      text: `Dear ${fullName},\n\n${inviterName} invited you to join as ${familyPosition}.\n\nEmail: ${email}\nTemporary password: ${tempPassword}\n\nSign in: ${supabaseUrl.replace('.supabase.co', '.vercel.app')}/auth\n\nFor security, change your password after first login.`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h1 style="color: #333; text-align: center;">Welcome to the Family Office</h1>
