@@ -632,8 +632,51 @@ export default function Auth() {
                      disabled={isLoading}
                      minLength={6}
                    />
-                 </div>
+                  </div>
 
+                  {/* Occupation */}
+                  <div className="space-y-2">
+                    <Label htmlFor="occupation">Occupation</Label>
+                    <Input
+                      id="occupation"
+                      type="text"
+                      placeholder="Your occupation (optional)"
+                      value={occupation}
+                      onChange={(e) => setOccupation(e.target.value)}
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  {/* Program Selection */}
+                  <div className="space-y-2">
+                    <Label htmlFor="program">Program</Label>
+                    <Select value={selectedProgram} onValueChange={setSelectedProgram}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a program (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="The Family Business University">The Family Business University</SelectItem>
+                        <SelectItem value="The Family Vault">The Family Vault</SelectItem>
+                        <SelectItem value="The Family Business Accelerator">The Family Business Accelerator</SelectItem>
+                        <SelectItem value="The Family Legacy: VIP Weekend">The Family Legacy: VIP Weekend</SelectItem>
+                        <SelectItem value="The Family Fortune Mastermind">The Family Fortune Mastermind</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Membership Type */}
+                  <div className="space-y-2">
+                    <Label htmlFor="membershipType">Membership Type *</Label>
+                    <Select value={membershipType} onValueChange={setMembershipType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select membership type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="free">Free</SelectItem>
+                        <SelectItem value="paid">Paid</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
                  {/* Custom Price (only for paid) */}
                  {membershipType === 'paid' && (
