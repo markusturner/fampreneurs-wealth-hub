@@ -256,10 +256,10 @@ export default function Documents() {
                     <Button 
                       className={`w-full mt-3 ${
                         module.title === 'Family Business Education' 
-                          ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                          ? 'business-course-btn bg-blue-600 hover:bg-blue-700 text-white' 
                           : module.title === 'Family Constitution'
-                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                          : 'bg-purple-600 hover:bg-purple-700 text-white'
+                          ? 'constitution-btn bg-emerald-600 hover:bg-emerald-700 text-white'
+                          : 'governance-btn bg-purple-600 hover:bg-purple-700 text-white'
                       }`}
                       size="sm"
                       onClick={() => handleStartLearning(module.title)}
