@@ -361,7 +361,7 @@ export default function Community() {
           </TabsContent>
 
           <TabsContent value="messages" className="space-y-6">
-            <MessagesContent />
+            <MessagesContent familyOfficeMembers={familyOfficeMembers} loadingMembers={loadingMembers} />
           </TabsContent>
 
           <TabsContent value="services" className="space-y-6">
@@ -695,54 +695,25 @@ function DocumentsContent() {
 }
 
 // Messages content component for family office members
-function MessagesContent() {
+function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOfficeMembers: any[], loadingMembers: boolean }) {
   const { user, profile } = useAuth()
   const { toast } = useToast()
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [messageInput, setMessageInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Mock family office members data - in real app, this would come from the database
-  const familyOfficeMembers = [
-    {
-      id: '1',
-      name: 'John Smith',
-      role: 'Family Office Admin',
-      avatar: 'JS',
-      lastSeen: '2 mins ago',
-      status: 'online',
-      unreadCount: 3
-    },
-    {
-      id: '2', 
-      name: 'Sarah Johnson',
-      role: 'Family Member',
-      avatar: 'SJ',
-      lastSeen: '1 hour ago',
-      status: 'away',
-      unreadCount: 0
-    },
-    {
-      id: '3',
-      name: 'Michael Davis',
-      role: 'Trust Administrator',
-      avatar: 'MD',
-      lastSeen: '3 hours ago',
-      status: 'offline',
-      unreadCount: 1
-    },
-    {
-      id: '4',
-      name: 'Emily Wilson',
-      role: 'Family Advisor',
-      avatar: 'EW',
-      lastSeen: 'Yesterday',
-      status: 'offline',
-      unreadCount: 0
-    }
-  ]
+  // Convert family office members to the format expected by the component
+  const formattedMembers = familyOfficeMembers.map((member, index) => ({
+    id: member.id,
+    name: member.full_name,
+    role: member.family_position || 'Family Member',
+    avatar: member.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'FM',
+    lastSeen: 'Offline',
+    status: 'offline',
+    unreadCount: 0
+  }))
 
-  // Mock conversation data
+  // Mock conversation data - in real app this would come from database
   const conversations: {[key: string]: Array<{id: string, sender: string, message: string, timestamp: string, isCurrentUser: boolean}> } = {
     '1': [
       { id: '1', sender: 'John Smith', message: 'Hi! I wanted to discuss the quarterly trust review meeting.', timestamp: '2:30 PM', isCurrentUser: false },
@@ -759,7 +730,7 @@ function MessagesContent() {
     '4': []
   }
 
-  const filteredMembers = familyOfficeMembers.filter(member => 
+  const filteredMembers = formattedMembers.filter(member => 
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.role.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -796,76 +767,103 @@ function MessagesContent() {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6 h-[600px]">
-        {/* Members List */}
-        <div className="md:col-span-1 border rounded-lg">
-          <div className="p-4 border-b">
-            <div className="relative">
-              <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search members..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+      {loadingMembers ? (
+        <div className="grid md:grid-cols-3 gap-6 h-[600px]">
+          <div className="md:col-span-3 flex items-center justify-center">
+            <div className="text-center text-muted-foreground">
+              <div className="h-8 w-8 animate-spin rounded-full border border-current border-t-transparent mx-auto mb-4" />
+              <p>Loading family office members...</p>
             </div>
           </div>
-          
-          <div className="overflow-y-auto max-h-[520px]">
-            {filteredMembers.map((member) => (
-              <div
-                key={member.id}
-                className={`p-4 border-b cursor-pointer transition-colors hover:bg-accent/50 ${
-                  selectedConversation === member.id ? 'bg-accent' : ''
-                }`}
-                onClick={() => setSelectedConversation(member.id)}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium">
-                      {member.avatar}
-                    </div>
-                    <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${getStatusColor(member.status)}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium truncate">{member.name}</p>
-                      {member.unreadCount > 0 && (
-                        <Badge variant="secondary" className="text-xs">
-                          {member.unreadCount}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground truncate">{member.role}</p>
-                    <p className="text-xs text-muted-foreground">{member.lastSeen}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+        </div>
+      ) : familyOfficeMembers.length === 0 ? (
+        <div className="grid md:grid-cols-3 gap-6 h-[600px]">
+          <div className="md:col-span-3 flex items-center justify-center">
+            <div className="text-center text-muted-foreground">
+              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium mb-2">No Family Office Members</p>
+              <p className="text-sm">Add family office members to enable messaging functionality.</p>
+            </div>
           </div>
         </div>
+      ) : (
+        <div className="grid md:grid-cols-3 gap-6 h-[600px]">
+          {/* Members List */}
+          <div className="md:col-span-1 border rounded-lg">
+            <div className="p-4 border-b">
+              <div className="relative">
+                <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search members..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                  disabled={familyOfficeMembers.length === 0}
+                />
+              </div>
+            </div>
+            
+            <div className="overflow-y-auto max-h-[520px]">
+              {filteredMembers.length > 0 ? (
+                filteredMembers.map((member) => (
+                  <div
+                    key={member.id}
+                    className={`p-4 border-b cursor-pointer transition-colors hover:bg-accent/50 ${
+                      selectedConversation === member.id ? 'bg-accent' : ''
+                    }`}
+                    onClick={() => setSelectedConversation(member.id)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div className="relative">
+                        <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium">
+                          {member.avatar}
+                        </div>
+                        <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${getStatusColor(member.status)}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium truncate">{member.name}</p>
+                          {member.unreadCount > 0 && (
+                            <Badge variant="secondary" className="text-xs">
+                              {member.unreadCount}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">{member.role}</p>
+                        <p className="text-xs text-muted-foreground">{member.lastSeen}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-4 text-center text-muted-foreground">
+                  <p className="text-sm">No members found</p>
+                </div>
+              )}
+            </div>
+          </div>
 
         {/* Chat Area */}
         <div className="md:col-span-2 border rounded-lg flex flex-col">
           {selectedConversation ? (
             <>
-              {/* Chat Header */}
-              <div className="p-4 border-b flex items-center space-x-3">
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm">
-                    {familyOfficeMembers.find(m => m.id === selectedConversation)?.avatar}
-                  </div>
-                  <div className={`absolute -bottom-0 -right-0 w-2 h-2 rounded-full border border-background ${getStatusColor(familyOfficeMembers.find(m => m.id === selectedConversation)?.status || 'offline')}`} />
-                </div>
-                <div>
-                  <p className="font-medium text-sm">
-                    {familyOfficeMembers.find(m => m.id === selectedConversation)?.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {familyOfficeMembers.find(m => m.id === selectedConversation)?.role}
-                  </p>
-                </div>
-              </div>
+               {/* Chat Header */}
+               <div className="p-4 border-b flex items-center space-x-3">
+                 <div className="relative">
+                   <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm">
+                     {formattedMembers.find(m => m.id === selectedConversation)?.avatar}
+                   </div>
+                   <div className={`absolute -bottom-0 -right-0 w-2 h-2 rounded-full border border-background ${getStatusColor(formattedMembers.find(m => m.id === selectedConversation)?.status || 'offline')}`} />
+                 </div>
+                 <div>
+                   <p className="font-medium text-sm">
+                     {formattedMembers.find(m => m.id === selectedConversation)?.name}
+                   </p>
+                   <p className="text-xs text-muted-foreground">
+                     {formattedMembers.find(m => m.id === selectedConversation)?.role}
+                   </p>
+                 </div>
+               </div>
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -934,7 +932,8 @@ function MessagesContent() {
             </div>
           )}
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Security Notice */}
       <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
