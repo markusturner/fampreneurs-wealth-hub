@@ -749,6 +749,7 @@ function DocumentsContent() {
                                 size="sm"
                                 onClick={() => handleReplace(document.name)}
                                 className="h-7 px-2 sm:h-8 sm:px-3"
+                                style={{ backgroundColor: '#290a52', color: 'white', borderColor: '#290a52' }}
                                 title="Replace"
                               >
                                 <Upload className="h-2 w-2 sm:h-3 sm:w-3" />
