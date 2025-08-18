@@ -792,7 +792,7 @@ function ServicesContent() {
         <CardContent className="p-6">
           <div className="flex items-center space-x-4">
             <div className="flex-shrink-0">
-              <Star className="h-8 w-8 text-primary" />
+              <Star className="h-8 w-8" style={{ color: "#ffb500" }} />
             </div>
             <div className="flex-1">
               <h3 className="font-semibold text-lg mb-2">Premium Service Guarantee</h3>
