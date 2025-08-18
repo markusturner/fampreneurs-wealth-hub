@@ -43,6 +43,12 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
     const nodes: Node[] = []
     const edges: Edge[] = []
 
+    // Preserve input description order by recording first-seen index
+    const orderMap: Record<string, number> = {}
+    familyMembers.forEach((m, idx) => {
+      if (m?.id) orderMap[m.id] = idx
+    })
+
     // Group by generation for positioning
     const generationGroups: { [key: number]: FamilyMember[] } = {}
     validMembers.forEach(member => {
@@ -57,8 +63,9 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
       const generation = parseInt(gen)
       const members = generationGroups[generation]
       
-      members.forEach((member, index) => {
-        const xPosition = (index - (members.length - 1) / 2) * 200
+      const sortedMembers = members.slice().sort((a, b) => (orderMap[a.id] ?? 0) - (orderMap[b.id] ?? 0))
+      sortedMembers.forEach((member, index) => {
+        const xPosition = (index - (sortedMembers.length - 1) / 2) * 200
         const yPosition = generation * 150
 
         // Determine relationship label based on generation and family structure
