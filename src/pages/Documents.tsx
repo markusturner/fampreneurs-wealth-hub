@@ -103,6 +103,43 @@ const heritageResources = [
 export default function Documents() {
   const navigate = useNavigate()
 
+  const handleStartLearning = (moduleTitle: string) => {
+    // Navigate to courses page with the specific module
+    navigate('/courses', { state: { searchTerm: moduleTitle } })
+  }
+
+  const handleAccessChat = () => {
+    // Navigate to community page for family communication
+    navigate('/community')
+  }
+
+  const handleHeritageResource = (resourceTitle: string) => {
+    // For now, show a toast message - you can implement specific pages later
+    const messages = {
+      "Family Crest & Seal": "Opening interactive family crest gallery...",
+      "Family Portrait Gallery": "Viewing commissioned family portraits...",
+      "Family Tree Explorer": "Loading interactive family tree...",
+      "Family Identity Manual": "Opening family values handbook..."
+    }
+    
+    // You could create specific pages for each resource
+    alert(messages[resourceTitle as keyof typeof messages] || "Opening resource...")
+  }
+
+  const handleEnterAccessCode = () => {
+    // Create a prompt for access code
+    const accessCode = prompt("Enter your family access code:")
+    
+    if (accessCode) {
+      if (accessCode.toLowerCase() === "family2024" || accessCode === "1234") {
+        alert("Access granted! Viewing secure family information...")
+        // You could navigate to a secure area or show hidden content
+      } else {
+        alert("Invalid access code. Please contact your family administrator.")
+      }
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <NavHeader />
@@ -148,7 +185,11 @@ export default function Documents() {
                       <span>{module.lessons} lessons</span>
                       <span>{module.duration}</span>
                     </div>
-                    <Button className="w-full mt-3" size="sm">
+                    <Button 
+                      className="w-full mt-3" 
+                      size="sm"
+                      onClick={() => handleStartLearning(module.title)}
+                    >
                       Start Learning
                     </Button>
                   </CardContent>
@@ -228,7 +269,7 @@ export default function Documents() {
                     </p>
                   </div>
                 </div>
-                <Button>
+                <Button onClick={handleAccessChat}>
                   Access Chat
                 </Button>
               </div>
@@ -252,7 +293,11 @@ export default function Documents() {
             {heritageResources.map((resource) => {
               const Icon = resource.icon
               return (
-                <Card key={resource.title} className="hover:shadow-md transition-shadow cursor-pointer">
+                <Card 
+                  key={resource.title} 
+                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => handleHeritageResource(resource.title)}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
@@ -296,7 +341,7 @@ export default function Documents() {
               <p className="text-sm text-muted-foreground mb-4">
                 Enter your family access code to view sensitive family information
               </p>
-              <Button variant="outline">
+              <Button variant="outline" onClick={handleEnterAccessCode}>
                 Enter Access Code
               </Button>
             </CardContent>
