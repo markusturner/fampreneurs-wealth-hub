@@ -23,7 +23,9 @@ import {
   Video,
   Settings,
   Eye,
-  EyeOff
+  EyeOff,
+  CheckCircle,
+  Key
 } from "lucide-react"
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { FamilySecretCodesAdmin } from "@/components/dashboard/family-secret-codes-admin"
@@ -325,8 +327,12 @@ export default function Documents() {
     }
 
     try {
-      const { data, error } = await supabase.rpc('validate_family_code', {
-        p_code: accessCode.toUpperCase().trim()
+      const { data, error } = await supabase.functions.invoke('validate-family-code', {
+        body: {
+          code: accessCode.toUpperCase().trim(),
+          ip_address: null,
+          user_agent: navigator.userAgent
+        }
       })
 
       if (error) throw error
