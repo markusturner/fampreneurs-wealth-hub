@@ -161,10 +161,14 @@ export function FamilyTreeTextInput({ onFamilyDataChange }: FamilyTreeTextInputP
           </CardTitle>
         </CardHeader>
         <CardContent className="text-xs space-y-2">
-          <p>• Use simple text with names on separate lines</p>
+          <p>• Write about your family naturally, then click Format to organize</p>
           <p>• Add "married to [spouse name]" for marriages</p>
           <p>• Add "children: [name1], [name2]" for children</p>
           <p>• Add "parents: [parent1], [parent2]" for parents</p>
+          <div className="mt-3 p-3 bg-muted rounded text-xs">
+            <p className="font-medium mb-2">Example:</p>
+            <p>"My grandfather John Smith married my grandmother Mary Johnson. They had three children: my father Robert, my aunt Patricia, and my uncle Michael. My father Robert married my mother Susan Davis. My parents have two children: me (David) and my sister Lisa."</p>
+          </div>
           <div className="flex flex-wrap gap-2 mt-3">
             <Button 
               size="sm" 
