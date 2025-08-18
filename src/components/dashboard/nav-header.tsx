@@ -244,8 +244,8 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           </div>
         </div>
 
-        {/* Navigation Links - Desktop */}
-        <div className="hidden lg:flex items-center gap-1 mx-4 xl:mx-6">
+        {/* Navigation Links - Desktop & Tablet */}
+        <div className="hidden md:flex items-center gap-1 mx-4 xl:mx-6">
           <Button
             variant={location.pathname === '/' ? "default" : "ghost"}
             size="sm"
