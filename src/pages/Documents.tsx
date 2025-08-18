@@ -23,7 +23,16 @@ import {
   Video,
   Settings,
   Eye,
-  EyeOff
+  EyeOff,
+  Unlock,
+  DollarSign,
+  Calendar,
+  UserCheck,
+  Briefcase,
+  Clock,
+  MapPin,
+  Phone,
+  Activity
 } from "lucide-react"
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { FamilySecretCodesAdmin } from "@/components/dashboard/family-secret-codes-admin"
@@ -126,6 +135,11 @@ export default function Documents() {
     if (user && isAdmin) {
       fetchAvailableCodes()
     }
+    // Load saved access from localStorage
+    const savedAccess = localStorage.getItem(`family_access_${user?.id}`)
+    if (savedAccess) {
+      setUserAccess(JSON.parse(savedAccess))
+    }
   }, [user, isAdmin])
 
   const fetchAvailableCodes = async () => {
@@ -180,25 +194,24 @@ export default function Documents() {
 
       const result = data as any
       if (result.success) {
-        toast.success(result.message)
-        setUserAccess(prev => [...prev, result.access_level])
+        const newAccess = [...userAccess, result.access_level]
+        setUserAccess(newAccess)
+        
+        // Save access to localStorage
+        localStorage.setItem(`family_access_${user?.id}`, JSON.stringify(newAccess))
+        
         setShowCodeDialog(false)
         setAccessCode('')
         
-        // Show access granted content based on level
-        switch (result.access_level) {
-          case 'trust':
-            alert(`🏛️ TRUST ACCESS GRANTED\n\n${result.description}\n\nYou now have access to:\n• Trust documents\n• Financial statements\n• Legal agreements\n• Investment portfolios`)
-            break
-          case 'legacy':
-            alert(`👑 LEGACY ACCESS GRANTED\n\n${result.description}\n\nYou now have access to:\n• Family legacy meetings\n• Historical documents\n• Succession planning\n• Leadership councils`)
-            break
-          case 'admin':
-            alert(`🔐 ADMINISTRATIVE ACCESS GRANTED\n\n${result.description}\n\nYou now have full administrative privileges.`)
-            break
-          default:
-            alert(`✅ ACCESS GRANTED\n\n${result.description}`)
-        }
+        toast.success(`🔓 ${result.access_level.toUpperCase()} ACCESS GRANTED`)
+        
+        // Show what's been unlocked
+        setTimeout(() => {
+          const element = document.getElementById(`${result.access_level}-section`)
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' })
+          }
+        }, 500)
       } else {
         toast.error(result.message)
       }
@@ -206,6 +219,10 @@ export default function Documents() {
       console.error('Error validating code:', error)
       toast.error('Failed to validate access code')
     }
+  }
+
+  const hasAccess = (level: string) => {
+    return isAdmin || userAccess.includes(level)
   }
 
   return (
@@ -546,6 +563,325 @@ export default function Documents() {
             </>
           )}
         </section>
+
+        {/* Trust Documents Section - Unlocked with Trust Access */}
+        {hasAccess('trust') && (
+          <section id="trust-section" className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2">
+                <Unlock className="h-5 w-5 text-emerald-600" />
+                <h2 className="text-xl font-semibold">Trust & Financial Documents</h2>
+              </div>
+              <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+                Trust Access
+              </Badge>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Card className="border-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/30">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-6 w-6 text-emerald-600" />
+                    <CardTitle className="text-lg">Investment Portfolios</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Real-time view of family investment holdings and performance
+                  </p>
+                  <Button className="w-full" onClick={() => navigate('/investments')}>
+                    View Investments
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/30">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-6 w-6 text-emerald-600" />
+                    <CardTitle className="text-lg">Trust Documents</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Legal trust agreements, amendments, and beneficiary information
+                  </p>
+                  <Button className="w-full" variant="outline">
+                    Access Documents
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/30">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-6 w-6 text-emerald-600" />
+                    <CardTitle className="text-lg">Financial Statements</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Quarterly reports, tax documents, and audit statements
+                  </p>
+                  <Button className="w-full" variant="outline">
+                    View Statements
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+        )}
+
+        {/* Legacy Meetings Section - Unlocked with Legacy Access */}
+        {hasAccess('legacy') && (
+          <section id="legacy-section" className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2">
+                <Unlock className="h-5 w-5 text-purple-600" />
+                <h2 className="text-xl font-semibold">Family Legacy & Succession</h2>
+              </div>
+              <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                Legacy Access
+              </Badge>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="border-purple-200 bg-purple-50/50 dark:bg-purple-950/30">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-6 w-6 text-purple-600" />
+                    <CardTitle className="text-lg">Legacy Council Meetings</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-background rounded border">
+                      <div>
+                        <p className="font-medium text-sm">Next Generation Leadership</p>
+                        <p className="text-xs text-muted-foreground">Today, 2:00 PM</p>
+                      </div>
+                      <Button size="sm">Join</Button>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-background rounded border">
+                      <div>
+                        <p className="font-medium text-sm">Succession Planning Review</p>
+                        <p className="text-xs text-muted-foreground">Tomorrow, 10:00 AM</p>
+                      </div>
+                      <Button size="sm" variant="outline">Schedule</Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-purple-200 bg-purple-50/50 dark:bg-purple-950/30">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <UserCheck className="h-6 w-6 text-purple-600" />
+                    <CardTitle className="text-lg">Leadership Pipeline</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-background rounded border">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="font-medium text-sm">Next Generation Readiness</p>
+                        <Badge variant="outline">75%</Badge>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div className="bg-purple-600 h-2 rounded-full" style={{ width: '75%' }}></div>
+                      </div>
+                    </div>
+                    <Button className="w-full" variant="outline">
+                      View Development Plans
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-purple-200 bg-purple-50/50 dark:bg-purple-950/30 md:col-span-2">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Crown className="h-6 w-6 text-purple-600" />
+                    <CardTitle className="text-lg">Family Legacy Archive</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-3 bg-background rounded border text-center">
+                      <FileText className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                      <p className="font-medium text-sm">Historical Documents</p>
+                      <p className="text-xs text-muted-foreground">150+ documents</p>
+                    </div>
+                    <div className="p-3 bg-background rounded border text-center">
+                      <Video className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                      <p className="font-medium text-sm">Legacy Recordings</p>
+                      <p className="text-xs text-muted-foreground">45 recordings</p>
+                    </div>
+                    <div className="p-3 bg-background rounded border text-center">
+                      <Image className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                      <p className="font-medium text-sm">Family Photos</p>
+                      <p className="text-xs text-muted-foreground">1,200+ photos</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+        )}
+
+        {/* Basic Access Section - Unlocked with Basic Access */}
+        {hasAccess('basic') && (
+          <section id="basic-section" className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2">
+                <Unlock className="h-5 w-5 text-blue-600" />
+                <h2 className="text-xl font-semibold">Family Network & Resources</h2>
+              </div>
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                Basic Access
+              </Badge>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/30">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-6 w-6 text-blue-600" />
+                    <CardTitle className="text-lg">Family Directory</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Contact information and profiles of all family members
+                  </p>
+                  <Button className="w-full" onClick={() => navigate('/family-members')}>
+                    View Directory
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/30">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-6 w-6 text-blue-600" />
+                    <CardTitle className="text-lg">Emergency Contacts</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span>Family Office</span>
+                      <span className="font-mono">+1 (555) 123-4567</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Legal Counsel</span>
+                      <span className="font-mono">+1 (555) 987-6543</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Financial Advisor</span>
+                      <span className="font-mono">+1 (555) 456-7890</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/30 md:col-span-2">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-6 w-6 text-blue-600" />
+                    <CardTitle className="text-lg">Family Properties & Locations</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="p-3 bg-background rounded border">
+                      <p className="font-medium text-sm">Main Estate</p>
+                      <p className="text-xs text-muted-foreground">Napa Valley, CA</p>
+                      <p className="text-xs text-muted-foreground mt-1">Primary residence</p>
+                    </div>
+                    <div className="p-3 bg-background rounded border">
+                      <p className="font-medium text-sm">Beach House</p>
+                      <p className="text-xs text-muted-foreground">Hamptons, NY</p>
+                      <p className="text-xs text-muted-foreground mt-1">Summer retreat</p>
+                    </div>
+                    <div className="p-3 bg-background rounded border">
+                      <p className="font-medium text-sm">Mountain Lodge</p>
+                      <p className="text-xs text-muted-foreground">Aspen, CO</p>
+                      <p className="text-xs text-muted-foreground mt-1">Winter getaway</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+        )}
+
+        {/* Admin Section - Unlocked with Admin Access */}
+        {hasAccess('admin') && (
+          <section id="admin-section" className="space-y-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2">
+                <Unlock className="h-5 w-5 text-red-600" />
+                <h2 className="text-xl font-semibold">Administrative Controls</h2>
+              </div>
+              <Badge variant="destructive">
+                Admin Access
+              </Badge>
+            </div>
+            
+            <Card className="border-red-200 bg-red-50/50 dark:bg-red-950/30">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Shield className="h-6 w-6 text-red-600" />
+                  <CardTitle className="text-lg">Family Office Management</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Button className="h-auto p-4 flex-col items-start" variant="outline">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Users className="h-5 w-5" />
+                      <span className="font-medium">User Management</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      Manage family member accounts and permissions
+                    </span>
+                  </Button>
+                  
+                  <Button className="h-auto p-4 flex-col items-start" variant="outline">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Settings className="h-5 w-5" />
+                      <span className="font-medium">System Settings</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      Configure platform settings and preferences
+                    </span>
+                  </Button>
+                  
+                  <Button className="h-auto p-4 flex-col items-start" variant="outline">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Activity className="h-5 w-5" />
+                      <span className="font-medium">Audit Logs</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      View system activity and security logs
+                    </span>
+                  </Button>
+                  
+                  <Button className="h-auto p-4 flex-col items-start" variant="outline">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Lock className="h-5 w-5" />
+                      <span className="font-medium">Access Control</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      Manage security codes and permissions
+                    </span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        )}
       </div>
     </div>
   )
