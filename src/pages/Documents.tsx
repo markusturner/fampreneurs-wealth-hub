@@ -643,9 +643,11 @@ export default function Documents() {
                 Describe your family in text and see it visualized in real-time
               </DialogDescription>
             </DialogHeader>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4 h-[70vh]">
-              <div className="space-y-4 overflow-y-auto">
-                <FamilyTreeTextInput onGenerate={setFamilyData} />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[70vh]">
+              <div className="flex flex-col h-full">
+                <div className="flex-1 overflow-y-auto pr-2">
+                  <FamilyTreeTextInput onGenerate={setFamilyData} />
+                </div>
               </div>
               <div className="border rounded-lg overflow-hidden h-full min-h-[480px]">
                 <DynamicFamilyTreeVisualization familyMembers={familyData} />
