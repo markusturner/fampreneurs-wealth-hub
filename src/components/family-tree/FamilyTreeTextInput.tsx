@@ -34,6 +34,12 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
 
   const parseFamilyText = (text: string): FamilyMember[] => {
     const lines = text.split('\n').filter(line => line.trim())
+    const sanitizeName = (name: string) =>
+      name
+        .replace(/\(.*?\)/g, '') // remove role notes in parentheses
+        .replace(/[^A-Za-z' -]/g, '') // strip non-name chars
+        .replace(/\s+/g, ' ') // collapse spaces
+        .trim()
     const members: FamilyMember[] = []
     const relationships: { [key: string]: { parents: string[], children: string[] } } = {}
 
@@ -46,8 +52,8 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
         const marriageMatch = cleanLine.match(/(.+?)\s+(?:married to|married)\s+(.+?)(?:\.|$|,)/i)
         if (marriageMatch) {
           const [, person1, person2] = marriageMatch
-          const p1 = person1.trim().replace(/^(my |the |his |her )/i, '')
-          const p2 = person2.trim().replace(/^(my |the |his |her )/i, '')
+          const p1 = sanitizeName(person1.trim().replace(/^(my |the |his |her )/i, ''))
+          const p2 = sanitizeName(person2.trim().replace(/^(my |the |his |her )/i, ''))
           if (!relationships[p1]) relationships[p1] = { parents: [], children: [] }
           if (!relationships[p2]) relationships[p2] = { parents: [], children: [] }
         }
@@ -64,12 +70,15 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
         const childrenMatch = cleanLine.match(pattern)
         if (childrenMatch) {
           const childrenStr = childrenMatch[1]
-          const children = childrenStr.split(/,|\sand\s/).map(c => c.trim().replace(/^(my |the |his |her )/i, ''))
+          const children = childrenStr
+            .split(/,|\sand\s|;|•/)
+            .map(c => sanitizeName(c.replace(/^(my |the |his |her )/i, '')))
+            .filter(c => c.length > 0)
           
           // Try to find the parent in the same line
           const parentMatch = cleanLine.match(/(.+?)\s+(?:had|have)/i)
           if (parentMatch) {
-            const parent = parentMatch[1].trim().replace(/^(my |the |his |her )/i, '')
+            const parent = sanitizeName(parentMatch[1].replace(/^(my |the |his |her )/i, ''))
             if (!relationships[parent]) relationships[parent] = { parents: [], children: [] }
             relationships[parent].children = [...(relationships[parent].children || []), ...children]
             
@@ -93,8 +102,11 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
         const parentMatch = cleanLine.match(pattern)
         if (parentMatch) {
           const [, person, parentsStr] = parentMatch
-          const p = person.trim().replace(/^(my |the |his |her )/i, '')
-          const parents = parentsStr.split(/,|\sand\s/).map(p => p.trim().replace(/^(my |the |his |her )/i, ''))
+          const p = sanitizeName(person.trim().replace(/^(my |the |his |her )/i, ''))
+          const parents = parentsStr
+            .split(/,|\sand\s|;|•/)
+            .map(p => sanitizeName(p.replace(/^(my |the |his |her )/i, '')))
+            .filter(Boolean)
           
           if (!relationships[p]) relationships[p] = { parents: [], children: [] }
           relationships[p].parents = [...(relationships[p].parents || []), ...parents]
@@ -118,7 +130,8 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
       namePatterns.forEach(pattern => {
         let match
         while ((match = pattern.exec(cleanLine)) !== null) {
-          const name = match[1].trim()
+          const raw = match[1].trim()
+          const name = sanitizeName(raw)
           if (name && name.length > 1 && !relationships[name]) {
             relationships[name] = { parents: [], children: [] }
           }
@@ -179,14 +192,14 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
         const line = rawLine.replace(/[├─└│]/g, '').trim()
         if (!line || /^(children:|parents:|married)/i.test(line)) continue
 
-        const nameMatch = line.match(/[A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z'-]+)+/)
+        const nameMatch = line.match(/[A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)*/)
         if (!nameMatch) continue
-        const name = nameMatch[0].trim()
+        const name = sanitizeName(nameMatch[0])
 
         const childIdx = getOrCreateMember(name, depth)
 
         if (depth > 0 && parentAtDepth[depth - 1]) {
-          const parentName = parentAtDepth[depth - 1]
+          const parentName = sanitizeName(parentAtDepth[depth - 1])
           const parentIdx = getOrCreateMember(parentName, depth - 1)
 
           const child = members[childIdx]
