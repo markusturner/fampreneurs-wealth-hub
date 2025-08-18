@@ -470,6 +470,38 @@ function DocumentsContent() {
     handleUpload(documentName) // Reuse upload logic to replace
   }
 
+  const handleDelete = async (documentName: string) => {
+    const meta = uploadedDocuments[documentName]
+    if (meta?.storageKey) {
+      try {
+        // Remove from IndexedDB
+        await localforage.removeItem(meta.storageKey)
+        // Remove from state and localStorage
+        setUploadedDocuments(prev => {
+          const updated = { ...prev }
+          delete updated[documentName]
+          try {
+            localStorage.setItem('uploadedDocuments', JSON.stringify(updated))
+          } catch (err) {
+            console.error('Failed to update localStorage after delete', err)
+          }
+          return updated
+        })
+        toast({
+          title: 'Document deleted',
+          description: 'The document has been successfully removed.',
+        })
+      } catch (err) {
+        console.error('Failed to delete file', err)
+        toast({
+          title: 'Delete failed',
+          description: 'Could not delete the document. Please try again.',
+          variant: 'destructive',
+        })
+      }
+    }
+  }
+
   const handlePreview = async (documentName: string) => {
     const meta = uploadedDocuments[documentName]
     if (!meta?.storageKey) {
@@ -639,6 +671,15 @@ function DocumentsContent() {
                                 title="Download"
                               >
                                 <Download className="h-2 w-2 sm:h-3 sm:w-3" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDelete(document.name)}
+                                className="h-7 px-2 sm:h-8 sm:px-3"
+                                title="Delete"
+                              >
+                                <X className="h-2 w-2 sm:h-3 sm:w-3" />
                               </Button>
                             </>
                           ) : (
