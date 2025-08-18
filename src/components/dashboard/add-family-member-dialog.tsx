@@ -173,6 +173,11 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
 
       resetForm()
       onOpenChange(false)
+      
+      // Trigger family tree update via custom event
+      window.dispatchEvent(new CustomEvent('familyMemberAdded', { 
+        detail: { memberName: formData.fullName } 
+      }))
     } catch (error) {
       console.error('Error adding family member:', error)
       toast({
