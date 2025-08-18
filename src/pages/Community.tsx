@@ -291,28 +291,34 @@ export default function Community() {
         </div>
 
         <Tabs defaultValue="accounts" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-7 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
-            <TabsTrigger value="accounts" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              <span className="hidden sm:inline">Accounts</span>
-              <span className="sm:hidden">Accts</span>
+          <TabsList className="grid w-full grid-cols-7 text-xs md:text-sm gap-1 md:gap-0 p-1">
+            <TabsTrigger value="accounts" className="px-1 md:px-4 text-xs md:text-sm">
+              <span className="hidden md:inline">Accounts</span>
+              <span className="md:hidden">Accts</span>
             </TabsTrigger>
-            <TabsTrigger value="transactions" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              <span className="hidden sm:inline">Transactions</span>
-              <span className="sm:hidden">Trans</span>
+            <TabsTrigger value="transactions" className="px-1 md:px-4 text-xs md:text-sm">
+              <span className="hidden md:inline">Transactions</span>
+              <span className="md:hidden">Trans</span>
             </TabsTrigger>
-            <TabsTrigger value="budget" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">Budget</TabsTrigger>
-            <TabsTrigger value="reports" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">Reports</TabsTrigger>
-            <TabsTrigger value="documents" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              <span className="hidden sm:inline">Documents</span>
-              <span className="sm:hidden">Docs</span>
+            <TabsTrigger value="budget" className="px-1 md:px-4 text-xs md:text-sm">
+              <span className="hidden md:inline">Budget</span>
+              <span className="md:hidden">Budget</span>
             </TabsTrigger>
-            <TabsTrigger value="messages" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              <span className="hidden sm:inline">Messages</span>
-              <span className="sm:hidden">Msgs</span>
+            <TabsTrigger value="reports" className="px-1 md:px-4 text-xs md:text-sm">
+              <span className="hidden md:inline">Reports</span>
+              <span className="md:hidden">Reports</span>
             </TabsTrigger>
-            <TabsTrigger value="services" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              <span className="hidden sm:inline">Services</span>
-              <span className="sm:hidden">Svcs</span>
+            <TabsTrigger value="documents" className="px-1 md:px-4 text-xs md:text-sm">
+              <span className="hidden md:inline">Documents</span>
+              <span className="md:hidden">Docs</span>
+            </TabsTrigger>
+            <TabsTrigger value="messages" className="px-1 md:px-4 text-xs md:text-sm">
+              <span className="hidden md:inline">Messages</span>
+              <span className="md:hidden">Msgs</span>
+            </TabsTrigger>
+            <TabsTrigger value="services" className="px-1 md:px-4 text-xs md:text-sm">
+              <span className="hidden md:inline">Services</span>
+              <span className="md:hidden">Svcs</span>
             </TabsTrigger>
           </TabsList>
 
