@@ -346,49 +346,6 @@ export default function Documents() {
           </div>
         </section>
 
-        {/* Family Governance */}
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
-              <Scale className="h-5 w-5" />
-              Family Governance Structure
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              The three branches of government that guide our family's decision-making process
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {governanceBranches.map((branch) => {
-              const Icon = branch.icon
-              return (
-                <Card key={branch.title} className="border-2">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                        <Icon className="h-6 w-6 text-emerald-600" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{branch.title}</CardTitle>
-                        <CardDescription className="text-xs">
-                          {branch.members}
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {branch.description}
-                    </p>
-                    <Badge variant="outline" className="text-xs">
-                      {branch.role}
-                    </Badge>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </section>
 
         {/* Communication Hub */}
         <section className="space-y-4">
