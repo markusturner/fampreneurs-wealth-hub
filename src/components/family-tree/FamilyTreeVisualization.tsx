@@ -228,11 +228,6 @@ export function FamilyTreeVisualization() {
         attributionPosition="bottom-left"
       >
         <Controls />
-        <MiniMap 
-          nodeStrokeColor="#333"
-          nodeColor="#fff"
-          nodeBorderRadius={8}
-        />
         <Background gap={12} size={1} />
       </ReactFlow>
     </div>
