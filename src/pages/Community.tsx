@@ -90,10 +90,36 @@ export default function Community() {
   const { toast } = useToast()
   const [investments, setInvestments] = useState<Investment[]>([])
   const [loading, setLoading] = useState(true)
+  const [familyOfficeMembers, setFamilyOfficeMembers] = useState<any[]>([])
+  const [loadingMembers, setLoadingMembers] = useState(true)
 
   useEffect(() => {
     fetchInvestments()
+    fetchFamilyOfficeMembers()
   }, [])
+
+  const fetchFamilyOfficeMembers = async () => {
+    if (!user?.id) {
+      setLoadingMembers(false)
+      return
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('family_members')
+        .select('*')
+        .eq('added_by', user.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setFamilyOfficeMembers(data || [])
+    } catch (error) {
+      console.error('Error fetching family office members:', error)
+    } finally {
+      setLoadingMembers(false)
+    }
+  }
 
   const fetchInvestments = async () => {
     if (!user?.id) {
@@ -930,13 +956,106 @@ function MessagesContent() {
 
 // Services content component
 function ServicesContent() {
+  const { user } = useAuth()
   const { toast } = useToast()
+  const navigate = useNavigate()
+  const [familyOfficeMembers, setFamilyOfficeMembers] = useState<any[]>([])
+  const [loadingMembers, setLoadingMembers] = useState(true)
+
+  useEffect(() => {
+    fetchFamilyOfficeMembers()
+  }, [])
+
+  const fetchFamilyOfficeMembers = async () => {
+    if (!user?.id) {
+      setLoadingMembers(false)
+      return
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('family_members')
+        .select('*')
+        .eq('added_by', user.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setFamilyOfficeMembers(data || [])
+    } catch (error) {
+      console.error('Error fetching family office members:', error)
+    } finally {
+      setLoadingMembers(false)
+    }
+  }
+
+  // Function to check if a family office member exists for a specific service
+  const findMemberForService = (serviceName: string) => {
+    return familyOfficeMembers.find(member => {
+      const memberRole = member.family_position?.toLowerCase() || ''
+      const serviceNameLower = serviceName.toLowerCase()
+      
+      // Match service names to family member roles/positions
+      const serviceToRoleMapping: { [key: string]: string[] } = {
+        'life insurance': ['insurance', 'advisor', 'agent'],
+        'health insurance': ['insurance', 'advisor', 'agent'],
+        'property insurance': ['insurance', 'advisor', 'agent'],
+        'business insurance': ['insurance', 'advisor', 'agent'],
+        'credit funding': ['financial', 'advisor', 'banker', 'lending'],
+        'forex trading': ['financial', 'advisor', 'trader', 'investment'],
+        'stock trading': ['financial', 'advisor', 'trader', 'investment'],
+        'crypto trading': ['financial', 'advisor', 'trader', 'investment'],
+        'nonprofit creation': ['legal', 'attorney', 'lawyer', 'business'],
+        'business formation': ['legal', 'attorney', 'lawyer', 'business'],
+        'tax planning': ['accountant', 'cpa', 'tax', 'financial'],
+        'family crest design': ['designer', 'creative', 'artist'],
+        'estate planning': ['legal', 'attorney', 'lawyer', 'estate'],
+        'wealth transfer': ['financial', 'advisor', 'estate', 'legal'],
+        'family office software': ['technology', 'tech', 'developer', 'it'],
+        'investment analytics': ['financial', 'advisor', 'analyst', 'investment'],
+        'security services': ['security', 'technology', 'tech', 'cyber'],
+        'personal assistant': ['assistant', 'admin', 'coordinator'],
+        'travel planning': ['travel', 'concierge', 'coordinator', 'assistant'],
+        'event management': ['event', 'coordinator', 'planner', 'assistant']
+      }
+      
+      const relevantRoles = serviceToRoleMapping[serviceNameLower] || []
+      return relevantRoles.some(role => memberRole.includes(role))
+    })
+  }
 
   const handleServiceClick = (serviceName: string) => {
-    toast({
-      title: "Service Request",
-      description: `${serviceName} service request submitted. We'll contact you within 24 hours.`,
-    })
+    const member = findMemberForService(serviceName)
+    
+    if (member) {
+      // Create a message and navigate to messages tab
+      const message = `Hi ${member.full_name}, I would like to request the "${serviceName}" service. Please let me know how we can proceed. Thank you!`
+      
+      // Store the message data temporarily
+      sessionStorage.setItem('pendingMessage', JSON.stringify({
+        memberId: member.id,
+        memberName: member.full_name,
+        serviceName: serviceName,
+        message: message
+      }))
+      
+      // Navigate to messages tab
+      const url = new URL(window.location.href)
+      url.searchParams.set('tab', 'messages')
+      url.searchParams.set('member', member.id)
+      window.history.pushState({}, '', url.toString())
+      
+      // Trigger tab change
+      const tabElement = document.querySelector('[data-value="messages"]') as HTMLElement
+      if (tabElement) {
+        tabElement.click()
+      }
+      
+      toast({
+        title: "Redirected to Messages",
+        description: `Opening conversation with ${member.full_name} for ${serviceName} service.`,
+      })
+    }
   }
 
   const serviceCategories = [
@@ -1029,16 +1148,24 @@ function ServicesContent() {
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {category.services.map((service) => {
                     const ServiceIcon = service.icon
+                    const member = findMemberForService(service.name)
+                    const isAvailable = !!member && !loadingMembers
                     
                     return (
                       <div
                         key={service.name}
-                        className="group p-4 rounded-lg border border-border hover:border-[#ffb500] transition-all cursor-pointer"
-                        onClick={() => handleServiceClick(service.name)}
+                        className={`group p-4 rounded-lg border border-border transition-all ${
+                          isAvailable 
+                            ? 'hover:border-[#ffb500] cursor-pointer' 
+                            : 'opacity-60 cursor-not-allowed'
+                        }`}
+                        onClick={() => isAvailable && handleServiceClick(service.name)}
                       >
                         <div className="flex items-start space-x-3">
                           <div className="flex-shrink-0">
-                            <ServiceIcon className={`h-5 w-5 ${category.color} group-hover:scale-110 transition-transform`} />
+                            <ServiceIcon className={`h-5 w-5 ${category.color} ${
+                              isAvailable ? 'group-hover:scale-110' : ''
+                            } transition-transform`} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="font-medium text-sm sm:text-base text-white hover:text-purple-500 transition-colors">
@@ -1047,9 +1174,23 @@ function ServicesContent() {
                             <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
                               {service.description}
                             </p>
+                            {member && (
+                              <p className="text-xs text-green-400 mt-1">
+                                Available via {member.full_name}
+                              </p>
+                            )}
                             <div className={`flex items-center mt-3 text-xs ${category.color} opacity-0 group-hover:opacity-100 transition-opacity`}>
-                              <span>Request Service</span>
-                              <ArrowRight className="h-3 w-3 ml-1" />
+                              {isAvailable ? (
+                                <>
+                                  <span>Request Service</span>
+                                  <ArrowRight className="h-3 w-3 ml-1" />
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-gray-400">Coming Soon</span>
+                                  <Clock className="h-3 w-3 ml-1 text-gray-400" />
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1084,6 +1225,26 @@ function ServicesContent() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Family Office Members Status */}
+      {!loadingMembers && (
+        <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+          <CardContent className="p-4">
+            <div className="flex items-start space-x-3">
+              <UserCheck className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-blue-900 mb-1">Family Office Team</h4>
+                <p className="text-sm text-blue-800">
+                  {familyOfficeMembers.length > 0 
+                    ? `${familyOfficeMembers.length} family office member(s) available to assist with services. Services without available members will show "Coming Soon".`
+                    : 'No family office members added yet. Add family members to enable service requests.'
+                  }
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
