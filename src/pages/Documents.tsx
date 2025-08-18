@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { 
   BookOpen, 
   Crown, 
@@ -17,10 +20,18 @@ import {
   ArrowLeft,
   Heart,
   FileText,
-  Video
+  Video,
+  Settings,
+  Eye,
+  EyeOff
 } from "lucide-react"
 import { NavHeader } from "@/components/dashboard/nav-header"
+import { FamilySecretCodesAdmin } from "@/components/dashboard/family-secret-codes-admin"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/contexts/AuthContext"
+import { supabase } from "@/integrations/supabase/client"
+import { useState, useEffect } from "react"
+import { toast } from "sonner"
 
 const familyEducationModules = [
   {
@@ -102,6 +113,34 @@ const heritageResources = [
 
 export default function Documents() {
   const navigate = useNavigate()
+  const { user, profile } = useAuth()
+  const [showCodeDialog, setShowCodeDialog] = useState(false)
+  const [accessCode, setAccessCode] = useState('')
+  const [showAdminPanel, setShowAdminPanel] = useState(false)
+  const [availableCodes, setAvailableCodes] = useState<any[]>([])
+  const [userAccess, setUserAccess] = useState<string[]>([])
+
+  const isAdmin = profile?.is_admin || false
+
+  useEffect(() => {
+    if (user && isAdmin) {
+      fetchAvailableCodes()
+    }
+  }, [user, isAdmin])
+
+  const fetchAvailableCodes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('family_secret_codes')
+        .select('*')
+        .eq('is_active', true)
+
+      if (error) throw error
+      setAvailableCodes(data || [])
+    } catch (error) {
+      console.error('Error fetching codes:', error)
+    }
+  }
 
   const handleStartLearning = (moduleTitle: string) => {
     // Navigate to courses page with the specific module
@@ -126,17 +165,46 @@ export default function Documents() {
     alert(messages[resourceTitle as keyof typeof messages] || "Opening resource...")
   }
 
-  const handleEnterAccessCode = () => {
-    // Create a prompt for access code
-    const accessCode = prompt("Enter your family access code:")
-    
-    if (accessCode) {
-      if (accessCode.toLowerCase() === "family2024" || accessCode === "1234") {
-        alert("Access granted! Viewing secure family information...")
-        // You could navigate to a secure area or show hidden content
+  const handleEnterAccessCode = async () => {
+    if (!accessCode.trim()) {
+      toast.error('Please enter an access code')
+      return
+    }
+
+    try {
+      const { data, error } = await supabase.rpc('validate_family_code', {
+        p_code: accessCode.toUpperCase().trim()
+      })
+
+      if (error) throw error
+
+      const result = data as any
+      if (result.success) {
+        toast.success(result.message)
+        setUserAccess(prev => [...prev, result.access_level])
+        setShowCodeDialog(false)
+        setAccessCode('')
+        
+        // Show access granted content based on level
+        switch (result.access_level) {
+          case 'trust':
+            alert(`🏛️ TRUST ACCESS GRANTED\n\n${result.description}\n\nYou now have access to:\n• Trust documents\n• Financial statements\n• Legal agreements\n• Investment portfolios`)
+            break
+          case 'legacy':
+            alert(`👑 LEGACY ACCESS GRANTED\n\n${result.description}\n\nYou now have access to:\n• Family legacy meetings\n• Historical documents\n• Succession planning\n• Leadership councils`)
+            break
+          case 'admin':
+            alert(`🔐 ADMINISTRATIVE ACCESS GRANTED\n\n${result.description}\n\nYou now have full administrative privileges.`)
+            break
+          default:
+            alert(`✅ ACCESS GRANTED\n\n${result.description}`)
+        }
       } else {
-        alert("Invalid access code. Please contact your family administrator.")
+        toast.error(result.message)
       }
+    } catch (error) {
+      console.error('Error validating code:', error)
+      toast.error('Failed to validate access code')
     }
   }
 
@@ -334,30 +402,149 @@ export default function Documents() {
 
         {/* Family Secret Codes */}
         <section className="space-y-4">
-          <div>
-            <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
-              <Lock className="h-5 w-5" />
-              Family Secret Codes
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Secure access system for sensitive family information and resources
-            </p>
-          </div>
-          
-          <Card className="border-2 border-dashed border-muted-foreground/30">
-            <CardContent className="p-8 text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
-                <Lock className="h-6 w-6 text-red-600" />
-              </div>
-              <h3 className="font-semibold mb-2">Secure Access Required</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Enter your family access code to view sensitive family information
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                <Lock className="h-5 w-5" />
+                Family Secret Codes
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Secure access system for sensitive family information and resources
               </p>
-              <Button variant="outline" onClick={handleEnterAccessCode}>
-                Enter Access Code
+            </div>
+            {isAdmin && (
+              <Button
+                variant="outline"
+                onClick={() => setShowAdminPanel(!showAdminPanel)}
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                {showAdminPanel ? 'Hide Admin' : 'Admin Panel'}
               </Button>
-            </CardContent>
-          </Card>
+            )}
+          </div>
+
+          {showAdminPanel && isAdmin ? (
+            <FamilySecretCodesAdmin />
+          ) : (
+            <>
+              {/* Active Codes Display for Admins */}
+              {isAdmin && availableCodes.length > 0 && (
+                <Card className="bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Eye className="h-5 w-5" />
+                      Active Family Codes ({availableCodes.length})
+                    </CardTitle>
+                    <CardDescription>
+                      As an admin, you can view all active family codes
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-3">
+                      {availableCodes.map((code) => (
+                        <div key={code.id} className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                          <div>
+                            <div className="font-mono text-sm font-semibold">{code.code}</div>
+                            <div className="text-xs text-muted-foreground">{code.description}</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={
+                              code.access_level === 'admin' ? 'destructive' :
+                              code.access_level === 'legacy' ? 'default' :
+                              code.access_level === 'trust' ? 'secondary' : 'outline'
+                            }>
+                              {code.access_level}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {code.current_uses} uses
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Public Access Interface */}
+              <Card className="border-2 border-dashed border-muted-foreground/30">
+                <CardContent className="p-8 text-center">
+                  <div className="mx-auto w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
+                    <Lock className="h-6 w-6 text-red-600" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Secure Access Required</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Enter your family access code to unlock sensitive resources
+                  </p>
+                  
+                  {/* Show user's current access levels */}
+                  {userAccess.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-sm font-medium mb-2">Current Access:</p>
+                      <div className="flex flex-wrap gap-2 justify-center">
+                        {userAccess.map((access, index) => (
+                          <Badge key={index} variant="secondary">
+                            {access.charAt(0).toUpperCase() + access.slice(1)} Access
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline">
+                        Enter Access Code
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Family Access Code</DialogTitle>
+                        <DialogDescription>
+                          Enter your secret family code to access restricted resources
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="access-code">Access Code</Label>
+                          <Input
+                            id="access-code"
+                            type="text"
+                            value={accessCode}
+                            onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
+                            placeholder="XXXX-XXXX-XXXX"
+                            className="font-mono text-center tracking-wider"
+                            onKeyDown={(e) => e.key === 'Enter' && handleEnterAccessCode()}
+                          />
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                          <Button onClick={handleEnterAccessCode} className="flex-1">
+                            Validate Code
+                          </Button>
+                          <Button variant="outline" onClick={() => {
+                            setShowCodeDialog(false)
+                            setAccessCode('')
+                          }}>
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  <div className="mt-6 text-xs text-muted-foreground">
+                    💡 Family codes provide access to different levels of information:
+                    <br />
+                    <strong>Trust</strong> - Financial documents & investments
+                    <br />
+                    <strong>Legacy</strong> - Family meetings & succession planning
+                    <br />
+                    <strong>Admin</strong> - Full administrative access
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </section>
       </div>
     </div>

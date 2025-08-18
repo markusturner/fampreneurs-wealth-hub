@@ -876,6 +876,41 @@ export type Database = {
         }
         Relationships: []
       }
+      family_code_usage_log: {
+        Row: {
+          code_id: string
+          id: string
+          ip_address: string | null
+          used_at: string
+          used_by: string
+          user_agent: string | null
+        }
+        Insert: {
+          code_id: string
+          id?: string
+          ip_address?: string | null
+          used_at?: string
+          used_by: string
+          user_agent?: string | null
+        }
+        Update: {
+          code_id?: string
+          id?: string
+          ip_address?: string | null
+          used_at?: string
+          used_by?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_code_usage_log_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "family_secret_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       family_documents: {
         Row: {
           category: string
@@ -1348,6 +1383,51 @@ export type Database = {
           session_timeout_minutes?: number | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      family_secret_codes: {
+        Row: {
+          access_level: string
+          code: string
+          created_at: string
+          created_by: string
+          current_uses: number
+          description: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          permissions: Json | null
+          updated_at: string
+        }
+        Insert: {
+          access_level?: string
+          code: string
+          created_at?: string
+          created_by: string
+          current_uses?: number
+          description: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          permissions?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          access_level?: string
+          code?: string
+          created_at?: string
+          created_by?: string
+          current_uses?: number
+          description?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          permissions?: Json | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -3374,6 +3454,10 @@ export type Database = {
       user_needs_weekly_checkin: {
         Args: { target_user_id: string }
         Returns: boolean
+      }
+      validate_family_code: {
+        Args: { p_code: string; p_ip_address?: string; p_user_agent?: string }
+        Returns: Json
       }
     }
     Enums: {
