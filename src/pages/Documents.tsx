@@ -479,16 +479,6 @@ export default function Documents() {
         {/* Family Secret Codes - Admin Only */}
         {isAdmin && (
           <section className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                <Lock className="h-5 w-5" />
-                Family Secret Codes Management
-              </h2>
-              <p className="text-muted-foreground text-sm">
-                Create and manage family access codes for secure authentication
-              </p>
-            </div>
-
             <FamilySecretCodesAdmin />
           </section>
         )}
