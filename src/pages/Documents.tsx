@@ -25,7 +25,9 @@ import {
   Eye,
   EyeOff,
   CheckCircle,
-  Key
+  Key,
+  Edit,
+  Trash2
 } from "lucide-react"
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { FamilySecretCodesAdmin } from "@/components/dashboard/family-secret-codes-admin"
@@ -171,6 +173,8 @@ export default function Documents() {
   const [familyTreeInput, setFamilyTreeInput] = useState('')
   const [selectedCourse, setSelectedCourse] = useState<any>(null)
   const [showCreateCourseDialog, setShowCreateCourseDialog] = useState(false)
+  const [showEditCourseDialog, setShowEditCourseDialog] = useState(false)
+  const [editingCourseIndex, setEditingCourseIndex] = useState<number | null>(null)
   const [newCourse, setNewCourse] = useState({ title: '', instructor: '', duration: '', description: '' })
   const [videoUrls, setVideoUrls] = useState<string[]>([''])
   const [courseModules, setCourseModules] = useState<Array<{name: string, duration: string}>>([{name: '', duration: ''}])
@@ -356,6 +360,48 @@ export default function Documents() {
     setShowCreateCourseDialog(false)
     
     toast.success('Course created successfully!')
+  }
+
+  const handleEditCourse = (index: number) => {
+    const course = businessCourses[index]
+    setNewCourse({
+      title: course.title,
+      instructor: course.instructor,
+      duration: course.duration,
+      description: course.description
+    })
+    setVideoUrls(course.videos?.length ? course.videos : [''])
+    setCourseModules(course.modules?.length ? course.modules : [{ name: '', duration: '' }])
+    setEditingCourseIndex(index)
+    setShowEditCourseDialog(true)
+  }
+
+  const handleUpdateCourse = () => {
+    if (!newCourse.title || !newCourse.instructor || editingCourseIndex === null) {
+      toast.error('Please fill in the required fields')
+      return
+    }
+
+    const updatedCourse = {
+      ...newCourse,
+      videos: videoUrls.filter(url => url.trim()),
+      modules: courseModules.filter(module => module.name.trim())
+    }
+
+    businessCourses[editingCourseIndex] = updatedCourse
+    
+    setNewCourse({ title: '', instructor: '', duration: '', description: '' })
+    setVideoUrls([''])
+    setCourseModules([{ name: '', duration: '' }])
+    setEditingCourseIndex(null)
+    setShowEditCourseDialog(false)
+    
+    toast.success('Course updated successfully!')
+  }
+
+  const handleDeleteCourse = (index: number) => {
+    businessCourses.splice(index, 1)
+    toast.success('Course deleted successfully!')
   }
 
   const sendMessage = async () => {
@@ -547,7 +593,7 @@ export default function Documents() {
             
             <div className="grid gap-4 py-4">
               {businessCourses.map((course, index) => (
-                <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
+                <Card key={index} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
@@ -561,12 +607,33 @@ export default function Documents() {
                           <span>{course.duration}</span>
                         </div>
                       </div>
-                      <Button 
-                        size="sm" 
-                        onClick={() => setSelectedCourse(course)}
-                      >
-                        View Course
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => setSelectedCourse(course)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleEditCourse(index)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleDeleteCourse(index)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -761,6 +828,134 @@ export default function Documents() {
                 </Button>
                 <Button onClick={handleCreateCourse}>
                   Create Course
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Course Dialog */}
+        <Dialog open={showEditCourseDialog} onOpenChange={setShowEditCourseDialog}>
+          <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Course</DialogTitle>
+              <DialogDescription>
+                Update the family business education course
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-course-title">Course Title *</Label>
+                  <Input
+                    id="edit-course-title"
+                    value={newCourse.title}
+                    onChange={(e) => setNewCourse(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Enter course title"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-course-instructor">Instructor *</Label>
+                  <Input
+                    id="edit-course-instructor"
+                    value={newCourse.instructor}
+                    onChange={(e) => setNewCourse(prev => ({ ...prev, instructor: e.target.value }))}
+                    placeholder="Enter instructor name"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-course-duration">Duration</Label>
+                <Input
+                  id="edit-course-duration"
+                  value={newCourse.duration}
+                  onChange={(e) => setNewCourse(prev => ({ ...prev, duration: e.target.value }))}
+                  placeholder="e.g., 4 weeks"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-course-description">Description</Label>
+                <Input
+                  id="edit-course-description"
+                  value={newCourse.description}
+                  onChange={(e) => setNewCourse(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Enter course description"
+                />
+              </div>
+              
+              <div>
+                <Label>Video URLs</Label>
+                <div className="space-y-2">
+                  {videoUrls.map((url, index) => (
+                    <div key={index} className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          value={url}
+                          onChange={(e) => updateVideoUrl(index, e.target.value)}
+                          placeholder="https://youtu.be/..."
+                        />
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => removeVideoUrl(index)}
+                        disabled={videoUrls.length === 1}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={addVideoUrl}>
+                    Add Video
+                  </Button>
+                </div>
+              </div>
+              
+              <div>
+                <Label>Course Modules</Label>
+                <div className="space-y-3">
+                  {courseModules.map((module, index) => (
+                    <div key={index} className="p-3 border rounded-lg space-y-3">
+                      <div className="flex justify-between items-center">
+                        <Label className="text-sm font-medium">Module {index + 1}</Label>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => removeModule(index)}
+                          disabled={courseModules.length === 1}
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          value={module.name}
+                          onChange={(e) => updateModule(index, 'name', e.target.value)}
+                          placeholder="Module name"
+                        />
+                        <Input
+                          value={module.duration}
+                          onChange={(e) => updateModule(index, 'duration', e.target.value)}
+                          placeholder="Duration (e.g., 45 minutes)"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={addModule}>
+                    Add Module
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button variant="outline" onClick={() => setShowEditCourseDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleUpdateCourse}>
+                  Update Course
                 </Button>
               </div>
             </div>
