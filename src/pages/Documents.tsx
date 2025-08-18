@@ -45,7 +45,8 @@ const familyEducationModules = [
     icon: Building2,
     status: "Available",
     lessons: 12,
-    duration: "3 hours"
+    duration: "3 hours",
+    color: "text-blue-600"
   },
   {
     title: "Family Constitution",
@@ -53,7 +54,8 @@ const familyEducationModules = [
     icon: Scroll,
     status: "Available", 
     lessons: 8,
-    duration: "2 hours"
+    duration: "2 hours",
+    color: "text-amber-600"
   },
   {
     title: "Wealth Management",
@@ -61,7 +63,8 @@ const familyEducationModules = [
     icon: Crown,
     status: "Available",
     lessons: 15,
-    duration: "4 hours"
+    duration: "4 hours",
+    color: "text-purple-600"
   },
   {
     title: "Next Generation Leadership",
@@ -69,7 +72,8 @@ const familyEducationModules = [
     icon: Users,
     status: "Available",
     lessons: 10,
-    duration: "3 hours"
+    duration: "3 hours",
+    color: "text-green-600"
   }
 ]
 
@@ -78,25 +82,29 @@ const heritageResources = [
     title: "Family History Archive",
     description: "Explore your family's rich history and heritage",
     icon: Scroll,
-    category: "Heritage"
+    category: "Heritage",
+    color: "text-rose-600"
   },
   {
     title: "Legacy Documents",
     description: "Important family documents and legal papers",
     icon: FileText,
-    category: "Documents"
+    category: "Documents",
+    color: "text-slate-600"
   },
   {
     title: "Photo & Video Collection",
     description: "Precious memories captured over generations",
     icon: Image,
-    category: "Media"
+    category: "Media",
+    color: "text-pink-600"
   },
   {
     title: "Family Tree Interactive",
     description: "Visualize your family connections",
     icon: TreePine,
-    category: "Genealogy"
+    category: "Genealogy",
+    color: "text-emerald-600"
   }
 ]
 
@@ -416,7 +424,7 @@ export default function Documents() {
                 <Card key={module.title} className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
-                      <Icon className="h-8 w-8 text-primary" />
+                      <Icon className={`h-8 w-8 ${module.color}`} />
                       <Badge variant="secondary">{module.status}</Badge>
                     </div>
                     <CardTitle className="text-lg">{module.title}</CardTitle>
@@ -458,7 +466,7 @@ export default function Documents() {
                   onClick={() => handleHeritageResource(resource.title)}
                 >
                   <CardHeader className="pb-3">
-                    <Icon className="h-8 w-8 text-primary mx-auto" />
+                    <Icon className={`h-8 w-8 ${resource.color} mx-auto`} />
                     <CardTitle className="text-center text-base">{resource.title}</CardTitle>
                     <CardDescription className="text-center text-sm">
                       {resource.description}
