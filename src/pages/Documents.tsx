@@ -419,9 +419,21 @@ export default function Documents() {
                         <p className="text-sm text-muted-foreground mb-2">
                           {resource.description}
                         </p>
-                        <Badge variant="outline" className="text-xs">
-                          {resource.type}
-                        </Badge>
+                        <div className="flex items-center justify-between">
+                          <Badge variant="outline" className="text-xs">
+                            {resource.type}
+                          </Badge>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setShowFamilyTreeDialog(true)
+                            }}
+                          >
+                            View
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
