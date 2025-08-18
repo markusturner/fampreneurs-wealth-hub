@@ -384,15 +384,6 @@ export default function Documents() {
             <h1 className="text-3xl font-bold mb-2">Family Office Documents</h1>
             <p className="text-muted-foreground">Access important family documents, educational resources, and secure information</p>
           </div>
-          
-          <Button 
-            variant="outline" 
-            onClick={() => navigate(-1)}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
         </div>
 
         {/* Family Business Education Modules */}
