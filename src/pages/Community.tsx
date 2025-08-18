@@ -1047,7 +1047,7 @@ function ServicesContent() {
                             <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
                               {service.description}
                             </p>
-                            <div className="flex items-center mt-3 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className={`flex items-center mt-3 text-xs ${category.color} opacity-0 group-hover:opacity-100 transition-opacity`}>
                               <span>Request Service</span>
                               <ArrowRight className="h-3 w-3 ml-1" />
                             </div>
