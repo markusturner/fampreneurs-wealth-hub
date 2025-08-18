@@ -124,7 +124,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
 
       if (familyMemberError) throw familyMemberError
 
-      // If email is provided, create login credentials
+      // If email is provided, create login credentials and send via email
       if (formData.email.trim()) {
         try {
           // Generate temporary password
@@ -151,10 +151,31 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
               variant: "destructive"
             });
           } else {
-            toast({
-              title: "Family Member Added Successfully",
-              description: `${formData.fullName} has been added with Family Office access. Temporary password: ${tempPassword}`,
-            });
+            // Send login credentials via email
+            try {
+              await supabase.functions.invoke('send-login-credentials', {
+                body: {
+                  email: formData.email.trim(),
+                  firstName: formData.fullName.split(' ')[0],
+                  lastName: formData.fullName.split(' ').slice(1).join(' '),
+                  tempPassword: tempPassword,
+                  loginUrl: `${window.location.origin}/auth`,
+                  memberType: 'family'
+                }
+              });
+
+              toast({
+                title: "Family Member Added Successfully",
+                description: `${formData.fullName} has been added with Family Office access. Login credentials have been sent to their email.`,
+              });
+            } catch (emailError) {
+              console.error('Error sending login credentials email:', emailError);
+              toast({
+                title: "Family Member Added",
+                description: `${formData.fullName} has been added with login access, but the email with credentials could not be sent. Temporary password: ${tempPassword}`,
+                variant: "destructive"
+              });
+            }
           }
         } catch (credentialsError) {
           console.error('Error with credentials function:', credentialsError);

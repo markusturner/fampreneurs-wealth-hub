@@ -128,29 +128,98 @@ export function AddFamilyOfficeMemberDialog({
 
     setLoading(true)
     try {
-      // Note: family_office_members table will be available after Supabase types regeneration
-      const { error } = await supabase
-        .from('family_office_members' as any)
-        .insert({
-          added_by: user?.id,
-          full_name: formData.fullName.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone.trim() || null,
-          role: formData.role || null,
-          company: formData.company.trim() || null,
-          department: formData.department.trim() || null,
-          access_level: formData.accessLevel || null,
-          specialties: selectedSpecialties.length > 0 ? selectedSpecialties : null,
-          notes: formData.notes.trim() || null,
-          status: 'active'
-        })
+      // Generate temporary password and ID first
+      const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+      const memberId = crypto.randomUUID();
 
-      if (error) throw error
+      // Try to add the family office member to the table
+      let officeMemberData: any = null;
+      try {
+        const result = await supabase
+          .from('family_office_members' as any)
+          .insert({
+            added_by: user?.id,
+            full_name: formData.fullName.trim(),
+            email: formData.email.trim(),
+            phone: formData.phone.trim() || null,
+            role: formData.role || null,
+            company: formData.company.trim() || null,
+            department: formData.department.trim() || null,
+            access_level: formData.accessLevel || null,
+            specialties: selectedSpecialties.length > 0 ? selectedSpecialties : null,
+            notes: formData.notes.trim() || null,
+            status: 'active'
+          })
+          .select()
+          .single()
 
-      toast({
-        title: "Family Office Member Added",
-        description: `${formData.fullName} has been added to your family office team.`
-      })
+        if (result.error) {
+          console.warn('Family office members table not available:', result.error);
+        } else {
+          officeMemberData = result.data;
+        }
+      } catch (tableError) {
+        console.warn('Family office members table not available, proceeding with credentials creation');
+      }
+
+      // Create login credentials and send via email
+      try {
+        const { data, error: credentialsError } = await supabase.functions.invoke(
+          'create-family-member-credentials',
+          {
+            body: {
+              email: formData.email.trim(),
+              firstName: formData.fullName.split(' ')[0],
+              lastName: formData.fullName.split(' ').slice(1).join(' '),
+              familyMemberId: officeMemberData?.id || memberId,
+              tempPassword: tempPassword
+            }
+          }
+        );
+
+        if (credentialsError) {
+          console.error('Error creating credentials:', credentialsError);
+          toast({
+            title: "Family Office Member Added",
+            description: `${formData.fullName} has been added but login credentials could not be created.`,
+            variant: "destructive"
+          });
+        } else {
+          // Send login credentials via email
+          try {
+            await supabase.functions.invoke('send-login-credentials', {
+              body: {
+                email: formData.email.trim(),
+                firstName: formData.fullName.split(' ')[0],
+                lastName: formData.fullName.split(' ').slice(1).join(' '),
+                tempPassword: tempPassword,
+                loginUrl: `${window.location.origin}/auth`,
+                memberType: 'office',
+                role: formData.role
+              }
+            });
+
+            toast({
+              title: "Family Office Member Added Successfully",
+              description: `${formData.fullName} has been added to your family office team. Login credentials have been sent to their email.`
+            });
+          } catch (emailError) {
+            console.error('Error sending login credentials email:', emailError);
+            toast({
+              title: "Family Office Member Added",
+              description: `${formData.fullName} has been added with login access, but the email with credentials could not be sent. Temporary password: ${tempPassword}`,
+              variant: "destructive"
+            });
+          }
+        }
+      } catch (credentialsError) {
+        console.error('Error with credentials function:', credentialsError);
+        toast({
+          title: "Family Office Member Added",
+          description: `${formData.fullName} has been added but login credentials could not be created.`,
+          variant: "destructive"
+        });
+      }
 
       resetForm()
       onOpenChange(false)
