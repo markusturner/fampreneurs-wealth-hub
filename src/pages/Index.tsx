@@ -93,17 +93,6 @@ const Index = () => {
           
           {/* Asset Allocation */}
           <div className="order-2 lg:col-span-2">
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle>Asset Allocation</CardTitle>
-                <CardDescription>
-                  Your portfolio distribution across asset classes
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AssetAllocation />
-              </CardContent>
-            </Card>
           </div>
 
           {/* AI Chat */}
