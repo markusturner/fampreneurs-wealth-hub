@@ -16,10 +16,10 @@ interface FamilyMember {
 }
 
 interface FamilyTreeTextInputProps {
-  onFamilyDataChange: (members: FamilyMember[]) => void
+  onGenerate: (members: FamilyMember[]) => void
 }
 
-export function FamilyTreeTextInput({ onFamilyDataChange }: FamilyTreeTextInputProps) {
+export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
   const [textInput, setTextInput] = useState(`John Smith
 ├─ married to Mary Johnson
 ├─ children: 
@@ -158,10 +158,10 @@ export function FamilyTreeTextInput({ onFamilyDataChange }: FamilyTreeTextInputP
     return members
   }
 
-  useEffect(() => {
+  const handleGenerate = () => {
     const familyData = parseFamilyText(textInput)
-    onFamilyDataChange(familyData)
-  }, [textInput, onFamilyDataChange])
+    onGenerate(familyData)
+  }
 
   const callAiAssistant = async (assistanceType: 'expand' | 'format' | 'suggest') => {
     if (!textInput.trim()) {
@@ -289,6 +289,14 @@ export function FamilyTreeTextInput({ onFamilyDataChange }: FamilyTreeTextInputP
           onChange={(e) => setTextInput(e.target.value)}
           className="min-h-[300px] font-mono text-sm"
         />
+        <Button 
+          onClick={handleGenerate}
+          className="w-full mt-2"
+          size="lg"
+        >
+          <Sparkles className="h-4 w-4 mr-2" />
+          Generate Family Tree
+        </Button>
       </div>
     </div>
   )

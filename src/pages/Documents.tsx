@@ -645,7 +645,7 @@ export default function Documents() {
             </DialogHeader>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4 h-[70vh]">
               <div className="space-y-4 overflow-y-auto">
-                <FamilyTreeTextInput onFamilyDataChange={setFamilyData} />
+                <FamilyTreeTextInput onGenerate={setFamilyData} />
               </div>
               <div className="border rounded-lg overflow-hidden h-full min-h-[480px]">
                 <DynamicFamilyTreeVisualization familyMembers={familyData} />
