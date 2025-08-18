@@ -179,6 +179,7 @@ export default function Documents() {
   const [businessCourses, setBusinessCourses] = useState(initialBusinessCourses)
   const [editingCourse, setEditingCourse] = useState<any>(null)
   const [showEditDialog, setShowEditDialog] = useState(false)
+  const [videoUrls, setVideoUrls] = useState<string[]>([''])
 
   const isAdmin = profile?.is_admin || false
 
@@ -292,7 +293,8 @@ export default function Documents() {
   }
 
   const handleEditCourse = (course: any) => {
-    setEditingCourse(course)
+    setEditingCourse({ ...course, videos: course.videos || [] })
+    setVideoUrls(course.videos?.length > 0 ? course.videos : [''])
     setShowEditDialog(true)
   }
 
@@ -304,12 +306,41 @@ export default function Documents() {
   }
 
   const handleSaveCourse = (updatedCourse: any) => {
+    const courseWithVideos = {
+      ...updatedCourse,
+      videos: videoUrls.filter(url => url.trim() !== '')
+    }
     setBusinessCourses(prev => 
-      prev.map(course => course.id === updatedCourse.id ? updatedCourse : course)
+      prev.map(course => course.id === updatedCourse.id ? courseWithVideos : course)
     )
     setShowEditDialog(false)
     setEditingCourse(null)
+    setVideoUrls([''])
     toast.success('Course updated successfully')
+  }
+
+  const handleVideoUrlChange = (index: number, value: string) => {
+    setVideoUrls(prev => {
+      const updated = [...prev]
+      updated[index] = value
+      return updated
+    })
+  }
+
+  const addVideoUrl = () => {
+    setVideoUrls(prev => [...prev, ''])
+  }
+
+  const removeVideoUrl = (index: number) => {
+    setVideoUrls(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const validateVideoUrl = (url: string) => {
+    const youtubePat = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)/
+    const vimeoPat = /^(https?:\/\/)?(www\.)?vimeo\.com/
+    const loomPat = /^(https?:\/\/)?(www\.)?loom\.com/
+    
+    return youtubePat.test(url) || vimeoPat.test(url) || loomPat.test(url)
   }
 
   return (
@@ -777,6 +808,60 @@ export default function Documents() {
                     <option value="Advanced">Advanced</option>
                     <option value="All Levels">All Levels</option>
                   </select>
+                </div>
+                
+                {/* Video Upload Section */}
+                <div className="space-y-4 border-t pt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Video className="h-4 w-4" />
+                    <Label className="text-sm font-medium">Course Videos</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Add videos from YouTube, Loom, or Vimeo by pasting their URLs below
+                  </p>
+                  
+                  {videoUrls.map((url, index) => (
+                    <div key={index} className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          placeholder="https://youtube.com/watch?v=... or https://loom.com/share/... or https://vimeo.com/..."
+                          value={url}
+                          onChange={(e) => handleVideoUrlChange(index, e.target.value)}
+                          className={url && !validateVideoUrl(url) ? 'border-red-500' : ''}
+                        />
+                        {url && !validateVideoUrl(url) && (
+                          <p className="text-xs text-red-500 mt-1">
+                            Please enter a valid YouTube, Loom, or Vimeo URL
+                          </p>
+                        )}
+                      </div>
+                      {videoUrls.length > 1 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeVideoUrl(index)}
+                          className="px-2"
+                        >
+                          ×
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addVideoUrl}
+                    className="w-full"
+                  >
+                    + Add Another Video URL
+                  </Button>
+                  
+                  {videoUrls.some(url => url && validateVideoUrl(url)) && (
+                    <div className="text-xs text-green-600 flex items-center gap-1">
+                      ✓ {videoUrls.filter(url => url && validateVideoUrl(url)).length} valid video URL(s) added
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2 pt-4">
                   <Button onClick={() => handleSaveCourse(editingCourse)} className="flex-1">
