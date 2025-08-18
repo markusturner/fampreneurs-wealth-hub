@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react"
+import * as React from "react"
 
 type Theme = "dark" | "light" | "system"
 
@@ -18,7 +18,7 @@ const initialState: ThemeProviderState = {
   setTheme: () => null,
 }
 
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
+const ThemeProviderContext = React.createContext<ThemeProviderState>(initialState)
 
 export function ThemeProvider({
   children,
@@ -26,21 +26,21 @@ export function ThemeProvider({
   storageKey = "fampreneurs-ui-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme)
-
-  // Initialize theme from localStorage after component mounts
-  useEffect(() => {
+  const [theme, setTheme] = React.useState<Theme>(() => {
+    if (typeof window === 'undefined') return defaultTheme
     try {
-      const storedTheme = localStorage.getItem(storageKey) as Theme
+      const storedTheme = window.localStorage.getItem(storageKey) as Theme
       if (storedTheme && (storedTheme === "dark" || storedTheme === "light" || storedTheme === "system")) {
-        setTheme(storedTheme)
+        return storedTheme
       }
-    } catch (error) {
-      console.warn("Error reading theme from localStorage:", error)
+    } catch {
+      // Fallback if localStorage is not available
     }
-  }, [storageKey])
+    return defaultTheme
+  })
 
-  useEffect(() => {
+  // Update theme in DOM
+  React.useEffect(() => {
     const root = window.document.documentElement
 
     root.classList.remove("light", "dark")
@@ -79,7 +79,7 @@ export function ThemeProvider({
 }
 
 export const useTheme = () => {
-  const context = useContext(ThemeProviderContext)
+  const context = React.useContext(ThemeProviderContext)
 
   if (context === undefined)
     throw new Error("useTheme must be used within a ThemeProvider")
