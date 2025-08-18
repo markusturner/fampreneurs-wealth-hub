@@ -180,6 +180,7 @@ export default function Documents() {
   const [editingCourse, setEditingCourse] = useState<any>(null)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [videoUrls, setVideoUrls] = useState<string[]>([''])
+  const [courseModules, setCourseModules] = useState<any[]>([{ name: '', description: '', videos: [] }])
 
   const isAdmin = profile?.is_admin || false
 
@@ -293,8 +294,9 @@ export default function Documents() {
   }
 
   const handleEditCourse = (course: any) => {
-    setEditingCourse({ ...course, videos: course.videos || [] })
+    setEditingCourse({ ...course, videos: course.videos || [], modules: course.modules || [] })
     setVideoUrls(course.videos?.length > 0 ? course.videos : [''])
+    setCourseModules(course.modules?.length > 0 ? course.modules : [{ name: '', description: '', videos: [] }])
     setShowEditDialog(true)
   }
 
@@ -306,16 +308,18 @@ export default function Documents() {
   }
 
   const handleSaveCourse = (updatedCourse: any) => {
-    const courseWithVideos = {
+    const courseWithVideosAndModules = {
       ...updatedCourse,
-      videos: videoUrls.filter(url => url.trim() !== '')
+      videos: videoUrls.filter(url => url.trim() !== ''),
+      modules: courseModules.filter(module => module.name.trim() !== '')
     }
     setBusinessCourses(prev => 
-      prev.map(course => course.id === updatedCourse.id ? courseWithVideos : course)
+      prev.map(course => course.id === updatedCourse.id ? courseWithVideosAndModules : course)
     )
     setShowEditDialog(false)
     setEditingCourse(null)
     setVideoUrls([''])
+    setCourseModules([{ name: '', description: '', videos: [] }])
     toast.success('Course updated successfully')
   }
 
@@ -341,6 +345,22 @@ export default function Documents() {
     const loomPat = /^(https?:\/\/)?(www\.)?loom\.com/
     
     return youtubePat.test(url) || vimeoPat.test(url) || loomPat.test(url)
+  }
+
+  const handleModuleChange = (index: number, field: string, value: string) => {
+    setCourseModules(prev => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], [field]: value }
+      return updated
+    })
+  }
+
+  const addModule = () => {
+    setCourseModules(prev => [...prev, { name: '', description: '', videos: [] }])
+  }
+
+  const removeModule = (index: number) => {
+    setCourseModules(prev => prev.filter((_, i) => i !== index))
   }
 
   return (
@@ -863,6 +883,64 @@ export default function Documents() {
                     </div>
                   )}
                 </div>
+
+                {/* Course Modules Section */}
+                <div className="space-y-4 border-t pt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <BookOpen className="h-4 w-4" />
+                    <Label className="text-sm font-medium">Course Modules</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Organize your course content into modules for better structure
+                  </p>
+                  
+                  {courseModules.map((module, index) => (
+                    <div key={index} className="p-3 border rounded-lg space-y-3">
+                      <div className="flex justify-between items-center">
+                        <Label className="text-sm font-medium">Module {index + 1}</Label>
+                        {courseModules.length > 1 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeModule(index)}
+                            className="px-2 h-8"
+                          >
+                            ×
+                          </Button>
+                        )}
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Input
+                          placeholder="Module name (e.g., Introduction to Family Finance)"
+                          value={module.name}
+                          onChange={(e) => handleModuleChange(index, 'name', e.target.value)}
+                        />
+                        <Input
+                          placeholder="Module description"
+                          value={module.description}
+                          onChange={(e) => handleModuleChange(index, 'description', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addModule}
+                    className="w-full"
+                  >
+                    + Add New Module
+                  </Button>
+                  
+                  {courseModules.some(module => module.name.trim() !== '') && (
+                    <div className="text-xs text-green-600 flex items-center gap-1">
+                      ✓ {courseModules.filter(module => module.name.trim() !== '').length} module(s) configured
+                    </div>
+                  )}
+                </div>
+                
                 <div className="flex gap-2 pt-4">
                   <Button onClick={() => handleSaveCourse(editingCourse)} className="flex-1">
                     Save Changes
