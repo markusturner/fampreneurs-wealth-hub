@@ -247,12 +247,8 @@ export default function Community() {
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-6 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
-            <TabsTrigger value="overview" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              <span className="hidden sm:inline">Overview</span>
-              <span className="sm:hidden">Home</span>
-            </TabsTrigger>
+        <Tabs defaultValue="accounts" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-5 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
             <TabsTrigger value="accounts" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Accounts</span>
               <span className="sm:hidden">Accts</span>
@@ -269,22 +265,6 @@ export default function Community() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">Overview Moved</h3>
-                  <p className="text-muted-foreground mb-4">
-                    The overview section has been moved to the main dashboard for better navigation.
-                  </p>
-                  <Button onClick={() => navigate('/')}>
-                    Go to Dashboard
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="accounts" className="space-y-6">
             <div className="lg:hidden">
