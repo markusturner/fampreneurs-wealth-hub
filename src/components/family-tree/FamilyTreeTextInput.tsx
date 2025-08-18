@@ -154,6 +154,31 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
         children: rel.children.length > 0 ? rel.children : undefined
       })
     })
+    
+    // Fallback: if nothing parsed (e.g., ASCII tree style), extract probable names to at least render nodes
+    if (members.length === 0) {
+      const seen = new Set<string>()
+      for (const rawLine of lines) {
+        const line = rawLine.replace(/[├─└│]/g, '').trim()
+        // Skip helper lines
+        if (!line || /^(children:|parents:|married)/i.test(line)) continue
+        // Take first two words as a probable full name
+        const nameMatch = line.match(/[A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z'-]+)+/)
+        if (nameMatch) {
+          const name = nameMatch[0].trim()
+          if (!seen.has(name)) {
+            seen.add(name)
+            // heuristic generation by indentation depth
+            const depth = (rawLine.match(/[│└├]/g) || []).length
+            members.push({
+              id: `person-${members.length}`,
+              name,
+              generation: Math.min(2, depth),
+            })
+          }
+        }
+      }
+    }
 
     return members
   }
@@ -161,6 +186,11 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
   const handleGenerate = () => {
     const data = parseFamilyText(textInput)
     console.log('FamilyTree Generate clicked. Members:', data.length, data)
+    if (data.length === 0) {
+      toast.error('No names detected. Try clicking Format first or add full names.')
+    } else {
+      toast.success(`Generated ${data.length} member${data.length > 1 ? 's' : ''}`)
+    }
     onGenerate(data)
   }
 
