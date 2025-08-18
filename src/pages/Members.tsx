@@ -121,15 +121,20 @@ export default function Members() {
   }
 
   const getStatusBadge = (member: FamilyMember) => {
-    if (member.status === 'active' && member.joined_at) {
+    // Accepted once they actually join (joined_at recorded)
+    if (member.joined_at) {
       return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>
-    } else if (member.is_invited && member.invitation_sent_at) {
-      return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Invited</Badge>
-    } else if (member.status === 'pending') {
-      return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>
-    } else {
-      return <Badge variant="outline" className="bg-gray-100 text-gray-800">Not Invited</Badge>
     }
+    // Consider as Invited if an invitation has been sent OR is_invited flag is true
+    if (member.invitation_sent_at || member.is_invited) {
+      return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Invited</Badge>
+    }
+    // Pending state from DB
+    if (member.status === 'pending') {
+      return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>
+    }
+    // Default fallback
+    return <Badge variant="outline" className="bg-gray-100 text-gray-800">Not Invited</Badge>
   }
 
   const handleDeleteFamilyMember = async (memberId: string) => {
