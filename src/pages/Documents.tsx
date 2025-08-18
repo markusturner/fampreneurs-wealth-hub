@@ -455,27 +455,39 @@ export default function Documents() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {familyEducationModules.map((module) => {
-              const Icon = module.icon
-              return (
-                <Card key={module.title} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <Icon className={`h-8 w-8 ${module.color}`} />
-                      <Badge variant="secondary">{module.status}</Badge>
-                    </div>
-                    <CardTitle className="text-lg">{module.title}</CardTitle>
-                    <CardDescription>{module.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>{module.lessons} lessons</span>
-                      <span>{module.duration}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
+            {businessCourses.slice(0, 4).map((course, index) => (
+              <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedCourse(course)}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <Building2 className="h-8 w-8 text-blue-600" />
+                    <Badge variant="secondary">Available</Badge>
+                  </div>
+                  <CardTitle className="text-lg">{course.title}</CardTitle>
+                  <CardDescription>{course.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <span>Instructor: {course.instructor}</span>
+                    <span>{course.duration}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {businessCourses.length === 0 && (
+              <div className="col-span-full text-center py-8 text-muted-foreground">
+                <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No courses available yet.</p>
+                {isAdmin && (
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => setShowCreateCourseDialog(true)}
+                  >
+                    Create First Course
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </section>
 
