@@ -5,6 +5,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
 interface FamilyMemberInvitationRequest {
@@ -54,58 +55,42 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('user_id', req.headers.get('authorization')?.split(' ')[1] || '')
       .single();
 
+    if (profileError) {
+      console.warn('Inviter profile lookup warning (non-fatal):', profileError);
+    }
+
     const inviterName = inviterProfile?.display_name || 
       `${inviterProfile?.first_name || ''} ${inviterProfile?.last_name || ''}`.trim() || 
       'Your Family Office';
 
     const fullName = `${firstName} ${lastName || ''}`.trim();
 
-    // Send the invitation email
+    // Send the invitation email (optimized for transactional deliverability)
     const emailResponse = await resend.emails.send({
       from: 'Family Office <info@fampreneurs.com>',
       to: [email],
-      bcc: ['info@fampreneurs.com'],
       subject: `You're invited to join Fampreneurs Family Office, ${firstName}`,
       reply_to: 'info@fampreneurs.com',
+      headers: {
+        'X-Entity-Ref-ID': familyMemberId,
+        'Auto-Submitted': 'auto-generated',
+      },
+      tags: ['transactional', 'family-invitation'],
       text: `Dear ${fullName},\n\n${inviterName} invited you to join as ${familyPosition}.\n\nEmail: ${email}\nTemporary password: ${tempPassword}\n\nSign in: ${supabaseUrl.replace('.supabase.co', '.vercel.app')}/auth\n\nFor security, change your password after first login.`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #333; text-align: center;">Welcome to the Family Office</h1>
-          
+        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 16px; color:#222;">
           <p>Dear ${fullName},</p>
-          
-          <p>You have been invited by <strong>${inviterName}</strong> to join the family office platform as a <strong>${familyPosition}</strong>.</p>
-          
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #333;">Your Login Credentials:</h3>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Temporary Password:</strong> <code style="background-color: #e9ecef; padding: 4px 8px; border-radius: 4px;">${tempPassword}</code></p>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${supabaseUrl.replace('.supabase.co', '.vercel.app')}/auth" 
-               style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
-              Access Family Office Platform
-            </a>
-          </div>
-          
-          <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin: 20px 0;">
-            <p style="margin: 0; color: #856404;"><strong>Security Notice:</strong> Please change your password after your first login for security purposes.</p>
-          </div>
-          
-          <p>If you have any questions or need assistance, please contact your family office administrator.</p>
-          
-          <p>Best regards,<br>The Family Office Team</p>
-          
-          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
-          <p style="font-size: 12px; color: #666; text-align: center;">
-            This is an automated message. Please do not reply to this email.
+          <p><strong>${inviterName}</strong> invited you to join the family office platform as a <strong>${familyPosition}</strong>.</p>
+          <p><strong>Email:</strong> ${email}<br/><strong>Temporary Password:</strong> <code style="background:#f2f4f7; padding:2px 6px; border-radius:4px;">${tempPassword}</code></p>
+          <p>
+            <a href="${supabaseUrl.replace('.supabase.co', '.vercel.app')}/auth" style="display:inline-block; background:#0a66c2; color:#fff; padding:10px 16px; text-decoration:none; border-radius:6px;">Sign in</a>
           </p>
+          <p style="margin-top:12px;">For security, please change your password after your first login.</p>
         </div>
       `,
     });
 
-    console.log('Email sent successfully:', emailResponse);
+    console.log('Email send response:', emailResponse);
 
     // Update the family member record to mark as invited
     const { error: updateError } = await supabase
@@ -126,7 +111,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: true, 
         message: 'Invitation sent successfully',
-        emailId: emailResponse.data?.id 
+        emailId: (emailResponse as any).data?.id 
       }),
       {
         status: 200,
