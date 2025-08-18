@@ -31,12 +31,21 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
       return { nodes: [], edges: [] }
     }
 
+    // Normalize and filter invalid entries (names must exist)
+    const validMembers = familyMembers
+      .map((m) => ({ ...m, name: (m.name || '').trim() }))
+      .filter((m) => m.name && m.name.length > 1)
+
+    if (validMembers.length === 0) {
+      return { nodes: [], edges: [] }
+    }
+
     const nodes: Node[] = []
     const edges: Edge[] = []
 
     // Group by generation for positioning
     const generationGroups: { [key: number]: FamilyMember[] } = {}
-    familyMembers.forEach(member => {
+    validMembers.forEach(member => {
       if (!generationGroups[member.generation]) {
         generationGroups[member.generation] = []
       }
@@ -58,10 +67,7 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
           position: { x: xPosition, y: yPosition },
           data: { 
             label: (
-              <div className="text-center">
-                <div className="font-semibold">{member.name}</div>
-                <div className="text-xs text-muted-foreground">Generation {member.generation + 1}</div>
-              </div>
+              <div className="text-center font-semibold">{member.name}</div>
             )
           },
           style: {
@@ -77,10 +83,10 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
     })
 
     // Create edges for parent-child relationships
-    familyMembers.forEach(member => {
+    validMembers.forEach(member => {
       if (member.parents) {
         member.parents.forEach(parentName => {
-          const parentMember = familyMembers.find(m => m.name === parentName)
+          const parentMember = validMembers.find(m => m.name === (parentName || '').trim())
           if (parentMember) {
             edges.push({
               id: `${parentMember.id}-${member.id}`,
