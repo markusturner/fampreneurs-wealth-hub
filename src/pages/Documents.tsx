@@ -186,11 +186,23 @@ export default function Documents() {
                       <span>{module.duration}</span>
                     </div>
                     <Button 
-                      className="w-full mt-3" 
+                      className={`w-full mt-3 ${
+                        module.title === 'Family Business Education' 
+                          ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                          : module.title === 'Family Constitution'
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                          : 'bg-purple-600 hover:bg-purple-700 text-white'
+                      }`}
                       size="sm"
                       onClick={() => handleStartLearning(module.title)}
                     >
-                      Start Learning
+                      <module.icon className="h-4 w-4 mr-2" />
+                      {module.title === 'Family Business Education' 
+                        ? 'Start Business Course' 
+                        : module.title === 'Family Constitution'
+                        ? 'Learn Our Values'
+                        : 'Study Governance'
+                      }
                     </Button>
                   </CardContent>
                 </Card>
