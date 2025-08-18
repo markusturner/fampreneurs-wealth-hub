@@ -40,7 +40,7 @@ import {
   Eye,
   X
 } from 'lucide-react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
 import { AssetAllocation } from '@/components/dashboard/asset-allocation'
 import { AccountIntegration } from '@/components/dashboard/account-integration'
@@ -555,20 +555,28 @@ function DocumentsContent() {
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
       if (file) {
+        console.log('File selected for upload:', file.name, 'Type:', file.type)
         setUploadingDocument(documentName)
         
         // Simulate upload delay
         setTimeout(() => {
           const url = URL.createObjectURL(file)
-          setUploadedDocuments(prev => ({
-            ...prev,
-            [documentName]: {
-              url,
-              name: file.name,
-              type: file.type
+          console.log('Created URL for file:', url)
+          const documentData = {
+            url,
+            name: file.name,
+            type: file.type
+          }
+          setUploadedDocuments(prev => {
+            const updated = {
+              ...prev,
+              [documentName]: documentData
             }
-          }))
+            console.log('Updated uploaded documents:', updated)
+            return updated
+          })
           setUploadingDocument(null)
+          console.log('Upload completed for:', documentName)
         }, 1500)
       }
     }
@@ -790,6 +798,9 @@ function DocumentsContent() {
               <Eye className="h-5 w-5" />
               {previewDocument?.name}
             </DialogTitle>
+            <DialogDescription>
+              Preview of uploaded document: {previewDocument?.name}
+            </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-auto">
             {previewDocument && (
