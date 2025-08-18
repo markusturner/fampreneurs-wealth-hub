@@ -63,8 +63,9 @@ const familyEducationModules = [
   }
 ]
 
-const businessCourses = [
+const initialBusinessCourses = [
   {
+    id: 1,
     title: "Financial Management",
     description: "Learn budgeting, cash flow, and financial planning for families",
     lessons: 8,
@@ -72,6 +73,7 @@ const businessCourses = [
     level: "Beginner"
   },
   {
+    id: 2,
     title: "Relationship Building",
     description: "Strengthen family bonds and communication skills",
     lessons: 6,
@@ -79,6 +81,7 @@ const businessCourses = [
     level: "All Levels"
   },
   {
+    id: 3,
     title: "Investment Fundamentals",
     description: "Basic principles of wealth building and investment strategies",
     lessons: 10,
@@ -86,6 +89,7 @@ const businessCourses = [
     level: "Intermediate"
   },
   {
+    id: 4,
     title: "Estate Planning",
     description: "Protecting and transferring family wealth across generations",
     lessons: 12,
@@ -93,6 +97,7 @@ const businessCourses = [
     level: "Advanced"
   },
   {
+    id: 5,
     title: "Family Communication",
     description: "Effective communication strategies for family meetings",
     lessons: 5,
@@ -100,6 +105,7 @@ const businessCourses = [
     level: "All Levels"
   },
   {
+    id: 6,
     title: "Conflict Resolution",
     description: "Managing disagreements and finding common ground",
     lessons: 7,
@@ -170,6 +176,9 @@ export default function Documents() {
   const [showCoursesDialog, setShowCoursesDialog] = useState(false)
   const [showFamilyTreeDialog, setShowFamilyTreeDialog] = useState(false)
   const [familyData, setFamilyData] = useState<any[]>([])
+  const [businessCourses, setBusinessCourses] = useState(initialBusinessCourses)
+  const [editingCourse, setEditingCourse] = useState<any>(null)
+  const [showEditDialog, setShowEditDialog] = useState(false)
 
   const isAdmin = profile?.is_admin || false
 
@@ -280,6 +289,27 @@ export default function Documents() {
       console.error('Error validating code:', error)
       toast.error('Failed to validate access code')
     }
+  }
+
+  const handleEditCourse = (course: any) => {
+    setEditingCourse(course)
+    setShowEditDialog(true)
+  }
+
+  const handleDeleteCourse = (courseId: number) => {
+    if (confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
+      setBusinessCourses(prev => prev.filter(course => course.id !== courseId))
+      toast.success('Course deleted successfully')
+    }
+  }
+
+  const handleSaveCourse = (updatedCourse: any) => {
+    setBusinessCourses(prev => 
+      prev.map(course => course.id === updatedCourse.id ? updatedCourse : course)
+    )
+    setShowEditDialog(false)
+    setEditingCourse(null)
+    toast.success('Course updated successfully')
   }
 
   return (
@@ -634,20 +664,14 @@ export default function Documents() {
                         <Button 
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            // Edit course functionality
-                            toast.success(`Editing ${course.title}`)
-                          }}
+                          onClick={() => handleEditCourse(course)}
                         >
                           Edit
                         </Button>
                         <Button 
                           variant="destructive"
                           size="sm"
-                          onClick={() => {
-                            // Delete course functionality
-                            toast.success(`Deleted ${course.title}`)
-                          }}
+                          onClick={() => handleDeleteCourse(course.id)}
                         >
                           Delete
                         </Button>
@@ -691,6 +715,79 @@ export default function Documents() {
                 <DynamicFamilyTreeVisualization familyMembers={familyData} />
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Course Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Course</DialogTitle>
+              <DialogDescription>
+                Update the course information
+              </DialogDescription>
+            </DialogHeader>
+            {editingCourse && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="course-title">Course Title</Label>
+                  <Input
+                    id="course-title"
+                    value={editingCourse.title}
+                    onChange={(e) => setEditingCourse(prev => ({ ...prev, title: e.target.value }))}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="course-description">Description</Label>
+                  <Input
+                    id="course-description"
+                    value={editingCourse.description}
+                    onChange={(e) => setEditingCourse(prev => ({ ...prev, description: e.target.value }))}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="course-lessons">Lessons</Label>
+                    <Input
+                      id="course-lessons"
+                      type="number"
+                      value={editingCourse.lessons}
+                      onChange={(e) => setEditingCourse(prev => ({ ...prev, lessons: parseInt(e.target.value) }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="course-duration">Duration</Label>
+                    <Input
+                      id="course-duration"
+                      value={editingCourse.duration}
+                      onChange={(e) => setEditingCourse(prev => ({ ...prev, duration: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="course-level">Level</Label>
+                  <select
+                    id="course-level"
+                    value={editingCourse.level}
+                    onChange={(e) => setEditingCourse(prev => ({ ...prev, level: e.target.value }))}
+                    className="w-full px-3 py-2 border rounded-md bg-background"
+                  >
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                    <option value="All Levels">All Levels</option>
+                  </select>
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={() => handleSaveCourse(editingCourse)} className="flex-1">
+                    Save Changes
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
