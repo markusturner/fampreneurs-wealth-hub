@@ -428,7 +428,11 @@ export default function Documents() {
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation()
-                              setShowFamilyTreeDialog(true)
+                              if (resource.title === "Family Crest & Coat of Arms") {
+                                window.open('/family-office#documents', '_blank')
+                              } else {
+                                setShowFamilyTreeDialog(true)
+                              }
                             }}
                           >
                             View
