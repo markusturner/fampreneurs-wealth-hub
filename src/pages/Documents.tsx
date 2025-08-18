@@ -633,8 +633,8 @@ export default function Documents() {
 
         {/* Family Tree Dialog */}
         <Dialog open={showFamilyTreeDialog} onOpenChange={setShowFamilyTreeDialog}>
-          <DialogContent className="sm:max-w-7xl max-h-[90vh] overflow-hidden">
-            <DialogHeader>
+          <DialogContent className="sm:max-w-7xl h-[95vh] overflow-hidden flex flex-col">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle className="flex items-center gap-2">
                 <TreePine className="h-5 w-5" />
                 Family Tree Builder
@@ -643,13 +643,13 @@ export default function Documents() {
                 Describe your family in text and see it visualized in real-time
               </DialogDescription>
             </DialogHeader>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[70vh]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-0">
               <div className="flex flex-col h-full">
                 <div className="flex-1 overflow-y-auto pr-2">
                   <FamilyTreeTextInput onGenerate={setFamilyData} />
                 </div>
               </div>
-              <div className="border rounded-lg overflow-hidden h-full min-h-[480px]">
+              <div className="border rounded-lg overflow-hidden h-full">
                 <DynamicFamilyTreeVisualization familyMembers={familyData} />
               </div>
             </div>
