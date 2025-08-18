@@ -804,7 +804,7 @@ function DocumentsContent() {
       </div>
 
       {/* Preview Dialog */}
-      <Dialog open={!!previewDocument} onOpenChange={() => setPreviewDocument(null)}>
+      <Dialog open={!!previewDocument} onOpenChange={(open) => { if (!open) setPreviewDocument(null) }}>
         <DialogContent className="sm:max-w-4xl h-[80vh] flex flex-col" >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
