@@ -23,7 +23,8 @@ import {
   Crown, 
   Copy,
   Activity,
-  RotateCcw
+  RotateCcw,
+  Edit
 } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
@@ -66,6 +67,8 @@ export function FamilySecretCodesAdmin() {
   const [usageLogs, setUsageLogs] = useState<Record<string, CodeUsage[]>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false)
+  const [editingCode, setEditingCode] = useState<FamilyCode | null>(null)
   const [showCodeValue, setShowCodeValue] = useState<Record<string, boolean>>({})
   
   // Form state
@@ -136,20 +139,68 @@ export function FamilySecretCodesAdmin() {
     }
   }
 
-  const generateRandomCode = () => {
+  const generateRandomCode = (length: number = 12) => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    const segments = []
+    let result = ''
     
-    for (let i = 0; i < 3; i++) {
-      let segment = ''
-      for (let j = 0; j < 4; j++) {
-        segment += chars.charAt(Math.floor(Math.random() * chars.length))
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length))
+      // Add dashes every 4 characters (except at the end)
+      if ((i + 1) % 4 === 0 && i < length - 1) {
+        result += '-'
       }
-      segments.push(segment)
     }
     
-    const generatedCode = segments.join('-')
-    setFormData(prev => ({ ...prev, code: generatedCode }))
+    setFormData(prev => ({ ...prev, code: result }))
+  }
+
+  const openEditDialog = (code: FamilyCode) => {
+    setEditingCode(code)
+    setFormData({
+      code: code.code,
+      description: code.description,
+      access_level: code.access_level as any,
+      expires_at: code.expires_at ? new Date(code.expires_at) : null,
+      max_uses: code.max_uses
+    })
+    setShowEditDialog(true)
+  }
+
+  const handleEditCode = async () => {
+    if (!formData.code || !formData.description || !editingCode) {
+      toast.error('Please fill in all required fields')
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('family_secret_codes')
+        .update({
+          code: formData.code.toUpperCase(),
+          description: formData.description,
+          access_level: formData.access_level,
+          expires_at: formData.expires_at?.toISOString(),
+          max_uses: formData.max_uses
+        })
+        .eq('id', editingCode.id)
+
+      if (error) throw error
+
+      toast.success('Family code updated successfully')
+      setShowEditDialog(false)
+      setEditingCode(null)
+      setFormData({
+        code: '',
+        description: '',
+        access_level: 'basic',
+        expires_at: null,
+        max_uses: null
+      })
+      fetchCodes()
+    } catch (error: any) {
+      console.error('Error updating code:', error)
+      toast.error(error.message?.includes('duplicate') ? 'Code already exists' : 'Failed to update code')
+    }
   }
 
   const handleCreateCode = async () => {
@@ -280,13 +331,16 @@ export function FamilySecretCodesAdmin() {
                     id="code"
                     value={formData.code}
                     onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                    placeholder="XXXX-XXXX-XXXX"
+                    placeholder="Enter custom code (letters/numbers)"
                     className="font-mono"
                   />
-                  <Button type="button" variant="outline" onClick={generateRandomCode}>
+                  <Button type="button" variant="outline" onClick={() => generateRandomCode()}>
                     <RotateCcw className="h-4 w-4" />
                   </Button>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Use any combination of letters and numbers. Any length allowed.
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -365,6 +419,129 @@ export function FamilySecretCodesAdmin() {
                   Create Code
                 </Button>
                 <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Dialog */}
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Family Code</DialogTitle>
+              <DialogDescription>
+                Update the access code and its settings
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-code">Access Code</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="edit-code"
+                    value={formData.code}
+                    onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
+                    placeholder="Enter custom code (letters/numbers)"
+                    className="font-mono"
+                  />
+                  <Button type="button" variant="outline" onClick={() => generateRandomCode()}>
+                    <RotateCcw className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Use any combination of letters and numbers. Any length allowed.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="What does this code provide access to?"
+                  rows={3}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-access_level">Access Level</Label>
+                <Select value={formData.access_level} onValueChange={(value: any) => setFormData(prev => ({ ...prev, access_level: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ACCESS_LEVELS.map((level) => (
+                      <SelectItem key={level.value} value={level.value}>
+                        <div className="flex items-center gap-2">
+                          <level.icon className="h-4 w-4" />
+                          {level.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Expiration Date (Optional)</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !formData.expires_at && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {formData.expires_at ? format(formData.expires_at, "PPP") : "No expiration"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={formData.expires_at || undefined}
+                        onSelect={(date) => setFormData(prev => ({ ...prev, expires_at: date || null }))}
+                        disabled={(date) => date < new Date()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-max_uses">Max Uses (Optional)</Label>
+                  <Input
+                    id="edit-max_uses"
+                    type="number"
+                    value={formData.max_uses || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, max_uses: e.target.value ? parseInt(e.target.value) : null }))}
+                    placeholder="Unlimited"
+                    min="1"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button onClick={handleEditCode} className="flex-1">
+                  Update Code
+                </Button>
+                <Button variant="outline" onClick={() => {
+                  setShowEditDialog(false)
+                  setEditingCode(null)
+                  setFormData({
+                    code: '',
+                    description: '',
+                    access_level: 'basic',
+                    expires_at: null,
+                    max_uses: null
+                  })
+                }}>
                   Cancel
                 </Button>
               </div>
@@ -454,6 +631,13 @@ export function FamilySecretCodesAdmin() {
                         disabled={!showCode}
                       >
                         <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openEditDialog(code)}
+                      >
+                        <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
