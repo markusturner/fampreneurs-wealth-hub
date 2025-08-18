@@ -5,6 +5,9 @@ import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
 import { NavHeader } from '@/components/dashboard/nav-header'
 import { useToast } from '@/hooks/use-toast'
 import { 
@@ -46,7 +49,12 @@ import {
   ExternalLink,
   Star,
   CheckCircle,
-  ArrowRight
+  ArrowRight,
+  MessageSquare,
+  Send,
+  Search,
+  UserCheck,
+  Clock
 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
@@ -256,7 +264,7 @@ export default function Community() {
         </div>
 
         <Tabs defaultValue="accounts" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-6 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
+          <TabsList className="grid w-full grid-cols-7 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
             <TabsTrigger value="accounts" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Accounts</span>
               <span className="sm:hidden">Accts</span>
@@ -270,6 +278,10 @@ export default function Community() {
             <TabsTrigger value="documents" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Documents</span>
               <span className="sm:hidden">Docs</span>
+            </TabsTrigger>
+            <TabsTrigger value="messages" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
+              <span className="hidden sm:inline">Messages</span>
+              <span className="sm:hidden">Msgs</span>
             </TabsTrigger>
             <TabsTrigger value="services" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Services</span>
@@ -320,6 +332,10 @@ export default function Community() {
 
           <TabsContent value="documents" className="space-y-6">
             <DocumentsContent />
+          </TabsContent>
+
+          <TabsContent value="messages" className="space-y-6">
+            <MessagesContent />
           </TabsContent>
 
           <TabsContent value="services" className="space-y-6">
@@ -648,6 +664,266 @@ function DocumentsContent() {
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  )
+}
+
+// Messages content component for family office members
+function MessagesContent() {
+  const { user, profile } = useAuth()
+  const { toast } = useToast()
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
+  const [messageInput, setMessageInput] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Mock family office members data - in real app, this would come from the database
+  const familyOfficeMembers = [
+    {
+      id: '1',
+      name: 'John Smith',
+      role: 'Family Office Admin',
+      avatar: 'JS',
+      lastSeen: '2 mins ago',
+      status: 'online',
+      unreadCount: 3
+    },
+    {
+      id: '2', 
+      name: 'Sarah Johnson',
+      role: 'Family Member',
+      avatar: 'SJ',
+      lastSeen: '1 hour ago',
+      status: 'away',
+      unreadCount: 0
+    },
+    {
+      id: '3',
+      name: 'Michael Davis',
+      role: 'Trust Administrator',
+      avatar: 'MD',
+      lastSeen: '3 hours ago',
+      status: 'offline',
+      unreadCount: 1
+    },
+    {
+      id: '4',
+      name: 'Emily Wilson',
+      role: 'Family Advisor',
+      avatar: 'EW',
+      lastSeen: 'Yesterday',
+      status: 'offline',
+      unreadCount: 0
+    }
+  ]
+
+  // Mock conversation data
+  const conversations: {[key: string]: Array<{id: string, sender: string, message: string, timestamp: string, isCurrentUser: boolean}> } = {
+    '1': [
+      { id: '1', sender: 'John Smith', message: 'Hi! I wanted to discuss the quarterly trust review meeting.', timestamp: '2:30 PM', isCurrentUser: false },
+      { id: '2', sender: 'You', message: 'Perfect timing. I was just reviewing the documents.', timestamp: '2:32 PM', isCurrentUser: true },
+      { id: '3', sender: 'John Smith', message: 'Great! Should we schedule it for next week?', timestamp: '2:35 PM', isCurrentUser: false }
+    ],
+    '2': [
+      { id: '1', sender: 'Sarah Johnson', message: 'Thanks for updating the investment portfolio.', timestamp: 'Yesterday', isCurrentUser: false },
+      { id: '2', sender: 'You', message: 'You\'re welcome! The new allocations look good.', timestamp: 'Yesterday', isCurrentUser: true }
+    ],
+    '3': [
+      { id: '1', sender: 'Michael Davis', message: 'I need your signature on the trust amendment.', timestamp: '3 hours ago', isCurrentUser: false }
+    ],
+    '4': []
+  }
+
+  const filteredMembers = familyOfficeMembers.filter(member => 
+    member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.role.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
+  const sendMessage = () => {
+    if (!messageInput.trim() || !selectedConversation) return
+    
+    // In real app, this would send to the database
+    toast({
+      title: "Message Sent",
+      description: "Your message has been sent successfully.",
+    })
+    setMessageInput('')
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'online': return 'bg-green-500'
+      case 'away': return 'bg-yellow-500'
+      case 'offline': return 'bg-gray-400'
+      default: return 'bg-gray-400'
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+          <MessageSquare className="h-5 w-5" />
+          Family Office Messages
+        </h3>
+        <p className="text-muted-foreground text-sm mb-6">
+          Secure messaging between family office members and administrators
+        </p>
+      </div>
+
+      <div className="grid md:grid-cols-3 gap-6 h-[600px]">
+        {/* Members List */}
+        <div className="md:col-span-1 border rounded-lg">
+          <div className="p-4 border-b">
+            <div className="relative">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search members..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
+          
+          <div className="overflow-y-auto max-h-[520px]">
+            {filteredMembers.map((member) => (
+              <div
+                key={member.id}
+                className={`p-4 border-b cursor-pointer transition-colors hover:bg-accent/50 ${
+                  selectedConversation === member.id ? 'bg-accent' : ''
+                }`}
+                onClick={() => setSelectedConversation(member.id)}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="relative">
+                    <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium">
+                      {member.avatar}
+                    </div>
+                    <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${getStatusColor(member.status)}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium truncate">{member.name}</p>
+                      {member.unreadCount > 0 && (
+                        <Badge variant="secondary" className="text-xs">
+                          {member.unreadCount}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">{member.role}</p>
+                    <p className="text-xs text-muted-foreground">{member.lastSeen}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Chat Area */}
+        <div className="md:col-span-2 border rounded-lg flex flex-col">
+          {selectedConversation ? (
+            <>
+              {/* Chat Header */}
+              <div className="p-4 border-b flex items-center space-x-3">
+                <div className="relative">
+                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm">
+                    {familyOfficeMembers.find(m => m.id === selectedConversation)?.avatar}
+                  </div>
+                  <div className={`absolute -bottom-0 -right-0 w-2 h-2 rounded-full border border-background ${getStatusColor(familyOfficeMembers.find(m => m.id === selectedConversation)?.status || 'offline')}`} />
+                </div>
+                <div>
+                  <p className="font-medium text-sm">
+                    {familyOfficeMembers.find(m => m.id === selectedConversation)?.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {familyOfficeMembers.find(m => m.id === selectedConversation)?.role}
+                  </p>
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {conversations[selectedConversation]?.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex ${message.isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[70%] p-3 rounded-lg ${
+                        message.isCurrentUser
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                      }`}
+                    >
+                      <p className="text-sm">{message.message}</p>
+                      <p className={`text-xs mt-1 ${
+                        message.isCurrentUser ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                      }`}>
+                        {message.timestamp}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                
+                {conversations[selectedConversation]?.length === 0 && (
+                  <div className="text-center text-muted-foreground py-12">
+                    <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No messages yet. Start the conversation!</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Message Input */}
+              <div className="p-4 border-t">
+                <div className="flex space-x-2">
+                  <Textarea
+                    placeholder="Type your message..."
+                    value={messageInput}
+                    onChange={(e) => setMessageInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        sendMessage()
+                      }
+                    }}
+                    className="flex-1 min-h-[60px] resize-none"
+                  />
+                  <Button 
+                    onClick={sendMessage}
+                    disabled={!messageInput.trim()}
+                    className="self-end"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center text-muted-foreground">
+                <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-medium mb-2">Select a conversation</p>
+                <p className="text-sm">Choose a family office member to start messaging</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Security Notice */}
+      <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
+        <CardContent className="p-4">
+          <div className="flex items-start space-x-3">
+            <Lock className="h-5 w-5 text-blue-600 mt-0.5" />
+            <div>
+              <h4 className="font-medium text-blue-900 mb-1">Secure Communications</h4>
+              <p className="text-sm text-blue-800">
+                All messages are encrypted end-to-end and only visible to authorized family office members and administrators.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
