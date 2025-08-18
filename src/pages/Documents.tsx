@@ -647,7 +647,7 @@ export default function Documents() {
               <div className="space-y-4 overflow-y-auto">
                 <FamilyTreeTextInput onFamilyDataChange={setFamilyData} />
               </div>
-              <div className="border rounded-lg overflow-hidden">
+              <div className="border rounded-lg overflow-hidden h-full min-h-[480px]">
                 <DynamicFamilyTreeVisualization familyMembers={familyData} />
               </div>
             </div>
