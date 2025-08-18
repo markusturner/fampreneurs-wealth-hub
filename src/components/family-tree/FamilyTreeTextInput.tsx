@@ -215,7 +215,7 @@ export function FamilyTreeTextInput({ onFamilyDataChange }: FamilyTreeTextInputP
         </div>
         <Textarea
           id="family-text"
-          placeholder="Enter your family information here..."
+          placeholder="Write about your family naturally... e.g., 'John is married to Mary. They have two children: Sarah and Mike. John's parents are Robert and Helen.' Then click Format to organize it."
           value={textInput}
           onChange={(e) => setTextInput(e.target.value)}
           className="min-h-[300px] font-mono text-sm"
