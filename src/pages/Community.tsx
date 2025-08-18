@@ -671,7 +671,8 @@ function ServicesContent() {
       services: [
         { name: "Life Insurance", icon: Heart, description: "Comprehensive life insurance policies for family protection" },
         { name: "Health Insurance", icon: Shield, description: "Medical coverage and health protection plans" },
-        { name: "Property Insurance", icon: Home, description: "Home, auto, and asset protection insurance" }
+        { name: "Property Insurance", icon: Home, description: "Home, auto, and asset protection insurance" },
+        { name: "Business Insurance", icon: Building2, description: "Commercial liability, workers comp, and business protection" }
       ]
     },
     {
