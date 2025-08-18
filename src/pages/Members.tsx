@@ -37,6 +37,8 @@ interface FamilyMember {
   notes: string | null
   created_at: string
   updated_at: string | null
+  joined_at: string | null
+  invitation_sent_at: string | null
 }
 
 interface FamilyOfficeMember {
@@ -67,6 +69,16 @@ export default function Members() {
 
   useEffect(() => {
     fetchMembers()
+  }, [user?.id])
+
+  useEffect(() => {
+    // Listen for custom events when family members are added
+    const handleFamilyMemberAdded = () => {
+      fetchMembers()
+    }
+
+    window.addEventListener('familyMemberAdded', handleFamilyMemberAdded)
+    return () => window.removeEventListener('familyMemberAdded', handleFamilyMemberAdded)
   }, [])
 
   const fetchMembers = async () => {
@@ -105,6 +117,18 @@ export default function Members() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const getStatusBadge = (member: FamilyMember) => {
+    if (member.status === 'active' && member.joined_at) {
+      return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>
+    } else if (member.is_invited && member.invitation_sent_at) {
+      return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Invited</Badge>
+    } else if (member.status === 'pending') {
+      return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>
+    } else {
+      return <Badge variant="outline" className="bg-gray-100 text-gray-800">Not Invited</Badge>
     }
   }
 
@@ -291,6 +315,7 @@ export default function Members() {
                               {member.family_position === 'Head of Family' && (
                                 <Crown className="h-4 w-4 text-yellow-500" />
                               )}
+                              {getStatusBadge(member)}
                             </div>
                             
                             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
