@@ -33,6 +33,8 @@ import { supabase } from "@/integrations/supabase/client"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { FamilyTreeVisualization } from "@/components/family-tree/FamilyTreeVisualization"
+import { FamilyTreeTextInput } from "@/components/family-tree/FamilyTreeTextInput"
+import { DynamicFamilyTreeVisualization } from "@/components/family-tree/DynamicFamilyTreeVisualization"
 
 const familyEducationModules = [
   {
@@ -167,6 +169,7 @@ export default function Documents() {
   const [userAccess, setUserAccess] = useState<string[]>([])
   const [showCoursesDialog, setShowCoursesDialog] = useState(false)
   const [showFamilyTreeDialog, setShowFamilyTreeDialog] = useState(false)
+  const [familyData, setFamilyData] = useState<any[]>([])
 
   const isAdmin = profile?.is_admin || false
 
@@ -630,18 +633,23 @@ export default function Documents() {
 
         {/* Family Tree Dialog */}
         <Dialog open={showFamilyTreeDialog} onOpenChange={setShowFamilyTreeDialog}>
-          <DialogContent className="sm:max-w-6xl max-h-[90vh] overflow-hidden">
+          <DialogContent className="sm:max-w-7xl max-h-[90vh] overflow-hidden">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <TreePine className="h-5 w-5" />
-                Family Tree Explorer
+                Family Tree Builder
               </DialogTitle>
               <DialogDescription>
-                Interactive visualization of your family lineage and relationships
+                Describe your family in text and see it visualized in real-time
               </DialogDescription>
             </DialogHeader>
-            <div className="mt-4">
-              <FamilyTreeVisualization />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4 h-[70vh]">
+              <div className="space-y-4 overflow-y-auto">
+                <FamilyTreeTextInput onFamilyDataChange={setFamilyData} />
+              </div>
+              <div className="border rounded-lg overflow-hidden">
+                <DynamicFamilyTreeVisualization familyMembers={familyData} />
+              </div>
             </div>
           </DialogContent>
         </Dialog>
