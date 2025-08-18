@@ -51,7 +51,7 @@ const familyEducationModules = [
     duration: "2 hours"
   },
   {
-    title: "Family Governance Framework",
+    title: "Family Governance Structure",
     description: "The three branches of family government and their roles",
     icon: Scale,
     status: "Available",
