@@ -194,6 +194,9 @@ export default function Documents() {
     } else if (moduleTitle === 'Family Constitution') {
       // Open the Family Constitution document
       handleOpenFamilyConstitution()
+    } else if (moduleTitle === 'Family Governance Structure') {
+      // Navigate to the family governance page
+      navigate('/family-governance')
     } else {
       // Navigate to courses page with the specific module
       navigate('/courses', { state: { searchTerm: moduleTitle } })
