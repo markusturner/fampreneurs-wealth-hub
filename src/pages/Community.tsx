@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
+import localforage from 'localforage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -378,11 +379,27 @@ export default function Community() {
 
 // Documents content component (moved from Documents page)
 function DocumentsContent() {
+  const { toast } = useToast()
   const [uploadingDocument, setUploadingDocument] = useState<string | null>(null)
-  const [uploadedDocuments, setUploadedDocuments] = useState<{[key: string]: {url: string, name: string, type: string}}>(() => {
-    // Load from localStorage on initialization
+  const [uploadedDocuments, setUploadedDocuments] = useState<{[key: string]: {storageKey: string, name: string, type: string}}>(() => {
+    // Load lightweight metadata index from localStorage
     const saved = localStorage.getItem('uploadedDocuments')
-    return saved ? JSON.parse(saved) : {}
+    if (!saved) return {}
+    try {
+      const parsed = JSON.parse(saved)
+      const normalized: {[key: string]: {storageKey: string, name: string, type: string}} = {}
+      Object.keys(parsed).forEach((k) => {
+        const v = parsed[k]
+        normalized[k] = {
+          storageKey: v.storageKey || '',
+          name: v.name,
+          type: v.type,
+        }
+      })
+      return normalized
+    } catch {
+      return {}
+    }
   })
   const [previewDocument, setPreviewDocument] = useState<{name: string, url: string, type: string} | null>(null)
 
@@ -393,51 +410,59 @@ function DocumentsContent() {
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
       if (file) {
-        console.log('File selected for upload:', file.name, 'Type:', file.type)
         setUploadingDocument(documentName)
-
-        // Read file as Data URL (base64) so it persists across navigation/reloads
-        const reader = new FileReader()
-        reader.onload = () => {
-          const url = reader.result as string
-          console.log('Created Data URL for file:', url?.slice(0, 64) + '...')
-          const documentData = {
-            url,
-            name: file.name,
-            type: file.type || 'application/octet-stream'
-          }
+        try {
+          const storageKey = `uploadedDocuments/${documentName}`
+          // Store the file blob in IndexedDB via localforage (avoids localStorage quota issues)
+          await localforage.setItem(storageKey, file)
+          const meta = { storageKey, name: file.name, type: file.type || 'application/octet-stream' }
           setUploadedDocuments(prev => {
-            const updated = {
-              ...prev,
-              [documentName]: documentData
+            const updated = { ...prev, [documentName]: meta }
+            try {
+              localStorage.setItem('uploadedDocuments', JSON.stringify(updated))
+            } catch (err) {
+              console.error('Failed to persist metadata to localStorage', err)
+              toast({
+                title: 'Storage limit reached',
+                description: 'Saved file locally but could not persist metadata. You may need to clear space.',
+                variant: 'destructive',
+              })
             }
-            console.log('Updated uploaded documents:', updated)
-            // Save to localStorage
-            localStorage.setItem('uploadedDocuments', JSON.stringify(updated))
             return updated
           })
+        } catch (err) {
+          console.error('Failed to save file', err)
+          toast({
+            title: 'Upload failed',
+            description: 'We could not save this file locally. Try a smaller file or contact support.',
+            variant: 'destructive',
+          })
+        } finally {
           setUploadingDocument(null)
-          console.log('Upload completed for:', documentName)
         }
-        reader.onerror = (err) => {
-          console.error('Failed to read file', err)
-          setUploadingDocument(null)
-        }
-        reader.readAsDataURL(file)
       }
     }
     input.click()
   }
 
-  const handleDownload = (documentName: string) => {
-    const documentData = uploadedDocuments[documentName]
-    if (documentData) {
+  const handleDownload = async (documentName: string) => {
+    const meta = uploadedDocuments[documentName]
+    if (!meta?.storageKey) {
+      toast({ title: 'File unavailable', description: 'Please re-upload this document to download it.' })
+      return
+    }
+    const blob = await localforage.getItem<Blob>(meta.storageKey)
+    if (blob) {
+      const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
-      link.href = documentData.url
-      link.download = documentData.name
+      link.href = url
+      link.download = meta.name
+      document.body.appendChild(link)
       link.click()
+      link.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 0)
     } else {
-      console.log("No file uploaded for:", documentName)
+      toast({ title: 'File not found', description: 'Please re-upload this document.' })
     }
   }
 
@@ -445,14 +470,18 @@ function DocumentsContent() {
     handleUpload(documentName) // Reuse upload logic to replace
   }
 
-  const handlePreview = (documentName: string) => {
-    const documentData = uploadedDocuments[documentName]
-    if (documentData) {
-      setPreviewDocument({
-        name: documentName,
-        url: documentData.url,
-        type: documentData.type
-      })
+  const handlePreview = async (documentName: string) => {
+    const meta = uploadedDocuments[documentName]
+    if (!meta?.storageKey) {
+      toast({ title: 'Preview unavailable', description: 'Please re-upload this document to preview it.' })
+      return
+    }
+    const blob = await localforage.getItem<Blob>(meta.storageKey)
+    if (blob) {
+      const url = URL.createObjectURL(blob)
+      setPreviewDocument({ name: documentName, url, type: meta.type })
+    } else {
+      toast({ title: 'File not found', description: 'Please re-upload this document.' })
     }
   }
 
@@ -640,7 +669,7 @@ function DocumentsContent() {
       </div>
 
       {/* Preview Dialog */}
-      <Dialog open={!!previewDocument} onOpenChange={(open) => { if (!open) setPreviewDocument(null) }}>
+      <Dialog open={!!previewDocument} onOpenChange={(open) => { if (!open) { if (previewDocument?.url?.startsWith('blob:')) { URL.revokeObjectURL(previewDocument.url) } setPreviewDocument(null) } }}>
         <DialogContent className="sm:max-w-4xl h-[80vh] flex flex-col" >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
