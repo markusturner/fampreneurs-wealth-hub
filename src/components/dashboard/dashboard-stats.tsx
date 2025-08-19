@@ -25,9 +25,9 @@ export function DashboardStats() {
     if (!user) return
 
     const fetchCounts = async () => {
-      // Fetch document count for current user
+      // Fetch document count from family office secure documents
       const { count: docCount, error: docError } = await supabase
-        .from('family_documents')
+        .from('family_office_secure_documents')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
       
