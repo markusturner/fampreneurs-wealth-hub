@@ -187,7 +187,6 @@ export default function Documents() {
   const [showMessagesDialog, setShowMessagesDialog] = useState(false)
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState('')
-  
   // Family Secret Code states
   const [familyCodeInput, setFamilyCodeInput] = useState('')
   const [isValidatingCode, setIsValidatingCode] = useState(false)
