@@ -94,7 +94,7 @@ const heritageResources = [
     color: "text-rose-600"
   },
   {
-    title: "Legacy Documents",
+    title: "Legal Documents",
     description: "Important family documents and legal papers",
     icon: FileText,
     category: "Documents",
@@ -241,7 +241,7 @@ export default function Documents() {
       }
     } else {
       const messages = {
-        "Legacy Documents": "📄 Accessing secure legacy documents...",
+        "Legal Documents": "📄 Accessing secure legal documents...",
         "Photo & Video Collection": "📸 Loading family multimedia archive...",
         "Family Tree Interactive": "🌳 Opening interactive family tree..."
       }
@@ -699,8 +699,8 @@ export default function Documents() {
                   key={resource.title} 
                   className="hover:shadow-md transition-shadow cursor-pointer"
                   onClick={() => {
-                    if (resource.title === "Legacy Documents") {
-                      // Show Family Documents tab with focus on Legacy Documents
+                    if (resource.title === "Legal Documents") {
+                      // Show Family Documents tab with focus on Legal Documents
                       setShowFamilyDocuments(true)
                     } else {
                       handleHeritageResource(resource.title)
@@ -1338,10 +1338,10 @@ export default function Documents() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Heart className="h-5 w-5 text-red-500" />
-                Legacy Documents & Family Office Files
+                Legal Documents & Family Office Files
               </DialogTitle>
               <DialogDescription>
-                Upload, manage, and access your family's important legacy documents
+                Upload, manage, and access your family's important legal documents
               </DialogDescription>
             </DialogHeader>
             <div className="mt-4">
