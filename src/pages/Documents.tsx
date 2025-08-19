@@ -601,8 +601,12 @@ export default function Documents() {
                     value={familyCodeInput}
                     onChange={(e) => setFamilyCodeInput(e.target.value.toUpperCase())}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && familyCodeInput.trim() && !isValidatingCode) {
-                        validateFamilyCode()
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        if (familyCodeInput.trim() && !isValidatingCode) {
+                          validateFamilyCode()
+                        }
+                        e.currentTarget.blur()
                       }
                     }}
                     className="flex-1"
