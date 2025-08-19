@@ -671,7 +671,7 @@ export default function Documents() {
         </section>
 
         {/* Heritage & Legacy Resources */}
-        <section className="space-y-4">
+        <section className="space-y-4 min-h-screen w-full">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
