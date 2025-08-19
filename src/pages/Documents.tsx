@@ -101,13 +101,6 @@ const heritageResources = [
     color: "text-slate-600"
   },
   {
-    title: "Photo & Video Collection",
-    description: "Precious memories captured over generations",
-    icon: Image,
-    category: "Media",
-    color: "text-pink-600"
-  },
-  {
     title: "Family Tree Interactive",
     description: "Visualize your family connections",
     icon: TreePine,
@@ -242,7 +235,7 @@ export default function Documents() {
     } else {
       const messages = {
         "Legal Documents": "📄 Accessing secure legal documents...",
-        "Photo & Video Collection": "📸 Loading family multimedia archive...",
+        
         "Family Tree Interactive": "🌳 Opening interactive family tree..."
       }
       
