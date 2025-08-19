@@ -600,6 +600,11 @@ export default function Documents() {
                     placeholder="Enter family secret code"
                     value={familyCodeInput}
                     onChange={(e) => setFamilyCodeInput(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && familyCodeInput.trim() && !isValidatingCode) {
+                        validateFamilyCode()
+                      }
+                    }}
                     className="flex-1"
                   />
                   <Button 
