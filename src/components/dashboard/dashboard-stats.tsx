@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext"
 export function DashboardStats() {
   const { user } = useAuth()
   const [documentCount, setDocumentCount] = useState(0)
-  const [financialAdvisorCount, setFinancialAdvisorCount] = useState(0)
+  const [familyOfficeMemberCount, setFamilyOfficeMemberCount] = useState(0)
   const [familyMemberCount, setFamilyMemberCount] = useState(0)
   const [portfolioData, setPortfolioData] = useState({
     totalValue: 0,
@@ -33,15 +33,15 @@ export function DashboardStats() {
         setDocumentCount(docCount)
       }
 
-      // Fetch financial advisor count for current user
-      const { count: advisorCount, error: advisorError } = await supabase
-        .from('financial_advisors')
+      // Fetch family office member count for current user
+      const { count: officeCount, error: officeError } = await supabase
+        .from('family_office_members')
         .select('*', { count: 'exact', head: true })
         .eq('added_by', user.id)
-        .eq('is_active', true)
+        .eq('status', 'active')
       
-      if (!advisorError && advisorCount !== null) {
-        setFinancialAdvisorCount(advisorCount)
+      if (!officeError && officeCount !== null) {
+        setFamilyOfficeMemberCount(officeCount)
       }
 
       // Fetch family member count for current user
@@ -135,8 +135,8 @@ export function DashboardStats() {
     },
     {
       title: "Family Office Members",
-      value: financialAdvisorCount.toString(),
-      change: financialAdvisorCount > 0 ? "+1" : "0",
+      value: familyOfficeMemberCount.toString(),
+      change: familyOfficeMemberCount > 0 ? "+1" : "0",
       trend: "up",
       icon: Users,
       iconColor: "#f59e0b", // Yellow/Orange
