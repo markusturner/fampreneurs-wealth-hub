@@ -134,7 +134,7 @@ export function DashboardStats() {
       tagColor: "#ffb500" // Orange
     },
     {
-      title: "Financial Advisors",
+      title: "Family Office Members",
       value: financialAdvisorCount.toString(),
       change: financialAdvisorCount > 0 ? "+1" : "0",
       trend: "up",
