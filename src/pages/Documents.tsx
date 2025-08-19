@@ -535,9 +535,9 @@ export default function Documents() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <Badge variant="outline" className="w-full justify-center">
+                    <Button variant="outline" className="w-full justify-center">
                       {resource.category}
-                    </Badge>
+                    </Button>
                   </CardContent>
                 </Card>
               )
