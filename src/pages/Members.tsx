@@ -277,6 +277,68 @@ export default function Members() {
     }
   }
 
+  const handleResendOfficeInvitation = async (member: FamilyOfficeMember) => {
+    try {
+      console.log('Resending office invitation for:', member.full_name)
+      
+      // Generate new temporary password
+      const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8).toUpperCase()
+      
+      // Send office member invitation email using the same function (we can enhance it later)
+      const { data, error } = await supabase.functions.invoke('send-family-member-invitation', {
+        body: {
+          familyMemberId: member.id,
+          email: member.email,
+          firstName: member.full_name.split(' ')[0],
+          lastName: member.full_name.split(' ').slice(1).join(' '),
+          familyPosition: member.role || 'Team Member',
+          tempPassword: tempPassword,
+          isOfficeTeam: true // Flag to differentiate office members
+        }
+      })
+
+      if (error) {
+        console.error('Error resending office invitation:', error)
+        throw error
+      }
+
+      // Update the member status to indicate invitation was sent
+      const { error: updateError } = await supabase
+        .from('family_office_members' as any)
+        .update({
+          status: 'invited',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', member.id)
+
+      if (updateError) {
+        console.error('Error updating invitation status:', updateError)
+      }
+
+      // Update local state
+      setOfficeMembers(prev => 
+        prev.map(m => 
+          m.id === member.id 
+            ? { ...m, status: 'invited', updated_at: new Date().toISOString() }
+            : m
+        )
+      )
+
+      toast({
+        title: "Invitation Resent",
+        description: `Invitation email has been resent to ${member.full_name}`,
+      })
+
+    } catch (error) {
+      console.error('Error resending office invitation:', error)
+      toast({
+        title: "Error",
+        description: "Failed to resend invitation. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
   const handleDeleteOfficeMember = async (memberId: string) => {
     try {
       const { error } = await supabase
@@ -656,6 +718,15 @@ export default function Members() {
                         </div>
                         
                         <div className="flex items-center space-x-2">
+                          {member.status === 'pending' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleResendOfficeInvitation(member)}
+                            >
+                              Resend Invitation
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
