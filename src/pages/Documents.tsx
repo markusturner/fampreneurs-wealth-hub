@@ -491,6 +491,56 @@ export default function Documents() {
           
           <Card className="p-6">
             <div className="space-y-6">
+              {isAdmin && (
+                <>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <Key className="h-4 w-4" />
+                      Create Family Secret Code
+                    </h3>
+                    <p className="text-muted-foreground text-sm mb-4">
+                      Generate secure access codes for family members
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <Input
+                        placeholder="Code Description"
+                        className="w-full"
+                      />
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Access Level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="trust">Trust Level</SelectItem>
+                          <SelectItem value="legacy">Legacy Level</SelectItem>
+                          <SelectItem value="admin">Admin Level</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <Button className="w-full mb-4" variant="secondary">
+                      <Key className="h-4 w-4 mr-2" />
+                      Generate Family Code
+                    </Button>
+                    
+                    <div className="p-4 bg-muted rounded-lg border-2 border-dashed border-muted-foreground/20">
+                      <div className="text-center">
+                        <p className="text-sm text-muted-foreground mb-2">Generated Family Code:</p>
+                        <div className="text-2xl font-mono font-bold tracking-wider bg-background p-3 rounded border">
+                          SAMPLE-CODE-2024
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Share this code with authorized family members
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                </>
+              )}
+              
               <div>
                 <h3 className="text-lg font-semibold mb-3">Validate Family Code</h3>
                 <div className="flex gap-4">
