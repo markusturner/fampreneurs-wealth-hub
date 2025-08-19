@@ -526,119 +526,84 @@ export default function Documents() {
           <Card className="p-6">
             <div className="space-y-6">
               {isAdmin && (
-                <>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                      <Key className="h-4 w-4" />
-                      Create Family Secret Code
-                    </h3>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      Generate secure access codes for family members
-                    </p>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <Input
-                        placeholder="Code Description"
-                        value={codeDescription}
-                        onChange={(e) => setCodeDescription(e.target.value)}
-                        className="w-full"
-                      />
-                      <Select value={codeAccessLevel} onValueChange={setCodeAccessLevel}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Access Level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="trust">Trust Level</SelectItem>
-                          <SelectItem value="legacy">Legacy Level</SelectItem>
-                          <SelectItem value="admin">Admin Level</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <Button 
-                      className="w-full mb-4" 
-                      variant="secondary"
-                      onClick={createFamilyCode}
-                      disabled={!codeDescription.trim() || !codeAccessLevel || isCreatingCode}
-                    >
-                      {isCreatingCode ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Creating Code...
-                        </>
-                      ) : (
-                        <>
-                          <Key className="h-4 w-4 mr-2" />
-                          Generate Family Code
-                        </>
-                      )}
-                    </Button>
-                    
-                    {createdCode && (
-                      <div className="p-4 bg-muted rounded-lg border-2 border-dashed border-muted-foreground/20">
-                        <div className="text-center">
-                          <p className="text-sm text-muted-foreground mb-2">Generated Family Code:</p>
-                          <div className="text-2xl font-mono font-bold tracking-wider bg-background p-3 rounded border">
-                            {createdCode}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-2">
-                            Share this code with authorized family members
-                          </p>
-                        </div>
-                      </div>
-                     )}
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <Key className="h-4 w-4" />
+                    Create Family Secret Code
+                  </h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Generate secure access codes for family members
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <Input
+                      placeholder="Code Description"
+                      value={codeDescription}
+                      onChange={(e) => setCodeDescription(e.target.value)}
+                      className="w-full"
+                    />
+                    <Select value={codeAccessLevel} onValueChange={setCodeAccessLevel}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Access Level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="trust">Trust Level</SelectItem>
+                        <SelectItem value="legacy">Legacy Level</SelectItem>
+                        <SelectItem value="admin">Admin Level</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   
-                  <Separator />
-                </>
-              )}
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Validate Family Code</h3>
-                <div className="flex gap-4">
-                  <Input
-                    placeholder="Enter family secret code"
-                    value={familyCodeInput}
-                    onChange={(e) => setFamilyCodeInput(e.target.value.toUpperCase())}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                        if (familyCodeInput.trim() && !isValidatingCode) {
-                          validateFamilyCode()
-                        }
-                        e.currentTarget.blur()
-                      }
-                    }}
-                    className="flex-1"
-                  />
                   <Button 
-                    onClick={validateFamilyCode}
-                    disabled={!familyCodeInput.trim() || isValidatingCode}
-                    className="px-6"
+                    className="w-full mb-4" 
+                    variant="default"
+                    onClick={createFamilyCode}
+                    disabled={!codeDescription.trim() || !codeAccessLevel || isCreatingCode}
                   >
-                    {isValidatingCode ? (
+                    {isCreatingCode ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Validating...
+                        Creating Code...
                       </>
                     ) : (
-                      'Access'
+                      <>
+                        <Key className="h-4 w-4 mr-2" />
+                        Generate Family Code
+                      </>
                     )}
                   </Button>
-                </div>
-                
-                {validatedCodeResult && (
-                  <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mt-4">
-                    <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
-                      <Shield className="h-4 w-4" />
-                      <span className="font-medium">Access Granted</span>
+                  
+                  {createdCode && (
+                    <div className="p-6 bg-primary/5 rounded-lg border-2 border-primary/20">
+                      <div className="text-center">
+                        <p className="text-sm font-medium mb-3">✅ Generated Family Code:</p>
+                        <div className="text-3xl font-mono font-bold tracking-wider bg-background p-4 rounded border shadow-sm">
+                          {createdCode}
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-3">
+                          Share this code with authorized family members
+                        </p>
+                        <div className="flex gap-2 mt-4 justify-center">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => navigator.clipboard.writeText(createdCode)}
+                          >
+                            Copy Code
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => setCreatedCode(null)}
+                          >
+                            Create Another
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                      {validatedCodeResult.description} | Access Level: {validatedCodeResult.access_level}
-                    </p>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
           </Card>
         </section>
