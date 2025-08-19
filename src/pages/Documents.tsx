@@ -30,8 +30,10 @@ import {
   Edit,
   Trash2,
   FileCheck,
-  Loader2
+  Loader2,
+  UserPlus
 } from "lucide-react"
+import { Separator } from "@/components/ui/separator"
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { FamilySecretCodesAdmin } from "@/components/dashboard/family-secret-codes-admin"
 import { useNavigate } from "react-router-dom"
@@ -488,17 +490,65 @@ export default function Documents() {
           </div>
           
           <Card className="p-6">
-            <div className="space-y-4">
-              <div className="flex gap-4">
-                <Input
-                  placeholder="Enter family secret code"
-                  value={familyCodeInput}
-                  onChange={(e) => setFamilyCodeInput(e.target.value.toUpperCase())}
-                  className="flex-1"
-                />
-                <Button 
-                  onClick={validateFamilyCode}
-                  disabled={!familyCodeInput.trim() || isValidatingCode}
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  Create Family Member Login Codes
+                </h3>
+                <p className="text-muted-foreground text-sm mb-4">
+                  Generate secure login codes for family members to access their accounts
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <Input
+                    placeholder="First Name"
+                    className="w-full"
+                  />
+                  <Input
+                    placeholder="Last Name"
+                    className="w-full"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <Input
+                    placeholder="Email Address"
+                    type="email"
+                    className="w-full"
+                  />
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Access Level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="basic">Basic Access</SelectItem>
+                      <SelectItem value="premium">Premium Access</SelectItem>
+                      <SelectItem value="admin">Admin Access</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button className="w-full" variant="secondary">
+                  <Key className="h-4 w-4 mr-2" />
+                  Generate Login Credentials
+                </Button>
+              </div>
+              
+              <Separator />
+              
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Validate Family Code</h3>
+                <div className="flex gap-4">
+                  <Input
+                    placeholder="Enter family secret code"
+                    value={familyCodeInput}
+                    onChange={(e) => setFamilyCodeInput(e.target.value.toUpperCase())}
+                    className="flex-1"
+                  />
+                  <Button 
+                    onClick={validateFamilyCode}
+                   disabled={!familyCodeInput.trim() || isValidatingCode}
                   className="px-6"
                 >
                   {isValidatingCode ? (
@@ -526,7 +576,24 @@ export default function Documents() {
             </div>
           </Card>
         </section>
+              </div>
+              
+              {validatedCodeResult && (
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                    <Shield className="h-4 w-4" />
+                    <span className="font-medium">Access Granted</span>
+                  </div>
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                    {validatedCodeResult.description} | Access Level: {validatedCodeResult.access_level}
+                  </p>
+                </div>
+              )}
+            </div>
+          </Card>
+        </section>
 
+        {/* Family Office Documents Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-2">Family Office Documents</h1>
