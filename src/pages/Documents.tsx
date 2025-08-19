@@ -548,47 +548,32 @@ export default function Documents() {
                   />
                   <Button 
                     onClick={validateFamilyCode}
-                   disabled={!familyCodeInput.trim() || isValidatingCode}
-                  className="px-6"
-                >
-                  {isValidatingCode ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Validating...
-                    </>
-                  ) : (
-                    'Access'
-                  )}
-                </Button>
-              </div>
-              
-              {validatedCodeResult && (
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
-                    <Shield className="h-4 w-4" />
-                    <span className="font-medium">Access Granted</span>
-                  </div>
-                  <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                    {validatedCodeResult.description} | Access Level: {validatedCodeResult.access_level}
-                  </p>
+                    disabled={!familyCodeInput.trim() || isValidatingCode}
+                    className="px-6"
+                  >
+                    {isValidatingCode ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Validating...
+                      </>
+                    ) : (
+                      'Access'
+                    )}
+                  </Button>
                 </div>
-              )}
-            </div>
-          </Card>
-        </section>
-              </div>
-              
-              {validatedCodeResult && (
-                <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                  <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
-                    <Shield className="h-4 w-4" />
-                    <span className="font-medium">Access Granted</span>
+                
+                {validatedCodeResult && (
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg mt-4">
+                    <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                      <Shield className="h-4 w-4" />
+                      <span className="font-medium">Access Granted</span>
+                    </div>
+                    <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                      {validatedCodeResult.description} | Access Level: {validatedCodeResult.access_level}
+                    </p>
                   </div>
-                  <p className="text-sm text-green-600 dark:text-green-400 mt-1">
-                    {validatedCodeResult.description} | Access Level: {validatedCodeResult.access_level}
-                  </p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </Card>
         </section>
