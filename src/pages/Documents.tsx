@@ -492,52 +492,6 @@ export default function Documents() {
           <Card className="p-6">
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <UserPlus className="h-4 w-4" />
-                  Create Family Member Login Codes
-                </h3>
-                <p className="text-muted-foreground text-sm mb-4">
-                  Generate secure login codes for family members to access their accounts
-                </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <Input
-                    placeholder="First Name"
-                    className="w-full"
-                  />
-                  <Input
-                    placeholder="Last Name"
-                    className="w-full"
-                  />
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <Input
-                    placeholder="Email Address"
-                    type="email"
-                    className="w-full"
-                  />
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Access Level" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="basic">Basic Access</SelectItem>
-                      <SelectItem value="premium">Premium Access</SelectItem>
-                      <SelectItem value="admin">Admin Access</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <Button className="w-full" variant="secondary">
-                  <Key className="h-4 w-4 mr-2" />
-                  Generate Login Credentials
-                </Button>
-              </div>
-              
-              <Separator />
-              
-              <div>
                 <h3 className="text-lg font-semibold mb-3">Validate Family Code</h3>
                 <div className="flex gap-4">
                   <Input
