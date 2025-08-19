@@ -51,7 +51,7 @@ function AppWithNotifications() {
       <Route path="/community" element={<Community />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/documents" element={<Documents />} />
-      
+      <Route path="/family-roundtable" element={<Index />} />
       <Route path="/family-governance" element={<FamilyGovernance />} />
       <Route path="/calendar" element={<Calendar />} />
       <Route path="/members" element={<Members />} />
