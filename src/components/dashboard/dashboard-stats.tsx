@@ -144,7 +144,7 @@ export function DashboardStats() {
       tagColor: "#ffb500" // Orange
     },
     {
-      title: "Family Members",
+      title: "Family Office Members",
       value: familyMemberCount.toString(),
       change: familyMemberCount > 0 ? "+1" : "0",
       trend: "up",
