@@ -718,13 +718,16 @@ export default function Members() {
                         </div>
                         
                         <div className="flex items-center space-x-2">
-                          {member.status === 'pending' && (
+                          {member.email && (
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleResendOfficeInvitation(member)}
+                              className="text-xs"
+                              disabled={member.status === 'active'}
                             >
-                              Resend Invitation
+                              <Mail className="h-4 w-4 mr-1" />
+                              {member.status === 'active' ? 'Accepted' : 'Resend Invitation'}
                             </Button>
                           )}
                           <Button
