@@ -11,6 +11,7 @@ import { NavHeader } from '@/components/dashboard/nav-header'
 import { AddFamilyMemberDialog } from '@/components/dashboard/add-family-member-dialog'
 import { AddFamilyOfficeMemberDialog } from '@/components/dashboard/add-family-office-member-dialog'
 import { EditFamilyMemberDialog } from '@/components/dashboard/edit-family-member-dialog'
+import { EditFamilyOfficeMemberDialog } from '@/components/dashboard/edit-family-office-member-dialog'
 import { 
   UserPlus, 
   Mail, 
@@ -68,6 +69,7 @@ export default function Members() {
   const [showAddFamilyDialog, setShowAddFamilyDialog] = useState(false)
   const [showAddOfficeDialog, setShowAddOfficeDialog] = useState(false)
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null)
+  const [editingOfficeMember, setEditingOfficeMember] = useState<FamilyOfficeMember | null>(null)
 
   useEffect(() => {
     fetchMembers()
@@ -294,6 +296,50 @@ export default function Members() {
       toast({
         title: "Error",
         description: "Failed to delete family office member",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleUpdateOfficeMember = async (updatedMember: Partial<FamilyOfficeMember> & { id: string }) => {
+    try {
+      const { error } = await supabase
+        .from('family_office_members' as any)
+        .update({
+          full_name: updatedMember.full_name,
+          email: updatedMember.email,
+          phone: updatedMember.phone,
+          role: updatedMember.role,
+          company: updatedMember.company,
+          department: updatedMember.department,
+          access_level: updatedMember.access_level,
+          specialties: updatedMember.specialties,
+          notes: updatedMember.notes,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', updatedMember.id)
+
+      if (error) throw error
+
+      // Update local state
+      setOfficeMembers(prev => 
+        prev.map(member => 
+          member.id === updatedMember.id 
+            ? { ...member, ...updatedMember, updated_at: new Date().toISOString() }
+            : member
+        )
+      )
+
+      setEditingOfficeMember(null)
+      toast({
+        title: "Success",
+        description: "Office member updated successfully"
+      })
+    } catch (error) {
+      console.error('Error updating office member:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update office member",
         variant: "destructive"
       })
     }
@@ -613,6 +659,13 @@ export default function Members() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            onClick={() => setEditingOfficeMember(member)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleDeleteOfficeMember(member.id)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -643,6 +696,12 @@ export default function Members() {
           member={editingMember}
           onClose={() => setEditingMember(null)}
           onUpdate={handleUpdateFamilyMember}
+        />
+
+        <EditFamilyOfficeMemberDialog
+          member={editingOfficeMember}
+          onClose={() => setEditingOfficeMember(null)}
+          onUpdate={handleUpdateOfficeMember}
         />
       </div>
     </div>
