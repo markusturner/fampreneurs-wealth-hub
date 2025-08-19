@@ -29,7 +29,8 @@ import {
   Key,
   Edit,
   Trash2,
-  FileCheck
+  FileCheck,
+  Loader2
 } from "lucide-react"
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { FamilySecretCodesAdmin } from "@/components/dashboard/family-secret-codes-admin"
@@ -186,6 +187,11 @@ export default function Documents() {
   const [showMessagesDialog, setShowMessagesDialog] = useState(false)
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState('')
+  
+  // Family Secret Code states
+  const [familyCodeInput, setFamilyCodeInput] = useState('')
+  const [isValidatingCode, setIsValidatingCode] = useState(false)
+  const [validatedCodeResult, setValidatedCodeResult] = useState<any>(null)
 
   const isAdmin = profile?.is_admin || false
 
@@ -279,6 +285,43 @@ export default function Documents() {
     } catch (error) {
       console.error('Error validating code:', error)
       toast.error('Failed to validate access code')
+    }
+  }
+
+  const validateFamilyCode = async () => {
+    if (!familyCodeInput.trim()) {
+      toast.error('Please enter a family secret code')
+      return
+    }
+
+    setIsValidatingCode(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-family-code', {
+        body: {
+          code: familyCodeInput.trim(),
+          ip_address: null,
+          user_agent: navigator.userAgent
+        }
+      })
+
+      if (error) throw error
+
+      const result = data as any
+      if (result.success) {
+        setValidatedCodeResult(result)
+        setUserAccess(prev => [...prev, result.access_level])
+        toast.success(`Access granted! Level: ${result.access_level}`)
+        setFamilyCodeInput('')
+      } else {
+        toast.error(result.message || 'Invalid family secret code')
+        setValidatedCodeResult(null)
+      }
+    } catch (error) {
+      console.error('Error validating code:', error)
+      toast.error('Failed to validate family secret code')
+      setValidatedCodeResult(null)
+    } finally {
+      setIsValidatingCode(false)
     }
   }
 
@@ -431,6 +474,60 @@ export default function Documents() {
       <NavHeader />
       
       <div className="container mx-auto px-4 py-6 space-y-8">
+        {/* Family Secret Code Access */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                <Lock className="h-5 w-5" />
+                Family Secret Code Access
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Enter your family secret code to access exclusive family office resources
+              </p>
+            </div>
+          </div>
+          
+          <Card className="p-6">
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <Input
+                  placeholder="Enter family secret code"
+                  value={familyCodeInput}
+                  onChange={(e) => setFamilyCodeInput(e.target.value.toUpperCase())}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={validateFamilyCode}
+                  disabled={!familyCodeInput.trim() || isValidatingCode}
+                  className="px-6"
+                >
+                  {isValidatingCode ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Validating...
+                    </>
+                  ) : (
+                    'Access'
+                  )}
+                </Button>
+              </div>
+              
+              {validatedCodeResult && (
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
+                    <Shield className="h-4 w-4" />
+                    <span className="font-medium">Access Granted</span>
+                  </div>
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                    {validatedCodeResult.description} | Access Level: {validatedCodeResult.access_level}
+                  </p>
+                </div>
+              )}
+            </div>
+          </Card>
+        </section>
+
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-2">Family Office Documents</h1>
