@@ -61,7 +61,7 @@ const documentCategories = [
   }
 ]
 
-export function FamilyDocumentsTab() {
+export function FamilyDocumentsTab({ viewOnly = false }: { viewOnly?: boolean }) {
   const [uploadingDocument, setUploadingDocument] = useState<string | null>(null)
 
   const handleUpload = (documentName: string) => {
@@ -115,20 +115,22 @@ export function FamilyDocumentsTab() {
                             </div>
                             
                             <div className="flex items-center space-x-1 sm:space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleUpload(document.name)}
-                                disabled={isUploading}
-                                className="h-7 px-2 sm:h-8 sm:px-3"
-                                title="Upload"
-                              >
-                                {isUploading ? (
-                                  <div className="h-2 w-2 sm:h-3 sm:w-3 animate-spin rounded-full border border-current border-t-transparent" />
-                                ) : (
-                                  <Upload className="h-2 w-2 sm:h-3 sm:w-3" />
-                                )}
-                              </Button>
+                              {!viewOnly && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleUpload(document.name)}
+                                  disabled={isUploading}
+                                  className="h-7 px-2 sm:h-8 sm:px-3"
+                                  title="Upload"
+                                >
+                                  {isUploading ? (
+                                    <div className="h-2 w-2 sm:h-3 sm:w-3 animate-spin rounded-full border border-current border-t-transparent" />
+                                  ) : (
+                                    <Upload className="h-2 w-2 sm:h-3 sm:w-3" />
+                                  )}
+                                </Button>
+                              )}
                               <Button
                                 variant="ghost"
                                 size="sm"

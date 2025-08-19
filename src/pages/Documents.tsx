@@ -1345,7 +1345,7 @@ export default function Documents() {
               </DialogDescription>
             </DialogHeader>
             <div className="mt-4">
-              <FamilyDocumentsTab />
+              <FamilyDocumentsTab viewOnly={true} />
             </div>
           </DialogContent>
         </Dialog>
