@@ -44,6 +44,7 @@ import { toast } from "sonner"
 import { FamilyTreeVisualization } from "@/components/family-tree/FamilyTreeVisualization"
 import { FamilyTreeTextInput } from "@/components/family-tree/FamilyTreeTextInput"
 import { DynamicFamilyTreeVisualization } from "@/components/family-tree/DynamicFamilyTreeVisualization"
+import { FamilyDocumentsTab } from "@/components/dashboard/family-documents-tab"
 
 const familyEducationModules = [
   {
@@ -189,6 +190,7 @@ export default function Documents() {
   const [showMessagesDialog, setShowMessagesDialog] = useState(false)
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState('')
+  const [showFamilyDocuments, setShowFamilyDocuments] = useState(false)
   // Family Secret Code states
   const [familyCodeInput, setFamilyCodeInput] = useState('')
   const [isValidatingCode, setIsValidatingCode] = useState(false)
@@ -698,8 +700,8 @@ export default function Documents() {
                   className="hover:shadow-md transition-shadow cursor-pointer"
                   onClick={() => {
                     if (resource.title === "Legacy Documents") {
-                      // Navigate to Family Office documents section
-                      navigate('/family-office/documents')
+                      // Show Family Documents tab with focus on Legacy Documents
+                      setShowFamilyDocuments(true)
                     } else {
                       handleHeritageResource(resource.title)
                     }
@@ -1326,6 +1328,24 @@ export default function Documents() {
                   Send
                 </Button>
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Family Documents Dialog */}
+        <Dialog open={showFamilyDocuments} onOpenChange={setShowFamilyDocuments}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Heart className="h-5 w-5 text-red-500" />
+                Legacy Documents & Family Office Files
+              </DialogTitle>
+              <DialogDescription>
+                Upload, manage, and access your family's important legacy documents
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              <FamilyDocumentsTab />
             </div>
           </DialogContent>
         </Dialog>
