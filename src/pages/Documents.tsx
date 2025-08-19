@@ -193,6 +193,12 @@ export default function Documents() {
   const [familyCodeInput, setFamilyCodeInput] = useState('')
   const [isValidatingCode, setIsValidatingCode] = useState(false)
   const [validatedCodeResult, setValidatedCodeResult] = useState<any>(null)
+  
+  // Family Code Creation states
+  const [codeDescription, setCodeDescription] = useState('')
+  const [codeAccessLevel, setCodeAccessLevel] = useState('')
+  const [isCreatingCode, setIsCreatingCode] = useState(false)
+  const [createdCode, setCreatedCode] = useState<string | null>(null)
 
   const isAdmin = profile?.is_admin || false
 
@@ -286,6 +292,34 @@ export default function Documents() {
     } catch (error) {
       console.error('Error validating code:', error)
       toast.error('Failed to validate access code')
+    }
+  }
+
+  const createFamilyCode = async () => {
+    if (!codeDescription.trim() || !codeAccessLevel) {
+      toast.error('Please fill in all fields')
+      return
+    }
+
+    setIsCreatingCode(true)
+    try {
+      // Generate a random code
+      const randomCode = `FAM-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${new Date().getFullYear()}`
+      
+      // Here you would typically call an edge function to save the code to the database
+      // For now, we'll just simulate the creation
+      setTimeout(() => {
+        setCreatedCode(randomCode)
+        toast.success('Family code created successfully!')
+        setCodeDescription('')
+        setCodeAccessLevel('')
+        setIsCreatingCode(false)
+      }, 1000)
+      
+    } catch (error) {
+      console.error('Error creating family code:', error)
+      toast.error('Failed to create family code')
+      setIsCreatingCode(false)
     }
   }
 
@@ -505,9 +539,11 @@ export default function Documents() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <Input
                         placeholder="Code Description"
+                        value={codeDescription}
+                        onChange={(e) => setCodeDescription(e.target.value)}
                         className="w-full"
                       />
-                      <Select>
+                      <Select value={codeAccessLevel} onValueChange={setCodeAccessLevel}>
                         <SelectTrigger>
                           <SelectValue placeholder="Access Level" />
                         </SelectTrigger>
@@ -519,22 +555,38 @@ export default function Documents() {
                       </Select>
                     </div>
                     
-                    <Button className="w-full mb-4" variant="secondary">
-                      <Key className="h-4 w-4 mr-2" />
-                      Generate Family Code
+                    <Button 
+                      className="w-full mb-4" 
+                      variant="secondary"
+                      onClick={createFamilyCode}
+                      disabled={!codeDescription.trim() || !codeAccessLevel || isCreatingCode}
+                    >
+                      {isCreatingCode ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Creating Code...
+                        </>
+                      ) : (
+                        <>
+                          <Key className="h-4 w-4 mr-2" />
+                          Generate Family Code
+                        </>
+                      )}
                     </Button>
                     
-                    <div className="p-4 bg-muted rounded-lg border-2 border-dashed border-muted-foreground/20">
-                      <div className="text-center">
-                        <p className="text-sm text-muted-foreground mb-2">Generated Family Code:</p>
-                        <div className="text-2xl font-mono font-bold tracking-wider bg-background p-3 rounded border">
-                          SAMPLE-CODE-2024
+                    {createdCode && (
+                      <div className="p-4 bg-muted rounded-lg border-2 border-dashed border-muted-foreground/20">
+                        <div className="text-center">
+                          <p className="text-sm text-muted-foreground mb-2">Generated Family Code:</p>
+                          <div className="text-2xl font-mono font-bold tracking-wider bg-background p-3 rounded border">
+                            {createdCode}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Share this code with authorized family members
+                          </p>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Share this code with authorized family members
-                        </p>
                       </div>
-                    </div>
+                     )}
                   </div>
                   
                   <Separator />
