@@ -1,8 +1,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Upload, Download, FileText, Building, Shield, Landmark, Crown, Phone, MapPin, Hash, Video, Heart, Scroll, Calendar as CalendarIcon, Clock } from "lucide-react"
-import { FamilyCalendar } from "@/components/dashboard/family-calendar"
+import { Upload, Download, FileText, Building, Shield, Landmark, Crown, Phone, MapPin, Hash, Video, Heart, Scroll } from "lucide-react"
 
 const documentCategories = [
   {
@@ -80,42 +79,6 @@ export function FamilyDocumentsTab() {
 
   return (
     <div className="space-y-6">
-      {/* Calendar Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarIcon className="h-5 w-5" />
-              Family Calendar
-            </CardTitle>
-            <CardDescription>
-              Schedule and track family meetings
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FamilyCalendar />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Upcoming Events
-            </CardTitle>
-            <CardDescription>
-              Your next family meetings and events
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">
-                No upcoming events scheduled
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Documents Section */}
       <div className="space-y-6">
