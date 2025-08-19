@@ -11,6 +11,8 @@ export function DashboardStats() {
   const [documentCount, setDocumentCount] = useState(0)
   const [familyOfficeMemberCount, setFamilyOfficeMemberCount] = useState(0)
   const [familyMemberCount, setFamilyMemberCount] = useState(0)
+  // Alias to prevent runtime errors from stale references during HMR
+  const financialAdvisorCount = familyOfficeMemberCount
   const [portfolioData, setPortfolioData] = useState({
     totalValue: 0,
     dayChange: 0,
