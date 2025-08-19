@@ -535,7 +535,7 @@ export default function Documents() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <Button variant="outline" className="w-full justify-center">
+                    <Button variant="secondary" className="w-full justify-center">
                       {resource.category}
                     </Button>
                   </CardContent>
