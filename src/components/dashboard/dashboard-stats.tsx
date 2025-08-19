@@ -11,6 +11,7 @@ export function DashboardStats() {
   const [documentCount, setDocumentCount] = useState(0)
   const [familyOfficeMemberCount, setFamilyOfficeMemberCount] = useState(0)
   const [familyMemberCount, setFamilyMemberCount] = useState(0)
+  const [connectedAccountsCount, setConnectedAccountsCount] = useState(0)
   // Alias to prevent runtime errors from stale references during HMR
   const financialAdvisorCount = familyOfficeMemberCount
   const [portfolioData, setPortfolioData] = useState({
@@ -55,6 +56,16 @@ export function DashboardStats() {
       
       if (!familyError && familyCount !== null) {
         setFamilyMemberCount(familyCount)
+      }
+
+      // Fetch connected accounts count for current user
+      const { count: accountsCount, error: accountsError } = await supabase
+        .from('connected_accounts')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+      
+      if (!accountsError && accountsCount !== null) {
+        setConnectedAccountsCount(accountsCount)
       }
 
       // Fetch portfolio data for current user
@@ -125,14 +136,14 @@ export function DashboardStats() {
     },
     {
       title: "Active Investments",
-      value: hasFinancialData 
-        ? `${portfolioData.activeInvestments + connectedAccounts.length}`
+      value: connectedAccountsCount > 0 
+        ? `${portfolioData.activeInvestments + connectedAccountsCount}`
         : "0",
-      change: hasFinancialData ? `${connectedAccounts.length} accounts` : "No accounts",
+      change: connectedAccountsCount > 0 ? `${connectedAccountsCount} accounts` : "No accounts",
       trend: "up", 
       icon: PieChart,
       iconColor: "#3b82f6", // Blue
-      description: hasFinancialData ? `${connectedAccounts.length} connected accounts` : "Connect accounts to track investments",
+      description: connectedAccountsCount > 0 ? `${connectedAccountsCount} connected accounts` : "Connect accounts to track investments",
       tagColor: "#ffb500" // Orange
     },
     {
