@@ -636,7 +636,7 @@ export default function Members() {
                 className="flex items-center gap-2"
               >
                 <UserPlus className="h-4 w-4" />
-                Add Team Member
+                Add Family Office Member
               </Button>
             </div>
 
