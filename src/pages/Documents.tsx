@@ -503,7 +503,7 @@ export default function Documents() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <div className="container mx-auto px-4 py-6 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-8">
         {/* Family Secret Code Access */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
