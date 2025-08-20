@@ -102,7 +102,7 @@ const heritageResources = [
   },
   {
     title: "Family Governance",
-    description: "Governance policies and family charter documents",
+    description: "Governance policies and family charter docs",
     icon: Scale,
     category: "Governance",
     color: "text-indigo-600"
