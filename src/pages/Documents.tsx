@@ -520,7 +520,7 @@ export default function Documents() {
           
           <Card className="p-6">
             <div className="space-y-6">
-              {isAdmin && (
+              {isAdmin ? (
                 <div>
                   <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                     <Key className="h-4 w-4" />
@@ -597,6 +597,17 @@ export default function Documents() {
                       </div>
                     </div>
                   )}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Key className="h-12 w-12 mx-auto mb-4 opacity-50 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Family Secret Codes</h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Contact your family office administrator to obtain a secret code for accessing exclusive resources.
+                  </p>
+                  <Badge variant="secondary" className="text-xs">
+                    Member Access
+                  </Badge>
                 </div>
               )}
             </div>
