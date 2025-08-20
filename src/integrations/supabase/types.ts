@@ -3482,6 +3482,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
+      users_are_family_members: {
+        Args: { user1_id: string; user2_id: string }
+        Returns: boolean
+      }
       validate_family_code: {
         Args: { p_code: string; p_ip_address?: string; p_user_agent?: string }
         Returns: Json
