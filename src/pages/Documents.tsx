@@ -606,7 +606,7 @@ export default function Documents() {
                   <CardHeader className="pb-3">
                     <Icon className={`h-8 w-8 ${resource.color} mx-auto`} />
                     <CardTitle className="text-center text-base">{resource.title}</CardTitle>
-                    <CardDescription className="text-center text-sm">
+                    <CardDescription className={`text-center text-sm ${resource.title === 'Family Governance' ? 'truncate' : ''}`}>
                       {resource.description}
                     </CardDescription>
                   </CardHeader>
