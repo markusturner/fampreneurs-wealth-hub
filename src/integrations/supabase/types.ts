@@ -3288,6 +3288,10 @@ export type Database = {
         Args: { p_record_id: string; p_table_name: string }
         Returns: boolean
       }
+      can_access_family_member_safe: {
+        Args: { member_id: string }
+        Returns: boolean
+      }
       can_join_group: {
         Args: { group_id: string; user_id: string }
         Returns: boolean
@@ -3341,6 +3345,10 @@ export type Database = {
           first_initial: string
           user_id: string
         }[]
+      }
+      get_family_member_count_secure: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       get_portfolio_summary: {
         Args: { target_user_id: string }
