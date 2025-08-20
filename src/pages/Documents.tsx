@@ -87,13 +87,6 @@ const familyEducationModules = [
 
 const heritageResources = [
   {
-    title: "Family History Archive",
-    description: "Explore your family's rich history and heritage",
-    icon: Scroll,
-    category: "Heritage",
-    color: "text-rose-600"
-  },
-  {
     title: "Legal Documents",
     description: "Important family documents and legal papers",
     icon: FileText,
