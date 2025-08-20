@@ -99,6 +99,34 @@ const heritageResources = [
     icon: TreePine,
     category: "Genealogy",
     color: "text-emerald-600"
+  },
+  {
+    title: "Family Constitution",
+    description: "Core values and guiding principles",
+    icon: Scroll,
+    category: "Governance",
+    color: "text-amber-600"
+  },
+  {
+    title: "Heritage Photos",
+    description: "Family memories and historical photos",
+    icon: Image,
+    category: "Media",
+    color: "text-blue-600"
+  },
+  {
+    title: "Family Messages",
+    description: "Secure communication with family members",
+    icon: MessageCircle,
+    category: "Communication",
+    color: "text-purple-600"
+  },
+  {
+    title: "Legacy Planning",
+    description: "Estate and succession planning documents",
+    icon: Crown,
+    category: "Planning",
+    color: "text-gold-600"
   }
 ]
 
@@ -586,14 +614,20 @@ export default function Documents() {
                 <Card 
                   key={resource.title} 
                   className="hover:shadow-md transition-shadow cursor-pointer"
-                  onClick={() => {
-                    if (resource.title === "Legal Documents") {
-                      // Show Family Documents tab with focus on Legal Documents
-                      setShowFamilyDocuments(true)
-                    } else {
-                      handleHeritageResource(resource.title)
-                    }
-                  }}
+                   onClick={() => {
+                     if (resource.title === "Legal Documents") {
+                       // Show Family Documents tab with focus on Legal Documents
+                       setShowFamilyDocuments(true)
+                     } else if (resource.title === "Family Tree Interactive") {
+                       setShowFamilyTreeDialog(true)
+                     } else if (resource.title === "Family Constitution") {
+                       setShowConstitutionDialog(true)
+                     } else if (resource.title === "Family Messages") {
+                       setShowMessagesDialog(true)
+                     } else {
+                       handleHeritageResource(resource.title)
+                     }
+                   }}
                 >
                   <CardHeader className="pb-3">
                     <Icon className={`h-8 w-8 ${resource.color} mx-auto`} />
