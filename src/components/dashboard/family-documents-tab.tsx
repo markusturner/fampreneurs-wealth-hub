@@ -85,14 +85,22 @@ export function FamilyDocumentsTab({ viewOnly = false }: { viewOnly?: boolean })
         <div>
           <h3 className="text-lg font-semibold mb-4">Family Documents</h3>
           <div className="grid gap-4 sm:gap-6">
-            {documentCategories.map((category) => {
+            {documentCategories.map((category, index) => {
               const CategoryIcon = category.icon
+              const iconColors = [
+                "text-blue-600",
+                "text-emerald-600", 
+                "text-purple-600",
+                "text-orange-600",
+                "text-pink-600",
+                "text-indigo-600"
+              ]
               
               return (
                 <Card key={category.title} className="shadow-soft">
                   <CardHeader className="pb-3 sm:pb-6">
                     <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
-                      <CategoryIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                      <CategoryIcon className={`h-4 w-4 sm:h-5 sm:w-5 ${iconColors[index]}`} />
                       <span>{category.title}</span>
                     </CardTitle>
                   </CardHeader>
