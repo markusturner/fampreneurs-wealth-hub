@@ -17,7 +17,7 @@ const familyOfficeItems: NavItem[] = [
   { name: 'Documents', href: '/documents', icon: FileText },
   { name: 'Investments', href: '/investments', icon: TrendingUp },
   { name: 'Home', href: '/', icon: Home },
-  { name: 'Courses', href: '/courses', icon: BookOpen },
+  { name: 'Calendar', href: '/calendar', icon: Calendar },
   { name: 'Members', href: '/members', icon: Users },
 ]
 
