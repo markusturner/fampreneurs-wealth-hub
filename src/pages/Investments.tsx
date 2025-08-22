@@ -71,9 +71,12 @@ export default function FamilyOffice() {
   const { toast } = useToast()
   const [investments, setInvestments] = useState<Investment[]>([])
   const [loading, setLoading] = useState(true)
+  const [familyOfficeMembers, setFamilyOfficeMembers] = useState<any[]>([])
+  const [loadingMembers, setLoadingMembers] = useState(true)
 
   useEffect(() => {
     fetchInvestments()
+    fetchFamilyOfficeMembers()
   }, [])
 
   const fetchInvestments = async () => {
@@ -95,6 +98,29 @@ export default function FamilyOffice() {
       console.error('Error fetching investments:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchFamilyOfficeMembers = async () => {
+    if (!user?.id) {
+      setLoadingMembers(false)
+      return
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('family_members')
+        .select('*')
+        .eq('added_by', user.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setFamilyOfficeMembers(data || [])
+    } catch (error) {
+      console.error('Error fetching family office members:', error)
+    } finally {
+      setLoadingMembers(false)
     }
   }
 
@@ -234,6 +260,97 @@ export default function FamilyOffice() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
+      
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold">Digital Family Office</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Complete financial ecosystem management and wealth tracking
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <Tabs defaultValue="accounts" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-7 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
+            <TabsTrigger value="accounts" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
+              Accounts
+            </TabsTrigger>
+            <TabsTrigger value="transactions" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
+              Transactions
+            </TabsTrigger>
+            <TabsTrigger value="budget" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
+              Budget
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
+              Reports
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
+              Documents
+            </TabsTrigger>
+            <TabsTrigger value="messages" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
+              Messages
+            </TabsTrigger>
+            <TabsTrigger value="services" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
+              Services
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="accounts" className="space-y-6">
+            <div className="lg:hidden">
+              <div className="space-y-4">
+                <AccountIntegration />
+              </div>
+            </div>
+            <div className="hidden lg:block">
+              <AccountIntegration />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="transactions" className="space-y-6">
+            <div className="lg:hidden">
+              <div className="space-y-4">
+                <TransactionMonitoring />
+              </div>
+            </div>
+            <div className="hidden lg:block">
+              <TransactionMonitoring />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="budget" className="space-y-6">
+            <BudgetingAnalytics />
+          </TabsContent>
+
+          <TabsContent value="reports" className="space-y-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="text-center">
+                  <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Financial Reports</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Reports will be available once you connect accounts or add investment data.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="documents" className="space-y-6">
+            <DocumentsContent />
+          </TabsContent>
+
+          <TabsContent value="messages" className="space-y-6">
+            <MessagesContent familyOfficeMembers={familyOfficeMembers} loadingMembers={loadingMembers} />
+          </TabsContent>
+
+          <TabsContent value="services" className="space-y-6">
+            <ServicesContent />
+          </TabsContent>
+        </Tabs>
+      </div>
       
       {/* Mobile Bottom Navigation */}
       <div className="pb-16 md:pb-0" />
@@ -390,5 +507,55 @@ function DocumentsContent() {
         })}
       </div>
     </div>
+  )
+}
+
+// Messages content component
+function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOfficeMembers: any[], loadingMembers: boolean }) {
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="text-center">
+          <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-lg font-semibold mb-2">Family Messages</h3>
+          <p className="text-muted-foreground mb-4">
+            Communication hub for family office members
+          </p>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Message board and notifications will appear here
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {loadingMembers ? 'Loading members...' : `${familyOfficeMembers.length} family members`}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// Services content component
+function ServicesContent() {
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="text-center">
+          <Briefcase className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <h3 className="text-lg font-semibold mb-2">Family Office Services</h3>
+          <p className="text-muted-foreground mb-4">
+            Professional services and support for your family office
+          </p>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Investment advisory, tax planning, and legal services
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Connect with certified professionals
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
