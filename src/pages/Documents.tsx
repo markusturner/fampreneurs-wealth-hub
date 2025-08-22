@@ -1081,7 +1081,7 @@ export default function Documents() {
 
         {/* Family Tree Dialog */}
         <Dialog open={showFamilyTreeDialog} onOpenChange={setShowFamilyTreeDialog}>
-          <DialogContent className="sm:max-w-6xl max-h-[90vh] overflow-hidden">
+          <DialogContent className="sm:max-w-7xl max-h-[95vh] overflow-hidden">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <TreePine className="h-5 w-5" />
@@ -1092,9 +1092,9 @@ export default function Documents() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[70vh]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[80vh]">
               {/* Left Panel - Input */}
-              <div className="space-y-4 overflow-y-auto">
+              <div className="space-y-4 overflow-y-auto pr-2">
                 <FamilyTreeTextInput
                   onGenerate={(members) => {
                     setFamilyData(members)
@@ -1111,7 +1111,7 @@ export default function Documents() {
                     Family Tree Visualization
                   </h3>
                 </div>
-                <div className="h-[calc(70vh-3rem)]">
+                <div className="h-[calc(80vh-3rem)]">
                   {familyData.length > 0 ? (
                     <DynamicFamilyTreeVisualization familyMembers={familyData} />
                   ) : (
