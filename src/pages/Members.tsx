@@ -529,7 +529,7 @@ export default function Members() {
               ) : (
                 familyMembers.map((member) => (
                   <Card key={member.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-3 sm:p-4 md:p-6">
+                    <CardContent className="p-2 sm:p-3 md:p-4">
                       <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
                         {/* Mobile: Header with Avatar and Name */}
                         <div className="flex items-center gap-3 sm:items-start">
