@@ -258,8 +258,7 @@ export default function FamilyOffice() {
         <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
           <TabsList className="grid w-full grid-cols-6 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
             <TabsTrigger value="overview" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              <span className="hidden sm:inline">Overview</span>
-              <span className="sm:hidden">Home</span>
+              Overview
             </TabsTrigger>
             <TabsTrigger value="accounts" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
               <span className="hidden sm:inline">Accounts</span>
