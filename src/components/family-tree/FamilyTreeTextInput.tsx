@@ -40,7 +40,75 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
         .replace(/[^A-Za-z' -]/g, '') // strip non-name chars
         .replace(/\s+/g, ' ') // collapse spaces
         .trim()
-    const members: FamilyMember[] = []
+    let members: FamilyMember[] = []
+
+    // Check if text contains ASCII tree structure characters
+    const hasTreeStructure = text.includes('├') || text.includes('└') || text.includes('│')
+    
+    // Priority 1: ASCII tree parser for structured hierarchical data
+    if (hasTreeStructure) {
+      const seen = new Map<string, number>()
+      const parentAtDepth: Record<number, string> = {}
+
+      const getOrCreateMember = (name: string, depth: number) => {
+        if (seen.has(name)) return seen.get(name) as number
+        const idx = members.length
+        members.push({
+          id: `person-${idx}`,
+          name,
+          generation: depth, // Use actual depth for proper generation
+          parents: [],
+          children: [],
+        })
+        seen.set(name, idx)
+        return idx
+      }
+
+      for (const rawLine of lines) {
+        const depth = (rawLine.match(/[│└├]/g) || []).length
+        const line = rawLine.replace(/[├─└│]/g, '').trim()
+        if (!line || /^(children:|parents:|married)/i.test(line)) continue
+
+        const nameMatch = line.match(/[A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)*/)
+        if (!nameMatch) continue
+        const name = sanitizeName(nameMatch[0])
+        if (!name || name.length < 2) continue
+
+        const childIdx = getOrCreateMember(name, depth)
+
+        if (depth > 0 && parentAtDepth[depth - 1]) {
+          const parentName = sanitizeName(parentAtDepth[depth - 1])
+          const parentIdx = getOrCreateMember(parentName, depth - 1)
+
+          const child = members[childIdx]
+          const parent = members[parentIdx]
+
+          if (!child.parents!.includes(parentName)) child.parents!.push(parentName)
+          if (!parent.children!.includes(name)) parent.children!.push(name)
+        }
+
+        parentAtDepth[depth] = name
+        // Clear deeper parents when we go up levels
+        Object.keys(parentAtDepth)
+          .map(Number)
+          .filter(d => d > depth)
+          .forEach(d => delete parentAtDepth[d])
+      }
+
+      // Clean up empty arrays
+      for (let i = 0; i < members.length; i++) {
+        if (!members[i].parents || members[i].parents!.length === 0) {
+          delete (members[i] as any).parents
+        }
+        if (!members[i].children || members[i].children!.length === 0) {
+          delete (members[i] as any).children
+        }
+      }
+      
+      return members
+    }
+
+    // Priority 2: Natural language parsing for unstructured text
     const relationships: { [key: string]: { parents: string[], children: string[] } } = {}
 
     // Enhanced parsing for natural language
@@ -176,65 +244,6 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
         children: rel.children.length > 0 ? rel.children : undefined
       })
     })
-    
-    // Fallback: ASCII tree parser using indentation/branch depth to infer parent-child
-    if (members.length === 0) {
-      const seen = new Map<string, number>()
-      const parentAtDepth: Record<number, string> = {}
-
-      const getOrCreateMember = (name: string, depth: number) => {
-        if (seen.has(name)) return seen.get(name) as number
-        const idx = members.length
-        members.push({
-          id: `person-${idx}`,
-          name,
-          generation: Math.min(2, depth),
-          parents: [],
-          children: [],
-        })
-        seen.set(name, idx)
-        return idx
-      }
-
-      for (const rawLine of lines) {
-        const depth = (rawLine.match(/[│└├]/g) || []).length
-        const line = rawLine.replace(/[├─└│]/g, '').trim()
-        if (!line || /^(children:|parents:|married)/i.test(line)) continue
-
-        const nameMatch = line.match(/[A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)*/)
-        if (!nameMatch) continue
-        const name = sanitizeName(nameMatch[0])
-
-        const childIdx = getOrCreateMember(name, depth)
-
-        if (depth > 0 && parentAtDepth[depth - 1]) {
-          const parentName = sanitizeName(parentAtDepth[depth - 1])
-          const parentIdx = getOrCreateMember(parentName, depth - 1)
-
-          const child = members[childIdx]
-          const parent = members[parentIdx]
-
-          if (!child.parents!.includes(parentName)) child.parents!.push(parentName)
-          if (!parent.children!.includes(name)) parent.children!.push(name)
-        }
-
-        parentAtDepth[depth] = name
-        // Clear deeper parents when we go up levels
-        Object.keys(parentAtDepth)
-          .map(Number)
-          .filter(d => d > depth)
-          .forEach(d => delete parentAtDepth[d])
-      }
-
-      for (let i = 0; i < members.length; i++) {
-        if (!members[i].parents || members[i].parents!.length === 0) {
-          delete (members[i] as any).parents
-        }
-        if (!members[i].children || members[i].children!.length === 0) {
-          delete (members[i] as any).children
-        }
-      }
-    }
 
     return members
   }
