@@ -151,34 +151,33 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
 
     // Reassign generations based on family relationships
     const assignGenerations = () => {
+      const norm = (s?: string) => (s || '').trim().toLowerCase()
       const memberMap = new Map<string, FamilyMember>()
-      validMembers.forEach(member => memberMap.set(member.name, member))
+      validMembers.forEach(member => memberMap.set(norm(member.name), member))
       
       // Reset all generations
-      validMembers.forEach(member => member.generation = -1)
+      validMembers.forEach(member => (member.generation = -1))
       
       // Find root members (those with no parents)
       const rootMembers = validMembers.filter(member => !member.parents || member.parents.length === 0)
       
       // Assign generations starting from roots
-      const visited = new Set<string>()
+      const visitedById = new Set<string>()
       const assignGeneration = (member: FamilyMember, generation: number) => {
-        if (visited.has(member.name) || member.generation !== -1) return
-        visited.add(member.name)
+        if (visitedById.has(member.id) || member.generation !== -1) return
+        visitedById.add(member.id)
         member.generation = generation
         
-        // Find and assign spouse to same generation first
+        // Find and assign spouse to same generation first (shared children)
         if (member.children) {
-          const spouses = validMembers.filter(other => 
-            other.name !== member.name && 
-            other.children && 
-            other.children.some(child => member.children!.includes(child))
+          const memberChildren = (member.children || []).map(norm)
+          const spouses = validMembers.filter(other =>
+            other.id !== member.id &&
+            (other.children || []).map(norm).some(child => memberChildren.includes(child))
           )
-          
           spouses.forEach(spouse => {
             if (spouse.generation === -1) {
               spouse.generation = generation
-              visited.add(spouse.name)
             }
           })
         }
@@ -186,8 +185,8 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
         // Then assign children to next generation
         if (member.children) {
           member.children.forEach(childName => {
-            const child = memberMap.get(childName)
-            if (child && !visited.has(child.name)) {
+            const child = memberMap.get(norm(childName))
+            if (child && !visitedById.has(child.id)) {
               assignGeneration(child, generation + 1)
             }
           })
@@ -197,23 +196,25 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
       // Start with root members at generation 0
       rootMembers.forEach(root => assignGeneration(root, 0))
       
-      // Handle any remaining members (siblings without parents specified)
+      // Handle any remaining members (e.g., due to name mismatch casing/spacing)
       validMembers.forEach(member => {
         if (member.generation === -1) {
-          // If they have children, try to infer generation from children
-          if (member.children) {
-            const childGenerations = member.children
-              .map(childName => memberMap.get(childName))
-              .filter(child => child && child.generation !== -1)
-              .map(child => child!.generation)
-            
-            if (childGenerations.length > 0) {
-              member.generation = Math.min(...childGenerations) - 1
-            } else {
-              member.generation = 0 // Default to root level
-            }
+          const parentGens = (member.parents || [])
+            .map(p => memberMap.get(norm(p)))
+            .filter((p): p is FamilyMember => !!p && p.generation !== -1)
+            .map(p => p.generation)
+          if (parentGens.length > 0) {
+            member.generation = Math.min(...parentGens) + 1
+            return
+          }
+          const childGens = (member.children || [])
+            .map(c => memberMap.get(norm(c)))
+            .filter((c): c is FamilyMember => !!c && c.generation !== -1)
+            .map(c => c.generation)
+          if (childGens.length > 0) {
+            member.generation = Math.min(...childGens) - 1
           } else {
-            member.generation = 0 // Default to root level
+            member.generation = 0 // Default to top if completely isolated
           }
         }
       })
@@ -237,36 +238,27 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
     generations.forEach(generation => {
       const members = generationGroups[generation]
       
-      // Group married couples together
-      const memberMap = new Map<string, FamilyMember>()
-      validMembers.forEach(m => memberMap.set(m.name, m))
-      
+      // Group married couples together (normalized by shared children)
+      const norm = (s?: string) => (s || '').trim().toLowerCase()
       const marriedPairs: FamilyMember[][] = []
       const singles: FamilyMember[] = []
       const processed = new Set<string>()
       
       members.forEach(member => {
-        if (processed.has(member.name)) return
-        
-        if (member.children) {
-          const spouses = members.filter(other => 
-            other.name !== member.name && 
-            !processed.has(other.name) &&
-            other.children && 
-            other.children.some(child => member.children!.includes(child))
-          )
-          
-          if (spouses.length > 0) {
-            marriedPairs.push([member, spouses[0]])
-            processed.add(member.name)
-            processed.add(spouses[0].name)
-          } else {
-            singles.push(member)
-            processed.add(member.name)
-          }
+        if (processed.has(member.id)) return
+        const memberChildren = (member.children || []).map(norm)
+        const spouses = members.filter(other =>
+          other.id !== member.id &&
+          !processed.has(other.id) &&
+          (other.children || []).map(norm).some(c => memberChildren.includes(c))
+        )
+        if (spouses.length > 0) {
+          marriedPairs.push([member, spouses[0]])
+          processed.add(member.id)
+          processed.add(spouses[0].id)
         } else {
           singles.push(member)
-          processed.add(member.name)
+          processed.add(member.id)
         }
       })
       
@@ -385,12 +377,13 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
 
     // Create edges for married couples (spouses)
     validMembers.forEach(member => {
-      if (member.children) {
+      const norm = (s?: string) => (s || '').trim().toLowerCase()
+      const memberChildren = (member.children || []).map(norm)
+      if (memberChildren.length > 0) {
         const spouses = validMembers.filter(other => 
-          other.name !== member.name && 
+          other.id !== member.id && 
           other.id > member.id && // Avoid duplicate edges
-          other.children && 
-          other.children.some(child => member.children!.includes(child))
+          (other.children || []).map(norm).some(c => memberChildren.includes(c))
         )
         
         spouses.forEach(spouse => {
