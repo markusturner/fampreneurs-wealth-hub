@@ -504,65 +504,67 @@ export default function Documents() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-6 sm:space-y-8">
 
         {/* Family Office Documents Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Family Office Documents</h1>
-            <p className="text-muted-foreground">Access important family documents, educational resources, and secure information</p>
-          </div>
+        <div className="text-center sm:text-left">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Family Office Documents</h1>
+          <p className="text-sm sm:text-base text-muted-foreground px-2 sm:px-0">Access important family documents, educational resources, and secure information</p>
         </div>
 
         {/* Family Business Education Modules */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
+        <section className="space-y-3 sm:space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
             <div>
-              <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                <GraduationCap className="h-5 w-5" />
+              <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2 flex items-center gap-2">
+                <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
                 Family Business Education
               </h2>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-xs sm:text-sm">
                 Comprehensive learning modules for family business management and wealth preservation
               </p>
             </div>
             
             <Button 
               variant="outline"
+              size="sm"
+              className="w-full sm:w-auto"
               onClick={() => setShowCoursesDialog(true)}
             >
               <Video className="h-4 w-4 mr-2" />
-              View All Courses
+              <span className="hidden sm:inline">View All Courses</span>
+              <span className="sm:hidden">All Courses</span>
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {businessCourses.filter(course => course.status === 'published').slice(0, 4).map((course, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedCourse(course)}>
-                <CardHeader className="pb-3">
+              <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer active:scale-[0.98]" onClick={() => setSelectedCourse(course)}>
+                <CardHeader className="pb-2 sm:pb-3">
                   <div className="flex items-center justify-between">
-                    <Building2 className="h-8 w-8 text-blue-600" />
-                    <Badge variant="secondary">Published</Badge>
+                    <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+                    <Badge variant="secondary" className="text-xs">Published</Badge>
                   </div>
-                  <CardTitle className="text-lg">{course.title}</CardTitle>
-                  <CardDescription>{course.description}</CardDescription>
+                  <CardTitle className="text-sm sm:text-lg leading-tight">{course.title}</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm line-clamp-2">{course.description}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>Instructor: {course.instructor}</span>
-                    <span>{course.duration}</span>
+                <CardContent className="pt-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 text-xs sm:text-sm text-muted-foreground">
+                    <span className="truncate">Instructor: {course.instructor}</span>
+                    <span className="font-medium">{course.duration}</span>
                   </div>
                 </CardContent>
               </Card>
             ))}
             {businessCourses.filter(course => course.status === 'published').length === 0 && (
-              <div className="col-span-full text-center py-8 text-muted-foreground">
-                <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No published courses available yet.</p>
+              <div className="col-span-full text-center py-6 sm:py-8 text-muted-foreground">
+                <Building2 className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+                <p className="text-sm sm:text-base">No published courses available yet.</p>
                 {isAdmin && (
                   <Button 
                     variant="outline" 
-                    className="mt-4"
+                    size="sm"
+                    className="mt-3 sm:mt-4"
                     onClick={() => setShowCreateCourseDialog(true)}
                   >
                     Create First Course
@@ -574,26 +576,24 @@ export default function Documents() {
         </section>
 
         {/* Heritage & Legacy Resources */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-semibold mb-2 flex items-center gap-2">
-                <Heart className="h-5 w-5" />
-                Heritage & Legacy Resources
-              </h2>
-              <p className="text-muted-foreground text-sm">
-                Preserve and explore your family's rich history and heritage
-              </p>
-            </div>
+        <section className="space-y-3 sm:space-y-4">
+          <div>
+            <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2 flex items-center gap-2">
+              <Heart className="h-4 w-4 sm:h-5 sm:w-5" />
+              Heritage & Legacy Resources
+            </h2>
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              Preserve and explore your family's rich history and heritage
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {heritageResources.map((resource) => {
               const Icon = resource.icon
               return (
                 <Card 
                   key={resource.title} 
-                  className="hover:shadow-md transition-shadow cursor-pointer"
+                  className="hover:shadow-md transition-shadow cursor-pointer active:scale-[0.98] min-h-[140px] sm:min-h-[160px]"
                   onClick={() => {
                     if (resource.title === "Legal Documents") {
                       // Show Family Documents tab with focus on Legal Documents
@@ -603,15 +603,15 @@ export default function Documents() {
                     }
                   }}
                 >
-                  <CardHeader className="pb-3">
-                    <Icon className={`h-8 w-8 ${resource.color} mx-auto`} />
-                    <CardTitle className="text-center text-base">{resource.title}</CardTitle>
-                    <CardDescription className={`text-center text-sm ${resource.title === 'Family Governance' ? 'truncate' : ''}`}>
+                  <CardHeader className="pb-2 sm:pb-3 text-center">
+                    <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${resource.color} mx-auto mb-2`} />
+                    <CardTitle className="text-sm sm:text-base leading-tight">{resource.title}</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm line-clamp-2">
                       {resource.description}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <Button variant="secondary" className="w-full justify-center">
+                    <Button variant="secondary" size="sm" className="w-full text-xs sm:text-sm">
                       {resource.category}
                     </Button>
                   </CardContent>
@@ -630,26 +630,26 @@ export default function Documents() {
 
         {/* Business Courses Dialog */}
         <Dialog open={showCoursesDialog} onOpenChange={setShowCoursesDialog}>
-          <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
+              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
                 Family Business Education Courses
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-xs sm:text-sm">
                 Comprehensive courses designed for family business success
               </DialogDescription>
             </DialogHeader>
             
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-3 sm:gap-4 py-3 sm:py-4">
               {businessCourses.map((course, index) => (
                 <Card key={index} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0 sm:mb-3">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-lg">{course.title}</h3>
-                          <Badge variant={course.status === 'published' ? 'default' : 'secondary'}>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-base sm:text-lg">{course.title}</h3>
+                          <Badge variant={course.status === 'published' ? 'default' : 'secondary'} className="w-fit text-xs">
                             {course.status === 'published' ? (
                               <>
                                 <FileCheck className="h-3 w-3 mr-1" />
@@ -663,22 +663,23 @@ export default function Documents() {
                             )}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-2">{course.description}</p>
-                        <div className="flex items-center gap-4 text-sm">
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-2">{course.description}</p>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm">
                           <span className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
+                            <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                             {course.instructor}
                           </span>
-                          <span>{course.duration}</span>
+                          <span className="font-medium">{course.duration}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 sm:flex-col sm:gap-1">
                         <Button 
                           size="sm" 
                           variant="outline"
+                          className="flex-1 sm:flex-none text-xs"
                           onClick={() => setSelectedCourse(course)}
                         >
-                          <Eye className="h-4 w-4 mr-1" />
+                          <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                           View
                         </Button>
                         {isAdmin && (
@@ -686,19 +687,22 @@ export default function Documents() {
                             <Button 
                               size="sm" 
                               variant="outline"
+                              className="flex-1 sm:flex-none text-xs"
                               onClick={() => handleEditCourse(index)}
                             >
-                              <Edit className="h-4 w-4 mr-1" />
-                              Edit
+                              <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                              <span className="sm:hidden">Edit</span>
+                              <span className="hidden sm:inline">Edit</span>
                             </Button>
                             <Button 
                               size="sm" 
                               variant="outline"
+                              className="flex-1 sm:flex-none text-xs text-destructive hover:text-destructive"
                               onClick={() => handleDeleteCourse(index)}
-                              className="text-destructive hover:text-destructive"
                             >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Delete
+                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                              <span className="sm:hidden">Delete</span>
+                              <span className="hidden sm:inline">Delete</span>
                             </Button>
                           </>
                         )}
@@ -709,16 +713,23 @@ export default function Documents() {
               ))}
             </div>
 
-            <div className="flex justify-between">
+            <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-0 pt-3 sm:pt-0">
               {isAdmin && (
                 <Button 
                   variant="outline" 
+                  size="sm"
+                  className="w-full sm:w-auto"
                   onClick={() => setShowCreateCourseDialog(true)}
                 >
                   Create New Course
                 </Button>
               )}
-              <Button variant="outline" onClick={() => setShowCoursesDialog(false)}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full sm:w-auto"
+                onClick={() => setShowCoursesDialog(false)}
+              >
                 Close
               </Button>
             </div>
@@ -728,21 +739,21 @@ export default function Documents() {
         {/* Course Detail Dialog */}
         {selectedCourse && (
           <Dialog open={!!selectedCourse} onOpenChange={() => setSelectedCourse(null)}>
-            <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>{selectedCourse.title}</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-base sm:text-lg leading-tight">{selectedCourse.title}</DialogTitle>
+                <DialogDescription className="text-xs sm:text-sm">
                   Instructor: {selectedCourse.instructor} | Duration: {selectedCourse.duration}
                 </DialogDescription>
               </DialogHeader>
               
-              <div className="space-y-6">
-                <p>{selectedCourse.description}</p>
+              <div className="space-y-4 sm:space-y-6">
+                <p className="text-sm sm:text-base">{selectedCourse.description}</p>
                 
                 {selectedCourse.videos && selectedCourse.videos.length > 0 && (
                   <div>
-                    <h4 className="font-semibold mb-3">Course Videos</h4>
-                    <div className="grid gap-4">
+                    <h4 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">Course Videos</h4>
+                    <div className="grid gap-3 sm:gap-4">
                       {selectedCourse.videos.map((videoUrl: string, index: number) => (
                         <div key={index} className="aspect-video bg-muted rounded-lg overflow-hidden">
                           <iframe
@@ -759,13 +770,13 @@ export default function Documents() {
                 
                 {selectedCourse.modules && selectedCourse.modules.length > 0 && (
                   <div>
-                    <h4 className="font-semibold mb-3">Course Modules</h4>
-                    <div className="grid gap-4">
+                    <h4 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">Course Modules</h4>
+                    <div className="grid gap-2 sm:gap-4">
                       {selectedCourse.modules.map((module: any, index: number) => (
                         <Card key={index}>
-                          <CardHeader>
-                            <CardTitle className="text-base">Module {index + 1}: {module.name}</CardTitle>
-                            <CardDescription>Duration: {module.duration}</CardDescription>
+                          <CardHeader className="pb-2 sm:pb-3">
+                            <CardTitle className="text-sm sm:text-base">Module {index + 1}: {module.name}</CardTitle>
+                            <CardDescription className="text-xs sm:text-sm">Duration: {module.duration}</CardDescription>
                           </CardHeader>
                         </Card>
                       ))}
@@ -777,324 +788,22 @@ export default function Documents() {
           </Dialog>
         )}
 
-        {/* Create Course Dialog */}
-        <Dialog open={showCreateCourseDialog} onOpenChange={setShowCreateCourseDialog}>
-          <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Create New Course</DialogTitle>
-              <DialogDescription>
-                Add a new family business education course
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="course-title">Course Title *</Label>
-                  <Input
-                    id="course-title"
-                    value={newCourse.title}
-                    onChange={(e) => setNewCourse(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="Enter course title"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="course-instructor">Instructor *</Label>
-                  <Input
-                    id="course-instructor"
-                    value={newCourse.instructor}
-                    onChange={(e) => setNewCourse(prev => ({ ...prev, instructor: e.target.value }))}
-                    placeholder="Enter instructor name"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="course-duration">Duration</Label>
-                <Input
-                  id="course-duration"
-                  value={newCourse.duration}
-                  onChange={(e) => setNewCourse(prev => ({ ...prev, duration: e.target.value }))}
-                  placeholder="e.g., 4 weeks"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="course-description">Description</Label>
-                <Input
-                  id="course-description"
-                  value={newCourse.description}
-                  onChange={(e) => setNewCourse(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Enter course description"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="course-status">Status</Label>
-                <Select value={newCourse.status} onValueChange={(value) => setNewCourse(prev => ({ ...prev, status: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">
-                      <div className="flex items-center gap-2">
-                        <Eye className="h-4 w-4" />
-                        Draft
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="published">
-                      <div className="flex items-center gap-2">
-                        <FileCheck className="h-4 w-4" />
-                        Published
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label>Video URLs</Label>
-                <div className="space-y-2">
-                  {videoUrls.map((url, index) => (
-                    <div key={index} className="flex gap-2">
-                      <div className="flex-1">
-                        <Input
-                          value={url}
-                          onChange={(e) => updateVideoUrl(index, e.target.value)}
-                          placeholder="https://youtu.be/..."
-                        />
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => removeVideoUrl(index)}
-                        disabled={videoUrls.length === 1}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={addVideoUrl}>
-                    Add Video
-                  </Button>
-                </div>
-              </div>
-              
-              <div>
-                <Label>Course Modules</Label>
-                <div className="space-y-3">
-                  {courseModules.map((module, index) => (
-                    <div key={index} className="p-3 border rounded-lg space-y-3">
-                      <div className="flex justify-between items-center">
-                        <Label className="text-sm font-medium">Module {index + 1}</Label>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => removeModule(index)}
-                          disabled={courseModules.length === 1}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          value={module.name}
-                          onChange={(e) => updateModule(index, 'name', e.target.value)}
-                          placeholder="Module name"
-                        />
-                        <Input
-                          value={module.duration}
-                          onChange={(e) => updateModule(index, 'duration', e.target.value)}
-                          placeholder="Duration (e.g., 45 minutes)"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={addModule}>
-                    Add Module
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button variant="outline" onClick={() => setShowCreateCourseDialog(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCreateCourse}>
-                  Create Course
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Course Dialog */}
-        <Dialog open={showEditCourseDialog} onOpenChange={setShowEditCourseDialog}>
-          <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Edit Course</DialogTitle>
-              <DialogDescription>
-                Update the family business education course
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="edit-course-title">Course Title *</Label>
-                  <Input
-                    id="edit-course-title"
-                    value={newCourse.title}
-                    onChange={(e) => setNewCourse(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="Enter course title"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-course-instructor">Instructor *</Label>
-                  <Input
-                    id="edit-course-instructor"
-                    value={newCourse.instructor}
-                    onChange={(e) => setNewCourse(prev => ({ ...prev, instructor: e.target.value }))}
-                    placeholder="Enter instructor name"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-course-duration">Duration</Label>
-                <Input
-                  id="edit-course-duration"
-                  value={newCourse.duration}
-                  onChange={(e) => setNewCourse(prev => ({ ...prev, duration: e.target.value }))}
-                  placeholder="e.g., 4 weeks"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-course-description">Description</Label>
-                <Input
-                  id="edit-course-description"
-                  value={newCourse.description}
-                  onChange={(e) => setNewCourse(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Enter course description"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-course-status">Status</Label>
-                <Select value={newCourse.status} onValueChange={(value) => setNewCourse(prev => ({ ...prev, status: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">
-                      <div className="flex items-center gap-2">
-                        <Eye className="h-4 w-4" />
-                        Draft
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="published">
-                      <div className="flex items-center gap-2">
-                        <FileCheck className="h-4 w-4" />
-                        Published
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label>Video URLs</Label>
-                <div className="space-y-2">
-                  {videoUrls.map((url, index) => (
-                    <div key={index} className="flex gap-2">
-                      <div className="flex-1">
-                        <Input
-                          value={url}
-                          onChange={(e) => updateVideoUrl(index, e.target.value)}
-                          placeholder="https://youtu.be/..."
-                        />
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => removeVideoUrl(index)}
-                        disabled={videoUrls.length === 1}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={addVideoUrl}>
-                    Add Video
-                  </Button>
-                </div>
-              </div>
-              
-              <div>
-                <Label>Course Modules</Label>
-                <div className="space-y-3">
-                  {courseModules.map((module, index) => (
-                    <div key={index} className="p-3 border rounded-lg space-y-3">
-                      <div className="flex justify-between items-center">
-                        <Label className="text-sm font-medium">Module {index + 1}</Label>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => removeModule(index)}
-                          disabled={courseModules.length === 1}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          value={module.name}
-                          onChange={(e) => updateModule(index, 'name', e.target.value)}
-                          placeholder="Module name"
-                        />
-                        <Input
-                          value={module.duration}
-                          onChange={(e) => updateModule(index, 'duration', e.target.value)}
-                          placeholder="Duration (e.g., 45 minutes)"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                  <Button variant="outline" size="sm" onClick={addModule}>
-                    Add Module
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button variant="outline" onClick={() => setShowEditCourseDialog(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleUpdateCourse}>
-                  Update Course
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
         {/* Family Tree Dialog */}
         <Dialog open={showFamilyTreeDialog} onOpenChange={setShowFamilyTreeDialog}>
-          <DialogContent className="sm:max-w-7xl max-h-[95vh] overflow-hidden">
+          <DialogContent className="w-[95vw] max-w-7xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <TreePine className="h-5 w-5" />
+              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <TreePine className="h-4 w-4 sm:h-5 sm:w-5" />
                 Interactive Family Tree
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-xs sm:text-sm">
                 Visualize your family connections and relationships
               </DialogDescription>
             </DialogHeader>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[80vh]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 h-[70vh] sm:h-[80vh]">
               {/* Left Panel - Input */}
-              <div className="space-y-4 overflow-y-auto pr-2">
+              <div className="space-y-3 sm:space-y-4 overflow-y-auto pr-1 sm:pr-2">
                 <FamilyTreeTextInput
                   onGenerate={(members) => {
                     setFamilyData(members)
@@ -1105,21 +814,21 @@ export default function Documents() {
               
               {/* Right Panel - Visual Diagram */}
               <div className="relative border rounded-lg bg-gradient-to-br from-blue-50 to-purple-50">
-                <div className="p-3 border-b bg-white/80 backdrop-blur-sm">
-                  <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <TreePine className="h-4 w-4" />
+                <div className="p-2 sm:p-3 border-b bg-white/80 backdrop-blur-sm">
+                  <h3 className="font-semibold text-xs sm:text-sm flex items-center gap-2">
+                    <TreePine className="h-3 w-3 sm:h-4 sm:w-4" />
                     Family Tree Visualization
                   </h3>
                 </div>
-                <div className="h-[calc(80vh-3rem)]">
+                <div className="h-[calc(70vh-2.5rem)] sm:h-[calc(80vh-3rem)]">
                   {familyData.length > 0 ? (
                     <DynamicFamilyTreeVisualization familyMembers={familyData} />
                   ) : (
                     <div className="h-full flex items-center justify-center text-muted-foreground">
-                      <div className="text-center">
-                        <TreePine className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                        <p className="text-sm font-medium mb-2">Interactive Family Tree</p>
-                        <p className="text-xs">Enter family information on the left to see your visual family tree</p>
+                      <div className="text-center px-4">
+                        <TreePine className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 opacity-30" />
+                        <p className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Interactive Family Tree</p>
+                        <p className="text-xs opacity-75">Enter family information on the left to see your visual family tree</p>
                       </div>
                     </div>
                   )}
@@ -1131,40 +840,40 @@ export default function Documents() {
 
         {/* Family Messages Dialog */}
         <Dialog open={showMessagesDialog} onOpenChange={setShowMessagesDialog}>
-          <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <MessageCircle className="h-5 w-5" />
+              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                 Family Messages
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-xs sm:text-sm">
                 Communicate securely with family members
               </DialogDescription>
             </DialogHeader>
             
-            <div className="flex-1 space-y-4 overflow-hidden">
-              <div className="flex-1 overflow-y-auto max-h-[400px] space-y-3 p-4 border rounded-lg bg-muted/20">
+            <div className="flex-1 space-y-3 sm:space-y-4 overflow-hidden">
+              <div className="flex-1 overflow-y-auto max-h-[50vh] sm:max-h-[400px] space-y-2 sm:space-y-3 p-3 sm:p-4 border rounded-lg bg-muted/20">
                 {messages.length === 0 ? (
-                  <div className="text-center text-muted-foreground py-8">
-                    <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No messages yet. Start the conversation!</p>
+                  <div className="text-center text-muted-foreground py-6 sm:py-8">
+                    <MessageCircle className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-xs sm:text-sm">No messages yet. Start the conversation!</p>
                   </div>
                 ) : (
                   messages.map((message) => {
                     const isOwnMessage = message.sender_id === user?.id
                     
                     return (
-                      <div key={message.id} className={`flex items-start gap-3 ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold text-white ${
+                      <div key={message.id} className={`flex items-start gap-2 sm:gap-3 ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
+                        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold text-white ${
                           isOwnMessage ? 'bg-primary' : 'bg-blue-500'
                         }`}>
                           {message.sender_name.charAt(0).toUpperCase()}
                         </div>
-                        <div className={`flex-1 max-w-[80%] ${isOwnMessage ? 'text-right' : ''}`}>
-                          <div className={`p-3 rounded-lg ${
+                        <div className={`flex-1 max-w-[85%] sm:max-w-[80%] ${isOwnMessage ? 'text-right' : ''}`}>
+                          <div className={`p-2 sm:p-3 rounded-lg ${
                             isOwnMessage ? 'bg-primary text-primary-foreground' : 'bg-background border'
                           }`}>
-                            <p className="text-sm">{message.content}</p>
+                            <p className="text-xs sm:text-sm">{message.content}</p>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">
                             {message.sender_name} • {new Date(message.created_at).toLocaleTimeString()}
@@ -1187,9 +896,14 @@ export default function Documents() {
                     }
                   }}
                   placeholder="Type your message..."
-                  className="flex-1"
+                  className="flex-1 text-sm"
                 />
-                <Button onClick={sendMessage} disabled={!newMessage.trim()}>
+                <Button 
+                  onClick={sendMessage} 
+                  disabled={!newMessage.trim()}
+                  size="sm"
+                  className="px-3 sm:px-4"
+                >
                   Send
                 </Button>
               </div>
@@ -1199,17 +913,17 @@ export default function Documents() {
 
         {/* Family Documents Dialog */}
         <Dialog open={showFamilyDocuments} onOpenChange={setShowFamilyDocuments}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-red-500" />
+              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
                 Legal Documents & Family Office Files
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-xs sm:text-sm">
                 Upload, manage, and access your family's important legal documents
               </DialogDescription>
             </DialogHeader>
-            <div className="mt-4">
+            <div className="mt-3 sm:mt-4">
               <FamilyDocumentsTab viewOnly={true} />
             </div>
           </DialogContent>
