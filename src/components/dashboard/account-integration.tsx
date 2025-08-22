@@ -671,34 +671,34 @@ export function AccountIntegration() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Link className="h-5 w-5" />
+          <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+            <Link className="h-4 w-4 sm:h-5 sm:w-5" />
             Account Integration
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Connect and manage all your financial accounts
           </p>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <Label className="flex items-center gap-2">
             <input 
               type="checkbox" 
               checked={realTimeUpdates} 
               onChange={(e) => setRealTimeUpdates(e.target.checked)}
             />
-            <span className="text-sm">Real-time updates</span>
+            <span className="text-xs sm:text-sm">Real-time updates</span>
           </Label>
 
           <div className="flex items-center gap-2">
             <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
               <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
+                <Button className="flex items-center gap-2 w-full sm:w-auto">
                   <Plus className="h-4 w-4" />
-                  Add Account
+                  <span className="text-sm">Add Account</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-2xl">
@@ -886,43 +886,52 @@ export function AccountIntegration() {
         ) : (
           accounts.map((account) => (
             <Card key={account.id} className={selectedAccounts.has(account.id) ? 'ring-2 ring-primary' : ''}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  {/* Left section - Account info */}
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
                     <Checkbox 
                       checked={selectedAccounts.has(account.id)}
                       onCheckedChange={(checked) => handleSelectAccount(account.id, checked as boolean)}
-                      className={`border-2 border-white ${selectedAccounts.has(account.id) ? 'data-[state=checked]:bg-[#ffb500] data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#290a52]' : ''}`}
+                      className={`border-2 border-white flex-shrink-0 ${selectedAccounts.has(account.id) ? 'data-[state=checked]:bg-[#ffb500] data-[state=checked]:border-[#ffb500] data-[state=checked]:text-[#290a52]' : ''}`}
                     />
                     {getAccountIcon(account.type)}
-                    <div>
-                      <h3 className="font-semibold">{account.name}</h3>
-                      <p className="text-sm text-muted-foreground capitalize">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-sm sm:text-base truncate">{account.name}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground capitalize truncate">
                         {account.provider} • {account.type}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="font-semibold text-lg">
-                        {formatCurrency(account.balance)}
+                  {/* Right section - Balance, status, and actions */}
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                    {/* Balance and status */}
+                    <div className="flex justify-between items-center sm:flex-col sm:items-end sm:text-right">
+                      <div>
+                        <div className="font-semibold text-base sm:text-lg">
+                          {formatCurrency(account.balance)}
+                        </div>
+                        <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                          Last sync: {new Date(account.lastSync).toLocaleString()}
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        Last sync: {new Date(account.lastSync).toLocaleString()}
+                      <div className="sm:mt-2">
+                        {getStatusBadge(account.status)}
                       </div>
                     </div>
 
-                    {getStatusBadge(account.status)}
-
-                    <div className="flex gap-2">
+                    {/* Action buttons */}
+                    <div className="flex gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleSync(account.id)}
                         disabled={account.status === 'syncing'}
+                        className="flex-1 sm:flex-none"
+                        title="Sync account"
                       >
-                        <RefreshCw className={`h-4 w-4 ${account.status === 'syncing' ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${account.status === 'syncing' ? 'animate-spin' : ''}`} />
                       </Button>
 
                       {account.provider === 'plaid' && (
@@ -931,8 +940,9 @@ export function AccountIntegration() {
                           size="sm"
                           onClick={() => enableTransactions(account.id)}
                           title="Enable Plaid Transactions for this account"
+                          className="flex-1 sm:flex-none"
                         >
-                          <Settings className="h-4 w-4" />
+                          <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
                       )}
 
@@ -943,14 +953,21 @@ export function AccountIntegration() {
                           setSelectedAccount(account)
                           setShowViewDialog(true)
                         }}
+                        title="View details"
+                        className="flex-1 sm:flex-none"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
 
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Trash2 className="h-4 w-4" />
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            title="Delete account"
+                            className="flex-1 sm:flex-none"
+                          >
+                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
