@@ -315,38 +315,36 @@ export default function Community() {
             </TabsList>
 
             {/* Secondary Mobile Tabs - Horizontal Scroll */}
-            <div className="overflow-x-auto scrollbar-hide">
-              <div className="flex gap-3 pb-2 min-w-max px-1">
-                <TabsTrigger 
-                  value="reports" 
-                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary"
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  <span>Reports</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="documents" 
-                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary"
-                >
-                  <FileText className="h-4 w-4" />
-                  <span>Documents</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="messages" 
-                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Messages</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="services" 
-                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary"
-                >
-                  <Briefcase className="h-4 w-4" />
-                  <span>Services</span>
-                </TabsTrigger>
-              </div>
-            </div>
+            <TabsList className="flex gap-3 pb-2 min-w-max px-1 bg-transparent p-0 h-auto overflow-x-auto">
+              <TabsTrigger 
+                value="reports" 
+                className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary"
+              >
+                <BarChart3 className="h-4 w-4" />
+                <span>Reports</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="documents" 
+                className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary"
+              >
+                <FileText className="h-4 w-4" />
+                <span>Documents</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="messages" 
+                className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary"
+              >
+                <MessageSquare className="h-4 w-4" />
+                <span>Messages</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="services" 
+                className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary"
+              >
+                <Briefcase className="h-4 w-4" />
+                <span>Services</span>
+              </TabsTrigger>
+            </TabsList>
           </div>
 
 
