@@ -36,7 +36,9 @@ import {
   Heart,
   Scroll,
   Landmark,
-  Crown
+  Crown,
+  ArrowUpRight,
+  MessageSquare
 } from 'lucide-react'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
 import { AssetAllocation } from '@/components/dashboard/asset-allocation'
@@ -261,42 +263,76 @@ export default function FamilyOffice() {
       <NavHeader />
       
       
-      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">Digital Family Office</h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Complete financial ecosystem management and wealth tracking
-              </p>
-            </div>
-          </div>
+      <div className="container mx-auto px-4 py-6 space-y-6 max-w-full touch-manipulation">
+        <div className="animate-fade-in">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Digital Family Office</h1>
+          <p className="text-lg text-muted-foreground">
+            Complete financial ecosystem management and wealth tracking
+          </p>
         </div>
 
-        <Tabs defaultValue="accounts" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-7 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
-            <TabsTrigger value="accounts" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Accounts
-            </TabsTrigger>
-            <TabsTrigger value="transactions" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Transactions
-            </TabsTrigger>
-            <TabsTrigger value="budget" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Budget
-            </TabsTrigger>
-            <TabsTrigger value="reports" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Reports
-            </TabsTrigger>
-            <TabsTrigger value="documents" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Documents
-            </TabsTrigger>
-            <TabsTrigger value="messages" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Messages
-            </TabsTrigger>
-            <TabsTrigger value="services" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Services
-            </TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="accounts" className="space-y-6 animate-fade-in">
+          {/* Mobile-Optimized Tab Navigation */}
+          <div className="w-full">
+            {/* Primary Mobile Tabs */}
+            <TabsList className="grid w-full grid-cols-3 gap-2 p-2 h-auto bg-muted rounded-xl mb-4">
+              <TabsTrigger 
+                value="accounts" 
+                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation"
+              >
+                <CreditCard className="h-5 w-5" />
+                <span>Accounts</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="transactions" 
+                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation"
+              >
+                <ArrowUpRight className="h-5 w-5" />
+                <span>Transactions</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="budget" 
+                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation"
+              >
+                <PieChart className="h-5 w-5" />
+                <span>Budget</span>
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Secondary Mobile Tabs - Horizontal Scroll */}
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex gap-3 pb-2 min-w-max px-1">
+                <TabsTrigger 
+                  value="reports" 
+                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary touch-manipulation"
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  <span>Reports</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="documents" 
+                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary touch-manipulation"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span>Documents</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="messages" 
+                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary touch-manipulation"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Messages</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="services" 
+                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary touch-manipulation"
+                >
+                  <Briefcase className="h-4 w-4" />
+                  <span>Services</span>
+                </TabsTrigger>
+              </div>
+            </div>
+          </div>
 
           <TabsContent value="accounts" className="space-y-6">
             <div className="lg:hidden">
