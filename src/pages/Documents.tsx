@@ -1092,25 +1092,38 @@ export default function Documents() {
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4 h-[70vh] overflow-hidden">
-              <FamilyTreeTextInput
-                onGenerate={(members) => {
-                  setFamilyData(members)
-                  toast.success('Family tree generated successfully!')
-                }}
-              />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[70vh]">
+              {/* Left Panel - Input */}
+              <div className="space-y-4 overflow-y-auto">
+                <FamilyTreeTextInput
+                  onGenerate={(members) => {
+                    setFamilyData(members)
+                    toast.success('Family tree generated successfully!')
+                  }}
+                />
+              </div>
               
-              <div className="h-[400px] border rounded-lg overflow-hidden">
-                {familyData.length > 0 ? (
-                  <DynamicFamilyTreeVisualization familyMembers={familyData} />
-                ) : (
-                  <div className="h-full flex items-center justify-center text-muted-foreground">
-                    <div className="text-center">
-                      <TreePine className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Enter family information above to generate your family tree</p>
+              {/* Right Panel - Visual Diagram */}
+              <div className="border rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50">
+                <div className="p-3 border-b bg-white/80 backdrop-blur-sm">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <TreePine className="h-4 w-4" />
+                    Family Tree Visualization
+                  </h3>
+                </div>
+                <div className="h-[calc(70vh-3rem)]">
+                  {familyData.length > 0 ? (
+                    <DynamicFamilyTreeVisualization familyMembers={familyData} />
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-muted-foreground">
+                      <div className="text-center">
+                        <TreePine className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                        <p className="text-sm font-medium mb-2">Interactive Family Tree</p>
+                        <p className="text-xs">Enter family information on the left to see your visual family tree</p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </DialogContent>
