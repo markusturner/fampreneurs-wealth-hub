@@ -332,30 +332,54 @@ export default function FamilyGovernance() {
                 How Our Governance System Works
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
+            <CardContent className="p-4 sm:p-6">
+              <div className="space-y-4 sm:space-y-6 max-w-none">
+                <p className="text-sm sm:text-base text-muted-foreground text-center leading-relaxed">
                   Our family governance structure operates on a system of checks and balances, ensuring that no single branch has absolute power while maintaining efficient decision-making processes.
                 </p>
                 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-semibold mb-2">Decision Flow</h4>
-                    <ol className="text-sm text-muted-foreground space-y-1">
-                      <li>1. Family Council proposes initiatives</li>
-                      <li>2. Council of Elders provides guidance</li>
-                      <li>3. Family Assembly votes on major decisions</li>
-                      <li>4. Implementation by appropriate branch</li>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="text-center lg:text-left">
+                    <h4 className="font-semibold mb-3 text-base">Decision Flow</h4>
+                    <ol className="text-sm sm:text-base text-muted-foreground space-y-2 text-left max-w-sm mx-auto lg:mx-0">
+                      <li className="flex items-start gap-2">
+                        <span className="font-medium text-primary">1.</span>
+                        <span>Family Council proposes initiatives</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="font-medium text-primary">2.</span>
+                        <span>Council of Elders provides guidance</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="font-medium text-primary">3.</span>
+                        <span>Family Assembly votes on major decisions</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="font-medium text-primary">4.</span>
+                        <span>Implementation by appropriate branch</span>
+                      </li>
                     </ol>
                   </div>
                   
-                  <div>
-                    <h4 className="font-semibold mb-2">Conflict Resolution</h4>
-                    <ol className="text-sm text-muted-foreground space-y-1">
-                      <li>1. Council of Elders mediates disputes</li>
-                      <li>2. Family Assembly final arbiter if needed</li>
-                      <li>3. External mediation for complex issues</li>
-                      <li>4. Family Constitution as ultimate guide</li>
+                  <div className="text-center lg:text-left">
+                    <h4 className="font-semibold mb-3 text-base">Conflict Resolution</h4>
+                    <ol className="text-sm sm:text-base text-muted-foreground space-y-2 text-left max-w-sm mx-auto lg:mx-0">
+                      <li className="flex items-start gap-2">
+                        <span className="font-medium text-primary">1.</span>
+                        <span>Council of Elders mediates disputes</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="font-medium text-primary">2.</span>
+                        <span>Family Assembly final arbiter if needed</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="font-medium text-primary">3.</span>
+                        <span>External mediation for complex issues</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <span className="font-medium text-primary">4.</span>
+                        <span>Family Constitution as ultimate guide</span>
+                      </li>
                     </ol>
                   </div>
                 </div>
