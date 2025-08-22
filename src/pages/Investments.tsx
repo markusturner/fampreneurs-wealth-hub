@@ -281,49 +281,42 @@ export default function FamilyOffice() {
                   value="accounts" 
                   className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
                 >
-                  <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>Accounts</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="transactions" 
                   className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
                 >
-                  <ArrowUpRight className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>Transactions</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="budget" 
                   className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
                 >
-                  <PieChart className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>Budget</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="reports" 
                   className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
                 >
-                  <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>Reports</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="documents" 
                   className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
                 >
-                  <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>Documents</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="messages" 
                   className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
                 >
-                  <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>Messages</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="services" 
                   className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
                 >
-                  <Briefcase className="h-4 w-4 sm:h-5 sm:w-5" />
                   <span>Services</span>
                 </TabsTrigger>
               </TabsList>
