@@ -66,13 +66,34 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
 
       for (const rawLine of lines) {
         const depth = (rawLine.match(/[│└├]/g) || []).length
-        const line = rawLine.replace(/[├─└│\s]/g, '').trim()
+        const line = rawLine.replace(/[├─└│]/g, '').trim()
         
-        // Skip empty lines or metadata lines
-        if (!line || /^(children:|parents:|married)/i.test(line)) continue
+        // Skip empty lines but process all lines that contain names
+        if (!line) continue
 
-        // Extract all potential names from the line
-        const nameMatches = line.match(/([A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)*)/g)
+        // Extract all potential names from the line, including from relationship descriptions
+        let nameMatches = line.match(/([A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)*)/g)
+        
+        // Special handling for relationship lines
+        if (/married to/i.test(line)) {
+          const marriageMatch = line.match(/married to\s+([A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)*)/i)
+          if (marriageMatch) {
+            nameMatches = [marriageMatch[1]] as RegExpMatchArray
+          }
+        } else if (/children:/i.test(line)) {
+          const childrenMatch = line.match(/children:\s*(.+)$/i)
+          if (childrenMatch) {
+            const childNames = childrenMatch[1].split(/,\s*/).map(n => n.trim()).filter(n => /^[A-Z]/.test(n))
+            nameMatches = childNames.length > 0 ? childNames as RegExpMatchArray : null
+          }
+        } else if (/parents:/i.test(line)) {
+          const parentsMatch = line.match(/parents:\s*(.+)$/i)
+          if (parentsMatch) {
+            const parentNames = parentsMatch[1].split(/,\s*/).map(n => n.trim()).filter(n => /^[A-Z]/.test(n))
+            nameMatches = parentNames.length > 0 ? parentNames as RegExpMatchArray : null
+          }
+        }
+        
         if (!nameMatches) continue
 
         // Process each name found in the line
@@ -82,13 +103,22 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
 
           const childIdx = getOrCreateMember(name, depth)
 
+          // Handle special relationship connections
+          if (/married to/i.test(line) && parentStack.length > 0) {
+            // Connect spouse to last person in stack (same generation)
+            const spouse = parentStack[parentStack.length - 1]
+            const spouseIdx = seen.get(spouse.name)!
+            // Spouses are same generation, don't create parent-child relationship
+            return
+          }
+
           // Maintain parent stack for current depth
           while (parentStack.length > 0 && parentStack[parentStack.length - 1].depth >= depth) {
             parentStack.pop()
           }
 
-          // Connect to parent if exists
-          if (parentStack.length > 0) {
+          // Connect to parent if exists and not a spouse line
+          if (parentStack.length > 0 && !/married to/i.test(line)) {
             const parent = parentStack[parentStack.length - 1]
             const parentIdx = seen.get(parent.name)!
             
@@ -103,8 +133,10 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
             }
           }
 
-          // Add to parent stack for next iteration
-          parentStack.push({ name, depth })
+          // Add to parent stack for next iteration (except spouses)
+          if (!/married to/i.test(line)) {
+            parentStack.push({ name, depth })
+          }
         })
       }
 
