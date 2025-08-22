@@ -158,32 +158,39 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
       generationGroups[member.generation].push(member)
     })
 
-    // Create nodes positioned by generation
-    Object.keys(generationGroups).forEach(gen => {
-      const generation = parseInt(gen)
+    // Create nodes positioned by generation with improved layout
+    const generations = Object.keys(generationGroups).map(Number).sort((a, b) => a - b)
+    const maxGeneration = Math.max(...generations)
+    
+    generations.forEach(generation => {
       const members = generationGroups[generation]
-      
       const sortedMembers = members.slice().sort((a, b) => (orderMap[a.id] ?? 0) - (orderMap[b.id] ?? 0))
+      
       sortedMembers.forEach((member, index) => {
-        const xPosition = (index - (sortedMembers.length - 1) / 2) * 200
-        const yPosition = generation * 150
+        // Better horizontal spacing based on number of members in generation
+        const totalMembers = sortedMembers.length
+        const spacing = Math.max(250, 180 + (totalMembers * 20)) // Adaptive spacing
+        const startX = -(totalMembers - 1) * spacing / 2
+        const xPosition = startX + (index * spacing)
+        
+        // Improved vertical positioning
+        const yPosition = generation * 180 // More spacing between generations
 
-        // Determine relationship label based on generation and family structure
-        let relationshipLabel = ''
-        if (generation === 0) {
-          relationshipLabel = member.children && member.children.length > 0 ? 'Grandparent' : 'Elder'
-        } else if (generation === 1) {
-          if (member.parents && member.parents.length > 0 && member.children && member.children.length > 0) {
-            relationshipLabel = 'Parent'
-          } else if (member.children && member.children.length > 0) {
-            relationshipLabel = 'Parent'
-          } else if (member.parents && member.parents.length > 0) {
-            relationshipLabel = 'Child'
-          } else {
-            relationshipLabel = 'Family Member'
-          }
-        } else {
-          relationshipLabel = member.parents && member.parents.length > 0 ? 'Child/Grandchild' : 'Descendant'
+        // Enhanced relationship detection
+        let relationshipLabel = 'Family Member'
+        const hasParents = member.parents && member.parents.length > 0
+        const hasChildren = member.children && member.children.length > 0
+        
+        if (generation === 0 || (!hasParents && hasChildren)) {
+          relationshipLabel = hasChildren ? 'Ancestor/Elder' : 'Elder'
+        } else if (generation === maxGeneration || (hasParents && !hasChildren)) {
+          relationshipLabel = 'Descendant'
+        } else if (hasParents && hasChildren) {
+          relationshipLabel = 'Parent/Child'
+        } else if (hasChildren) {
+          relationshipLabel = 'Parent'
+        } else if (hasParents) {
+          relationshipLabel = 'Child'
         }
 
         nodes.push({
@@ -194,8 +201,8 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
             name: member.name,
             relationshipLabel,
             generation,
-            hasChildren: member.children && member.children.length > 0,
-            hasParents: member.parents && member.parents.length > 0
+            hasChildren: hasChildren,
+            hasParents: hasParents
           }
         })
       })

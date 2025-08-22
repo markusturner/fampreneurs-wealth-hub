@@ -45,10 +45,10 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
     // Check if text contains ASCII tree structure characters
     const hasTreeStructure = text.includes('├') || text.includes('└') || text.includes('│')
     
-    // Priority 1: ASCII tree parser for structured hierarchical data
+    // Priority 1: Enhanced ASCII tree parser for structured hierarchical data
     if (hasTreeStructure) {
       const seen = new Map<string, number>()
-      const parentAtDepth: Record<number, string> = {}
+      const parentStack: Array<{ name: string, depth: number }> = []
 
       const getOrCreateMember = (name: string, depth: number) => {
         if (seen.has(name)) return seen.get(name) as number
@@ -66,33 +66,46 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
 
       for (const rawLine of lines) {
         const depth = (rawLine.match(/[│└├]/g) || []).length
-        const line = rawLine.replace(/[├─└│]/g, '').trim()
+        const line = rawLine.replace(/[├─└│\s]/g, '').trim()
+        
+        // Skip empty lines or metadata lines
         if (!line || /^(children:|parents:|married)/i.test(line)) continue
 
-        const nameMatch = line.match(/[A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)*/)
-        if (!nameMatch) continue
-        const name = sanitizeName(nameMatch[0])
-        if (!name || name.length < 2) continue
+        // Extract all potential names from the line
+        const nameMatches = line.match(/([A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)*)/g)
+        if (!nameMatches) continue
 
-        const childIdx = getOrCreateMember(name, depth)
+        // Process each name found in the line
+        nameMatches.forEach(rawName => {
+          const name = sanitizeName(rawName)
+          if (!name || name.length < 2) return
 
-        if (depth > 0 && parentAtDepth[depth - 1]) {
-          const parentName = sanitizeName(parentAtDepth[depth - 1])
-          const parentIdx = getOrCreateMember(parentName, depth - 1)
+          const childIdx = getOrCreateMember(name, depth)
 
-          const child = members[childIdx]
-          const parent = members[parentIdx]
+          // Maintain parent stack for current depth
+          while (parentStack.length > 0 && parentStack[parentStack.length - 1].depth >= depth) {
+            parentStack.pop()
+          }
 
-          if (!child.parents!.includes(parentName)) child.parents!.push(parentName)
-          if (!parent.children!.includes(name)) parent.children!.push(name)
-        }
+          // Connect to parent if exists
+          if (parentStack.length > 0) {
+            const parent = parentStack[parentStack.length - 1]
+            const parentIdx = seen.get(parent.name)!
+            
+            const child = members[childIdx]
+            const parentMember = members[parentIdx]
 
-        parentAtDepth[depth] = name
-        // Clear deeper parents when we go up levels
-        Object.keys(parentAtDepth)
-          .map(Number)
-          .filter(d => d > depth)
-          .forEach(d => delete parentAtDepth[d])
+            if (!child.parents!.includes(parent.name)) {
+              child.parents!.push(parent.name)
+            }
+            if (!parentMember.children!.includes(name)) {
+              parentMember.children!.push(name)
+            }
+          }
+
+          // Add to parent stack for next iteration
+          parentStack.push({ name, depth })
+        })
       }
 
       // Clean up empty arrays
@@ -108,138 +121,124 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
       return members
     }
 
-    // Priority 2: Natural language parsing for unstructured text
-    const relationships: { [key: string]: { parents: string[], children: string[] } } = {}
+    // Priority 2: Enhanced natural language parsing
+    const relationships: { [key: string]: { parents: string[], children: string[], depth?: number } } = {}
 
-    // Enhanced parsing for natural language
-    lines.forEach(line => {
+    // First pass: Extract all names and basic relationships
+    lines.forEach((line, lineIndex) => {
       const cleanLine = line.replace(/[├─└│]/g, '').trim()
       
-      // Handle different relationship patterns
+      // Extract all names from the line
+      const allNames = Array.from(cleanLine.matchAll(/[A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)*/g))
+        .map(match => sanitizeName(match[0]))
+        .filter(name => name && name.length > 1)
+
+      // Initialize relationships for all names
+      allNames.forEach(name => {
+        if (!relationships[name]) {
+          relationships[name] = { parents: [], children: [], depth: lineIndex }
+        }
+      })
+      
+      // Handle marriage relationships
       if (cleanLine.includes('married to') || cleanLine.includes('married')) {
         const marriageMatch = cleanLine.match(/(.+?)\s+(?:married to|married)\s+(.+?)(?:\.|$|,)/i)
         if (marriageMatch) {
           const [, person1, person2] = marriageMatch
           const p1 = sanitizeName(person1.trim().replace(/^(my |the |his |her )/i, ''))
           const p2 = sanitizeName(person2.trim().replace(/^(my |the |his |her )/i, ''))
-          if (!relationships[p1]) relationships[p1] = { parents: [], children: [] }
-          if (!relationships[p2]) relationships[p2] = { parents: [], children: [] }
+          if (p1 && p2) {
+            if (!relationships[p1]) relationships[p1] = { parents: [], children: [], depth: lineIndex }
+            if (!relationships[p2]) relationships[p2] = { parents: [], children: [], depth: lineIndex }
+          }
         }
       }
       
-      // Handle children patterns
+      // Handle children relationships
       const childrenPatterns = [
-        /(?:had|have)\s+(?:children|kids):\s*(.+?)(?:\.|$)/i,
-        /(?:children|kids):\s*(.+?)(?:\.|$)/i,
-        /(?:had|have)\s+(?:\d+\s+)?(?:children|kids):\s*(.+?)(?:\.|$)/i
+        /(.+?)\s+(?:had|have|has)\s+(?:\d+\s+)?(?:children|kids|child):\s*(.+?)(?:\.|$)/i,
+        /(?:children|kids|child)(?:\s+of\s+(.+?))?\s*:\s*(.+?)(?:\.|$)/i
       ]
       
       childrenPatterns.forEach(pattern => {
-        const childrenMatch = cleanLine.match(pattern)
-        if (childrenMatch) {
-          const childrenStr = childrenMatch[1]
-          const children = childrenStr
-            .split(/,|\sand\s|;|•/)
-            .map(c => sanitizeName(c.replace(/^(my |the |his |her )/i, '')))
-            .filter(c => c.length > 0)
+        const match = cleanLine.match(pattern)
+        if (match) {
+          const parentName = match[1] ? sanitizeName(match[1].replace(/^(my |the |his |her )/i, '')) : null
+          const childrenStr = match[2] || match[1]
           
-          // Try to find the parent in the same line
-          const parentMatch = cleanLine.match(/(.+?)\s+(?:had|have)/i)
-          if (parentMatch) {
-            const parent = sanitizeName(parentMatch[1].replace(/^(my |the |his |her )/i, ''))
-            if (!relationships[parent]) relationships[parent] = { parents: [], children: [] }
-            relationships[parent].children = [...(relationships[parent].children || []), ...children]
+          const children = childrenStr
+            .split(/,|\sand\s|;|•|\n/)
+            .map(c => sanitizeName(c.replace(/^(my |the |his |her )/i, '')))
+            .filter(c => c && c.length > 1)
+          
+          if (parentName && children.length > 0) {
+            if (!relationships[parentName]) relationships[parentName] = { parents: [], children: [], depth: lineIndex }
+            relationships[parentName].children = [...new Set([...relationships[parentName].children, ...children])]
             
             children.forEach(child => {
-              if (!relationships[child]) relationships[child] = { parents: [], children: [] }
-              if (!relationships[child].parents.includes(parent)) {
-                relationships[child].parents.push(parent)
+              if (!relationships[child]) relationships[child] = { parents: [], children: [], depth: lineIndex + 1 }
+              if (!relationships[child].parents.includes(parentName)) {
+                relationships[child].parents.push(parentName)
               }
             })
           }
         }
       })
       
-      // Handle explicit parent statements
+      // Handle parent relationships
       const parentPatterns = [
         /(.+?)\s+(?:parents are|parents:)\s*(.+?)(?:\.|$)/i,
-        /(?:parents of|parents for)\s+(.+?)\s+are\s+(.+?)(?:\.|$)/i
+        /(?:parents of|parents for)\s+(.+?)\s+(?:are|is)\s+(.+?)(?:\.|$)/i
       ]
       
       parentPatterns.forEach(pattern => {
-        const parentMatch = cleanLine.match(pattern)
-        if (parentMatch) {
-          const [, person, parentsStr] = parentMatch
+        const match = cleanLine.match(pattern)
+        if (match) {
+          const [, person, parentsStr] = match
           const p = sanitizeName(person.trim().replace(/^(my |the |his |her )/i, ''))
           const parents = parentsStr
             .split(/,|\sand\s|;|•/)
-            .map(p => sanitizeName(p.replace(/^(my |the |his |her )/i, '')))
+            .map(parent => sanitizeName(parent.replace(/^(my |the |his |her )/i, '')))
             .filter(Boolean)
           
-          if (!relationships[p]) relationships[p] = { parents: [], children: [] }
-          relationships[p].parents = [...(relationships[p].parents || []), ...parents]
-          
-          parents.forEach(parent => {
-            if (!relationships[parent]) relationships[parent] = { parents: [], children: [] }
-            if (!relationships[parent].children.includes(p)) {
-              relationships[parent].children.push(p)
-            }
-          })
-        }
-      })
-      
-      // Extract names from natural sentences
-      const namePatterns = [
-        /(?:my\s+)?(?:grandfather|grandmother|father|mother|dad|mom|son|daughter|brother|sister|uncle|aunt)\s+(\w+(?:\s+\w+)?)/gi,
-        /(\w+(?:\s+\w+)?)\s+(?:is|was)\s+(?:my|the)/gi,
-        /(?:called|named)\s+(\w+(?:\s+\w+)?)/gi
-      ]
-      
-      namePatterns.forEach(pattern => {
-        let match
-        while ((match = pattern.exec(cleanLine)) !== null) {
-          const raw = match[1].trim()
-          const name = sanitizeName(raw)
-          if (name && name.length > 1 && !relationships[name]) {
-            relationships[name] = { parents: [], children: [] }
+          if (p && parents.length > 0) {
+            if (!relationships[p]) relationships[p] = { parents: [], children: [], depth: lineIndex }
+            relationships[p].parents = [...new Set([...relationships[p].parents, ...parents])]
+            
+            parents.forEach(parent => {
+              if (!relationships[parent]) relationships[parent] = { parents: [], children: [], depth: lineIndex - 1 }
+              if (!relationships[parent].children.includes(p)) {
+                relationships[parent].children.push(p)
+              }
+            })
           }
         }
       })
-    })
-
-    // Ensure we include standalone names not captured by patterns
-    const allNameMatches = Array.from(text.matchAll(/[A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)*/g))
-      .map(m => sanitizeName(m[0]))
-      .filter(n => n && n.length > 1)
-
-    allNameMatches.forEach(n => {
-      if (!relationships[n]) relationships[n] = { parents: [], children: [] }
     })
 
     // Convert to FamilyMember objects with better generation calculation
     Object.keys(relationships).forEach((name, index) => {
       const rel = relationships[name]
       
-      // Calculate generation based on relationships
-      let generation = 1 // Default middle generation
+      // Calculate generation based on relationships and line depth
+      let generation = rel.depth || 1
       
-      // If has parents but no children = younger generation
+      // Adjust generation based on family relationships
       if (rel.parents.length > 0 && rel.children.length === 0) {
-        generation = 2
-      }
-      // If has children but no parents = older generation  
-      else if (rel.children.length > 0 && rel.parents.length === 0) {
-        generation = 0
-      }
-      // If has both = middle generation
-      else if (rel.parents.length > 0 && rel.children.length > 0) {
+        // Has parents but no children = younger generation
+        generation = Math.max(generation, 2)
+      } else if (rel.children.length > 0 && rel.parents.length === 0) {
+        // Has children but no parents = older generation  
+        generation = Math.min(generation, 0)
+      } else if (rel.parents.length > 0 && rel.children.length > 0) {
+        // Has both = middle generation
         generation = 1
       }
 
       members.push({
         id: `person-${index}`,
         name,
-        generation,
+        generation: Math.max(0, Math.min(3, generation)), // Cap between 0-3
         parents: rel.parents.length > 0 ? rel.parents : undefined,
         children: rel.children.length > 0 ? rel.children : undefined
       })
