@@ -274,53 +274,51 @@ export default function FamilyOffice() {
         <Tabs defaultValue="accounts" className="space-y-6 animate-fade-in">
           {/* Mobile-Optimized Tab Navigation */}
           <div className="w-full">
-            {/* All Tabs in One Row */}
-            <div className="overflow-x-auto scrollbar-hide">
-              <TabsList className="flex gap-2 p-2 h-auto bg-muted rounded-xl min-w-max">
-                <TabsTrigger 
-                  value="accounts" 
-                  className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
-                >
-                  <span>Accounts</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="transactions" 
-                  className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
-                >
-                  <span>Transactions</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="budget" 
-                  className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
-                >
-                  <span>Budget</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="reports" 
-                  className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
-                >
-                  <span>Reports</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="documents" 
-                  className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
-                >
-                  <span>Documents</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="messages" 
-                  className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
-                >
-                  <span>Messages</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="services" 
-                  className="flex flex-col items-center gap-1.5 py-3 px-3 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation whitespace-nowrap sm:gap-2 sm:py-4 sm:text-sm"
-                >
-                  <span>Services</span>
-                </TabsTrigger>
-              </TabsList>
-            </div>
+            {/* All Tabs in Grid Layout */}
+            <TabsList className="grid grid-cols-4 gap-1 p-2 h-auto bg-muted rounded-xl lg:grid-cols-7">
+              <TabsTrigger 
+                value="accounts" 
+                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm"
+              >
+                <span>Accounts</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="transactions" 
+                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm"
+              >
+                <span>Transactions</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="budget" 
+                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm"
+              >
+                <span>Budget</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="reports" 
+                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm"
+              >
+                <span>Reports</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="documents" 
+                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm lg:col-start-5"
+              >
+                <span>Documents</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="messages" 
+                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm"
+              >
+                <span>Messages</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="services" 
+                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm"
+              >
+                <span>Services</span>
+              </TabsTrigger>
+            </TabsList>
           </div>
 
           <TabsContent value="accounts" className="space-y-6">
