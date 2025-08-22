@@ -470,52 +470,54 @@ export default function Members() {
   )
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       <NavHeader />
       
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Members</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
-              Manage your family and professional team members
-            </p>
-          </div>
+        <div className="flex flex-col gap-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Members</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage your family and professional team members
+          </p>
         </div>
 
-        <Tabs defaultValue="family" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="family" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Family Members
-              <Badge variant="secondary" className="ml-2">
+        <Tabs defaultValue="family" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-2 h-12">
+            <TabsTrigger value="family" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+              <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Family</span>
+              <span className="xs:hidden">Fam</span>
+              <Badge variant="secondary" className="ml-1 text-xs h-5 px-1.5">
                 {familyMembers.length}
               </Badge>
             </TabsTrigger>
-            <TabsTrigger value="office" className="flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              Family Office
-              <Badge variant="secondary" className="ml-2">
+            <TabsTrigger value="office" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+              <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Office</span>
+              <span className="xs:hidden">Off</span>
+              <Badge variant="secondary" className="ml-1 text-xs h-5 px-1.5">
                 {officeMembers.length}
               </Badge>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="family" className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <TabsContent value="family" className="space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-lg sm:text-xl font-semibold">Family Members</h2>
-                <p className="text-sm text-muted-foreground">
+                <h2 className="text-base sm:text-lg font-semibold">Family Members</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
                   Manage your family directory and relationships
                 </p>
               </div>
               
               <Button 
                 onClick={() => setShowAddFamilyDialog(true)} 
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-sm h-9"
+                size="sm"
               >
                 <UserPlus className="h-4 w-4" />
-                Add Family Member
+                <span className="hidden xs:inline">Add Family Member</span>
+                <span className="xs:hidden">Add Member</span>
               </Button>
             </div>
 
@@ -527,93 +529,101 @@ export default function Members() {
               ) : (
                 familyMembers.map((member) => (
                   <Card key={member.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-4">
-                          <Avatar className="h-12 w-12">
+                    <CardContent className="p-3 sm:p-4 md:p-6">
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+                        {/* Mobile: Header with Avatar and Name */}
+                        <div className="flex items-center gap-3 sm:items-start">
+                          <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
                             <AvatarImage src="" />
-                            <AvatarFallback className="bg-primary/10">
+                            <AvatarFallback className="bg-primary/10 text-xs sm:text-sm">
                               {member.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           
-                          <div className="space-y-1">
-                            <div className="flex items-center space-x-2">
-                              <h3 className="font-semibold">{member.full_name}</h3>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-semibold text-sm sm:text-base truncate">{member.full_name}</h3>
                               {member.family_position === 'Head of Family' && (
-                                <Crown className="h-4 w-4 text-yellow-500" />
+                                <Crown className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 flex-shrink-0" />
                               )}
                               {getStatusBadge(member)}
                             </div>
                             
-                            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                            <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
                               {member.family_position && (
-                                <Badge variant="secondary">{member.family_position}</Badge>
+                                <Badge variant="secondary" className="text-xs">{member.family_position}</Badge>
                               )}
                               {member.relationship_to_family && (
-                                <span>• {member.relationship_to_family}</span>
-                              )}
-                            </div>
-                            
-                            {member.trust_positions && member.trust_positions.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {member.trust_positions.map(position => (
-                                  <Badge
-                                    key={position}
-                                    variant="outline"
-                                    className={`text-xs ${getTrustPositionColor(position)}`}
-                                  >
-                                    {position}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-
-                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                              {member.email && (
-                                <div className="flex items-center space-x-1">
-                                  <Mail className="h-3 w-3" />
-                                  <span>{member.email}</span>
-                                </div>
-                              )}
-                              {member.phone && (
-                                <div className="flex items-center space-x-1">
-                                  <Phone className="h-3 w-3" />
-                                  <span>{member.phone}</span>
-                                </div>
+                                <span className="text-xs">• {member.relationship_to_family}</span>
                               )}
                             </div>
                           </div>
                         </div>
-                        
-                        <div className="flex items-center space-x-2">
+
+                        {/* Mobile: Action Buttons - Moved to top right on mobile */}
+                        <div className="flex items-center gap-2 sm:ml-auto sm:flex-shrink-0">
                           {member.email && (
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleResendInvitation(member)}
-                              className="text-xs"
+                              className="text-xs h-8 px-2"
                               disabled={!!member.joined_at}
                             >
-                              <Mail className="h-4 w-4 mr-1" />
-                              {member.joined_at ? 'Accepted' : 'Resend Invitation'}
+                              <Mail className="h-3 w-3 sm:mr-1" />
+                              <span className="hidden sm:inline">
+                                {member.joined_at ? 'Accepted' : 'Resend'}
+                              </span>
                             </Button>
                           )}
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setEditingMember(member)}
+                            className="h-8 w-8 p-0"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteFamilyMember(member.id)}
+                            className="h-8 w-8 p-0"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                         </div>
+                      </div>
+
+                      {/* Trust Positions */}
+                      {member.trust_positions && member.trust_positions.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {member.trust_positions.map(position => (
+                            <Badge
+                              key={position}
+                              variant="outline"
+                              className={`text-xs ${getTrustPositionColor(position)}`}
+                            >
+                              {position}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Contact Info */}
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mt-3">
+                        {member.email && (
+                          <div className="flex items-center gap-1 min-w-0">
+                            <Mail className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{member.email}</span>
+                          </div>
+                        )}
+                        {member.phone && (
+                          <div className="flex items-center gap-1">
+                            <Phone className="h-3 w-3 flex-shrink-0" />
+                            <span>{member.phone}</span>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -622,21 +632,23 @@ export default function Members() {
             </div>
           </TabsContent>
 
-          <TabsContent value="office" className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <TabsContent value="office" className="space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-lg sm:text-xl font-semibold">Family Office Team</h2>
-                <p className="text-sm text-muted-foreground">
+                <h2 className="text-base sm:text-lg font-semibold">Family Office Team</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
                   Manage your professional advisors and staff
                 </p>
               </div>
               
               <Button 
                 onClick={() => setShowAddOfficeDialog(true)} 
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-sm h-9"
+                size="sm"
               >
                 <UserPlus className="h-4 w-4" />
-                Add Family Office Member
+                <span className="hidden xs:inline">Add Office Member</span>
+                <span className="xs:hidden">Add Member</span>
               </Button>
             </div>
 
@@ -648,104 +660,113 @@ export default function Members() {
               ) : (
                 officeMembers.map((member) => (
                   <Card key={member.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-4">
-                          <Avatar className="h-12 w-12">
+                    <CardContent className="p-3 sm:p-4 md:p-6">
+                      <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+                        {/* Mobile: Header with Avatar and Name */}
+                        <div className="flex items-center gap-3 sm:items-start">
+                          <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
                             <AvatarImage src="" />
-                            <AvatarFallback className="bg-primary/10">
+                            <AvatarFallback className="bg-primary/10 text-xs sm:text-sm">
                               {member.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           
-                          <div className="space-y-1">
-                            <div className="flex items-center space-x-2">
-                              <h3 className="font-semibold">{member.full_name}</h3>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-semibold text-sm sm:text-base truncate">{member.full_name}</h3>
                               <Badge variant="outline" className="text-xs">
                                 {member.status}
                               </Badge>
                             </div>
                             
-                            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                            <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
                               {member.role && (
-                                <Badge variant="secondary">{member.role}</Badge>
+                                <Badge variant="secondary" className="text-xs">{member.role}</Badge>
                               )}
                               {member.company && (
-                                <span>• {member.company}</span>
+                                <span className="text-xs">• {member.company}</span>
                               )}
                               {member.department && (
-                                <span>• {member.department}</span>
-                              )}
-                            </div>
-                            
-                            {member.access_level && (
-                              <div className="mt-2">
-                                <Badge
-                                  variant="outline"
-                                  className={`text-xs ${getAccessLevelColor(member.access_level)}`}
-                                >
-                                  {member.access_level}
-                                </Badge>
-                              </div>
-                            )}
-
-                            {member.specialties && member.specialties.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {member.specialties.map(specialty => (
-                                  <Badge
-                                    key={specialty}
-                                    variant="outline"
-                                    className="text-xs bg-blue-50 text-blue-700"
-                                  >
-                                    {specialty}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-
-                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                              <div className="flex items-center space-x-1">
-                                <Mail className="h-3 w-3" />
-                                <span>{member.email}</span>
-                              </div>
-                              {member.phone && (
-                                <div className="flex items-center space-x-1">
-                                  <Phone className="h-3 w-3" />
-                                  <span>{member.phone}</span>
-                                </div>
+                                <span className="text-xs">• {member.department}</span>
                               )}
                             </div>
                           </div>
                         </div>
-                        
-                        <div className="flex items-center space-x-2">
+
+                        {/* Mobile: Action Buttons */}
+                        <div className="flex items-center gap-2 sm:ml-auto sm:flex-shrink-0">
                           {member.email && (
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleResendOfficeInvitation(member)}
-                              className="text-xs"
+                              className="text-xs h-8 px-2"
                               disabled={!!member.joined_at}
                             >
-                              <Mail className="h-4 w-4 mr-1" />
-                              {member.joined_at ? 'Accepted' : 'Resend Invitation'}
+                              <Mail className="h-3 w-3 sm:mr-1" />
+                              <span className="hidden sm:inline">
+                                {member.joined_at ? 'Accepted' : 'Resend'}
+                              </span>
                             </Button>
                           )}
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setEditingOfficeMember(member)}
+                            className="h-8 w-8 p-0"
                           >
-                            <Edit className="h-4 w-4" />
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteOfficeMember(member.id)}
+                            className="h-8 w-8 p-0"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                         </div>
+                      </div>
+
+                      {/* Access Level */}
+                      {member.access_level && (
+                        <div className="mt-3">
+                          <Badge
+                            variant="outline"
+                            className={`text-xs ${getAccessLevelColor(member.access_level)}`}
+                          >
+                            {member.access_level}
+                          </Badge>
+                        </div>
+                      )}
+
+                      {/* Specialties */}
+                      {member.specialties && member.specialties.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {member.specialties.map(specialty => (
+                            <Badge
+                              key={specialty}
+                              variant="outline"
+                              className="text-xs bg-blue-50 text-blue-700"
+                            >
+                              {specialty}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Contact Info */}
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mt-3">
+                        <div className="flex items-center gap-1 min-w-0">
+                          <Mail className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">{member.email}</span>
+                        </div>
+                        {member.phone && (
+                          <div className="flex items-center gap-1">
+                            <Phone className="h-3 w-3 flex-shrink-0" />
+                            <span>{member.phone}</span>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
