@@ -70,6 +70,7 @@ export function FamilySecretCodesAdmin() {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [editingCode, setEditingCode] = useState<FamilyCode | null>(null)
   const [showCodeValue, setShowCodeValue] = useState<Record<string, boolean>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
   
   // Form state
   const [formData, setFormData] = useState({
@@ -208,12 +209,17 @@ export function FamilySecretCodesAdmin() {
       toast.error('Please fill in all required fields')
       return
     }
+    if (!user?.id) {
+      toast.error('Please sign in to create a code')
+      return
+    }
 
+    setIsSubmitting(true)
     try {
       const { error } = await supabase
         .from('family_secret_codes')
         .insert({
-          created_by: user?.id,
+          created_by: user.id,
           code: formData.code.toUpperCase(),
           description: formData.description,
           access_level: 'basic', // Default to basic access since selector was removed
@@ -237,6 +243,8 @@ export function FamilySecretCodesAdmin() {
     } catch (error: any) {
       console.error('Error creating code:', error)
       toast.error(error.message?.includes('duplicate') ? 'Code already exists' : 'Failed to create code')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -397,8 +405,8 @@ export function FamilySecretCodesAdmin() {
               </div>
 
               <div className="flex gap-2 pt-4">
-                <Button onClick={handleCreateCode} className="flex-1">
-                  Create Code
+                <Button onClick={handleCreateCode} className="flex-1" disabled={isSubmitting || !formData.code || !formData.description}>
+                  {isSubmitting ? 'Creating...' : 'Create Code'}
                 </Button>
                 <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
                   Cancel
