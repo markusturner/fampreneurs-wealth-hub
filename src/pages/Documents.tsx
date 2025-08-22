@@ -1104,7 +1104,7 @@ export default function Documents() {
               </div>
               
               {/* Right Panel - Visual Diagram */}
-              <div className="border rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50">
+              <div className="relative border rounded-lg bg-gradient-to-br from-blue-50 to-purple-50">
                 <div className="p-3 border-b bg-white/80 backdrop-blur-sm">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
                     <TreePine className="h-4 w-4" />
