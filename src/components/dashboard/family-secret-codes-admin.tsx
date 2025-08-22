@@ -307,42 +307,42 @@ export function FamilySecretCodesAdmin() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
         <div>
-          <h3 className="text-lg font-semibold">Family Secret Codes Management</h3>
-          <p className="text-sm text-muted-foreground">
+          <h3 className="text-base sm:text-lg font-semibold">Family Secret Codes Management</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Create and manage secure access codes for family resources
           </p>
         </div>
         
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
-            <Button>
+            <Button size="sm" className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
               Create Code
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New Family Code</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-base sm:text-lg">Create New Family Code</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm">
                 Generate a secure access code for family members
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="code">Access Code</Label>
+                <Label htmlFor="code" className="text-sm">Access Code</Label>
                 <div className="flex gap-2">
                   <Input
                     id="code"
                     value={formData.code}
                     onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                    placeholder="Enter custom code (letters/numbers)"
-                    className="font-mono"
+                    placeholder="Enter custom code"
+                    className="font-mono text-sm"
                   />
-                  <Button type="button" variant="outline" onClick={() => generateRandomCode()}>
+                  <Button type="button" variant="outline" size="sm" onClick={() => generateRandomCode()}>
                     <RotateCcw className="h-4 w-4" />
                   </Button>
                 </div>
@@ -352,31 +352,32 @@ export function FamilySecretCodesAdmin() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description" className="text-sm">Description</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="What does this code provide access to?"
                   rows={3}
+                  className="text-sm resize-none"
                 />
               </div>
 
-
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-2">
-                  <Label>Expiration Date (Optional)</Label>
+                  <Label className="text-sm">Expiration Date (Optional)</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
+                        size="sm"
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full justify-start text-left font-normal text-xs sm:text-sm",
                           !formData.expires_at && "text-muted-foreground"
                         )}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.expires_at ? format(formData.expires_at, "PPP") : "No expiration"}
+                        <CalendarIcon className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                        {formData.expires_at ? format(formData.expires_at, "MMM d, yyyy") : "No expiration"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -392,7 +393,7 @@ export function FamilySecretCodesAdmin() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="max_uses">Max Uses (Optional)</Label>
+                  <Label htmlFor="max_uses" className="text-sm">Max Uses (Optional)</Label>
                   <Input
                     id="max_uses"
                     type="number"
@@ -400,15 +401,16 @@ export function FamilySecretCodesAdmin() {
                     onChange={(e) => setFormData(prev => ({ ...prev, max_uses: e.target.value ? parseInt(e.target.value) : null }))}
                     placeholder="Unlimited"
                     min="1"
+                    className="text-sm"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-4">
-                <Button onClick={handleCreateCode} className="flex-1" disabled={isSubmitting || !formData.code || !formData.description}>
+              <div className="flex flex-col sm:flex-row gap-2 pt-3 sm:pt-4">
+                <Button onClick={handleCreateCode} className="flex-1" size="sm" disabled={isSubmitting || !formData.code || !formData.description}>
                   {isSubmitting ? 'Creating...' : 'Create Code'}
                 </Button>
-                <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+                <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => setShowCreateDialog(false)}>
                   Cancel
                 </Button>
               </div>
@@ -418,26 +420,26 @@ export function FamilySecretCodesAdmin() {
 
         {/* Edit Dialog */}
         <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Edit Family Code</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-base sm:text-lg">Edit Family Code</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm">
                 Update the access code and its settings
               </DialogDescription>
             </DialogHeader>
             
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-code">Access Code</Label>
+                <Label htmlFor="edit-code" className="text-sm">Access Code</Label>
                 <div className="flex gap-2">
                   <Input
                     id="edit-code"
                     value={formData.code}
                     onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                    placeholder="Enter custom code (letters/numbers)"
-                    className="font-mono"
+                    placeholder="Enter custom code"
+                    className="font-mono text-sm"
                   />
-                  <Button type="button" variant="outline" onClick={() => generateRandomCode()}>
+                  <Button type="button" variant="outline" size="sm" onClick={() => generateRandomCode()}>
                     <RotateCcw className="h-4 w-4" />
                   </Button>
                 </div>
@@ -447,28 +449,29 @@ export function FamilySecretCodesAdmin() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-description">Description</Label>
+                <Label htmlFor="edit-description" className="text-sm">Description</Label>
                 <Textarea
                   id="edit-description"
                   value={formData.description}
                   onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="What does this code provide access to?"
                   rows={3}
+                  className="text-sm resize-none"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-access_level">Access Level</Label>
+                <Label htmlFor="edit-access_level" className="text-sm">Access Level</Label>
                 <Select value={formData.access_level} onValueChange={(value: any) => setFormData(prev => ({ ...prev, access_level: value }))}>
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {ACCESS_LEVELS.map((level) => (
                       <SelectItem key={level.value} value={level.value}>
                         <div className="flex items-center gap-2">
-                          <level.icon className="h-4 w-4" />
-                          {level.label}
+                          <level.icon className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="text-xs sm:text-sm">{level.label}</span>
                         </div>
                       </SelectItem>
                     ))}
@@ -476,20 +479,21 @@ export function FamilySecretCodesAdmin() {
                 </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-2">
-                  <Label>Expiration Date (Optional)</Label>
+                  <Label className="text-sm">Expiration Date (Optional)</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
+                        size="sm"
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full justify-start text-left font-normal text-xs sm:text-sm",
                           !formData.expires_at && "text-muted-foreground"
                         )}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.expires_at ? format(formData.expires_at, "PPP") : "No expiration"}
+                        <CalendarIcon className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                        {formData.expires_at ? format(formData.expires_at, "MMM d, yyyy") : "No expiration"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -505,7 +509,7 @@ export function FamilySecretCodesAdmin() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-max_uses">Max Uses (Optional)</Label>
+                  <Label htmlFor="edit-max_uses" className="text-sm">Max Uses (Optional)</Label>
                   <Input
                     id="edit-max_uses"
                     type="number"
@@ -513,15 +517,16 @@ export function FamilySecretCodesAdmin() {
                     onChange={(e) => setFormData(prev => ({ ...prev, max_uses: e.target.value ? parseInt(e.target.value) : null }))}
                     placeholder="Unlimited"
                     min="1"
+                    className="text-sm"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-2 pt-4">
-                <Button onClick={handleEditCode} className="flex-1">
+              <div className="flex flex-col sm:flex-row gap-2 pt-3 sm:pt-4">
+                <Button onClick={handleEditCode} className="flex-1" size="sm">
                   Update Code
                 </Button>
-                <Button variant="outline" onClick={() => {
+                <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={() => {
                   setShowEditDialog(false)
                   setEditingCode(null)
                   setFormData({
@@ -541,23 +546,25 @@ export function FamilySecretCodesAdmin() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-8">Loading codes...</div>
+        <div className="text-center py-6 sm:py-8">
+          <div className="text-sm sm:text-base">Loading codes...</div>
+        </div>
       ) : codes.length === 0 ? (
         <Card>
-          <CardContent className="p-8 text-center">
-            <Shield className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="font-semibold mb-2">No Family Codes Created</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+          <CardContent className="p-6 sm:p-8 text-center">
+            <Shield className="h-8 w-8 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-3 sm:mb-4" />
+            <h3 className="font-semibold mb-2 text-sm sm:text-base">No Family Codes Created</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
               Create your first family access code to get started
             </p>
-            <Button onClick={() => setShowCreateDialog(true)}>
+            <Button size="sm" onClick={() => setShowCreateDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Create First Code
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3 sm:gap-4">
           {codes.map((code) => {
             const accessConfig = getAccessLevelConfig(code.access_level)
             const isExpired = code.expires_at && new Date(code.expires_at) < new Date()
@@ -571,123 +578,134 @@ export function FamilySecretCodesAdmin() {
                 isExpired && "border-red-200",
                 isMaxedOut && "border-orange-200"
               )}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                <CardHeader className="pb-3 sm:pb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0">
+                    <div className="space-y-1 sm:space-y-2 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
                         <div className={cn("w-2 h-2 rounded-full", accessConfig.color)} />
-                        <CardTitle className="text-lg">{code.description}</CardTitle>
+                        <CardTitle className="text-sm sm:text-lg leading-tight">{code.description}</CardTitle>
                         {!code.is_active && (
-                          <Badge variant="secondary">Inactive</Badge>
+                          <Badge variant="secondary" className="text-xs">Inactive</Badge>
                         )}
                         {isExpired && (
-                          <Badge variant="destructive">Expired</Badge>
+                          <Badge variant="destructive" className="text-xs">Expired</Badge>
                         )}
                         {isMaxedOut && (
-                          <Badge variant="outline" className="border-orange-500 text-orange-700">
+                          <Badge variant="outline" className="border-orange-500 text-orange-700 text-xs">
                             Max Uses Reached
                           </Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
-                          <accessConfig.icon className="h-4 w-4" />
-                          {accessConfig.label}
+                          <accessConfig.icon className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span>{accessConfig.label}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Activity className="h-4 w-4" />
-                          {code.current_uses} uses
-                          {code.max_uses && ` / ${code.max_uses}`}
+                          <Activity className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span>{code.current_uses} uses{code.max_uses && ` / ${code.max_uses}`}</span>
                         </div>
                         {code.expires_at && (
-                          <div>
-                            Expires: {format(new Date(code.expires_at), "MMM d, yyyy")}
+                          <div className="flex items-center gap-1">
+                            <span>Expires: {format(new Date(code.expires_at), "MMM d, yyyy")}</span>
                           </div>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    
+                    {/* Mobile: Stack buttons vertically, Desktop: Row */}
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-1 sm:gap-2">
                       <Button
                         variant="outline"
                         size="sm"
+                        className="flex-1 sm:flex-none text-xs"
                         onClick={() => setShowCodeValue(prev => ({ ...prev, [code.id]: !prev[code.id] }))}
                       >
-                        {showCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showCode ? <EyeOff className="h-3 w-3 sm:h-4 sm:w-4" /> : <Eye className="h-3 w-3 sm:h-4 sm:w-4" />}
+                        <span className="ml-1 sm:hidden">{showCode ? 'Hide' : 'Show'}</span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
+                        className="flex-1 sm:flex-none text-xs"
                         onClick={() => copyToClipboard(code.code)}
                         disabled={!showCode}
                       >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="ml-1 sm:hidden">Copy</span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
+                        className="flex-1 sm:flex-none text-xs"
                         onClick={() => openEditDialog(code)}
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="ml-1 sm:hidden">Edit</span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
+                        className="flex-1 sm:flex-none text-xs"
                         onClick={() => toggleCodeActive(code.id, code.is_active)}
                       >
-                        {code.is_active ? 'Deactivate' : 'Activate'}
+                        <span className="sm:hidden">{code.is_active ? 'Deactivate' : 'Activate'}</span>
+                        <span className="hidden sm:inline">{code.is_active ? 'Deactivate' : 'Activate'}</span>
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
+                        className="flex-1 sm:flex-none text-xs text-red-600 hover:text-red-700"
                         onClick={() => deleteCode(code.id)}
-                        className="text-red-600 hover:text-red-700"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <span className="ml-1 sm:hidden">Delete</span>
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
                 
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="p-3 bg-muted rounded-lg font-mono text-center text-lg tracking-wider">
+                <CardContent className="pt-0">
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="p-2 sm:p-3 bg-muted rounded-lg font-mono text-center text-sm sm:text-lg tracking-wider">
                       {showCode ? code.code : '••••-••••-••••'}
                     </div>
                     
                     <Separator />
                     
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <Label className="text-sm font-medium">Recent Usage</Label>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2 sm:mb-3">
+                        <Label className="text-xs sm:text-sm font-medium">Recent Usage</Label>
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="text-xs w-full sm:w-auto"
                           onClick={() => fetchUsageLog(code.id)}
                         >
-                          <Activity className="h-4 w-4 mr-1" />
+                          <Activity className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                           Load Log
                         </Button>
                       </div>
                       
                       {usageLogs[code.id] ? (
                         usageLogs[code.id].length > 0 ? (
-                          <div className="space-y-2 max-h-32 overflow-y-auto">
+                          <div className="space-y-1 sm:space-y-2 max-h-24 sm:max-h-32 overflow-y-auto">
                             {usageLogs[code.id].map((usage) => (
-                              <div key={usage.id} className="flex items-center justify-between text-sm p-2 bg-muted/50 rounded">
-                                <span>{usage.profiles?.display_name || usage.profiles?.email}</span>
-                                <span className="text-muted-foreground">
+                              <div key={usage.id} className="flex items-center justify-between text-xs sm:text-sm p-2 bg-muted/50 rounded">
+                                <span className="truncate mr-2">{usage.profiles?.display_name || usage.profiles?.email}</span>
+                                <span className="text-muted-foreground whitespace-nowrap">
                                   {format(new Date(usage.used_at), "MMM d, HH:mm")}
                                 </span>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground text-center py-2">
+                          <p className="text-xs sm:text-sm text-muted-foreground text-center py-2">
                             No usage recorded yet
                           </p>
                         )
                       ) : (
-                        <p className="text-sm text-muted-foreground text-center py-2">
+                        <p className="text-xs sm:text-sm text-muted-foreground text-center py-2">
                           Click "Load Log" to view usage history
                         </p>
                       )}
