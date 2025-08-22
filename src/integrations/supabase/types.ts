@@ -3300,6 +3300,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
+      check_portfolio_access_rate_limit: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
       cleanup_expired_verification_codes: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -3349,6 +3353,10 @@ export type Database = {
       get_family_member_count_secure: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      get_masked_portfolio_summary: {
+        Args: { target_user_id: string }
+        Returns: Json
       }
       get_portfolio_summary: {
         Args: { target_user_id: string }
