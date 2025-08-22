@@ -16,6 +16,7 @@ interface NavItem {
 const familyOfficeItems: NavItem[] = [
   { name: 'Documents', href: '/documents', icon: FileText },
   { name: 'Investments', href: '/investments', icon: TrendingUp },
+  { name: 'Home', href: '/', icon: Home },
   { name: 'Calendar', href: '/calendar', icon: Calendar },
   { name: 'Members', href: '/members', icon: Users },
 ]
@@ -24,6 +25,7 @@ const familyOfficeItems: NavItem[] = [
 const familyMemberItems: NavItem[] = [
   { name: 'Documents', href: '/documents', icon: FileText },
   { name: 'Calendar', href: '/calendar', icon: Calendar },
+  { name: 'Home', href: '/', icon: Home },
 ]
 
 export function MobileBottomNav() {
