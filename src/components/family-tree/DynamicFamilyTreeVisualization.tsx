@@ -154,17 +154,36 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
       const memberMap = new Map<string, FamilyMember>()
       validMembers.forEach(member => memberMap.set(member.name, member))
       
+      // Reset all generations
+      validMembers.forEach(member => member.generation = -1)
+      
       // Find root members (those with no parents)
       const rootMembers = validMembers.filter(member => !member.parents || member.parents.length === 0)
       
       // Assign generations starting from roots
       const visited = new Set<string>()
       const assignGeneration = (member: FamilyMember, generation: number) => {
-        if (visited.has(member.name)) return
+        if (visited.has(member.name) || member.generation !== -1) return
         visited.add(member.name)
         member.generation = generation
         
-        // Assign children to next generation
+        // Find and assign spouse to same generation first
+        if (member.children) {
+          const spouses = validMembers.filter(other => 
+            other.name !== member.name && 
+            other.children && 
+            other.children.some(child => member.children!.includes(child))
+          )
+          
+          spouses.forEach(spouse => {
+            if (spouse.generation === -1) {
+              spouse.generation = generation
+              visited.add(spouse.name)
+            }
+          })
+        }
+        
+        // Then assign children to next generation
         if (member.children) {
           member.children.forEach(childName => {
             const child = memberMap.get(childName)
@@ -178,20 +197,24 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
       // Start with root members at generation 0
       rootMembers.forEach(root => assignGeneration(root, 0))
       
-      // Handle married couples - put them on same generation
+      // Handle any remaining members (siblings without parents specified)
       validMembers.forEach(member => {
-        if (member.children) {
-          // Find potential spouses (other parents of the same children)
-          const potentialSpouses = validMembers.filter(other => 
-            other.name !== member.name && 
-            other.children && 
-            other.children.some(child => member.children!.includes(child))
-          )
-          
-          potentialSpouses.forEach(spouse => {
-            // Put spouse on same generation as member
-            spouse.generation = member.generation
-          })
+        if (member.generation === -1) {
+          // If they have children, try to infer generation from children
+          if (member.children) {
+            const childGenerations = member.children
+              .map(childName => memberMap.get(childName))
+              .filter(child => child && child.generation !== -1)
+              .map(child => child!.generation)
+            
+            if (childGenerations.length > 0) {
+              member.generation = Math.min(...childGenerations) - 1
+            } else {
+              member.generation = 0 // Default to root level
+            }
+          } else {
+            member.generation = 0 // Default to root level
+          }
         }
       })
     }
@@ -213,29 +236,102 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
     
     generations.forEach(generation => {
       const members = generationGroups[generation]
-      const sortedMembers = members.slice().sort((a, b) => (orderMap[a.id] ?? 0) - (orderMap[b.id] ?? 0))
       
-      sortedMembers.forEach((member, index) => {
-        // Better horizontal spacing based on number of members in generation
-        const totalMembers = sortedMembers.length
-        const spacing = Math.max(250, 180 + (totalMembers * 20)) // Adaptive spacing
-        const startX = -(totalMembers - 1) * spacing / 2
-        const xPosition = startX + (index * spacing)
+      // Group married couples together
+      const memberMap = new Map<string, FamilyMember>()
+      validMembers.forEach(m => memberMap.set(m.name, m))
+      
+      const marriedPairs: FamilyMember[][] = []
+      const singles: FamilyMember[] = []
+      const processed = new Set<string>()
+      
+      members.forEach(member => {
+        if (processed.has(member.name)) return
         
-        // Improved vertical positioning
-        const yPosition = generation * 180 // More spacing between generations
+        if (member.children) {
+          const spouses = members.filter(other => 
+            other.name !== member.name && 
+            !processed.has(other.name) &&
+            other.children && 
+            other.children.some(child => member.children!.includes(child))
+          )
+          
+          if (spouses.length > 0) {
+            marriedPairs.push([member, spouses[0]])
+            processed.add(member.name)
+            processed.add(spouses[0].name)
+          } else {
+            singles.push(member)
+            processed.add(member.name)
+          }
+        } else {
+          singles.push(member)
+          processed.add(member.name)
+        }
+      })
+      
+      // Position married couples and singles
+      const totalGroups = marriedPairs.length + singles.length
+      const spacing = Math.max(300, 250 + (totalGroups * 30))
+      const startX = -(totalGroups - 1) * spacing / 2
+      
+      let groupIndex = 0
+      
+      // Position married couples (side by side)
+      marriedPairs.forEach(pair => {
+        const groupX = startX + (groupIndex * spacing)
+        const yPosition = generation * 180
+        
+        pair.forEach((member, pairIndex) => {
+          const xPosition = groupX + (pairIndex - 0.5) * 200 // Side by side spacing
+          
+          let relationshipLabel = 'Family Member'
+          const hasParents = member.parents && member.parents.length > 0
+          const hasChildren = member.children && member.children.length > 0
+          
+          if (generation === 0 || (!hasParents && hasChildren)) {
+            relationshipLabel = hasChildren ? 'Parent/Ancestor' : 'Elder'
+          } else if (generation === maxGeneration || (hasParents && !hasChildren)) {
+            relationshipLabel = 'Child/Descendant'
+          } else if (hasParents && hasChildren) {
+            relationshipLabel = 'Parent'
+          } else if (hasChildren) {
+            relationshipLabel = 'Parent'
+          } else if (hasParents) {
+            relationshipLabel = 'Child'
+          }
 
-        // Enhanced relationship detection
+          nodes.push({
+            id: member.id,
+            type: 'familyNode',
+            position: { x: xPosition, y: yPosition },
+            data: { 
+              name: member.name,
+              relationshipLabel,
+              generation,
+              hasChildren: hasChildren,
+              hasParents: hasParents
+            }
+          })
+        })
+        groupIndex++
+      })
+      
+      // Position singles
+      singles.forEach(member => {
+        const xPosition = startX + (groupIndex * spacing)
+        const yPosition = generation * 180
+        
         let relationshipLabel = 'Family Member'
         const hasParents = member.parents && member.parents.length > 0
         const hasChildren = member.children && member.children.length > 0
         
         if (generation === 0 || (!hasParents && hasChildren)) {
-          relationshipLabel = hasChildren ? 'Ancestor/Elder' : 'Elder'
+          relationshipLabel = hasChildren ? 'Parent/Ancestor' : 'Elder'
         } else if (generation === maxGeneration || (hasParents && !hasChildren)) {
-          relationshipLabel = 'Descendant'
+          relationshipLabel = 'Child/Descendant'
         } else if (hasParents && hasChildren) {
-          relationshipLabel = 'Parent/Child'
+          relationshipLabel = 'Parent'
         } else if (hasChildren) {
           relationshipLabel = 'Parent'
         } else if (hasParents) {
@@ -254,6 +350,7 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
             hasParents: hasParents
           }
         })
+        groupIndex++
       })
     })
 
@@ -282,6 +379,34 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
               }
             })
           }
+        })
+      }
+    })
+
+    // Create edges for married couples (spouses)
+    validMembers.forEach(member => {
+      if (member.children) {
+        const spouses = validMembers.filter(other => 
+          other.name !== member.name && 
+          other.id > member.id && // Avoid duplicate edges
+          other.children && 
+          other.children.some(child => member.children!.includes(child))
+        )
+        
+        spouses.forEach(spouse => {
+          edges.push({
+            id: `marriage-${member.id}-${spouse.id}`,
+            source: member.id,
+            target: spouse.id,
+            type: 'straight',
+            style: { 
+              stroke: '#ef4444', 
+              strokeWidth: 2,
+              strokeDasharray: '5,5'
+            },
+            label: '♥',
+            labelStyle: { fill: '#ef4444', fontWeight: 'bold' }
+          })
         })
       }
     })
