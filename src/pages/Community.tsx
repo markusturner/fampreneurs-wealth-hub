@@ -278,93 +278,154 @@ export default function Community() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 max-w-7xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
           <div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold">Digital Family Office</h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
-                Complete financial ecosystem management and wealth tracking
-              </p>
-            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">Digital Family Office</h1>
+            <p className="text-base sm:text-lg text-muted-foreground mt-2">
+              Complete financial ecosystem management and wealth tracking
+            </p>
           </div>
         </div>
 
-        <Tabs defaultValue="accounts" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-7 text-xs sm:text-sm gap-1 sm:gap-0 p-1">
-            <TabsTrigger value="accounts" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Accounts
-            </TabsTrigger>
-            <TabsTrigger value="transactions" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Transactions
-            </TabsTrigger>
-            <TabsTrigger value="budget" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Budget
-            </TabsTrigger>
-            <TabsTrigger value="reports" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Reports
-            </TabsTrigger>
-            <TabsTrigger value="documents" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Documents
-            </TabsTrigger>
-            <TabsTrigger value="messages" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Messages
-            </TabsTrigger>
-            <TabsTrigger value="services" className="px-1 sm:px-2 lg:px-4 text-xs sm:text-sm">
-              Services
-            </TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="accounts" className="space-y-6 animate-fade-in">
+          {/* Mobile-First Tab Navigation */}
+          <div className="w-full overflow-hidden">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1 p-1 h-auto bg-muted/50 rounded-lg">
+              <TabsTrigger 
+                value="accounts" 
+                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
+                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
+                  <CreditCard className="h-4 w-4 flex-shrink-0" />
+                  <span className="hidden sm:inline">Accounts</span>
+                  <span className="sm:hidden">Accts</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="transactions" 
+                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
+                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
+                  <ArrowUpRight className="h-4 w-4 flex-shrink-0" />
+                  <span className="hidden sm:inline">Transactions</span>
+                  <span className="sm:hidden">Trans</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="budget" 
+                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
+                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
+                  <PieChart className="h-4 w-4 flex-shrink-0" />
+                  <span>Budget</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="reports" 
+                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm hidden sm:flex"
+              >
+                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
+                  <BarChart3 className="h-4 w-4 flex-shrink-0" />
+                  <span>Reports</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="documents" 
+                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm hidden lg:flex"
+              >
+                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
+                  <FileText className="h-4 w-4 flex-shrink-0" />
+                  <span>Documents</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="messages" 
+                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm hidden lg:flex"
+              >
+                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
+                  <MessageSquare className="h-4 w-4 flex-shrink-0" />
+                  <span>Messages</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="services" 
+                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm hidden lg:flex"
+              >
+                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
+                  <Briefcase className="h-4 w-4 flex-shrink-0" />
+                  <span>Services</span>
+                </div>
+              </TabsTrigger>
+            </TabsList>
 
-
-          <TabsContent value="accounts" className="space-y-6">
-            <div className="lg:hidden">
-              <div className="space-y-4">
-                <AccountIntegration />
+            {/* Mobile Tab Overflow Menu */}
+            <div className="sm:hidden mt-3">
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                <TabsTrigger 
+                  value="reports" 
+                  className="px-4 py-2 text-xs font-medium rounded-full border bg-background hover:bg-accent whitespace-nowrap flex-shrink-0"
+                >
+                  Reports
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="documents" 
+                  className="px-4 py-2 text-xs font-medium rounded-full border bg-background hover:bg-accent whitespace-nowrap flex-shrink-0"
+                >
+                  Documents
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="messages" 
+                  className="px-4 py-2 text-xs font-medium rounded-full border bg-background hover:bg-accent whitespace-nowrap flex-shrink-0"
+                >
+                  Messages
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="services" 
+                  className="px-4 py-2 text-xs font-medium rounded-full border bg-background hover:bg-accent whitespace-nowrap flex-shrink-0"
+                >
+                  Services
+                </TabsTrigger>
               </div>
             </div>
-            <div className="hidden lg:block">
-              <AccountIntegration />
-            </div>
+          </div>
+
+
+          <TabsContent value="accounts" className="space-y-4 sm:space-y-6 animate-fade-in">
+            <AccountIntegration />
           </TabsContent>
 
-          <TabsContent value="transactions" className="space-y-6">
-            <div className="lg:hidden">
-              <div className="space-y-4">
-                <TransactionMonitoring />
-              </div>
-            </div>
-            <div className="hidden lg:block">
-              <TransactionMonitoring />
-            </div>
+          <TabsContent value="transactions" className="space-y-4 sm:space-y-6 animate-fade-in">
+            <TransactionMonitoring />
           </TabsContent>
 
-          <TabsContent value="budget" className="space-y-6">
+          <TabsContent value="budget" className="space-y-4 sm:space-y-6 animate-fade-in">
             <BudgetingAnalytics />
           </TabsContent>
 
-          <TabsContent value="reports" className="space-y-6">
-            <Card>
-              <CardContent className="p-6">
+          <TabsContent value="reports" className="space-y-4 sm:space-y-6 animate-fade-in">
+            <Card className="hover-scale">
+              <CardContent className="p-6 sm:p-8">
                 <div className="text-center">
-                  <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">Financial Reports</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Reports will be available once you connect accounts or add investment data.
+                  <FileText className="h-16 w-16 sm:h-20 sm:w-20 mx-auto mb-6 text-muted-foreground" />
+                  <h3 className="text-xl sm:text-2xl font-semibold mb-4">Financial Reports</h3>
+                  <p className="text-muted-foreground text-base sm:text-lg max-w-md mx-auto">
+                    Comprehensive reports will be available once you connect accounts or add investment data.
                   </p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="documents" className="space-y-6">
+          <TabsContent value="documents" className="space-y-4 sm:space-y-6 animate-fade-in">
             <DocumentsContent />
           </TabsContent>
 
-          <TabsContent value="messages" className="space-y-6">
+          <TabsContent value="messages" className="space-y-4 sm:space-y-6 animate-fade-in">
             <MessagesContent familyOfficeMembers={familyOfficeMembers} loadingMembers={loadingMembers} />
           </TabsContent>
 
-          <TabsContent value="services" className="space-y-6">
+          <TabsContent value="services" className="space-y-4 sm:space-y-6 animate-fade-in">
             <ServicesContent />
           </TabsContent>
         </Tabs>
@@ -577,15 +638,15 @@ function DocumentsContent() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-xl font-semibold mb-2">Family Documents</h3>
-        <p className="text-muted-foreground text-sm mb-6">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="animate-fade-in">
+        <h3 className="text-2xl sm:text-3xl font-bold mb-3">Family Documents</h3>
+        <p className="text-muted-foreground text-base sm:text-lg">
           Manage your trust and family documents securely
         </p>
       </div>
       
-      <div className="grid gap-4 sm:gap-6">
+      <div className="grid gap-6 sm:gap-8">
         {documentCategories.map((category, categoryIndex) => {
           const CategoryIcon = category.icon
           const iconColors = [
@@ -599,15 +660,15 @@ function DocumentsContent() {
           const iconColor = iconColors[categoryIndex] || 'text-primary'
           
           return (
-            <Card key={category.title} className="shadow-soft">
-              <CardHeader className="pb-3 sm:pb-6">
-                <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
-                  <CategoryIcon className={`h-4 w-4 sm:h-5 sm:w-5 ${iconColor}`} />
+            <Card key={category.title} className="hover-scale animate-fade-in border-2 hover:border-primary/20 transition-all duration-300">
+              <CardHeader className="pb-4 sm:pb-6">
+                <CardTitle className="flex items-center space-x-3 text-lg sm:text-xl">
+                  <CategoryIcon className={`h-6 w-6 sm:h-7 sm:w-7 ${iconColor}`} />
                   <span>{category.title}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="grid gap-2 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 sm:gap-6 sm:grid-cols-1 lg:grid-cols-2">
                   {category.documents.map((document) => {
                     const DocumentIcon = document.icon
                     const isUploading = uploadingDocument === document.name
@@ -616,69 +677,66 @@ function DocumentsContent() {
                     return (
                       <div
                         key={document.name}
-                        className={`flex items-center justify-between p-2 sm:p-3 rounded-lg border transition-colors ${
+                        className={`flex items-center justify-between p-4 sm:p-5 rounded-xl border-2 transition-all duration-300 hover-scale ${
                           isUploaded 
-                            ? 'bg-green-50 border-green-200 hover:bg-green-100' 
-                            : 'bg-card hover:bg-accent/50'
+                            ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 hover:border-green-300' 
+                            : 'bg-card hover:bg-accent/30 border-border hover:border-primary/30'
                         }`}
-                        style={isUploaded ? { color: '#290a52' } : {}}
                       >
-                        <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                          <DocumentIcon className={`h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0 ${
+                        <div className="flex items-center space-x-4 flex-1 min-w-0">
+                          <DocumentIcon className={`h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 ${
                             isUploaded ? 'text-green-600' : 'text-muted-foreground'
                           }`} />
                           <div className="min-w-0 flex-1">
-                            <span className="text-xs sm:text-sm font-medium truncate block">
+                            <span className="text-sm sm:text-base font-medium block truncate">
                               {document.name}
                             </span>
                             {isUploaded && (
-                              <span className="text-xs text-green-600 truncate block">
+                              <span className="text-xs sm:text-sm text-green-600 truncate block mt-1">
                                 {uploadedDocuments[document.name].name}
                               </span>
                             )}
                           </div>
                         </div>
                         
-                        <div className="flex items-center space-x-1 sm:space-x-2">
+                        <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
                           {isUploaded ? (
                             <>
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handlePreview(document.name)}
-                                className="h-7 px-2 sm:h-8 sm:px-3"
-                                style={{ backgroundColor: '#290a52', color: 'white' }}
+                                className="h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg hover:bg-primary/10"
                                 title="Preview"
                               >
-                                <Eye className="h-2 w-2 sm:h-3 sm:w-3" />
+                                <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
                               </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleReplace(document.name)}
-                                className="h-7 px-2 sm:h-8 sm:px-3"
-                                style={{ backgroundColor: '#290a52', color: 'white', borderColor: '#290a52' }}
+                                className="h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg border-2"
                                 title="Replace"
                               >
-                                <Upload className="h-2 w-2 sm:h-3 sm:w-3" />
+                                <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
                               </Button>
                               <Button
                                 variant="default"
                                 size="sm"
                                 onClick={() => handleDownload(document.name)}
-                                className="h-7 px-2 sm:h-8 sm:px-3"
+                                className="h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg"
                                 title="Download"
                               >
-                                <Download className="h-2 w-2 sm:h-3 sm:w-3" />
+                                <Download className="h-4 w-4 sm:h-5 sm:w-5" />
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
                                 onClick={() => handleDelete(document.name)}
-                                className="h-7 px-2 sm:h-8 sm:px-3"
+                                className="h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg"
                                 title="Delete"
                               >
-                                <X className="h-2 w-2 sm:h-3 sm:w-3" />
+                                <X className="h-4 w-4 sm:h-5 sm:w-5" />
                               </Button>
                             </>
                           ) : (
@@ -687,13 +745,16 @@ function DocumentsContent() {
                               size="sm"
                               onClick={() => handleUpload(document.name)}
                               disabled={isUploading}
-                              className="h-7 px-2 sm:h-8 sm:px-3"
+                              className="h-10 px-4 sm:h-11 sm:px-6 rounded-lg border-2 hover:border-primary/50 font-medium"
                               title="Upload"
                             >
                               {isUploading ? (
-                                <div className="h-2 w-2 sm:h-3 sm:w-3 animate-spin rounded-full border border-current border-t-transparent" />
+                                <div className="h-4 w-4 sm:h-5 sm:w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
                               ) : (
-                                <Upload className="h-2 w-2 sm:h-3 sm:w-3" />
+                                <>
+                                  <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                                  <span className="hidden sm:inline">Upload</span>
+                                </>
                               )}
                             </Button>
                           )}
@@ -708,49 +769,51 @@ function DocumentsContent() {
         })}
       </div>
 
-      {/* Preview Dialog */}
+      {/* Enhanced Preview Dialog */}
       <Dialog open={!!previewDocument} onOpenChange={(open) => { if (!open) { if (previewDocument?.url?.startsWith('blob:')) { URL.revokeObjectURL(previewDocument.url) } setPreviewDocument(null) } }}>
-        <DialogContent className="sm:max-w-4xl h-[80vh] flex flex-col bg-background border">
-          <DialogHeader className="pb-4">
-            <DialogTitle className="flex items-center gap-2 text-foreground">
-              <Eye className="h-5 w-5" />
+        <DialogContent className="sm:max-w-5xl max-h-[90vh] flex flex-col bg-background border-2 animate-scale-in">
+          <DialogHeader className="pb-6">
+            <DialogTitle className="flex items-center gap-3 text-xl font-bold">
+              <Eye className="h-6 w-6 text-primary" />
               {previewDocument?.name}
             </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
+            <DialogDescription className="text-base text-muted-foreground">
               Preview of uploaded document: {previewDocument?.name}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-auto min-h-0 bg-background border rounded-md p-4">
+          <div className="flex-1 overflow-auto min-h-0 bg-muted/20 border-2 rounded-lg p-4">
             {previewDocument && (
               <div className="w-full h-full">
                 {previewDocument.type.startsWith('image/') ? (
                   <img 
                     src={previewDocument.url} 
                     alt={previewDocument.name}
-                    className="max-w-full h-auto mx-auto"
+                    className="max-w-full h-auto mx-auto rounded-lg shadow-lg"
                   />
                 ) : previewDocument.type.startsWith('video/') ? (
                   <video 
                     src={previewDocument.url} 
                     controls
-                    className="max-w-full h-auto mx-auto"
+                    className="max-w-full h-auto mx-auto rounded-lg shadow-lg"
                   />
                 ) : previewDocument.type === 'application/pdf' ? (
                   <embed 
                     src={previewDocument.url} 
                     type="application/pdf"
-                    className="w-full h-full min-h-[600px]"
+                    className="w-full h-full min-h-[600px] rounded-lg"
                   />
                 ) : (
-                  <div className="text-center py-12">
-                    <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">
+                  <div className="text-center py-20">
+                    <FileText className="h-20 w-20 mx-auto mb-6 text-muted-foreground" />
+                    <p className="text-lg text-muted-foreground mb-6">
                       Preview not available for this file type. Use the download button to view the file.
                     </p>
                     <Button 
                       onClick={() => handleDownload(previewDocument.name)}
-                      className="mt-4"
+                      className="px-8 py-3 text-base"
+                      size="lg"
                     >
+                      <Download className="h-5 w-5 mr-2" />
                       Download File
                     </Button>
                   </div>
@@ -1193,28 +1256,28 @@ function ServicesContent() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8 animate-fade-in">
       <div>
-        <h3 className="text-xl font-semibold mb-2">Family Office Services</h3>
-        <p className="text-muted-foreground text-sm mb-6">
+        <h3 className="text-2xl sm:text-3xl font-bold mb-3">Family Office Services</h3>
+        <p className="text-muted-foreground text-base sm:text-lg">
           Comprehensive services to support your family's financial and personal needs
         </p>
       </div>
       
-      <div className="grid gap-6">
+      <div className="grid gap-6 sm:gap-8">
         {serviceCategories.map((category, categoryIndex) => {
           const CategoryIcon = category.icon
           
           return (
-            <Card key={category.title} className="shadow-soft border-l-4" style={{ borderLeftColor: 'hsl(var(--primary))' }}>
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center space-x-3 text-lg">
-                  <CategoryIcon className={`h-6 w-6 ${category.color}`} />
+            <Card key={category.title} className="hover-scale border-2 hover:border-primary/20 transition-all duration-300 animate-fade-in">
+              <CardHeader className="pb-4 sm:pb-6">
+                <CardTitle className="flex items-center space-x-3 text-lg sm:text-xl">
+                  <CategoryIcon className={`h-6 w-6 sm:h-7 sm:w-7 ${category.color}`} />
                   <span>{category.title}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 sm:gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
                   {category.services.map((service) => {
                     const ServiceIcon = service.icon
                     const member = findMemberForService(service.name)
@@ -1223,41 +1286,48 @@ function ServicesContent() {
                     return (
                       <div
                         key={service.name}
-                        className={`group p-4 rounded-lg border border-border transition-all ${
+                        className={`group p-5 sm:p-6 rounded-xl border-2 transition-all duration-300 hover-scale ${
                           isAvailable 
-                            ? 'hover:border-[#ffb500] cursor-pointer' 
-                            : 'opacity-60 cursor-not-allowed'
+                            ? 'hover:border-primary cursor-pointer hover:shadow-lg bg-gradient-to-br from-background to-muted/20' 
+                            : 'opacity-60 cursor-not-allowed border-muted bg-muted/10'
                         }`}
                         onClick={() => isAvailable && handleServiceClick(service.name)}
                       >
-                        <div className="flex items-start space-x-3">
+                        <div className="flex items-start space-x-4">
                           <div className="flex-shrink-0">
-                            <ServiceIcon className={`h-5 w-5 ${category.color} ${
-                              isAvailable ? 'group-hover:scale-110' : ''
-                            } transition-transform`} />
+                            <div className={`p-3 rounded-full ${isAvailable ? 'bg-primary/10' : 'bg-muted'} transition-all duration-300`}>
+                              <ServiceIcon className={`h-6 w-6 sm:h-7 sm:w-7 ${category.color} ${
+                                isAvailable ? 'group-hover:scale-110' : ''
+                              } transition-transform duration-300`} />
+                            </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm sm:text-base text-white hover:text-purple-500 transition-colors">
+                            <h4 className="font-semibold text-base sm:text-lg mb-2 group-hover:text-primary transition-colors duration-300">
                               {service.name}
                             </h4>
-                            <p className="text-xs sm:text-sm text-muted-foreground mt-1 leading-relaxed">
+                            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-3">
                               {service.description}
                             </p>
                             {member && (
-                              <p className="text-xs text-green-400 mt-1">
-                                Available via {member.full_name}
-                              </p>
+                              <div className="flex items-center gap-2 mb-3">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                <p className="text-xs sm:text-sm text-green-600 font-medium">
+                                  Available via {member.full_name}
+                                </p>
+                              </div>
                             )}
-                            <div className={`flex items-center mt-3 text-xs ${category.color} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                            <div className={`flex items-center text-sm font-medium ${category.color} ${
+                              isAvailable ? 'opacity-0 group-hover:opacity-100' : 'opacity-60'
+                            } transition-all duration-300`}>
                               {isAvailable ? (
                                 <>
                                   <span>Request Service</span>
-                                  <ArrowRight className="h-3 w-3 ml-1" />
+                                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
                                 </>
                               ) : (
                                 <>
-                                  <span className="text-gray-400">Coming Soon</span>
-                                  <Clock className="h-3 w-3 ml-1 text-gray-400" />
+                                  <span className="text-muted-foreground">Coming Soon</span>
+                                  <Clock className="h-4 w-4 ml-2 text-muted-foreground" />
                                 </>
                               )}
                             </div>
@@ -1273,37 +1343,47 @@ function ServicesContent() {
         })}
       </div>
 
-      {/* Premium Services Notice */}
-      <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-        <CardContent className="p-6">
-          <div className="flex items-center space-x-4">
+      {/* Enhanced Premium Services Notice */}
+      <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 border-2 border-primary/20 hover-scale">
+        <CardContent className="p-6 sm:p-8">
+          <div className="flex items-start space-x-4 sm:space-x-6">
             <div className="flex-shrink-0">
-              <Star className="h-8 w-8" style={{ color: "#ffb500" }} />
+              <div className="p-4 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full">
+                <Star className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
+              </div>
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-lg mb-2">Premium Service Guarantee</h3>
-              <p className="text-sm text-muted-foreground mb-4">
+              <h3 className="font-bold text-xl sm:text-2xl mb-3">Premium Service Guarantee</h3>
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-6">
                 All services are provided by vetted professionals with extensive experience in high-net-worth family office management. 
                 We guarantee white-glove service and complete confidentiality.
               </p>
-              <div className="flex items-center space-x-2 text-sm">
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <span>24/7 Support Available</span>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-base">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <span className="font-medium">24/7 Support Available</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Shield className="h-5 w-5 text-blue-600" />
+                  <span className="font-medium">Fully Confidential</span>
+                </div>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Family Office Members Status */}
+      {/* Enhanced Family Office Members Status */}
       {!loadingMembers && (
-        <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
-          <CardContent className="p-4">
-            <div className="flex items-start space-x-3">
-              <UserCheck className="h-5 w-5 text-blue-600 mt-0.5" />
+        <Card className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200/50 hover-scale">
+          <CardContent className="p-6 sm:p-8">
+            <div className="flex items-start space-x-4">
+              <div className="p-3 bg-blue-100 rounded-full">
+                <UserCheck className="h-6 w-6 text-blue-600" />
+              </div>
               <div>
-                <h4 className="font-medium text-blue-900 mb-1">Family Office Team</h4>
-                <p className="text-sm text-blue-800">
+                <h4 className="font-semibold text-blue-900 mb-2 text-lg sm:text-xl">Family Office Team</h4>
+                <p className="text-base text-blue-800 leading-relaxed">
                   {familyOfficeMembers.length > 0 
                     ? `${familyOfficeMembers.length} family office member(s) available to assist with services. Services without available members will show "Coming Soon".`
                     : 'No family office members added yet. Add family members to enable service requests.'
