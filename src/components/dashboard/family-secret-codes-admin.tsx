@@ -354,24 +354,6 @@ export function FamilySecretCodesAdmin() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="access_level">Access Level</Label>
-                <Select value={formData.access_level} onValueChange={(value: any) => setFormData(prev => ({ ...prev, access_level: value }))}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACCESS_LEVELS.map((level) => (
-                      <SelectItem key={level.value} value={level.value}>
-                        <div className="flex items-center gap-2">
-                          <level.icon className="h-4 w-4" />
-                          {level.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
