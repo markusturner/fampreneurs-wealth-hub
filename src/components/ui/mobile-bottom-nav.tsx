@@ -102,7 +102,7 @@ export function MobileBottomNav() {
     }
   }, [user?.id])
 
-  const navigationItems = isFamilyOfficeOnly ? familyMemberItems : familyOfficeItems
+  const navigationItems = familyOfficeItems // Always use full navigation for consistency across devices
 
   // Add unread count to Members nav item
   const itemsWithBadges = navigationItems.map(item => ({
