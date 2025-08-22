@@ -65,7 +65,9 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
       }
 
       for (const rawLine of lines) {
-        const depth = (rawLine.match(/[│└├]/g) || []).length
+        const prefixMatch = rawLine.match(/^[\s│├└─]*/)
+        const prefix = prefixMatch ? prefixMatch[0] : ''
+        const depth = (prefix.match(/[│├└]/g) || []).length
         const line = rawLine.replace(/[├─└│]/g, '').trim()
         
         // Skip empty lines but process all lines that contain names

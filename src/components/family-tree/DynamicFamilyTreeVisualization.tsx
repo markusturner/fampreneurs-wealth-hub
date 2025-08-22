@@ -212,7 +212,7 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
     validMembers.forEach(member => {
       if (member.parents) {
         member.parents.forEach(parentName => {
-          const parentMember = validMembers.find(m => m.name === (parentName || '').trim())
+          const parentMember = validMembers.find(m => m.name.trim().toLowerCase() === (parentName || '').trim().toLowerCase())
           if (parentMember) {
             edges.push({
               id: `${parentMember.id}-${member.id}`,
