@@ -80,13 +80,6 @@ export type Database = {
             referencedRelation: "connected_accounts"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "account_transactions_account_id_fkey"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "connected_accounts_display"
-            referencedColumns: ["id"]
-          },
         ]
       }
       announcements: {
@@ -3260,54 +3253,7 @@ export type Database = {
       }
     }
     Views: {
-      connected_accounts_display: {
-        Row: {
-          account_id_display: string | null
-          account_name: string | null
-          account_type: string | null
-          balance: number | null
-          created_at: string | null
-          currency: string | null
-          id: string | null
-          last_sync: string | null
-          plaid_token_display: string | null
-          provider: string | null
-          status: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          account_id_display?: never
-          account_name?: string | null
-          account_type?: string | null
-          balance?: number | null
-          created_at?: string | null
-          currency?: string | null
-          id?: string | null
-          last_sync?: string | null
-          plaid_token_display?: never
-          provider?: string | null
-          status?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          account_id_display?: never
-          account_name?: string | null
-          account_type?: string | null
-          balance?: number | null
-          created_at?: string | null
-          currency?: string | null
-          id?: string | null
-          last_sync?: string | null
-          plaid_token_display?: never
-          provider?: string | null
-          status?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       assign_accountability_role: {
