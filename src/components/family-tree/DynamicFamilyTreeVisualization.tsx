@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useEffect } from 'react'
+import { useCallback, useMemo, useEffect, memo } from 'react'
 import {
   ReactFlow,
   Controls,
@@ -9,7 +9,11 @@ import {
   Connection,
   Edge,
   Node,
+  Handle,
+  Position,
+  MiniMap,
 } from '@xyflow/react'
+import { Users, Heart, Baby, Crown } from 'lucide-react'
 
 import '@xyflow/react/dist/style.css'
 
@@ -23,6 +27,102 @@ interface FamilyMember {
 
 interface DynamicFamilyTreeVisualizationProps {
   familyMembers: FamilyMember[]
+}
+
+// Custom Family Tree Node Component
+const FamilyNode = memo(({ data }: { data: any }) => {
+  const { name, relationshipLabel, generation, hasChildren, hasParents } = data
+  
+  // Determine icon based on relationship
+  const getIcon = () => {
+    if (generation === 0) return <Crown className="h-4 w-4" />
+    if (relationshipLabel.includes('Parent')) return <Users className="h-4 w-4" />
+    if (relationshipLabel.includes('Child')) return <Baby className="h-4 w-4" />
+    return <Heart className="h-4 w-4" />
+  }
+  
+  // Get colors based on generation
+  const getColors = () => {
+    switch (generation) {
+      case 0:
+        return {
+          background: 'linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%)',
+          border: '#f59e0b',
+          iconColor: '#d97706'
+        }
+      case 1:
+        return {
+          background: 'linear-gradient(135deg, #dbeafe 0%, #3b82f6 100%)',
+          border: '#2563eb',
+          iconColor: '#1d4ed8'
+        }
+      default:
+        return {
+          background: 'linear-gradient(135deg, #f3e8ff 0%, #a855f7 100%)',
+          border: '#9333ea',
+          iconColor: '#7c3aed'
+        }
+    }
+  }
+  
+  const colors = getColors()
+  
+  return (
+    <div
+      className="family-node"
+      style={{
+        background: colors.background,
+        border: `2px solid ${colors.border}`,
+        borderRadius: '12px',
+        padding: '12px',
+        minWidth: '180px',
+        minHeight: '90px',
+        textAlign: 'center',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        position: 'relative',
+      }}
+    >
+      {/* Connection Handles */}
+      {hasParents && (
+        <Handle
+          type="target"
+          position={Position.Top}
+          style={{
+            background: colors.border,
+            width: '8px',
+            height: '8px',
+            border: 'none',
+          }}
+        />
+      )}
+      {hasChildren && (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          style={{
+            background: colors.border,
+            width: '8px',
+            height: '8px',
+            border: 'none',
+          }}
+        />
+      )}
+      
+      <div className="flex flex-col items-center gap-1">
+        <div style={{ color: colors.iconColor }}>
+          {getIcon()}
+        </div>
+        <div className="font-semibold text-sm text-gray-800">{name}</div>
+        <div className="text-xs text-gray-600">{relationshipLabel}</div>
+      </div>
+    </div>
+  )
+})
+
+FamilyNode.displayName = 'FamilyNode'
+
+const nodeTypes = {
+  familyNode: FamilyNode,
 }
 
 export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyTreeVisualizationProps) {
@@ -88,24 +188,14 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
 
         nodes.push({
           id: member.id,
-          type: 'default',
+          type: 'familyNode',
           position: { x: xPosition, y: yPosition },
           data: { 
-            label: (
-              <div className="text-center p-1">
-                <div className="font-semibold text-sm" style={{ color: '#290a52' }}>{member.name}</div>
-                <div className="text-xs" style={{ color: '#6b46c1' }}>{relationshipLabel}</div>
-              </div>
-            )
-          },
-          style: {
-            background: generation === 0 ? '#fef3c7' : generation === 1 ? '#dbeafe' : '#f3e8ff',
-            border: '2px solid #d1d5db',
-            borderRadius: '8px',
-            width: 160,
-            height: 80,
-            fontSize: '14px',
-            color: '#290a52'
+            name: member.name,
+            relationshipLabel,
+            generation,
+            hasChildren: member.children && member.children.length > 0,
+            hasParents: member.parents && member.parents.length > 0
           }
         })
       })
@@ -122,10 +212,17 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
               source: parentMember.id,
               target: member.id,
               type: 'smoothstep',
-              style: { stroke: '#6b7280', strokeWidth: 2 },
+              animated: true,
+              style: { 
+                stroke: '#6366f1', 
+                strokeWidth: 3,
+                strokeDasharray: '0'
+              },
               markerEnd: {
                 type: 'arrowclosed' as const,
-                color: '#6b7280'
+                color: '#6366f1',
+                width: 20,
+                height: 20
               }
             })
           }
@@ -156,6 +253,7 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
         <ReactFlow
           nodes={nodes}
           edges={edges}
+          nodeTypes={nodeTypes}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
@@ -164,8 +262,30 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
           attributionPosition="bottom-left"
           style={{ width: '100%', height: '100%' }}
         >
-          <Controls />
-          <Background gap={12} size={1} />
+          <Controls 
+            style={{
+              background: '#f8fafc',
+              border: '1px solid #e2e8f0',
+              borderRadius: '8px'
+            }}
+          />
+          <Background gap={20} size={2} color="#e2e8f0" />
+          <MiniMap 
+            nodeColor={(node) => {
+              switch (node.data.generation) {
+                case 0: return '#f59e0b'
+                case 1: return '#2563eb'
+                default: return '#9333ea'
+              }
+            }}
+            maskColor="rgba(255, 255, 255, 0.9)"
+            position="bottom-right"
+            style={{
+              background: '#f8fafc',
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0'
+            }}
+          />
         </ReactFlow>
       )}
     </div>
