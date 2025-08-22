@@ -56,6 +56,8 @@ export function MobileBottomNav() {
 
   // Fetch unread messages count
   useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
     const fetchUnreadCount = async () => {
       if (!user?.id) return
 
@@ -76,25 +78,27 @@ export function MobileBottomNav() {
 
     fetchUnreadCount()
 
-    // Subscribe to new messages
-    const channel = supabase
-      .channel('unread_messages')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'messages',
-          filter: `recipient_id=eq.${user?.id}`
-        },
-        () => {
-          fetchUnreadCount()
-        }
-      )
-      .subscribe()
+    // Subscribe to new messages only when user is available
+    if (user?.id) {
+      channel = supabase
+        .channel(`unread_messages_${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'messages',
+            filter: `recipient_id=eq.${user.id}`
+          },
+          () => {
+            fetchUnreadCount()
+          }
+        )
+        .subscribe()
+    }
 
     return () => {
-      supabase.removeChannel(channel)
+      if (channel) supabase.removeChannel(channel)
     }
   }, [user?.id])
 
