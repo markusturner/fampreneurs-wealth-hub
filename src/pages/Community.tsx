@@ -278,113 +278,72 @@ export default function Community() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <div className="container mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 max-w-7xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
-          <div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">Digital Family Office</h1>
-            <p className="text-base sm:text-lg text-muted-foreground mt-2">
-              Complete financial ecosystem management and wealth tracking
-            </p>
-          </div>
+      <div className="container mx-auto px-4 py-6 space-y-6 max-w-7xl">
+        <div className="animate-fade-in">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">Digital Family Office</h1>
+          <p className="text-lg text-muted-foreground">
+            Complete financial ecosystem management and wealth tracking
+          </p>
         </div>
 
         <Tabs defaultValue="accounts" className="space-y-6 animate-fade-in">
-          {/* Mobile-First Tab Navigation */}
-          <div className="w-full overflow-hidden">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1 p-1 h-auto bg-muted/50 rounded-lg">
+          {/* Mobile-Optimized Tab Navigation */}
+          <div className="w-full">
+            {/* Primary Mobile Tabs */}
+            <TabsList className="grid w-full grid-cols-3 gap-2 p-2 h-auto bg-muted rounded-xl mb-4">
               <TabsTrigger 
                 value="accounts" 
-                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md"
               >
-                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
-                  <CreditCard className="h-4 w-4 flex-shrink-0" />
-                  <span className="hidden sm:inline">Accounts</span>
-                  <span className="sm:hidden">Accts</span>
-                </div>
+                <CreditCard className="h-5 w-5" />
+                <span>Accounts</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="transactions" 
-                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md"
               >
-                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
-                  <ArrowUpRight className="h-4 w-4 flex-shrink-0" />
-                  <span className="hidden sm:inline">Transactions</span>
-                  <span className="sm:hidden">Trans</span>
-                </div>
+                <ArrowUpRight className="h-5 w-5" />
+                <span>Transactions</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="budget" 
-                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md"
               >
-                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
-                  <PieChart className="h-4 w-4 flex-shrink-0" />
-                  <span>Budget</span>
-                </div>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="reports" 
-                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm hidden sm:flex"
-              >
-                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
-                  <BarChart3 className="h-4 w-4 flex-shrink-0" />
-                  <span>Reports</span>
-                </div>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="documents" 
-                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm hidden lg:flex"
-              >
-                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
-                  <FileText className="h-4 w-4 flex-shrink-0" />
-                  <span>Documents</span>
-                </div>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="messages" 
-                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm hidden lg:flex"
-              >
-                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
-                  <MessageSquare className="h-4 w-4 flex-shrink-0" />
-                  <span>Messages</span>
-                </div>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="services" 
-                className="px-3 py-3 text-xs sm:text-sm font-medium rounded-md transition-all hover-scale data-[state=active]:bg-background data-[state=active]:shadow-sm hidden lg:flex"
-              >
-                <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-2">
-                  <Briefcase className="h-4 w-4 flex-shrink-0" />
-                  <span>Services</span>
-                </div>
+                <PieChart className="h-5 w-5" />
+                <span>Budget</span>
               </TabsTrigger>
             </TabsList>
 
-            {/* Mobile Tab Overflow Menu */}
-            <div className="sm:hidden mt-3">
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {/* Secondary Mobile Tabs - Horizontal Scroll */}
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex gap-3 pb-2 min-w-max px-1">
                 <TabsTrigger 
                   value="reports" 
-                  className="px-4 py-2 text-xs font-medium rounded-full border bg-background hover:bg-accent whitespace-nowrap flex-shrink-0"
+                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary"
                 >
-                  Reports
+                  <BarChart3 className="h-4 w-4" />
+                  <span>Reports</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="documents" 
-                  className="px-4 py-2 text-xs font-medium rounded-full border bg-background hover:bg-accent whitespace-nowrap flex-shrink-0"
+                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary"
                 >
-                  Documents
+                  <FileText className="h-4 w-4" />
+                  <span>Documents</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="messages" 
-                  className="px-4 py-2 text-xs font-medium rounded-full border bg-background hover:bg-accent whitespace-nowrap flex-shrink-0"
+                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary"
                 >
-                  Messages
+                  <MessageSquare className="h-4 w-4" />
+                  <span>Messages</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="services" 
-                  className="px-4 py-2 text-xs font-medium rounded-full border bg-background hover:bg-accent whitespace-nowrap flex-shrink-0"
+                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary"
                 >
-                  Services
+                  <Briefcase className="h-4 w-4" />
+                  <span>Services</span>
                 </TabsTrigger>
               </div>
             </div>
@@ -417,22 +376,22 @@ export default function Community() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="documents" className="space-y-4 sm:space-y-6 animate-fade-in">
+          <TabsContent value="documents" className="space-y-6 animate-fade-in">
             <DocumentsContent />
           </TabsContent>
 
-          <TabsContent value="messages" className="space-y-4 sm:space-y-6 animate-fade-in">
+          <TabsContent value="messages" className="space-y-6 animate-fade-in">
             <MessagesContent familyOfficeMembers={familyOfficeMembers} loadingMembers={loadingMembers} />
           </TabsContent>
 
-          <TabsContent value="services" className="space-y-4 sm:space-y-6 animate-fade-in">
+          <TabsContent value="services" className="space-y-6 animate-fade-in">
             <ServicesContent />
           </TabsContent>
         </Tabs>
       </div>
       
-      {/* Mobile Bottom Navigation */}
-      <div className="pb-16 md:pb-0" />
+      {/* Mobile Bottom Navigation Spacing */}
+      <div className="pb-20" />
     </div>
   )
 }
