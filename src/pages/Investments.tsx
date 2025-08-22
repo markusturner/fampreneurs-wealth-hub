@@ -274,7 +274,7 @@ export default function FamilyOffice() {
         <Tabs defaultValue="accounts" className="space-y-6 animate-fade-in">
           {/* Mobile-Optimized Tab Navigation */}
           <div className="w-full">
-            {/* Primary Mobile Tabs */}
+            {/* Combined Mobile Tabs */}
             <TabsList className="grid w-full grid-cols-3 gap-2 p-2 h-auto bg-muted rounded-xl mb-4">
               <TabsTrigger 
                 value="accounts" 
@@ -299,39 +299,37 @@ export default function FamilyOffice() {
               </TabsTrigger>
             </TabsList>
 
-            {/* Secondary Mobile Tabs - Horizontal Scroll */}
-            <div className="overflow-x-auto scrollbar-hide">
-              <TabsList className="flex gap-3 pb-2 min-w-max px-1 bg-transparent">
-                <TabsTrigger 
-                  value="reports" 
-                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary touch-manipulation"
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  <span>Reports</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="documents" 
-                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary touch-manipulation"
-                >
-                  <FileText className="h-4 w-4" />
-                  <span>Documents</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="messages" 
-                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary touch-manipulation"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span>Messages</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="services" 
-                  className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary touch-manipulation"
-                >
-                  <Briefcase className="h-4 w-4" />
-                  <span>Services</span>
-                </TabsTrigger>
-              </TabsList>
-            </div>
+            {/* Additional Tabs Row */}
+            <TabsList className="grid w-full grid-cols-4 gap-2 p-2 h-auto bg-muted rounded-xl">
+              <TabsTrigger 
+                value="reports" 
+                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation"
+              >
+                <BarChart3 className="h-5 w-5" />
+                <span>Reports</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="documents" 
+                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation"
+              >
+                <FileText className="h-5 w-5" />
+                <span>Documents</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="messages" 
+                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation"
+              >
+                <MessageSquare className="h-5 w-5" />
+                <span>Messages</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="services" 
+                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation"
+              >
+                <Briefcase className="h-5 w-5" />
+                <span>Services</span>
+              </TabsTrigger>
+            </TabsList>
           </div>
 
           <TabsContent value="accounts" className="space-y-6">
