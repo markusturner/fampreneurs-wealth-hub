@@ -216,7 +216,7 @@ export function FamilySecretCodesAdmin() {
           created_by: user?.id,
           code: formData.code.toUpperCase(),
           description: formData.description,
-          access_level: formData.access_level,
+          access_level: 'basic', // Default to basic access since selector was removed
           expires_at: formData.expires_at?.toISOString(),
           max_uses: formData.max_uses,
           permissions: {}
