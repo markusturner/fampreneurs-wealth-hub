@@ -90,7 +90,7 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
         family_position: member.family_position || '',
         relationship_to_family: member.relationship_to_family || '',
         trust_positions: member.trust_positions || [],
-        governance_position: member.trust_positions?.find(pos => governancePositions.includes(pos)) || '',
+        governance_position: member.trust_positions?.find(pos => governancePositions.includes(pos)) || 'none',
         notes: member.notes || ''
       })
     }
@@ -120,7 +120,7 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
     // Merge governance position with trust positions
     let finalTrustPositions = formData.trust_positions.filter(pos => !governancePositions.includes(pos))
     
-    if (formData.governance_position && formData.governance_position !== '') {
+    if (formData.governance_position && formData.governance_position !== '' && formData.governance_position !== 'none') {
       finalTrustPositions = [...finalTrustPositions, formData.governance_position]
     }
 
@@ -218,7 +218,7 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
                 <SelectValue placeholder="Select governance position" />
               </SelectTrigger>
               <SelectContent className="bg-background border z-50">
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 <SelectItem value="family-council-header" disabled className="font-semibold text-blue-600">Family Council</SelectItem>
                 <SelectItem value="Chairman">Chairman</SelectItem>
                 <SelectItem value="Vice Chair">Vice Chair</SelectItem>

@@ -72,7 +72,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
     phone: '',
     familyPosition: '',
     relationshipToFamily: '',
-    governancePosition: '',
+    governancePosition: 'none',
     notes: ''
   })
   const [selectedTrustPositions, setSelectedTrustPositions] = useState<string[]>([])
@@ -85,7 +85,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
       phone: '',
       familyPosition: '',
       relationshipToFamily: '',
-      governancePosition: '',
+      governancePosition: 'none',
       notes: ''
     })
     setSelectedTrustPositions([])
@@ -126,7 +126,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
       // Merge governance position with trust positions
       let finalTrustPositions = [...selectedTrustPositions]
       
-      if (formData.governancePosition && formData.governancePosition !== '') {
+      if (formData.governancePosition && formData.governancePosition !== '' && formData.governancePosition !== 'none') {
         finalTrustPositions = [...finalTrustPositions, formData.governancePosition]
       }
 
@@ -333,7 +333,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
                     <SelectValue placeholder="Select governance position (optional)" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border z-50">
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     <SelectItem value="family-council-header" disabled className="font-semibold text-blue-600">Family Council</SelectItem>
                     <SelectItem value="Chairman">Chairman</SelectItem>
                     <SelectItem value="Vice Chair">Vice Chair</SelectItem>
