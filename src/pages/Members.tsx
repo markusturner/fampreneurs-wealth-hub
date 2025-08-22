@@ -447,21 +447,21 @@ export default function Members() {
 
   const EmptyState = ({ type }: { type: 'family' | 'office' }) => (
     <Card className="w-full">
-      <CardContent className="p-4 sm:p-8 text-center">
+      <CardContent className="p-3 sm:p-6 text-center">
         {type === 'family' ? (
           <>
-            <Users className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-base sm:text-lg font-medium mb-2">No family members added</h3>
-            <p className="text-sm text-muted-foreground mb-3 sm:mb-4">
-              Start building your family directory by adding your first member
+            <Users className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 sm:mb-3 text-muted-foreground opacity-50" />
+            <h3 className="text-sm sm:text-base font-medium mb-1 sm:mb-2">No family members added</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
+              Start building your family directory
             </p>
           </>
         ) : (
           <>
-            <Briefcase className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-base sm:text-lg font-medium mb-2">No family office members added</h3>
-            <p className="text-sm text-muted-foreground mb-3 sm:mb-4">
-              Build your professional team by adding family office members
+            <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 sm:mb-3 text-muted-foreground opacity-50" />
+            <h3 className="text-sm sm:text-base font-medium mb-1 sm:mb-2">No office members added</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
+              Build your professional team
             </p>
           </>
         )}
