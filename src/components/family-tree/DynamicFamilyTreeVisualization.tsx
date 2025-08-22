@@ -149,6 +149,55 @@ export function DynamicFamilyTreeVisualization({ familyMembers }: DynamicFamilyT
       if (m?.id) orderMap[m.id] = idx
     })
 
+    // Reassign generations based on family relationships
+    const assignGenerations = () => {
+      const memberMap = new Map<string, FamilyMember>()
+      validMembers.forEach(member => memberMap.set(member.name, member))
+      
+      // Find root members (those with no parents)
+      const rootMembers = validMembers.filter(member => !member.parents || member.parents.length === 0)
+      
+      // Assign generations starting from roots
+      const visited = new Set<string>()
+      const assignGeneration = (member: FamilyMember, generation: number) => {
+        if (visited.has(member.name)) return
+        visited.add(member.name)
+        member.generation = generation
+        
+        // Assign children to next generation
+        if (member.children) {
+          member.children.forEach(childName => {
+            const child = memberMap.get(childName)
+            if (child && !visited.has(child.name)) {
+              assignGeneration(child, generation + 1)
+            }
+          })
+        }
+      }
+      
+      // Start with root members at generation 0
+      rootMembers.forEach(root => assignGeneration(root, 0))
+      
+      // Handle married couples - put them on same generation
+      validMembers.forEach(member => {
+        if (member.children) {
+          // Find potential spouses (other parents of the same children)
+          const potentialSpouses = validMembers.filter(other => 
+            other.name !== member.name && 
+            other.children && 
+            other.children.some(child => member.children!.includes(child))
+          )
+          
+          potentialSpouses.forEach(spouse => {
+            // Put spouse on same generation as member
+            spouse.generation = member.generation
+          })
+        }
+      })
+    }
+    
+    assignGenerations()
+
     // Group by generation for positioning
     const generationGroups: { [key: number]: FamilyMember[] } = {}
     validMembers.forEach(member => {
