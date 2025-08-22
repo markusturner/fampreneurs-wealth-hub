@@ -20,6 +20,13 @@ const governanceBranches = [
     description: "Executive branch responsible for day-to-day family business decisions",
     icon: Crown,
     members: "5 Active Members",
+    membersList: [
+      { name: "John Smith", role: "Chairman" },
+      { name: "Mary Johnson", role: "Vice Chair" },
+      { name: "Robert Williams", role: "Secretary" },
+      { name: "Lisa Brown", role: "Treasurer" },
+      { name: "Michael Davis", role: "Operations Lead" }
+    ],
     role: "Decision Making & Strategy",
     color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800",
     iconColor: "text-blue-600",
@@ -38,6 +45,11 @@ const governanceBranches = [
     description: "Advisory branch providing wisdom and guidance based on experience",
     icon: Users,
     members: "3 Elder Members",
+    membersList: [
+      { name: "Eleanor Smith", role: "Elder Advisor" },
+      { name: "George Johnson", role: "Elder Mentor" },
+      { name: "Dorothy Williams", role: "Elder Mediator" }
+    ],
     role: "Guidance & Mentorship",
     color: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800",
     iconColor: "text-emerald-600",
@@ -56,6 +68,16 @@ const governanceBranches = [
     description: "Legislative branch representing all family members' voices",
     icon: Scale,
     members: "All Family Members",
+    membersList: [
+      { name: "John Smith", role: "Voting Member" },
+      { name: "Mary Johnson", role: "Voting Member" },
+      { name: "Sarah Smith", role: "Voting Member" },
+      { name: "David Johnson", role: "Voting Member" },
+      { name: "Emily Williams", role: "Voting Member" },
+      { name: "James Brown", role: "Voting Member" },
+      { name: "Anna Davis", role: "Voting Member" },
+      { name: "Thomas Wilson", role: "Voting Member" }
+    ],
     role: "Voting & Policy Making",
     color: "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800",
     iconColor: "text-purple-600",
@@ -196,7 +218,19 @@ export default function FamilyGovernance() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid md:grid-cols-3 gap-6">
+                    <div className="grid md:grid-cols-4 gap-6">
+                      <div>
+                        <h4 className="font-semibold mb-2 text-sm">Current Members</h4>
+                        <div className="space-y-2">
+                          {branch.membersList.map((member, idx) => (
+                            <div key={idx} className="text-sm">
+                              <div className="font-medium">{member.name}</div>
+                              <div className="text-muted-foreground text-xs">{member.role}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
                       <div>
                         <h4 className="font-semibold mb-2 text-sm">Key Responsibilities</h4>
                         <ul className="space-y-1">
