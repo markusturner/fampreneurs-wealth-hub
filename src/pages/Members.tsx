@@ -433,12 +433,12 @@ export default function Members() {
   }
 
   const LoadingSkeleton = () => (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {[1, 2, 3].map(i => (
         <Card key={i} className="animate-pulse">
-          <CardContent className="p-6">
-            <div className="h-4 bg-muted rounded w-1/3 mb-4"></div>
-            <div className="h-3 bg-muted rounded w-2/3"></div>
+          <CardContent className="p-3 sm:p-4 md:p-6">
+            <div className="h-3 sm:h-4 bg-muted rounded w-1/3 mb-3 sm:mb-4"></div>
+            <div className="h-2 sm:h-3 bg-muted rounded w-2/3"></div>
           </CardContent>
         </Card>
       ))}
@@ -446,21 +446,21 @@ export default function Members() {
   )
 
   const EmptyState = ({ type }: { type: 'family' | 'office' }) => (
-    <Card>
-      <CardContent className="p-8 text-center">
+    <Card className="w-full">
+      <CardContent className="p-4 sm:p-8 text-center">
         {type === 'family' ? (
           <>
-            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-medium mb-2">No family members added</h3>
-            <p className="text-muted-foreground mb-4">
+            <Users className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-base sm:text-lg font-medium mb-2">No family members added</h3>
+            <p className="text-sm text-muted-foreground mb-3 sm:mb-4">
               Start building your family directory by adding your first member
             </p>
           </>
         ) : (
           <>
-            <Briefcase className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-            <h3 className="text-lg font-medium mb-2">No family office members added</h3>
-            <p className="text-muted-foreground mb-4">
+            <Briefcase className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-muted-foreground opacity-50" />
+            <h3 className="text-base sm:text-lg font-medium mb-2">No family office members added</h3>
+            <p className="text-sm text-muted-foreground mb-3 sm:mb-4">
               Build your professional team by adding family office members
             </p>
           </>
