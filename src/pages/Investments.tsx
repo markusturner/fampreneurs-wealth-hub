@@ -352,8 +352,6 @@ export default function FamilyOffice() {
         </Tabs>
       </div>
       
-      {/* Mobile Bottom Navigation */}
-      <div className="pb-16 md:pb-0" />
     </div>
   )
 }
