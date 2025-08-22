@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Send, Bot, User, Loader2, MessageCircle, X, Minimize2, Building2, TrendingUp, FileText, Users } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { supabase } from '@/integrations/supabase/client'
 
 interface Message {
@@ -19,6 +20,7 @@ interface Message {
 export function AIChat() {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+  const isMobile = useIsMobile()
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -169,7 +171,7 @@ export function AIChat() {
   ]
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className={`fixed right-4 z-50 ${isMobile ? 'bottom-20' : 'bottom-4'}`}>
       {/* Chat Widget Button */}
       {!isOpen && (
         <Button
