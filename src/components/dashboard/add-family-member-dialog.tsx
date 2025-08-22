@@ -46,6 +46,22 @@ const trustPositions = [
   'Board Member'
 ]
 
+const governancePositions = [
+  // Family Council
+  'Chairman',
+  'Vice Chair',
+  'Secretary',
+  'Treasurer',
+  'Operations Lead',
+  'Council Member',
+  // Council of Elders
+  'Elder Advisor',
+  'Elder Mentor',
+  'Elder Mediator',
+  // Family Assembly
+  'Voting Member'
+]
+
 export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDialogProps) {
   const { user } = useAuth()
   const { toast } = useToast()
@@ -56,6 +72,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
     phone: '',
     familyPosition: '',
     relationshipToFamily: '',
+    governancePosition: '',
     notes: ''
   })
   const [selectedTrustPositions, setSelectedTrustPositions] = useState<string[]>([])
@@ -68,6 +85,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
       phone: '',
       familyPosition: '',
       relationshipToFamily: '',
+      governancePosition: '',
       notes: ''
     })
     setSelectedTrustPositions([])
@@ -105,6 +123,13 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
 
     setLoading(true)
     try {
+      // Merge governance position with trust positions
+      let finalTrustPositions = [...selectedTrustPositions]
+      
+      if (formData.governancePosition && formData.governancePosition !== '') {
+        finalTrustPositions = [...finalTrustPositions, formData.governancePosition]
+      }
+
       // First, insert the family member
       const { data: familyMemberData, error: familyMemberError } = await supabase
         .from('family_members')
@@ -114,7 +139,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
           email: formData.email.trim() || null,
           phone: formData.phone.trim() || null,
           family_position: formData.familyPosition || null,
-          trust_positions: selectedTrustPositions.length > 0 ? selectedTrustPositions : null,
+          trust_positions: finalTrustPositions.length > 0 ? finalTrustPositions : null,
           relationship_to_family: formData.relationshipToFamily.trim() || null,
           notes: formData.notes.trim() || null,
           status: 'pending'
@@ -296,6 +321,36 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
                   onChange={(e) => setFormData(prev => ({ ...prev, relationshipToFamily: e.target.value }))}
                   placeholder="e.g., Son of John Smith, Daughter-in-law"
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="governancePosition">Family Governance Position</Label>
+                <Select 
+                  value={formData.governancePosition} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, governancePosition: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select governance position (optional)" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border z-50">
+                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="family-council-header" disabled className="font-semibold text-blue-600">Family Council</SelectItem>
+                    <SelectItem value="Chairman">Chairman</SelectItem>
+                    <SelectItem value="Vice Chair">Vice Chair</SelectItem>
+                    <SelectItem value="Secretary">Secretary</SelectItem>
+                    <SelectItem value="Treasurer">Treasurer</SelectItem>
+                    <SelectItem value="Operations Lead">Operations Lead</SelectItem>
+                    <SelectItem value="Council Member">Council Member</SelectItem>
+                    
+                    <SelectItem value="council-elders-header" disabled className="font-semibold text-emerald-600 mt-2">Council of Elders</SelectItem>
+                    <SelectItem value="Elder Advisor">Elder Advisor</SelectItem>
+                    <SelectItem value="Elder Mentor">Elder Mentor</SelectItem>
+                    <SelectItem value="Elder Mediator">Elder Mediator</SelectItem>
+                    
+                    <SelectItem value="family-assembly-header" disabled className="font-semibold text-purple-600 mt-2">Family Assembly</SelectItem>
+                    <SelectItem value="Voting Member">Voting Member</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>

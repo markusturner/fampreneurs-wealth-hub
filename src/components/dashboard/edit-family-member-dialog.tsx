@@ -52,6 +52,22 @@ const trustPositions = [
   'Advisory Board Member'
 ]
 
+const governancePositions = [
+  // Family Council
+  'Chairman',
+  'Vice Chair',
+  'Secretary',
+  'Treasurer',
+  'Operations Lead',
+  'Council Member',
+  // Council of Elders
+  'Elder Advisor',
+  'Elder Mentor',
+  'Elder Mediator',
+  // Family Assembly
+  'Voting Member'
+]
+
 export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamilyMemberDialogProps) {
   const [formData, setFormData] = useState({
     full_name: '',
@@ -60,6 +76,7 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
     family_position: '',
     relationship_to_family: '',
     trust_positions: [] as string[],
+    governance_position: '',
     notes: ''
   })
   const [newTrustPosition, setNewTrustPosition] = useState('')
@@ -73,6 +90,7 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
         family_position: member.family_position || '',
         relationship_to_family: member.relationship_to_family || '',
         trust_positions: member.trust_positions || [],
+        governance_position: member.trust_positions?.find(pos => governancePositions.includes(pos)) || '',
         notes: member.notes || ''
       })
     }
@@ -99,9 +117,17 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
     e.preventDefault()
     if (!member) return
 
+    // Merge governance position with trust positions
+    let finalTrustPositions = formData.trust_positions.filter(pos => !governancePositions.includes(pos))
+    
+    if (formData.governance_position && formData.governance_position !== '') {
+      finalTrustPositions = [...finalTrustPositions, formData.governance_position]
+    }
+
     onUpdate({
       id: member.id,
-      ...formData
+      ...formData,
+      trust_positions: finalTrustPositions
     })
   }
 
@@ -183,9 +209,41 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="governance_position">Family Governance Position</Label>
+            <Select
+              value={formData.governance_position}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, governance_position: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select governance position" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border z-50">
+                <SelectItem value="">None</SelectItem>
+                <SelectItem value="family-council-header" disabled className="font-semibold text-blue-600">Family Council</SelectItem>
+                <SelectItem value="Chairman">Chairman</SelectItem>
+                <SelectItem value="Vice Chair">Vice Chair</SelectItem>
+                <SelectItem value="Secretary">Secretary</SelectItem>
+                <SelectItem value="Treasurer">Treasurer</SelectItem>
+                <SelectItem value="Operations Lead">Operations Lead</SelectItem>
+                <SelectItem value="Council Member">Council Member</SelectItem>
+                
+                <SelectItem value="council-elders-header" disabled className="font-semibold text-emerald-600 mt-2">Council of Elders</SelectItem>
+                <SelectItem value="Elder Advisor">Elder Advisor</SelectItem>
+                <SelectItem value="Elder Mentor">Elder Mentor</SelectItem>
+                <SelectItem value="Elder Mediator">Elder Mediator</SelectItem>
+                
+                <SelectItem value="family-assembly-header" disabled className="font-semibold text-purple-600 mt-2">Family Assembly</SelectItem>
+                <SelectItem value="Voting Member">Voting Member</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label>Trust Positions</Label>
             <div className="flex flex-wrap gap-2 mb-2">
-              {formData.trust_positions.map(position => (
+              {formData.trust_positions
+                .filter(position => !governancePositions.includes(position))
+                .map(position => (
                 <Badge key={position} variant="secondary" className="flex items-center gap-1">
                   {position}
                   <button
