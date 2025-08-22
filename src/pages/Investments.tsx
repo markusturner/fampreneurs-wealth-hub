@@ -275,7 +275,7 @@ export default function FamilyOffice() {
           {/* Mobile-Optimized Tab Navigation */}
           <div className="w-full">
             {/* All Tabs in Grid Layout */}
-            <TabsList className="grid grid-cols-4 gap-1 p-2 h-auto bg-muted rounded-xl lg:grid-cols-7">
+            <TabsList className="grid grid-cols-4 gap-1 p-2 h-auto bg-muted rounded-xl lg:grid-cols-7 mx-auto max-w-fit">
               <TabsTrigger 
                 value="accounts" 
                 className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm"
