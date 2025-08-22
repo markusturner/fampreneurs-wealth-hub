@@ -301,7 +301,7 @@ export default function FamilyOffice() {
 
             {/* Secondary Mobile Tabs - Horizontal Scroll */}
             <div className="overflow-x-auto scrollbar-hide">
-              <div className="flex gap-3 pb-2 min-w-max px-1">
+              <TabsList className="flex gap-3 pb-2 min-w-max px-1 bg-transparent">
                 <TabsTrigger 
                   value="reports" 
                   className="flex items-center gap-2 py-3 px-5 text-sm font-medium rounded-full border-2 bg-background hover:bg-accent whitespace-nowrap transition-all hover:border-primary touch-manipulation"
@@ -330,7 +330,7 @@ export default function FamilyOffice() {
                   <Briefcase className="h-4 w-4" />
                   <span>Services</span>
                 </TabsTrigger>
-              </div>
+              </TabsList>
             </div>
           </div>
 
