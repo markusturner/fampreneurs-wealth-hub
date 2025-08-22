@@ -263,10 +263,10 @@ export default function FamilyOffice() {
       <NavHeader />
       
       
-      <div className="container mx-auto px-4 py-6 space-y-6 max-w-full touch-manipulation">
+      <div className="container mx-auto px-3 py-4 space-y-4 max-w-full touch-manipulation sm:px-4 sm:py-6 sm:space-y-6">
         <div className="animate-fade-in">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Digital Family Office</h1>
-          <p className="text-lg text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Digital Family Office</h1>
+          <p className="text-base sm:text-lg text-muted-foreground">
             Complete financial ecosystem management and wealth tracking
           </p>
         </div>
@@ -300,33 +300,33 @@ export default function FamilyOffice() {
             </TabsList>
 
             {/* Additional Tabs Row */}
-            <TabsList className="grid w-full grid-cols-4 gap-2 p-2 h-auto bg-muted rounded-xl">
+            <TabsList className="grid w-full grid-cols-2 gap-2 p-2 h-auto bg-muted rounded-xl sm:grid-cols-4">
               <TabsTrigger 
                 value="reports" 
-                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation"
+                className="flex flex-col items-center gap-1.5 py-3 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-2 sm:py-4 sm:px-3 sm:text-sm"
               >
-                <BarChart3 className="h-5 w-5" />
+                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span>Reports</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="documents" 
-                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation"
+                className="flex flex-col items-center gap-1.5 py-3 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-2 sm:py-4 sm:px-3 sm:text-sm"
               >
-                <FileText className="h-5 w-5" />
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span>Documents</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="messages" 
-                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation"
+                className="flex flex-col items-center gap-1.5 py-3 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-2 sm:py-4 sm:px-3 sm:text-sm"
               >
-                <MessageSquare className="h-5 w-5" />
+                <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span>Messages</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="services" 
-                className="flex flex-col items-center gap-2 py-4 px-3 text-sm font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation"
+                className="flex flex-col items-center gap-1.5 py-3 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-2 sm:py-4 sm:px-3 sm:text-sm"
               >
-                <Briefcase className="h-5 w-5" />
+                <Briefcase className="h-4 w-4 sm:h-5 sm:w-5" />
                 <span>Services</span>
               </TabsTrigger>
             </TabsList>
