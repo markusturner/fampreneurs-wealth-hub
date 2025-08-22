@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -13,85 +14,15 @@ import {
 } from "lucide-react"
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { useNavigate } from "react-router-dom"
+import { supabase } from "@/integrations/supabase/client"
+import { useAuth } from "@/contexts/AuthContext"
 
-const governanceBranches = [
-  {
-    title: "The Family Council",
-    description: "Executive branch responsible for day-to-day family business decisions",
-    icon: Crown,
-    members: "5 Active Members",
-    membersList: [
-      { name: "John Smith", role: "Chairman" },
-      { name: "Mary Johnson", role: "Vice Chair" },
-      { name: "Robert Williams", role: "Secretary" },
-      { name: "Lisa Brown", role: "Treasurer" },
-      { name: "Michael Davis", role: "Operations Lead" }
-    ],
-    role: "Decision Making & Strategy",
-    color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800",
-    iconColor: "text-blue-600",
-    responsibilities: [
-      "Strategic planning and direction",
-      "Resource allocation decisions", 
-      "Business operations oversight",
-      "Crisis management and resolution",
-      "Quarterly family meetings"
-    ],
-    meetingSchedule: "Weekly meetings every Tuesday",
-    authority: "Executive decisions for amounts up to $500K"
-  },
-  {
-    title: "Council of Elders",
-    description: "Advisory branch providing wisdom and guidance based on experience",
-    icon: Users,
-    members: "3 Elder Members",
-    membersList: [
-      { name: "Eleanor Smith", role: "Elder Advisor" },
-      { name: "George Johnson", role: "Elder Mentor" },
-      { name: "Dorothy Williams", role: "Elder Mediator" }
-    ],
-    role: "Guidance & Mentorship",
-    color: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800",
-    iconColor: "text-emerald-600",
-    responsibilities: [
-      "Mentorship for younger generation",
-      "Dispute resolution and mediation",
-      "Preservation of family values",
-      "Historical knowledge transfer",
-      "Legacy planning guidance"
-    ],
-    meetingSchedule: "Monthly meetings first Friday",
-    authority: "Advisory capacity with veto power on major decisions"
-  },
-  {
-    title: "Family Assembly",
-    description: "Legislative branch representing all family members' voices",
-    icon: Scale,
-    members: "All Family Members",
-    membersList: [
-      { name: "John Smith", role: "Voting Member" },
-      { name: "Mary Johnson", role: "Voting Member" },
-      { name: "Sarah Smith", role: "Voting Member" },
-      { name: "David Johnson", role: "Voting Member" },
-      { name: "Emily Williams", role: "Voting Member" },
-      { name: "James Brown", role: "Voting Member" },
-      { name: "Anna Davis", role: "Voting Member" },
-      { name: "Thomas Wilson", role: "Voting Member" }
-    ],
-    role: "Voting & Policy Making",
-    color: "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800",
-    iconColor: "text-purple-600",
-    responsibilities: [
-      "Vote on family constitution changes",
-      "Approve major investments",
-      "Select Family Council members",
-      "Annual budget approval",
-      "Policy and governance decisions"
-    ],
-    meetingSchedule: "Quarterly assemblies and annual meeting",
-    authority: "Final voting authority on all major family matters"
-  }
-]
+interface FamilyMember {
+  id: string
+  full_name: string
+  family_position: string
+  trust_positions: string[] | null
+}
 
 const governancePrinciples = [
   {
@@ -118,6 +49,138 @@ const governancePrinciples = [
 
 export default function FamilyGovernance() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchFamilyMembers()
+  }, [user])
+
+  const fetchFamilyMembers = async () => {
+    if (!user) return
+
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('family_members')
+        .select('id, full_name, family_position, trust_positions')
+        .eq('added_by', user.id)
+      
+      if (error) throw error
+      
+      setFamilyMembers(data || [])
+    } catch (error) {
+      console.error('Error fetching family members:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getGovernanceBranches = () => {
+    // Categorize family members into governance branches
+    const familyCouncilMembers = familyMembers.filter(member => 
+      member.trust_positions?.includes('Chairman') ||
+      member.trust_positions?.includes('Vice Chair') ||
+      member.trust_positions?.includes('Secretary') ||
+      member.trust_positions?.includes('Treasurer') ||
+      member.family_position?.toLowerCase().includes('council')
+    )
+
+    const elderMembers = familyMembers.filter(member => 
+      member.trust_positions?.includes('Elder') ||
+      member.family_position?.toLowerCase().includes('elder') ||
+      member.family_position?.toLowerCase().includes('advisor') ||
+      member.family_position?.toLowerCase().includes('mentor')
+    )
+
+    // All other family members are part of Family Assembly
+    const assemblyMembers = familyMembers
+
+    return [
+      {
+        title: "The Family Council",
+        description: "Executive branch responsible for day-to-day family business decisions",
+        icon: Crown,
+        members: `${familyCouncilMembers.length} Active Members`,
+        membersList: familyCouncilMembers.map(member => ({
+          name: member.full_name,
+          role: member.trust_positions?.[0] || member.family_position || "Council Member"
+        })),
+        role: "Decision Making & Strategy",
+        color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800",
+        iconColor: "text-blue-600",
+        responsibilities: [
+          "Strategic planning and direction",
+          "Resource allocation decisions", 
+          "Business operations oversight",
+          "Crisis management and resolution",
+          "Quarterly family meetings"
+        ],
+        meetingSchedule: "Weekly meetings every Tuesday",
+        authority: "Executive decisions for amounts up to $500K"
+      },
+      {
+        title: "Council of Elders",
+        description: "Advisory branch providing wisdom and guidance based on experience",
+        icon: Users,
+        members: `${elderMembers.length} Elder Members`,
+        membersList: elderMembers.map(member => ({
+          name: member.full_name,
+          role: member.trust_positions?.[0] || member.family_position || "Elder Advisor"
+        })),
+        role: "Guidance & Mentorship",
+        color: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800",
+        iconColor: "text-emerald-600",
+        responsibilities: [
+          "Mentorship for younger generation",
+          "Dispute resolution and mediation",
+          "Preservation of family values",
+          "Historical knowledge transfer",
+          "Legacy planning guidance"
+        ],
+        meetingSchedule: "Monthly meetings first Friday",
+        authority: "Advisory capacity with veto power on major decisions"
+      },
+      {
+        title: "Family Assembly",
+        description: "Legislative branch representing all family members' voices",
+        icon: Scale,
+        members: `${assemblyMembers.length} Voting Members`,
+        membersList: assemblyMembers.map(member => ({
+          name: member.full_name,
+          role: "Voting Member"
+        })),
+        role: "Voting & Policy Making",
+        color: "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800",
+        iconColor: "text-purple-600",
+        responsibilities: [
+          "Vote on family constitution changes",
+          "Approve major investments",
+          "Select Family Council members",
+          "Annual budget approval",
+          "Policy and governance decisions"
+        ],
+        meetingSchedule: "Quarterly assemblies and annual meeting",
+        authority: "Final voting authority on all major family matters"
+      }
+    ]
+  }
+
+  const governanceBranches = getGovernanceBranches()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <NavHeader />
+        <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">Loading family governance structure...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
