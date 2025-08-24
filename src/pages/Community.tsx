@@ -844,6 +844,33 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
 
   const [conversationMessages, setConversationMessages] = useState(conversations)
 
+  // Build AI "members" from existing AI conversations
+  const aiConversationMembers = aiChatbotExperts
+    .filter((e) => (conversationMessages[e.id] || []).length > 0)
+    .map((e) => {
+      const msgs = conversationMessages[e.id] || []
+      const last = msgs[msgs.length - 1]
+      const unreadCount = msgs.filter((m) => !m.isCurrentUser).length
+      return {
+        id: e.id,
+        name: e.name,
+        role: e.role,
+        avatar: e.avatar,
+        lastSeen: last ? last.timestamp : 'No messages',
+        status: unreadCount > 0 ? 'online' : 'offline',
+        unreadCount,
+        lastMessage: last?.message || 'No messages yet',
+        hasUnread: unreadCount > 0,
+        isAI: true,
+      }
+    })
+
+  // Combine real members and AI conversations
+  const allMembersWithAI = [
+    ...formattedMembers.map(m => ({ ...m, isAI: false })),
+    ...aiConversationMembers,
+  ]
+
   // Enhanced conversations with sample data for family members
   useEffect(() => {
     if (familyOfficeMembers.length === 0) return
@@ -908,7 +935,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
     }))
   }
 
-  const filteredMembers = formattedMembers.filter(member => 
+  const filteredMembers = allMembersWithAI.filter(member => 
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.role.toLowerCase().includes(searchQuery.toLowerCase())
   )
@@ -1121,7 +1148,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
-                  disabled={familyOfficeMembers.length === 0}
+                  disabled={allMembersWithAI.length === 0}
                 />
               </div>
             </div>
@@ -1134,7 +1161,18 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                      className={`p-4 border-b cursor-pointer transition-colors hover:bg-accent/50 ${
                        selectedConversation === member.id ? 'bg-accent' : ''
                      } ${member.hasUnread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
-                     onClick={() => setSelectedConversation(member.id)}
+                     onClick={() => {
+                       if ((member as any).isAI) {
+                         const expert = aiChatbotExperts.find(e => e.id === member.id)
+                         setChatMode('ai')
+                         setSelectedAIMember(member.id)
+                         setSelectedConversation(member.id)
+                         if (expert) initializeExpertConversation(expert)
+                       } else {
+                         setChatMode('real')
+                         setSelectedConversation(member.id)
+                       }
+                     }}
                    >
                      <div className="flex items-center space-x-3">
                        <div className="relative">
