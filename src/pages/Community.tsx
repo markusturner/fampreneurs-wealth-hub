@@ -787,6 +787,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [messageInput, setMessageInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [chatMode, setChatMode] = useState<'real' | 'ai'>('real')
 
   // Convert family office members to the format expected by the component
   const formattedMembers = familyOfficeMembers.map((member, index) => ({
@@ -824,11 +825,29 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
   const sendMessage = () => {
     if (!messageInput.trim() || !selectedConversation) return
     
-    // In real app, this would send to the database
-    toast({
-      title: "Message Sent",
-      description: "Your message has been sent successfully.",
-    })
+    if (chatMode === 'ai') {
+      // AI chat simulation
+      toast({
+        title: "AI Assistant Response",
+        description: "AI is processing your request and will respond shortly...",
+      })
+      
+      // Simulate AI response after a delay
+      setTimeout(() => {
+        const selectedMember = formattedMembers.find(m => m.id === selectedConversation)
+        toast({
+          title: "AI Response Ready",
+          description: `AI assistant (as ${selectedMember?.name}) has responded to your message.`,
+        })
+      }, 2000)
+    } else {
+      // Real member chat
+      toast({
+        title: "Message Sent",
+        description: "Your message has been sent to the family office member.",
+      })
+    }
+    
     setMessageInput('')
   }
 
@@ -851,6 +870,34 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
         <p className="text-muted-foreground text-sm mb-6">
           Secure messaging between family office members and administrators
         </p>
+        
+        {/* Chat Mode Toggle */}
+        <div className="flex items-center gap-4 mb-6 p-4 bg-muted/20 rounded-lg border">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Chat Mode:</span>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant={chatMode === 'real' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setChatMode('real')}
+              className="text-xs"
+            >
+              <UserCheck className="h-3 w-3 mr-2" />
+              Real Member
+            </Button>
+            <Button
+              variant={chatMode === 'ai' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setChatMode('ai')}
+              className="text-xs"
+            >
+              <BrainCircuit className="h-3 w-3 mr-2" />
+              AI Assistant
+            </Button>
+          </div>
+        </div>
       </div>
 
       {loadingMembers ? (
@@ -934,21 +981,41 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
           {selectedConversation ? (
             <>
                {/* Chat Header */}
-               <div className="p-4 border-b flex items-center space-x-3">
-                 <div className="relative">
-                   <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm">
-                     {formattedMembers.find(m => m.id === selectedConversation)?.avatar}
+               <div className="p-4 border-b flex items-center justify-between">
+                 <div className="flex items-center space-x-3">
+                   <div className="relative">
+                     <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm">
+                       {formattedMembers.find(m => m.id === selectedConversation)?.avatar}
+                     </div>
+                     <div className={`absolute -bottom-0 -right-0 w-2 h-2 rounded-full border border-background ${getStatusColor(formattedMembers.find(m => m.id === selectedConversation)?.status || 'offline')}`} />
                    </div>
-                   <div className={`absolute -bottom-0 -right-0 w-2 h-2 rounded-full border border-background ${getStatusColor(formattedMembers.find(m => m.id === selectedConversation)?.status || 'offline')}`} />
+                   <div>
+                     <div className="flex items-center gap-2">
+                       <p className="font-medium text-sm">
+                         {formattedMembers.find(m => m.id === selectedConversation)?.name}
+                       </p>
+                       {chatMode === 'ai' && (
+                         <Badge variant="secondary" className="text-xs">
+                           <BrainCircuit className="h-3 w-3 mr-1" />
+                           AI Assistant
+                         </Badge>
+                       )}
+                     </div>
+                     <p className="text-xs text-muted-foreground">
+                       {chatMode === 'ai' 
+                         ? `AI simulation of ${formattedMembers.find(m => m.id === selectedConversation)?.role}`
+                         : formattedMembers.find(m => m.id === selectedConversation)?.role
+                       }
+                     </p>
+                   </div>
                  </div>
-                 <div>
-                   <p className="font-medium text-sm">
-                     {formattedMembers.find(m => m.id === selectedConversation)?.name}
-                   </p>
-                   <p className="text-xs text-muted-foreground">
-                     {formattedMembers.find(m => m.id === selectedConversation)?.role}
-                   </p>
-                 </div>
+                 
+                 {chatMode === 'ai' && (
+                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                     <span>AI Mode</span>
+                   </div>
+                 )}
                </div>
 
               {/* Messages */}
@@ -987,7 +1054,11 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
               <div className="p-4 border-t">
                 <div className="flex space-x-2">
                   <Textarea
-                    placeholder="Type your message..."
+                    placeholder={
+                      chatMode === 'ai' 
+                        ? `Ask the AI assistant (as ${formattedMembers.find(m => m.id === selectedConversation)?.name})...`
+                        : "Type your message..."
+                    }
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
                     onKeyDown={(e) => {
@@ -1006,6 +1077,12 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
+                {chatMode === 'ai' && (
+                  <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+                    <BrainCircuit className="h-3 w-3" />
+                    <span>AI will respond as the selected family office member with relevant expertise</span>
+                  </div>
+                )}
               </div>
             </>
           ) : (
