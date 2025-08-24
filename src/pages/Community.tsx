@@ -849,6 +849,11 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
   }
 
   const initializeExpertConversation = (expert: any) => {
+    // Check if conversation already exists
+    if (conversationMessages[expert.id] && conversationMessages[expert.id].length > 0) {
+      return // Don't reinitialize if already exists
+    }
+
     const greeting = generateExpertGreeting(expert)
     const initialMessage = {
       id: `${expert.id}_greeting`,
@@ -981,11 +986,13 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                         key={expert.id}
                         className="flex items-center p-3 hover:bg-accent cursor-pointer border-b last:border-0"
                         onClick={() => {
+                          console.log('Selecting AI expert:', expert.name, expert.id)
                           setSelectedAIMember(expert.id)
                           setChatMode('ai')
                           setSelectedConversation(expert.id)
                           initializeExpertConversation(expert)
                           setShowAIMemberSelector(false)
+                          console.log('AI expert selected, conversation should be initialized')
                         }}
                       >
                         <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm mr-3">
@@ -1142,27 +1149,31 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {conversationMessages[selectedConversation]?.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.isCurrentUser ? 'justify-end' : 'justify-start'}`}
-                  >
+                {(() => {
+                  const messages = conversationMessages[selectedConversation] || []
+                  console.log('Displaying messages for conversation:', selectedConversation, 'Messages:', messages)
+                  return messages.map((message) => (
                     <div
-                      className={`max-w-[70%] p-3 rounded-lg ${
-                        message.isCurrentUser
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
-                      }`}
+                      key={message.id}
+                      className={`flex ${message.isCurrentUser ? 'justify-end' : 'justify-start'}`}
                     >
-                      <p className="text-sm">{message.message}</p>
-                      <p className={`text-xs mt-1 ${
-                        message.isCurrentUser ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                      }`}>
-                        {message.timestamp}
-                      </p>
+                      <div
+                        className={`max-w-[70%] p-3 rounded-lg ${
+                          message.isCurrentUser
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted'
+                        }`}
+                      >
+                        <p className="text-sm">{message.message}</p>
+                        <p className={`text-xs mt-1 ${
+                          message.isCurrentUser ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                        }`}>
+                          {message.timestamp}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                })()}
                 
                 {(!conversationMessages[selectedConversation] || conversationMessages[selectedConversation]?.length === 0) && (
                   <div className="text-center text-muted-foreground py-12">
