@@ -879,17 +879,30 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
     
     const messageContent = messageInput.trim()
     setMessageInput('')
+
+    const timestamp = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
     
     if (chatMode === 'ai') {
       const selectedExpert = aiChatbotExperts.find(e => e.id === selectedConversation)
       if (!selectedExpert) return
+
+      // Add user's message to the thread immediately
+      setConversationMessages(prev => ({
+        ...prev,
+        [selectedConversation]: [
+          ...(prev[selectedConversation] || []),
+          {
+            id: `${selectedConversation}_user_${Date.now()}`,
+            sender: 'You',
+            message: messageContent,
+            timestamp,
+            isCurrentUser: true,
+          }
+        ]
+      }))
       
       try {
-        // Show loading state
-        toast({
-          title: "AI Processing",
-          description: "AI assistant is analyzing your message...",
-        })
+        toast({ title: 'AI Processing', description: 'AI assistant is analyzing your message...' })
         
         const { data, error } = await supabase.functions.invoke('ai-chat', {
           body: { 
@@ -900,28 +913,44 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
 
         if (error) throw error
 
-        toast({
-          title: "AI Response Ready",
-          description: `${selectedExpert.name} (AI) has responded to your message.`,
-        })
-        
-        // In a real implementation, you would add the message to the conversation
-        console.log('AI Response:', data.response)
-        
+        const aiReply = (data as any)?.response || "I'm here to help. Could you share more details?"
+
+        // Append AI response
+        setConversationMessages(prev => ({
+          ...prev,
+          [selectedConversation]: [
+            ...(prev[selectedConversation] || []),
+            {
+              id: `${selectedConversation}_ai_${Date.now()}`,
+              sender: selectedExpert.name,
+              message: aiReply,
+              timestamp: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+              isCurrentUser: false,
+            }
+          ]
+        }))
+
+        toast({ title: 'AI Response Ready', description: `${selectedExpert.name} (AI) has responded to your message.` })
       } catch (error) {
         console.error('AI chat error:', error)
-        toast({
-          title: "AI Error", 
-          description: "Sorry, the AI assistant is unavailable. Please try again later.",
-          variant: "destructive"
-        })
+        toast({ title: 'AI Error', description: 'Sorry, the AI assistant is unavailable. Please try again later.', variant: 'destructive' })
       }
     } else {
-      // Real member chat
-      toast({
-        title: "Message Sent",
-        description: "Your message has been sent to the family office member.",
-      })
+      // Real member chat - append user message locally for now
+      setConversationMessages(prev => ({
+        ...prev,
+        [selectedConversation]: [
+          ...(prev[selectedConversation] || []),
+          {
+            id: `${selectedConversation}_user_${Date.now()}`,
+            sender: 'You',
+            message: messageContent,
+            timestamp,
+            isCurrentUser: true,
+          }
+        ]
+      }))
+      toast({ title: 'Message Sent', description: 'Your message has been sent to the family office member.' })
     }
   }
 
