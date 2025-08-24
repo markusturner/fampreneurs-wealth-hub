@@ -58,6 +58,7 @@ import {
   Clock
 } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
 import { AssetAllocation } from '@/components/dashboard/asset-allocation'
 import { AccountIntegration } from '@/components/dashboard/account-integration'
@@ -788,6 +789,8 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
   const [messageInput, setMessageInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [chatMode, setChatMode] = useState<'real' | 'ai'>('real')
+  const [showAIMemberSelector, setShowAIMemberSelector] = useState(false)
+  const [selectedAIMember, setSelectedAIMember] = useState<string | null>(null)
 
   // Convert family office members to the format expected by the component
   const formattedMembers = familyOfficeMembers.map((member, index) => ({
@@ -907,15 +910,60 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
               <UserCheck className="h-3 w-3 mr-2" />
               Real Member
             </Button>
-            <Button
-              variant={chatMode === 'ai' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setChatMode('ai')}
-              className="text-xs"
-            >
-              <BrainCircuit className="h-3 w-3 mr-2" />
-              AI Assistant
-            </Button>
+            <Popover open={showAIMemberSelector} onOpenChange={setShowAIMemberSelector}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={chatMode === 'ai' ? 'default' : 'outline'}
+                  size="sm"
+                  className="text-xs"
+                >
+                  <BrainCircuit className="h-3 w-3 mr-2" />
+                  AI Assistant
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0" side="bottom" align="end">
+                <div className="p-4 border-b">
+                  <h4 className="font-medium text-sm mb-1">Select AI Assistant</h4>
+                  <p className="text-xs text-muted-foreground">
+                    Choose a family office member for AI simulation
+                  </p>
+                </div>
+                <div className="max-h-60 overflow-y-auto">
+                  {formattedMembers.length > 0 ? (
+                    formattedMembers.map((member) => (
+                      <div
+                        key={member.id}
+                        className="flex items-center p-3 hover:bg-accent cursor-pointer border-b last:border-0"
+                        onClick={() => {
+                          setSelectedAIMember(member.id)
+                          setChatMode('ai')
+                          setSelectedConversation(member.id)
+                          setShowAIMemberSelector(false)
+                        }}
+                      >
+                        <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm mr-3">
+                          {member.avatar}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{member.name}</p>
+                          <p className="text-xs text-muted-foreground">{member.role}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <BrainCircuit className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">AI</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 text-center text-muted-foreground">
+                      <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">No family members available</p>
+                      <p className="text-xs">Add family members to enable AI chat</p>
+                    </div>
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </div>
