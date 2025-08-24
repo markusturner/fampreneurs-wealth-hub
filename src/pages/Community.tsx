@@ -1060,7 +1060,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
             </div>
           </div>
         </div>
-      ) : familyOfficeMembers.length === 0 ? (
+      ) : (chatMode === 'real' && familyOfficeMembers.length === 0) ? (
         <div className="grid md:grid-cols-3 gap-6 h-[600px]">
           <div className="md:col-span-3 flex items-center justify-center">
             <div className="text-center text-muted-foreground">
