@@ -1195,7 +1195,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                        </div>
                        <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
-                            <p className={`text-sm font-medium truncate ${member.hasUnread ? 'font-bold' : ''}`} style={{ color: member.hasUnread ? '#290a52' : undefined }}>
+                            <p className={`text-sm font-medium truncate ${member.hasUnread ? 'font-bold' : ''}`} style={{ color: !member.hasUnread ? '#290a52' : undefined }}>
                               {member.name}
                             </p>
                            {member.unreadCount > 0 && (
@@ -1205,7 +1205,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                            )}
                          </div>
                          <p className="text-xs text-muted-foreground truncate mb-1">{member.role}</p>
-                          <p className={`text-xs truncate ${member.hasUnread ? 'font-medium text-foreground' : 'text-muted-foreground'}`} style={{ color: member.hasUnread ? '#290a52' : undefined }}>
+                          <p className={`text-xs truncate ${member.hasUnread ? 'font-medium text-foreground' : 'text-muted-foreground'}`} style={{ color: !member.hasUnread ? '#290a52' : undefined }}>
                             {member.lastMessage}
                           </p>
                          <p className="text-xs text-muted-foreground">{member.lastSeen}</p>
