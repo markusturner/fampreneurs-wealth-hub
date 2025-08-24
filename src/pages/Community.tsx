@@ -792,6 +792,18 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
   const [showAIMemberSelector, setShowAIMemberSelector] = useState(false)
   const [selectedAIMember, setSelectedAIMember] = useState<string | null>(null)
 
+  // Predefined AI chatbot experts
+  const aiChatbotExperts = [
+    { id: 'ai-financial-advisor', name: 'Sarah Chen', role: 'Senior Financial Advisor', avatar: 'SC' },
+    { id: 'ai-tax-specialist', name: 'Michael Rodriguez', role: 'Tax Planning Specialist', avatar: 'MR' },
+    { id: 'ai-estate-planner', name: 'Jennifer Williams', role: 'Estate Planning Attorney', avatar: 'JW' },
+    { id: 'ai-investment-manager', name: 'David Thompson', role: 'Portfolio Manager', avatar: 'DT' },
+    { id: 'ai-insurance-expert', name: 'Lisa Park', role: 'Insurance Specialist', avatar: 'LP' },
+    { id: 'ai-business-consultant', name: 'Robert Johnson', role: 'Business Strategy Consultant', avatar: 'RJ' },
+    { id: 'ai-trust-officer', name: 'Amanda Foster', role: 'Trust Officer', avatar: 'AF' },
+    { id: 'ai-crypto-advisor', name: 'Alex Kumar', role: 'Digital Assets Specialist', avatar: 'AK' }
+  ]
+
   // Convert family office members to the format expected by the component
   const formattedMembers = familyOfficeMembers.map((member, index) => ({
     id: member.id,
@@ -829,10 +841,12 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
     if (!messageInput.trim() || !selectedConversation) return
     
     const messageContent = messageInput.trim()
-    const selectedMember = formattedMembers.find(m => m.id === selectedConversation)
     setMessageInput('')
     
     if (chatMode === 'ai') {
+      const selectedExpert = aiChatbotExperts.find(e => e.id === selectedConversation)
+      if (!selectedExpert) return
+      
       try {
         // Show loading state
         toast({
@@ -842,8 +856,8 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
         
         const { data, error } = await supabase.functions.invoke('ai-chat', {
           body: { 
-            message: `Acting as ${selectedMember?.name}, a ${selectedMember?.role} in our family office: ${messageContent}`,
-            context: `You are ${selectedMember?.name}, a professional ${selectedMember?.role} in a family office. Provide expert advice and assistance based on your role.` 
+            message: `Acting as ${selectedExpert.name}, a ${selectedExpert.role} in our family office: ${messageContent}`,
+            context: `You are ${selectedExpert.name}, a professional ${selectedExpert.role} in a family office. Provide expert advice and assistance based on your role and expertise.` 
           }
         })
 
@@ -851,7 +865,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
 
         toast({
           title: "AI Response Ready",
-          description: `${selectedMember?.name} (AI) has responded to your message.`,
+          description: `${selectedExpert.name} (AI) has responded to your message.`,
         })
         
         // In a real implementation, you would add the message to the conversation
@@ -929,24 +943,24 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                   </p>
                 </div>
                 <div className="max-h-60 overflow-y-auto">
-                  {formattedMembers.length > 0 ? (
-                    formattedMembers.map((member) => (
+                  {aiChatbotExperts.length > 0 ? (
+                    aiChatbotExperts.map((expert) => (
                       <div
-                        key={member.id}
+                        key={expert.id}
                         className="flex items-center p-3 hover:bg-accent cursor-pointer border-b last:border-0"
                         onClick={() => {
-                          setSelectedAIMember(member.id)
+                          setSelectedAIMember(expert.id)
                           setChatMode('ai')
-                          setSelectedConversation(member.id)
+                          setSelectedConversation(expert.id)
                           setShowAIMemberSelector(false)
                         }}
                       >
                         <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm mr-3">
-                          {member.avatar}
+                          {expert.avatar}
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-medium">{member.name}</p>
-                          <p className="text-xs text-muted-foreground">{member.role}</p>
+                          <p className="text-sm font-medium">{expert.name}</p>
+                          <p className="text-xs text-muted-foreground">{expert.role}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           <BrainCircuit className="h-3 w-3 text-muted-foreground" />
@@ -956,9 +970,9 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                     ))
                   ) : (
                     <div className="p-4 text-center text-muted-foreground">
-                      <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">No family members available</p>
-                      <p className="text-xs">Add family members to enable AI chat</p>
+                      <BrainCircuit className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">AI Experts Available</p>
+                      <p className="text-xs">Select an AI specialist to chat with</p>
                     </div>
                   )}
                 </div>
@@ -1050,33 +1064,40 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
             <>
                {/* Chat Header */}
                <div className="p-4 border-b flex items-center justify-between">
-                 <div className="flex items-center space-x-3">
-                   <div className="relative">
-                     <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm">
-                       {formattedMembers.find(m => m.id === selectedConversation)?.avatar}
-                     </div>
-                     <div className={`absolute -bottom-0 -right-0 w-2 h-2 rounded-full border border-background ${getStatusColor(formattedMembers.find(m => m.id === selectedConversation)?.status || 'offline')}`} />
-                   </div>
-                   <div>
-                     <div className="flex items-center gap-2">
-                       <p className="font-medium text-sm">
-                         {formattedMembers.find(m => m.id === selectedConversation)?.name}
-                       </p>
-                       {chatMode === 'ai' && (
-                         <Badge variant="secondary" className="text-xs">
-                           <BrainCircuit className="h-3 w-3 mr-1" />
-                           AI Assistant
-                         </Badge>
-                       )}
-                     </div>
-                     <p className="text-xs text-muted-foreground">
-                       {chatMode === 'ai' 
-                         ? `AI simulation of ${formattedMembers.find(m => m.id === selectedConversation)?.role}`
-                         : formattedMembers.find(m => m.id === selectedConversation)?.role
-                       }
-                     </p>
-                   </div>
-                 </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="relative">
+                      <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm">
+                        {chatMode === 'ai' && selectedAIMember 
+                          ? aiChatbotExperts.find(e => e.id === selectedConversation)?.avatar
+                          : formattedMembers.find(m => m.id === selectedConversation)?.avatar}
+                      </div>
+                      <div className={`absolute -bottom-0 -right-0 w-2 h-2 rounded-full border border-background ${
+                        chatMode === 'ai' ? 'bg-green-500' : 
+                        getStatusColor(formattedMembers.find(m => m.id === selectedConversation)?.status || 'offline')
+                      }`} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm">
+                          {chatMode === 'ai' && selectedAIMember 
+                            ? aiChatbotExperts.find(e => e.id === selectedConversation)?.name
+                            : formattedMembers.find(m => m.id === selectedConversation)?.name}
+                        </p>
+                        {chatMode === 'ai' && (
+                          <Badge variant="secondary" className="text-xs">
+                            <BrainCircuit className="h-3 w-3 mr-1" />
+                            AI Expert
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {chatMode === 'ai' && selectedAIMember
+                          ? aiChatbotExperts.find(e => e.id === selectedConversation)?.role
+                          : formattedMembers.find(m => m.id === selectedConversation)?.role
+                        }
+                      </p>
+                    </div>
+                  </div>
                  
                  {chatMode === 'ai' && (
                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -1124,7 +1145,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                   <Textarea
                     placeholder={
                       chatMode === 'ai' 
-                        ? `Ask the AI assistant (as ${formattedMembers.find(m => m.id === selectedConversation)?.name})...`
+                        ? `Ask ${aiChatbotExperts.find(e => e.id === selectedConversation)?.name || 'the AI expert'}...`
                         : "Type your message..."
                     }
                     value={messageInput}
@@ -1148,7 +1169,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                 {chatMode === 'ai' && (
                   <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
                     <BrainCircuit className="h-3 w-3" />
-                    <span>AI will respond as the selected family office member with relevant expertise</span>
+                    <span>AI expert will provide professional guidance based on their expertise</span>
                   </div>
                 )}
               </div>
