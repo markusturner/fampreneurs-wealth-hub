@@ -822,24 +822,46 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
     member.role.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!messageInput.trim() || !selectedConversation) return
     
+    const messageContent = messageInput.trim()
+    const selectedMember = formattedMembers.find(m => m.id === selectedConversation)
+    setMessageInput('')
+    
     if (chatMode === 'ai') {
-      // AI chat simulation
-      toast({
-        title: "AI Assistant Response",
-        description: "AI is processing your request and will respond shortly...",
-      })
-      
-      // Simulate AI response after a delay
-      setTimeout(() => {
-        const selectedMember = formattedMembers.find(m => m.id === selectedConversation)
+      try {
+        // Show loading state
+        toast({
+          title: "AI Processing",
+          description: "AI assistant is analyzing your message...",
+        })
+        
+        const { data, error } = await supabase.functions.invoke('ai-chat', {
+          body: { 
+            message: `Acting as ${selectedMember?.name}, a ${selectedMember?.role} in our family office: ${messageContent}`,
+            context: `You are ${selectedMember?.name}, a professional ${selectedMember?.role} in a family office. Provide expert advice and assistance based on your role.` 
+          }
+        })
+
+        if (error) throw error
+
         toast({
           title: "AI Response Ready",
-          description: `AI assistant (as ${selectedMember?.name}) has responded to your message.`,
+          description: `${selectedMember?.name} (AI) has responded to your message.`,
         })
-      }, 2000)
+        
+        // In a real implementation, you would add the message to the conversation
+        console.log('AI Response:', data.response)
+        
+      } catch (error) {
+        console.error('AI chat error:', error)
+        toast({
+          title: "AI Error", 
+          description: "Sorry, the AI assistant is unavailable. Please try again later.",
+          variant: "destructive"
+        })
+      }
     } else {
       // Real member chat
       toast({
@@ -847,8 +869,6 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
         description: "Your message has been sent to the family office member.",
       })
     }
-    
-    setMessageInput('')
   }
 
   const getStatusColor = (status: string) => {
