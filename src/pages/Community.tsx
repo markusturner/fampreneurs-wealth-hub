@@ -805,15 +805,25 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
   ]
 
   // Convert family office members to the format expected by the component
-  const formattedMembers = familyOfficeMembers.map((member, index) => ({
-    id: member.id,
-    name: member.full_name,
-    role: member.family_position || 'Family Member',
-    avatar: member.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'FM',
-    lastSeen: 'Offline',
-    status: 'offline',
-    unreadCount: 0
-  }))
+  const formattedMembers = familyOfficeMembers.map((member, index) => {
+    const memberConversations = conversationMessages[member.id] || []
+    const lastMessage = memberConversations[memberConversations.length - 1]
+    
+    // Count unread messages (messages from other users - simplified logic)
+    const unreadCount = memberConversations.filter(msg => !msg.isCurrentUser).length
+    
+    return {
+      id: member.id,
+      name: member.full_name,
+      role: member.family_position || 'Family Member',
+      avatar: member.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'FM',
+      lastSeen: lastMessage ? lastMessage.timestamp : 'No messages',
+      status: unreadCount > 0 ? 'online' : 'offline',
+      unreadCount: unreadCount,
+      lastMessage: lastMessage?.message || 'No messages yet',
+      hasUnread: unreadCount > 0
+    }
+  })
 
   // Mock conversation data - in real app this would come from database
   const conversations: {[key: string]: Array<{id: string, sender: string, message: string, timestamp: string, isCurrentUser: boolean}> } = {
@@ -833,6 +843,35 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
   }
 
   const [conversationMessages, setConversationMessages] = useState(conversations)
+
+  // Enhanced conversations with sample data for family members
+  useEffect(() => {
+    if (familyOfficeMembers.length === 0) return
+    
+    const enhancedConversations = { ...conversations }
+    
+    // Add sample conversations for the first few members if they don't have any
+    if (familyOfficeMembers.length > 0 && !enhancedConversations[familyOfficeMembers[0]?.id]) {
+      enhancedConversations[familyOfficeMembers[0]?.id] = [
+        { id: `${familyOfficeMembers[0].id}_1`, sender: familyOfficeMembers[0].full_name, message: 'Good morning! I wanted to discuss the quarterly review.', timestamp: '9:15 AM', isCurrentUser: false },
+        { id: `${familyOfficeMembers[0].id}_2`, sender: 'You', message: 'Perfect timing. I just reviewed the documents.', timestamp: '9:18 AM', isCurrentUser: true },
+        { id: `${familyOfficeMembers[0].id}_3`, sender: familyOfficeMembers[0].full_name, message: 'Great! Should we schedule the meeting for next week?', timestamp: '9:20 AM', isCurrentUser: false }
+      ]
+    }
+
+    if (familyOfficeMembers.length > 1 && !enhancedConversations[familyOfficeMembers[1]?.id]) {
+      enhancedConversations[familyOfficeMembers[1]?.id] = [
+        { id: `${familyOfficeMembers[1].id}_1`, sender: familyOfficeMembers[1].full_name, message: 'The investment portfolio updates are ready for your review.', timestamp: 'Yesterday', isCurrentUser: false },
+        { id: `${familyOfficeMembers[1].id}_2`, sender: 'You', message: 'Thank you! I\'ll review them this afternoon.', timestamp: 'Yesterday', isCurrentUser: true },
+        { id: `${familyOfficeMembers[1].id}_3`, sender: familyOfficeMembers[1].full_name, message: 'Also, we have some new investment opportunities to discuss.', timestamp: '2 hours ago', isCurrentUser: false }
+      ]
+    }
+
+    setConversationMessages(prev => ({
+      ...prev,
+      ...enhancedConversations
+    }))
+  }, [familyOfficeMembers.length])
 
   const generateExpertGreeting = (expert: any) => {
     const greetings = {
@@ -1090,33 +1129,38 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
             <div className="overflow-y-auto max-h-[520px]">
               {filteredMembers.length > 0 ? (
                 filteredMembers.map((member) => (
-                  <div
-                    key={member.id}
-                    className={`p-4 border-b cursor-pointer transition-colors hover:bg-accent/50 ${
-                      selectedConversation === member.id ? 'bg-accent' : ''
-                    }`}
-                    onClick={() => setSelectedConversation(member.id)}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="relative">
-                        <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium">
-                          {member.avatar}
-                        </div>
-                        <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${getStatusColor(member.status)}`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium truncate">{member.name}</p>
-                          {member.unreadCount > 0 && (
-                            <Badge variant="secondary" className="text-xs">
-                              {member.unreadCount}
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground truncate">{member.role}</p>
-                        <p className="text-xs text-muted-foreground">{member.lastSeen}</p>
-                      </div>
-                    </div>
+                   <div
+                     key={member.id}
+                     className={`p-4 border-b cursor-pointer transition-colors hover:bg-accent/50 ${
+                       selectedConversation === member.id ? 'bg-accent' : ''
+                     } ${member.hasUnread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
+                     onClick={() => setSelectedConversation(member.id)}
+                   >
+                     <div className="flex items-center space-x-3">
+                       <div className="relative">
+                         <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium">
+                           {member.avatar}
+                         </div>
+                         <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${getStatusColor(member.status)}`} />
+                       </div>
+                       <div className="flex-1 min-w-0">
+                         <div className="flex items-center justify-between mb-1">
+                           <p className={`text-sm font-medium truncate ${member.hasUnread ? 'font-bold' : ''}`}>
+                             {member.name}
+                           </p>
+                           {member.unreadCount > 0 && (
+                             <Badge variant="secondary" className="text-xs bg-primary text-primary-foreground">
+                               {member.unreadCount}
+                             </Badge>
+                           )}
+                         </div>
+                         <p className="text-xs text-muted-foreground truncate mb-1">{member.role}</p>
+                         <p className={`text-xs truncate ${member.hasUnread ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
+                           {member.lastMessage}
+                         </p>
+                         <p className="text-xs text-muted-foreground">{member.lastSeen}</p>
+                       </div>
+                     </div>
                   </div>
                 ))
               ) : (
