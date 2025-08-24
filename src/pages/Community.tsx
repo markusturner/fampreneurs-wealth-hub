@@ -832,6 +832,38 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
     '4': []
   }
 
+  const [conversationMessages, setConversationMessages] = useState(conversations)
+
+  const generateExpertGreeting = (expert: any) => {
+    const greetings = {
+      'ai-financial-advisor': "Hello! I'm Sarah Chen, your Senior Financial Advisor. I specialize in comprehensive wealth management, portfolio optimization, and strategic financial planning. How can I assist you with your financial goals today?",
+      'ai-tax-specialist': "Greetings! Michael Rodriguez here, your Tax Planning Specialist. I help families navigate complex tax strategies, optimize tax efficiency, and ensure compliance with all regulations. What tax matters can I help you with?",
+      'ai-estate-planner': "Good day! I'm Jennifer Williams, your Estate Planning Attorney. I focus on wealth transfer strategies, trust structures, and legacy planning. How can I help you protect and transfer your family's wealth?",
+      'ai-investment-manager': "Hello! David Thompson, Portfolio Manager at your service. I specialize in investment strategy, risk management, and market analysis for high-net-worth families. What investment questions can I help you with?",
+      'ai-insurance-expert': "Hi there! Lisa Park, Insurance Specialist. I help families protect their wealth through comprehensive insurance strategies including life, property, and liability coverage. How can I assist with your insurance needs?",
+      'ai-business-consultant': "Welcome! Robert Johnson, Business Strategy Consultant. I advise on business operations, succession planning, and strategic growth initiatives. What business challenges can I help you address?",
+      'ai-trust-officer': "Hello! Amanda Foster, Trust Officer. I manage trust administration, fiduciary services, and family governance structures. How can I assist you with your trust and family office needs?",
+      'ai-crypto-advisor': "Greetings! Alex Kumar, Digital Assets Specialist. I help families navigate cryptocurrency investments, blockchain technology, and digital asset management. What digital asset questions do you have?"
+    }
+    return greetings[expert.id] || `Hello! I'm ${expert.name}, your ${expert.role}. How can I help you today?`
+  }
+
+  const initializeExpertConversation = (expert: any) => {
+    const greeting = generateExpertGreeting(expert)
+    const initialMessage = {
+      id: `${expert.id}_greeting`,
+      sender: expert.name,
+      message: greeting,
+      timestamp: 'now',
+      isCurrentUser: false
+    }
+    
+    setConversationMessages(prev => ({
+      ...prev,
+      [expert.id]: [initialMessage]
+    }))
+  }
+
   const filteredMembers = formattedMembers.filter(member => 
     member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.role.toLowerCase().includes(searchQuery.toLowerCase())
@@ -952,6 +984,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                           setSelectedAIMember(expert.id)
                           setChatMode('ai')
                           setSelectedConversation(expert.id)
+                          initializeExpertConversation(expert)
                           setShowAIMemberSelector(false)
                         }}
                       >
@@ -1109,7 +1142,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {conversations[selectedConversation]?.map((message) => (
+                {conversationMessages[selectedConversation]?.map((message) => (
                   <div
                     key={message.id}
                     className={`flex ${message.isCurrentUser ? 'justify-end' : 'justify-start'}`}
@@ -1131,7 +1164,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                   </div>
                 ))}
                 
-                {conversations[selectedConversation]?.length === 0 && (
+                {(!conversationMessages[selectedConversation] || conversationMessages[selectedConversation]?.length === 0) && (
                   <div className="text-center text-muted-foreground py-12">
                     <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No messages yet. Start the conversation!</p>
