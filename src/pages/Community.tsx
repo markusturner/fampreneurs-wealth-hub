@@ -810,7 +810,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
     const lastMessage = memberConversations[memberConversations.length - 1]
     
     // Count unread messages (messages from other users - simplified logic)
-    const unreadCount = memberConversations.filter(msg => !msg.isCurrentUser).length
+    const unreadCount = memberConversations.filter(msg => !msg.isCurrentUser && !msg.isRead).length
     
     return {
       id: member.id,
@@ -826,18 +826,18 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
   })
 
   // Mock conversation data - in real app this would come from database
-  const conversations: {[key: string]: Array<{id: string, sender: string, message: string, timestamp: string, isCurrentUser: boolean}> } = {
+  const conversations: {[key: string]: Array<{id: string, sender: string, message: string, timestamp: string, isCurrentUser: boolean, isRead?: boolean}> } = {
     '1': [
-      { id: '1', sender: 'John Smith', message: 'Hi! I wanted to discuss the quarterly trust review meeting.', timestamp: '2:30 PM', isCurrentUser: false },
+      { id: '1', sender: 'John Smith', message: 'Hi! I wanted to discuss the quarterly trust review meeting.', timestamp: '2:30 PM', isCurrentUser: false, isRead: false },
       { id: '2', sender: 'You', message: 'Perfect timing. I was just reviewing the documents.', timestamp: '2:32 PM', isCurrentUser: true },
-      { id: '3', sender: 'John Smith', message: 'Great! Should we schedule it for next week?', timestamp: '2:35 PM', isCurrentUser: false }
+      { id: '3', sender: 'John Smith', message: 'Great! Should we schedule it for next week?', timestamp: '2:35 PM', isCurrentUser: false, isRead: false }
     ],
     '2': [
-      { id: '1', sender: 'Sarah Johnson', message: 'Thanks for updating the investment portfolio.', timestamp: 'Yesterday', isCurrentUser: false },
+      { id: '1', sender: 'Sarah Johnson', message: 'Thanks for updating the investment portfolio.', timestamp: 'Yesterday', isCurrentUser: false, isRead: false },
       { id: '2', sender: 'You', message: 'You\'re welcome! The new allocations look good.', timestamp: 'Yesterday', isCurrentUser: true }
     ],
     '3': [
-      { id: '1', sender: 'Michael Davis', message: 'I need your signature on the trust amendment.', timestamp: '3 hours ago', isCurrentUser: false }
+      { id: '1', sender: 'Michael Davis', message: 'I need your signature on the trust amendment.', timestamp: '3 hours ago', isCurrentUser: false, isRead: false }
     ],
     '4': []
   }
@@ -850,7 +850,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
     .map((e) => {
       const msgs = conversationMessages[e.id] || []
       const last = msgs[msgs.length - 1]
-      const unreadCount = msgs.filter((m) => !m.isCurrentUser).length
+      const unreadCount = msgs.filter((m) => !m.isCurrentUser && !m.isRead).length
       return {
         id: e.id,
         name: e.name,
@@ -880,17 +880,17 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
     // Add sample conversations for the first few members if they don't have any
     if (familyOfficeMembers.length > 0 && !enhancedConversations[familyOfficeMembers[0]?.id]) {
       enhancedConversations[familyOfficeMembers[0]?.id] = [
-        { id: `${familyOfficeMembers[0].id}_1`, sender: familyOfficeMembers[0].full_name, message: 'Good morning! I wanted to discuss the quarterly review.', timestamp: '9:15 AM', isCurrentUser: false },
+        { id: `${familyOfficeMembers[0].id}_1`, sender: familyOfficeMembers[0].full_name, message: 'Good morning! I wanted to discuss the quarterly review.', timestamp: '9:15 AM', isCurrentUser: false, isRead: false },
         { id: `${familyOfficeMembers[0].id}_2`, sender: 'You', message: 'Perfect timing. I just reviewed the documents.', timestamp: '9:18 AM', isCurrentUser: true },
-        { id: `${familyOfficeMembers[0].id}_3`, sender: familyOfficeMembers[0].full_name, message: 'Great! Should we schedule the meeting for next week?', timestamp: '9:20 AM', isCurrentUser: false }
+        { id: `${familyOfficeMembers[0].id}_3`, sender: familyOfficeMembers[0].full_name, message: 'Great! Should we schedule the meeting for next week?', timestamp: '9:20 AM', isCurrentUser: false, isRead: false }
       ]
     }
 
     if (familyOfficeMembers.length > 1 && !enhancedConversations[familyOfficeMembers[1]?.id]) {
       enhancedConversations[familyOfficeMembers[1]?.id] = [
-        { id: `${familyOfficeMembers[1].id}_1`, sender: familyOfficeMembers[1].full_name, message: 'The investment portfolio updates are ready for your review.', timestamp: 'Yesterday', isCurrentUser: false },
+        { id: `${familyOfficeMembers[1].id}_1`, sender: familyOfficeMembers[1].full_name, message: 'The investment portfolio updates are ready for your review.', timestamp: 'Yesterday', isCurrentUser: false, isRead: false },
         { id: `${familyOfficeMembers[1].id}_2`, sender: 'You', message: 'Thank you! I\'ll review them this afternoon.', timestamp: 'Yesterday', isCurrentUser: true },
-        { id: `${familyOfficeMembers[1].id}_3`, sender: familyOfficeMembers[1].full_name, message: 'Also, we have some new investment opportunities to discuss.', timestamp: '2 hours ago', isCurrentUser: false }
+        { id: `${familyOfficeMembers[1].id}_3`, sender: familyOfficeMembers[1].full_name, message: 'Also, we have some new investment opportunities to discuss.', timestamp: '2 hours ago', isCurrentUser: false, isRead: false }
       ]
     }
 
@@ -926,7 +926,8 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
       sender: expert.name,
       message: greeting,
       timestamp: 'now',
-      isCurrentUser: false
+      isCurrentUser: false,
+      isRead: false
     }
     
     setConversationMessages(prev => ({
@@ -992,6 +993,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
               message: aiReply,
               timestamp: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
               isCurrentUser: false,
+              isRead: false
             }
           ]
         }))
@@ -1162,6 +1164,16 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                        selectedConversation === member.id ? 'bg-accent' : ''
                      } ${member.hasUnread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
                      onClick={() => {
+                       // Mark messages as read by updating their isCurrentUser status
+                       if (conversationMessages[member.id]) {
+                         setConversationMessages(prev => ({
+                           ...prev,
+                           [member.id]: prev[member.id]?.map(msg => 
+                             msg.isCurrentUser ? msg : { ...msg, isRead: true }
+                           )
+                         }))
+                       }
+                       
                        if ((member as any).isAI) {
                          const expert = aiChatbotExperts.find(e => e.id === member.id)
                          setChatMode('ai')
@@ -1182,10 +1194,10 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                          <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background ${getStatusColor(member.status)}`} />
                        </div>
                        <div className="flex-1 min-w-0">
-                         <div className="flex items-center justify-between mb-1">
-                           <p className={`text-sm font-medium truncate ${member.hasUnread ? 'font-bold' : ''}`}>
-                             {member.name}
-                           </p>
+                          <div className="flex items-center justify-between mb-1">
+                            <p className={`text-sm font-medium truncate ${member.hasUnread ? 'font-bold' : ''}`} style={{ color: member.hasUnread ? '#290a52' : undefined }}>
+                              {member.name}
+                            </p>
                            {member.unreadCount > 0 && (
                              <Badge variant="secondary" className="text-xs bg-primary text-primary-foreground">
                                {member.unreadCount}
@@ -1193,9 +1205,9 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                            )}
                          </div>
                          <p className="text-xs text-muted-foreground truncate mb-1">{member.role}</p>
-                         <p className={`text-xs truncate ${member.hasUnread ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
-                           {member.lastMessage}
-                         </p>
+                          <p className={`text-xs truncate ${member.hasUnread ? 'font-medium text-foreground' : 'text-muted-foreground'}`} style={{ color: member.hasUnread ? '#290a52' : undefined }}>
+                            {member.lastMessage}
+                          </p>
                          <p className="text-xs text-muted-foreground">{member.lastSeen}</p>
                        </div>
                      </div>
