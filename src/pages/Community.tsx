@@ -1064,7 +1064,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                   className="text-xs"
                 >
                   <BrainCircuit className="h-3 w-3 mr-2" />
-                  AI Assistant
+                  AI Expert
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-80 p-0" side="bottom" align="end">
