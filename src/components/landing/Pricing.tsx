@@ -150,12 +150,13 @@ export const Pricing = () => {
                 <Button 
                   className={`w-full text-lg py-3 font-semibold ${
                     tier.popular 
-                      ? 'text-white' 
-                      : 'border-2 text-white'
+                      ? '' 
+                      : 'border-2'
                   }`}
                   style={{ 
                     backgroundColor: tier.popular ? '#FFB500' : '#290A52',
-                    borderColor: tier.popular ? '#FFB500' : '#290A52'
+                    borderColor: tier.popular ? '#FFB500' : '#290A52',
+                    color: '#290a52'
                   }}
                   onClick={() => handlePurchase(tier.stripeAmount)}
                 >
