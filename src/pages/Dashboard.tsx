@@ -7,6 +7,10 @@ import { InvestmentChart } from "@/components/dashboard/investment-chart"
 import { AssetAllocation } from "@/components/dashboard/asset-allocation"
 import { AIChat } from "@/components/dashboard/ai-chat"
 import { FamilyMemberDashboard } from "@/components/dashboard/family-member-dashboard"
+import { FamilyGovernance } from "@/components/dashboard/family-governance"
+import { DocumentManagement } from "@/components/dashboard/document-management"
+import { EnhancedSearch } from "@/components/dashboard/enhanced-search"
+import { RealTimeNotifications } from "@/components/dashboard/real-time-notifications"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from 'lucide-react'
@@ -90,12 +94,28 @@ const Dashboard = () => {
             <InvestmentChart />
           </div>
           
-          {/* Asset Allocation */}
-          <div className="order-2 lg:col-span-2">
+          {/* Family Governance */}
+          <div className="lg:col-span-2">
+            <FamilyGovernance />
+          </div>
+
+          {/* Document Management */}
+          <div className="lg:col-span-2">
+            <DocumentManagement />
+          </div>
+
+          {/* Enhanced Search */}
+          <div className="order-3">
+            <EnhancedSearch />
+          </div>
+
+          {/* Real-time Notifications */}
+          <div className="order-4">
+            <RealTimeNotifications />
           </div>
 
           {/* AI Chat */}
-          <div className="order-3">
+          <div className="order-5">
             <AIChat />
           </div>
         </div>
