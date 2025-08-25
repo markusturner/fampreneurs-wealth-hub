@@ -42,7 +42,7 @@ export const Hero = () => {
               Login
             </Button>
             <Button 
-              className="text-sm bg-white hover:bg-white/90 text-black shadow-medium hover:shadow-glow transition-smooth hover:scale-105" 
+              className="text-sm bg-gradient-to-r from-white to-white/80 hover:from-white/90 hover:to-white/70 text-black shadow-medium hover:shadow-glow transition-smooth hover:scale-105" 
               onClick={scrollToPricing}
             >
               Get Started
@@ -55,15 +55,8 @@ export const Hero = () => {
       <div className="container mx-auto px-6 py-20 text-center relative z-10 bg-card/20 backdrop-blur-md border border-border/30 rounded-3xl shadow-strong mx-4 lg:mx-auto">
         <div className="max-w-5xl mx-auto animate-fade-in">
           {/* Main Headlines - Enhanced Typography */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight tracking-tight">
-            <span className="text-foreground">How to build</span>{' '}
-            <span className="text-white bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-              generational wealth
-            </span>{' '}
-            <span className="text-foreground">without</span>{' '}
-            <span className="text-white bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
-              expensive wealth managers
-            </span>
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight tracking-tight bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
+            How to build generational wealth without expensive wealth managers
           </h1>
           
           <p className="text-xl md:text-3xl text-muted-foreground mb-10 max-w-4xl mx-auto font-light leading-relaxed">
@@ -81,7 +74,7 @@ export const Hero = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16">
             <Button 
               size="lg" 
-              className="text-xl px-12 py-6 bg-white hover:bg-white/90 text-black font-bold shadow-strong hover:shadow-glow transition-all duration-300 hover:scale-105 group"
+              className="text-xl px-12 py-6 bg-gradient-to-r from-white to-white/80 hover:from-white/90 hover:to-white/70 text-black font-bold shadow-strong hover:shadow-glow transition-all duration-300 hover:scale-105 group"
               onClick={scrollToPricing}
             >
               <span className="group-hover:animate-pulse">Start Building Your Legacy</span>
