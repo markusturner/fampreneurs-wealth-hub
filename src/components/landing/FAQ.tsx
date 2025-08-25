@@ -108,7 +108,7 @@ export const FAQ = () => {
         {/* CTA Section */}
         <div className="text-center mt-16">
           <div className="max-w-2xl mx-auto p-8 rounded-2xl" style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}>
-            <h3 className="text-2xl font-bold mb-4" style={{ color: '#290A52' }}>
+            <h3 className="text-2xl font-bold mb-4" style={{ color: '#ffb500' }}>
               Still Have Questions?
             </h3>
             <p className="text-muted-foreground mb-6">
