@@ -11,10 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, Vote, FileText, Clock, Users, ArrowLeft, TreePine } from 'lucide-react'
+import { Calendar, Vote, FileText, Clock, Users, ArrowLeft, Gavel, Crown, UserCheck } from 'lucide-react'
 import { useToast } from "@/hooks/use-toast"
 import { useNavigate } from 'react-router-dom'
-import { DynamicFamilyTreeVisualization } from "@/components/family-tree/DynamicFamilyTreeVisualization"
 
 interface Policy {
   id: string
@@ -312,27 +311,146 @@ export default function FamilyGovernance() {
         {/* Main Content */}
         <Card>
           <CardContent className="p-6">
-            <Tabs defaultValue="family-tree" className="w-full">
+            <Tabs defaultValue="governance-structure" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="family-tree">Family Tree</TabsTrigger>
+                <TabsTrigger value="governance-structure">Governance Structure</TabsTrigger>
                 <TabsTrigger value="proposals">Voting Proposals</TabsTrigger>
                 <TabsTrigger value="policies">Family Policies</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="family-tree" className="space-y-6 mt-6">
+              <TabsContent value="governance-structure" className="space-y-6 mt-6">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-xl font-semibold">Family Structure</h3>
+                    <h3 className="text-xl font-semibold">Three Branches of Family Governance</h3>
                     <p className="text-sm text-muted-foreground">
-                      Visualize your family relationships and organizational structure
+                      The foundational structure that ensures balanced decision-making and accountability
                     </p>
                   </div>
                 </div>
 
+                <div className="grid gap-6 md:grid-cols-3">
+                  {/* Family Council - Executive Branch */}
+                  <Card className="border-l-4 border-l-blue-500">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <Crown className="h-8 w-8 text-blue-500" />
+                        <div>
+                          <CardTitle className="text-lg">Family Council</CardTitle>
+                          <CardDescription>Executive Branch</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Responsible for implementing family policies, managing day-to-day operations, and executing strategic decisions.
+                      </p>
+                      <div className="space-y-2">
+                        <div className="text-sm">
+                          <strong>Key Responsibilities:</strong>
+                        </div>
+                        <ul className="text-xs text-muted-foreground space-y-1 ml-4">
+                          <li>• Strategic planning & execution</li>
+                          <li>• Resource allocation</li>
+                          <li>• Policy implementation</li>
+                          <li>• Family office management</li>
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Council of Elders - Judicial Branch */}
+                  <Card className="border-l-4 border-l-purple-500">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <Gavel className="h-8 w-8 text-purple-500" />
+                        <div>
+                          <CardTitle className="text-lg">Council of Elders</CardTitle>
+                          <CardDescription>Judicial Branch</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Provides wisdom, oversight, and resolution of disputes. Ensures family values and traditions are preserved.
+                      </p>
+                      <div className="space-y-2">
+                        <div className="text-sm">
+                          <strong>Key Responsibilities:</strong>
+                        </div>
+                        <ul className="text-xs text-muted-foreground space-y-1 ml-4">
+                          <li>• Dispute resolution</li>
+                          <li>• Ethics oversight</li>
+                          <li>• Constitutional interpretation</li>
+                          <li>• Family legacy preservation</li>
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Family Assembly - Legislative Branch */}
+                  <Card className="border-l-4 border-l-green-500">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <UserCheck className="h-8 w-8 text-green-500" />
+                        <div>
+                          <CardTitle className="text-lg">Family Assembly</CardTitle>
+                          <CardDescription>Legislative Branch</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Democratic voice of all family members. Creates policies, approves budgets, and makes major decisions through voting.
+                      </p>
+                      <div className="space-y-2">
+                        <div className="text-sm">
+                          <strong>Key Responsibilities:</strong>
+                        </div>
+                        <ul className="text-xs text-muted-foreground space-y-1 ml-4">
+                          <li>• Policy creation & amendment</li>
+                          <li>• Budget approval</li>
+                          <li>• Major decision voting</li>
+                          <li>• Family member representation</li>
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Governance Framework Overview */}
                 <Card>
-                  <CardContent className="p-6">
-                    <div className="h-[600px] w-full">
-                      <DynamicFamilyTreeVisualization familyMembers={familyMembers} />
+                  <CardHeader>
+                    <CardTitle>How Our Governance System Works</CardTitle>
+                    <CardDescription>
+                      A balanced approach to family decision-making that ensures accountability, transparency, and preservation of family values
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid gap-6 md:grid-cols-2">
+                      <div>
+                        <h4 className="font-semibold mb-2">Checks and Balances</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Each branch has distinct powers and responsibilities, with built-in mechanisms to prevent any single entity from having unchecked authority.
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-2">Decision Flow</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Proposals originate in the Assembly, are implemented by the Council, and overseen by the Elders for compliance and wisdom.
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-2">Representation</h4>
+                        <p className="text-sm text-muted-foreground">
+                          All family members have a voice through the Assembly, while experienced members guide through the Council and Elders.
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-2">Continuity</h4>
+                        <p className="text-sm text-muted-foreground">
+                          The structure ensures smooth transitions across generations while maintaining family values and institutional knowledge.
+                        </p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
