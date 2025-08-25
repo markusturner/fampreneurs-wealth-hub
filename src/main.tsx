@@ -7,7 +7,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { MeetingsProvider } from "@/contexts/MeetingsContext";
 import { useZapierNotifications } from "@/hooks/useZapierNotifications";
 import { ThemeProvider } from "@/components/theme-provider";
-import Index from "./pages/Index";
+import Landing from "./pages/Landing";
+import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import Community from "./pages/Community";
 import Courses from "./pages/Courses";
@@ -46,12 +47,13 @@ function AppWithNotifications() {
   useZapierNotifications()
   return (
     <Routes>
-      <Route path="/" element={<Index />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/community" element={<Community />} />
       <Route path="/courses" element={<Courses />} />
       <Route path="/documents" element={<Documents />} />
-      <Route path="/family-roundtable" element={<Index />} />
+      <Route path="/family-roundtable" element={<Dashboard />} />
       <Route path="/family-governance" element={<FamilyGovernance />} />
       <Route path="/calendar" element={<Calendar />} />
       <Route path="/members" element={<Members />} />
