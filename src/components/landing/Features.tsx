@@ -69,7 +69,7 @@ export const Features = () => {
     <section id="features" className="py-20 bg-background">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ color: '#290A52' }}>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ color: '#2eb2ff' }}>
             Everything You Need to Build
             <span style={{ color: '#FFB500' }}> Generational Wealth</span>
           </h2>
