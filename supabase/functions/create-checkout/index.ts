@@ -60,7 +60,6 @@ serve(async (req) => {
       cancel_url: `${req.headers.get("origin")}/?payment=cancelled`,
       allow_promotion_codes: true,
       billing_address_collection: 'required',
-      customer_creation: 'always',
     });
 
     console.log("Checkout session created:", session.id);
