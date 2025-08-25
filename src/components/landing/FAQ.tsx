@@ -2,6 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
+import { DemoModal } from './DemoModal'
+import { navigateToRoute, openEmailClient, contactInfo } from '@/utils/navigation'
 
 const faqs = [
   {
@@ -40,6 +42,7 @@ const faqs = [
 
 export const FAQ = () => {
   const [openItems, setOpenItems] = useState<number[]>([])
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false)
 
   const toggleItem = (index: number) => {
     setOpenItems(prev => 
@@ -47,6 +50,14 @@ export const FAQ = () => {
         ? prev.filter(i => i !== index)
         : [...prev, index]
     )
+  }
+  
+  const handleScheduleDemo = () => {
+    setIsDemoModalOpen(true)
+  }
+  
+  const handleContactSupport = () => {
+    navigateToRoute('/contact')
   }
 
   return (
@@ -104,16 +115,29 @@ export const FAQ = () => {
               Our team is here to help you understand how TruHeirs can transform your family's wealth building journey.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-6 py-3 text-white font-semibold rounded-lg hover:opacity-90 transition-opacity" style={{ backgroundColor: '#290A52' }}>
+              <button 
+                onClick={handleScheduleDemo}
+                className="px-6 py-3 text-white font-semibold rounded-lg hover:opacity-90 transition-opacity" 
+                style={{ backgroundColor: '#290A52' }}
+              >
                 Schedule a Demo
               </button>
-              <button className="px-6 py-3 border-2 font-semibold rounded-lg hover:bg-opacity-10 transition-colors" style={{ borderColor: '#2EB2FF', color: '#2EB2FF' }}>
+              <button 
+                onClick={handleContactSupport}
+                className="px-6 py-3 border-2 font-semibold rounded-lg hover:bg-opacity-10 transition-colors" 
+                style={{ borderColor: '#2EB2FF', color: '#2EB2FF' }}
+              >
                 Contact Support
               </button>
             </div>
           </div>
         </div>
       </div>
+      
+      <DemoModal 
+        isOpen={isDemoModalOpen} 
+        onClose={() => setIsDemoModalOpen(false)} 
+      />
     </section>
   )
 }

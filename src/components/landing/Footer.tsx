@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button'
 import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin } from 'lucide-react'
+import { scrollToSection, openExternalLink, socialLinks, contactInfo } from '@/utils/navigation'
 
 export const Footer = () => {
   const scrollToPricing = () => {
-    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
+    scrollToSection('pricing')
   }
 
   return (
@@ -26,18 +27,38 @@ export const Footer = () => {
               The complete DIY AI family office platform designed for busy professionals and entrepreneurs building generational wealth.
             </p>
             <div className="flex space-x-4">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}>
+              <button 
+                onClick={() => openExternalLink(socialLinks.facebook)}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" 
+                style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}
+                aria-label="Facebook"
+              >
                 <Facebook className="w-4 h-4" style={{ color: '#290A52' }} />
-              </div>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}>
+              </button>
+              <button 
+                onClick={() => openExternalLink(socialLinks.twitter)}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" 
+                style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}
+                aria-label="Twitter"
+              >
                 <Twitter className="w-4 h-4" style={{ color: '#290A52' }} />
-              </div>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}>
+              </button>
+              <button 
+                onClick={() => openExternalLink(socialLinks.linkedin)}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" 
+                style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}
+                aria-label="LinkedIn"
+              >
                 <Linkedin className="w-4 h-4" style={{ color: '#290A52' }} />
-              </div>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}>
+              </button>
+              <button 
+                onClick={() => openExternalLink(socialLinks.instagram)}
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" 
+                style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}
+                aria-label="Instagram"
+              >
                 <Instagram className="w-4 h-4" style={{ color: '#290A52' }} />
-              </div>
+              </button>
             </div>
           </div>
 
@@ -45,11 +66,25 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4" style={{ color: '#290A52' }}>Platform</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Features</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Pricing</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Security</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Integrations</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">API Documentation</a></li>
+              <li>
+                <button 
+                  onClick={() => scrollToSection('features')} 
+                  className="hover:text-foreground transition-colors text-left"
+                >
+                  Features
+                </button>
+              </li>
+              <li>
+                <button 
+                  onClick={() => scrollToSection('pricing')} 
+                  className="hover:text-foreground transition-colors text-left"
+                >
+                  Pricing
+                </button>
+              </li>
+              <li><a href="/help" className="hover:text-foreground transition-colors">Security</a></li>
+              <li><a href="/help" className="hover:text-foreground transition-colors">Integrations</a></li>
+              <li><a href="/help" className="hover:text-foreground transition-colors">API Documentation</a></li>
             </ul>
           </div>
 
@@ -57,11 +92,11 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4" style={{ color: '#290A52' }}>Resources</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Blog</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Help Center</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Webinars</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Case Studies</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Community</a></li>
+              <li><a href="/community" className="hover:text-foreground transition-colors">Blog</a></li>
+              <li><a href="/help" className="hover:text-foreground transition-colors">Help Center</a></li>
+              <li><a href="/courses" className="hover:text-foreground transition-colors">Webinars</a></li>
+              <li><a href="/community" className="hover:text-foreground transition-colors">Case Studies</a></li>
+              <li><a href="/community" className="hover:text-foreground transition-colors">Community</a></li>
             </ul>
           </div>
 
@@ -71,11 +106,21 @@ export const Footer = () => {
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-center">
                 <Mail className="w-4 h-4 mr-2" style={{ color: '#FFB500' }} />
-                <span>support@truheirs.com</span>
+                <button 
+                  onClick={() => window.open(`mailto:${contactInfo.email}`, '_blank')}
+                  className="hover:text-foreground transition-colors text-left"
+                >
+                  {contactInfo.email}
+                </button>
               </li>
               <li className="flex items-center">
                 <Phone className="w-4 h-4 mr-2" style={{ color: '#FFB500' }} />
-                <span>1-800-TRU-HEIR</span>
+                <button 
+                  onClick={() => window.open(`tel:${contactInfo.phone}`, '_blank')}
+                  className="hover:text-foreground transition-colors text-left"
+                >
+                  {contactInfo.phone}
+                </button>
               </li>
               <li className="flex items-start">
                 <MapPin className="w-4 h-4 mr-2 mt-0.5" style={{ color: '#FFB500' }} />
@@ -106,9 +151,9 @@ export const Footer = () => {
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center pt-8 text-sm text-muted-foreground">
           <div className="flex space-x-6 mb-4 md:mb-0">
-            <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-foreground transition-colors">Cookie Policy</a>
+            <a href="/help" className="hover:text-foreground transition-colors">Privacy Policy</a>
+            <a href="/help" className="hover:text-foreground transition-colors">Terms of Service</a>
+            <a href="/help" className="hover:text-foreground transition-colors">Cookie Policy</a>
           </div>
           <p>© 2024 TruHeirs by The Fampreneurs. All rights reserved.</p>
         </div>

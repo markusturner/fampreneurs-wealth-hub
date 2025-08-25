@@ -1,9 +1,22 @@
 import { Button } from '@/components/ui/button'
 import { ArrowDown, Play, Star, Users, TrendingUp } from 'lucide-react'
+import { useState } from 'react'
+import { DemoModal } from './DemoModal'
+import { navigateToRoute, scrollToSection } from '@/utils/navigation'
 
 export const Hero = () => {
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false)
+  
   const scrollToPricing = () => {
-    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
+    scrollToSection('pricing')
+  }
+  
+  const handleLoginClick = () => {
+    navigateToRoute('/auth')
+  }
+  
+  const handleDemoClick = () => {
+    setIsDemoModalOpen(true)
   }
 
   return (
@@ -38,7 +51,11 @@ export const Hero = () => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" className="text-sm text-primary hover:text-primary hover:bg-primary/10 transition-smooth">
+            <Button 
+              variant="ghost" 
+              className="text-sm text-primary hover:text-primary hover:bg-primary/10 transition-smooth"
+              onClick={handleLoginClick}
+            >
               Login
             </Button>
             <Button 
@@ -90,6 +107,7 @@ export const Hero = () => {
               variant="outline" 
               size="lg" 
               className="text-xl px-12 py-6 border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground shadow-medium hover:shadow-glow transition-all duration-300 hover:scale-105"
+              onClick={handleDemoClick}
             >
               <Play className="w-6 h-6 mr-3" />
               Watch Demo
@@ -129,6 +147,11 @@ export const Hero = () => {
           </div>
         </div>
       </div>
+      
+      <DemoModal 
+        isOpen={isDemoModalOpen} 
+        onClose={() => setIsDemoModalOpen(false)} 
+      />
     </section>
   )
 }
