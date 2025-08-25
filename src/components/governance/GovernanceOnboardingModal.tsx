@@ -921,11 +921,11 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleFinishLater(); }}>
       <DialogContent
-        className="max-w-[95vw] md:max-w-7xl h-[90vh] p-0 overflow-hidden"
+        className="max-w-[95vw] md:max-w-7xl h-[90dvh] p-0"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <div className="flex h-full">
+        <div className="flex h-full min-h-0">
           {renderProgressSidebar()}
           
           <div className="flex-1 flex flex-col min-h-0">
