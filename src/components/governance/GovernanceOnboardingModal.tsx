@@ -14,6 +14,7 @@ import { Check, Circle, AlertCircle, Plus, X, Upload } from 'lucide-react';
 
 interface OnboardingData {
   // Identity & Core Documents
+  constitutionName: string;
   familyConstitution: string;
   missionStatement: string;
   visionStatement: string;
@@ -159,7 +160,7 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
   const getRequiredFields = () => {
     return {
       identity: [
-        'familyConstitution', 'missionStatement', 'visionStatement', 'coreValues',
+        'constitutionName', 'familyConstitution', 'missionStatement', 'visionStatement', 'coreValues',
         'wealthPhilosophy', 'constitutionDate', 'primaryLanguage', 'familyCrestUrl', 'secretCodes'
       ],
       governance: [
@@ -243,6 +244,7 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
 
   const getFieldLabel = (field: string): string => {
     const labels: { [key: string]: string } = {
+      constitutionName: 'Constitution Name',
       familyConstitution: 'Family Constitution',
       missionStatement: 'Mission Statement',
       visionStatement: 'Vision Statement',
@@ -396,6 +398,17 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
       </div>
 
       <div className="grid gap-6">
+        <div>
+          <Label htmlFor="constitutionName">Constitution Name *</Label>
+          <Input
+            id="constitutionName"
+            value={data.constitutionName || ''}
+            onChange={(e) => saveData({ constitutionName: e.target.value })}
+            placeholder="e.g., The Smith Family Constitution"
+            className="font-medium"
+          />
+        </div>
+
         <div>
           <Label htmlFor="familyConstitution">Family Preamble *</Label>
           <p className="text-sm text-muted-foreground mt-1 mb-3">
