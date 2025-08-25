@@ -177,6 +177,7 @@ export default function Members() {
           family_position: updatedMember.family_position,
           relationship_to_family: updatedMember.relationship_to_family,
           trust_positions: updatedMember.trust_positions,
+          governance_branch: (updatedMember as any).governance_branch,
           notes: updatedMember.notes,
           updated_at: new Date().toISOString()
         })

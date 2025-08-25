@@ -72,6 +72,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
     phone: '',
     familyPosition: '',
     relationshipToFamily: '',
+    governanceBranch: '',
     governancePosition: 'none',
     notes: ''
   })
@@ -85,6 +86,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
       phone: '',
       familyPosition: '',
       relationshipToFamily: '',
+      governanceBranch: '',
       governancePosition: 'none',
       notes: ''
     })
@@ -141,6 +143,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
           family_position: formData.familyPosition || null,
           trust_positions: finalTrustPositions.length > 0 ? finalTrustPositions : null,
           relationship_to_family: formData.relationshipToFamily.trim() || null,
+          governance_branch: formData.governanceBranch || null,
           notes: formData.notes.trim() || null,
           status: 'pending'
         })
@@ -321,6 +324,24 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
                   onChange={(e) => setFormData(prev => ({ ...prev, relationshipToFamily: e.target.value }))}
                   placeholder="e.g., Son of John Smith, Daughter-in-law"
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="governanceBranch">Governance Branch</Label>
+                <Select 
+                  value={formData.governanceBranch}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, governanceBranch: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select governance branch (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="family_council">Family Council (Executive Branch)</SelectItem>
+                    <SelectItem value="council_elders">Council of Elders (Judicial Branch)</SelectItem>
+                    <SelectItem value="family_assembly">Family Assembly (Legislative Branch)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>

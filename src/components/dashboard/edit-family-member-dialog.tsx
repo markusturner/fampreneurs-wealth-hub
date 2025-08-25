@@ -17,6 +17,7 @@ interface FamilyMember {
   email: string | null
   phone: string | null
   trust_positions: string[] | null
+  governance_branch?: string | null
   status: string | null
   is_invited: boolean | null
   notes: string | null
@@ -77,6 +78,7 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
     relationship_to_family: '',
     trust_positions: [] as string[],
     governance_position: '',
+    governance_branch: '',
     notes: ''
   })
   const [newTrustPosition, setNewTrustPosition] = useState('')
@@ -91,6 +93,7 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
         relationship_to_family: member.relationship_to_family || '',
         trust_positions: member.trust_positions || [],
         governance_position: member.trust_positions?.find(pos => governancePositions.includes(pos)) || 'none',
+        governance_branch: member.governance_branch || '',
         notes: member.notes || ''
       })
     }
@@ -127,7 +130,8 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
     onUpdate({
       id: member.id,
       ...formData,
-      trust_positions: finalTrustPositions
+      trust_positions: finalTrustPositions,
+      governance_branch: formData.governance_branch || null
     })
   }
 
@@ -206,6 +210,24 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
               onChange={(e) => setFormData(prev => ({ ...prev, relationship_to_family: e.target.value }))}
               placeholder="Describe relationship to family"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="governance_branch">Governance Branch</Label>
+            <Select
+              value={formData.governance_branch}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, governance_branch: value }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select governance branch" />
+              </SelectTrigger>
+              <SelectContent className="bg-background border z-50">
+                <SelectItem value="">None</SelectItem>
+                <SelectItem value="family_council">Family Council (Executive Branch)</SelectItem>
+                <SelectItem value="council_elders">Council of Elders (Judicial Branch)</SelectItem>
+                <SelectItem value="family_assembly">Family Assembly (Legislative Branch)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
