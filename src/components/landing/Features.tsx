@@ -124,7 +124,7 @@ export const Features = () => {
                 </ul>
               </div>
               <div>
-                <h4 className="font-bold text-lg mb-2" style={{ color: '#290A52' }}>TruHeirs Platform</h4>
+                <h4 className="font-bold text-lg mb-2" style={{ color: '#6215c8' }}>TruHeirs Platform</h4>
                 <ul className="text-foreground text-left space-y-1">
                   <li>• Start with any amount</li>
                   <li>• Fixed monthly pricing</li>
