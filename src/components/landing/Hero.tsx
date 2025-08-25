@@ -123,7 +123,7 @@ export const Hero = () => {
             <div className="flex flex-col items-center p-4 md:p-6 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 shadow-medium hover:shadow-strong transition-all duration-300 hover:scale-105">
               <div className="flex items-center mb-2">
                 <Users className="w-5 h-5 md:w-6 md:h-6 text-secondary mr-2" />
-                <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-secondary">500+</span>
+                <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-secondary">70+</span>
               </div>
               <span className="text-xs md:text-sm text-muted-foreground font-medium text-center">Families Building Wealth</span>
             </div>
