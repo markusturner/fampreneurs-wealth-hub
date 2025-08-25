@@ -783,7 +783,10 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <Label htmlFor="quorumPercentage">Quorum Percentage * (1-100)</Label>
+            <Label htmlFor="quorumPercentage">How Many People Need to Show Up * (1-100)</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              How many family members need to be at a meeting before you can make decisions? (like 50% means half the family)
+            </p>
             <Input
               id="quorumPercentage"
               type="number"
@@ -795,7 +798,10 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
             />
           </div>
           <div>
-            <Label htmlFor="routineThreshold">Routine Decision Threshold * (%)</Label>
+            <Label htmlFor="routineThreshold">Easy Decisions Need * (%)</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              How many people need to agree for small decisions? (like paying bills or normal stuff)
+            </p>
             <Input
               id="routineThreshold"
               type="number"
@@ -807,7 +813,10 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
             />
           </div>
           <div>
-            <Label htmlFor="majorThreshold">Major Decision Threshold * (%)</Label>
+            <Label htmlFor="majorThreshold">Big Decisions Need * (%)</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              How many people need to agree for huge decisions? (like selling a house or changing family rules)
+            </p>
             <Input
               id="majorThreshold"
               type="number"
