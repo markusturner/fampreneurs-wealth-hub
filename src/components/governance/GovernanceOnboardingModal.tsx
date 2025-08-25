@@ -398,6 +398,13 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
       <div className="grid gap-6">
         <div>
           <Label htmlFor="familyConstitution">Family Constitution *</Label>
+          <p className="text-sm text-muted-foreground mt-1 mb-3">
+            A family constitution is your foundational document that outlines how your family operates as stewards of wealth. 
+            Include key components like: <strong>purpose & values</strong> (why you exist as a family enterprise), 
+            <strong>ownership philosophy</strong> (how wealth should be used), <strong>governance structure</strong> (who makes decisions), 
+            <strong>conflict resolution</strong> (how disputes are handled), <strong>next-generation development</strong> (education & preparation), 
+            and <strong>legacy preservation</strong> (how values transfer across generations).
+          </p>
           <Textarea
             id="familyConstitution"
             value={data.familyConstitution || ''}
