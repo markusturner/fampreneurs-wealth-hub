@@ -1132,6 +1132,7 @@ export type Database = {
           encrypted_notes: string | null
           family_position: string
           full_name: string
+          governance_branch: string | null
           id: string
           invitation_sent_at: string | null
           is_invited: boolean | null
@@ -1156,6 +1157,7 @@ export type Database = {
           encrypted_notes?: string | null
           family_position: string
           full_name: string
+          governance_branch?: string | null
           id?: string
           invitation_sent_at?: string | null
           is_invited?: boolean | null
@@ -1180,6 +1182,7 @@ export type Database = {
           encrypted_notes?: string | null
           family_position?: string
           full_name?: string
+          governance_branch?: string | null
           id?: string
           invitation_sent_at?: string | null
           is_invited?: boolean | null

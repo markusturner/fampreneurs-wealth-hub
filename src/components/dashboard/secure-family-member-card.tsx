@@ -15,6 +15,7 @@ interface FamilyMember {
   family_position: string
   relationship_to_family: string | null
   trust_positions: string[] | null
+  governance_branch?: string | null
   status: string | null
   notes: string | null
   data_classification?: string
@@ -160,6 +161,26 @@ export function SecureFamilyMemberCard({
                             </Badge>
                           ))}
                         </div>
+                      </div>
+                    )}
+                    
+                    {member.governance_branch && (
+                      <div>
+                        <span className="text-xs text-muted-foreground">Governance Branch: </span>
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs ${
+                            member.governance_branch === 'family_council' ? 'border-blue-500 text-blue-700' :
+                            member.governance_branch === 'council_elders' ? 'border-purple-500 text-purple-700' :
+                            member.governance_branch === 'family_assembly' ? 'border-green-500 text-green-700' :
+                            'border-gray-500 text-gray-700'
+                          }`}
+                        >
+                          {member.governance_branch === 'family_council' ? 'Family Council (Executive)' :
+                           member.governance_branch === 'council_elders' ? 'Council of Elders (Judicial)' :
+                           member.governance_branch === 'family_assembly' ? 'Family Assembly (Legislative)' :
+                           member.governance_branch}
+                        </Badge>
                       </div>
                     )}
                     

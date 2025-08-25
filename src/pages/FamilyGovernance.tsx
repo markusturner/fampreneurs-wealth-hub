@@ -43,7 +43,7 @@ interface FamilyMember {
   full_name: string
   email?: string
   family_position: string
-  governance_branch?: 'family_council' | 'council_elders' | 'family_assembly'
+  governance_branch?: string | null
   status: string
 }
 

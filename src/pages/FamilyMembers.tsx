@@ -27,7 +27,7 @@ interface FamilyMember {
   email: string | null
   phone: string | null
   trust_positions: string[] | null
-  governance_branch?: 'family_council' | 'council_elders' | 'family_assembly' | null
+  governance_branch?: string | null
   status: string | null
   is_invited: boolean | null
   notes: string | null
