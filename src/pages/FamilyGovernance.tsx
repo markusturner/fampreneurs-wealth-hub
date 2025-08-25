@@ -101,8 +101,11 @@ export default function FamilyGovernance() {
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (policiesError) throw policiesError
-      setPolicies(policiesData || [])
+      if (policiesError) {
+        console.error('Policies error:', policiesError)
+      } else {
+        setPolicies(policiesData || [])
+      }
 
       // Load proposals
       const { data: proposalsData, error: proposalsError } = await supabase
@@ -110,27 +113,29 @@ export default function FamilyGovernance() {
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (proposalsError) throw proposalsError
-      
-      // Get vote counts for each proposal
-      const proposalsWithVotes = await Promise.all(
-        (proposalsData || []).map(async (proposal) => {
-          const { data: voteData } = await supabase
-            .from('family_votes')
-            .select('vote_choice, user_id')
-            .eq('proposal_id', proposal.id)
-          
-          const userVote = voteData?.find(v => v.user_id === user?.id)
-          
-          return {
-            ...proposal,
-            vote_count: voteData?.length || 0,
-            user_vote: userVote?.vote_choice
-          }
-        })
-      )
-      
-      setProposals(proposalsWithVotes)
+      if (proposalsError) {
+        console.error('Proposals error:', proposalsError)
+      } else {
+        // Get vote counts for each proposal
+        const proposalsWithVotes = await Promise.all(
+          (proposalsData || []).map(async (proposal) => {
+            const { data: voteData } = await supabase
+              .from('family_votes')
+              .select('vote_choice, user_id')
+              .eq('proposal_id', proposal.id)
+            
+            const userVote = voteData?.find(v => v.user_id === user?.id)
+            
+            return {
+              ...proposal,
+              vote_count: voteData?.length || 0,
+              user_vote: userVote?.vote_choice
+            }
+          })
+        )
+        
+        setProposals(proposalsWithVotes)
+      }
 
       // Load user votes
       const { data: votesData, error: votesError } = await supabase
@@ -138,17 +143,25 @@ export default function FamilyGovernance() {
         .select('*')
         .eq('user_id', user?.id || '')
 
-      if (votesError) throw votesError
-      setVotes(votesData || [])
+      if (votesError) {
+        console.error('Votes error:', votesError)
+      } else {
+        setVotes(votesData || [])
+      }
 
       // Load family members
       const { data: familyMembersData, error: familyMembersError } = await supabase
         .from('family_members')
-        .select('*')
+        .select('id, full_name, family_position, governance_branch, status')
+        .eq('status', 'active')
         .order('created_at', { ascending: false })
 
-      if (familyMembersError) throw familyMembersError
-      setFamilyMembers(familyMembersData || [])
+      if (familyMembersError) {
+        console.error('Family members error:', familyMembersError)
+      } else {
+        console.log('Loaded family members:', familyMembersData)
+        setFamilyMembers(familyMembersData || [])
+      }
 
     } catch (error) {
       console.error('Error loading governance data:', error)
