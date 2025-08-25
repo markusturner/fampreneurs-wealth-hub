@@ -86,35 +86,6 @@ const Dashboard = () => {
         {/* Overview Section */}
         <OverviewSection />
 
-        {/* Main Dashboard Grid */}
-        <div className="grid gap-3 sm:gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-2">
-          {/* Investment Overview */}
-          <div className="lg:col-span-2">
-            <InvestmentChart />
-          </div>
-          
-          {/* Family Governance - Moved to dedicated page */}
-          
-          {/* Document Management */}
-          <div className="lg:col-span-2">
-            <DocumentManagement />
-          </div>
-
-          {/* Enhanced Search */}
-          <div className="order-3">
-            <EnhancedSearch />
-          </div>
-
-          {/* Real-time Notifications */}
-          <div className="order-4">
-            <RealTimeNotifications />
-          </div>
-
-          {/* AI Chat */}
-          <div className="order-5">
-            <AIChat />
-          </div>
-        </div>
       </main>
       
       {/* Mobile Bottom Navigation */}
