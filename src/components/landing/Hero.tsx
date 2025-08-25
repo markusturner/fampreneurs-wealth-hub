@@ -46,7 +46,7 @@ export const Hero = () => {
               T
             </div>
             <div>
-              <h1 className="text-xl font-bold text-primary">TruHeirs</h1>
+              <h1 className="text-xl font-bold" style={{ color: '#ffb500' }}>TruHeirs</h1>
               <p className="text-xs text-muted-foreground">Powered by The Fampreneurs</p>
             </div>
           </div>
