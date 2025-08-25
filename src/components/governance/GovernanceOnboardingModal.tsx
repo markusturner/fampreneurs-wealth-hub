@@ -397,19 +397,20 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
 
       <div className="grid gap-6">
         <div>
-          <Label htmlFor="familyConstitution">Family Constitution *</Label>
+          <Label htmlFor="familyConstitution">Family Preamble *</Label>
           <p className="text-sm text-muted-foreground mt-1 mb-3">
-            A family constitution is your foundational document that outlines how your family operates as stewards of wealth. 
-            Include key components like: <strong>purpose & values</strong> (why you exist as a family enterprise), 
-            <strong>ownership philosophy</strong> (how wealth should be used), <strong>governance structure</strong> (who makes decisions), 
-            <strong>conflict resolution</strong> (how disputes are handled), <strong>next-generation development</strong> (education & preparation), 
-            and <strong>legacy preservation</strong> (how values transfer across generations).
+            Your family preamble is the opening statement that establishes your family's identity and purpose as wealth stewards. 
+            It should capture: <strong>your family's origin story</strong> (how you came to be), <strong>core beliefs about wealth</strong> 
+            (responsibility vs. privilege), <strong>commitment to future generations</strong> (preparing successors), and 
+            <strong>guiding principles</strong> (integrity, service, stewardship). Example: "We, the [Family Name], 
+            united by shared values and committed to responsible stewardship, establish this constitution to guide our family 
+            enterprise across generations, ensuring our wealth serves both family prosperity and societal good."
           </p>
           <Textarea
             id="familyConstitution"
             value={data.familyConstitution || ''}
             onChange={(e) => saveData({ familyConstitution: e.target.value })}
-            placeholder="Define your family's governing principles and framework..."
+            placeholder="We, the [Family Name], united by shared values and committed to responsible stewardship..."
             className="min-h-32"
           />
         </div>
