@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Play, X } from 'lucide-react'
+import { Play } from 'lucide-react'
 
 interface DemoModalProps {
   isOpen: boolean
@@ -12,19 +12,9 @@ export const DemoModal = ({ isOpen, onClose }: DemoModalProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-full h-[80vh] p-0">
         <DialogHeader className="p-6 pb-0">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold text-primary">
-              TruHeirs Platform Demo
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm" 
-              onClick={onClose}
-              className="h-8 w-8 p-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle className="text-2xl font-bold text-primary">
+            TruHeirs Platform Demo
+          </DialogTitle>
         </DialogHeader>
         <div className="flex-1 p-6 pt-0">
           <div className="relative w-full h-full bg-muted rounded-lg overflow-hidden">
