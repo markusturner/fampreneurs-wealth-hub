@@ -128,7 +128,7 @@ export const Pricing = () => {
                   {tier.name}
                 </CardTitle>
                 <div className="flex items-baseline justify-center mb-2">
-                  <span className="text-4xl font-bold" style={{ color: '#290A52' }}>
+                  <span className="text-4xl font-bold" style={{ color: '#ffb500' }}>
                     {tier.price}
                   </span>
                   <span className="text-muted-foreground ml-1">{tier.period}</span>
