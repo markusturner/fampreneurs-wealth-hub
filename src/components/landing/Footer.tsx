@@ -20,7 +20,7 @@ export const Footer = () => {
               </div>
               <div>
                 <h3 className="text-xl font-bold" style={{
-                color: '#290A52'
+                color: '#ffb500'
               }}>TruHeirs</h3>
                 <p className="text-xs text-muted-foreground">TruHeirs</p>
               </div>
