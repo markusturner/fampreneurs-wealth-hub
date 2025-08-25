@@ -82,7 +82,7 @@ export const FAQ = () => {
                   onClick={() => toggleItem(index)}
                 >
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                    <CardTitle className="text-left text-lg" style={{ color: '#290A52' }}>
+                    <CardTitle className="text-left text-lg" style={{ color: 'white' }}>
                       {faq.question}
                     </CardTitle>
                     <ChevronDown 
