@@ -490,6 +490,65 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
               </Badge>
             ))}
           </div>
+          
+          <div className="mt-3">
+            <Label htmlFor="customCoreValue">Add Custom Core Value</Label>
+            <div className="flex gap-2 mt-1">
+              <Input
+                id="customCoreValue"
+                placeholder="Enter a custom core value"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                    const customValue = e.currentTarget.value.trim();
+                    const current = data.coreValues || [];
+                    if (!current.includes(customValue)) {
+                      saveData({ coreValues: [...current, customValue] });
+                    }
+                    e.currentTarget.value = '';
+                  }
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={(e) => {
+                  const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                  const customValue = input.value.trim();
+                  if (customValue) {
+                    const current = data.coreValues || [];
+                    if (!current.includes(customValue)) {
+                      saveData({ coreValues: [...current, customValue] });
+                    }
+                    input.value = '';
+                  }
+                }}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+          
+          {data.coreValues && data.coreValues.length > 0 && (
+            <div className="mt-3">
+              <Label>Selected Values:</Label>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {data.coreValues.map((value) => (
+                  <Badge
+                    key={value}
+                    variant="default"
+                    className="cursor-pointer"
+                    onClick={() => {
+                      const updated = data.coreValues.filter(v => v !== value);
+                      saveData({ coreValues: updated });
+                    }}
+                  >
+                    {value}
+                    <X className="h-3 w-3 ml-1" />
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
