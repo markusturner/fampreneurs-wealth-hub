@@ -53,6 +53,17 @@ const features = [
   }
 ]
 
+const iconColors = [
+  '#FFB500', // Golden yellow
+  '#2EB2FF', // Bright blue
+  '#FF6B6B', // Coral red
+  '#4ECDC4', // Teal
+  '#45B7D1', // Sky blue
+  '#96CEB4', // Mint green
+  '#FFEAA7', // Light yellow
+  '#DDA0DD'  // Plum
+]
+
 export const Features = () => {
   return (
     <section id="features" className="py-20 bg-background">
@@ -71,8 +82,8 @@ export const Features = () => {
           {features.map((feature, index) => (
             <Card key={index} className="border-2 hover:shadow-lg transition-all duration-300 group">
               <CardHeader className="text-center pb-4">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}>
-                  <feature.icon className="w-8 h-8" style={{ color: '#290A52' }} />
+                 <div className="w-16 h-16 mx-auto mb-4 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: `${iconColors[index]}20` }}>
+                   <feature.icon className="w-8 h-8" style={{ color: iconColors[index] }} />
                 </div>
                 <CardTitle className="text-lg" style={{ color: '#ffb500' }}>
                   {feature.title}
