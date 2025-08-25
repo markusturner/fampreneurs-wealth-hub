@@ -919,8 +919,12 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
   const isComplete = totalProgress.completed === totalProgress.total;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleFinishLater}>
-      <DialogContent className="max-w-7xl h-[90vh] p-0">
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleFinishLater(); }}>
+      <DialogContent
+        className="max-w-[95vw] md:max-w-7xl h-[90vh] p-0 overflow-hidden"
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         <div className="flex h-full">
           {renderProgressSidebar()}
           
