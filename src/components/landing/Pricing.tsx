@@ -68,6 +68,12 @@ const pricingTiers = [
   }
 ]
 
+const pricingIconColors = [
+  '#FF6B6B', // Coral red for Starter
+  '#4ECDC4', // Teal for Professional  
+  '#45B7D1'  // Sky blue for Enterprise
+]
+
 export const Pricing = () => {
   const handlePurchase = async (amount: number) => {
     try {
@@ -121,8 +127,8 @@ export const Pricing = () => {
               )}
 
               <CardHeader className="text-center pb-4">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}>
-                  <tier.icon className="w-8 h-8" style={{ color: '#290A52' }} />
+                <div className="w-16 h-16 mx-auto mb-4 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${pricingIconColors[index]}20` }}>
+                  <tier.icon className="w-8 h-8" style={{ color: pricingIconColors[index] }} />
                 </div>
                 <CardTitle className="text-2xl" style={{ color: 'white' }}>
                   {tier.name}
