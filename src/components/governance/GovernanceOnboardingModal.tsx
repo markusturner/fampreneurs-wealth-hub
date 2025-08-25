@@ -165,10 +165,9 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
         'wealthPhilosophy', 'constitutionDate', 'primaryLanguage', 'familyCrestUrl', 'secretCodes'
       ],
       governance: [
-        'ownershipEligibility', 'quorumPercentage', 'eligibleVoters', 'routineThreshold',
-        'majorThreshold', 'conflictResolution', 'amendmentProcess', 'corporateSealUrl',
-        'sealCustodian', 'sealUsagePolicy', 'leadershipRoles', 'successorCriteria',
-        'transitionProtocol', 'emergencyContacts', 'familyCouncil', 'boardOfTrustees'
+        'ownershipEligibility', 'quorumPercentage', 'routineThreshold',
+        'majorThreshold', 'conflictResolution', 'amendmentProcess',
+        'corporateSealUrl', 'sealCustodian', 'sealUsagePolicy'
       ],
       legacy: [
         'educationOverview', 'curriculumTracks', 'philanthropyThesis', 'focusAreas',
