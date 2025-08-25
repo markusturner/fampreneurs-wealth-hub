@@ -206,7 +206,7 @@ export default function Documents() {
         .from('family_governance_policies')
         .select('*')
         .eq('user_id', user.id)
-        .eq('policy_type', 'family_values')
+        .eq('policy_type', 'governance')
         .single();
 
       if (error && error.code !== 'PGRST116') {
@@ -242,7 +242,7 @@ export default function Documents() {
           user_id: user.id,
           title: 'Family Values & Mission',
           description: JSON.stringify(valuesData),
-          policy_type: 'family_values',
+          policy_type: 'governance',
           status: 'active'
         });
 
