@@ -113,7 +113,7 @@ export const Pricing = () => {
             >
               {tier.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="text-xs font-bold text-white px-4 py-2 rounded-full" style={{ backgroundColor: '#FFB500' }}>
+                  <div className="text-xs font-bold px-4 py-2 rounded-full" style={{ backgroundColor: '#FFB500', color: '#290a52' }}>
                     MOST POPULAR
                   </div>
                 </div>
