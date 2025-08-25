@@ -1146,12 +1146,19 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
         </div>
 
         <div>
-          <Label htmlFor="minutesPolicy">Minutes/Archive Policy *</Label>
+          <Label htmlFor="minutesPolicy">How You Keep Meeting Records *</Label>
+          <p className="text-sm text-muted-foreground mt-1 mb-3">
+            How will you remember what happened in your family meetings? Think about <strong>who writes things down</strong> 
+            (maybe the oldest kid or a parent), <strong>what gets written</strong> (big decisions, who was there, what was discussed), 
+            and <strong>where you keep these notes</strong> (in a special folder, on the computer, in a safe place). 
+            Example: "Mom writes down what we talk about in each meeting. We keep notes about who came, what decisions 
+            we made, and any important family news. All meeting notes go in our family binder that we keep in the office."
+          </p>
           <Textarea
             id="minutesPolicy"
             value={data.minutesPolicy || ''}
             onChange={(e) => saveData({ minutesPolicy: e.target.value })}
-            placeholder="How we document and preserve meeting records..."
+            placeholder="How you'll write down and save what happens in family meetings..."
             maxLength={200}
           />
         </div>
