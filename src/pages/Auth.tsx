@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Shield, Upload, User, CreditCard } from 'lucide-react'
+import { Loader2, Shield, Upload, User, CreditCard, ArrowLeft } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNavigate } from 'react-router-dom'
@@ -493,6 +493,16 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-soft relative">
+        <div className="absolute top-4 left-4 z-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/')}
+            className="hover:bg-muted"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </div>
         <div className="absolute top-4 right-4 z-10">
           <ThemeToggle />
         </div>
