@@ -146,9 +146,14 @@ export const Hero = () => {
 
         {/* Enhanced Scroll Indicator */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="p-3 rounded-full bg-primary/10 backdrop-blur-sm border" style={{ borderColor: '#ffb500' }}>
+          <button 
+            onClick={() => scrollToSection('features')}
+            className="p-3 rounded-full bg-primary/10 backdrop-blur-sm border hover:bg-primary/20 transition-all duration-300 hover:scale-110 cursor-pointer" 
+            style={{ borderColor: '#ffb500' }}
+            aria-label="Scroll to features section"
+          >
             <ArrowDown className="w-6 h-6" style={{ color: '#ffb500' }} />
-          </div>
+          </button>
         </div>
       </div>
       
