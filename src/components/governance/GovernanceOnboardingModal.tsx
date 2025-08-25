@@ -1000,7 +1000,14 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
         </div>
 
         <div>
-          <Label>Curriculum Tracks * (minimum 2)</Label>
+          <Label>Different Learning Topics * (minimum 2)</Label>
+          <p className="text-sm text-muted-foreground mt-1 mb-3">
+            What different subjects will you teach your family members? Think of these like school classes. 
+            Each topic should have <strong>a name</strong> (like "Money Basics" or "Family History") and 
+            <strong>what they'll learn</strong> (the goals for that class). You need at least 2 different topics.
+            Examples: "Money Basics" (learn to save and spend wisely), "Family Values" (learn what's important to our family), 
+            "Helping Others" (learn about giving back to the community).
+          </p>
           <div className="space-y-3">
             {(data.curriculumTracks || []).map((track, index) => (
               <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-2">
