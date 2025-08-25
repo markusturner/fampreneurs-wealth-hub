@@ -919,7 +919,10 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="sealCustodianName">Seal Custodian Name *</Label>
+            <Label htmlFor="sealCustodianName">Who Takes Care of the Seal *</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              Who in your family will keep the seal safe? This person is like the "keeper" of your family's official stamp.
+            </p>
             <Input
               id="sealCustodianName"
               value={data.sealCustodian?.name || ''}
@@ -930,7 +933,10 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
             />
           </div>
           <div>
-            <Label htmlFor="sealCustodianRole">Seal Custodian Role *</Label>
+            <Label htmlFor="sealCustodianRole">What Job Do They Have *</Label>
+            <p className="text-xs text-muted-foreground mb-2">
+              What's their role in the family? Like "Family Leader," "Mom," "Oldest Son," or "Family Lawyer."
+            </p>
             <Input
               id="sealCustodianRole"
               value={data.sealCustodian?.role || ''}
