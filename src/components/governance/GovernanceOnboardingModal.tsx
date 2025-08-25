@@ -1099,12 +1099,19 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
         </div>
 
         <div>
-          <Label htmlFor="grantmakingPolicy">Grantmaking/Contribution Policy *</Label>
+          <Label htmlFor="grantmakingPolicy">How You Decide Who Gets Help *</Label>
+          <p className="text-sm text-muted-foreground mt-1 mb-3">
+            How does your family choose who to help with money or time? Think about <strong>what kind of groups you like</strong> 
+            (schools, hospitals, animal shelters), <strong>how you check if they're good</strong> (do they really help people?), 
+            <strong>how much you give</strong> (like $100 or $1000), and <strong>how often</strong> (every month or once a year). 
+            Example: "We help local schools and food banks. We visit them first to make sure they really help people. 
+            We give $500 every 3 months to groups that show us exactly how our money helps kids and families."
+          </p>
           <Textarea
             id="grantmakingPolicy"
             value={data.grantmakingPolicy || ''}
             onChange={(e) => saveData({ grantmakingPolicy: e.target.value })}
-            placeholder="How we evaluate and distribute resources..."
+            placeholder="How your family decides who to help and how much to give..."
             maxLength={300}
           />
         </div>
