@@ -119,7 +119,7 @@ export const Footer = () => {
         {/* CTA Section */}
         <div className="text-center py-12 border-t border-b border-border">
           <h3 className="text-2xl md:text-3xl font-bold mb-4" style={{
-          color: '#290A52'
+          color: '#2eb2ff'
         }}>
             Ready to Start Building Your Family Legacy?
           </h3>
