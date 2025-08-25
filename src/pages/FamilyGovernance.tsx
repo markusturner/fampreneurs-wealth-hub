@@ -295,28 +295,28 @@ export default function FamilyGovernance() {
     return new Date(deadline) > new Date()
   }
 
-  // Helper to normalize branch values (supports "Family Council" and "family_council" styles)
+  // Helper to normalize branch values and robustly detect branch keys
   const normalizeBranch = (branch?: string | null) =>
-    branch ? branch.toLowerCase().replace(/\s+/g, '_') : ''
+    branch ? branch.toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_+|_+$/g, '') : ''
 
-  const getFamilyCouncilMembers = () => {
-    return familyMembers.filter(member => 
-      normalizeBranch(member.governance_branch) === 'family_council'
-    )
+  const branchKey = (branch?: string | null) => {
+    const n = normalizeBranch(branch)
+    if (!n) return ''
+    if (n.includes('elder')) return 'council_of_elders'
+    if (n.includes('assembly')) return 'family_assembly'
+    if (n.includes('council')) return 'family_council'
+    return ''
   }
 
-  const getCouncilOfEldersMembers = () => {
-    return familyMembers.filter(member => {
-      const b = normalizeBranch(member.governance_branch)
-      return b === 'council_of_elders' || b === 'council_elders'
-    })
-  }
+  const getFamilyCouncilMembers = () =>
+    familyMembers.filter(m => branchKey(m.governance_branch) === 'family_council')
 
-  const getFamilyAssemblyMembers = () => {
-    return familyMembers.filter(member => 
-      normalizeBranch(member.governance_branch) === 'family_assembly'
-    )
-  }
+  const getCouncilOfEldersMembers = () =>
+    familyMembers.filter(m => branchKey(m.governance_branch) === 'council_of_elders')
+
+  const getFamilyAssemblyMembers = () =>
+    familyMembers.filter(m => branchKey(m.governance_branch) === 'family_assembly')
+
 
   if (loading) {
     return (
