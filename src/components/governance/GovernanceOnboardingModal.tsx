@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Check, Circle, AlertCircle, Plus, X, Upload } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface OnboardingData {
   // Identity & Core Documents
@@ -125,35 +124,23 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
     }
   }, [isOpen, userId]);
 
-  const loadSavedData = async () => {
+  const loadSavedData = () => {
     try {
-      const { data: savedData } = await supabase
-        .from('governance_onboarding')
-        .select('data')
-        .eq('user_id', userId)
-        .single();
-      
-      if (savedData?.data) {
-        setData(savedData.data);
+      const savedData = localStorage.getItem(`governance_onboarding_${userId}`);
+      if (savedData) {
+        setData(JSON.parse(savedData));
       }
     } catch (error) {
       console.error('Error loading saved data:', error);
     }
   };
 
-  const saveData = async (updatedData: Partial<OnboardingData>) => {
+  const saveData = (updatedData: Partial<OnboardingData>) => {
     const newData = { ...data, ...updatedData };
     setData(newData);
     
     try {
-      await supabase
-        .from('governance_onboarding')
-        .upsert({
-          user_id: userId,
-          data: newData,
-          updated_at: new Date().toISOString()
-        });
-      
+      localStorage.setItem(`governance_onboarding_${userId}`, JSON.stringify(newData));
       setLastSaved(new Date());
       toast({
         description: "Progress saved ✓",
@@ -310,7 +297,7 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
     });
   };
 
-  const handleComplete = async () => {
+  const handleComplete = () => {
     const missing = getMissingItems();
     if (missing.length > 0) {
       setShowMissingItems(true);
@@ -318,14 +305,8 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
     }
 
     try {
-      await supabase
-        .from('governance_onboarding')
-        .upsert({
-          user_id: userId,
-          data,
-          completed: true,
-          completed_at: new Date().toISOString()
-        });
+      localStorage.setItem(`governance_onboarding_complete_${userId}`, 'true');
+      localStorage.setItem(`governance_onboarding_${userId}`, JSON.stringify(data));
       
       onComplete();
       toast({
@@ -342,8 +323,8 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
     }
   };
 
-  const handleFinishLater = async () => {
-    await saveData({});
+  const handleFinishLater = () => {
+    saveData({});
     onComplete();
   };
 

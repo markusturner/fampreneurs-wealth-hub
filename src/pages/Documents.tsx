@@ -18,6 +18,8 @@ import { FamilyTreeVisualization } from "@/components/family-tree/FamilyTreeVisu
 import { FamilyTreeTextInput } from "@/components/family-tree/FamilyTreeTextInput";
 import { DynamicFamilyTreeVisualization } from "@/components/family-tree/DynamicFamilyTreeVisualization";
 import { FamilyDocumentsTab } from "@/components/dashboard/family-documents-tab";
+import { GovernanceOnboardingModal } from "@/components/governance/GovernanceOnboardingModal";
+import { useGovernanceOnboarding } from "@/hooks/useGovernanceOnboarding";
 const familyEducationModules = [{
   title: "Family Business Education",
   description: "Learn the fundamentals of running a successful family business",
@@ -178,6 +180,7 @@ export default function Documents() {
   const [codeAccessLevel, setCodeAccessLevel] = useState('');
   const [isCreatingCode, setIsCreatingCode] = useState(false);
   const [createdCode, setCreatedCode] = useState<string | null>(null);
+  const { shouldShowOnboarding, completeOnboarding, resetOnboarding } = useGovernanceOnboarding(user?.id || null);
   const isAdmin = profile?.is_admin || false;
   useEffect(() => {
     if (user && isAdmin) {
@@ -986,5 +989,12 @@ export default function Documents() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Governance Onboarding Modal */}
+      <GovernanceOnboardingModal
+        isOpen={shouldShowOnboarding}
+        onComplete={completeOnboarding}
+        userId={user?.id || ''}
+      />
     </div>;
 }
