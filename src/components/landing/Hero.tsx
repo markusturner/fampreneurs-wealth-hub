@@ -1,26 +1,20 @@
-import { Button } from '@/components/ui/button'
-import { ArrowDown, Play, Star, Users, TrendingUp } from 'lucide-react'
-import { useState } from 'react'
-import { DemoModal } from './DemoModal'
-import { navigateToRoute, scrollToSection } from '@/utils/navigation'
-
+import { Button } from '@/components/ui/button';
+import { ArrowDown, Play, Star, Users, TrendingUp } from 'lucide-react';
+import { useState } from 'react';
+import { DemoModal } from './DemoModal';
+import { navigateToRoute, scrollToSection } from '@/utils/navigation';
 export const Hero = () => {
-  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false)
-  
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const scrollToPricing = () => {
-    scrollToSection('pricing')
-  }
-  
+    scrollToSection('pricing');
+  };
   const handleLoginClick = () => {
-    navigateToRoute('/auth')
-  }
-  
+    navigateToRoute('/auth');
+  };
   const handleDemoClick = () => {
-    setIsDemoModalOpen(true)
-  }
-
-  return (
-    <section className="relative min-h-screen flex items-center justify-center bg-background overflow-hidden">
+    setIsDemoModalOpen(true);
+  };
+  return <section className="relative min-h-screen flex items-center justify-center bg-background overflow-hidden">
       {/* Enhanced Background Elements */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-20 left-10 w-72 h-72 rounded-full bg-gradient-to-br from-primary to-secondary animate-pulse shadow-glow" />
@@ -46,25 +40,20 @@ export const Hero = () => {
               T
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-lg md:text-xl font-bold" style={{ color: '#ffb500' }}>TruHeirs</h1>
+              <h1 className="text-lg md:text-xl font-bold" style={{
+              color: '#ffb500'
+            }}>TruHeirs</h1>
               <p className="text-xs text-muted-foreground hidden md:block">Powered by The Fampreneurs</p>
             </div>
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="text-xs md:text-sm hover:bg-primary/10 transition-smooth px-3 md:px-4"
-              style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-              onClick={handleLoginClick}
-            >
+            <Button variant="ghost" size="sm" className="text-xs md:text-sm hover:bg-primary/10 transition-smooth px-3 md:px-4" style={{
+            backgroundColor: '#ffb500',
+            color: '#290a52'
+          }} onClick={handleLoginClick}>
               Login
             </Button>
-            <Button 
-              size="sm"
-              className="text-xs md:text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-medium hover:shadow-glow transition-smooth hover:scale-105 px-3 md:px-4" 
-              onClick={scrollToPricing}
-            >
+            <Button size="sm" className="text-xs md:text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-medium hover:shadow-glow transition-smooth hover:scale-105 px-3 md:px-4" onClick={scrollToPricing}>
               Get Started
             </Button>
           </div>
@@ -80,7 +69,9 @@ export const Hero = () => {
             <span className="text-secondary">
               generational wealth
             </span>{' '}
-            <span style={{ color: '#2eb2ff' }}>without</span>{' '}
+            <span style={{
+            color: '#2eb2ff'
+          }}>without</span>{' '}
             <span className="text-accent">
               expensive wealth managers
             </span>
@@ -99,20 +90,12 @@ export const Hero = () => {
 
           {/* Enhanced CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-12 md:mb-16">
-            <Button 
-              size="lg" 
-              className="w-full sm:w-auto text-base md:text-lg lg:text-xl px-8 md:px-12 py-4 md:py-6 hover:bg-primary/90 text-primary-foreground font-bold shadow-strong hover:shadow-glow transition-all duration-300 hover:scale-105 group"
-              style={{ backgroundColor: '#2eb2ff' }}
-              onClick={scrollToPricing}
-            >
+            <Button size="lg" className="w-full sm:w-auto text-base md:text-lg lg:text-xl px-8 md:px-12 py-4 md:py-6 hover:bg-primary/90 text-primary-foreground font-bold shadow-strong hover:shadow-glow transition-all duration-300 hover:scale-105 group" style={{
+            backgroundColor: '#2eb2ff'
+          }} onClick={scrollToPricing}>
               <span className="group-hover:animate-pulse">Start Building Your Legacy</span>
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="w-full sm:w-auto text-base md:text-lg lg:text-xl px-8 md:px-12 py-4 md:py-6 border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground shadow-medium hover:shadow-glow transition-all duration-300 hover:scale-105"
-              onClick={handleDemoClick}
-            >
+            <Button variant="outline" size="lg" className="w-full sm:w-auto text-base md:text-lg lg:text-xl px-8 md:px-12 py-4 md:py-6 border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground shadow-medium hover:shadow-glow transition-all duration-300 hover:scale-105" onClick={handleDemoClick}>
               <Play className="w-4 h-4 md:w-6 md:h-6 mr-2 md:mr-3" />
               Watch Demo
             </Button>
@@ -123,14 +106,14 @@ export const Hero = () => {
             <div className="flex flex-col items-center p-4 md:p-6 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 shadow-medium hover:shadow-strong transition-all duration-300 hover:scale-105">
               <div className="flex items-center mb-2">
                 <Users className="w-5 h-5 md:w-6 md:h-6 text-secondary mr-2" />
-                <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-secondary">70+</span>
+                <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-secondary">500+</span>
               </div>
               <span className="text-xs md:text-sm text-muted-foreground font-medium text-center">Families Building Wealth</span>
             </div>
             <div className="flex flex-col items-center p-4 md:p-6 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 shadow-medium hover:shadow-strong transition-all duration-300 hover:scale-105">
               <div className="flex items-center mb-2">
                 <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-secondary mr-2" />
-                <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-secondary">$50M+</span>
+                <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-secondary">$6M+</span>
               </div>
               <span className="text-xs md:text-sm text-muted-foreground font-medium text-center">Assets Under Management</span>
             </div>
@@ -146,21 +129,16 @@ export const Hero = () => {
 
         {/* Enhanced Scroll Indicator */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <button 
-            onClick={() => scrollToSection('features')}
-            className="p-3 rounded-full bg-primary/10 backdrop-blur-sm border hover:bg-primary/20 transition-all duration-300 hover:scale-110 cursor-pointer" 
-            style={{ borderColor: '#ffb500' }}
-            aria-label="Scroll to features section"
-          >
-            <ArrowDown className="w-6 h-6" style={{ color: '#ffb500' }} />
+          <button onClick={() => scrollToSection('features')} className="p-3 rounded-full bg-primary/10 backdrop-blur-sm border hover:bg-primary/20 transition-all duration-300 hover:scale-110 cursor-pointer" style={{
+          borderColor: '#ffb500'
+        }} aria-label="Scroll to features section">
+            <ArrowDown className="w-6 h-6" style={{
+            color: '#ffb500'
+          }} />
           </button>
         </div>
       </div>
       
-      <DemoModal 
-        isOpen={isDemoModalOpen} 
-        onClose={() => setIsDemoModalOpen(false)} 
-      />
-    </section>
-  )
-}
+      <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
+    </section>;
+};
