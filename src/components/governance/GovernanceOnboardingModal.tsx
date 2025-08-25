@@ -841,12 +841,20 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
         </div>
 
         <div>
-          <Label htmlFor="amendmentProcess">Amendment Process *</Label>
+          <Label htmlFor="amendmentProcess">How to Change the Family Rules *</Label>
+          <p className="text-sm text-muted-foreground mt-1 mb-3">
+            Sometimes your family might need to change these rules later. Write down how to do that. 
+            Think about: <strong>who can suggest changes</strong> (any family member or just leaders?), 
+            <strong>how many people need to agree</strong> (like 75% of the family), <strong>how much time to think about it</strong> 
+            (like 30 days), and <strong>how to vote on it</strong>. 
+            Example: "Any family member can suggest rule changes. We'll talk about it for 30 days, then 75% of 
+            adult family members must vote yes to make the change official."
+          </p>
           <Textarea
             id="amendmentProcess"
             value={data.amendmentProcess || ''}
             onChange={(e) => saveData({ amendmentProcess: e.target.value })}
-            placeholder="How governance documents can be changed..."
+            placeholder="How can you change these family rules in the future..."
             maxLength={300}
           />
         </div>
