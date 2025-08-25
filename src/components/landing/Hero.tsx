@@ -78,7 +78,7 @@ export const Hero = () => {
             <span className="text-secondary">
               generational wealth
             </span>{' '}
-            <span className="text-foreground">without</span>{' '}
+            <span style={{ color: '#2eb2ff' }}>without</span>{' '}
             <span className="text-accent">
               expensive wealth managers
             </span>
