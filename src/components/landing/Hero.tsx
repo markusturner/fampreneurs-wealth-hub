@@ -55,7 +55,7 @@ export const Hero = () => {
       <div className="container mx-auto px-6 py-20 text-center relative z-10 bg-card/20 backdrop-blur-md border border-border/30 rounded-3xl shadow-strong mx-4 lg:mx-auto">
         <div className="max-w-5xl mx-auto animate-fade-in">
           {/* Main Headlines - Enhanced Typography */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight tracking-tight bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight tracking-tight text-white bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 px-8 py-4 rounded-2xl shadow-glow">
             How to build generational wealth without expensive wealth managers
           </h1>
           
