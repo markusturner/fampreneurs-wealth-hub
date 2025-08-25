@@ -140,7 +140,7 @@ export const Footer = () => {
             <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
             <a href="#" className="hover:text-foreground transition-colors">Cookie Policy</a>
           </div>
-          <p>© 2024 TruHeirs by The Fampreneurs. All rights reserved.</p>
+          <p>© 2024 TruHeirs by The Fampreneurs VNCI, LLC. All rights reserved.</p>
         </div>
       </div>
     </footer>;
