@@ -11,9 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, Vote, FileText, Clock, Users, ArrowLeft } from 'lucide-react'
+import { Calendar, Vote, FileText, Clock, Users, ArrowLeft, TreePine } from 'lucide-react'
 import { useToast } from "@/hooks/use-toast"
 import { useNavigate } from 'react-router-dom'
+import { DynamicFamilyTreeVisualization } from "@/components/family-tree/DynamicFamilyTreeVisualization"
 
 interface Policy {
   id: string
@@ -53,6 +54,7 @@ export default function FamilyGovernance() {
   const [policies, setPolicies] = useState<Policy[]>([])
   const [proposals, setProposals] = useState<Proposal[]>([])
   const [votes, setVotes] = useState<Vote[]>([])
+  const [familyMembers, setFamilyMembers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [newPolicyOpen, setNewPolicyOpen] = useState(false)
   const [newProposalOpen, setNewProposalOpen] = useState(false)
@@ -130,6 +132,15 @@ export default function FamilyGovernance() {
 
       if (votesError) throw votesError
       setVotes(votesData || [])
+
+      // Load family members
+      const { data: familyMembersData, error: familyMembersError } = await supabase
+        .from('family_members')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (familyMembersError) throw familyMembersError
+      setFamilyMembers(familyMembersData || [])
 
     } catch (error) {
       console.error('Error loading governance data:', error)
@@ -301,11 +312,31 @@ export default function FamilyGovernance() {
         {/* Main Content */}
         <Card>
           <CardContent className="p-6">
-            <Tabs defaultValue="proposals" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+            <Tabs defaultValue="family-tree" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="family-tree">Family Tree</TabsTrigger>
                 <TabsTrigger value="proposals">Voting Proposals</TabsTrigger>
                 <TabsTrigger value="policies">Family Policies</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="family-tree" className="space-y-6 mt-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-xl font-semibold">Family Structure</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Visualize your family relationships and organizational structure
+                    </p>
+                  </div>
+                </div>
+
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="h-[600px] w-full">
+                      <DynamicFamilyTreeVisualization familyMembers={familyMembers} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
               <TabsContent value="proposals" className="space-y-6 mt-6">
                 <div className="flex justify-between items-center">
