@@ -38,7 +38,16 @@ interface Proposal {
   user_vote?: string
 }
 
-interface Vote {
+interface FamilyMember {
+  id: string
+  full_name: string
+  email?: string
+  family_position: string
+  governance_branch?: 'family_council' | 'council_elders' | 'family_assembly'
+  status: string
+}
+
+interface VoteRecord {
   id: string
   proposal_id: string
   vote_choice: string
@@ -52,8 +61,8 @@ export default function FamilyGovernance() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [policies, setPolicies] = useState<Policy[]>([])
   const [proposals, setProposals] = useState<Proposal[]>([])
-  const [votes, setVotes] = useState<Vote[]>([])
-  const [familyMembers, setFamilyMembers] = useState<any[]>([])
+  const [votes, setVotes] = useState<VoteRecord[]>([])
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
   const [loading, setLoading] = useState(true)
   const [newPolicyOpen, setNewPolicyOpen] = useState(false)
   const [newProposalOpen, setNewProposalOpen] = useState(false)
@@ -272,6 +281,25 @@ export default function FamilyGovernance() {
     return new Date(deadline) > new Date()
   }
 
+  // Helper functions to filter family members by governance branch
+  const getFamilyCouncilMembers = () => {
+    return familyMembers.filter(member => 
+      member.governance_branch === 'family_council' && member.status === 'active'
+    )
+  }
+
+  const getCouncilOfEldersMembers = () => {
+    return familyMembers.filter(member => 
+      member.governance_branch === 'council_elders' && member.status === 'active'
+    )
+  }
+
+  const getFamilyAssemblyMembers = () => {
+    return familyMembers.filter(member => 
+      member.governance_branch === 'family_assembly' && member.status === 'active'
+    )
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -355,6 +383,24 @@ export default function FamilyGovernance() {
                           <li>• Family office management</li>
                         </ul>
                       </div>
+                      
+                      <div className="mt-4 pt-4 border-t">
+                        <div className="text-sm font-medium mb-2">Council Members:</div>
+                        {getFamilyCouncilMembers().length === 0 ? (
+                          <p className="text-xs text-muted-foreground italic">No members assigned yet</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {getFamilyCouncilMembers().map((member) => (
+                              <div key={member.id} className="flex items-center justify-between text-xs">
+                                <span className="font-medium">{member.full_name}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {member.family_position}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -384,6 +430,24 @@ export default function FamilyGovernance() {
                           <li>• Family legacy preservation</li>
                         </ul>
                       </div>
+                      
+                      <div className="mt-4 pt-4 border-t">
+                        <div className="text-sm font-medium mb-2">Elder Members:</div>
+                        {getCouncilOfEldersMembers().length === 0 ? (
+                          <p className="text-xs text-muted-foreground italic">No elders assigned yet</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {getCouncilOfEldersMembers().map((member) => (
+                              <div key={member.id} className="flex items-center justify-between text-xs">
+                                <span className="font-medium">{member.full_name}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {member.family_position}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -412,6 +476,24 @@ export default function FamilyGovernance() {
                           <li>• Major decision voting</li>
                           <li>• Family member representation</li>
                         </ul>
+                      </div>
+                      
+                      <div className="mt-4 pt-4 border-t">
+                        <div className="text-sm font-medium mb-2">Assembly Members:</div>
+                        {getFamilyAssemblyMembers().length === 0 ? (
+                          <p className="text-xs text-muted-foreground italic">No assembly members assigned yet</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {getFamilyAssemblyMembers().map((member) => (
+                              <div key={member.id} className="flex items-center justify-between text-xs">
+                                <span className="font-medium">{member.full_name}</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {member.family_position}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
