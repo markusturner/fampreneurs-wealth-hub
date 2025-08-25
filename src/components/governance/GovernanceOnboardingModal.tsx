@@ -765,6 +765,15 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
       <div className="grid gap-6">
         <div>
           <Label htmlFor="ownershipEligibility">Ownership/Participation Eligibility *</Label>
+          <p className="text-sm text-muted-foreground mt-1 mb-3">
+            Define who can become owners or participants in your family enterprise and under what conditions. 
+            Consider factors like: <strong>bloodline requirements</strong> (descendants, spouses, adopted children), 
+            <strong>age minimums</strong> (e.g., 18 or 21), <strong>residency requirements</strong>, 
+            <strong>educational achievements</strong>, <strong>behavioral standards</strong>, and <strong>approval processes</strong>. 
+            Example: "All biological and legally adopted descendants of [Founder Name], their spouses who have been 
+            married for 2+ years, must be 21+ years old, demonstrate financial responsibility, and receive unanimous 
+            approval from the Family Council."
+          </p>
           <Textarea
             id="ownershipEligibility"
             value={data.ownershipEligibility || ''}
