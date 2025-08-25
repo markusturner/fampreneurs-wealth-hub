@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { Check, Circle, AlertCircle, Plus, X, Upload } from 'lucide-react';
+import { Check, Circle, AlertCircle, Plus, X, Upload, Image } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface OnboardingData {
   // Identity & Core Documents
@@ -299,6 +300,70 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
     });
   };
 
+  const handleFileUpload = async (file: File, type: 'crest' | 'seal') => {
+    if (!file || !userId) return;
+
+    // Validate file type
+    const allowedTypes = ['image/png', 'image/svg+xml', 'image/jpeg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload PNG, SVG, or JPG files only",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload files smaller than 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/${type}_${Date.now()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from('governance-assets')
+        .upload(fileName, file);
+
+      if (error) {
+        throw error;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('governance-assets')
+        .getPublicUrl(fileName);
+
+      // Save URL to data
+      if (type === 'crest') {
+        saveData({ familyCrestUrl: publicUrl });
+      } else {
+        saveData({ corporateSealUrl: publicUrl });
+      }
+
+      toast({
+        title: "Upload successful",
+        description: `${type === 'crest' ? 'Family crest' : 'Corporate seal'} uploaded successfully`,
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleComplete = () => {
     const missing = getMissingItems();
     if (missing.length > 0) {
@@ -585,15 +650,60 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
 
         <div>
           <Label>Family Crest *</Label>
-          <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-            <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">
-              Upload PNG or SVG (min 512x512, max 10MB)
-            </p>
-            <Button variant="outline" className="mt-2">
-              Choose File
-            </Button>
-          </div>
+          {data.familyCrestUrl ? (
+            <div className="space-y-3">
+              <div className="border rounded-lg p-4 bg-muted/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Image className="h-5 w-5 text-green-600" />
+                    <span className="text-sm font-medium">Family crest uploaded</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => saveData({ familyCrestUrl: '' })}
+                  >
+                    Remove
+                  </Button>
+                </div>
+                <img 
+                  src={data.familyCrestUrl} 
+                  alt="Family Crest" 
+                  className="mt-3 max-w-32 max-h-32 object-contain rounded border"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+              <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground mb-3">
+                Upload PNG or SVG (min 512x512, max 10MB)
+              </p>
+              <Input
+                type="file"
+                accept="image/png,image/svg+xml,image/jpeg"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleFileUpload(file, 'crest');
+                    e.target.value = '';
+                  }
+                }}
+                className="hidden"
+                id="crest-upload"
+                disabled={isLoading}
+              />
+              <Button 
+                variant="outline" 
+                asChild
+                disabled={isLoading}
+              >
+                <label htmlFor="crest-upload" className="cursor-pointer">
+                  {isLoading ? 'Uploading...' : 'Choose File'}
+                </label>
+              </Button>
+            </div>
+          )}
         </div>
 
         <div>
@@ -727,15 +837,60 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
 
         <div>
           <Label>Corporate Seal *</Label>
-          <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-            <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-            <p className="text-sm text-muted-foreground">
-              Upload the official seal used to certify resolutions and trust documents
-            </p>
-            <Button variant="outline" className="mt-2">
-              Choose File
-            </Button>
-          </div>
+          {data.corporateSealUrl ? (
+            <div className="space-y-3">
+              <div className="border rounded-lg p-4 bg-muted/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Image className="h-5 w-5 text-green-600" />
+                    <span className="text-sm font-medium">Corporate seal uploaded</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => saveData({ corporateSealUrl: '' })}
+                  >
+                    Remove
+                  </Button>
+                </div>
+                <img 
+                  src={data.corporateSealUrl} 
+                  alt="Corporate Seal" 
+                  className="mt-3 max-w-32 max-h-32 object-contain rounded border"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+              <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground mb-3">
+                Upload the official seal used to certify resolutions and trust documents
+              </p>
+              <Input
+                type="file"
+                accept="image/png,image/svg+xml,image/jpeg"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleFileUpload(file, 'seal');
+                    e.target.value = '';
+                  }
+                }}
+                className="hidden"
+                id="seal-upload"
+                disabled={isLoading}
+              />
+              <Button 
+                variant="outline" 
+                asChild
+                disabled={isLoading}
+              >
+                <label htmlFor="seal-upload" className="cursor-pointer">
+                  {isLoading ? 'Uploading...' : 'Choose File'}
+                </label>
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
