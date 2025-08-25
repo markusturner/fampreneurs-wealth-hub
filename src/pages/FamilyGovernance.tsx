@@ -153,7 +153,8 @@ export default function FamilyGovernance() {
       const { data: familyMembersData, error: familyMembersError } = await supabase
         .from('family_members')
         .select('id, full_name, family_position, governance_branch, status')
-        .eq('status', 'active')
+        .not('governance_branch', 'is', null)
+        .neq('governance_branch', '')
         .order('created_at', { ascending: false })
 
       if (familyMembersError) {
@@ -294,22 +295,26 @@ export default function FamilyGovernance() {
     return new Date(deadline) > new Date()
   }
 
-  // Helper functions to filter family members by governance branch
+  // Helper to normalize branch values (supports "Family Council" and "family_council" styles)
+  const normalizeBranch = (branch?: string | null) =>
+    branch ? branch.toLowerCase().replace(/\s+/g, '_') : ''
+
   const getFamilyCouncilMembers = () => {
     return familyMembers.filter(member => 
-      member.governance_branch === 'family_council' && member.status === 'active'
+      normalizeBranch(member.governance_branch) === 'family_council'
     )
   }
 
   const getCouncilOfEldersMembers = () => {
-    return familyMembers.filter(member => 
-      member.governance_branch === 'council_elders' && member.status === 'active'
-    )
+    return familyMembers.filter(member => {
+      const b = normalizeBranch(member.governance_branch)
+      return b === 'council_of_elders' || b === 'council_elders'
+    })
   }
 
   const getFamilyAssemblyMembers = () => {
     return familyMembers.filter(member => 
-      member.governance_branch === 'family_assembly' && member.status === 'active'
+      normalizeBranch(member.governance_branch) === 'family_assembly'
     )
   }
 
