@@ -155,9 +155,9 @@ export const Pricing = () => {
                       : 'border-2'
                   }`}
                   style={{ 
-                    backgroundColor: tier.popular ? '#FFB500' : '#290A52',
-                    borderColor: tier.popular ? '#FFB500' : '#290A52',
-                    color: '#290a52'
+                    backgroundColor: tier.popular ? '#FFB500' : '#2eb2ff',
+                    borderColor: tier.popular ? '#FFB500' : '#2eb2ff',
+                    color: tier.popular ? '#290a52' : 'white'
                   }}
                   onClick={() => handlePurchase(tier.stripeAmount)}
                 >
