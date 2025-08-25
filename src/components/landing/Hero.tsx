@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { ArrowDown, Play } from 'lucide-react'
+import { ArrowDown, Play, Star, Users, TrendingUp } from 'lucide-react'
 
 export const Hero = () => {
   const scrollToPricing = () => {
@@ -7,32 +7,42 @@ export const Hero = () => {
   }
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 overflow-hidden">
-      {/* Background Elements */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-10 w-72 h-72 rounded-full" style={{ background: 'linear-gradient(135deg, #290A52, #FFB500)' }} />
-        <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full" style={{ background: 'linear-gradient(135deg, #2EB2FF, #290A52)' }} />
+    <section className="relative min-h-screen flex items-center justify-center gradient-hero overflow-hidden">
+      {/* Enhanced Background Elements */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-20 left-10 w-72 h-72 rounded-full bg-gradient-to-br from-primary to-secondary animate-pulse shadow-glow" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-gradient-to-br from-accent to-primary animate-pulse delay-700 shadow-glow" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full bg-gradient-to-br from-secondary/20 to-transparent animate-spin-slow" />
       </div>
 
-      {/* Navigation */}
-      <nav className="absolute top-0 left-0 right-0 z-50 p-6">
+      {/* Floating Elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 animate-bounce delay-1000">
+          <TrendingUp className="w-8 h-8 text-secondary/40" />
+        </div>
+        <div className="absolute top-3/4 right-1/4 animate-bounce delay-500">
+          <Users className="w-10 h-10 text-accent/40" />
+        </div>
+      </div>
+
+      {/* Enhanced Navigation */}
+      <nav className="absolute top-0 left-0 right-0 z-50 p-6 backdrop-blur-sm bg-background/20">
         <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xl" style={{ backgroundColor: '#290A52' }}>
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl shadow-glow transition-smooth hover:scale-105">
               T
             </div>
             <div>
-              <h1 className="text-xl font-bold" style={{ color: '#290A52' }}>TruHeirs</h1>
+              <h1 className="text-xl font-bold text-primary">TruHeirs</h1>
               <p className="text-xs text-muted-foreground">Powered by The Fampreneurs</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" className="text-sm" style={{ color: '#290A52' }}>
+            <Button variant="ghost" className="text-sm text-primary hover:text-primary hover:bg-primary/10 transition-smooth">
               Login
             </Button>
             <Button 
-              className="text-sm text-white" 
-              style={{ backgroundColor: '#290A52' }}
+              className="text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-medium hover:shadow-glow transition-smooth hover:scale-105" 
               onClick={scrollToPricing}
             >
               Get Started
@@ -41,67 +51,82 @@ export const Hero = () => {
         </div>
       </nav>
 
-      {/* Hero Content */}
+      {/* Enhanced Hero Content */}
       <div className="container mx-auto px-6 py-20 text-center relative z-10">
-        <div className="max-w-4xl mx-auto">
-          {/* Main Headlines */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-            <span style={{ color: '#290A52' }}>How to build</span>{' '}
-            <span style={{ color: '#FFB500' }}>generational wealth</span>{' '}
-            <span style={{ color: '#290A52' }}>without</span>{' '}
-            <span style={{ color: '#2EB2FF' }}>expensive wealth managers</span>
+        <div className="max-w-5xl mx-auto animate-fade-in">
+          {/* Main Headlines - Enhanced Typography */}
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight tracking-tight">
+            <span className="text-foreground">How to build</span>{' '}
+            <span className="text-secondary bg-gradient-to-r from-secondary to-secondary-glow bg-clip-text text-transparent">
+              generational wealth
+            </span>{' '}
+            <span className="text-foreground">without</span>{' '}
+            <span className="text-accent bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
+              expensive wealth managers
+            </span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+          <p className="text-xl md:text-3xl text-muted-foreground mb-10 max-w-4xl mx-auto font-light leading-relaxed">
             Even if you're busy with your 9-5 and don't have millions yet
           </p>
 
-          {/* Value Proposition */}
-          <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto" style={{ color: '#290A52' }}>
-            The Complete DIY AI Family Office Platform for $75k+ earning professionals and entrepreneurs
-          </p>
+          {/* Enhanced Value Proposition */}
+          <div className="mb-12 p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 shadow-medium max-w-3xl mx-auto">
+            <p className="text-lg md:text-2xl text-primary font-semibold leading-relaxed">
+              The Complete DIY AI Family Office Platform for $75k+ earning professionals and entrepreneurs
+            </p>
+          </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+          {/* Enhanced CTA Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16">
             <Button 
               size="lg" 
-              className="text-lg px-8 py-4 text-white font-semibold"
-              style={{ backgroundColor: '#290A52' }}
+              className="text-xl px-12 py-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-strong hover:shadow-glow transition-all duration-300 hover:scale-105 group"
               onClick={scrollToPricing}
             >
-              Start Building Your Legacy
+              <span className="group-hover:animate-pulse">Start Building Your Legacy</span>
             </Button>
             <Button 
               variant="outline" 
               size="lg" 
-              className="text-lg px-8 py-4 border-2"
-              style={{ borderColor: '#2EB2FF', color: '#2EB2FF' }}
+              className="text-xl px-12 py-6 border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground shadow-medium hover:shadow-glow transition-all duration-300 hover:scale-105"
             >
-              <Play className="w-5 h-5 mr-2" />
+              <Play className="w-6 h-6 mr-3" />
               Watch Demo
             </Button>
           </div>
 
-          {/* Social Proof */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-8 text-sm text-muted-foreground">
-            <div className="flex items-center">
-              <span className="font-semibold text-2xl mr-2" style={{ color: '#FFB500' }}>500+</span>
-              <span>Families Building Wealth</span>
+          {/* Enhanced Social Proof */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div className="flex flex-col items-center p-6 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 shadow-medium hover:shadow-strong transition-all duration-300 hover:scale-105">
+              <div className="flex items-center mb-2">
+                <Users className="w-6 h-6 text-secondary mr-2" />
+                <span className="text-4xl font-bold text-secondary">500+</span>
+              </div>
+              <span className="text-sm text-muted-foreground font-medium">Families Building Wealth</span>
             </div>
-            <div className="flex items-center">
-              <span className="font-semibold text-2xl mr-2" style={{ color: '#FFB500' }}>$50M+</span>
-              <span>Assets Under Management</span>
+            <div className="flex flex-col items-center p-6 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 shadow-medium hover:shadow-strong transition-all duration-300 hover:scale-105">
+              <div className="flex items-center mb-2">
+                <TrendingUp className="w-6 h-6 text-secondary mr-2" />
+                <span className="text-4xl font-bold text-secondary">$50M+</span>
+              </div>
+              <span className="text-sm text-muted-foreground font-medium">Assets Under Management</span>
             </div>
-            <div className="flex items-center">
-              <span className="font-semibold text-2xl mr-2" style={{ color: '#FFB500' }}>4.9★</span>
-              <span>Average Rating</span>
+            <div className="flex flex-col items-center p-6 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 shadow-medium hover:shadow-strong transition-all duration-300 hover:scale-105">
+              <div className="flex items-center mb-2">
+                <Star className="w-6 h-6 text-secondary mr-2 fill-current" />
+                <span className="text-4xl font-bold text-secondary">4.9</span>
+              </div>
+              <span className="text-sm text-muted-foreground font-medium">Average Rating</span>
             </div>
           </div>
         </div>
 
-        {/* Scroll Indicator */}
+        {/* Enhanced Scroll Indicator */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <ArrowDown className="w-6 h-6" style={{ color: '#290A52' }} />
+          <div className="p-3 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/20">
+            <ArrowDown className="w-6 h-6 text-primary" />
+          </div>
         </div>
       </div>
     </section>
