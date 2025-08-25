@@ -126,8 +126,9 @@ export const Footer = () => {
           <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
             Join hundreds of families who are already using TruHeirs to build and manage generational wealth.
           </p>
-          <Button size="lg" className="text-lg px-8 py-4 text-white font-semibold" style={{
-          backgroundColor: '#FFB500'
+          <Button size="lg" className="text-lg px-8 py-4 font-semibold" style={{
+          backgroundColor: '#FFB500',
+          color: '#290a52'
         }} onClick={scrollToPricing}>
             Get Started Today
           </Button>
