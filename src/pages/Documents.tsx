@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { BookOpen, Crown, Users, MessageCircle, Image, TreePine, Lock, Scroll, Building2, Scale, Shield, GraduationCap, ArrowLeft, Heart, FileText, Video, Settings, Eye, EyeOff, CheckCircle, Key, Edit, Trash2, FileCheck, Loader2, UserPlus } from "lucide-react";
@@ -544,240 +545,466 @@ export default function Documents() {
     setNewMessage('');
     toast.success('Message sent!');
   };
+  // Load governance onboarding data
+  const [governanceData, setGovernanceData] = useState<any>(null);
+  
+  useEffect(() => {
+    if (user?.id) {
+      const savedData = localStorage.getItem(`governance_onboarding_${user.id}`);
+      if (savedData) {
+        setGovernanceData(JSON.parse(savedData));
+      }
+    }
+  }, [user?.id]);
+
   return <div className="min-h-screen bg-background">
       <NavHeader />
       
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-6 sm:space-y-8">
 
-        {/* Family Office Documents Header */}
-        <div className="text-center sm:text-left">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Family Roundtable Dashboard</h1>
-          <p className="text-sm sm:text-base text-muted-foreground px-2 sm:px-0">Access important family documents, educational resources, and secure information</p>
+        {/* Family Constitution Header */}
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+            {governanceData?.constitutionName || "Family Constitution"}
+          </h1>
+          <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
+            {governanceData?.familyConstitution || "Your comprehensive family governance framework and foundational documents"}
+          </p>
+          {governanceData?.constitutionDate && (
+            <p className="text-sm text-muted-foreground">
+              Established: {new Date(governanceData.constitutionDate).toLocaleDateString()}
+            </p>
+          )}
         </div>
 
-        {/* Core Values, Vision & Mission */}
-        <section className="space-y-3 sm:space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2 flex items-center gap-2">
-                <Heart className="h-4 w-4 sm:h-5 sm:w-5" />
-                Core Values, Vision & Mission
-              </h2>
-              <p className="text-muted-foreground text-xs sm:text-sm">
-                Define and preserve your family's fundamental principles and aspirations
-              </p>
-            </div>
-            
-            <Button 
-              variant={isEditingValues ? "default" : "outline"} 
-              size="sm" 
-              className="w-full sm:w-auto"
-              onClick={() => {
-                if (isEditingValues) {
-                  saveFamilyValues();
-                } else {
-                  setIsEditingValues(true);
-                }
-              }}
-              disabled={isSavingValues}
-            >
-              {isSavingValues ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : isEditingValues ? (
-                <CheckCircle className="h-4 w-4 mr-2" />
-              ) : (
-                <Edit className="h-4 w-4 mr-2" />
-              )}
-              <span className="hidden sm:inline">
-                {isSavingValues ? 'Saving...' : isEditingValues ? 'Save Changes' : 'Edit Values'}
-              </span>
-              <span className="sm:hidden">
-                {isSavingValues ? 'Saving...' : isEditingValues ? 'Save' : 'Edit'}
-              </span>
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
-            {/* Core Values */}
-            <Card className="min-h-[200px]">
-              <CardHeader className="pb-2 sm:pb-3">
-                <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-blue-600" />
-                  Core Values
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  The fundamental beliefs that guide your family
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isEditingValues ? (
-                  <textarea
-                    value={coreValues}
-                    onChange={(e) => setCoreValues(e.target.value)}
-                    placeholder="Enter your family's core values..."
-                    className="w-full h-24 p-2 text-sm border rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                ) : (
-                  <div className="text-xs sm:text-sm text-muted-foreground">
-                    {coreValues || (
-                      <span className="italic">Click Edit to add your family's core values</span>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Vision */}
-            <Card className="min-h-[200px]">
-              <CardHeader className="pb-2 sm:pb-3">
-                <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-                  <Eye className="h-4 w-4 text-green-600" />
-                  Vision
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Your family's aspirational future
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isEditingValues ? (
-                  <textarea
-                    value={vision}
-                    onChange={(e) => setVision(e.target.value)}
-                    placeholder="Describe your family's vision for the future..."
-                    className="w-full h-24 p-2 text-sm border rounded-md resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                ) : (
-                  <div className="text-xs sm:text-sm text-muted-foreground">
-                    {vision || (
-                      <span className="italic">Click Edit to add your family's vision</span>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Mission */}
-            <Card className="min-h-[200px]">
-              <CardHeader className="pb-2 sm:pb-3">
-                <CardTitle className="text-sm sm:text-base flex items-center gap-2">
-                  <Users className="h-4 w-4 text-purple-600" />
-                  Mission
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Your family's purpose and commitment
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isEditingValues ? (
-                  <textarea
-                    value={mission}
-                    onChange={(e) => setMission(e.target.value)}
-                    placeholder="Define your family's mission and purpose..."
-                    className="w-full h-24 p-2 text-sm border rounded-md resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                ) : (
-                  <div className="text-xs sm:text-sm text-muted-foreground">
-                    {mission || (
-                      <span className="italic">Click Edit to add your family's mission</span>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* Family Business Education Modules */}
-        <section className="space-y-3 sm:space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-            <div>
-              <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2 flex items-center gap-2">
-                <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
-                Family Business Education
-              </h2>
-              <p className="text-muted-foreground text-xs sm:text-sm">
-                Comprehensive learning modules for family business management and wealth preservation
-              </p>
-            </div>
-            
-            <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => setShowCoursesDialog(true)}>
-              <Video className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">View All Courses</span>
-              <span className="sm:hidden">All Courses</span>
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            {businessCourses.filter(course => course.status === 'published').slice(0, 4).map((course, index) => <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer active:scale-[0.98]" onClick={() => setSelectedCourse(course)}>
-                <CardHeader className="pb-2 sm:pb-3">
-                  <div className="flex items-center justify-between">
-                    <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
-                    <Badge variant="secondary" className="text-xs">Published</Badge>
-                  </div>
-                  <CardTitle className="text-sm sm:text-lg leading-tight">{course.title}</CardTitle>
-                  <CardDescription className="text-xs sm:text-sm line-clamp-2">{course.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0 text-xs sm:text-sm text-muted-foreground">
-                    <span className="truncate">Instructor: {course.instructor}</span>
-                    <span className="font-medium">{course.duration}</span>
-                  </div>
-                </CardContent>
-              </Card>)}
-            {businessCourses.filter(course => course.status === 'published').length === 0 && <div className="col-span-full text-center py-6 sm:py-8 text-muted-foreground">
-                <Building2 className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
-                <p className="text-sm sm:text-base">No published courses available yet.</p>
-                {isAdmin && <Button variant="outline" size="sm" className="mt-3 sm:mt-4" onClick={() => setShowCreateCourseDialog(true)}>
-                    Create First Course
-                  </Button>}
-              </div>}
-          </div>
-        </section>
-
-        {/* Heritage & Legacy Resources */}
-        <section className="space-y-3 sm:space-y-4">
-          <div>
-            <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2 flex items-center gap-2">
-              <Heart className="h-4 w-4 sm:h-5 sm:w-5" />
-              Heritage & Legacy Resources
+        {/* Identity & Core Documents Section */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+              <Crown className="h-6 w-6 text-amber-600" />
+              Identity & Core Documents
             </h2>
-            <p className="text-muted-foreground text-xs sm:text-sm">
-              Preserve and explore your family's rich history and heritage
+            <p className="text-muted-foreground">
+              The foundation of your family's values and principles
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {heritageResources.map(resource => {
-            const Icon = resource.icon;
-            return <Card key={resource.title} className="hover:shadow-md transition-shadow cursor-pointer active:scale-[0.98] min-h-[140px] sm:min-h-[160px]" onClick={() => {
-              if (resource.title === "Legal Documents") {
-                // Show Family Documents tab with focus on Legal Documents
-                setShowFamilyDocuments(true);
-              } else {
-                handleHeritageResource(resource.title);
-              }
-            }}>
-                  <CardHeader className="pb-2 sm:pb-3 text-center">
-                    <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${resource.color} mx-auto mb-2`} />
-                    <CardTitle className="text-sm sm:text-base leading-tight">{resource.title}</CardTitle>
-                    <CardDescription className="text-xs sm:text-sm line-clamp-2">
-                      {resource.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <Button variant="secondary" size="sm" className="w-full text-xs sm:text-sm">
-                      {resource.category}
-                    </Button>
-                  </CardContent>
-                </Card>;
-          })}
+          {/* Mission, Vision, Values Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="border-l-4 border-l-blue-500">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-blue-700">
+                  <Shield className="h-5 w-5" />
+                  Core Values
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {governanceData?.coreValues?.length > 0 ? (
+                  <div className="space-y-2">
+                    {governanceData.coreValues.map((value: string, index: number) => (
+                      <Badge key={index} variant="secondary" className="mr-2 mb-2">
+                        {value}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground italic">No core values defined yet</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="border-l-4 border-l-green-500">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-green-700">
+                  <Eye className="h-5 w-5" />
+                  Vision Statement
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm leading-relaxed">
+                  {governanceData?.visionStatement || "No vision statement defined yet"}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-l-4 border-l-purple-500">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-purple-700">
+                  <Users className="h-5 w-5" />
+                  Mission Statement
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm leading-relaxed">
+                  {governanceData?.missionStatement || "No mission statement defined yet"}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Wealth Philosophy & Founding Story */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-amber-600" />
+                  Wealth Philosophy
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm leading-relaxed">
+                  {governanceData?.wealthPhilosophy || "No wealth philosophy defined yet"}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-emerald-600" />
+                  Founding Story
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm leading-relaxed">
+                  {governanceData?.foundingStory || "No founding story documented yet"}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Legacy Milestones */}
+          {governanceData?.legacyMilestones?.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Scroll className="h-5 w-5 text-indigo-600" />
+                  Legacy Milestones
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {governanceData.legacyMilestones.map((milestone: any, index: number) => (
+                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                      <Badge variant="outline" className="shrink-0">
+                        {milestone.year}
+                      </Badge>
+                      <p className="text-sm">{milestone.note}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </section>
+
+        {/* Governance & Authority Section */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+              <Scale className="h-6 w-6 text-blue-600" />
+              Governance & Authority
+            </h2>
+            <p className="text-muted-foreground">
+              Decision-making processes and organizational structure
+            </p>
+          </div>
+
+          {/* Voting & Decision Making */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-blue-600" />
+                  Voting Structure
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <Label className="text-sm font-medium">Quorum Percentage</Label>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {governanceData?.quorumPercentage || 0}%
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Routine Decisions Threshold</Label>
+                  <p className="text-lg font-semibold">
+                    {governanceData?.routineThreshold || 0}%
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Major Decisions Threshold</Label>
+                  <p className="text-lg font-semibold">
+                    {governanceData?.majorThreshold || 0}%
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-green-600" />
+                  Ownership & Eligibility
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm leading-relaxed">
+                  {governanceData?.ownershipEligibility || "No ownership eligibility criteria defined"}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Family Council & Board of Trustees */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {governanceData?.familyCouncil?.members?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-purple-600" />
+                    Family Council
+                  </CardTitle>
+                  <CardDescription>
+                    Meets {governanceData.familyCouncil.cadence}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {governanceData.familyCouncil.members.map((member: any, index: number) => (
+                      <div key={index} className="flex justify-between items-center p-2 rounded bg-muted/50">
+                        <div>
+                          <p className="font-medium text-sm">{member.name}</p>
+                          <p className="text-xs text-muted-foreground">{member.role}</p>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {member.termStart} - {member.termEnd}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {governanceData?.boardOfTrustees?.members?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building2 className="h-5 w-5 text-amber-600" />
+                    Board of Trustees
+                  </CardTitle>
+                  <CardDescription>
+                    Meets {governanceData.boardOfTrustees.cadence}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {governanceData.boardOfTrustees.members.map((member: any, index: number) => (
+                      <div key={index} className="flex justify-between items-center p-2 rounded bg-muted/50">
+                        <div>
+                          <p className="font-medium text-sm">{member.name}</p>
+                          <p className="text-xs text-muted-foreground">{member.role}</p>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {member.termStart} - {member.termEnd}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Leadership Roles */}
+          {governanceData?.leadershipRoles?.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-yellow-600" />
+                  Leadership Roles & Responsibilities
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {governanceData.leadershipRoles.map((role: any, index: number) => (
+                    <div key={index} className="p-4 rounded-lg border">
+                      <h4 className="font-semibold text-sm mb-2">{role.title}</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {role.duties}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </section>
+
+        {/* Legacy & Development Section */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+              <GraduationCap className="h-6 w-6 text-emerald-600" />
+              Legacy & Development
+            </h2>
+            <p className="text-muted-foreground">
+              Education, philanthropy, and future planning
+            </p>
+          </div>
+
+          {/* Education & Philanthropy */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <GraduationCap className="h-5 w-5 text-blue-600" />
+                  Education Framework
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <Label className="text-sm font-medium">Overview</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {governanceData?.educationOverview || "No education framework defined"}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Participation Guidelines</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {governanceData?.participationGuidelines || "No participation guidelines defined"}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-red-600" />
+                  Philanthropy
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <Label className="text-sm font-medium">Thesis</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {governanceData?.philanthropyThesis || "No philanthropy thesis defined"}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Grantmaking Policy</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {governanceData?.grantmakingPolicy || "No grantmaking policy defined"}
+                  </p>
+                </div>
+                {governanceData?.focusAreas?.length > 0 && (
+                  <div>
+                    <Label className="text-sm font-medium">Focus Areas</Label>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {governanceData.focusAreas.map((area: string, index: number) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {area}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Curriculum Tracks */}
+          {governanceData?.curriculumTracks?.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-indigo-600" />
+                  Curriculum Tracks
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {governanceData.curriculumTracks.map((track: any, index: number) => (
+                    <div key={index} className="p-4 rounded-lg border">
+                      <h4 className="font-semibold text-sm mb-2">{track.name}</h4>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {track.objectives}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Awards & Recognition */}
+          {governanceData?.awardTypes?.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-yellow-600" />
+                  Awards & Recognition
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {governanceData.awardTypes.map((award: any, index: number) => (
+                    <div key={index} className="p-3 rounded-lg bg-muted/50">
+                      <h4 className="font-semibold text-sm mb-1">{award.name}</h4>
+                      <p className="text-xs text-muted-foreground">{award.criteria}</p>
+                    </div>
+                  ))}
+                </div>
+                {governanceData?.ceremonyNotes && (
+                  <div className="mt-4 p-3 rounded-lg border-l-4 border-l-yellow-500 bg-yellow-50">
+                    <Label className="text-sm font-medium">Ceremony Notes</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {governanceData.ceremonyNotes}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </section>
+
+        {/* Quick Actions & Resources */}
+        <section className="space-y-4">
+          <div className="text-center">
+            <h2 className="text-xl font-bold mb-2">Quick Actions</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => setShowFamilyTreeDialog(true)}>
+              <TreePine className="h-6 w-6 text-emerald-600" />
+              <span className="text-sm">Family Tree</span>
+            </Button>
+            
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => setShowFamilyDocuments(true)}>
+              <FileText className="h-6 w-6 text-blue-600" />
+              <span className="text-sm">Documents</span>
+            </Button>
+            
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => navigate('/family-governance')}>
+              <Scale className="h-6 w-6 text-indigo-600" />
+              <span className="text-sm">Governance</span>
+            </Button>
+            
+            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => setShowMessagesDialog(true)}>
+              <MessageCircle className="h-6 w-6 text-purple-600" />
+              <span className="text-sm">Messages</span>
+            </Button>
           </div>
         </section>
 
         {/* Family Secret Codes - Admin Only */}
-        {isAdmin && <section className="space-y-4">
-            <FamilySecretCodesAdmin />
-          </section>}
+        {isAdmin && (
+            <section className="space-y-4">
+              <FamilySecretCodesAdmin />
+            </section>
+        )}
 
         {/* Business Courses Dialog */}
         <Dialog open={showCoursesDialog} onOpenChange={setShowCoursesDialog}>
