@@ -171,7 +171,7 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
       ],
       legacy: [
         'educationOverview', 'curriculumTracks', 'philanthropyThesis', 'focusAreas',
-        'grantmakingPolicy', 'meetingFramework', 'meetingCadence', 'notableDates', 'minutesPolicy'
+        'grantmakingPolicy', 'meetingFramework', 'meetingCadence', 'minutesPolicy'
       ]
     };
   };
