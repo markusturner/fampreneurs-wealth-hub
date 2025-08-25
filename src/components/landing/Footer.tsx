@@ -33,28 +33,28 @@ export const Footer = () => {
               backgroundColor: 'rgba(41, 10, 82, 0.1)'
             }}>
                 <Facebook className="w-4 h-4" style={{
-                color: '#290A52'
+                color: '#1877F2'
               }} />
               </div>
               <div className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" style={{
               backgroundColor: 'rgba(41, 10, 82, 0.1)'
             }}>
                 <Twitter className="w-4 h-4" style={{
-                color: '#290A52'
+                color: '#1DA1F2'
               }} />
               </div>
               <div className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" style={{
               backgroundColor: 'rgba(41, 10, 82, 0.1)'
             }}>
                 <Linkedin className="w-4 h-4" style={{
-                color: '#290A52'
+                color: '#0A66C2'
               }} />
               </div>
               <div className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" style={{
               backgroundColor: 'rgba(41, 10, 82, 0.1)'
             }}>
                 <Instagram className="w-4 h-4" style={{
-                color: '#290A52'
+                color: '#E4405F'
               }} />
               </div>
             </div>
