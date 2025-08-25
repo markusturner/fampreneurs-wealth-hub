@@ -1052,12 +1052,19 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
         </div>
 
         <div>
-          <Label htmlFor="philanthropyThesis">Philanthropy Impact Thesis *</Label>
+          <Label htmlFor="philanthropyThesis">How Your Family Helps Others *</Label>
+          <p className="text-sm text-muted-foreground mt-1 mb-3">
+            How does your family want to help make the world better? Think about <strong>what problems you care about</strong> 
+            (like hungry kids, sick people, protecting animals), <strong>why these are important to your family</strong>, 
+            and <strong>how you want to help</strong> (giving money, volunteering time, teaching others). 
+            Example: "Our family believes everyone should have enough food and a good education. We help by donating 
+            to food banks and schools, volunteering at soup kitchens, and teaching other kids about helping their neighbors."
+          </p>
           <Textarea
             id="philanthropyThesis"
             value={data.philanthropyThesis || ''}
             onChange={(e) => saveData({ philanthropyThesis: e.target.value })}
-            placeholder="Our approach to creating positive impact..."
+            placeholder="How your family wants to help make the world better..."
             maxLength={300}
           />
         </div>
