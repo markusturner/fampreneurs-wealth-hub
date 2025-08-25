@@ -876,6 +876,96 @@ export type Database = {
         }
         Relationships: []
       }
+      document_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          template_content: Json | null
+          template_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          template_content?: Json | null
+          template_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          template_content?: Json | null
+          template_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      enhanced_notifications: {
+        Row: {
+          action_required: boolean | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string | null
+          metadata: Json | null
+          notification_type: string
+          priority: string
+          recipient_id: string
+          reference_id: string | null
+          reference_table: string | null
+          sender_id: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          action_required?: boolean | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          notification_type: string
+          priority?: string
+          recipient_id: string
+          reference_id?: string | null
+          reference_table?: string | null
+          sender_id?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          action_required?: boolean | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          notification_type?: string
+          priority?: string
+          recipient_id?: string
+          reference_id?: string | null
+          reference_table?: string | null
+          sender_id?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       family_code_usage_log: {
         Row: {
           code_id: string
@@ -946,6 +1036,42 @@ export type Database = {
           mime_type?: string | null
           updated_at?: string
           uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      family_governance_policies: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          effective_date: string | null
+          id: string
+          policy_type: string
+          status: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          effective_date?: string | null
+          id?: string
+          policy_type: string
+          status?: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          effective_date?: string | null
+          id?: string
+          policy_type?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -1455,6 +1581,77 @@ export type Database = {
           max_uses?: number | null
           permissions?: Json | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      family_votes: {
+        Row: {
+          id: string
+          proposal_id: string
+          user_id: string
+          vote_choice: string
+          voted_at: string | null
+        }
+        Insert: {
+          id?: string
+          proposal_id: string
+          user_id: string
+          vote_choice: string
+          voted_at?: string | null
+        }
+        Update: {
+          id?: string
+          proposal_id?: string
+          user_id?: string
+          vote_choice?: string
+          voted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_votes_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "family_voting_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      family_voting_proposals: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          proposal_type: string
+          status: string
+          title: string
+          updated_at: string | null
+          user_id: string
+          voting_deadline: string
+          voting_options: Json
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          proposal_type: string
+          status?: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+          voting_deadline: string
+          voting_options?: Json
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          proposal_type?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+          voting_deadline?: string
+          voting_options?: Json
         }
         Relationships: []
       }
