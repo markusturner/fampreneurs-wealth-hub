@@ -74,7 +74,7 @@ export const Features = () => {
                 <div className="w-16 h-16 mx-auto mb-4 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300" style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}>
                   <feature.icon className="w-8 h-8" style={{ color: '#290A52' }} />
                 </div>
-                <CardTitle className="text-lg" style={{ color: '#290A52' }}>
+                <CardTitle className="text-lg" style={{ color: '#ffb500' }}>
                   {feature.title}
                 </CardTitle>
               </CardHeader>
