@@ -63,7 +63,7 @@ export const Footer = () => {
           {/* Platform */}
           <div>
             <h4 className="font-semibold mb-4" style={{
-            color: '#290A52'
+            color: '#ffb500'
           }}>Platform</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><a href="#" className="hover:text-foreground transition-colors">Features</a></li>
