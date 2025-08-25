@@ -64,8 +64,8 @@ export const FAQ = () => {
     <section className="py-20 bg-background">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6" style={{ color: '#290A52' }}>
-            Frequently Asked
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            <span style={{ color: '#2eb2ff' }}>Frequently Asked</span>
             <span style={{ color: '#FFB500' }}> Questions</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
