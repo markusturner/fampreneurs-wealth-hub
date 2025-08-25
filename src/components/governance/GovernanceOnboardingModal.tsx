@@ -980,12 +980,21 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
 
       <div className="grid gap-6">
         <div>
-          <Label htmlFor="educationOverview">Education Program Overview *</Label>
+          <Label htmlFor="educationOverview">How You'll Teach Your Family *</Label>
+          <p className="text-sm text-muted-foreground mt-1 mb-3">
+            How will you teach your kids and grandkids about money, family values, and being responsible? 
+            Think about <strong>what they need to learn</strong> (like how to save money, family history, helping others), 
+            <strong>when they start learning</strong> (maybe at age 10 or 16), and <strong>how you'll teach them</strong> 
+            (family meetings, classes, working together). 
+            Example: "Starting at age 12, kids learn about our family history and values. At 16, they learn about 
+            money and budgeting. At 18, they can help choose which charities we support. We have monthly family 
+            learning sessions and summer workshops."
+          </p>
           <Textarea
             id="educationOverview"
             value={data.educationOverview || ''}
             onChange={(e) => saveData({ educationOverview: e.target.value })}
-            placeholder="How we prepare next generation for stewardship..."
+            placeholder="How you'll teach your kids about money, family values, and responsibility..."
             maxLength={300}
           />
         </div>
