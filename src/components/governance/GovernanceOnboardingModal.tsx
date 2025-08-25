@@ -949,12 +949,20 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
         </div>
 
         <div>
-          <Label htmlFor="sealUsagePolicy">Seal Usage Policy *</Label>
+          <Label htmlFor="sealUsagePolicy">When Do You Use the Seal *</Label>
+          <p className="text-sm text-muted-foreground mt-1 mb-3">
+            When should your family use this special stamp? Think about <strong>important papers</strong> 
+            (like family contracts or trust papers), <strong>official family decisions</strong> (like voting results), 
+            and <strong>special certificates</strong> (like when someone joins the family business). 
+            Example: "We use our seal on all family meeting minutes, trust documents, family business contracts, 
+            and official letters to banks or lawyers. Only the seal keeper can use it, and they must keep a record 
+            of every time it's used."
+          </p>
           <Textarea
             id="sealUsagePolicy"
             value={data.sealUsagePolicy || ''}
             onChange={(e) => saveData({ sealUsagePolicy: e.target.value })}
-            placeholder="When and how the seal is used (resolutions, trust certificates, agreements)..."
+            placeholder="When and how your family uses the official seal..."
             maxLength={250}
           />
         </div>
