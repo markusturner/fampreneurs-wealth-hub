@@ -332,7 +332,7 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
     const progress = getSectionProgress();
     
     return (
-      <div className="w-80 border-r bg-muted/20 p-6">
+      <div className="w-80 border-r bg-muted/20 p-6 overflow-y-auto">
         <div className="space-y-6">
           <div>
             <h3 className="font-semibold mb-2">Progress</h3>
@@ -924,15 +924,15 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
         <div className="flex h-full">
           {renderProgressSidebar()}
           
-          <div className="flex-1 flex flex-col">
-            <DialogHeader className="p-6 border-b">
+          <div className="flex-1 flex flex-col min-h-0">
+            <DialogHeader className="p-6 border-b flex-shrink-0">
               <DialogTitle className="text-2xl">Set Up Governance & Legacy</DialogTitle>
               <p className="text-muted-foreground">
                 Define who you are, how you decide, and how the legacy endures.
               </p>
             </DialogHeader>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto p-6 min-h-0">
               {showMissingItems ? (
                 <div className="space-y-6">
                   {renderMissingItemsSummary()}
@@ -951,7 +951,7 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
               )}
             </div>
 
-            <div className="border-t p-6">
+            <div className="border-t p-6 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex gap-3">
                   {currentSection > 0 && !showMissingItems && (
