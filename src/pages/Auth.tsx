@@ -34,7 +34,40 @@ export default function Auth() {
   
   const { toast } = useToast()
   const navigate = useNavigate()
+  
   useEffect(() => {
+    // Check URL parameters for payment success
+    const urlParams = new URLSearchParams(window.location.search)
+    const paymentStatus = urlParams.get('payment')
+    const planName = urlParams.get('plan')
+    
+    if (paymentStatus === 'success') {
+      // Show success message for completed payment
+      toast({
+        title: "Payment Successful! 🎉",
+        description: `Welcome to ${planName || 'TruHeirs'}! Please create your account to get started.`,
+        duration: 8000,
+      })
+      
+      // Set membership type to paid if coming from payment
+      setMembershipType('paid')
+      
+      // Extract price from plan name and set it
+      if (planName?.includes('Starter')) {
+        setCustomPrice('97')
+        setSelectedProgram('TruHeirs Starter')
+      } else if (planName?.includes('Professional')) {
+        setCustomPrice('297')
+        setSelectedProgram('TruHeirs Professional')
+      } else if (planName?.includes('Enterprise')) {
+        setCustomPrice('497')
+        setSelectedProgram('TruHeirs Enterprise')
+      }
+      
+      // Clean up URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+    
     // Check if user is already logged in
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -43,7 +76,7 @@ export default function Auth() {
       }
     }
     checkUser()
-  }, [navigate])
+  }, [navigate, toast])
 
   const cleanupAuthState = () => {
     Object.keys(localStorage).forEach((key) => {
