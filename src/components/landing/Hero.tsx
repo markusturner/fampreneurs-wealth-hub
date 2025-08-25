@@ -53,7 +53,8 @@ export const Hero = () => {
           <div className="flex items-center space-x-4">
             <Button 
               variant="ghost" 
-              className="text-sm text-primary hover:text-primary hover:bg-primary/10 transition-smooth"
+              className="text-sm hover:bg-primary/10 transition-smooth"
+              style={{ color: '#ffb500' }}
               onClick={handleLoginClick}
             >
               Login
