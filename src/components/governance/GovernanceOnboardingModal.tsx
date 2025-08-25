@@ -1112,6 +1112,7 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
                 <SelectValue placeholder="Select frequency" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="weekly">Weekly</SelectItem>
                 <SelectItem value="monthly">Monthly</SelectItem>
                 <SelectItem value="quarterly">Quarterly</SelectItem>
                 <SelectItem value="semi-annual">Semi-Annual</SelectItem>
