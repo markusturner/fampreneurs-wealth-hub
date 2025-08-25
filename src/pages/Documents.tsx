@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { BookOpen, Crown, Users, MessageCircle, Image, TreePine, Lock, Scroll, Building2, Scale, Shield, GraduationCap, ArrowLeft, Heart, FileText, Video, Settings, Eye, EyeOff, CheckCircle, Key, Edit, Trash2, FileCheck, Loader2, UserPlus } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { NavHeader } from "@/components/dashboard/nav-header";
@@ -166,6 +166,13 @@ export default function Documents() {
   const [isValidatingCode, setIsValidatingCode] = useState(false);
   const [validatedCodeResult, setValidatedCodeResult] = useState<any>(null);
 
+  // Family Values, Vision & Mission states
+  const [coreValues, setCoreValues] = useState('');
+  const [vision, setVision] = useState('');
+  const [mission, setMission] = useState('');
+  const [isEditingValues, setIsEditingValues] = useState(false);
+  const [isSavingValues, setIsSavingValues] = useState(false);
+
   // Family Code Creation states
   const [codeDescription, setCodeDescription] = useState('');
   const [codeAccessLevel, setCodeAccessLevel] = useState('');
@@ -176,6 +183,7 @@ export default function Documents() {
     if (user && isAdmin) {
       fetchAvailableCodes();
     }
+    loadFamilyValues();
   }, [user, isAdmin]);
   const fetchAvailableCodes = async () => {
     try {
@@ -187,6 +195,66 @@ export default function Documents() {
       setAvailableCodes(data || []);
     } catch (error) {
       console.error('Error fetching codes:', error);
+    }
+  };
+
+  const loadFamilyValues = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('family_governance_policies')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('policy_type', 'family_values')
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading family values:', error);
+        return;
+      }
+
+      if (data) {
+        const values = JSON.parse(data.description || '{}');
+        setCoreValues(values.coreValues || '');
+        setVision(values.vision || '');
+        setMission(values.mission || '');
+      }
+    } catch (error) {
+      console.error('Error loading family values:', error);
+    }
+  };
+
+  const saveFamilyValues = async () => {
+    if (!user?.id) return;
+    
+    setIsSavingValues(true);
+    try {
+      const valuesData = {
+        coreValues,
+        vision,
+        mission
+      };
+
+      const { error } = await supabase
+        .from('family_governance_policies')
+        .upsert({
+          user_id: user.id,
+          title: 'Family Values & Mission',
+          description: JSON.stringify(valuesData),
+          policy_type: 'family_values',
+          status: 'active'
+        });
+
+      if (error) throw error;
+
+      toast.success('Family values saved successfully!');
+      setIsEditingValues(false);
+    } catch (error) {
+      console.error('Error saving family values:', error);
+      toast.error('Failed to save family values');
+    } finally {
+      setIsSavingValues(false);
     }
   };
   const handleHeritageResource = (resourceTitle: string) => {
@@ -470,6 +538,138 @@ export default function Documents() {
           <h1 className="text-2xl sm:text-3xl font-bold mb-2">Family Roundtable Dashboard</h1>
           <p className="text-sm sm:text-base text-muted-foreground px-2 sm:px-0">Access important family documents, educational resources, and secure information</p>
         </div>
+
+        {/* Core Values, Vision & Mission */}
+        <section className="space-y-3 sm:space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+            <div>
+              <h2 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2 flex items-center gap-2">
+                <Heart className="h-4 w-4 sm:h-5 sm:w-5" />
+                Core Values, Vision & Mission
+              </h2>
+              <p className="text-muted-foreground text-xs sm:text-sm">
+                Define and preserve your family's fundamental principles and aspirations
+              </p>
+            </div>
+            
+            <Button 
+              variant={isEditingValues ? "default" : "outline"} 
+              size="sm" 
+              className="w-full sm:w-auto"
+              onClick={() => {
+                if (isEditingValues) {
+                  saveFamilyValues();
+                } else {
+                  setIsEditingValues(true);
+                }
+              }}
+              disabled={isSavingValues}
+            >
+              {isSavingValues ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : isEditingValues ? (
+                <CheckCircle className="h-4 w-4 mr-2" />
+              ) : (
+                <Edit className="h-4 w-4 mr-2" />
+              )}
+              <span className="hidden sm:inline">
+                {isSavingValues ? 'Saving...' : isEditingValues ? 'Save Changes' : 'Edit Values'}
+              </span>
+              <span className="sm:hidden">
+                {isSavingValues ? 'Saving...' : isEditingValues ? 'Save' : 'Edit'}
+              </span>
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+            {/* Core Values */}
+            <Card className="min-h-[200px]">
+              <CardHeader className="pb-2 sm:pb-3">
+                <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-blue-600" />
+                  Core Values
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
+                  The fundamental beliefs that guide your family
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isEditingValues ? (
+                  <textarea
+                    value={coreValues}
+                    onChange={(e) => setCoreValues(e.target.value)}
+                    placeholder="Enter your family's core values..."
+                    className="w-full h-24 p-2 text-sm border rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                ) : (
+                  <div className="text-xs sm:text-sm text-muted-foreground">
+                    {coreValues || (
+                      <span className="italic">Click Edit to add your family's core values</span>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Vision */}
+            <Card className="min-h-[200px]">
+              <CardHeader className="pb-2 sm:pb-3">
+                <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                  <Eye className="h-4 w-4 text-green-600" />
+                  Vision
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
+                  Your family's aspirational future
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isEditingValues ? (
+                  <textarea
+                    value={vision}
+                    onChange={(e) => setVision(e.target.value)}
+                    placeholder="Describe your family's vision for the future..."
+                    className="w-full h-24 p-2 text-sm border rounded-md resize-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                ) : (
+                  <div className="text-xs sm:text-sm text-muted-foreground">
+                    {vision || (
+                      <span className="italic">Click Edit to add your family's vision</span>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Mission */}
+            <Card className="min-h-[200px]">
+              <CardHeader className="pb-2 sm:pb-3">
+                <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                  <Users className="h-4 w-4 text-purple-600" />
+                  Mission
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
+                  Your family's purpose and commitment
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isEditingValues ? (
+                  <textarea
+                    value={mission}
+                    onChange={(e) => setMission(e.target.value)}
+                    placeholder="Define your family's mission and purpose..."
+                    className="w-full h-24 p-2 text-sm border rounded-md resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
+                ) : (
+                  <div className="text-xs sm:text-sm text-muted-foreground">
+                    {mission || (
+                      <span className="italic">Click Edit to add your family's mission</span>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </section>
 
         {/* Family Business Education Modules */}
         <section className="space-y-3 sm:space-y-4">
