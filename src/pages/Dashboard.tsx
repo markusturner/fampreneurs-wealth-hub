@@ -7,7 +7,6 @@ import { InvestmentChart } from "@/components/dashboard/investment-chart"
 import { AssetAllocation } from "@/components/dashboard/asset-allocation"
 import { AIChat } from "@/components/dashboard/ai-chat"
 import { FamilyMemberDashboard } from "@/components/dashboard/family-member-dashboard"
-import { FamilyGovernance } from "@/components/dashboard/family-governance"
 import { DocumentManagement } from "@/components/dashboard/document-management"
 import { EnhancedSearch } from "@/components/dashboard/enhanced-search"
 import { RealTimeNotifications } from "@/components/dashboard/real-time-notifications"
@@ -94,11 +93,8 @@ const Dashboard = () => {
             <InvestmentChart />
           </div>
           
-          {/* Family Governance */}
-          <div className="lg:col-span-2">
-            <FamilyGovernance />
-          </div>
-
+          {/* Family Governance - Moved to dedicated page */}
+          
           {/* Document Management */}
           <div className="lg:col-span-2">
             <DocumentManagement />

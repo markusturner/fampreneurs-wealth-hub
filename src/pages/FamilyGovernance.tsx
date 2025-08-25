@@ -1,393 +1,571 @@
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { 
-  Crown, 
-  Users, 
-  Scale,
-  ArrowLeft,
-  Building2,
-  Target,
-  Users2,
-  CheckCircle2
-} from "lucide-react"
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/integrations/supabase/client'
 import { NavHeader } from "@/components/dashboard/nav-header"
-import { useNavigate } from "react-router-dom"
-import { supabase } from "@/integrations/supabase/client"
-import { useAuth } from "@/contexts/AuthContext"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Calendar, Vote, FileText, Clock, Users, ArrowLeft } from 'lucide-react'
+import { useToast } from "@/hooks/use-toast"
+import { useNavigate } from 'react-router-dom'
 
-interface FamilyMember {
+interface Policy {
   id: string
-  full_name: string
-  family_position: string
-  trust_positions: string[] | null
+  title: string
+  description: string
+  policy_type: string
+  status: string
+  effective_date: string
+  created_at: string
 }
 
-const governancePrinciples = [
-  {
-    title: "Transparency",
-    description: "All decisions and processes are open and accessible to family members",
-    icon: CheckCircle2
-  },
-  {
-    title: "Accountability", 
-    description: "Each branch is responsible for their actions and decisions",
-    icon: Target
-  },
-  {
-    title: "Representation",
-    description: "Every family member has a voice in the governance process",
-    icon: Users2
-  },
-  {
-    title: "Continuity",
-    description: "Structures designed to preserve family values across generations",
-    icon: Building2
-  }
-]
+interface Proposal {
+  id: string
+  title: string
+  description: string
+  proposal_type: string
+  voting_deadline: string
+  status: string
+  voting_options: any // JSON data from database
+  created_at: string
+  vote_count?: number
+  user_vote?: string
+}
+
+interface Vote {
+  id: string
+  proposal_id: string
+  vote_choice: string
+  voted_at: string
+}
 
 export default function FamilyGovernance() {
-  const navigate = useNavigate()
   const { user } = useAuth()
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
+  const { toast } = useToast()
+  const navigate = useNavigate()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [policies, setPolicies] = useState<Policy[]>([])
+  const [proposals, setProposals] = useState<Proposal[]>([])
+  const [votes, setVotes] = useState<Vote[]>([])
   const [loading, setLoading] = useState(true)
+  const [newPolicyOpen, setNewPolicyOpen] = useState(false)
+  const [newProposalOpen, setNewProposalOpen] = useState(false)
+
+  // Form states
+  const [newPolicy, setNewPolicy] = useState({
+    title: '',
+    description: '',
+    policy_type: 'governance',
+    effective_date: ''
+  })
+
+  const [newProposal, setNewProposal] = useState({
+    title: '',
+    description: '',
+    proposal_type: 'governance_matter',
+    voting_deadline: '',
+    voting_options: ['Yes', 'No']
+  })
 
   useEffect(() => {
-    fetchFamilyMembers()
-  }, [user])
+    if (!user) {
+      navigate('/auth')
+      return
+    }
+    loadGovernanceData()
+  }, [user, navigate])
 
-  const fetchFamilyMembers = async () => {
-    if (!user) return
-
+  const loadGovernanceData = async () => {
     try {
       setLoading(true)
-      const { data, error } = await supabase
-        .from('family_members')
-        .select('id, full_name, family_position, trust_positions')
-        .eq('added_by', user.id)
       
-      if (error) throw error
+      // Load policies
+      const { data: policiesData, error: policiesError } = await supabase
+        .from('family_governance_policies')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (policiesError) throw policiesError
+      setPolicies(policiesData || [])
+
+      // Load proposals
+      const { data: proposalsData, error: proposalsError } = await supabase
+        .from('family_voting_proposals')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (proposalsError) throw proposalsError
       
-      setFamilyMembers(data || [])
+      // Get vote counts for each proposal
+      const proposalsWithVotes = await Promise.all(
+        (proposalsData || []).map(async (proposal) => {
+          const { data: voteData } = await supabase
+            .from('family_votes')
+            .select('vote_choice, user_id')
+            .eq('proposal_id', proposal.id)
+          
+          const userVote = voteData?.find(v => v.user_id === user?.id)
+          
+          return {
+            ...proposal,
+            vote_count: voteData?.length || 0,
+            user_vote: userVote?.vote_choice
+          }
+        })
+      )
+      
+      setProposals(proposalsWithVotes)
+
+      // Load user votes
+      const { data: votesData, error: votesError } = await supabase
+        .from('family_votes')
+        .select('*')
+        .eq('user_id', user?.id || '')
+
+      if (votesError) throw votesError
+      setVotes(votesData || [])
+
     } catch (error) {
-      console.error('Error fetching family members:', error)
+      console.error('Error loading governance data:', error)
+      toast({
+        title: "Error",
+        description: "Failed to load governance data",
+        variant: "destructive"
+      })
     } finally {
       setLoading(false)
     }
   }
 
-  const getGovernanceBranches = () => {
-    // Categorize family members into governance branches
-    const familyCouncilMembers = familyMembers.filter(member => 
-      member.trust_positions?.includes('Chairman') ||
-      member.trust_positions?.includes('Vice Chair') ||
-      member.trust_positions?.includes('Secretary') ||
-      member.trust_positions?.includes('Treasurer') ||
-      member.family_position?.toLowerCase().includes('council')
-    )
+  const createPolicy = async () => {
+    if (!user || !newPolicy.title) return
 
-    const elderMembers = familyMembers.filter(member => 
-      member.trust_positions?.includes('Elder') ||
-      member.family_position?.toLowerCase().includes('elder') ||
-      member.family_position?.toLowerCase().includes('advisor') ||
-      member.family_position?.toLowerCase().includes('mentor')
-    )
+    try {
+      const { error } = await supabase
+        .from('family_governance_policies')
+        .insert([{
+          ...newPolicy,
+          user_id: user.id,
+          effective_date: newPolicy.effective_date || null
+        }])
 
-    // All other family members are part of Family Assembly
-    const assemblyMembers = familyMembers
+      if (error) throw error
 
-    return [
-      {
-        title: "The Family Council",
-        description: "Executive branch responsible for day-to-day family business decisions",
-        icon: Crown,
-        members: `${familyCouncilMembers.length} Active Members`,
-        membersList: familyCouncilMembers.map(member => ({
-          name: member.full_name,
-          role: member.trust_positions?.[0] || member.family_position || "Council Member"
-        })),
-        role: "Decision Making & Strategy",
-        color: "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800",
-        iconColor: "text-blue-600",
-        responsibilities: [
-          "Strategic planning and direction",
-          "Resource allocation decisions", 
-          "Business operations oversight",
-          "Crisis management and resolution",
-          "Quarterly family meetings"
-        ],
-        meetingSchedule: "Weekly meetings every Tuesday",
-        authority: "Executive decisions for amounts up to $500K"
-      },
-      {
-        title: "Council of Elders",
-        description: "Advisory branch providing wisdom and guidance based on experience",
-        icon: Users,
-        members: `${elderMembers.length} Elder Members`,
-        membersList: elderMembers.map(member => ({
-          name: member.full_name,
-          role: member.trust_positions?.[0] || member.family_position || "Elder Advisor"
-        })),
-        role: "Guidance & Mentorship",
-        color: "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800",
-        iconColor: "text-emerald-600",
-        responsibilities: [
-          "Mentorship for younger generation",
-          "Dispute resolution and mediation",
-          "Preservation of family values",
-          "Historical knowledge transfer",
-          "Legacy planning guidance"
-        ],
-        meetingSchedule: "Monthly meetings first Friday",
-        authority: "Advisory capacity with veto power on major decisions"
-      },
-      {
-        title: "Family Assembly",
-        description: "Legislative branch representing all family members' voices",
-        icon: Scale,
-        members: `${assemblyMembers.length} Voting Members`,
-        membersList: assemblyMembers.map(member => ({
-          name: member.full_name,
-          role: "Voting Member"
-        })),
-        role: "Voting & Policy Making",
-        color: "bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800",
-        iconColor: "text-purple-600",
-        responsibilities: [
-          "Vote on family constitution changes",
-          "Approve major investments",
-          "Select Family Council members",
-          "Annual budget approval",
-          "Policy and governance decisions"
-        ],
-        meetingSchedule: "Quarterly assemblies and annual meeting",
-        authority: "Final voting authority on all major family matters"
-      }
-    ]
+      toast({
+        title: "Success",
+        description: "Policy created successfully"
+      })
+
+      setNewPolicyOpen(false)
+      setNewPolicy({
+        title: '',
+        description: '',
+        policy_type: 'governance',
+        effective_date: ''
+      })
+      loadGovernanceData()
+    } catch (error) {
+      console.error('Error creating policy:', error)
+      toast({
+        title: "Error",
+        description: "Failed to create policy",
+        variant: "destructive"
+      })
+    }
   }
 
-  const governanceBranches = getGovernanceBranches()
+  const createProposal = async () => {
+    if (!user || !newProposal.title || !newProposal.voting_deadline) return
+
+    try {
+      const { error } = await supabase
+        .from('family_voting_proposals')
+        .insert([{
+          ...newProposal,
+          user_id: user.id,
+          voting_options: newProposal.voting_options
+        }])
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: "Proposal created successfully"
+      })
+
+      setNewProposalOpen(false)
+      setNewProposal({
+        title: '',
+        description: '',
+        proposal_type: 'governance_matter',
+        voting_deadline: '',
+        voting_options: ['Yes', 'No']
+      })
+      loadGovernanceData()
+    } catch (error) {
+      console.error('Error creating proposal:', error)
+      toast({
+        title: "Error",
+        description: "Failed to create proposal",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const castVote = async (proposalId: string, voteChoice: string) => {
+    if (!user) return
+
+    try {
+      const { error } = await supabase
+        .from('family_votes')
+        .upsert([{
+          proposal_id: proposalId,
+          user_id: user.id,
+          vote_choice: voteChoice
+        }])
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: "Vote cast successfully"
+      })
+
+      loadGovernanceData()
+    } catch (error) {
+      console.error('Error casting vote:', error)
+      toast({
+        title: "Error",
+        description: "Failed to cast vote",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800'
+      case 'draft': return 'bg-yellow-100 text-yellow-800'
+      case 'archived': return 'bg-gray-100 text-gray-800'
+      case 'closed': return 'bg-red-100 text-red-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const isVotingOpen = (deadline: string) => {
+    return new Date(deadline) > new Date()
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <NavHeader />
-        <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Loading family governance structure...</p>
-          </div>
-        </div>
+        <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+          <div className="text-center py-8">Loading governance data...</div>
+        </main>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <NavHeader />
+      <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
-      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-6">
+      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="sm"
-            onClick={() => navigate('/documents')}
+            onClick={() => navigate('/dashboard')}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Family Roundtable
+            Back to Dashboard
           </Button>
         </div>
 
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-            <Scale className="h-8 w-8" />
-            Family Governance Structure
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-2">
-            Understanding the three branches of government that guide our family's decision-making process
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold text-foreground">Family Governance</h1>
+          <p className="text-muted-foreground">
+            Manage family policies and voting proposals for transparent decision-making
           </p>
         </div>
 
-        {/* Governance Principles */}
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Core Governance Principles</h2>
-            <p className="text-muted-foreground text-sm">
-              The foundational values that guide our family governance structure
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {governancePrinciples.map((principle, index) => {
-              const Icon = principle.icon
-              const iconColors = [
-                "text-blue-600",
-                "text-emerald-600", 
-                "text-purple-600",
-                "text-orange-600"
-              ]
-              return (
-                <Card key={principle.title} className="text-center">
-                  <CardContent className="p-4">
-                    <div className="flex justify-center mb-3">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <Icon className={`h-6 w-6 ${iconColors[index]}`} />
-                      </div>
-                    </div>
-                    <h3 className="font-semibold mb-2">{principle.title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {principle.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </section>
+        {/* Main Content */}
+        <Card>
+          <CardContent className="p-6">
+            <Tabs defaultValue="proposals" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="proposals">Voting Proposals</TabsTrigger>
+                <TabsTrigger value="policies">Family Policies</TabsTrigger>
+              </TabsList>
 
-        {/* Three Branches */}
-        <section className="space-y-6">
-          <div>
-            <h2 className="text-xl font-semibold mb-2">The Three Branches of Family Government</h2>
-            <p className="text-muted-foreground text-sm">
-              Each branch has distinct roles and responsibilities in our family's governance system
-            </p>
-          </div>
-          
-          <div className="space-y-6">
-            {governanceBranches.map((branch, index) => {
-              const Icon = branch.icon
-              return (
-                <Card key={branch.title} className={`${branch.color} border-2`}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-lg bg-background/50">
-                          <Icon className={`h-8 w-8 ${branch.iconColor}`} />
+              <TabsContent value="proposals" className="space-y-6 mt-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-xl font-semibold">Active Proposals</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Vote on important family decisions and track progress
+                    </p>
+                  </div>
+                  <Dialog open={newProposalOpen} onOpenChange={setNewProposalOpen}>
+                    <DialogTrigger asChild>
+                      <Button>Create Proposal</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create New Proposal</DialogTitle>
+                        <DialogDescription>
+                          Create a new voting proposal for family members
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="proposal-title">Title</Label>
+                          <Input
+                            id="proposal-title"
+                            value={newProposal.title}
+                            onChange={(e) => setNewProposal(prev => ({ ...prev, title: e.target.value }))}
+                            placeholder="Proposal title"
+                          />
                         </div>
                         <div>
-                          <CardTitle className="text-xl">{branch.title}</CardTitle>
-                          <CardDescription className="text-base">
-                            {branch.description}
-                          </CardDescription>
-                          <div className="flex gap-3 mt-2">
-                            <Badge variant="secondary">{branch.members}</Badge>
-                            <Badge variant="outline">{branch.role}</Badge>
-                          </div>
+                          <Label htmlFor="proposal-description">Description</Label>
+                          <Textarea
+                            id="proposal-description"
+                            value={newProposal.description}
+                            onChange={(e) => setNewProposal(prev => ({ ...prev, description: e.target.value }))}
+                            placeholder="Describe the proposal details"
+                          />
                         </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-4 gap-6">
-                      <div>
-                        <h4 className="font-semibold mb-2 text-sm">Current Members</h4>
-                        <div className="space-y-2">
-                          {branch.membersList.map((member, idx) => (
-                            <div key={idx} className="text-sm">
-                              <div className="font-medium">{member.name}</div>
-                              <div className="text-muted-foreground text-xs">{member.role}</div>
-                            </div>
-                          ))}
+                        <div>
+                          <Label htmlFor="proposal-type">Type</Label>
+                          <Select
+                            value={newProposal.proposal_type}
+                            onValueChange={(value) => setNewProposal(prev => ({ ...prev, proposal_type: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="policy_change">Policy Change</SelectItem>
+                              <SelectItem value="investment_decision">Investment Decision</SelectItem>
+                              <SelectItem value="governance_matter">Governance Matter</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
+                        <div>
+                          <Label htmlFor="voting-deadline">Voting Deadline</Label>
+                          <Input
+                            id="voting-deadline"
+                            type="datetime-local"
+                            value={newProposal.voting_deadline}
+                            onChange={(e) => setNewProposal(prev => ({ ...prev, voting_deadline: e.target.value }))}
+                          />
+                        </div>
+                        <Button onClick={createProposal} className="w-full">
+                          Create Proposal
+                        </Button>
                       </div>
-                      
-                      <div>
-                        <h4 className="font-semibold mb-2 text-sm">Key Responsibilities</h4>
-                        <ul className="space-y-1">
-                          {branch.responsibilities.map((responsibility, idx) => (
-                            <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
-                              <CheckCircle2 className="h-3 w-3 mt-0.5 flex-shrink-0 text-green-600" />
-                              {responsibility}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-semibold mb-2 text-sm">Meeting Schedule</h4>
-                        <p className="text-sm text-muted-foreground">{branch.meetingSchedule}</p>
-                      </div>
-                      
-                      <div>
-                        <h4 className="font-semibold mb-2 text-sm">Decision Authority</h4>
-                        <p className="text-sm text-muted-foreground">{branch.authority}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </section>
-
-        {/* How It Works Together */}
-        <section className="space-y-4">
-          <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                How Our Governance System Works
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 sm:p-6">
-              <div className="space-y-4 sm:space-y-6 max-w-none">
-                <p className="text-sm sm:text-base text-muted-foreground text-center leading-relaxed">
-                  Our family governance structure operates on a system of checks and balances, ensuring that no single branch has absolute power while maintaining efficient decision-making processes.
-                </p>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-                  <div className="text-center lg:text-left">
-                    <h4 className="font-semibold mb-3 text-base">Decision Flow</h4>
-                    <ol className="text-sm sm:text-base text-muted-foreground space-y-2 text-left max-w-sm mx-auto lg:mx-0">
-                      <li className="flex items-start gap-2">
-                        <span className="font-medium text-primary">1.</span>
-                        <span>Family Council proposes initiatives</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="font-medium text-primary">2.</span>
-                        <span>Council of Elders provides guidance</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="font-medium text-primary">3.</span>
-                        <span>Family Assembly votes on major decisions</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="font-medium text-primary">4.</span>
-                        <span>Implementation by appropriate branch</span>
-                      </li>
-                    </ol>
-                  </div>
-                  
-                  <div className="text-center lg:text-left">
-                    <h4 className="font-semibold mb-3 text-base">Conflict Resolution</h4>
-                    <ol className="text-sm sm:text-base text-muted-foreground space-y-2 text-left max-w-sm mx-auto lg:mx-0">
-                      <li className="flex items-start gap-2">
-                        <span className="font-medium text-primary">1.</span>
-                        <span>Council of Elders mediates disputes</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="font-medium text-primary">2.</span>
-                        <span>Family Assembly final arbiter if needed</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="font-medium text-primary">3.</span>
-                        <span>External mediation for complex issues</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="font-medium text-primary">4.</span>
-                        <span>Family Constitution as ultimate guide</span>
-                      </li>
-                    </ol>
-                  </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-      </div>
+
+                {proposals.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Vote className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <h4 className="text-lg font-medium mb-2">No proposals yet</h4>
+                    <p>Create your first proposal to get started with family voting.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-6">
+                    {proposals.map((proposal) => (
+                      <Card key={proposal.id} className="border-l-4 border-l-primary">
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <CardTitle className="text-xl">{proposal.title}</CardTitle>
+                              <CardDescription className="mt-2">{proposal.description}</CardDescription>
+                            </div>
+                            <Badge className={getStatusColor(proposal.status)}>
+                              {proposal.status}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4" />
+                                Deadline: {new Date(proposal.voting_deadline).toLocaleDateString()}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4" />
+                                {proposal.vote_count} votes cast
+                              </div>
+                              <Badge variant="outline">
+                                {proposal.proposal_type.replace('_', ' ')}
+                              </Badge>
+                            </div>
+                            
+                            {isVotingOpen(proposal.voting_deadline) && proposal.status === 'active' ? (
+                              <div className="space-y-3">
+                                <div className="text-sm font-medium">Cast your vote:</div>
+                                <div className="flex gap-3">
+                                  {(Array.isArray(proposal.voting_options) ? proposal.voting_options : JSON.parse(proposal.voting_options || '[]')).map((option: string) => (
+                                    <Button
+                                      key={option}
+                                      variant={proposal.user_vote === option ? "default" : "outline"}
+                                      size="sm"
+                                      onClick={() => castVote(proposal.id, option)}
+                                      disabled={!!proposal.user_vote}
+                                    >
+                                      {option} {proposal.user_vote === option && "✓"}
+                                    </Button>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-sm text-muted-foreground p-3 bg-muted rounded-lg">
+                                {proposal.user_vote ? `You voted: ${proposal.user_vote}` : 'Voting period has ended'}
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="policies" className="space-y-6 mt-6">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-xl font-semibold">Family Policies</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Established guidelines and rules governing family decisions
+                    </p>
+                  </div>
+                  <Dialog open={newPolicyOpen} onOpenChange={setNewPolicyOpen}>
+                    <DialogTrigger asChild>
+                      <Button>Create Policy</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Create New Policy</DialogTitle>
+                        <DialogDescription>
+                          Create a new family policy document
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="policy-title">Title</Label>
+                          <Input
+                            id="policy-title"
+                            value={newPolicy.title}
+                            onChange={(e) => setNewPolicy(prev => ({ ...prev, title: e.target.value }))}
+                            placeholder="Policy title"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="policy-description">Description</Label>
+                          <Textarea
+                            id="policy-description"
+                            value={newPolicy.description}
+                            onChange={(e) => setNewPolicy(prev => ({ ...prev, description: e.target.value }))}
+                            placeholder="Policy description and details"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="policy-type">Type</Label>
+                          <Select
+                            value={newPolicy.policy_type}
+                            onValueChange={(value) => setNewPolicy(prev => ({ ...prev, policy_type: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="investment">Investment</SelectItem>
+                              <SelectItem value="spending">Spending</SelectItem>
+                              <SelectItem value="governance">Governance</SelectItem>
+                              <SelectItem value="succession">Succession</SelectItem>
+                              <SelectItem value="philanthropy">Philanthropy</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="effective-date">Effective Date</Label>
+                          <Input
+                            id="effective-date"
+                            type="date"
+                            value={newPolicy.effective_date}
+                            onChange={(e) => setNewPolicy(prev => ({ ...prev, effective_date: e.target.value }))}
+                          />
+                        </div>
+                        <Button onClick={createPolicy} className="w-full">
+                          Create Policy
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                {policies.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                    <h4 className="text-lg font-medium mb-2">No policies yet</h4>
+                    <p>Create your first policy to establish family governance guidelines.</p>
+                  </div>
+                ) : (
+                  <div className="grid gap-6">
+                    {policies.map((policy) => (
+                      <Card key={policy.id} className="border-l-4 border-l-secondary">
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <CardTitle className="text-xl">{policy.title}</CardTitle>
+                              <CardDescription className="mt-2">{policy.description}</CardDescription>
+                            </div>
+                            <Badge className={getStatusColor(policy.status)}>
+                              {policy.status}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4" />
+                              {policy.policy_type.replace('_', ' ')}
+                            </div>
+                            {policy.effective_date && (
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4" />
+                                Effective: {new Date(policy.effective_date).toLocaleDateString()}
+                              </div>
+                            )}
+                            <div className="text-xs">
+                              Created: {new Date(policy.created_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </main>
     </div>
   )
 }
