@@ -57,11 +57,11 @@ export const Hero = () => {
           {/* Main Headlines - Enhanced Typography */}
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight tracking-tight">
             <span className="text-foreground">How to build</span>{' '}
-            <span className="text-secondary bg-gradient-to-r from-secondary to-secondary-glow bg-clip-text text-transparent">
+            <span className="text-secondary">
               generational wealth
             </span>{' '}
             <span className="text-foreground">without</span>{' '}
-            <span className="text-accent bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
+            <span className="text-accent">
               expensive wealth managers
             </span>
           </h1>
