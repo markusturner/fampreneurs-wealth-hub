@@ -27,6 +27,7 @@ interface FamilyMember {
   email: string | null
   phone: string | null
   trust_positions: string[] | null
+  governance_branch?: 'family_council' | 'council_elders' | 'family_assembly' | null
   status: string | null
   is_invited: boolean | null
   notes: string | null
@@ -56,6 +57,12 @@ const trustPositions = [
   'Advisory Committee Member'
 ]
 
+const governanceBranches = [
+  { value: 'family_council', label: 'Family Council (Executive Branch)' },
+  { value: 'council_elders', label: 'Council of Elders (Judicial Branch)' },
+  { value: 'family_assembly', label: 'Family Assembly (Legislative Branch)' }
+]
+
 export default function FamilyMembers() {
   const { user, profile } = useAuth()
   const { toast } = useToast()
@@ -73,7 +80,8 @@ export default function FamilyMembers() {
     relationshipToFamily: '',
     email: '',
     phone: '',
-    notes: ''
+    notes: '',
+    governanceBranch: ''
   })
   const [selectedTrustPositions, setSelectedTrustPositions] = useState<string[]>([])
 
@@ -109,7 +117,8 @@ export default function FamilyMembers() {
       relationshipToFamily: '',
       email: '',
       phone: '',
-      notes: ''
+      notes: '',
+      governanceBranch: ''
     })
     setSelectedTrustPositions([])
     setEditingMember(null)
@@ -123,7 +132,8 @@ export default function FamilyMembers() {
       relationshipToFamily: member.relationship_to_family || '',
       email: member.email || '',
       phone: member.phone || '',
-      notes: member.notes || ''
+      notes: member.notes || '',
+      governanceBranch: member.governance_branch || ''
     })
     setSelectedTrustPositions(member.trust_positions || [])
     setDialogOpen(true)
@@ -160,6 +170,7 @@ export default function FamilyMembers() {
         email: formData.email.trim() || null,
         phone: formData.phone.trim() || null,
         trust_positions: selectedTrustPositions.length > 0 ? selectedTrustPositions : null,
+        governance_branch: formData.governanceBranch || null,
         notes: formData.notes.trim() || null,
         status: 'active'
       }
@@ -406,6 +417,31 @@ export default function FamilyMembers() {
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* Governance Branch */}
+                <div className="space-y-4">
+                  <h3 className="font-medium text-sm">Family Governance Position</h3>
+                  
+                  <div>
+                    <Label htmlFor="governanceBranch">Governance Branch</Label>
+                    <Select value={formData.governanceBranch} onValueChange={(value) => setFormData(prev => ({ ...prev, governanceBranch: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select governance branch (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        {governanceBranches.map((branch) => (
+                          <SelectItem key={branch.value} value={branch.value}>
+                            {branch.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Assign this member to a governance branch for decision-making responsibilities
+                    </p>
+                  </div>
                 </div>
 
                 {/* Additional Information */}
