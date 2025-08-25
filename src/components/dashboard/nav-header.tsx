@@ -271,7 +271,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             className="gap-1 lg:gap-2 h-8 lg:h-9 px-2 lg:px-3 text-xs lg:text-sm"
           >
             <FileText className="h-3 w-3 lg:h-4 lg:w-4" />
-            <span className="hidden lg:inline">Family Roundtable</span>
+            <span className="hidden lg:inline">Family Constitution</span>
           </Button>
           <Button
             variant={location.pathname === '/calendar' ? "default" : "ghost"}
