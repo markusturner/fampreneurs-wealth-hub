@@ -205,14 +205,27 @@ export default function Documents() {
     if (!user?.id) return;
     
     try {
+      // First try to load from governance onboarding data (localStorage)
+      const savedData = localStorage.getItem(`governance_onboarding_${user.id}`);
+      if (savedData) {
+        const onboardingData = JSON.parse(savedData);
+        
+        // Map onboarding fields to family values
+        setCoreValues(onboardingData.coreValues?.join(', ') || '');
+        setVision(onboardingData.visionStatement || '');
+        setMission(onboardingData.missionStatement || '');
+        return;
+      }
+
+      // Fallback to database if no localStorage data
       const { data, error } = await supabase
         .from('family_governance_policies')
         .select('*')
         .eq('user_id', user.id)
         .eq('policy_type', 'governance')
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error loading family values:', error);
         return;
       }
