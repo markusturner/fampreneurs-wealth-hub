@@ -54,7 +54,7 @@ export const Hero = () => {
             <Button 
               variant="ghost" 
               className="text-sm hover:bg-primary/10 transition-smooth"
-              style={{ color: '#ffb500' }}
+              style={{ backgroundColor: '#ffb500', color: '#290a52' }}
               onClick={handleLoginClick}
             >
               Login
