@@ -7,9 +7,9 @@ export const Footer = () => {
     });
   };
   return <footer className="bg-background border-t border-border">
-      <div className="container mx-auto px-6 py-16">
+      <div className="container mx-auto px-4 md:px-6 py-12 md:py-16">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8 md:mb-12">
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
@@ -117,16 +117,16 @@ export const Footer = () => {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center py-12 border-t border-b border-border">
-          <h3 className="text-2xl md:text-3xl font-bold mb-4" style={{
+        <div className="text-center py-8 md:py-12 border-t border-b border-border">
+          <h3 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4" style={{
           color: '#2eb2ff'
         }}>
             Ready to Start Building Your Family Legacy?
           </h3>
-          <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+          <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-2xl mx-auto">
             Join hundreds of families who are already using TruHeirs to build and manage generational wealth.
           </p>
-          <Button size="lg" className="text-lg px-8 py-4 font-semibold" style={{
+          <Button size="lg" className="text-base md:text-lg px-6 md:px-8 py-3 md:py-4 font-semibold" style={{
           backgroundColor: '#FFB500',
           color: '#290a52'
         }} onClick={scrollToPricing}>
@@ -135,13 +135,13 @@ export const Footer = () => {
         </div>
 
         {/* Bottom Footer */}
-        <div className="flex flex-col md:flex-row justify-between items-center pt-8 text-sm text-muted-foreground">
-          <div className="flex space-x-6 mb-4 md:mb-0">
+        <div className="flex flex-col md:flex-row justify-between items-center pt-6 md:pt-8 text-xs md:text-sm text-muted-foreground">
+          <div className="flex flex-wrap justify-center md:justify-start space-x-4 md:space-x-6 mb-4 md:mb-0">
             <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
             <a href="#" className="hover:text-foreground transition-colors">Cookie Policy</a>
           </div>
-          <p>© 2024 TruHeirs by The Fampreneurs VNCI, LLC. All rights reserved.</p>
+          <p className="text-center md:text-left">© 2024 TruHeirs by The Fampreneurs VNCI, LLC. All rights reserved.</p>
         </div>
       </div>
     </footer>;

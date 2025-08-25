@@ -39,28 +39,30 @@ export const Hero = () => {
       </div>
 
       {/* Enhanced Navigation */}
-      <nav className="absolute top-0 left-0 right-0 z-50 p-6 backdrop-blur-sm bg-background/20">
+      <nav className="absolute top-0 left-0 right-0 z-50 p-4 md:p-6 backdrop-blur-sm bg-background/20">
         <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl shadow-glow transition-smooth hover:scale-105">
+          <div className="flex items-center space-x-2 md:space-x-3">
+            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg md:text-xl shadow-glow transition-smooth hover:scale-105">
               T
             </div>
-            <div>
-              <h1 className="text-xl font-bold" style={{ color: '#ffb500' }}>TruHeirs</h1>
-              <p className="text-xs text-muted-foreground">Powered by The Fampreneurs</p>
+            <div className="hidden sm:block">
+              <h1 className="text-lg md:text-xl font-bold" style={{ color: '#ffb500' }}>TruHeirs</h1>
+              <p className="text-xs text-muted-foreground hidden md:block">Powered by The Fampreneurs</p>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-4">
             <Button 
               variant="ghost" 
-              className="text-sm hover:bg-primary/10 transition-smooth"
+              size="sm"
+              className="text-xs md:text-sm hover:bg-primary/10 transition-smooth px-3 md:px-4"
               style={{ backgroundColor: '#ffb500', color: '#290a52' }}
               onClick={handleLoginClick}
             >
               Login
             </Button>
             <Button 
-              className="text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-medium hover:shadow-glow transition-smooth hover:scale-105" 
+              size="sm"
+              className="text-xs md:text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-medium hover:shadow-glow transition-smooth hover:scale-105 px-3 md:px-4" 
               onClick={scrollToPricing}
             >
               Get Started
@@ -70,10 +72,10 @@ export const Hero = () => {
       </nav>
 
       {/* Enhanced Hero Content */}
-      <div className="container mx-auto px-6 py-20 text-center relative z-10">
+      <div className="container mx-auto px-4 md:px-6 py-16 md:py-20 text-center relative z-10">
         <div className="max-w-5xl mx-auto animate-fade-in">
           {/* Main Headlines - Enhanced Typography */}
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-tight tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 md:mb-8 leading-tight tracking-tight">
             <span className="text-foreground">How to build</span>{' '}
             <span className="text-secondary">
               generational wealth
@@ -84,22 +86,22 @@ export const Hero = () => {
             </span>
           </h1>
           
-          <p className="text-xl md:text-3xl text-muted-foreground mb-10 max-w-4xl mx-auto font-light leading-relaxed">
+          <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-muted-foreground mb-8 md:mb-10 max-w-4xl mx-auto font-light leading-relaxed">
             Even if you're busy with your 9-5 and don't have millions yet
           </p>
 
           {/* Enhanced Value Proposition */}
-          <div className="mb-12 p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 shadow-medium max-w-3xl mx-auto">
-            <p className="text-lg md:text-2xl text-white font-semibold leading-relaxed">
+          <div className="mb-8 md:mb-12 p-4 md:p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 shadow-medium max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white font-semibold leading-relaxed">
               The Complete DIY AI Family Office Platform for $75k+ earning professionals and entrepreneurs
             </p>
           </div>
 
           {/* Enhanced CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-16">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-12 md:mb-16">
             <Button 
               size="lg" 
-              className="text-xl px-12 py-6 hover:bg-primary/90 text-primary-foreground font-bold shadow-strong hover:shadow-glow transition-all duration-300 hover:scale-105 group"
+              className="w-full sm:w-auto text-base md:text-lg lg:text-xl px-8 md:px-12 py-4 md:py-6 hover:bg-primary/90 text-primary-foreground font-bold shadow-strong hover:shadow-glow transition-all duration-300 hover:scale-105 group"
               style={{ backgroundColor: '#2eb2ff' }}
               onClick={scrollToPricing}
             >
@@ -108,36 +110,36 @@ export const Hero = () => {
             <Button 
               variant="outline" 
               size="lg" 
-              className="text-xl px-12 py-6 border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground shadow-medium hover:shadow-glow transition-all duration-300 hover:scale-105"
+              className="w-full sm:w-auto text-base md:text-lg lg:text-xl px-8 md:px-12 py-4 md:py-6 border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground shadow-medium hover:shadow-glow transition-all duration-300 hover:scale-105"
               onClick={handleDemoClick}
             >
-              <Play className="w-6 h-6 mr-3" />
+              <Play className="w-4 h-4 md:w-6 md:h-6 mr-2 md:mr-3" />
               Watch Demo
             </Button>
           </div>
 
           {/* Enhanced Social Proof */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="flex flex-col items-center p-6 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 shadow-medium hover:shadow-strong transition-all duration-300 hover:scale-105">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 max-w-4xl mx-auto">
+            <div className="flex flex-col items-center p-4 md:p-6 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 shadow-medium hover:shadow-strong transition-all duration-300 hover:scale-105">
               <div className="flex items-center mb-2">
-                <Users className="w-6 h-6 text-secondary mr-2" />
-                <span className="text-4xl font-bold text-secondary">500+</span>
+                <Users className="w-5 h-5 md:w-6 md:h-6 text-secondary mr-2" />
+                <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-secondary">500+</span>
               </div>
-              <span className="text-sm text-muted-foreground font-medium">Families Building Wealth</span>
+              <span className="text-xs md:text-sm text-muted-foreground font-medium text-center">Families Building Wealth</span>
             </div>
-            <div className="flex flex-col items-center p-6 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 shadow-medium hover:shadow-strong transition-all duration-300 hover:scale-105">
+            <div className="flex flex-col items-center p-4 md:p-6 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 shadow-medium hover:shadow-strong transition-all duration-300 hover:scale-105">
               <div className="flex items-center mb-2">
-                <TrendingUp className="w-6 h-6 text-secondary mr-2" />
-                <span className="text-4xl font-bold text-secondary">$50M+</span>
+                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-secondary mr-2" />
+                <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-secondary">$50M+</span>
               </div>
-              <span className="text-sm text-muted-foreground font-medium">Assets Under Management</span>
+              <span className="text-xs md:text-sm text-muted-foreground font-medium text-center">Assets Under Management</span>
             </div>
-            <div className="flex flex-col items-center p-6 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 shadow-medium hover:shadow-strong transition-all duration-300 hover:scale-105">
+            <div className="flex flex-col items-center p-4 md:p-6 rounded-xl bg-card/30 backdrop-blur-sm border border-border/30 shadow-medium hover:shadow-strong transition-all duration-300 hover:scale-105">
               <div className="flex items-center mb-2">
-                <Star className="w-6 h-6 text-secondary mr-2 fill-current" />
-                <span className="text-4xl font-bold text-secondary">4.9</span>
+                <Star className="w-5 h-5 md:w-6 md:h-6 text-secondary mr-2 fill-current" />
+                <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-secondary">4.9</span>
               </div>
-              <span className="text-sm text-muted-foreground font-medium">Average Rating</span>
+              <span className="text-xs md:text-sm text-muted-foreground font-medium text-center">Average Rating</span>
             </div>
           </div>
         </div>
