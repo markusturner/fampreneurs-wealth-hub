@@ -162,7 +162,7 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
     return {
       identity: [
         'constitutionName', 'familyConstitution', 'missionStatement', 'visionStatement', 'coreValues',
-        'wealthPhilosophy', 'constitutionDate', 'primaryLanguage', 'familyCrestUrl', 'secretCodes'
+        'wealthPhilosophy', 'constitutionDate', 'primaryLanguage', 'familyCrestUrl', 'foundingStory', 'secretCodes'
       ],
       governance: [
         'ownershipEligibility', 'quorumPercentage', 'routineThreshold',
@@ -253,6 +253,7 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
       constitutionDate: 'Constitution Effective Date',
       primaryLanguage: 'Primary Language',
       familyCrestUrl: 'Family Crest',
+      foundingStory: 'Founding Story',
       secretCodes: 'Family Secret Codes',
       ownershipEligibility: 'Ownership Eligibility',
       quorumPercentage: 'Quorum Percentage',
@@ -703,6 +704,23 @@ export const GovernanceOnboardingModal: React.FC<GovernanceOnboardingModalProps>
               </Button>
             </div>
           )}
+        </div>
+
+        <div>
+          <Label htmlFor="foundingStory">Founding Story *</Label>
+          <p className="text-sm text-muted-foreground mt-1 mb-3">
+            Tell the story of how your family came to be. This is your origin story - the beginning of your legacy. 
+            Include key moments, challenges overcome, values formed, and what drove your family's success. 
+            This story will inspire future generations and remind them of their roots.
+          </p>
+          <Textarea
+            id="foundingStory"
+            value={data.foundingStory || ''}
+            onChange={(e) => saveData({ foundingStory: e.target.value })}
+            placeholder="Tell the story of how your family journey began..."
+            className="min-h-32"
+            maxLength={1000}
+          />
         </div>
 
         <div>
