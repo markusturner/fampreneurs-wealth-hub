@@ -603,18 +603,6 @@ export default function Documents() {
             </Button>
           </div>
 
-          {/* Family Secret Codes - Admin Only */}
-          {isAdmin && (
-            <>
-              <Separator />
-              <div className="space-y-2">
-                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Admin</h3>
-                <div className="text-xs">
-                  <FamilySecretCodesAdmin />
-                </div>
-              </div>
-            </>
-          )}
         </div>
 
         {/* Main Content */}
@@ -1028,6 +1016,36 @@ export default function Documents() {
               </Card>
             )}
           </section>
+
+          {/* Family Secret Codes Admin - Admin Only */}
+          {isAdmin && (
+            <section className="space-y-6 mt-8">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+                  <Settings className="h-6 w-6 text-slate-600" />
+                  Administrative Controls
+                </h2>
+                <p className="text-muted-foreground">
+                  Family office administration and access management
+                </p>
+              </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Key className="h-5 w-5 text-orange-600" />
+                    Family Secret Codes Management
+                  </CardTitle>
+                  <CardDescription>
+                    Create and manage secure access codes for family members
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FamilySecretCodesAdmin />
+                </CardContent>
+              </Card>
+            </section>
+          )}
         </div>
         </div>
       </div>
