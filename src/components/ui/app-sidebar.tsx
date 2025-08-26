@@ -1,3 +1,4 @@
+
 import { Home, TrendingUp, FileText, Calendar } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
@@ -29,7 +30,6 @@ const familyMemberItems = [
   { title: "The Family Roundtable", url: "/documents", icon: FileText },
   { title: "Calendar", url: "/calendar", icon: Calendar },
 ]
-
 
 export function AppSidebar() {
   const { state } = useSidebar()
