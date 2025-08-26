@@ -39,10 +39,19 @@ export const useGovernanceOnboarding = (userId: string | null) => {
     }
   };
 
+  const editOnboarding = () => {
+    if (userId) {
+      // Only remove the completion flag, keep the data
+      localStorage.removeItem(`governance_onboarding_complete_${userId}`);
+      setShouldShowOnboarding(true);
+    }
+  };
+
   return {
     shouldShowOnboarding,
     isLoading,
     completeOnboarding,
-    resetOnboarding
+    resetOnboarding,
+    editOnboarding
   };
 };

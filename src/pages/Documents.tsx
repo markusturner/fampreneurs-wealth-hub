@@ -185,7 +185,7 @@ export default function Documents() {
   const [codeAccessLevel, setCodeAccessLevel] = useState('');
   const [isCreatingCode, setIsCreatingCode] = useState(false);
   const [createdCode, setCreatedCode] = useState<string | null>(null);
-  const { shouldShowOnboarding, completeOnboarding, resetOnboarding } = useGovernanceOnboarding(user?.id || null);
+  const { shouldShowOnboarding, completeOnboarding, resetOnboarding, editOnboarding } = useGovernanceOnboarding(user?.id || null);
   const isAdmin = profile?.is_admin || false;
   useEffect(() => {
     if (user && isAdmin) {
@@ -597,7 +597,7 @@ export default function Documents() {
           <div className="space-y-2">
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Settings</h3>
             
-            <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={resetOnboarding}>
+            <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={editOnboarding}>
               <RefreshCw className="h-4 w-4 mr-3 text-orange-600" />
               <span className="text-sm">Edit Constitution Setup</span>
             </Button>
