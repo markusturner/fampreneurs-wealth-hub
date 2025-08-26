@@ -317,7 +317,6 @@ export default function FamilyGovernance() {
   const getFamilyAssemblyMembers = () =>
     familyMembers.filter(m => branchKey(m.governance_branch) === 'family_assembly')
 
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -339,11 +338,11 @@ export default function FamilyGovernance() {
           <Button 
             variant="ghost" 
             size="sm"
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/documents')}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Dashboard
+            Back to Family Constitution
           </Button>
         </div>
 
