@@ -561,62 +561,64 @@ export default function Documents() {
     }
   }, [user?.id]);
 
-  return <div className="min-h-screen bg-background flex">
+  return (
+    <div className="min-h-screen bg-background">
       <NavHeader />
       
-      {/* Sidebar */}
-      <div className="w-64 bg-card border-r border-border p-4 space-y-4 fixed left-0 top-16 bottom-0 overflow-y-auto z-10">
-        <div className="space-y-2">
-          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Quick Actions</h3>
-          
-          <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={() => setShowFamilyTreeDialog(true)}>
-            <TreePine className="h-4 w-4 mr-3 text-emerald-600" />
-            <span className="text-sm">Family Tree</span>
-          </Button>
-          
-          <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={() => setShowFamilyDocuments(true)}>
-            <FileText className="h-4 w-4 mr-3 text-blue-600" />
-            <span className="text-sm">Documents</span>
-          </Button>
-          
-          <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={() => navigate('/family-governance')}>
-            <Scale className="h-4 w-4 mr-3 text-indigo-600" />
-            <span className="text-sm">Governance</span>
-          </Button>
-          
-          <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={() => setShowMessagesDialog(true)}>
-            <MessageCircle className="h-4 w-4 mr-3 text-purple-600" />
-            <span className="text-sm">Messages</span>
-          </Button>
-        </div>
+      <div className="flex w-full">
+        {/* Sidebar */}
+        <div className="w-64 bg-card border-r border-border p-4 space-y-4 h-[calc(100vh-64px)] overflow-y-auto flex-shrink-0">
+          <div className="space-y-2">
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Quick Actions</h3>
+            
+            <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={() => setShowFamilyTreeDialog(true)}>
+              <TreePine className="h-4 w-4 mr-3 text-emerald-600" />
+              <span className="text-sm">Family Tree</span>
+            </Button>
+            
+            <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={() => setShowFamilyDocuments(true)}>
+              <FileText className="h-4 w-4 mr-3 text-blue-600" />
+              <span className="text-sm">Documents</span>
+            </Button>
+            
+            <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={() => navigate('/family-governance')}>
+              <Scale className="h-4 w-4 mr-3 text-indigo-600" />
+              <span className="text-sm">Governance</span>
+            </Button>
+            
+            <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={() => setShowMessagesDialog(true)}>
+              <MessageCircle className="h-4 w-4 mr-3 text-purple-600" />
+              <span className="text-sm">Messages</span>
+            </Button>
+          </div>
 
-        <Separator />
+          <Separator />
 
-        <div className="space-y-2">
-          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Settings</h3>
-          
-          <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={resetOnboarding}>
-            <RefreshCw className="h-4 w-4 mr-3 text-orange-600" />
-            <span className="text-sm">Edit Constitution Setup</span>
-          </Button>
-        </div>
+          <div className="space-y-2">
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Settings</h3>
+            
+            <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={resetOnboarding}>
+              <RefreshCw className="h-4 w-4 mr-3 text-orange-600" />
+              <span className="text-sm">Edit Constitution Setup</span>
+            </Button>
+          </div>
 
-        {/* Family Secret Codes - Admin Only */}
-        {isAdmin && (
-          <>
-            <Separator />
-            <div className="space-y-2">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Admin</h3>
-              <div className="text-xs">
-                <FamilySecretCodesAdmin />
+          {/* Family Secret Codes - Admin Only */}
+          {isAdmin && (
+            <>
+              <Separator />
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Admin</h3>
+                <div className="text-xs">
+                  <FamilySecretCodesAdmin />
+                </div>
               </div>
-            </div>
-          </>
-        )}
-      </div>
+            </>
+          )}
+        </div>
 
-      {/* Main Content */}
-      <div className="flex-1 ml-64">
+        {/* Main Content */}
+        <div className="flex-1 min-w-0">
         <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-6 sm:space-y-8">
 
           {/* Family Constitution Header */}
@@ -1027,6 +1029,7 @@ export default function Documents() {
             )}
           </section>
         </div>
+        </div>
       </div>
 
       {/* Business Courses Dialog */}
@@ -1258,5 +1261,6 @@ export default function Documents() {
         onComplete={completeOnboarding}
         userId={user?.id || ''}
       />
-    </div>;
+    </div>
+  );
 }
