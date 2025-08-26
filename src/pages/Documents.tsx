@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { BookOpen, Crown, Users, MessageCircle, Image, TreePine, Lock, Scroll, Building2, Scale, Shield, GraduationCap, ArrowLeft, Heart, FileText, Video, Settings, Eye, EyeOff, CheckCircle, Key, Edit, Trash2, FileCheck, Loader2, UserPlus } from "lucide-react";
+import { BookOpen, Crown, Users, MessageCircle, Image, TreePine, Lock, Scroll, Building2, Scale, Shield, GraduationCap, ArrowLeft, Heart, FileText, Video, Settings, Eye, EyeOff, CheckCircle, Key, Edit, Trash2, FileCheck, Loader2, UserPlus, RefreshCw } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { NavHeader } from "@/components/dashboard/nav-header";
 import { FamilySecretCodesAdmin } from "@/components/dashboard/family-secret-codes-admin";
@@ -21,6 +21,7 @@ import { DynamicFamilyTreeVisualization } from "@/components/family-tree/Dynamic
 import { FamilyDocumentsTab } from "@/components/dashboard/family-documents-tab";
 import { GovernanceOnboardingModal } from "@/components/governance/GovernanceOnboardingModal";
 import { useGovernanceOnboarding } from "@/hooks/useGovernanceOnboarding";
+
 const familyEducationModules = [{
   title: "Family Business Education",
   description: "Learn the fundamentals of running a successful family business",
@@ -54,6 +55,7 @@ const familyEducationModules = [{
   duration: "3 hours",
   color: "text-green-600"
 }];
+
 const heritageResources = [{
   title: "Legal Documents",
   description: "Important family documents and legal papers",
@@ -73,6 +75,7 @@ const heritageResources = [{
   category: "Governance",
   color: "text-indigo-600"
 }];
+
 const businessCourses = [{
   title: "Family Business Fundamentals",
   instructor: "Dr. Sarah Johnson",
@@ -125,6 +128,7 @@ const businessCourses = [{
     duration: "70 minutes"
   }]
 }];
+
 export default function Documents() {
   const navigate = useNavigate();
   const {
@@ -557,678 +561,696 @@ export default function Documents() {
     }
   }, [user?.id]);
 
-  return <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background flex">
       <NavHeader />
       
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-6 sm:space-y-8">
-
-        {/* Family Constitution Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-            {governanceData?.constitutionName || "Family Constitution"}
-          </h1>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
-            {governanceData?.familyConstitution || "Your comprehensive family governance framework and foundational documents"}
-          </p>
-          {governanceData?.constitutionDate && (
-            <p className="text-sm text-muted-foreground">
-              Established: {new Date(governanceData.constitutionDate).toLocaleDateString()}
-            </p>
-          )}
+      {/* Sidebar */}
+      <div className="w-64 bg-card border-r border-border p-4 space-y-4 fixed left-0 top-16 bottom-0 overflow-y-auto z-10">
+        <div className="space-y-2">
+          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Quick Actions</h3>
+          
+          <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={() => setShowFamilyTreeDialog(true)}>
+            <TreePine className="h-4 w-4 mr-3 text-emerald-600" />
+            <span className="text-sm">Family Tree</span>
+          </Button>
+          
+          <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={() => setShowFamilyDocuments(true)}>
+            <FileText className="h-4 w-4 mr-3 text-blue-600" />
+            <span className="text-sm">Documents</span>
+          </Button>
+          
+          <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={() => navigate('/family-governance')}>
+            <Scale className="h-4 w-4 mr-3 text-indigo-600" />
+            <span className="text-sm">Governance</span>
+          </Button>
+          
+          <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={() => setShowMessagesDialog(true)}>
+            <MessageCircle className="h-4 w-4 mr-3 text-purple-600" />
+            <span className="text-sm">Messages</span>
+          </Button>
         </div>
 
-        {/* Identity & Core Documents Section */}
-        <section className="space-y-6">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-              <Crown className="h-6 w-6 text-amber-600" />
-              Identity & Core Documents
-            </h2>
-            <p className="text-muted-foreground">
-              The foundation of your family's values and principles
-            </p>
-          </div>
+        <Separator />
 
-          {/* Mission, Vision, Values Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="border-l-4 border-l-blue-500">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-blue-700">
-                  <Shield className="h-5 w-5" />
-                  Core Values
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {governanceData?.coreValues?.length > 0 ? (
-                  <div className="space-y-2">
-                    {governanceData.coreValues.map((value: string, index: number) => (
-                      <Badge key={index} variant="secondary" className="mr-2 mb-2">
-                        {value}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground italic">No core values defined yet</p>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="border-l-4 border-l-green-500">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-green-700">
-                  <Eye className="h-5 w-5" />
-                  Vision Statement
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm leading-relaxed">
-                  {governanceData?.visionStatement || "No vision statement defined yet"}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-l-4 border-l-purple-500">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-purple-700">
-                  <Users className="h-5 w-5" />
-                  Mission Statement
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm leading-relaxed">
-                  {governanceData?.missionStatement || "No mission statement defined yet"}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Wealth Philosophy & Founding Story */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Crown className="h-5 w-5 text-amber-600" />
-                  Wealth Philosophy
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm leading-relaxed">
-                  {governanceData?.wealthPhilosophy || "No wealth philosophy defined yet"}
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-emerald-600" />
-                  Founding Story
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm leading-relaxed">
-                  {governanceData?.foundingStory || "No founding story documented yet"}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Legacy Milestones */}
-          {governanceData?.legacyMilestones?.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Scroll className="h-5 w-5 text-indigo-600" />
-                  Legacy Milestones
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {governanceData.legacyMilestones.map((milestone: any, index: number) => (
-                    <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                      <Badge variant="outline" className="shrink-0">
-                        {milestone.year}
-                      </Badge>
-                      <p className="text-sm">{milestone.note}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </section>
-
-        {/* Governance & Authority Section */}
-        <section className="space-y-6">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-              <Scale className="h-6 w-6 text-blue-600" />
-              Governance & Authority
-            </h2>
-            <p className="text-muted-foreground">
-              Decision-making processes and organizational structure
-            </p>
-          </div>
-
-          {/* Voting & Decision Making */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-blue-600" />
-                  Voting Structure
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <Label className="text-sm font-medium">Quorum Percentage</Label>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {governanceData?.quorumPercentage || 0}%
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Routine Decisions Threshold</Label>
-                  <p className="text-lg font-semibold">
-                    {governanceData?.routineThreshold || 0}%
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Major Decisions Threshold</Label>
-                  <p className="text-lg font-semibold">
-                    {governanceData?.majorThreshold || 0}%
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-green-600" />
-                  Ownership & Eligibility
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm leading-relaxed">
-                  {governanceData?.ownershipEligibility || "No ownership eligibility criteria defined"}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Family Council & Board of Trustees */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {governanceData?.familyCouncil?.members?.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-purple-600" />
-                    Family Council
-                  </CardTitle>
-                  <CardDescription>
-                    Meets {governanceData.familyCouncil.cadence}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {governanceData.familyCouncil.members.map((member: any, index: number) => (
-                      <div key={index} className="flex justify-between items-center p-2 rounded bg-muted/50">
-                        <div>
-                          <p className="font-medium text-sm">{member.name}</p>
-                          <p className="text-xs text-muted-foreground">{member.role}</p>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {member.termStart} - {member.termEnd}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {governanceData?.boardOfTrustees?.members?.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Building2 className="h-5 w-5 text-amber-600" />
-                    Board of Trustees
-                  </CardTitle>
-                  <CardDescription>
-                    Meets {governanceData.boardOfTrustees.cadence}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {governanceData.boardOfTrustees.members.map((member: any, index: number) => (
-                      <div key={index} className="flex justify-between items-center p-2 rounded bg-muted/50">
-                        <div>
-                          <p className="font-medium text-sm">{member.name}</p>
-                          <p className="text-xs text-muted-foreground">{member.role}</p>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {member.termStart} - {member.termEnd}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Leadership Roles */}
-          {governanceData?.leadershipRoles?.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Crown className="h-5 w-5 text-yellow-600" />
-                  Leadership Roles & Responsibilities
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {governanceData.leadershipRoles.map((role: any, index: number) => (
-                    <div key={index} className="p-4 rounded-lg border">
-                      <h4 className="font-semibold text-sm mb-2">{role.title}</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {role.duties}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </section>
-
-        {/* Legacy & Development Section */}
-        <section className="space-y-6">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-              <GraduationCap className="h-6 w-6 text-emerald-600" />
-              Legacy & Development
-            </h2>
-            <p className="text-muted-foreground">
-              Education, philanthropy, and future planning
-            </p>
-          </div>
-
-          {/* Education & Philanthropy */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5 text-blue-600" />
-                  Education Framework
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <Label className="text-sm font-medium">Overview</Label>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {governanceData?.educationOverview || "No education framework defined"}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Participation Guidelines</Label>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {governanceData?.participationGuidelines || "No participation guidelines defined"}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Heart className="h-5 w-5 text-red-600" />
-                  Philanthropy
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <Label className="text-sm font-medium">Thesis</Label>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {governanceData?.philanthropyThesis || "No philanthropy thesis defined"}
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Grantmaking Policy</Label>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {governanceData?.grantmakingPolicy || "No grantmaking policy defined"}
-                  </p>
-                </div>
-                {governanceData?.focusAreas?.length > 0 && (
-                  <div>
-                    <Label className="text-sm font-medium">Focus Areas</Label>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {governanceData.focusAreas.map((area: string, index: number) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {area}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Curriculum Tracks */}
-          {governanceData?.curriculumTracks?.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-indigo-600" />
-                  Curriculum Tracks
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {governanceData.curriculumTracks.map((track: any, index: number) => (
-                    <div key={index} className="p-4 rounded-lg border">
-                      <h4 className="font-semibold text-sm mb-2">{track.name}</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
-                        {track.objectives}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Awards & Recognition */}
-          {governanceData?.awardTypes?.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Crown className="h-5 w-5 text-yellow-600" />
-                  Awards & Recognition
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {governanceData.awardTypes.map((award: any, index: number) => (
-                    <div key={index} className="p-3 rounded-lg bg-muted/50">
-                      <h4 className="font-semibold text-sm mb-1">{award.name}</h4>
-                      <p className="text-xs text-muted-foreground">{award.criteria}</p>
-                    </div>
-                  ))}
-                </div>
-                {governanceData?.ceremonyNotes && (
-                  <div className="mt-4 p-3 rounded-lg border-l-4 border-l-yellow-500 bg-yellow-50">
-                    <Label className="text-sm font-medium">Ceremony Notes</Label>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {governanceData.ceremonyNotes}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-        </section>
-
-        {/* Quick Actions & Resources */}
-        <section className="space-y-4">
-          <div className="text-center">
-            <h2 className="text-xl font-bold mb-2">Quick Actions</h2>
-          </div>
+        <div className="space-y-2">
+          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Settings</h3>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => setShowFamilyTreeDialog(true)}>
-              <TreePine className="h-6 w-6 text-emerald-600" />
-              <span className="text-sm">Family Tree</span>
-            </Button>
-            
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => setShowFamilyDocuments(true)}>
-              <FileText className="h-6 w-6 text-blue-600" />
-              <span className="text-sm">Documents</span>
-            </Button>
-            
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => navigate('/family-governance')}>
-              <Scale className="h-6 w-6 text-indigo-600" />
-              <span className="text-sm">Governance</span>
-            </Button>
-            
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => setShowMessagesDialog(true)}>
-              <MessageCircle className="h-6 w-6 text-purple-600" />
-              <span className="text-sm">Messages</span>
-            </Button>
-          </div>
-        </section>
+          <Button variant="ghost" className="w-full justify-start h-auto p-3" onClick={resetOnboarding}>
+            <RefreshCw className="h-4 w-4 mr-3 text-orange-600" />
+            <span className="text-sm">Edit Constitution Setup</span>
+          </Button>
+        </div>
 
         {/* Family Secret Codes - Admin Only */}
         {isAdmin && (
-            <section className="space-y-4">
-              <FamilySecretCodesAdmin />
-            </section>
+          <>
+            <Separator />
+            <div className="space-y-2">
+              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Admin</h3>
+              <div className="text-xs">
+                <FamilySecretCodesAdmin />
+              </div>
+            </div>
+          </>
         )}
+      </div>
 
-        {/* Business Courses Dialog */}
-        <Dialog open={showCoursesDialog} onOpenChange={setShowCoursesDialog}>
-          <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                Family Business Education Courses
-              </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm">
-                Comprehensive courses designed for family business success
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="grid gap-3 sm:gap-4 py-3 sm:py-4">
-              {businessCourses.map((course, index) => <Card key={index} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-3 sm:p-4">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0 sm:mb-3">
-                      <div className="flex-1">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-base sm:text-lg">{course.title}</h3>
-                          <Badge variant={course.status === 'published' ? 'default' : 'secondary'} className="w-fit text-xs">
-                            {course.status === 'published' ? <>
-                                <FileCheck className="h-3 w-3 mr-1" />
-                                Published
-                              </> : <>
-                                <Eye className="h-3 w-3 mr-1" />
-                                Draft
-                              </>}
-                          </Badge>
-                        </div>
-                        <p className="text-xs sm:text-sm text-muted-foreground mb-2">{course.description}</p>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm">
-                          <span className="flex items-center gap-1">
-                            <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                            {course.instructor}
-                          </span>
-                          <span className="font-medium">{course.duration}</span>
-                        </div>
+      {/* Main Content */}
+      <div className="flex-1 ml-64">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-6 sm:space-y-8">
+
+          {/* Family Constitution Header */}
+          <div className="text-center space-y-4">
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+              {governanceData?.constitutionName || "Family Constitution"}
+            </h1>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
+              {governanceData?.familyConstitution || "Your comprehensive family governance framework and foundational documents"}
+            </p>
+            {governanceData?.constitutionDate && (
+              <p className="text-sm text-muted-foreground">
+                Established: {new Date(governanceData.constitutionDate).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+
+          {/* Identity & Core Documents Section */}
+          <section className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+                <Crown className="h-6 w-6 text-amber-600" />
+                Identity & Core Documents
+              </h2>
+              <p className="text-muted-foreground">
+                The foundation of your family's values and principles
+              </p>
+            </div>
+
+            {/* Mission, Vision, Values Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card className="border-l-4 border-l-blue-500">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-blue-700">
+                    <Shield className="h-5 w-5" />
+                    Core Values
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {governanceData?.coreValues?.length > 0 ? (
+                    <div className="space-y-2">
+                      {governanceData.coreValues.map((value: string, index: number) => (
+                        <Badge key={index} variant="secondary" className="mr-2 mb-2">
+                          {value}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground italic">No core values defined yet</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-green-500">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-700">
+                    <Eye className="h-5 w-5" />
+                    Vision Statement
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm leading-relaxed">
+                    {governanceData?.visionStatement || "No vision statement defined yet"}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-l-4 border-l-purple-500">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-purple-700">
+                    <Users className="h-5 w-5" />
+                    Mission Statement
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm leading-relaxed">
+                    {governanceData?.missionStatement || "No mission statement defined yet"}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Wealth Philosophy & Founding Story */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Crown className="h-5 w-5 text-amber-600" />
+                    Wealth Philosophy
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm leading-relaxed">
+                    {governanceData?.wealthPhilosophy || "No wealth philosophy defined yet"}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-emerald-600" />
+                    Founding Story
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm leading-relaxed">
+                    {governanceData?.foundingStory || "No founding story documented yet"}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Legacy Milestones */}
+            {governanceData?.legacyMilestones?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Scroll className="h-5 w-5 text-indigo-600" />
+                    Legacy Milestones
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {governanceData.legacyMilestones.map((milestone: any, index: number) => (
+                      <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                        <Badge variant="outline" className="shrink-0">
+                          {milestone.year}
+                        </Badge>
+                        <p className="text-sm">{milestone.note}</p>
                       </div>
-                      <div className="flex items-center gap-2 sm:flex-col sm:gap-1">
-                        <Button size="sm" variant="outline" className="flex-1 sm:flex-none text-xs" onClick={() => setSelectedCourse(course)}>
-                          <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                          View
-                        </Button>
-                        {isAdmin && <>
-                            <Button size="sm" variant="outline" className="flex-1 sm:flex-none text-xs" onClick={() => handleEditCourse(index)}>
-                              <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                              <span className="sm:hidden">Edit</span>
-                              <span className="hidden sm:inline">Edit</span>
-                            </Button>
-                            <Button size="sm" variant="outline" className="flex-1 sm:flex-none text-xs text-destructive hover:text-destructive" onClick={() => handleDeleteCourse(index)}>
-                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                              <span className="sm:hidden">Delete</span>
-                              <span className="hidden sm:inline">Delete</span>
-                            </Button>
-                          </>}
-                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </section>
+
+          {/* Governance & Authority Section */}
+          <section className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+                <Scale className="h-6 w-6 text-blue-600" />
+                Governance & Authority
+              </h2>
+              <p className="text-muted-foreground">
+                Decision-making processes and organizational structure
+              </p>
+            </div>
+
+            {/* Voting & Decision Making */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-blue-600" />
+                    Voting Structure
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <Label className="text-sm font-medium">Quorum Percentage</Label>
+                    <p className="text-2xl font-bold text-blue-600">
+                      {governanceData?.quorumPercentage || 0}%
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Routine Decisions Threshold</Label>
+                    <p className="text-lg font-semibold">
+                      {governanceData?.routineThreshold || 0}%
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Major Decisions Threshold</Label>
+                    <p className="text-lg font-semibold">
+                      {governanceData?.majorThreshold || 0}%
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-green-600" />
+                    Ownership & Eligibility
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm leading-relaxed">
+                    {governanceData?.ownershipEligibility || "No ownership eligibility criteria defined"}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Family Council & Board of Trustees */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {governanceData?.familyCouncil?.members?.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-purple-600" />
+                      Family Council
+                    </CardTitle>
+                    <CardDescription>
+                      Meets {governanceData.familyCouncil.cadence}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {governanceData.familyCouncil.members.map((member: any, index: number) => (
+                        <div key={index} className="flex justify-between items-center p-2 rounded bg-muted/50">
+                          <div>
+                            <p className="font-medium text-sm">{member.name}</p>
+                            <p className="text-xs text-muted-foreground">{member.role}</p>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {member.termStart} - {member.termEnd}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </CardContent>
-                </Card>)}
+                </Card>
+              )}
+
+              {governanceData?.boardOfTrustees?.members?.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Building2 className="h-5 w-5 text-amber-600" />
+                      Board of Trustees
+                    </CardTitle>
+                    <CardDescription>
+                      Meets {governanceData.boardOfTrustees.cadence}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {governanceData.boardOfTrustees.members.map((member: any, index: number) => (
+                        <div key={index} className="flex justify-between items-center p-2 rounded bg-muted/50">
+                          <div>
+                            <p className="font-medium text-sm">{member.name}</p>
+                            <p className="text-xs text-muted-foreground">{member.role}</p>
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {member.termStart} - {member.termEnd}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-0 pt-3 sm:pt-0">
-              {isAdmin && <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => setShowCreateCourseDialog(true)}>
-                  Create New Course
-                </Button>}
-              <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => setShowCoursesDialog(false)}>
-                Close
+            {/* Leadership Roles */}
+            {governanceData?.leadershipRoles?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Crown className="h-5 w-5 text-yellow-600" />
+                    Leadership Roles & Responsibilities
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {governanceData.leadershipRoles.map((role: any, index: number) => (
+                      <div key={index} className="p-4 rounded-lg border">
+                        <h4 className="font-semibold text-sm mb-2">{role.title}</h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {role.duties}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </section>
+
+          {/* Legacy & Development Section */}
+          <section className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+                <GraduationCap className="h-6 w-6 text-emerald-600" />
+                Legacy & Development
+              </h2>
+              <p className="text-muted-foreground">
+                Education, philanthropy, and future planning
+              </p>
+            </div>
+
+            {/* Education & Philanthropy */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <GraduationCap className="h-5 w-5 text-blue-600" />
+                    Education Framework
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <Label className="text-sm font-medium">Overview</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {governanceData?.educationOverview || "No education framework defined"}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Participation Guidelines</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {governanceData?.participationGuidelines || "No participation guidelines defined"}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Heart className="h-5 w-5 text-red-600" />
+                    Philanthropy
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <Label className="text-sm font-medium">Thesis</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {governanceData?.philanthropyThesis || "No philanthropy thesis defined"}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Grantmaking Policy</Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {governanceData?.grantmakingPolicy || "No grantmaking policy defined"}
+                    </p>
+                  </div>
+                  {governanceData?.focusAreas?.length > 0 && (
+                    <div>
+                      <Label className="text-sm font-medium">Focus Areas</Label>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {governanceData.focusAreas.map((area: string, index: number) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {area}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Curriculum Tracks */}
+            {governanceData?.curriculumTracks?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-indigo-600" />
+                    Curriculum Tracks
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {governanceData.curriculumTracks.map((track: any, index: number) => (
+                      <div key={index} className="p-4 rounded-lg border">
+                        <h4 className="font-semibold text-sm mb-2">{track.name}</h4>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {track.objectives}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Awards & Recognition */}
+            {governanceData?.awardTypes?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Crown className="h-5 w-5 text-yellow-600" />
+                    Awards & Recognition
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {governanceData.awardTypes.map((award: any, index: number) => (
+                      <div key={index} className="p-3 rounded-lg bg-muted/50">
+                        <h4 className="font-semibold text-sm mb-1">{award.name}</h4>
+                        <p className="text-xs text-muted-foreground">{award.criteria}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {governanceData?.ceremonyNotes && (
+                    <div className="mt-4 p-3 rounded-lg border-l-4 border-l-yellow-500 bg-yellow-50">
+                      <Label className="text-sm font-medium">Ceremony Notes</Label>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {governanceData.ceremonyNotes}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </section>
+        </div>
+      </div>
+
+      {/* Business Courses Dialog */}
+      <Dialog open={showCoursesDialog} onOpenChange={setShowCoursesDialog}>
+        <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
+              Family Business Education Courses
+            </DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
+              Comprehensive courses designed for family business success
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-3 sm:gap-4 py-3 sm:py-4">
+            {businessCourses.map((course, index) => <Card key={index} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0 sm:mb-3">
+                    <div className="flex-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                        <h3 className="font-semibold text-base sm:text-lg">{course.title}</h3>
+                        <Badge variant={course.status === 'published' ? 'default' : 'secondary'} className="w-fit text-xs">
+                          {course.status === 'published' ? <>
+                              <FileCheck className="h-3 w-3 mr-1" />
+                              Published
+                            </> : <>
+                              <Eye className="h-3 w-3 mr-1" />
+                              Draft
+                            </>}
+                        </Badge>
+                      </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-2">{course.description}</p>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm">
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+                          {course.instructor}
+                        </span>
+                        <span className="font-medium">{course.duration}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 sm:flex-col sm:gap-1">
+                      <Button size="sm" variant="outline" className="flex-1 sm:flex-none text-xs" onClick={() => setSelectedCourse(course)}>
+                        <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                        View
+                      </Button>
+                      {isAdmin && <>
+                          <Button size="sm" variant="outline" className="flex-1 sm:flex-none text-xs" onClick={() => handleEditCourse(index)}>
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                            <span className="sm:hidden">Edit</span>
+                            <span className="hidden sm:inline">Edit</span>
+                          </Button>
+                          <Button size="sm" variant="outline" className="flex-1 sm:flex-none text-xs text-destructive hover:text-destructive" onClick={() => handleDeleteCourse(index)}>
+                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                            <span className="sm:hidden">Delete</span>
+                            <span className="hidden sm:inline">Delete</span>
+                          </Button>
+                        </>}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>)}
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-0 pt-3 sm:pt-0">
+            {isAdmin && <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => setShowCreateCourseDialog(true)}>
+                Create New Course
+              </Button>}
+            <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => setShowCoursesDialog(false)}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Course Detail Dialog */}
+      {selectedCourse && <Dialog open={!!selectedCourse} onOpenChange={() => setSelectedCourse(null)}>
+          <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-base sm:text-lg leading-tight">{selectedCourse.title}</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm">
+                Instructor: {selectedCourse.instructor} | Duration: {selectedCourse.duration}
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 sm:space-y-6">
+              <p className="text-sm sm:text-base">{selectedCourse.description}</p>
+              
+              {selectedCourse.videos && selectedCourse.videos.length > 0 && <div>
+                  <h4 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">Course Videos</h4>
+                  <div className="grid gap-3 sm:gap-4">
+                    {selectedCourse.videos.map((videoUrl: string, index: number) => <div key={index} className="aspect-video bg-muted rounded-lg overflow-hidden">
+                        <iframe src={videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')} title={`${selectedCourse.title} - Video ${index + 1}`} className="w-full h-full" allowFullScreen />
+                      </div>)}
+                  </div>
+                </div>}
+              
+              {selectedCourse.modules && selectedCourse.modules.length > 0 && <div>
+                  <h4 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">Course Modules</h4>
+                  <div className="grid gap-2 sm:gap-4">
+                    {selectedCourse.modules.map((module: any, index: number) => <Card key={index}>
+                        <CardHeader className="pb-2 sm:pb-3">
+                          <CardTitle className="text-sm sm:text-base">Module {index + 1}: {module.name}</CardTitle>
+                          <CardDescription className="text-xs sm:text-sm">Duration: {module.duration}</CardDescription>
+                        </CardHeader>
+                      </Card>)}
+                  </div>
+                </div>}
+            </div>
+          </DialogContent>
+        </Dialog>}
+
+      {/* Family Tree Dialog */}
+      <Dialog open={showFamilyTreeDialog} onOpenChange={setShowFamilyTreeDialog}>
+        <DialogContent className="w-[95vw] max-w-7xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <TreePine className="h-4 w-4 sm:h-5 sm:w-5" />
+              Interactive Family Tree
+            </DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
+              Visualize your family connections and relationships
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 h-[70vh] sm:h-[80vh]">
+            {/* Left Panel - Input */}
+            <div className="space-y-3 sm:space-y-4 overflow-y-auto pr-1 sm:pr-2">
+              <FamilyTreeTextInput onGenerate={members => {
+              setFamilyData(members);
+              toast.success('Family tree generated successfully!');
+            }} />
+            </div>
+            
+            {/* Right Panel - Visual Diagram */}
+            <div className="relative border rounded-lg bg-gradient-to-br from-blue-50 to-purple-50">
+              <div className="p-2 sm:p-3 border-b bg-white/80 backdrop-blur-sm">
+                <h3 className="font-semibold text-xs sm:text-sm flex items-center gap-2">
+                  <TreePine className="h-3 w-3 sm:h-4 sm:w-4" />
+                  Family Tree Visualization
+                </h3>
+              </div>
+              <div className="h-[calc(70vh-2.5rem)] sm:h-[calc(80vh-3rem)]">
+                {familyData.length > 0 ? <DynamicFamilyTreeVisualization familyMembers={familyData} /> : <div className="h-full flex items-center justify-center text-muted-foreground">
+                    <div className="text-center px-4">
+                      <TreePine className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 opacity-30" />
+                      <p className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Interactive Family Tree</p>
+                      <p className="text-xs opacity-75">Enter family information on the left to see your visual family tree</p>
+                    </div>
+                  </div>}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Family Messages Dialog */}
+      <Dialog open={showMessagesDialog} onOpenChange={setShowMessagesDialog}>
+        <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+              Family Messages
+            </DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
+              Communicate securely with family members
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 space-y-3 sm:space-y-4 overflow-hidden">
+            <div className="flex-1 overflow-y-auto max-h-[50vh] sm:max-h-[400px] space-y-2 sm:space-y-3 p-3 sm:p-4 border rounded-lg bg-muted/20">
+              {messages.length === 0 ? <div className="text-center text-muted-foreground py-6 sm:py-8">
+                  <MessageCircle className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-xs sm:text-sm">No messages yet. Start the conversation!</p>
+                </div> : messages.map(message => {
+              const isOwnMessage = message.sender_id === user?.id;
+              return <div key={message.id} className={`flex items-start gap-2 sm:gap-3 ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
+                      <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold text-white ${isOwnMessage ? 'bg-primary' : 'bg-blue-500'}`}>
+                        {message.sender_name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className={`flex-1 max-w-[85%] sm:max-w-[80%] ${isOwnMessage ? 'text-right' : ''}`}>
+                        <div className={`p-2 sm:p-3 rounded-lg ${isOwnMessage ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
+                          <p className="text-xs sm:text-sm">{message.content}</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {message.sender_name} • {new Date(message.created_at).toLocaleTimeString()}
+                        </p>
+                      </div>
+                    </div>;
+            })}
+            </div>
+            
+            <div className="flex gap-2">
+              <Input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+              }
+            }} placeholder="Type your message..." className="flex-1 text-sm" />
+              <Button onClick={sendMessage} disabled={!newMessage.trim()} size="sm" className="px-3 sm:px-4">
+                Send
               </Button>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* Course Detail Dialog */}
-        {selectedCourse && <Dialog open={!!selectedCourse} onOpenChange={() => setSelectedCourse(null)}>
-            <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-base sm:text-lg leading-tight">{selectedCourse.title}</DialogTitle>
-                <DialogDescription className="text-xs sm:text-sm">
-                  Instructor: {selectedCourse.instructor} | Duration: {selectedCourse.duration}
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="space-y-4 sm:space-y-6">
-                <p className="text-sm sm:text-base">{selectedCourse.description}</p>
-                
-                {selectedCourse.videos && selectedCourse.videos.length > 0 && <div>
-                    <h4 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">Course Videos</h4>
-                    <div className="grid gap-3 sm:gap-4">
-                      {selectedCourse.videos.map((videoUrl: string, index: number) => <div key={index} className="aspect-video bg-muted rounded-lg overflow-hidden">
-                          <iframe src={videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')} title={`${selectedCourse.title} - Video ${index + 1}`} className="w-full h-full" allowFullScreen />
-                        </div>)}
-                    </div>
-                  </div>}
-                
-                {selectedCourse.modules && selectedCourse.modules.length > 0 && <div>
-                    <h4 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">Course Modules</h4>
-                    <div className="grid gap-2 sm:gap-4">
-                      {selectedCourse.modules.map((module: any, index: number) => <Card key={index}>
-                          <CardHeader className="pb-2 sm:pb-3">
-                            <CardTitle className="text-sm sm:text-base">Module {index + 1}: {module.name}</CardTitle>
-                            <CardDescription className="text-xs sm:text-sm">Duration: {module.duration}</CardDescription>
-                          </CardHeader>
-                        </Card>)}
-                    </div>
-                  </div>}
-              </div>
-            </DialogContent>
-          </Dialog>}
-
-        {/* Family Tree Dialog */}
-        <Dialog open={showFamilyTreeDialog} onOpenChange={setShowFamilyTreeDialog}>
-          <DialogContent className="w-[95vw] max-w-7xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <TreePine className="h-4 w-4 sm:h-5 sm:w-5" />
-                Interactive Family Tree
-              </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm">
-                Visualize your family connections and relationships
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 h-[70vh] sm:h-[80vh]">
-              {/* Left Panel - Input */}
-              <div className="space-y-3 sm:space-y-4 overflow-y-auto pr-1 sm:pr-2">
-                <FamilyTreeTextInput onGenerate={members => {
-                setFamilyData(members);
-                toast.success('Family tree generated successfully!');
-              }} />
-              </div>
-              
-              {/* Right Panel - Visual Diagram */}
-              <div className="relative border rounded-lg bg-gradient-to-br from-blue-50 to-purple-50">
-                <div className="p-2 sm:p-3 border-b bg-white/80 backdrop-blur-sm">
-                  <h3 className="font-semibold text-xs sm:text-sm flex items-center gap-2">
-                    <TreePine className="h-3 w-3 sm:h-4 sm:w-4" />
-                    Family Tree Visualization
-                  </h3>
-                </div>
-                <div className="h-[calc(70vh-2.5rem)] sm:h-[calc(80vh-3rem)]">
-                  {familyData.length > 0 ? <DynamicFamilyTreeVisualization familyMembers={familyData} /> : <div className="h-full flex items-center justify-center text-muted-foreground">
-                      <div className="text-center px-4">
-                        <TreePine className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 opacity-30" />
-                        <p className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Interactive Family Tree</p>
-                        <p className="text-xs opacity-75">Enter family information on the left to see your visual family tree</p>
-                      </div>
-                    </div>}
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Family Messages Dialog */}
-        <Dialog open={showMessagesDialog} onOpenChange={setShowMessagesDialog}>
-          <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                Family Messages
-              </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm">
-                Communicate securely with family members
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="flex-1 space-y-3 sm:space-y-4 overflow-hidden">
-              <div className="flex-1 overflow-y-auto max-h-[50vh] sm:max-h-[400px] space-y-2 sm:space-y-3 p-3 sm:p-4 border rounded-lg bg-muted/20">
-                {messages.length === 0 ? <div className="text-center text-muted-foreground py-6 sm:py-8">
-                    <MessageCircle className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-xs sm:text-sm">No messages yet. Start the conversation!</p>
-                  </div> : messages.map(message => {
-                const isOwnMessage = message.sender_id === user?.id;
-                return <div key={message.id} className={`flex items-start gap-2 sm:gap-3 ${isOwnMessage ? 'flex-row-reverse' : ''}`}>
-                        <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold text-white ${isOwnMessage ? 'bg-primary' : 'bg-blue-500'}`}>
-                          {message.sender_name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className={`flex-1 max-w-[85%] sm:max-w-[80%] ${isOwnMessage ? 'text-right' : ''}`}>
-                          <div className={`p-2 sm:p-3 rounded-lg ${isOwnMessage ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
-                            <p className="text-xs sm:text-sm">{message.content}</p>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {message.sender_name} • {new Date(message.created_at).toLocaleTimeString()}
-                          </p>
-                        </div>
-                      </div>;
-              })}
-              </div>
-              
-              <div className="flex gap-2">
-                <Input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  sendMessage();
-                }
-              }} placeholder="Type your message..." className="flex-1 text-sm" />
-                <Button onClick={sendMessage} disabled={!newMessage.trim()} size="sm" className="px-3 sm:px-4">
-                  Send
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Family Documents Dialog */}
-        <Dialog open={showFamilyDocuments} onOpenChange={setShowFamilyDocuments}>
-          <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
-                Legal Documents & Family Office Files
-              </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm">
-                Upload, manage, and access your family's important legal documents
-              </DialogDescription>
-            </DialogHeader>
-            <div className="mt-3 sm:mt-4">
-              <FamilyDocumentsTab viewOnly={true} />
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+      {/* Family Documents Dialog */}
+      <Dialog open={showFamilyDocuments} onOpenChange={setShowFamilyDocuments}>
+        <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
+              Legal Documents & Family Office Files
+            </DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
+              Upload, manage, and access your family's important legal documents
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-3 sm:mt-4">
+            <FamilyDocumentsTab viewOnly={true} />
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Governance Onboarding Modal */}
       <GovernanceOnboardingModal
