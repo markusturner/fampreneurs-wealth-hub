@@ -1123,10 +1123,6 @@ export default function Documents() {
               <span className="text-sm">Documents</span>
             </Button>
             
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => navigate('/family-governance')}>
-              <Scale className="h-6 w-6 text-indigo-600" />
-              <span className="text-sm">Governance</span>
-            </Button>
             
             <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => setShowMessagesDialog(true)}>
               <MessageCircle className="h-6 w-6 text-purple-600" />
