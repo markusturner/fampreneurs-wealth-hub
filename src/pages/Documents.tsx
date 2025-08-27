@@ -1112,7 +1112,7 @@ export default function Documents() {
             <h2 className="text-xl font-bold mb-2">Quick Actions</h2>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => setShowFamilyTreeDialog(true)}>
               <TreePine className="h-6 w-6 text-emerald-600" />
               <span className="text-sm">Family Tree</span>
