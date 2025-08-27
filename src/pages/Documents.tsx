@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { BookOpen, Crown, Users, MessageCircle, Image, TreePine, Lock, Scroll, Building2, Scale, Shield, GraduationCap, ArrowLeft, Heart, FileText, Video, Settings, Eye, EyeOff, CheckCircle, Key, Edit, Trash2, FileCheck, Loader2, UserPlus, Gavel, UserCheck } from "lucide-react";
+import { BookOpen, Crown, Users, MessageCircle, Image, TreePine, Lock, Scroll, Building2, Scale, Shield, GraduationCap, ArrowLeft, Heart, FileText, Video, Settings, Eye, EyeOff, CheckCircle, Key, Edit, Trash2, FileCheck, Loader2, UserPlus, Gavel, UserCheck, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { NavHeader } from "@/components/dashboard/nav-header";
 import { FamilySecretCodesAdmin } from "@/components/dashboard/family-secret-codes-admin";
@@ -164,6 +164,18 @@ export default function Documents() {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [showFamilyDocuments, setShowFamilyDocuments] = useState(false);
+  
+  // Voting system states
+  const [showCreateVoteDialog, setShowCreateVoteDialog] = useState(false);
+  const [showActiveVotesDialog, setShowActiveVotesDialog] = useState(false);
+  const [activeVotes, setActiveVotes] = useState<any[]>([]);
+  const [newVote, setNewVote] = useState({
+    title: '',
+    description: '',
+    type: 'routine', // routine or major
+    options: ['Yes', 'No'],
+    expiresIn: 7 // days
+  });
   // Family Secret Code states
   const [familyCodeInput, setFamilyCodeInput] = useState('');
   const [isValidatingCode, setIsValidatingCode] = useState(false);
@@ -737,6 +749,20 @@ export default function Documents() {
                   <p className="text-lg font-semibold">
                     {governanceData?.majorThreshold || 0}%
                   </p>
+                </div>
+                <Separator className="my-4" />
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Execute Voting</Label>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowCreateVoteDialog(true)}>
+                      <Gavel className="h-4 w-4 mr-2" />
+                      Create Vote
+                    </Button>
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => setShowActiveVotesDialog(true)}>
+                      <UserCheck className="h-4 w-4 mr-2" />
+                      Active Votes
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1324,6 +1350,189 @@ export default function Documents() {
             </DialogHeader>
             <div className="mt-3 sm:mt-4">
               <FamilyDocumentsTab viewOnly={true} />
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Create Vote Dialog */}
+        <Dialog open={showCreateVoteDialog} onOpenChange={setShowCreateVoteDialog}>
+          <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Gavel className="h-5 w-5 text-blue-600" />
+                Create New Vote
+              </DialogTitle>
+              <DialogDescription>
+                Create a new vote for family decision-making
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="vote-title">Vote Title</Label>
+                <Input 
+                  id="vote-title"
+                  value={newVote.title}
+                  onChange={(e) => setNewVote({...newVote, title: e.target.value})}
+                  placeholder="Enter vote title..."
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="vote-description">Description</Label>
+                <Textarea 
+                  id="vote-description"
+                  value={newVote.description}
+                  onChange={(e) => setNewVote({...newVote, description: e.target.value})}
+                  placeholder="Describe what this vote is about..."
+                  rows={3}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="vote-type">Vote Type</Label>
+                <Select value={newVote.type} onValueChange={(value) => setNewVote({...newVote, type: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="routine">Routine Decision ({governanceData?.routineThreshold || 50}% threshold)</SelectItem>    
+                    <SelectItem value="major">Major Decision ({governanceData?.majorThreshold || 75}% threshold)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="vote-expires">Voting Period (days)</Label>
+                <Input 
+                  id="vote-expires"
+                  type="number"
+                  value={newVote.expiresIn}
+                  onChange={(e) => setNewVote({...newVote, expiresIn: parseInt(e.target.value)})}
+                  min="1"
+                  max="30"
+                />
+              </div>
+              
+              <div className="flex gap-2 pt-4">
+                <Button onClick={() => {
+                  // Create vote logic here
+                  const vote = {
+                    id: Date.now().toString(),
+                    ...newVote,
+                    createdBy: user?.id,
+                    createdAt: new Date(),
+                    expiresAt: new Date(Date.now() + newVote.expiresIn * 24 * 60 * 60 * 1000),
+                    votes: {},
+                    status: 'active'
+                  };
+                  setActiveVotes([...activeVotes, vote]);
+                  setNewVote({title: '', description: '', type: 'routine', options: ['Yes', 'No'], expiresIn: 7});
+                  setShowCreateVoteDialog(false);
+                  toast.success('Vote created successfully!');
+                }} className="flex-1">
+                  Create Vote
+                </Button>
+                <Button variant="outline" onClick={() => setShowCreateVoteDialog(false)} className="flex-1">
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Active Votes Dialog */}
+        <Dialog open={showActiveVotesDialog} onOpenChange={setShowActiveVotesDialog}>
+          <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <UserCheck className="h-5 w-5 text-green-600" />
+                Active Votes
+              </DialogTitle>
+              <DialogDescription>
+                Participate in family decision-making votes
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {activeVotes.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Gavel className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No active votes at this time</p>
+                  <Button variant="outline" className="mt-4" onClick={() => {
+                    setShowActiveVotesDialog(false);
+                    setShowCreateVoteDialog(true);
+                  }}>
+                    Create First Vote
+                  </Button>
+                </div>
+              ) : (
+                activeVotes.map((vote) => (
+                  <Card key={vote.id}>
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">{vote.title}</CardTitle>
+                          <CardDescription className="mt-1">{vote.description}</CardDescription>
+                        </div>
+                        <Badge variant={vote.type === 'major' ? 'destructive' : 'secondary'}>
+                          {vote.type === 'major' ? 'Major' : 'Routine'} Decision
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="text-sm text-muted-foreground">
+                          Expires: {vote.expiresAt.toLocaleDateString()} at {vote.expiresAt.toLocaleTimeString()}
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => {
+                              // Cast vote logic
+                              const updatedVotes = activeVotes.map(v => 
+                                v.id === vote.id 
+                                  ? {...v, votes: {...v.votes, [user?.id || '']: 'yes'}}
+                                  : v
+                              );
+                              setActiveVotes(updatedVotes);
+                              toast.success('Vote cast: Yes');
+                            }}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                            Vote Yes
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => {
+                              // Cast vote logic
+                              const updatedVotes = activeVotes.map(v => 
+                                v.id === vote.id 
+                                  ? {...v, votes: {...v.votes, [user?.id || '']: 'no'}}
+                                  : v
+                              );
+                              setActiveVotes(updatedVotes);
+                              toast.success('Vote cast: No');
+                            }}
+                          >
+                            <X className="h-4 w-4 mr-2 text-red-600" />
+                            Vote No
+                          </Button>
+                        </div>
+                        
+                        {vote.votes[user?.id || ''] && (
+                          <div className="text-sm text-muted-foreground">
+                            Your vote: <strong>{vote.votes[user?.id || '']}</strong>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </DialogContent>
         </Dialog>
