@@ -599,6 +599,17 @@ export default function Documents() {
             <p className="text-muted-foreground">
               The foundation of your family's values and principles
             </p>
+            {governanceData && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => resetOnboarding()}
+                className="mt-2"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Edit Governance Setup
+              </Button>
+            )}
           </div>
 
           {/* Mission, Vision, Values Grid */}
