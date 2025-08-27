@@ -370,11 +370,11 @@ export default function FamilyGovernance() {
                     Please visit the Documents page to view the complete governance framework.
                   </p>
                   <Button 
-                    variant="outline" 
+                    variant="default" 
                     className="mt-4"
                     onClick={() => navigate('/documents')}
                   >
-                    View in Family Constitution
+                    Go to Family Constitution (Documents Page)
                   </Button>
                 </div>
 
