@@ -572,7 +572,7 @@ export default function Documents() {
   return <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-6 sm:space-y-8">
+      <div className="max-w-7xl mx-auto px-2 xs:px-3 sm:px-4 md:px-5 lg:px-6 py-3 xs:py-4 sm:py-5 md:py-6 space-y-4 xs:space-y-5 sm:space-y-6 md:space-y-7 lg:space-y-8">
 
         {/* Family Constitution Header */}
         <div className="text-center space-y-4">
