@@ -101,7 +101,7 @@ export const Features = () => {
         {/* Value Proposition */}
         <div className="mt-16 md:mt-20 text-center">
           <div className="max-w-4xl mx-auto p-6 md:p-8 rounded-2xl" style={{ backgroundColor: 'rgba(255, 181, 0, 0.1)' }}>
-            <h3 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4" style={{ color: 'white' }}>
+            <h3 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4 text-foreground dark:text-white">
               Why Choose TruHeirs Over Traditional Wealth Management?
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mt-6 md:mt-8">
