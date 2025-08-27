@@ -364,156 +364,18 @@ export default function FamilyGovernance() {
               </TabsList>
 
               <TabsContent value="governance-structure" className="space-y-6 mt-6">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-xl font-semibold">Three Branches of Family Governance</h3>
-                    <p className="text-sm text-muted-foreground">
-                      The foundational structure that ensures balanced decision-making and accountability
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid gap-6 md:grid-cols-3">
-                  {/* Family Council - Executive Branch */}
-                  <Card className="border-l-4 border-l-blue-500">
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <Crown className="h-8 w-8 text-blue-500" />
-                        <div>
-                          <CardTitle className="text-lg">Family Council</CardTitle>
-                          <CardDescription>Executive Branch</CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Responsible for implementing family policies, managing day-to-day operations, and executing strategic decisions.
-                      </p>
-                      <div className="space-y-2">
-                        <div className="text-sm">
-                          <strong>Key Responsibilities:</strong>
-                        </div>
-                        <ul className="text-xs text-muted-foreground space-y-1 ml-4">
-                          <li>• Strategic planning & execution</li>
-                          <li>• Resource allocation</li>
-                          <li>• Policy implementation</li>
-                          <li>• Family office management</li>
-                        </ul>
-                      </div>
-                      
-                      <div className="mt-4 pt-4 border-t">
-                        <div className="text-sm font-medium mb-2">Council Members:</div>
-                        {getFamilyCouncilMembers().length === 0 ? (
-                          <p className="text-xs text-muted-foreground italic">No members assigned yet</p>
-                        ) : (
-                          <div className="space-y-2">
-                            {getFamilyCouncilMembers().map((member) => (
-                              <div key={member.id} className="flex items-center justify-between text-xs">
-                                <span className="font-medium">{member.full_name}</span>
-                                <Badge variant="outline" className="text-xs">
-                                  {member.family_position}
-                                </Badge>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Council of Elders - Judicial Branch */}
-                  <Card className="border-l-4 border-l-purple-500">
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <Gavel className="h-8 w-8 text-purple-500" />
-                        <div>
-                          <CardTitle className="text-lg">Council of Elders</CardTitle>
-                          <CardDescription>Judicial Branch</CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Provides wisdom, oversight, and resolution of disputes. Ensures family values and traditions are preserved.
-                      </p>
-                      <div className="space-y-2">
-                        <div className="text-sm">
-                          <strong>Key Responsibilities:</strong>
-                        </div>
-                        <ul className="text-xs text-muted-foreground space-y-1 ml-4">
-                          <li>• Dispute resolution</li>
-                          <li>• Ethics oversight</li>
-                          <li>• Constitutional interpretation</li>
-                          <li>• Family legacy preservation</li>
-                        </ul>
-                      </div>
-                      
-                      <div className="mt-4 pt-4 border-t">
-                        <div className="text-sm font-medium mb-2">Elder Members:</div>
-                        {getCouncilOfEldersMembers().length === 0 ? (
-                          <p className="text-xs text-muted-foreground italic">No elders assigned yet</p>
-                        ) : (
-                          <div className="space-y-2">
-                            {getCouncilOfEldersMembers().map((member) => (
-                              <div key={member.id} className="flex items-center justify-between text-xs">
-                                <span className="font-medium">{member.full_name}</span>
-                                <Badge variant="outline" className="text-xs">
-                                  {member.family_position}
-                                </Badge>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Family Assembly - Legislative Branch */}
-                  <Card className="border-l-4 border-l-green-500">
-                    <CardHeader>
-                      <div className="flex items-center gap-3">
-                        <UserCheck className="h-8 w-8 text-green-500" />
-                        <div>
-                          <CardTitle className="text-lg">Family Assembly</CardTitle>
-                          <CardDescription>Legislative Branch</CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Democratic voice of all family members. Creates policies, approves budgets, and makes major decisions through voting.
-                      </p>
-                      <div className="space-y-2">
-                        <div className="text-sm">
-                          <strong>Key Responsibilities:</strong>
-                        </div>
-                        <ul className="text-xs text-muted-foreground space-y-1 ml-4">
-                          <li>• Policy creation & amendment</li>
-                          <li>• Budget approval</li>
-                          <li>• Major decision voting</li>
-                          <li>• Family member representation</li>
-                        </ul>
-                      </div>
-                      
-                      <div className="mt-4 pt-4 border-t">
-                        <div className="text-sm font-medium mb-2">Assembly Members:</div>
-                        {getFamilyAssemblyMembers().length === 0 ? (
-                          <p className="text-xs text-muted-foreground italic">No assembly members assigned yet</p>
-                        ) : (
-                          <div className="space-y-2">
-                            {getFamilyAssemblyMembers().map((member) => (
-                              <div key={member.id} className="flex items-center justify-between text-xs">
-                                <span className="font-medium">{member.full_name}</span>
-                                <Badge variant="outline" className="text-xs">
-                                  {member.family_position}
-                                </Badge>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div className="text-center">
+                  <p className="text-muted-foreground">
+                    The three branches governance structure has been moved to the Family Constitution page. 
+                    Please visit the Documents page to view the complete governance framework.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => navigate('/documents')}
+                  >
+                    View in Family Constitution
+                  </Button>
                 </div>
 
                 {/* Governance Framework Overview */}
