@@ -450,68 +450,9 @@ export function AddFamilyOfficeMemberDialog({
                   </SelectTrigger>
                   <SelectContent>
                     {officeRoles.map((role) => (
-                      <div key={role} className="flex items-center justify-between group px-2 py-1">
-                        {editingRole === role ? (
-                          <div className="flex items-center gap-1 w-full">
-                            <Input
-                              value={editRoleValue}
-                              onChange={(e) => setEditRoleValue(e.target.value)}
-                              className="h-6 text-xs"
-                              onKeyPress={(e) => e.key === 'Enter' && saveRoleEdit()}
-                            />
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              onClick={saveRoleEdit}
-                              className="h-6 w-6 p-0"
-                            >
-                              <Check className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              onClick={cancelRoleEdit}
-                              className="h-6 w-6 p-0"
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <>
-                            <SelectItem value={role} className="flex-1">
-                              {role}
-                            </SelectItem>
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  startEditingRole(role)
-                                }}
-                                className="h-6 w-6 p-0"
-                              >
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  deleteRole(role)
-                                }}
-                                className="h-6 w-6 p-0 text-destructive hover:text-destructive"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </>
-                        )}
-                      </div>
+                      <SelectItem key={role} value={role}>
+                        {role}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -523,11 +464,71 @@ export function AddFamilyOfficeMemberDialog({
                     onChange={(e) => setNewRole(e.target.value)}
                     placeholder="Add custom role"
                     className="flex-1"
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomRole())}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomRole())}
                   />
                   <Button type="button" onClick={addCustomRole} variant="outline" size="sm">
                     <Plus className="h-4 w-4" />
                   </Button>
+                </div>
+
+                {/* Manage Roles List */}
+                <div className="mt-3 space-y-1">
+                  {officeRoles.map((role) => (
+                    <div key={role} className="flex items-center justify-between rounded-md border px-2 py-1">
+                      {editingRole === role ? (
+                        <div className="flex items-center gap-2 w-full">
+                          <Input
+                            value={editRoleValue}
+                            onChange={(e) => setEditRoleValue(e.target.value)}
+                            className="h-7 text-sm"
+                            onKeyDown={(e) => e.key === 'Enter' && saveRoleEdit()}
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={saveRoleEdit}
+                            className="h-7 w-7 p-0"
+                          >
+                            <Check className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={cancelRoleEdit}
+                            className="h-7 w-7 p-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="text-sm">{role}</span>
+                          <div className="flex gap-1">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => startEditingRole(role)}
+                              className="h-7 w-7 p-0"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => deleteRole(role)}
+                              className="h-7 w-7 p-0 text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 
