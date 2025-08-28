@@ -80,6 +80,26 @@ export function AddFamilyOfficeMemberDialog({
   const [editingRole, setEditingRole] = useState<string | null>(null)
   const [editRoleValue, setEditRoleValue] = useState('')
   const [showRoleManager, setShowRoleManager] = useState(false)
+  
+  // Services management state
+  const [roleServices, setRoleServices] = useState<Record<string, string[]>>({})
+  const [availableServices] = useState([
+    'Investment Management',
+    'Tax Planning',
+    'Estate Planning',
+    'Legal Advisory',
+    'Family Governance',
+    'Wealth Planning',
+    'Risk Management',
+    'Philanthropy Advisory',
+    'Business Advisory',
+    'Accounting Services',
+    'Trust Administration',
+    'Family Education',
+    'Succession Planning',
+    'Insurance Planning',
+    'Banking Services'
+  ])
 
   const resetForm = () => {
     setFormData({
@@ -91,6 +111,7 @@ export function AddFamilyOfficeMemberDialog({
       department: '',
       notes: ''
     })
+    setRoleServices({})
   }
 
   // Populate form when editing
@@ -127,6 +148,11 @@ export function AddFamilyOfficeMemberDialog({
     if (formData.role === roleToDelete) {
       setFormData(prev => ({ ...prev, role: '' }))
     }
+    // Remove services for this role
+    const newRoleServices = { ...roleServices }
+    delete newRoleServices[roleToDelete]
+    setRoleServices(newRoleServices)
+    
     toast({
       title: "Role Deleted",
       description: `"${roleToDelete}" has been removed from the roles list.`
@@ -149,6 +175,14 @@ export function AddFamilyOfficeMemberDialog({
         setFormData(prev => ({ ...prev, role: editRoleValue.trim() }))
       }
       
+      // Update services mapping
+      const newRoleServices = { ...roleServices }
+      if (newRoleServices[editingRole]) {
+        newRoleServices[editRoleValue.trim()] = newRoleServices[editingRole]
+        delete newRoleServices[editingRole]
+        setRoleServices(newRoleServices)
+      }
+      
       setEditingRole(null)
       setEditRoleValue('')
       toast({
@@ -161,6 +195,18 @@ export function AddFamilyOfficeMemberDialog({
   const cancelRoleEdit = () => {
     setEditingRole(null)
     setEditRoleValue('')
+  }
+
+  const toggleServiceForRole = (role: string, service: string) => {
+    const currentServices = roleServices[role] || []
+    const newServices = currentServices.includes(service)
+      ? currentServices.filter(s => s !== service)
+      : [...currentServices, service]
+    
+    setRoleServices(prev => ({
+      ...prev,
+      [role]: newServices
+    }))
   }
 
   const handleDelete = async () => {
@@ -460,68 +506,90 @@ export function AddFamilyOfficeMemberDialog({
                     </div>
 
                     {/* Manage Roles List */}
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      Default roles are locked and cannot be edited or deleted. Add a custom role if needed.
-                    </p>
-                    <div className="mt-2 space-y-1">
+                    <div className="mt-3 space-y-3">
                       {officeRoles.map((role) => (
-                        <div key={role} className="flex items-center justify-between rounded-md border px-2 py-1">
-                          {editingRole === role ? (
-                            <div className="flex items-center gap-2 w-full">
-                              <Input
-                                value={editRoleValue}
-                                onChange={(e) => setEditRoleValue(e.target.value)}
-                                className="h-7 text-sm"
-                                onKeyDown={(e) => e.key === 'Enter' && saveRoleEdit()}
-                              />
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                onClick={saveRoleEdit}
-                                className="h-7 w-7 p-0"
-                                aria-label="Save role"
-                              >
-                                <Check className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                onClick={cancelRoleEdit}
-                                className="h-7 w-7 p-0"
-                                aria-label="Cancel edit"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <>
-                              <span className="text-sm">{role}</span>
-                              <div className="flex gap-1">
+                        <div key={role} className="rounded-md border p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            {editingRole === role ? (
+                              <div className="flex items-center gap-2 flex-1">
+                                <Input
+                                  value={editRoleValue}
+                                  onChange={(e) => setEditRoleValue(e.target.value)}
+                                  className="h-7 text-sm"
+                                  onKeyDown={(e) => e.key === 'Enter' && saveRoleEdit()}
+                                />
                                 <Button
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => startEditingRole(role)}
+                                  onClick={saveRoleEdit}
                                   className="h-7 w-7 p-0"
-                                  aria-label={`Edit ${role}`}
+                                  aria-label="Save role"
                                 >
-                                  <Edit className="h-4 w-4" />
+                                  <Check className="h-4 w-4" />
                                 </Button>
                                 <Button
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => deleteRole(role)}
-                                  className="h-7 w-7 p-0 text-destructive"
-                                  aria-label={`Delete ${role}`}
+                                  onClick={cancelRoleEdit}
+                                  className="h-7 w-7 p-0"
+                                  aria-label="Cancel edit"
                                 >
-                                  <Trash2 className="h-4 w-4" />
+                                  <X className="h-4 w-4" />
                                 </Button>
                               </div>
-                            </>
-                          )}
+                            ) : (
+                              <>
+                                <span className="text-sm font-medium">{role}</span>
+                                <div className="flex gap-1">
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => startEditingRole(role)}
+                                    className="h-7 w-7 p-0"
+                                    aria-label={`Edit ${role}`}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => deleteRole(role)}
+                                    className="h-7 w-7 p-0 text-destructive"
+                                    aria-label={`Delete ${role}`}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                          
+                          {/* Services for this role */}
+                          <div className="mt-2">
+                            <Label className="text-xs text-muted-foreground">Services:</Label>
+                            <div className="grid grid-cols-2 gap-1 mt-1">
+                              {availableServices.map((service) => (
+                                <label key={service} className="flex items-center space-x-2 text-xs">
+                                  <input
+                                    type="checkbox"
+                                    checked={(roleServices[role] || []).includes(service)}
+                                    onChange={() => toggleServiceForRole(role, service)}
+                                    className="rounded border-gray-300"
+                                  />
+                                  <span className="truncate">{service}</span>
+                                </label>
+                              ))}
+                            </div>
+                            {roleServices[role] && roleServices[role].length > 0 && (
+                              <div className="mt-2 text-xs text-muted-foreground">
+                                Selected: {roleServices[role].join(', ')}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
