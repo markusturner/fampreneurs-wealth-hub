@@ -804,6 +804,25 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
     { id: 'ai-crypto-advisor', name: 'Alex Kumar', role: 'Digital Assets Specialist', avatar: 'AK' }
   ]
 
+  // Mock conversation data - in real app this would come from database
+  const conversations: {[key: string]: Array<{id: string, sender: string, message: string, timestamp: string, isCurrentUser: boolean, isRead?: boolean}> } = {
+    '1': [
+      { id: '1', sender: 'John Smith', message: 'Hi! I wanted to discuss the quarterly trust review meeting.', timestamp: '2:30 PM', isCurrentUser: false, isRead: false },
+      { id: '2', sender: 'You', message: 'Perfect timing. I was just reviewing the documents.', timestamp: '2:32 PM', isCurrentUser: true },
+      { id: '3', sender: 'John Smith', message: 'Great! Should we schedule it for next week?', timestamp: '2:35 PM', isCurrentUser: false, isRead: false }
+    ],
+    '2': [
+      { id: '1', sender: 'Sarah Johnson', message: 'Thanks for updating the investment portfolio.', timestamp: 'Yesterday', isCurrentUser: false, isRead: false },
+      { id: '2', sender: 'You', message: 'You\'re welcome! The new allocations look good.', timestamp: 'Yesterday', isCurrentUser: true }
+    ],
+    '3': [
+      { id: '1', sender: 'Michael Davis', message: 'I need your signature on the trust amendment.', timestamp: '3 hours ago', isCurrentUser: false, isRead: false }
+    ],
+    '4': []
+  }
+
+  const [conversationMessages, setConversationMessages] = useState(conversations)
+
   // Convert family office members to the format expected by the component
   const formattedMembers = familyOfficeMembers.map((member, index) => {
     const memberConversations = conversationMessages[member.id] || []
@@ -824,25 +843,6 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
       hasUnread: unreadCount > 0
     }
   })
-
-  // Mock conversation data - in real app this would come from database
-  const conversations: {[key: string]: Array<{id: string, sender: string, message: string, timestamp: string, isCurrentUser: boolean, isRead?: boolean}> } = {
-    '1': [
-      { id: '1', sender: 'John Smith', message: 'Hi! I wanted to discuss the quarterly trust review meeting.', timestamp: '2:30 PM', isCurrentUser: false, isRead: false },
-      { id: '2', sender: 'You', message: 'Perfect timing. I was just reviewing the documents.', timestamp: '2:32 PM', isCurrentUser: true },
-      { id: '3', sender: 'John Smith', message: 'Great! Should we schedule it for next week?', timestamp: '2:35 PM', isCurrentUser: false, isRead: false }
-    ],
-    '2': [
-      { id: '1', sender: 'Sarah Johnson', message: 'Thanks for updating the investment portfolio.', timestamp: 'Yesterday', isCurrentUser: false, isRead: false },
-      { id: '2', sender: 'You', message: 'You\'re welcome! The new allocations look good.', timestamp: 'Yesterday', isCurrentUser: true }
-    ],
-    '3': [
-      { id: '1', sender: 'Michael Davis', message: 'I need your signature on the trust amendment.', timestamp: '3 hours ago', isCurrentUser: false, isRead: false }
-    ],
-    '4': []
-  }
-
-  const [conversationMessages, setConversationMessages] = useState(conversations)
 
   // Build AI "members" from existing AI conversations
   const aiConversationMembers = aiChatbotExperts
