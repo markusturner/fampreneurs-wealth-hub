@@ -102,17 +102,36 @@ export default function Members() {
 
       if (familyError) throw familyError
 
-      // Fetch family office members (using type casting until types are regenerated)
+      // Fetch family office members from family_members with office_role set
       const { data: officeData, error: officeError } = await supabase
-        .from('family_office_members' as any)
+        .from('family_members')
         .select('*')
         .eq('added_by', user.id)
+        .eq('status', 'active')
+        .not('office_role', 'is', null)
         .order('created_at', { ascending: false })
 
       if (officeError) throw officeError
 
       setFamilyMembers(familyData || [])
-      setOfficeMembers((officeData as unknown as FamilyOfficeMember[]) || [])
+      // Map to UI shape
+      setOfficeMembers(
+        (officeData || []).map((fm: any) => ({
+          id: fm.id,
+          full_name: fm.full_name,
+          email: fm.email,
+          phone: fm.phone || undefined,
+          role: fm.office_role || undefined,
+          specialties: fm.office_services || [],
+          services: fm.office_services || [],
+          status: fm.status || undefined,
+          notes: fm.notes || undefined,
+          added_by: fm.added_by,
+          created_at: fm.created_at,
+          updated_at: fm.updated_at,
+          joined_at: fm.joined_at,
+        }))
+      )
     } catch (error) {
       console.error('Error fetching members:', error)
       toast({
@@ -306,7 +325,7 @@ export default function Members() {
 
       // Update the member status to indicate invitation was sent
       const { error: updateError } = await supabase
-        .from('family_office_members' as any)
+        .from('family_members')
         .update({
           status: 'invited',
           updated_at: new Date().toISOString()
@@ -344,7 +363,7 @@ export default function Members() {
   const handleDeleteOfficeMember = async (memberId: string) => {
     try {
       const { error } = await supabase
-        .from('family_office_members' as any)
+        .from('family_members')
         .delete()
         .eq('id', memberId)
 
@@ -368,16 +387,13 @@ export default function Members() {
   const handleUpdateOfficeMember = async (updatedMember: Partial<FamilyOfficeMember> & { id: string }) => {
     try {
       const { error } = await supabase
-        .from('family_office_members' as any)
+        .from('family_members')
         .update({
           full_name: updatedMember.full_name,
           email: updatedMember.email,
           phone: updatedMember.phone,
-          role: updatedMember.role,
-          company: updatedMember.company,
-          department: updatedMember.department,
-          access_level: updatedMember.access_level,
-          specialties: updatedMember.specialties,
+          office_role: updatedMember.role,
+          office_services: updatedMember.specialties || updatedMember.services,
           notes: updatedMember.notes,
           updated_at: new Date().toISOString()
         })
@@ -741,16 +757,16 @@ export default function Members() {
                         </div>
                       )}
 
-                      {/* Specialties */}
-                      {member.specialties && member.specialties.length > 0 && (
+                      {/* Services */}
+                      {((member.services && member.services.length > 0) || (member.specialties && member.specialties.length > 0)) && (
                         <div className="flex flex-wrap gap-1 mt-3">
-                          {member.specialties.map(specialty => (
+                          {(member.services || member.specialties || []).map((svc) => (
                             <Badge
-                              key={specialty}
+                              key={svc}
                               variant="outline"
                               className="text-xs bg-blue-50 text-blue-700"
                             >
-                              {specialty}
+                              {svc}
                             </Badge>
                           ))}
                         </div>
