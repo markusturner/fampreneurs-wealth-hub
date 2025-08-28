@@ -477,7 +477,10 @@ export function AddFamilyOfficeMemberDialog({
                     </div>
 
                     {/* Manage Roles List */}
-                    <div className="mt-3 space-y-1">
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Default roles are locked and cannot be edited or deleted. Add a custom role if needed.
+                    </p>
+                    <div className="mt-2 space-y-1">
                       {officeRoles.map((role) => (
                         <div key={role} className="flex items-center justify-between rounded-md border px-2 py-1">
                           {editingRole === role ? (
