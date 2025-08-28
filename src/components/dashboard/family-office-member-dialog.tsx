@@ -52,14 +52,6 @@ const defaultOfficeRoles = [
   'Other'
 ]
 
-const accessLevels = [
-  'Full Access',
-  'Financial Reports Only',
-  'Investment Data Only',
-  'Administrative Access',
-  'Limited Access',
-  'View Only'
-]
 
 export function AddFamilyOfficeMemberDialog({ 
   open, 
@@ -79,7 +71,6 @@ export function AddFamilyOfficeMemberDialog({
     role: '',
     company: '',
     department: '',
-    accessLevel: '',
     notes: ''
   })
   
@@ -97,7 +88,6 @@ export function AddFamilyOfficeMemberDialog({
       role: '',
       company: '',
       department: '',
-      accessLevel: '',
       notes: ''
     })
   }
@@ -112,7 +102,6 @@ export function AddFamilyOfficeMemberDialog({
         role: member.role || '',
         company: member.company || '',
         department: member.department || '',
-        accessLevel: member.access_level || '',
         notes: member.notes || ''
       })
     } else {
@@ -248,7 +237,6 @@ export function AddFamilyOfficeMemberDialog({
             role: formData.role || null,
             company: formData.company.trim() || null,
             department: formData.department.trim() || null,
-            access_level: formData.accessLevel || null,
             notes: formData.notes.trim() || null,
             updated_at: new Date().toISOString()
           })
@@ -286,7 +274,7 @@ export function AddFamilyOfficeMemberDialog({
             role: formData.role || null,
             company: formData.company.trim() || null,
             department: formData.department.trim() || null,
-            access_level: formData.accessLevel || null,
+            
             notes: formData.notes.trim() || null,
             status: 'active'
           })
@@ -565,21 +553,6 @@ export function AddFamilyOfficeMemberDialog({
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="accessLevel">Access Level</Label>
-                <Select value={formData.accessLevel} onValueChange={(value) => setFormData(prev => ({ ...prev, accessLevel: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select access level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accessLevels.map((level) => (
-                      <SelectItem key={level} value={level}>
-                        {level}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </div>
 
