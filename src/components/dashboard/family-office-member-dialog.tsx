@@ -7,9 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
-import { UserPlus, X, Plus } from 'lucide-react'
+import { UserPlus, Plus, Trash2, Edit, Check, X } from 'lucide-react'
 
 interface FamilyOfficeMember {
   id?: string
@@ -20,8 +19,6 @@ interface FamilyOfficeMember {
   company?: string
   department?: string
   access_level?: string
-  specialties?: string[]
-  services?: string[]
   notes?: string
   status?: string
 }
@@ -35,7 +32,7 @@ interface AddFamilyOfficeMemberDialogProps {
   mode?: 'add' | 'edit'
 }
 
-const officeRoles = [
+const defaultOfficeRoles = [
   'Chief Investment Officer',
   'Chief Financial Officer',
   'Investment Advisor',
@@ -64,45 +61,6 @@ const accessLevels = [
   'View Only'
 ]
 
-const familyOfficeServices = [
-  'Investment Management',
-  'Tax Planning & Preparation',
-  'Estate Planning',
-  'Trust Administration',
-  'Risk Management',
-  'Insurance Planning',
-  'Philanthropy Advisory',
-  'Family Governance',
-  'Next Generation Planning',
-  'Business Management',
-  'Legal Services',
-  'Accounting & Bookkeeping',
-  'Compliance & Regulatory',
-  'Concierge Services',
-  'Real Estate Management',
-  'Art & Collectibles Management'
-]
-
-// Role to services mapping
-const roleServicesMapping: { [key: string]: string[] } = {
-  'Chief Investment Officer': ['Investment Management', 'Risk Management'],
-  'Chief Financial Officer': ['Accounting & Bookkeeping', 'Tax Planning & Preparation', 'Business Management'],
-  'Investment Advisor': ['Investment Management', 'Risk Management'],
-  'Tax Advisor': ['Tax Planning & Preparation', 'Accounting & Bookkeeping'],
-  'Estate Planning Attorney': ['Estate Planning', 'Trust Administration', 'Legal Services'],
-  'Family Office Manager': ['Family Governance', 'Business Management', 'Concierge Services'],
-  'Wealth Manager': ['Investment Management', 'Estate Planning', 'Insurance Planning'],
-  'Accountant': ['Accounting & Bookkeeping', 'Tax Planning & Preparation'],
-  'Legal Counsel': ['Legal Services', 'Estate Planning', 'Compliance & Regulatory'],
-  'Investment Analyst': ['Investment Management', 'Risk Management'],
-  'Administrative Assistant': ['Concierge Services', 'Business Management'],
-  'Compliance Officer': ['Compliance & Regulatory', 'Risk Management'],
-  'Risk Manager': ['Risk Management', 'Insurance Planning'],
-  'Philanthropy Advisor': ['Philanthropy Advisory', 'Family Governance'],
-  'Family Council Advisor': ['Family Governance', 'Next Generation Planning'],
-  'Business Manager': ['Business Management', 'Accounting & Bookkeeping']
-}
-
 export function AddFamilyOfficeMemberDialog({ 
   open, 
   onOpenChange, 
@@ -124,24 +82,12 @@ export function AddFamilyOfficeMemberDialog({
     accessLevel: '',
     notes: ''
   })
-  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([])
-  const [selectedServices, setSelectedServices] = useState<string[]>([])
-  const [customSpecialty, setCustomSpecialty] = useState('')
-
-  const specialties = [
-    'Investment Management',
-    'Tax Planning',
-    'Estate Planning',
-    'Trust Administration',
-    'Risk Management',
-    'Philanthropy',
-    'Business Management',
-    'Compliance',
-    'Legal Services',
-    'Accounting',
-    'Family Governance',
-    'Next Generation Planning'
-  ]
+  
+  // Role management state
+  const [officeRoles, setOfficeRoles] = useState(defaultOfficeRoles)
+  const [newRole, setNewRole] = useState('')
+  const [editingRole, setEditingRole] = useState<string | null>(null)
+  const [editRoleValue, setEditRoleValue] = useState('')
 
   const resetForm = () => {
     setFormData({
@@ -154,9 +100,6 @@ export function AddFamilyOfficeMemberDialog({
       accessLevel: '',
       notes: ''
     })
-    setSelectedSpecialties([])
-    setSelectedServices([])
-    setCustomSpecialty('')
   }
 
   // Populate form when editing
@@ -172,55 +115,79 @@ export function AddFamilyOfficeMemberDialog({
         accessLevel: member.access_level || '',
         notes: member.notes || ''
       })
-      setSelectedSpecialties(member.specialties || [])
-      setSelectedServices(member.services || [])
     } else {
       resetForm()
     }
   }, [member, mode])
 
-  const addSpecialty = (specialty: string) => {
-    if (specialty && !selectedSpecialties.includes(specialty)) {
-      setSelectedSpecialties([...selectedSpecialties, specialty])
+  // Role management functions
+  const addCustomRole = () => {
+    if (newRole.trim() && !officeRoles.includes(newRole.trim())) {
+      setOfficeRoles([...officeRoles, newRole.trim()])
+      setNewRole('')
+      toast({
+        title: "Role Added",
+        description: `"${newRole.trim()}" has been added to the roles list.`
+      })
     }
   }
 
-  const removeSpecialty = (specialty: string) => {
-    setSelectedSpecialties(selectedSpecialties.filter(s => s !== specialty))
-  }
-
-  const addCustomSpecialty = () => {
-    if (customSpecialty.trim()) {
-      addSpecialty(customSpecialty.trim())
-      setCustomSpecialty('')
+  const deleteRole = (roleToDelete: string) => {
+    if (defaultOfficeRoles.includes(roleToDelete)) {
+      toast({
+        title: "Cannot Delete",
+        description: "Default roles cannot be deleted.",
+        variant: "destructive"
+      })
+      return
     }
-  }
-
-  const addService = (service: string) => {
-    if (service && !selectedServices.includes(service)) {
-      setSelectedServices([...selectedServices, service])
-    }
-  }
-
-  const removeService = (service: string) => {
-    setSelectedServices(selectedServices.filter(s => s !== service))
-  }
-
-  // Auto-suggest services when role changes
-  const handleRoleChange = (value: string) => {
-    setFormData(prev => ({ ...prev, role: value }))
     
-    // Auto-add suggested services for the role
-    const suggestedServices = roleServicesMapping[value] || []
-    const newServices = [...selectedServices]
-    
-    suggestedServices.forEach(service => {
-      if (!newServices.includes(service)) {
-        newServices.push(service)
-      }
+    setOfficeRoles(officeRoles.filter(role => role !== roleToDelete))
+    if (formData.role === roleToDelete) {
+      setFormData(prev => ({ ...prev, role: '' }))
+    }
+    toast({
+      title: "Role Deleted",
+      description: `"${roleToDelete}" has been removed from the roles list.`
     })
-    
-    setSelectedServices(newServices)
+  }
+
+  const startEditingRole = (role: string) => {
+    if (defaultOfficeRoles.includes(role)) {
+      toast({
+        title: "Cannot Edit",
+        description: "Default roles cannot be edited.",
+        variant: "destructive"
+      })
+      return
+    }
+    setEditingRole(role)
+    setEditRoleValue(role)
+  }
+
+  const saveRoleEdit = () => {
+    if (editRoleValue.trim() && editingRole) {
+      const updatedRoles = officeRoles.map(role => 
+        role === editingRole ? editRoleValue.trim() : role
+      )
+      setOfficeRoles(updatedRoles)
+      
+      if (formData.role === editingRole) {
+        setFormData(prev => ({ ...prev, role: editRoleValue.trim() }))
+      }
+      
+      setEditingRole(null)
+      setEditRoleValue('')
+      toast({
+        title: "Role Updated",
+        description: `Role has been updated to "${editRoleValue.trim()}".`
+      })
+    }
+  }
+
+  const cancelRoleEdit = () => {
+    setEditingRole(null)
+    setEditRoleValue('')
   }
 
   const handleDelete = async () => {
@@ -282,8 +249,6 @@ export function AddFamilyOfficeMemberDialog({
             company: formData.company.trim() || null,
             department: formData.department.trim() || null,
             access_level: formData.accessLevel || null,
-            specialties: selectedSpecialties.length > 0 ? selectedSpecialties : null,
-            services: selectedServices.length > 0 ? selectedServices : null,
             notes: formData.notes.trim() || null,
             updated_at: new Date().toISOString()
           })
@@ -303,7 +268,8 @@ export function AddFamilyOfficeMemberDialog({
         onMemberAdded?.()
         return
       }
-      // Generate temporary password and ID first
+      
+      // Add new member logic
       const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
       const memberId = crypto.randomUUID();
 
@@ -321,8 +287,6 @@ export function AddFamilyOfficeMemberDialog({
             company: formData.company.trim() || null,
             department: formData.department.trim() || null,
             access_level: formData.accessLevel || null,
-            specialties: selectedSpecialties.length > 0 ? selectedSpecialties : null,
-            services: selectedServices.length > 0 ? selectedServices : null,
             notes: formData.notes.trim() || null,
             status: 'active'
           })
@@ -477,20 +441,106 @@ export function AddFamilyOfficeMemberDialog({
             <h3 className="font-medium text-sm">Professional Information</h3>
             
             <div className="grid grid-cols-1 gap-4">
+              {/* Role Selection with Management */}
               <div>
-                <Label htmlFor="role">Role</Label>
-                <Select value={formData.role} onValueChange={handleRoleChange}>
+                <div className="flex items-center justify-between mb-2">
+                  <Label htmlFor="role">Role</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setNewRole('')}
+                    className="text-xs"
+                  >
+                    Manage Roles
+                  </Button>
+                </div>
+                
+                <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
                   <SelectContent>
                     {officeRoles.map((role) => (
-                      <SelectItem key={role} value={role}>
-                        {role}
-                      </SelectItem>
+                      <div key={role} className="flex items-center justify-between group px-2 py-1">
+                        {editingRole === role ? (
+                          <div className="flex items-center gap-1 w-full">
+                            <Input
+                              value={editRoleValue}
+                              onChange={(e) => setEditRoleValue(e.target.value)}
+                              className="h-6 text-xs"
+                              onKeyPress={(e) => e.key === 'Enter' && saveRoleEdit()}
+                            />
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={saveRoleEdit}
+                              className="h-6 w-6 p-0"
+                            >
+                              <Check className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={cancelRoleEdit}
+                              className="h-6 w-6 p-0"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <SelectItem value={role} className="flex-1">
+                              {role}
+                            </SelectItem>
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  startEditingRole(role)
+                                }}
+                                className="h-6 w-6 p-0"
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  deleteRole(role)
+                                }}
+                                className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     ))}
                   </SelectContent>
                 </Select>
+
+                {/* Add Custom Role */}
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    value={newRole}
+                    onChange={(e) => setNewRole(e.target.value)}
+                    placeholder="Add custom role"
+                    className="flex-1"
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomRole())}
+                  />
+                  <Button type="button" onClick={addCustomRole} variant="outline" size="sm">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -531,88 +581,6 @@ export function AddFamilyOfficeMemberDialog({
                 </Select>
               </div>
             </div>
-          </div>
-
-          {/* Specialties */}
-          <div className="space-y-4">
-            <h3 className="font-medium text-sm">Specialties</h3>
-            
-            <div>
-              <Label>Select Specialties</Label>
-              <Select onValueChange={addSpecialty}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Add specialty" />
-                </SelectTrigger>
-                <SelectContent>
-                  {specialties.map((specialty) => (
-                    <SelectItem key={specialty} value={specialty}>
-                      {specialty}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex gap-2">
-              <Input
-                value={customSpecialty}
-                onChange={(e) => setCustomSpecialty(e.target.value)}
-                placeholder="Add custom specialty"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomSpecialty())}
-              />
-              <Button type="button" onClick={addCustomSpecialty} variant="outline" size="sm">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {selectedSpecialties.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {selectedSpecialties.map((specialty) => (
-                  <Badge key={specialty} variant="secondary" className="cursor-pointer">
-                    {specialty}
-                    <X 
-                      className="h-3 w-3 ml-1" 
-                      onClick={() => removeSpecialty(specialty)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Services */}
-          <div className="space-y-4">
-            <h3 className="font-medium text-sm">Family Office Services</h3>
-            
-            <div>
-              <Label>Select Services</Label>
-              <Select onValueChange={addService}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Add service" />
-                </SelectTrigger>
-                <SelectContent>
-                  {familyOfficeServices.map((service) => (
-                    <SelectItem key={service} value={service}>
-                      {service}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {selectedServices.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {selectedServices.map((service) => (
-                  <Badge key={service} variant="outline" className="cursor-pointer">
-                    {service}
-                    <X 
-                      className="h-3 w-3 ml-1" 
-                      onClick={() => removeService(service)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Notes */}
