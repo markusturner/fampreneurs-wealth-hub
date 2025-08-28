@@ -112,9 +112,11 @@ export default function Members() {
         .from('family_members')
         .select('*')
         .eq('added_by', user.id)
-        .eq('status', 'active')
         .not('office_role', 'is', null)
         .order('created_at', { ascending: false })
+
+      console.log('Office members data:', officeData)
+      console.log('Office members error:', officeError)
 
       if (officeError) throw officeError
 
