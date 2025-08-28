@@ -93,12 +93,17 @@ export default function Members() {
     }
 
     try {
+      console.log('Fetching family members for user:', user.id)
+      
       // Fetch family members
       const { data: familyData, error: familyError } = await supabase
         .from('family_members')
         .select('*')
         .eq('added_by', user.id)
         .order('created_at', { ascending: false })
+
+      console.log('Family members data:', familyData)
+      console.log('Family members error:', familyError)
 
       if (familyError) throw familyError
 
