@@ -79,6 +79,7 @@ export function AddFamilyOfficeMemberDialog({
   const [newRole, setNewRole] = useState('')
   const [editingRole, setEditingRole] = useState<string | null>(null)
   const [editRoleValue, setEditRoleValue] = useState('')
+  const [showRoleManager, setShowRoleManager] = useState(false)
 
   const resetForm = () => {
     setFormData({
@@ -437,10 +438,12 @@ export function AddFamilyOfficeMemberDialog({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => setNewRole('')}
+                    onClick={() => setShowRoleManager((v) => !v)}
                     className="text-xs"
+                    aria-expanded={showRoleManager}
+                    aria-controls="role-manager"
                   >
-                    Manage Roles
+                    {showRoleManager ? 'Hide Role Manager' : 'Manage Roles'}
                   </Button>
                 </div>
                 
@@ -457,79 +460,87 @@ export function AddFamilyOfficeMemberDialog({
                   </SelectContent>
                 </Select>
 
-                {/* Add Custom Role */}
-                <div className="flex gap-2 mt-2">
-                  <Input
-                    value={newRole}
-                    onChange={(e) => setNewRole(e.target.value)}
-                    placeholder="Add custom role"
-                    className="flex-1"
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomRole())}
-                  />
-                  <Button type="button" onClick={addCustomRole} variant="outline" size="sm">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Manage Roles List */}
-                <div className="mt-3 space-y-1">
-                  {officeRoles.map((role) => (
-                    <div key={role} className="flex items-center justify-between rounded-md border px-2 py-1">
-                      {editingRole === role ? (
-                        <div className="flex items-center gap-2 w-full">
-                          <Input
-                            value={editRoleValue}
-                            onChange={(e) => setEditRoleValue(e.target.value)}
-                            className="h-7 text-sm"
-                            onKeyDown={(e) => e.key === 'Enter' && saveRoleEdit()}
-                          />
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            onClick={saveRoleEdit}
-                            className="h-7 w-7 p-0"
-                          >
-                            <Check className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            onClick={cancelRoleEdit}
-                            className="h-7 w-7 p-0"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <>
-                          <span className="text-sm">{role}</span>
-                          <div className="flex gap-1">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => startEditingRole(role)}
-                              className="h-7 w-7 p-0"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => deleteRole(role)}
-                              className="h-7 w-7 p-0 text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </>
-                      )}
+                {showRoleManager && (
+                  <div id="role-manager" className="mt-2">
+                    {/* Add Custom Role */}
+                    <div className="flex gap-2">
+                      <Input
+                        value={newRole}
+                        onChange={(e) => setNewRole(e.target.value)}
+                        placeholder="Add custom role"
+                        className="flex-1"
+                        onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomRole())}
+                      />
+                      <Button type="button" onClick={addCustomRole} variant="outline" size="sm">
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     </div>
-                  ))}
-                </div>
+
+                    {/* Manage Roles List */}
+                    <div className="mt-3 space-y-1">
+                      {officeRoles.map((role) => (
+                        <div key={role} className="flex items-center justify-between rounded-md border px-2 py-1">
+                          {editingRole === role ? (
+                            <div className="flex items-center gap-2 w-full">
+                              <Input
+                                value={editRoleValue}
+                                onChange={(e) => setEditRoleValue(e.target.value)}
+                                className="h-7 text-sm"
+                                onKeyDown={(e) => e.key === 'Enter' && saveRoleEdit()}
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={saveRoleEdit}
+                                className="h-7 w-7 p-0"
+                                aria-label="Save role"
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={cancelRoleEdit}
+                                className="h-7 w-7 p-0"
+                                aria-label="Cancel edit"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <>
+                              <span className="text-sm">{role}</span>
+                              <div className="flex gap-1">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => startEditingRole(role)}
+                                  className="h-7 w-7 p-0"
+                                  aria-label={`Edit ${role}`}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => deleteRole(role)}
+                                  className="h-7 w-7 p-0 text-destructive"
+                                  aria-label={`Delete ${role}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
