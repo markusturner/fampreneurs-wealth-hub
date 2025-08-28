@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -11,10 +11,27 @@ import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
 import { UserPlus, X, Plus } from 'lucide-react'
 
+interface FamilyOfficeMember {
+  id?: string
+  full_name: string
+  email: string
+  phone?: string
+  role?: string
+  company?: string
+  department?: string
+  access_level?: string
+  specialties?: string[]
+  services?: string[]
+  notes?: string
+  status?: string
+}
+
 interface AddFamilyOfficeMemberDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onMemberAdded?: () => void
+  member?: FamilyOfficeMember | null
+  mode?: 'add' | 'edit'
 }
 
 const officeRoles = [
@@ -46,10 +63,31 @@ const accessLevels = [
   'View Only'
 ]
 
+const familyOfficeServices = [
+  'Investment Management',
+  'Tax Planning & Preparation',
+  'Estate Planning',
+  'Trust Administration',
+  'Risk Management',
+  'Insurance Planning',
+  'Philanthropy Advisory',
+  'Family Governance',
+  'Next Generation Planning',
+  'Business Management',
+  'Legal Services',
+  'Accounting & Bookkeeping',
+  'Compliance & Regulatory',
+  'Concierge Services',
+  'Real Estate Management',
+  'Art & Collectibles Management'
+]
+
 export function AddFamilyOfficeMemberDialog({ 
   open, 
   onOpenChange, 
-  onMemberAdded 
+  onMemberAdded,
+  member = null,
+  mode = 'add'
 }: AddFamilyOfficeMemberDialogProps) {
   const { user } = useAuth()
   const { toast } = useToast()
@@ -65,6 +103,7 @@ export function AddFamilyOfficeMemberDialog({
     notes: ''
   })
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([])
+  const [selectedServices, setSelectedServices] = useState<string[]>([])
   const [customSpecialty, setCustomSpecialty] = useState('')
 
   const specialties = [
@@ -94,8 +133,29 @@ export function AddFamilyOfficeMemberDialog({
       notes: ''
     })
     setSelectedSpecialties([])
+    setSelectedServices([])
     setCustomSpecialty('')
   }
+
+  // Populate form when editing
+  useEffect(() => {
+    if (member && mode === 'edit') {
+      setFormData({
+        fullName: member.full_name || '',
+        email: member.email || '',
+        phone: member.phone || '',
+        role: member.role || '',
+        company: member.company || '',
+        department: member.department || '',
+        accessLevel: member.access_level || '',
+        notes: member.notes || ''
+      })
+      setSelectedSpecialties(member.specialties || [])
+      setSelectedServices(member.services || [])
+    } else {
+      resetForm()
+    }
+  }, [member, mode])
 
   const addSpecialty = (specialty: string) => {
     if (specialty && !selectedSpecialties.includes(specialty)) {
@@ -114,6 +174,16 @@ export function AddFamilyOfficeMemberDialog({
     }
   }
 
+  const addService = (service: string) => {
+    if (service && !selectedServices.includes(service)) {
+      setSelectedServices([...selectedServices, service])
+    }
+  }
+
+  const removeService = (service: string) => {
+    setSelectedServices(selectedServices.filter(s => s !== service))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -128,6 +198,39 @@ export function AddFamilyOfficeMemberDialog({
 
     setLoading(true)
     try {
+      if (mode === 'edit' && member?.id) {
+        // Update existing member
+        const { error: updateError } = await supabase
+          .from('family_office_members' as any)
+          .update({
+            full_name: formData.fullName.trim(),
+            email: formData.email.trim(),
+            phone: formData.phone.trim() || null,
+            role: formData.role || null,
+            company: formData.company.trim() || null,
+            department: formData.department.trim() || null,
+            access_level: formData.accessLevel || null,
+            specialties: selectedSpecialties.length > 0 ? selectedSpecialties : null,
+            services: selectedServices.length > 0 ? selectedServices : null,
+            notes: formData.notes.trim() || null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', member.id)
+
+        if (updateError) {
+          throw updateError
+        }
+
+        toast({
+          title: "Member Updated Successfully",
+          description: `${formData.fullName} has been updated.`
+        })
+
+        resetForm()
+        onOpenChange(false)
+        onMemberAdded?.()
+        return
+      }
       // Generate temporary password and ID first
       const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
       const memberId = crypto.randomUUID();
@@ -147,6 +250,7 @@ export function AddFamilyOfficeMemberDialog({
             department: formData.department.trim() || null,
             access_level: formData.accessLevel || null,
             specialties: selectedSpecialties.length > 0 ? selectedSpecialties : null,
+            services: selectedServices.length > 0 ? selectedServices : null,
             notes: formData.notes.trim() || null,
             status: 'active'
           })
@@ -242,10 +346,13 @@ export function AddFamilyOfficeMemberDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
-            Add Family Office Member
+            {mode === 'edit' ? 'Edit Family Office Member' : 'Add Family Office Member'}
           </DialogTitle>
           <DialogDescription>
-            Add a professional team member to your family office.
+            {mode === 'edit' 
+              ? 'Update the information for this family office team member.'
+              : 'Add a professional team member to your family office.'
+            }
           </DialogDescription>
         </DialogHeader>
 
@@ -401,6 +508,41 @@ export function AddFamilyOfficeMemberDialog({
             )}
           </div>
 
+          {/* Services */}
+          <div className="space-y-4">
+            <h3 className="font-medium text-sm">Family Office Services</h3>
+            
+            <div>
+              <Label>Select Services</Label>
+              <Select onValueChange={addService}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Add service" />
+                </SelectTrigger>
+                <SelectContent>
+                  {familyOfficeServices.map((service) => (
+                    <SelectItem key={service} value={service}>
+                      {service}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedServices.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedServices.map((service) => (
+                  <Badge key={service} variant="outline" className="cursor-pointer">
+                    {service}
+                    <X 
+                      className="h-3 w-3 ml-1" 
+                      onClick={() => removeService(service)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Notes */}
           <div>
             <Label htmlFor="notes">Additional Notes</Label>
@@ -428,7 +570,10 @@ export function AddFamilyOfficeMemberDialog({
               disabled={loading}
               className="flex-1"
             >
-              {loading ? "Adding..." : "Add Team Member"}
+              {loading 
+                ? (mode === 'edit' ? "Updating..." : "Adding...") 
+                : (mode === 'edit' ? "Update Member" : "Add Team Member")
+              }
             </Button>
           </div>
         </form>

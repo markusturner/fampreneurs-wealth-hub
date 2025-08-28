@@ -9,9 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { NavHeader } from '@/components/dashboard/nav-header'
 import { AddFamilyMemberDialog } from '@/components/dashboard/add-family-member-dialog'
-import { AddFamilyOfficeMemberDialog } from '@/components/dashboard/add-family-office-member-dialog'
+import { AddFamilyOfficeMemberDialog } from '@/components/dashboard/family-office-member-dialog'
 import { EditFamilyMemberDialog } from '@/components/dashboard/edit-family-member-dialog'
-import { EditFamilyOfficeMemberDialog } from '@/components/dashboard/edit-family-office-member-dialog'
 import { 
   UserPlus, 
   Mail, 
@@ -43,23 +42,24 @@ interface FamilyMember {
   invitation_sent_at: string | null
 }
 
-interface FamilyOfficeMember {
-  id: string
-  added_by: string
-  full_name: string
-  email: string
-  phone: string | null
-  role: string | null
-  company: string | null
-  department: string | null
-  access_level: string | null
-  specialties: string[] | null
-  status: string
-  notes: string | null
-  created_at: string
-  updated_at: string | null
-  joined_at: string | null
-}
+  interface FamilyOfficeMember {
+    id: string
+    full_name: string
+    email: string
+    phone?: string
+    role?: string
+    company?: string
+    department?: string
+    access_level?: string
+    specialties?: string[]
+    services?: string[]
+    status?: string
+    notes?: string
+    added_by?: string
+    created_at?: string
+    updated_at?: string
+    joined_at?: string
+  }
 
 export default function Members() {
   const { user } = useAuth()
@@ -787,6 +787,7 @@ export default function Members() {
           open={showAddOfficeDialog} 
           onOpenChange={setShowAddOfficeDialog}
           onMemberAdded={fetchMembers}
+          mode="add"
         />
 
         <EditFamilyMemberDialog
@@ -795,10 +796,12 @@ export default function Members() {
           onUpdate={handleUpdateFamilyMember}
         />
 
-        <EditFamilyOfficeMemberDialog
+        <AddFamilyOfficeMemberDialog 
+          open={!!editingOfficeMember}
+          onOpenChange={(open) => !open && setEditingOfficeMember(null)}
+          onMemberAdded={fetchMembers}
           member={editingOfficeMember}
-          onClose={() => setEditingOfficeMember(null)}
-          onUpdate={handleUpdateOfficeMember}
+          mode="edit"
         />
       </div>
     </div>
