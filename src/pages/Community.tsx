@@ -1380,6 +1380,7 @@ function ServicesContent() {
   const navigate = useNavigate()
   const [familyOfficeMembers, setFamilyOfficeMembers] = useState<any[]>([])
   const [loadingMembers, setLoadingMembers] = useState(true)
+  const [roleServicesMap, setRoleServicesMap] = useState<Record<string, string[]>>({})
 
   useEffect(() => {
     fetchFamilyOfficeMembers()
@@ -1402,6 +1403,20 @@ function ServicesContent() {
 
       if (error) throw error
       setFamilyOfficeMembers(data || [])
+
+      // Load role services mapping for fallback when member has role but no explicit services
+      const { data: roles, error: rolesError } = await supabase
+        .from('office_roles_catalog')
+        .select('name, services')
+        .eq('created_by', user.id)
+
+      if (!rolesError && roles) {
+        const map: Record<string, string[]> = {}
+        roles.forEach((r: any) => {
+          map[r.name] = Array.isArray(r.services) ? r.services : []
+        })
+        setRoleServicesMap(map)
+      }
     } catch (error) {
       console.error('Error fetching family office members:', error)
     } finally {
@@ -1415,6 +1430,10 @@ function ServicesContent() {
       // Check office_services first (new field)
       if (member.office_services && Array.isArray(member.office_services)) {
         return member.office_services.includes(serviceName)
+      }
+      // Fallback: use role's defined services if member has a role
+      if (member.office_role && roleServicesMap[member.office_role]) {
+        if (roleServicesMap[member.office_role].includes(serviceName)) return true
       }
       // Fall back to specialties for backward compatibility
       if (member.specialties && Array.isArray(member.specialties)) {
@@ -1464,8 +1483,11 @@ function ServicesContent() {
     
     // Collect all unique services from family office members
     familyOfficeMembers.forEach(member => {
-      if (member.office_services && Array.isArray(member.office_services)) {
-        member.office_services.forEach(service => allServices.add(service))
+      const explicit = Array.isArray(member.office_services) ? member.office_services : []
+      if (explicit.length > 0) {
+        explicit.forEach(service => allServices.add(service))
+      } else if (member.office_role && roleServicesMap[member.office_role]) {
+        roleServicesMap[member.office_role].forEach(service => allServices.add(service))
       }
       // Also check legacy specialties field for backward compatibility
       if (member.specialties && Array.isArray(member.specialties)) {
