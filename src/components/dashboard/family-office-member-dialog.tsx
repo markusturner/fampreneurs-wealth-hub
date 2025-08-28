@@ -19,6 +19,7 @@ interface FamilyOfficeMember {
   company?: string
   department?: string
   access_level?: string
+  specialties?: string[]
   notes?: string
   status?: string
 }
@@ -126,6 +127,14 @@ export function AddFamilyOfficeMemberDialog({
         department: member.department || '',
         notes: member.notes || ''
       })
+      
+      // Load existing services for the member's role
+      if (member.role && member.specialties && member.specialties.length > 0) {
+        setRoleServices(prev => ({
+          ...prev,
+          [member.role]: member.specialties
+        }))
+      }
     } else {
       resetForm()
     }
@@ -256,6 +265,9 @@ export function AddFamilyOfficeMemberDialog({
 
     setLoading(true)
     try {
+      // Get selected services for the chosen role
+      const selectedServices = formData.role ? (roleServices[formData.role] || []) : []
+
       if (mode === 'edit' && member?.id) {
         // Update existing member
         const { error: updateError } = await supabase
@@ -265,6 +277,7 @@ export function AddFamilyOfficeMemberDialog({
             email: formData.email.trim(),
             phone: formData.phone.trim() || null,
             role: formData.role || null,
+            specialties: selectedServices.length > 0 ? selectedServices : null,
             company: formData.company.trim() || null,
             department: formData.department.trim() || null,
             notes: formData.notes.trim() || null,
@@ -278,7 +291,7 @@ export function AddFamilyOfficeMemberDialog({
 
         toast({
           title: "Member Updated Successfully",
-          description: `${formData.fullName} has been updated.`
+          description: `${formData.fullName} has been updated with their role and services.`
         })
 
         resetForm()
@@ -302,9 +315,9 @@ export function AddFamilyOfficeMemberDialog({
             email: formData.email.trim(),
             phone: formData.phone.trim() || null,
             role: formData.role || null,
+            specialties: selectedServices.length > 0 ? selectedServices : null,
             company: formData.company.trim() || null,
             department: formData.department.trim() || null,
-            
             notes: formData.notes.trim() || null,
             status: 'active'
           })
