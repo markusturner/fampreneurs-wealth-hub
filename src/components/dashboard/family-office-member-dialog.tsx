@@ -454,7 +454,6 @@ export function AddFamilyOfficeMemberDialog({
             phone: formData.phone.trim() || null,
             office_role: formData.role || null,
             office_services: selectedServices.length > 0 ? selectedServices : null,
-            specialties: selectedServices.length > 0 ? selectedServices : null, // Keep for backward compatibility
             notes: formData.notes.trim() || null,
             updated_at: new Date().toISOString()
           })
@@ -486,7 +485,6 @@ export function AddFamilyOfficeMemberDialog({
           family_position: 'Family Office Team',
           office_role: formData.role || null,
           office_services: selectedServices.length > 0 ? selectedServices : null,
-          specialties: selectedServices.length > 0 ? selectedServices : null, // Keep for backward compatibility
           notes: formData.notes.trim() || null,
           status: 'active'
         })
