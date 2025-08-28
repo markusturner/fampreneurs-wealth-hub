@@ -108,10 +108,11 @@ export default function Community() {
     
     try {
       const { data, error } = await supabase
-        .from('family_office_members')
+        .from('family_members')
         .select('*')
         .eq('added_by', user.id)
         .eq('status', 'active')
+        .not('office_role', 'is', null)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -1392,10 +1393,11 @@ function ServicesContent() {
     
     try {
       const { data, error } = await supabase
-        .from('family_office_members')
+        .from('family_members')
         .select('*')
         .eq('added_by', user.id)
         .eq('status', 'active')
+        .not('office_role', 'is', null)
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -1410,10 +1412,15 @@ function ServicesContent() {
   // Function to check if a family office member exists for a specific service
   const findMemberForService = (serviceName: string) => {
     return familyOfficeMembers.find(member => {
-      if (!member.specialties || !Array.isArray(member.specialties)) {
-        return false
+      // Check office_services first (new field)
+      if (member.office_services && Array.isArray(member.office_services)) {
+        return member.office_services.includes(serviceName)
       }
-      return member.specialties.includes(serviceName)
+      // Fall back to specialties for backward compatibility
+      if (member.specialties && Array.isArray(member.specialties)) {
+        return member.specialties.includes(serviceName)
+      }
+      return false
     })
   }
 
@@ -1457,6 +1464,10 @@ function ServicesContent() {
     
     // Collect all unique services from family office members
     familyOfficeMembers.forEach(member => {
+      if (member.office_services && Array.isArray(member.office_services)) {
+        member.office_services.forEach(service => allServices.add(service))
+      }
+      // Also check legacy specialties field for backward compatibility
       if (member.specialties && Array.isArray(member.specialties)) {
         member.specialties.forEach(service => allServices.add(service))
       }
