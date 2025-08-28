@@ -123,15 +123,6 @@ export function AddFamilyOfficeMemberDialog({
   }
 
   const deleteRole = (roleToDelete: string) => {
-    if (defaultOfficeRoles.includes(roleToDelete)) {
-      toast({
-        title: "Cannot Delete",
-        description: "Default roles cannot be deleted.",
-        variant: "destructive"
-      })
-      return
-    }
-    
     setOfficeRoles(officeRoles.filter(role => role !== roleToDelete))
     if (formData.role === roleToDelete) {
       setFormData(prev => ({ ...prev, role: '' }))
@@ -143,14 +134,6 @@ export function AddFamilyOfficeMemberDialog({
   }
 
   const startEditingRole = (role: string) => {
-    if (defaultOfficeRoles.includes(role)) {
-      toast({
-        title: "Cannot Edit",
-        description: "Default roles cannot be edited.",
-        variant: "destructive"
-      })
-      return
-    }
     setEditingRole(role)
     setEditRoleValue(role)
   }
