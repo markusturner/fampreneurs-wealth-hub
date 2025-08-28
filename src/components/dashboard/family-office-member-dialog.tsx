@@ -30,6 +30,7 @@ interface AddFamilyOfficeMemberDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onMemberAdded?: () => void
+  onMemberDeleted?: () => void
   member?: FamilyOfficeMember | null
   mode?: 'add' | 'edit'
 }
@@ -82,10 +83,31 @@ const familyOfficeServices = [
   'Art & Collectibles Management'
 ]
 
+// Role to services mapping
+const roleServicesMapping: { [key: string]: string[] } = {
+  'Chief Investment Officer': ['Investment Management', 'Risk Management'],
+  'Chief Financial Officer': ['Accounting & Bookkeeping', 'Tax Planning & Preparation', 'Business Management'],
+  'Investment Advisor': ['Investment Management', 'Risk Management'],
+  'Tax Advisor': ['Tax Planning & Preparation', 'Accounting & Bookkeeping'],
+  'Estate Planning Attorney': ['Estate Planning', 'Trust Administration', 'Legal Services'],
+  'Family Office Manager': ['Family Governance', 'Business Management', 'Concierge Services'],
+  'Wealth Manager': ['Investment Management', 'Estate Planning', 'Insurance Planning'],
+  'Accountant': ['Accounting & Bookkeeping', 'Tax Planning & Preparation'],
+  'Legal Counsel': ['Legal Services', 'Estate Planning', 'Compliance & Regulatory'],
+  'Investment Analyst': ['Investment Management', 'Risk Management'],
+  'Administrative Assistant': ['Concierge Services', 'Business Management'],
+  'Compliance Officer': ['Compliance & Regulatory', 'Risk Management'],
+  'Risk Manager': ['Risk Management', 'Insurance Planning'],
+  'Philanthropy Advisor': ['Philanthropy Advisory', 'Family Governance'],
+  'Family Council Advisor': ['Family Governance', 'Next Generation Planning'],
+  'Business Manager': ['Business Management', 'Accounting & Bookkeeping']
+}
+
 export function AddFamilyOfficeMemberDialog({ 
   open, 
   onOpenChange, 
   onMemberAdded,
+  onMemberDeleted,
   member = null,
   mode = 'add'
 }: AddFamilyOfficeMemberDialogProps) {
@@ -182,6 +204,56 @@ export function AddFamilyOfficeMemberDialog({
 
   const removeService = (service: string) => {
     setSelectedServices(selectedServices.filter(s => s !== service))
+  }
+
+  // Auto-suggest services when role changes
+  const handleRoleChange = (value: string) => {
+    setFormData(prev => ({ ...prev, role: value }))
+    
+    // Auto-add suggested services for the role
+    const suggestedServices = roleServicesMapping[value] || []
+    const newServices = [...selectedServices]
+    
+    suggestedServices.forEach(service => {
+      if (!newServices.includes(service)) {
+        newServices.push(service)
+      }
+    })
+    
+    setSelectedServices(newServices)
+  }
+
+  const handleDelete = async () => {
+    if (!member?.id) return
+    
+    setLoading(true)
+    try {
+      const { error } = await supabase
+        .from('family_office_members' as any)
+        .delete()
+        .eq('id', member.id)
+
+      if (error) {
+        throw error
+      }
+
+      toast({
+        title: "Member Deleted",
+        description: `${member.full_name} has been removed from your family office team.`
+      })
+
+      onOpenChange(false)
+      onMemberDeleted?.()
+    } catch (error) {
+      console.error('Error deleting family office member:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete family office member. Please try again.",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -407,7 +479,7 @@ export function AddFamilyOfficeMemberDialog({
             <div className="grid grid-cols-1 gap-4">
               <div>
                 <Label htmlFor="role">Role</Label>
-                <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
+                <Select value={formData.role} onValueChange={handleRoleChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
@@ -557,6 +629,16 @@ export function AddFamilyOfficeMemberDialog({
 
           {/* Actions */}
           <div className="flex gap-2 pt-4">
+            {mode === 'edit' && (
+              <Button 
+                type="button" 
+                variant="destructive" 
+                onClick={handleDelete}
+                disabled={loading}
+              >
+                {loading ? "Deleting..." : "Delete"}
+              </Button>
+            )}
             <Button 
               type="button" 
               variant="outline" 
