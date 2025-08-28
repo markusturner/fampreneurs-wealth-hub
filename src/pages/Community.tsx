@@ -1498,6 +1498,13 @@ function ServicesContent() {
       }
     })
 
+    // Also include services defined in the roles catalog, even if no members are assigned yet
+    Object.values(roleServicesMap).forEach((services) => {
+      if (Array.isArray(services)) {
+        services.forEach((service) => allServices.add(service))
+      }
+    })
+
     // Service to icon mapping
     const serviceIconMap: { [key: string]: any } = {
       'Investment Management': TrendingUp,
