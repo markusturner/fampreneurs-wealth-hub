@@ -1383,8 +1383,10 @@ function ServicesContent() {
   const [roleServicesMap, setRoleServicesMap] = useState<Record<string, string[]>>({})
 
   useEffect(() => {
-    fetchFamilyOfficeMembers()
-  }, [])
+    if (user?.id) {
+      fetchFamilyOfficeMembers()
+    }
+  }, [user?.id])
 
   const fetchFamilyOfficeMembers = async () => {
     if (!user?.id) {
@@ -1392,6 +1394,7 @@ function ServicesContent() {
       return
     }
     
+    setLoadingMembers(true)
     try {
       const { data, error } = await supabase
         .from('family_members')
