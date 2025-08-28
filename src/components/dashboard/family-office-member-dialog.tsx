@@ -10,6 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast'
 import { UserPlus, Plus, Trash2, Edit, Check, X } from 'lucide-react'
 
+interface OfficeRole {
+  id?: string
+  name: string
+  services: string[]
+  is_default?: boolean
+}
+
 interface FamilyOfficeMember {
   id?: string
   full_name: string
@@ -22,6 +29,8 @@ interface FamilyOfficeMember {
   specialties?: string[]
   notes?: string
   status?: string
+  office_role?: string
+  office_services?: string[]
 }
 
 interface AddFamilyOfficeMemberDialogProps {
@@ -33,26 +42,24 @@ interface AddFamilyOfficeMemberDialogProps {
   mode?: 'add' | 'edit'
 }
 
-const defaultOfficeRoles = [
-  'Chief Investment Officer',
-  'Chief Financial Officer',
-  'Investment Advisor',
-  'Tax Advisor',
-  'Estate Planning Attorney',
-  'Family Office Manager',
-  'Wealth Manager',
-  'Accountant',
-  'Legal Counsel',
-  'Investment Analyst',
-  'Administrative Assistant',
-  'Compliance Officer',
-  'Risk Manager',
-  'Philanthropy Advisor',
-  'Family Council Advisor',
-  'Business Manager',
-  'Other'
+const defaultOfficeRoles: OfficeRole[] = [
+  { name: 'Chief Investment Officer', services: ['Investment Management', 'Portfolio Management', 'Risk Assessment'], is_default: true },
+  { name: 'Chief Financial Officer', services: ['Financial Planning', 'Budgeting', 'Cash Flow'], is_default: true },
+  { name: 'Investment Advisor', services: ['Investment Management', 'Portfolio Management'], is_default: true },
+  { name: 'Tax Advisor', services: ['Tax Planning', 'Returns', 'Strategy'], is_default: true },
+  { name: 'Estate Planning Attorney', services: ['Wills', 'Trusts', 'Succession Planning'], is_default: true },
+  { name: 'Family Office Manager', services: ['Family Governance', 'Administration'], is_default: true },
+  { name: 'Wealth Manager', services: ['Wealth Planning', 'Investment Management'], is_default: true },
+  { name: 'Accountant', services: ['Accounting Services', 'Tax Planning'], is_default: true },
+  { name: 'Legal Counsel', services: ['Legal Advisory', 'Contract Review', 'Compliance'], is_default: true },
+  { name: 'Investment Analyst', services: ['Investment Research', 'Market Analysis'], is_default: true },
+  { name: 'Administrative Assistant', services: ['Administration', 'Support Services'], is_default: true },
+  { name: 'Compliance Officer', services: ['Compliance', 'Risk Management'], is_default: true },
+  { name: 'Risk Manager', services: ['Risk Management', 'Insurance Planning'], is_default: true },
+  { name: 'Philanthropy Advisor', services: ['Philanthropy Advisory', 'Charitable Giving'], is_default: true },
+  { name: 'Family Council Advisor', services: ['Family Governance', 'Family Education'], is_default: true },
+  { name: 'Business Manager', services: ['Business Advisory', 'Operations Management'], is_default: true },
 ]
-
 
 export function AddFamilyOfficeMemberDialog({ 
   open, 
@@ -75,15 +82,14 @@ export function AddFamilyOfficeMemberDialog({
     notes: ''
   })
   
-  // Role management state
-  const [officeRoles, setOfficeRoles] = useState(defaultOfficeRoles)
+  // Role management state with persistent storage
+  const [officeRoles, setOfficeRoles] = useState<OfficeRole[]>([])
   const [newRole, setNewRole] = useState('')
   const [editingRole, setEditingRole] = useState<string | null>(null)
   const [editRoleValue, setEditRoleValue] = useState('')
   const [showRoleManager, setShowRoleManager] = useState(false)
   
   // Services management state
-  const [roleServices, setRoleServices] = useState<Record<string, string[]>>({})
   const [availableServices] = useState([
     'Investment Management',
     'Tax Planning',
@@ -99,8 +105,103 @@ export function AddFamilyOfficeMemberDialog({
     'Family Education',
     'Succession Planning',
     'Insurance Planning',
-    'Banking Services'
+    'Banking Services',
+    'Contract Review',
+    'Compliance',
+    'Portfolio Management',
+    'Risk Assessment',
+    'Financial Planning',
+    'Budgeting',
+    'Cash Flow',
+    'Wills',
+    'Trusts',
+    'Returns',
+    'Strategy',
+    'Administration',
+    'Support Services',
+    'Investment Research',
+    'Market Analysis',
+    'Charitable Giving',
+    'Operations Management'
   ])
+
+  // Load persistent roles from Supabase
+  const loadRoles = async () => {
+    if (!user?.id) return
+
+    try {
+      const { data: existingRoles, error } = await supabase
+        .from('office_roles_catalog')
+        .select('*')
+        .eq('created_by', user.id)
+        .order('name')
+
+      if (error) {
+        console.error('Error loading roles:', error)
+        // Fall back to defaults
+        setOfficeRoles(defaultOfficeRoles)
+        return
+      }
+
+      if (!existingRoles || existingRoles.length === 0) {
+        // First time - seed with defaults
+        await seedDefaultRoles()
+      } else {
+        // Load existing roles
+        setOfficeRoles(existingRoles.map(role => ({
+          id: role.id,
+          name: role.name,
+          services: role.services || [],
+          is_default: role.is_default
+        })))
+      }
+    } catch (error) {
+      console.error('Error loading roles:', error)
+      setOfficeRoles(defaultOfficeRoles)
+    }
+  }
+
+  // Seed default roles on first use
+  const seedDefaultRoles = async () => {
+    if (!user?.id) return
+
+    try {
+      const rolesToInsert = defaultOfficeRoles.map(role => ({
+        created_by: user.id,
+        name: role.name,
+        services: role.services,
+        is_default: true
+      }))
+
+      const { data, error } = await supabase
+        .from('office_roles_catalog')
+        .insert(rolesToInsert)
+        .select()
+
+      if (error) {
+        console.error('Error seeding roles:', error)
+        setOfficeRoles(defaultOfficeRoles)
+        return
+      }
+
+      setOfficeRoles(data.map(role => ({
+        id: role.id,
+        name: role.name,
+        services: role.services || [],
+        is_default: role.is_default
+      })))
+    } catch (error) {
+      console.error('Error seeding roles:', error)
+      setOfficeRoles(defaultOfficeRoles)
+    }
+  }
+
+  // Load roles when dialog opens
+  useEffect(() => {
+    if (open && user?.id) {
+      loadRoles()
+    }
+  }, [open, user?.id])
 
   const resetForm = () => {
     setFormData({
@@ -112,7 +213,6 @@ export function AddFamilyOfficeMemberDialog({
       department: '',
       notes: ''
     })
-    setRoleServices({})
   }
 
   // Populate form when editing
@@ -122,61 +222,120 @@ export function AddFamilyOfficeMemberDialog({
         fullName: member.full_name || '',
         email: member.email || '',
         phone: member.phone || '',
-        role: member.role || '',
+        role: member.office_role || member.role || '',
         company: member.company || '',
         department: member.department || '',
         notes: member.notes || ''
       })
-      
-      // Load existing services for the member's role
-      if (member.role && member.specialties && member.specialties.length > 0) {
-        setRoleServices(prev => ({
-          ...prev,
-          [member.role]: member.specialties
-        }))
-      }
     } else {
       resetForm()
     }
   }, [member, mode])
 
-  // Role management functions
-  const addCustomRole = () => {
-    if (newRole.trim() && !officeRoles.includes(newRole.trim())) {
-      setOfficeRoles([...officeRoles, newRole.trim()])
+  // Role management functions with persistent storage
+  const addCustomRole = async () => {
+    if (!newRole.trim() || !user?.id) return
+    
+    const roleExists = officeRoles.some(role => role.name.toLowerCase() === newRole.trim().toLowerCase())
+    if (roleExists) {
+      toast({
+        title: "Role Already Exists",
+        description: `"${newRole.trim()}" is already in the roles list.`,
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('office_roles_catalog')
+        .insert({
+          created_by: user.id,
+          name: newRole.trim(),
+          services: [],
+          is_default: false
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      const newRoleObj: OfficeRole = {
+        id: data.id,
+        name: data.name,
+        services: data.services || [],
+        is_default: false
+      }
+
+      setOfficeRoles([...officeRoles, newRoleObj])
       setNewRole('')
       toast({
         title: "Role Added",
-        description: `"${newRole.trim()}" has been added to the roles list.`
+        description: `"${newRole.trim()}" has been permanently added to the roles list.`
+      })
+    } catch (error) {
+      console.error('Error adding role:', error)
+      toast({
+        title: "Error",
+        description: "Failed to add role. Please try again.",
+        variant: "destructive"
       })
     }
   }
 
-  const deleteRole = (roleToDelete: string) => {
-    setOfficeRoles(officeRoles.filter(role => role !== roleToDelete))
-    if (formData.role === roleToDelete) {
-      setFormData(prev => ({ ...prev, role: '' }))
+  const deleteRole = async (roleToDelete: OfficeRole) => {
+    if (!user?.id) return
+
+    try {
+      if (roleToDelete.id) {
+        const { error } = await supabase
+          .from('office_roles_catalog')
+          .delete()
+          .eq('id', roleToDelete.id)
+
+        if (error) throw error
+      }
+
+      setOfficeRoles(officeRoles.filter(role => role.name !== roleToDelete.name))
+      if (formData.role === roleToDelete.name) {
+        setFormData(prev => ({ ...prev, role: '' }))
+      }
+      
+      toast({
+        title: "Role Deleted",
+        description: `"${roleToDelete.name}" has been permanently removed from the roles list.`
+      })
+    } catch (error) {
+      console.error('Error deleting role:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete role. Please try again.",
+        variant: "destructive"
+      })
     }
-    // Remove services for this role
-    const newRoleServices = { ...roleServices }
-    delete newRoleServices[roleToDelete]
-    setRoleServices(newRoleServices)
-    
-    toast({
-      title: "Role Deleted",
-      description: `"${roleToDelete}" has been removed from the roles list.`
-    })
   }
 
-  const startEditingRole = (role: string) => {
-    setEditingRole(role)
-    setEditRoleValue(role)
+  const startEditingRole = (role: OfficeRole) => {
+    setEditingRole(role.name)
+    setEditRoleValue(role.name)
   }
 
-  const saveRoleEdit = () => {
-    if (editRoleValue.trim() && editingRole) {
+  const saveRoleEdit = async () => {
+    if (!editRoleValue.trim() || !editingRole || !user?.id) return
+
+    const roleToEdit = officeRoles.find(role => role.name === editingRole)
+    if (!roleToEdit?.id) return
+
+    try {
+      const { error } = await supabase
+        .from('office_roles_catalog')
+        .update({ name: editRoleValue.trim() })
+        .eq('id', roleToEdit.id)
+
+      if (error) throw error
+
       const updatedRoles = officeRoles.map(role => 
-        role === editingRole ? editRoleValue.trim() : role
+        role.name === editingRole ? { ...role, name: editRoleValue.trim() } : role
       )
       setOfficeRoles(updatedRoles)
       
@@ -184,19 +343,18 @@ export function AddFamilyOfficeMemberDialog({
         setFormData(prev => ({ ...prev, role: editRoleValue.trim() }))
       }
       
-      // Update services mapping
-      const newRoleServices = { ...roleServices }
-      if (newRoleServices[editingRole]) {
-        newRoleServices[editRoleValue.trim()] = newRoleServices[editingRole]
-        delete newRoleServices[editingRole]
-        setRoleServices(newRoleServices)
-      }
-      
       setEditingRole(null)
       setEditRoleValue('')
       toast({
         title: "Role Updated",
-        description: `Role has been updated to "${editRoleValue.trim()}".`
+        description: `Role has been permanently updated to "${editRoleValue.trim()}".`
+      })
+    } catch (error) {
+      console.error('Error updating role:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update role. Please try again.",
+        variant: "destructive"
       })
     }
   }
@@ -206,16 +364,33 @@ export function AddFamilyOfficeMemberDialog({
     setEditRoleValue('')
   }
 
-  const toggleServiceForRole = (role: string, service: string) => {
-    const currentServices = roleServices[role] || []
+  const toggleServiceForRole = async (roleToUpdate: OfficeRole, service: string) => {
+    if (!roleToUpdate.id || !user?.id) return
+
+    const currentServices = roleToUpdate.services || []
     const newServices = currentServices.includes(service)
       ? currentServices.filter(s => s !== service)
       : [...currentServices, service]
     
-    setRoleServices(prev => ({
-      ...prev,
-      [role]: newServices
-    }))
+    try {
+      const { error } = await supabase
+        .from('office_roles_catalog')
+        .update({ services: newServices })
+        .eq('id', roleToUpdate.id)
+
+      if (error) throw error
+
+      setOfficeRoles(officeRoles.map(role => 
+        role.id === roleToUpdate.id ? { ...role, services: newServices } : role
+      ))
+    } catch (error) {
+      console.error('Error updating role services:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update role services. Please try again.",
+        variant: "destructive"
+      })
+    }
   }
 
   const handleDelete = async () => {
@@ -224,7 +399,7 @@ export function AddFamilyOfficeMemberDialog({
     setLoading(true)
     try {
       const { error } = await supabase
-        .from('family_office_members' as any)
+        .from('family_members')
         .delete()
         .eq('id', member.id)
 
@@ -266,20 +441,20 @@ export function AddFamilyOfficeMemberDialog({
     setLoading(true)
     try {
       // Get selected services for the chosen role
-      const selectedServices = formData.role ? (roleServices[formData.role] || []) : []
+      const selectedRole = officeRoles.find(role => role.name === formData.role)
+      const selectedServices = selectedRole?.services || []
 
       if (mode === 'edit' && member?.id) {
         // Update existing member
         const { error: updateError } = await supabase
-          .from('family_office_members' as any)
+          .from('family_members')
           .update({
             full_name: formData.fullName.trim(),
             email: formData.email.trim(),
             phone: formData.phone.trim() || null,
-            role: formData.role || null,
-            specialties: selectedServices.length > 0 ? selectedServices : null,
-            company: formData.company.trim() || null,
-            department: formData.department.trim() || null,
+            office_role: formData.role || null,
+            office_services: selectedServices.length > 0 ? selectedServices : null,
+            specialties: selectedServices.length > 0 ? selectedServices : null, // Keep for backward compatibility
             notes: formData.notes.trim() || null,
             updated_at: new Date().toISOString()
           })
@@ -301,105 +476,38 @@ export function AddFamilyOfficeMemberDialog({
       }
       
       // Add new member logic
-      const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
-      const memberId = crypto.randomUUID();
+      const { data: insertData, error: insertError } = await supabase
+        .from('family_members')
+        .insert({
+          added_by: user?.id,
+          full_name: formData.fullName.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim() || null,
+          family_position: 'Family Office Team',
+          office_role: formData.role || null,
+          office_services: selectedServices.length > 0 ? selectedServices : null,
+          specialties: selectedServices.length > 0 ? selectedServices : null, // Keep for backward compatibility
+          notes: formData.notes.trim() || null,
+          status: 'active'
+        })
+        .select()
+        .single()
 
-      // Try to add the family office member to the table
-      let officeMemberData: any = null;
-      try {
-        const result = await supabase
-          .from('family_office_members' as any)
-          .insert({
-            added_by: user?.id,
-            full_name: formData.fullName.trim(),
-            email: formData.email.trim(),
-            phone: formData.phone.trim() || null,
-            role: formData.role || null,
-            specialties: selectedServices.length > 0 ? selectedServices : null,
-            company: formData.company.trim() || null,
-            department: formData.department.trim() || null,
-            notes: formData.notes.trim() || null,
-            status: 'active'
-          })
-          .select()
-          .single()
+      if (insertError) throw insertError
 
-        if (result.error) {
-          console.warn('Family office members table not available:', result.error);
-        } else {
-          officeMemberData = result.data;
-        }
-      } catch (tableError) {
-        console.warn('Family office members table not available, proceeding with credentials creation');
-      }
-
-      // Create login credentials and send via email
-      try {
-        const { data, error: credentialsError } = await supabase.functions.invoke(
-          'create-family-member-credentials',
-          {
-            body: {
-              email: formData.email.trim(),
-              firstName: formData.fullName.split(' ')[0],
-              lastName: formData.fullName.split(' ').slice(1).join(' '),
-              familyMemberId: officeMemberData?.id || memberId,
-              tempPassword: tempPassword
-            }
-          }
-        );
-
-        if (credentialsError) {
-          console.error('Error creating credentials:', credentialsError);
-          toast({
-            title: "Family Office Member Added",
-            description: `${formData.fullName} has been added but login credentials could not be created.`,
-            variant: "destructive"
-          });
-        } else {
-          // Send login credentials via email
-          try {
-            await supabase.functions.invoke('send-login-credentials', {
-              body: {
-                email: formData.email.trim(),
-                firstName: formData.fullName.split(' ')[0],
-                lastName: formData.fullName.split(' ').slice(1).join(' '),
-                tempPassword: tempPassword,
-                loginUrl: `${window.location.origin}/auth`,
-                memberType: 'office',
-                role: formData.role
-              }
-            });
-
-            toast({
-              title: "Family Office Member Added Successfully",
-              description: `${formData.fullName} has been added to your family office team. Login credentials have been sent to their email.`
-            });
-          } catch (emailError) {
-            console.error('Error sending login credentials email:', emailError);
-            toast({
-              title: "Family Office Member Added",
-              description: `${formData.fullName} has been added with login access, but the email with credentials could not be sent. Temporary password: ${tempPassword}`,
-              variant: "destructive"
-            });
-          }
-        }
-      } catch (credentialsError) {
-        console.error('Error with credentials function:', credentialsError);
-        toast({
-          title: "Family Office Member Added",
-          description: `${formData.fullName} has been added but login credentials could not be created.`,
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Family Office Member Added Successfully",
+        description: `${formData.fullName} has been added to your family office team with their role and services.`
+      })
 
       resetForm()
       onOpenChange(false)
       onMemberAdded?.()
     } catch (error) {
-      console.error('Error adding family office member:', error)
+      console.error('Error adding/updating family office member:', error)
       toast({
         title: "Error",
-        description: "Failed to add family office member. Please try again.",
+        description: `Failed to ${mode === 'edit' ? 'update' : 'add'} family office member. Please try again.`,
         variant: "destructive"
       })
     } finally {
@@ -493,8 +601,8 @@ export function AddFamilyOfficeMemberDialog({
                   </SelectTrigger>
                   <SelectContent>
                     {officeRoles.map((role) => (
-                      <SelectItem key={role} value={role}>
-                        {role}
+                      <SelectItem key={role.name} value={role.name}>
+                        {role.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -519,9 +627,9 @@ export function AddFamilyOfficeMemberDialog({
                     {/* Manage Roles List */}
                     <div className="mt-3 space-y-3">
                       {officeRoles.map((role) => (
-                        <div key={role} className="rounded-md border p-3">
+                        <div key={role.name} className="rounded-md border p-3">
                           <div className="flex items-center justify-between mb-2">
-                            {editingRole === role ? (
+                            {editingRole === role.name ? (
                               <div className="flex items-center gap-2 flex-1">
                                 <Input
                                   value={editRoleValue}
@@ -552,7 +660,7 @@ export function AddFamilyOfficeMemberDialog({
                               </div>
                             ) : (
                               <>
-                                <span className="text-sm font-medium">{role}</span>
+                                <span className="text-sm font-medium">{role.name}</span>
                                 <div className="flex gap-1">
                                   <Button
                                     type="button"
@@ -560,7 +668,7 @@ export function AddFamilyOfficeMemberDialog({
                                     variant="ghost"
                                     onClick={() => startEditingRole(role)}
                                     className="h-7 w-7 p-0"
-                                    aria-label={`Edit ${role}`}
+                                    aria-label={`Edit ${role.name}`}
                                   >
                                     <Edit className="h-4 w-4" />
                                   </Button>
@@ -570,7 +678,7 @@ export function AddFamilyOfficeMemberDialog({
                                     variant="ghost"
                                     onClick={() => deleteRole(role)}
                                     className="h-7 w-7 p-0 text-destructive"
-                                    aria-label={`Delete ${role}`}
+                                    aria-label={`Delete ${role.name}`}
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
@@ -587,7 +695,7 @@ export function AddFamilyOfficeMemberDialog({
                                 <label key={service} className="flex items-center space-x-2 text-xs">
                                   <input
                                     type="checkbox"
-                                    checked={(roleServices[role] || []).includes(service)}
+                                    checked={(role.services || []).includes(service)}
                                     onChange={() => toggleServiceForRole(role, service)}
                                     className="rounded border-gray-300"
                                   />
@@ -595,9 +703,9 @@ export function AddFamilyOfficeMemberDialog({
                                 </label>
                               ))}
                             </div>
-                            {roleServices[role] && roleServices[role].length > 0 && (
+                            {role.services && role.services.length > 0 && (
                               <div className="mt-2 text-xs text-muted-foreground">
-                                Selected: {roleServices[role].join(', ')}
+                                Selected: {role.services.join(', ')}
                               </div>
                             )}
                           </div>

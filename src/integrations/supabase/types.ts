@@ -1139,6 +1139,8 @@ export type Database = {
           joined_at: string | null
           last_accessed: string | null
           notes: string | null
+          office_role: string | null
+          office_services: string[] | null
           phone: string | null
           relationship_to_family: string | null
           requires_approval: boolean | null
@@ -1164,6 +1166,8 @@ export type Database = {
           joined_at?: string | null
           last_accessed?: string | null
           notes?: string | null
+          office_role?: string | null
+          office_services?: string[] | null
           phone?: string | null
           relationship_to_family?: string | null
           requires_approval?: boolean | null
@@ -1189,6 +1193,8 @@ export type Database = {
           joined_at?: string | null
           last_accessed?: string | null
           notes?: string | null
+          office_role?: string | null
+          office_services?: string[] | null
           phone?: string | null
           relationship_to_family?: string | null
           requires_approval?: boolean | null
@@ -2543,6 +2549,36 @@ export type Database = {
           title?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      office_roles_catalog: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          is_default: boolean
+          name: string
+          services: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          is_default?: boolean
+          name: string
+          services?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          services?: string[]
+          updated_at?: string
         }
         Relationships: []
       }
