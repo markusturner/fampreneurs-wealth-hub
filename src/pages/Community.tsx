@@ -108,7 +108,7 @@ export default function Community() {
     
     try {
       const { data, error } = await supabase
-        .from('family_members')
+        .from('family_office_members')
         .select('*')
         .eq('added_by', user.id)
         .eq('status', 'active')
@@ -1392,7 +1392,7 @@ function ServicesContent() {
     
     try {
       const { data, error } = await supabase
-        .from('family_members')
+        .from('family_office_members')
         .select('*')
         .eq('added_by', user.id)
         .eq('status', 'active')
@@ -1410,35 +1410,10 @@ function ServicesContent() {
   // Function to check if a family office member exists for a specific service
   const findMemberForService = (serviceName: string) => {
     return familyOfficeMembers.find(member => {
-      const memberRole = member.family_position?.toLowerCase() || ''
-      const serviceNameLower = serviceName.toLowerCase()
-      
-      // Match service names to family member roles/positions
-      const serviceToRoleMapping: { [key: string]: string[] } = {
-        'life insurance': ['insurance', 'advisor', 'agent'],
-        'health insurance': ['insurance', 'advisor', 'agent'],
-        'property insurance': ['insurance', 'advisor', 'agent'],
-        'business insurance': ['insurance', 'advisor', 'agent'],
-        'credit funding': ['financial', 'advisor', 'banker', 'lending'],
-        'forex trading': ['financial', 'advisor', 'trader', 'investment'],
-        'stock trading': ['financial', 'advisor', 'trader', 'investment'],
-        'crypto trading': ['financial', 'advisor', 'trader', 'investment'],
-        'nonprofit creation': ['legal', 'attorney', 'lawyer', 'business'],
-        'business formation': ['legal', 'attorney', 'lawyer', 'business'],
-        'tax planning': ['accountant', 'cpa', 'tax', 'financial'],
-        'family crest design': ['designer', 'creative', 'artist'],
-        'estate planning': ['legal', 'attorney', 'lawyer', 'estate'],
-        'wealth transfer': ['financial', 'advisor', 'estate', 'legal'],
-        'family office software': ['technology', 'tech', 'developer', 'it'],
-        'investment analytics': ['financial', 'advisor', 'analyst', 'investment'],
-        'security services': ['security', 'technology', 'tech', 'cyber'],
-        'personal assistant': ['assistant', 'admin', 'coordinator'],
-        'travel planning': ['travel', 'concierge', 'coordinator', 'assistant'],
-        'event management': ['event', 'coordinator', 'planner', 'assistant']
+      if (!member.specialties || !Array.isArray(member.specialties)) {
+        return false
       }
-      
-      const relevantRoles = serviceToRoleMapping[serviceNameLower] || []
-      return relevantRoles.some(role => memberRole.includes(role))
+      return member.specialties.includes(serviceName)
     })
   }
 
@@ -1476,70 +1451,117 @@ function ServicesContent() {
     }
   }
 
-  const serviceCategories = [
-    {
-      title: "Insurance Services",
-      icon: LifeBuoy,
-      color: "text-blue-600",
-      services: [
-        { name: "Life Insurance", icon: Heart, description: "Comprehensive life insurance policies for family protection" },
-        { name: "Health Insurance", icon: Shield, description: "Medical coverage and health protection plans" },
-        { name: "Property Insurance", icon: Home, description: "Home, auto, and asset protection insurance" },
-        { name: "Business Insurance", icon: Building2, description: "Commercial liability, workers comp, and business protection" }
-      ]
-    },
-    {
-      title: "Financial Services",
-      icon: DollarSign,
-      color: "text-green-600",
-      services: [
-        { name: "Credit Funding", icon: CreditCard, description: "Business and personal credit funding solutions" },
-        { name: "Forex Trading", icon: Globe, description: "Foreign exchange trading and currency management" },
-        { name: "Stock Trading", icon: TrendingUp, description: "Equity trading and investment management" },
-        { name: "Crypto Trading", icon: Bitcoin, description: "Cryptocurrency trading and digital asset management" }
-      ]
-    },
-    {
-      title: "Business Services",
-      icon: Building2,
-      color: "text-purple-600",
-      services: [
-        { name: "Nonprofit Creation", icon: Building, description: "501(c)(3) nonprofit organization setup and compliance" },
-        { name: "Business Formation", icon: Briefcase, description: "LLC, Corporation, and business entity formation" },
-        { name: "Tax Planning", icon: Target, description: "Strategic tax planning and optimization services" }
-      ]
-    },
-    {
-      title: "Legacy Services",
-      icon: Crown,
-      color: "text-orange-600",
-      services: [
-        { name: "Family Crest Design", icon: Crown, description: "Custom family crest design and heraldry services" },
-        { name: "Estate Planning", icon: Scroll, description: "Comprehensive estate planning and trust services" },
-        { name: "Wealth Transfer", icon: ArrowUpRight, description: "Generational wealth transfer strategies" }
-      ]
-    },
-    {
-      title: "Technology Services",
-      icon: BrainCircuit,
-      color: "text-red-600",
-      services: [
-        { name: "Family Office Software", icon: Building2, description: "Custom family office management platforms" },
-        { name: "Investment Analytics", icon: BarChart3, description: "Advanced portfolio analytics and reporting" },
-        { name: "Security Services", icon: Lock, description: "Cybersecurity and digital asset protection" }
-      ]
-    },
-    {
-      title: "Concierge Services",
-      icon: Star,
-      color: "text-pink-600",
-      services: [
-        { name: "Personal Assistant", icon: Users, description: "Dedicated personal and family assistance" },
-        { name: "Travel Planning", icon: Globe, description: "Luxury travel and vacation planning services" },
-        { name: "Event Management", icon: Video, description: "Family events and special occasion planning" }
-      ]
+  // Create dynamic service categories based on family office members' specialties
+  const createDynamicServiceCategories = () => {
+    const allServices = new Set<string>()
+    
+    // Collect all unique services from family office members
+    familyOfficeMembers.forEach(member => {
+      if (member.specialties && Array.isArray(member.specialties)) {
+        member.specialties.forEach(service => allServices.add(service))
+      }
+    })
+
+    // Service to icon mapping
+    const serviceIconMap: { [key: string]: any } = {
+      'Investment Management': TrendingUp,
+      'Tax Planning': Target,
+      'Estate Planning': Scroll,
+      'Legal Advisory': Building,
+      'Family Governance': Crown,
+      'Wealth Planning': DollarSign,
+      'Risk Management': Shield,
+      'Philanthropy Advisory': Heart,
+      'Business Advisory': Briefcase,
+      'Accounting Services': BarChart3,
+      'Trust Administration': Landmark,
+      'Family Education': Users,
+      'Succession Planning': ArrowUpRight,
+      'Insurance Planning': LifeBuoy,
+      'Banking Services': CreditCard
     }
-  ]
+
+    // Service to description mapping  
+    const serviceDescriptionMap: { [key: string]: string } = {
+      'Investment Management': 'Professional portfolio management and investment strategies',
+      'Tax Planning': 'Strategic tax planning and optimization services',
+      'Estate Planning': 'Comprehensive estate planning and trust services',
+      'Legal Advisory': 'Legal counsel and advisory services',
+      'Family Governance': 'Family governance structure and decision-making processes',
+      'Wealth Planning': 'Comprehensive wealth management and financial planning',
+      'Risk Management': 'Risk assessment and mitigation strategies',
+      'Philanthropy Advisory': 'Charitable giving and philanthropic planning',
+      'Business Advisory': 'Business strategy and operational guidance',
+      'Accounting Services': 'Financial reporting and accounting services',
+      'Trust Administration': 'Trust management and administration services',
+      'Family Education': 'Family financial education and literacy programs',
+      'Succession Planning': 'Business and wealth succession strategies',
+      'Insurance Planning': 'Insurance coverage analysis and planning',
+      'Banking Services': 'Private banking and financial services'
+    }
+
+    // Group services by category
+    const categoryMapping: { [key: string]: string[] } = {
+      'Financial Services': ['Investment Management', 'Wealth Planning', 'Banking Services'],
+      'Legal & Tax Services': ['Legal Advisory', 'Tax Planning', 'Estate Planning', 'Trust Administration'],
+      'Risk & Insurance': ['Risk Management', 'Insurance Planning'],
+      'Business Services': ['Business Advisory', 'Accounting Services', 'Succession Planning'],
+      'Family Services': ['Family Governance', 'Family Education', 'Philanthropy Advisory']
+    }
+
+    const dynamicCategories = []
+
+    // Create categories based on available services
+    for (const [categoryName, categoryServices] of Object.entries(categoryMapping)) {
+      const availableServices = categoryServices.filter(service => allServices.has(service))
+      
+      if (availableServices.length > 0) {
+        const categoryIcon = categoryName === 'Financial Services' ? DollarSign :
+                           categoryName === 'Legal & Tax Services' ? Building2 :
+                           categoryName === 'Risk & Insurance' ? Shield :
+                           categoryName === 'Business Services' ? Briefcase :
+                           categoryName === 'Family Services' ? Crown : Users
+
+        const categoryColor = categoryName === 'Financial Services' ? 'text-green-600' :
+                             categoryName === 'Legal & Tax Services' ? 'text-blue-600' :
+                             categoryName === 'Risk & Insurance' ? 'text-red-600' :
+                             categoryName === 'Business Services' ? 'text-purple-600' :
+                             categoryName === 'Family Services' ? 'text-orange-600' : 'text-gray-600'
+
+        dynamicCategories.push({
+          title: categoryName,
+          icon: categoryIcon,
+          color: categoryColor,
+          services: availableServices.map(service => ({
+            name: service,
+            icon: serviceIconMap[service] || FileText,
+            description: serviceDescriptionMap[service] || `Professional ${service.toLowerCase()} services`
+          }))
+        })
+      }
+    }
+
+    // Add any uncategorized services
+    const categorizedServices = new Set(Object.values(categoryMapping).flat())
+    const uncategorizedServices = Array.from(allServices).filter(service => !categorizedServices.has(service))
+    
+    if (uncategorizedServices.length > 0) {
+      dynamicCategories.push({
+        title: 'Other Services',
+        icon: Star,
+        color: 'text-pink-600',
+        services: uncategorizedServices.map(service => ({
+          name: service,
+          icon: serviceIconMap[service] || FileText,
+          description: `Professional ${service.toLowerCase()} services`
+        }))
+      })
+    }
+
+    return dynamicCategories
+  }
+
+  const serviceCategories = createDynamicServiceCategories()
 
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in">
@@ -1550,8 +1572,34 @@ function ServicesContent() {
         </p>
       </div>
       
-      <div className="grid gap-6 sm:gap-8">
-        {serviceCategories.map((category, categoryIndex) => {
+      {loadingMembers ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-pulse text-muted-foreground">Loading services...</div>
+        </div>
+      ) : serviceCategories.length === 0 ? (
+        <Card className="p-8 text-center">
+          <CardContent>
+            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">No Services Available</h3>
+            <p className="text-muted-foreground mb-4">
+              Add family office members with services in the Members tab to see available services here.
+            </p>
+            <Button 
+              onClick={() => {
+                const url = new URL(window.location.href)
+                url.searchParams.set('tab', 'members')
+                window.history.pushState({}, '', url.toString())
+                const tabElement = document.querySelector('[data-value="members"]') as HTMLElement
+                if (tabElement) tabElement.click()
+              }}
+              variant="outline"
+            >
+              Go to Members
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-6 sm:gap-8">{serviceCategories.map((category, categoryIndex) => {
           const CategoryIcon = category.icon
           
           return (
@@ -1628,6 +1676,7 @@ function ServicesContent() {
           )
         })}
       </div>
+      )}
 
       {/* Enhanced Premium Services Notice */}
       <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 border-2 border-primary/20 hover-scale">
