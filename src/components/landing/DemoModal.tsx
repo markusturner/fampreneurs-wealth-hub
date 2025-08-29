@@ -96,12 +96,12 @@ export const DemoModal = ({ isOpen, onClose }: DemoModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-full h-[80vh] p-0">
-        <DialogHeader className="p-6 pb-0">
-          <DialogTitle className="text-2xl font-bold text-foreground">
+        <DialogHeader className="px-6 pt-4 pb-2">
+          <DialogTitle className="text-xl font-bold text-foreground">
             TruHeirs Platform Demo
           </DialogTitle>
         </DialogHeader>
-        <div className="flex-1 p-6 pt-0">
+        <div className="flex-1 px-6 pb-6">
           {currentVideoUrl ? (
             <div className="relative w-full h-full bg-muted rounded-lg overflow-hidden">
               {uploadedVideo ? (
