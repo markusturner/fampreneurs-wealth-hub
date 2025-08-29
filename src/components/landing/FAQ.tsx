@@ -116,11 +116,11 @@ export const FAQ = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button 
-                onClick={handleScheduleDemo}
+                onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
                 className="px-6 py-3 text-white font-semibold rounded-lg hover:opacity-90 transition-opacity" 
                 style={{ backgroundColor: '#290A52' }}
               >
-                Schedule a Demo
+                Get Started
               </button>
               <button 
                 onClick={handleContactSupport}
