@@ -95,7 +95,7 @@ export const DemoModal = ({ isOpen, onClose }: DemoModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl w-full h-[80vh] p-0">
+      <DialogContent className="max-w-6xl w-full h-[85vh] p-0">
         {!currentVideoUrl && (
           <DialogHeader className="px-6 py-2">
             <DialogTitle className="text-lg font-bold text-foreground">
