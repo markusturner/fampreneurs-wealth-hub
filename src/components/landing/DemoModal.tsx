@@ -103,7 +103,7 @@ export const DemoModal = ({ isOpen, onClose }: DemoModalProps) => {
             </DialogTitle>
           </DialogHeader>
         )}
-        <div className="flex-1 px-6 pb-6 pt-2">
+        <div className={`flex-1 ${currentVideoUrl ? 'p-0' : 'px-6 pb-6 pt-2'}`}>
           {currentVideoUrl ? (
             <div className="relative w-full h-full bg-muted rounded-lg overflow-hidden">
               {uploadedVideo ? (
