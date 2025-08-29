@@ -1,19 +1,13 @@
 import { Button } from '@/components/ui/button';
-import { ArrowDown, Play, Star, Users, TrendingUp } from 'lucide-react';
-import { useState } from 'react';
-import { DemoModal } from './DemoModal';
+import { ArrowDown, Star, Users, TrendingUp } from 'lucide-react';
 import { navigateToRoute, scrollToSection } from '@/utils/navigation';
 import { ThemeToggle } from '@/components/theme-toggle';
 export const Hero = () => {
-  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const scrollToPricing = () => {
     scrollToSection('pricing');
   };
   const handleLoginClick = () => {
     navigateToRoute('/auth');
-  };
-  const handleDemoClick = () => {
-    setIsDemoModalOpen(true);
   };
   return <section className="relative min-h-screen flex items-center justify-center bg-background overflow-hidden">
       {/* Enhanced Background Elements */}
@@ -97,10 +91,6 @@ export const Hero = () => {
           }} onClick={scrollToPricing}>
               <span className="group-hover:animate-pulse">Start Building Your Legacy</span>
             </Button>
-            <Button variant="outline" size="lg" className="w-full sm:w-auto text-base md:text-lg lg:text-xl px-8 md:px-12 py-4 md:py-6 border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground shadow-medium hover:shadow-glow transition-all duration-300 hover:scale-105" onClick={handleDemoClick}>
-              <Play className="w-4 h-4 md:w-6 md:h-6 mr-2 md:mr-3" />
-              Watch Demo
-            </Button>
           </div>
 
           {/* Enhanced Social Proof */}
@@ -141,6 +131,5 @@ export const Hero = () => {
         </div>
       </div>
       
-      <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
     </section>;
 };
