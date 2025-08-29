@@ -12,7 +12,7 @@ export const DemoModal = ({ isOpen, onClose }: DemoModalProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-full h-[80vh] p-0">
         <DialogHeader className="p-6 pb-0">
-          <DialogTitle className="text-2xl font-bold text-primary">
+          <DialogTitle className="text-2xl font-bold text-foreground">
             TruHeirs Platform Demo
           </DialogTitle>
         </DialogHeader>
@@ -25,7 +25,7 @@ export const DemoModal = ({ isOpen, onClose }: DemoModalProps) => {
                   <Play className="w-8 h-8 text-primary-foreground" />
                 </div>
                 <div className="space-y-2">
-                  <h3 className="text-xl font-semibold text-primary">
+                  <h3 className="text-xl font-semibold text-foreground">
                     Interactive Demo Coming Soon
                   </h3>
                   <p className="text-muted-foreground max-w-md">
