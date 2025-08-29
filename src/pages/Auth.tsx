@@ -531,7 +531,7 @@ export default function Auth() {
             variant="ghost"
             size="icon"
             onClick={() => navigate('/')}
-            className="hover:bg-muted"
+            className="hover:bg-accent"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
