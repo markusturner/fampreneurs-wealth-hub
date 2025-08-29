@@ -116,23 +116,6 @@ export const Footer = () => {
           </div>
         </div>
 
-        {/* CTA Section */}
-        <div className="text-center py-8 md:py-12 border-t border-b border-border">
-          <h3 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4" style={{
-          color: '#2eb2ff'
-        }}>
-            Ready to Start Building Your Family Legacy?
-          </h3>
-          <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-2xl mx-auto">
-            Join hundreds of families who are already using TruHeirs to build and manage generational wealth.
-          </p>
-          <Button size="lg" className="text-base md:text-lg px-6 md:px-8 py-3 md:py-4 font-semibold" style={{
-          backgroundColor: '#FFB500',
-          color: '#290a52'
-        }} onClick={scrollToPricing}>
-            Get Started Today
-          </Button>
-        </div>
 
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center pt-6 md:pt-8 text-xs md:text-sm text-muted-foreground">
