@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin } from 'lucide-react';
+import { openExternalLink, socialLinks } from '@/utils/navigation';
 export const Footer = () => {
   const scrollToPricing = () => {
     document.getElementById('pricing')?.scrollIntoView({
@@ -29,33 +30,33 @@ export const Footer = () => {
               The complete DIY AI family office platform designed for busy professionals and entrepreneurs building generational wealth.
             </p>
             <div className="flex space-x-4">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" style={{
-              backgroundColor: 'rgba(41, 10, 82, 0.1)'
-            }}>
-                <Facebook className="w-4 h-4" style={{
-                color: '#1877F2'
-              }} />
+              <div 
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" 
+                style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}
+                onClick={() => openExternalLink(socialLinks.facebook)}
+              >
+                <Facebook className="w-4 h-4" style={{ color: '#1877F2' }} />
               </div>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" style={{
-              backgroundColor: 'rgba(41, 10, 82, 0.1)'
-            }}>
-                <Twitter className="w-4 h-4" style={{
-                color: '#1DA1F2'
-              }} />
+              <div 
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" 
+                style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}
+                onClick={() => openExternalLink(socialLinks.twitter)}
+              >
+                <Twitter className="w-4 h-4" style={{ color: '#1DA1F2' }} />
               </div>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" style={{
-              backgroundColor: 'rgba(41, 10, 82, 0.1)'
-            }}>
-                <Linkedin className="w-4 h-4" style={{
-                color: '#0A66C2'
-              }} />
+              <div 
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" 
+                style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}
+                onClick={() => openExternalLink(socialLinks.linkedin)}
+              >
+                <Linkedin className="w-4 h-4" style={{ color: '#0A66C2' }} />
               </div>
-              <div className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" style={{
-              backgroundColor: 'rgba(41, 10, 82, 0.1)'
-            }}>
-                <Instagram className="w-4 h-4" style={{
-                color: '#E4405F'
-              }} />
+              <div 
+                className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity cursor-pointer" 
+                style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}
+                onClick={() => openExternalLink(socialLinks.instagram)}
+              >
+                <Instagram className="w-4 h-4" style={{ color: '#E4405F' }} />
               </div>
             </div>
           </div>
