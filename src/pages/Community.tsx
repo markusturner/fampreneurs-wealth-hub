@@ -824,6 +824,63 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
 
   const [conversationMessages, setConversationMessages] = useState(conversations)
 
+  // Handle pending message from service requests
+  useEffect(() => {
+    const pendingMessageData = sessionStorage.getItem('pendingMessage')
+    if (pendingMessageData) {
+      try {
+        const { memberId, memberName, serviceName, message } = JSON.parse(pendingMessageData)
+        
+        // Set the selected conversation to the member
+        setSelectedConversation(memberId)
+        
+        // Add the message to the conversation
+        setConversationMessages(prev => {
+          const existing = prev[memberId] || []
+          const newMessage = {
+            id: `pending_${Date.now()}`,
+            sender: 'You',
+            message: message,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isCurrentUser: true,
+            isRead: true
+          }
+          
+          return {
+            ...prev,
+            [memberId]: [...existing, newMessage]
+          }
+        })
+        
+        // Clear the pending message
+        sessionStorage.removeItem('pendingMessage')
+        
+        toast({
+          title: "Message Sent",
+          description: `Your service request for ${serviceName} has been sent to ${memberName}.`,
+        })
+        
+      } catch (error) {
+        console.error('Error processing pending message:', error)
+        sessionStorage.removeItem('pendingMessage')
+      }
+    }
+  }, [toast])
+
+  // Handle URL parameter for member selection
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const memberParam = urlParams.get('member')
+    
+    if (memberParam && familyOfficeMembers.length > 0) {
+      // Check if this member exists in our family office members
+      const memberExists = familyOfficeMembers.find(member => member.id === memberParam)
+      if (memberExists) {
+        setSelectedConversation(memberParam)
+      }
+    }
+  }, [familyOfficeMembers])
+
   // Convert family office members to the format expected by the component
   const formattedMembers = familyOfficeMembers.map((member, index) => {
     const memberConversations = conversationMessages[member.id] || []
