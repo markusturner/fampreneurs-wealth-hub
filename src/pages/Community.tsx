@@ -1472,19 +1472,8 @@ function ServicesContent() {
   // Function to check if a family office member exists for a specific service
   const findMemberForService = (serviceName: string) => {
     return familyOfficeMembers.find(member => {
-      // Check office_services first (new field)
-      if (member.office_services && Array.isArray(member.office_services)) {
-        return member.office_services.includes(serviceName)
-      }
-      // Fallback: use role's defined services if member has a role
-      if (member.office_role && roleServicesMap[member.office_role]) {
-        if (roleServicesMap[member.office_role].includes(serviceName)) return true
-      }
-      // Fall back to specialties for backward compatibility
-      if (member.specialties && Array.isArray(member.specialties)) {
-        return member.specialties.includes(serviceName)
-      }
-      return false
+      const services = Array.isArray(member.office_services) ? member.office_services : []
+      return services.includes(serviceName)
     })
   }
 
@@ -1529,15 +1518,7 @@ function ServicesContent() {
     // Collect all unique services from family office members
     familyOfficeMembers.forEach(member => {
       const explicit = Array.isArray(member.office_services) ? member.office_services : []
-      if (explicit.length > 0) {
-        explicit.forEach(service => allServices.add(service))
-      } else if (member.office_role && roleServicesMap[member.office_role]) {
-        roleServicesMap[member.office_role].forEach(service => allServices.add(service))
-      }
-      // Also check legacy specialties field for backward compatibility
-      if (member.specialties && Array.isArray(member.specialties)) {
-        member.specialties.forEach(service => allServices.add(service))
-      }
+      explicit.forEach(service => allServices.add(service))
     })
 
 
