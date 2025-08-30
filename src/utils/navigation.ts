@@ -39,7 +39,7 @@ export const openPhoneDialer = (phoneNumber: string) => {
 
 // Social media links - replace with actual company profiles
 export const socialLinks = {
-  facebook: 'https://facebook.com/thefampreneurs',
+  facebook: 'https://www.facebook.com/thefampreneursofficial',
   twitter: 'https://twitter.com/thefampreneurs', 
   linkedin: 'https://linkedin.com/company/thefampreneurs',
   instagram: 'https://www.instagram.com/thefampreneurs/'
