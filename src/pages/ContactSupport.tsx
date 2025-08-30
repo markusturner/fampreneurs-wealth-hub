@@ -88,8 +88,8 @@ const ContactSupport = () => {
           <div className="lg:col-span-2">
             <Card className="border-2 hover:border-primary transition-colors duration-300">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-2xl text-primary">
-                  <MessageSquare className="h-6 w-6" />
+                <CardTitle className="flex items-center gap-2 text-2xl text-white">
+                  <MessageSquare className="h-6 w-6" style={{ color: '#ffb500' }} />
                   Send us a message
                 </CardTitle>
               </CardHeader>
