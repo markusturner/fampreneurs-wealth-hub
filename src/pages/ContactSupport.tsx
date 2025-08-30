@@ -52,6 +52,10 @@ const ContactSupport = () => {
     });
   };
 
+  const handleGetStarted = () => {
+    navigate('/#pricing');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Landing Page Header */}
@@ -223,9 +227,9 @@ const ContactSupport = () => {
                 </p>
                 <Button 
                   className="w-full bg-secondary text-secondary-foreground" 
-                  onClick={() => navigate('/auth')}
+                  onClick={handleGetStarted}
                 >
-                  Start Your Free Trial
+                  Get Started
                 </Button>
               </CardContent>
             </Card>
