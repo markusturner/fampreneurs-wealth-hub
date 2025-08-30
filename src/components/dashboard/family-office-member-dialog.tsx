@@ -17,6 +17,14 @@ interface OfficeRole {
   is_default?: boolean
 }
 
+interface OfficeService {
+  id?: string
+  name: string
+  description?: string
+  is_default?: boolean
+  is_active?: boolean
+}
+
 interface FamilyOfficeMember {
   id?: string
   full_name: string
@@ -90,42 +98,15 @@ export function AddFamilyOfficeMemberDialog({
   const [showRoleManager, setShowRoleManager] = useState(false)
   
   // Services management state
-  const [availableServices] = useState([
-    'Investment Management',
-    'Tax Planning',
-    'Estate Planning',
-    'Legal Advisory',
-    'Family Governance',
-    'Wealth Planning',
-    'Risk Management',
-    'Philanthropy Advisory',
-    'Business Advisory',
-    'Accounting Services',
-    'Trust Administration',
-    'Family Education',
-    'Succession Planning',
-    'Insurance Planning',
-    'Banking Services',
-    'Contract Review',
-    'Compliance',
-    'Portfolio Management',
-    'Risk Assessment',
-    'Financial Planning',
-    'Budgeting',
-    'Cash Flow',
-    'Wills',
-    'Trusts',
-    'Returns',
-    'Strategy',
-    'Administration',
-    'Support Services',
-    'Investment Research',
-    'Market Analysis',
-    'Charitable Giving',
-    'Operations Management'
-  ])
+  const [availableServices, setAvailableServices] = useState<OfficeService[]>([])
+  const [newService, setNewService] = useState('')
+  const [newServiceDescription, setNewServiceDescription] = useState('')
+  const [editingService, setEditingService] = useState<string | null>(null)
+  const [editServiceName, setEditServiceName] = useState('')
+  const [editServiceDescription, setEditServiceDescription] = useState('')
+  const [showServiceManager, setShowServiceManager] = useState(false)
 
-  // Load persistent roles from Supabase
+  // Load persistent roles and services from Supabase
   const loadRoles = async () => {
     if (!user?.id) return
 
@@ -158,6 +139,35 @@ export function AddFamilyOfficeMemberDialog({
     } catch (error) {
       console.error('Error loading roles:', error)
       setOfficeRoles(defaultOfficeRoles)
+    }
+  }
+
+  // Load services from database
+  const loadServices = async () => {
+    if (!user?.id) return
+
+    try {
+      const { data: services, error } = await supabase
+        .from('office_services_catalog')
+        .select('*')
+        .or(`created_by.eq.${user.id},is_default.eq.true`)
+        .eq('is_active', true)
+        .order('name')
+
+      if (error) {
+        console.error('Error loading services:', error)
+        return
+      }
+
+      setAvailableServices(services.map(service => ({
+        id: service.id,
+        name: service.name,
+        description: service.description,
+        is_default: service.is_default,
+        is_active: service.is_active
+      })))
+    } catch (error) {
+      console.error('Error loading services:', error)
     }
   }
 
@@ -196,10 +206,11 @@ export function AddFamilyOfficeMemberDialog({
     }
   }
 
-  // Load roles when dialog opens
+  // Load roles and services when dialog opens
   useEffect(() => {
     if (open && user?.id) {
       loadRoles()
+      loadServices()
     }
   }, [open, user?.id])
 
@@ -391,6 +402,170 @@ export function AddFamilyOfficeMemberDialog({
         variant: "destructive"
       })
     }
+  }
+
+  // Service management functions
+  const addCustomService = async () => {
+    if (!newService.trim() || !user?.id) return
+    
+    const serviceExists = availableServices.some(service => service.name.toLowerCase() === newService.trim().toLowerCase())
+    if (serviceExists) {
+      toast({
+        title: "Service Already Exists",
+        description: `"${newService.trim()}" is already in the services list.`,
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('office_services_catalog')
+        .insert({
+          created_by: user.id,
+          name: newService.trim(),
+          description: newServiceDescription.trim() || null,
+          is_default: false,
+          is_active: true
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      const newServiceObj: OfficeService = {
+        id: data.id,
+        name: data.name,
+        description: data.description,
+        is_default: false,
+        is_active: true
+      }
+
+      setAvailableServices([...availableServices, newServiceObj])
+      setNewService('')
+      setNewServiceDescription('')
+      toast({
+        title: "Service Added",
+        description: `"${newService.trim()}" has been added to the services list.`
+      })
+    } catch (error) {
+      console.error('Error adding service:', error)
+      toast({
+        title: "Error",
+        description: "Failed to add service. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const deleteService = async (serviceToDelete: OfficeService) => {
+    if (!user?.id || serviceToDelete.is_default) {
+      toast({
+        title: "Cannot Delete",
+        description: "Default services cannot be deleted.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      if (serviceToDelete.id) {
+        const { error } = await supabase
+          .from('office_services_catalog')
+          .delete()
+          .eq('id', serviceToDelete.id)
+
+        if (error) throw error
+      }
+
+      setAvailableServices(availableServices.filter(service => service.id !== serviceToDelete.id))
+      
+      // Remove service from all roles that use it
+      const updatedRoles = officeRoles.map(role => ({
+        ...role,
+        services: role.services.filter(s => s !== serviceToDelete.name)
+      }))
+      setOfficeRoles(updatedRoles)
+      
+      toast({
+        title: "Service Deleted",
+        description: `"${serviceToDelete.name}" has been removed from the services list.`
+      })
+    } catch (error) {
+      console.error('Error deleting service:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete service. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const startEditingService = (service: OfficeService) => {
+    setEditingService(service.id || '')
+    setEditServiceName(service.name)
+    setEditServiceDescription(service.description || '')
+  }
+
+  const saveServiceEdit = async () => {
+    if (!editServiceName.trim() || !editingService || !user?.id) return
+
+    const serviceToEdit = availableServices.find(service => service.id === editingService)
+    if (!serviceToEdit?.id || serviceToEdit.is_default) {
+      toast({
+        title: "Cannot Edit",
+        description: "Default services cannot be edited.",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('office_services_catalog')
+        .update({ 
+          name: editServiceName.trim(),
+          description: editServiceDescription.trim() || null
+        })
+        .eq('id', serviceToEdit.id)
+
+      if (error) throw error
+
+      const updatedServices = availableServices.map(service => 
+        service.id === editingService 
+          ? { ...service, name: editServiceName.trim(), description: editServiceDescription.trim() }
+          : service
+      )
+      setAvailableServices(updatedServices)
+      
+      // Update roles that use this service
+      const updatedRoles = officeRoles.map(role => ({
+        ...role,
+        services: role.services.map(s => s === serviceToEdit.name ? editServiceName.trim() : s)
+      }))
+      setOfficeRoles(updatedRoles)
+      
+      setEditingService(null)
+      setEditServiceName('')
+      setEditServiceDescription('')
+      toast({
+        title: "Service Updated",
+        description: `Service has been updated to "${editServiceName.trim()}".`
+      })
+    } catch (error) {
+      console.error('Error updating service:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update service. Please try again.",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const cancelServiceEdit = () => {
+    setEditingService(null)
+    setEditServiceName('')
+    setEditServiceDescription('')
   }
 
   const handleDelete = async () => {
@@ -687,17 +862,132 @@ export function AddFamilyOfficeMemberDialog({
                           
                           {/* Services for this role */}
                           <div className="mt-2">
-                            <Label className="text-xs text-muted-foreground">Services:</Label>
+                            <div className="flex items-center justify-between mb-2">
+                              <Label className="text-xs text-muted-foreground">Services:</Label>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowServiceManager((v) => !v)}
+                                className="text-xs h-6"
+                              >
+                                {showServiceManager ? 'Hide Service Manager' : 'Manage Services'}
+                              </Button>
+                            </div>
+                            
+                            {showServiceManager && (
+                              <div className="mb-3 p-2 border rounded-md bg-muted/50">
+                                {/* Add New Service */}
+                                <div className="space-y-2 mb-3">
+                                  <div className="flex gap-2">
+                                    <Input
+                                      value={newService}
+                                      onChange={(e) => setNewService(e.target.value)}
+                                      placeholder="Service name"
+                                      className="flex-1 h-7 text-xs"
+                                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomService())}
+                                    />
+                                    <Button type="button" onClick={addCustomService} variant="outline" size="sm" className="h-7">
+                                      <Plus className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                  <Input
+                                    value={newServiceDescription}
+                                    onChange={(e) => setNewServiceDescription(e.target.value)}
+                                    placeholder="Service description (optional)"
+                                    className="h-7 text-xs"
+                                  />
+                                </div>
+
+                                {/* Manage Services List */}
+                                <div className="max-h-32 overflow-y-auto space-y-1">
+                                  {availableServices.map((service) => (
+                                    <div key={service.id} className="flex items-center justify-between p-1 rounded border bg-background">
+                                      {editingService === service.id ? (
+                                        <div className="flex items-center gap-1 flex-1">
+                                          <div className="flex-1 space-y-1">
+                                            <Input
+                                              value={editServiceName}
+                                              onChange={(e) => setEditServiceName(e.target.value)}
+                                              className="h-6 text-xs"
+                                              onKeyDown={(e) => e.key === 'Enter' && saveServiceEdit()}
+                                            />
+                                            <Input
+                                              value={editServiceDescription}
+                                              onChange={(e) => setEditServiceDescription(e.target.value)}
+                                              placeholder="Description"
+                                              className="h-6 text-xs"
+                                            />
+                                          </div>
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={saveServiceEdit}
+                                            className="h-6 w-6 p-0"
+                                          >
+                                            <Check className="h-3 w-3" />
+                                          </Button>
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={cancelServiceEdit}
+                                            className="h-6 w-6 p-0"
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      ) : (
+                                        <>
+                                          <div className="flex-1">
+                                            <span className="text-xs font-medium">{service.name}</span>
+                                            {service.description && (
+                                              <p className="text-xs text-muted-foreground truncate">{service.description}</p>
+                                            )}
+                                          </div>
+                                          <div className="flex gap-1">
+                                            {!service.is_default && (
+                                              <>
+                                                <Button
+                                                  type="button"
+                                                  size="sm"
+                                                  variant="ghost"
+                                                  onClick={() => startEditingService(service)}
+                                                  className="h-6 w-6 p-0"
+                                                >
+                                                  <Edit className="h-3 w-3" />
+                                                </Button>
+                                                <Button
+                                                  type="button"
+                                                  size="sm"
+                                                  variant="ghost"
+                                                  onClick={() => deleteService(service)}
+                                                  className="h-6 w-6 p-0 text-destructive"
+                                                >
+                                                  <Trash2 className="h-3 w-3" />
+                                                </Button>
+                                              </>
+                                            )}
+                                          </div>
+                                        </>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
                             <div className="grid grid-cols-2 gap-1 mt-1">
                               {availableServices.map((service) => (
-                                <label key={service} className="flex items-center space-x-2 text-xs">
+                                <label key={service.id} className="flex items-center space-x-2 text-xs">
                                   <input
                                     type="checkbox"
-                                    checked={(role.services || []).includes(service)}
-                                    onChange={() => toggleServiceForRole(role, service)}
+                                    checked={(role.services || []).includes(service.name)}
+                                    onChange={() => toggleServiceForRole(role, service.name)}
                                     className="rounded border-gray-300"
                                   />
-                                  <span className="truncate">{service}</span>
+                                  <span className="truncate">{service.name}</span>
                                 </label>
                               ))}
                             </div>
