@@ -122,7 +122,7 @@ export const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center pt-6 md:pt-8 text-xs md:text-sm text-muted-foreground">
           <div className="flex flex-wrap justify-center md:justify-start space-x-4 md:space-x-6 mb-4 md:mb-0">
             <a href="/privacy-policy" className="hover:text-foreground transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
+            <a href="/terms-of-service" className="hover:text-foreground transition-colors">Terms of Service</a>
             <a href="#" className="hover:text-foreground transition-colors">Cookie Policy</a>
           </div>
           <p className="text-center md:text-left">© 2024 TruHeirs by VNCI, LLC Powered by The Fampreneurs. All rights reserved.</p>
