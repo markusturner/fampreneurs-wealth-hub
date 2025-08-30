@@ -57,7 +57,7 @@ export const FAQ = () => {
   }
   
   const handleContactSupport = () => {
-    navigateToRoute('/contact')
+    navigateToRoute('/contact-support')
   }
 
   return (
