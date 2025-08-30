@@ -247,9 +247,9 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
         {/* Navigation Links - Desktop & Tablet */}
         <div className="hidden md:flex items-center gap-0.5 lg:gap-1 mx-2 lg:mx-4 xl:mx-6">
           <Button
-            variant={location.pathname === '/' ? "default" : "ghost"}
+            variant={location.pathname === '/dashboard' ? "default" : "ghost"}
             size="sm"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/dashboard')}
             className="gap-1 lg:gap-2 h-8 lg:h-9 px-2 lg:px-3 text-xs lg:text-sm"
           >
             <LayoutDashboard className="h-3 w-3 lg:h-4 lg:w-4" />

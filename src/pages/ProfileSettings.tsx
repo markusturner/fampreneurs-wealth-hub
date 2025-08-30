@@ -18,7 +18,7 @@ export function ProfileSettings() {
   const isMobile = useIsMobile()
 
   const handleBackToDashboard = () => {
-    navigate('/')
+    navigate('/dashboard')
   }
 
   return (
