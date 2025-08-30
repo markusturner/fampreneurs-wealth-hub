@@ -64,7 +64,7 @@ export const Footer = () => {
 
 
           {/* Contact */}
-          <div className="ml-20 max-w-xs">
+          <div className="ml-24 max-w-xs">
             <h4 className="font-semibold mb-4" style={{
             color: '#ffb500'
           }}>Contact</h4>
