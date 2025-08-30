@@ -107,29 +107,29 @@ export const Features = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mt-6 md:mt-8">
               <div>
                 <h4 className="font-bold text-lg mb-2" style={{ color: '#FFB500' }}>Traditional Wealth Managers</h4>
-                <ul className="text-muted-foreground text-left space-y-1">
-                  <li>• $1M+ minimum investment</li>
-                  <li>• 1-2% annual fees</li>
-                  <li>• Limited family involvement</li>
-                  <li>• Slow decision making</li>
+                <ul className="text-white text-left space-y-1">
+                  <li className="flex items-start"><span className="mr-2">•</span><span>$1M+ minimum investment</span></li>
+                  <li className="flex items-start"><span className="mr-2">•</span><span>1-2% annual fees</span></li>
+                  <li className="flex items-start"><span className="mr-2">•</span><span>Limited family involvement</span></li>
+                  <li className="flex items-start"><span className="mr-2">•</span><span>Slow decision making</span></li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-bold text-lg mb-2" style={{ color: '#2EB2FF' }}>DIY Approach</h4>
-                <ul className="text-muted-foreground text-left space-y-1">
-                  <li>• No professional guidance</li>
-                  <li>• Scattered tools & accounts</li>
-                  <li>• Time-consuming research</li>
-                  <li>• No family coordination</li>
+                <ul className="text-white text-left space-y-1">
+                  <li className="flex items-start"><span className="mr-2">•</span><span>No professional guidance</span></li>
+                  <li className="flex items-start"><span className="mr-2">•</span><span>Scattered tools & accounts</span></li>
+                  <li className="flex items-start"><span className="mr-2">•</span><span>Time-consuming research</span></li>
+                  <li className="flex items-start"><span className="mr-2">•</span><span>No family coordination</span></li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-bold text-lg mb-2" style={{ color: '#6215c8' }}>TruHeirs Platform</h4>
-                <ul className="text-foreground text-left space-y-1">
-                  <li>• Start with any amount</li>
-                  <li>• Fixed monthly pricing</li>
-                  <li>• Full family engagement</li>
-                  <li>• AI-powered insights</li>
+                <ul className="text-white text-left space-y-1">
+                  <li className="flex items-start"><span className="mr-2">•</span><span>Start with any amount</span></li>
+                  <li className="flex items-start"><span className="mr-2">•</span><span>Fixed monthly pricing</span></li>
+                  <li className="flex items-start"><span className="mr-2">•</span><span>Full family engagement</span></li>
+                  <li className="flex items-start"><span className="mr-2">•</span><span>AI-powered insights</span></li>
                 </ul>
               </div>
             </div>
