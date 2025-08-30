@@ -43,16 +43,20 @@ document.addEventListener('keydown', (e) => {
   }
 })
 
-// Fix mobile viewport height for consistent mobile UI
+// Fix mobile viewport height for consistent mobile UI - with proper cleanup
+let viewportHeightInitialized = false
+
 const setViewportHeight = () => {
   const vh = window.innerHeight * 0.01
   document.documentElement.style.setProperty('--vh', `${vh}px`)
 }
 
-// Set on load and resize
-setViewportHeight()
-window.addEventListener('resize', setViewportHeight)
-window.addEventListener('orientationchange', setViewportHeight)
+if (!viewportHeightInitialized) {
+  setViewportHeight()
+  window.addEventListener('resize', setViewportHeight, { passive: true })
+  window.addEventListener('orientationchange', setViewportHeight, { passive: true })
+  viewportHeightInitialized = true
+}
 
 // Initialize mobile services
 initializeMobileServices();
@@ -60,26 +64,30 @@ initializeMobileServices();
 function AppWithNotifications() {
   useZapierNotifications()
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/community" element={<Community />} />
-      <Route path="/courses" element={<Courses />} />
-      <Route path="/documents" element={<Documents />} />
-      <Route path="/family-roundtable" element={<Dashboard />} />
-      <Route path="/family-governance" element={<FamilyGovernance />} />
-      <Route path="/calendar" element={<Calendar />} />
-      <Route path="/members" element={<Members />} />
-      <Route path="/investments" element={<Investments />} />
-      <Route path="/profile-settings" element={<ProfileSettings />} />
-      <Route path="/help" element={<Help />} />
-      <Route path="/contact" element={<Contact />} />
-      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-      <Route path="/terms-of-service" element={<TermsOfService />} />
-      <Route path="/cookie-policy" element={<CookiePolicy />} />
-      <Route path="/search" element={<Search />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/community" element={<Community />} />
+        <Route path="/courses" element={<Courses />} />
+        <Route path="/documents" element={<Documents />} />
+        <Route path="/family-roundtable" element={<Dashboard />} />
+        <Route path="/family-governance" element={<FamilyGovernance />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/members" element={<Members />} />
+        <Route path="/investments" element={<Investments />} />
+        <Route path="/profile-settings" element={<ProfileSettings />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-service" element={<TermsOfService />} />
+        <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/search" element={<Search />} />
+        <Route path="*" element={<div>Page not found</div>} />
+      </Routes>
+      <MobileBottomNav />
+    </>
   )
 }
 
@@ -91,7 +99,6 @@ createRoot(document.getElementById("root")!).render(
           <AuthProvider>
             <MeetingsProvider>
               <AppWithNotifications />
-              <MobileBottomNav />
               <AIChat />
               <Toaster />
             </MeetingsProvider>

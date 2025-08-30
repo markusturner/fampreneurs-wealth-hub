@@ -54,15 +54,17 @@ export function MobileBottomNav() {
       }
     }
 
-    checkUserRole()
-  }, [user?.id])
+    if (shouldShowNav) {
+      checkUserRole()
+    }
+  }, [user?.id, shouldShowNav])
 
   // Fetch unread messages count
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null
 
     const fetchUnreadCount = async () => {
-      if (!user?.id) return
+      if (!user?.id || !shouldShowNav) return
 
       try {
         const { data, error } = await supabase
@@ -79,31 +81,39 @@ export function MobileBottomNav() {
       }
     }
 
-    fetchUnreadCount()
+    if (shouldShowNav) {
+      fetchUnreadCount()
 
-    // Subscribe to new messages only when user is available
-    if (user?.id) {
-      channel = supabase
-        .channel(`unread_messages_${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'messages',
-            filter: `recipient_id=eq.${user.id}`
-          },
-          () => {
-            fetchUnreadCount()
-          }
-        )
-        .subscribe()
+      // Subscribe to new messages only when user is available and nav should show
+      if (user?.id) {
+        channel = supabase
+          .channel(`unread_messages_${user.id}`)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'messages',
+              filter: `recipient_id=eq.${user.id}`
+            },
+            () => {
+              fetchUnreadCount()
+            }
+          )
+          .subscribe()
+      }
     }
 
     return () => {
-      if (channel) supabase.removeChannel(channel)
+      if (channel) {
+        try {
+          supabase.removeChannel(channel)
+        } catch (error) {
+          console.warn('Error removing channel:', error)
+        }
+      }
     }
-  }, [user?.id])
+  }, [user?.id, shouldShowNav])
 
   // Don't render if user is not authenticated or on landing/auth pages
   if (!shouldShowNav) {
