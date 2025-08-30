@@ -111,7 +111,7 @@ export const Footer = () => {
                 <MapPin className="w-4 h-4 mr-2 mt-0.5" style={{
                 color: '#FFB500'
               }} />
-                <span>123 Wealth St.<br />Financial District<br />New York, NY 10001</span>
+                <span>1650 Marietta Boulevard NW Unit D58<br />Atlanta, GA 30318</span>
               </li>
             </ul>
           </div>

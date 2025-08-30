@@ -322,7 +322,7 @@ const TermsOfService = () => {
               <div className="space-y-2">
                 <p><strong>Email:</strong> legal@truheirs.com</p>
                 <p><strong>Phone:</strong> 1-800-TRU-HEIR</p>
-                <p><strong>Address:</strong> VNCI, LLC, 123 Wealth St., Financial District, New York, NY 10001</p>
+                <p><strong>Address:</strong> VNCI, LLC, 1650 Marietta Boulevard NW Unit D58, Atlanta, GA 30318</p>
               </div>
             </CardContent>
           </Card>
