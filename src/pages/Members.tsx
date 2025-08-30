@@ -95,36 +95,24 @@ export default function Members() {
     try {
       console.log('Fetching family members for user:', user.id)
       
-      // Fetch family members
-      const { data: familyData, error: familyError } = await supabase
+      // Fetch all members for this user once, split client-side into family vs office
+      const { data: allData, error: membersError } = await supabase
         .from('family_members')
         .select('*')
         .eq('added_by', user.id)
         .order('created_at', { ascending: false })
 
-      console.log('Family members data:', familyData)
-      console.log('Family members error:', familyError)
+      console.log('All members data:', allData)
+      console.log('Members error:', membersError)
 
-      if (familyError) throw familyError
+      if (membersError) throw membersError
 
-      // Fetch family office members from family_members with office_role set
-      const { data: officeData, error: officeError } = await supabase
-        .from('family_members')
-        .select('*')
-        .eq('added_by', user.id)
-        .not('office_role', 'is', null)
-        .order('created_at', { ascending: false })
+      const familyList = (allData || []).filter((m: any) => !m.office_role && m.family_position !== 'Family Office Team')
+      const officeList = (allData || []).filter((m: any) => m.office_role || m.family_position === 'Family Office Team')
 
-      console.log('Office members data:', officeData)
-      console.log('Office members error:', officeError)
-
-      if (officeError) throw officeError
-
-      // Filter out family members who have office roles - they should only appear in office section
-      setFamilyMembers((familyData || []).filter(member => !member.office_role))
-      // Map to UI shape
+      setFamilyMembers(familyList)
       setOfficeMembers(
-        (officeData || []).map((fm: any) => ({
+        officeList.map((fm: any) => ({
           id: fm.id,
           full_name: fm.full_name,
           email: fm.email,
