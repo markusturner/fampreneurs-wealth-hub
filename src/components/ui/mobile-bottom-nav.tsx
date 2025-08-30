@@ -16,7 +16,7 @@ interface NavItem {
 const familyOfficeItems: NavItem[] = [
   { name: 'Documents', href: '/documents', icon: FileText },
   { name: 'Investments', href: '/investments', icon: TrendingUp },
-  { name: 'Home', href: '/', icon: Home },
+  { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Calendar', href: '/calendar', icon: Calendar },
   { name: 'Members', href: '/members', icon: Users },
 ]
@@ -25,7 +25,7 @@ const familyOfficeItems: NavItem[] = [
 const familyMemberItems: NavItem[] = [
   { name: 'Documents', href: '/documents', icon: FileText },
   { name: 'Calendar', href: '/calendar', icon: Calendar },
-  { name: 'Home', href: '/', icon: Home },
+  { name: 'Dashboard', href: '/dashboard', icon: Home },
 ]
 
 export function MobileBottomNav() {
@@ -33,6 +33,9 @@ export function MobileBottomNav() {
   const { user } = useAuth()
   const [isFamilyOfficeOnly, setIsFamilyOfficeOnly] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+
+  // Only show mobile nav when user is authenticated and not on auth/landing pages
+  const shouldShowNav = user && !location.pathname.includes('/auth') && location.pathname !== '/'
 
   useEffect(() => {
     const checkUserRole = async () => {
@@ -101,6 +104,11 @@ export function MobileBottomNav() {
       if (channel) supabase.removeChannel(channel)
     }
   }, [user?.id])
+
+  // Don't render if user is not authenticated or on landing/auth pages
+  if (!shouldShowNav) {
+    return null
+  }
 
   const navigationItems = familyOfficeItems // Always use full navigation for consistency across devices
 
