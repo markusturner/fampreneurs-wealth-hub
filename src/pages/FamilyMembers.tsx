@@ -170,7 +170,7 @@ export default function FamilyMembers() {
         email: formData.email.trim() || null,
         phone: formData.phone.trim() || null,
         trust_positions: selectedTrustPositions.length > 0 ? selectedTrustPositions : null,
-        governance_branch: formData.governanceBranch || null,
+        governance_branch: formData.governanceBranch && formData.governanceBranch !== 'none' ? formData.governanceBranch : null,
         notes: formData.notes.trim() || null,
         status: 'active'
       }
@@ -430,7 +430,7 @@ export default function FamilyMembers() {
                         <SelectValue placeholder="Select governance branch (optional)" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {governanceBranches.map((branch) => (
                           <SelectItem key={branch.value} value={branch.value}>
                             {branch.label}

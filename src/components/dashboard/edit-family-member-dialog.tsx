@@ -82,6 +82,7 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
     notes: ''
   })
   const [newTrustPosition, setNewTrustPosition] = useState('')
+  const [trustSelectValue, setTrustSelectValue] = useState('')
 
   useEffect(() => {
     if (member) {
@@ -107,6 +108,7 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
       }))
     }
     setNewTrustPosition('')
+    setTrustSelectValue('')
   }
 
   const removeTrustPosition = (position: string) => {
@@ -279,8 +281,11 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
               ))}
             </div>
             <Select
-              value=""
-              onValueChange={(value) => addTrustPosition(value)}
+              value={trustSelectValue}
+              onValueChange={(value) => {
+                setTrustSelectValue(value)
+                addTrustPosition(value)
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Add trust position" />
