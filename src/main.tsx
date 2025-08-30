@@ -25,6 +25,7 @@ import Help from "./pages/Help";
 import Contact from "./pages/Contact";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
 
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { AIChat } from "@/components/dashboard/ai-chat";
@@ -65,6 +66,7 @@ function AppWithNotifications() {
       <Route path="/contact" element={<Contact />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-of-service" element={<TermsOfService />} />
+      <Route path="/cookie-policy" element={<CookiePolicy />} />
       <Route path="/search" element={<Search />} />
     </Routes>
   )
