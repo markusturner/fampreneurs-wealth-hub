@@ -6,6 +6,7 @@ import { Features } from '@/components/landing/Features'
 import { Pricing } from '@/components/landing/Pricing'
 import { FAQ } from '@/components/landing/FAQ'
 import { Footer } from '@/components/landing/Footer'
+import { BuildInfo } from '@/components/BuildInfo'
 
 const Landing = () => {
   const { user, loading } = useAuth()
@@ -26,6 +27,7 @@ const Landing = () => {
       <Pricing />
       <FAQ />
       <Footer />
+      <BuildInfo />
     </div>
   )
 }
