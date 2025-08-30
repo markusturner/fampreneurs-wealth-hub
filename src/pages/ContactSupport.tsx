@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -214,7 +213,7 @@ const ContactSupport = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-2 hover:border-primary transition-colors duration-300">
+            <Card className="border-2 hover:border-white transition-colors duration-300">
               <CardHeader>
                 <CardTitle style={{ color: '#2eb2ff' }}>Get Started Today</CardTitle>
               </CardHeader>
