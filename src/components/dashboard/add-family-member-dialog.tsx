@@ -143,7 +143,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
           family_position: formData.familyPosition || null,
           trust_positions: finalTrustPositions.length > 0 ? finalTrustPositions : null,
           relationship_to_family: formData.relationshipToFamily.trim() || null,
-          governance_branch: formData.governanceBranch || null,
+          governance_branch: formData.governanceBranch && formData.governanceBranch !== 'none' ? formData.governanceBranch : null,
           notes: formData.notes.trim() || null,
           status: 'pending'
         })
@@ -336,7 +336,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
                     <SelectValue placeholder="Select governance branch (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     <SelectItem value="family_council">Family Council (Executive Branch)</SelectItem>
                     <SelectItem value="council_elders">Council of Elders (Judicial Branch)</SelectItem>
                     <SelectItem value="family_assembly">Family Assembly (Legislative Branch)</SelectItem>

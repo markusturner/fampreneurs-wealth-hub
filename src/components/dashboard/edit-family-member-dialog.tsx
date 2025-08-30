@@ -131,7 +131,7 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
       id: member.id,
       ...formData,
       trust_positions: finalTrustPositions,
-      governance_branch: formData.governance_branch || null
+      governance_branch: formData.governance_branch && formData.governance_branch !== 'none' ? formData.governance_branch : null
     })
   }
 
@@ -222,7 +222,7 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
                 <SelectValue placeholder="Select governance branch" />
               </SelectTrigger>
               <SelectContent className="bg-background border z-50">
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 <SelectItem value="family_council">Family Council (Executive Branch)</SelectItem>
                 <SelectItem value="council_elders">Council of Elders (Judicial Branch)</SelectItem>
                 <SelectItem value="family_assembly">Family Assembly (Legislative Branch)</SelectItem>
