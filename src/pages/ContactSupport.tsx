@@ -226,7 +226,7 @@ const ContactSupport = () => {
                   Ready to transform your family's wealth building journey?
                 </p>
                 <Button 
-                  className="w-full bg-secondary text-secondary-foreground" 
+                  className="w-full bg-secondary text-secondary-foreground hover:bg-[#2eb2ff] hover:text-white transition-colors duration-300" 
                   onClick={handleGetStarted}
                 >
                   Get Started
