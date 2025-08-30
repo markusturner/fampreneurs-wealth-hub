@@ -203,7 +203,7 @@ const ContactSupport = () => {
                 <p className="text-muted-foreground mb-4">
                   Call our support line:
                 </p>
-                <p className="font-semibold text-lg mb-4 text-primary">
+                <p className="font-semibold text-lg mb-4 text-white">
                   +1 (470) 432-0220
                 </p>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
