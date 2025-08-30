@@ -61,19 +61,6 @@ export const Footer = () => {
             </div>
           </div>
 
-          {/* Platform */}
-          <div>
-            <h4 className="font-semibold mb-4" style={{
-            color: '#ffb500'
-          }}>Platform</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Features</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Pricing</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Security</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Integrations</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">API Documentation</a></li>
-            </ul>
-          </div>
 
           {/* Resources */}
           <div>
