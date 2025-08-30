@@ -43,6 +43,17 @@ document.addEventListener('keydown', (e) => {
   }
 })
 
+// Fix mobile viewport height for consistent mobile UI
+const setViewportHeight = () => {
+  const vh = window.innerHeight * 0.01
+  document.documentElement.style.setProperty('--vh', `${vh}px`)
+}
+
+// Set on load and resize
+setViewportHeight()
+window.addEventListener('resize', setViewportHeight)
+window.addEventListener('orientationchange', setViewportHeight)
+
 // Initialize mobile services
 initializeMobileServices();
 

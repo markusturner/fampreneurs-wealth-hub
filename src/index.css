@@ -190,6 +190,22 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     display: none;
   }
 
+  /* Mobile viewport height fix */
+  .mobile-vh-fix {
+    --vh: 1vh;
+  }
+
+  @supports (height: 100dvh) {
+    .mobile-vh-fix {
+      --vh: 1dvh;
+    }
+  }
+
+  /* Safe area support for mobile devices */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
   /* Mobile-first responsive grid optimizations */
   .course-grid-mobile {
     display: grid;

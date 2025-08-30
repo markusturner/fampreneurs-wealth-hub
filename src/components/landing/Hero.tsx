@@ -9,7 +9,10 @@ export const Hero = () => {
   const handleLoginClick = () => {
     navigateToRoute('/auth');
   };
-  return <section className="relative min-h-screen flex items-center justify-center bg-background overflow-hidden">
+  return <section className="relative min-h-[100dvh] min-h-screen flex items-center justify-center bg-background overflow-hidden"
+    style={{
+      minHeight: 'calc(var(--vh, 1vh) * 100)', // Fallback for browsers without dvh support
+    }}>
       {/* Enhanced Background Elements */}
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-20 left-10 w-72 h-72 rounded-full bg-gradient-to-br from-primary to-secondary animate-pulse shadow-glow" />
@@ -28,7 +31,7 @@ export const Hero = () => {
       </div>
 
       {/* Enhanced Navigation */}
-      <nav className="absolute top-0 left-0 right-0 z-50 p-4 md:p-6 backdrop-blur-sm bg-background/20">
+      <nav className="absolute top-0 left-0 right-0 z-50 p-3 md:p-6 backdrop-blur-sm bg-background/80 safe-area-top">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2 md:space-x-3">
             <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg md:text-xl shadow-glow transition-smooth hover:scale-105">
@@ -57,7 +60,7 @@ export const Hero = () => {
       </nav>
 
       {/* Enhanced Hero Content */}
-      <div className="container mx-auto px-4 md:px-6 py-16 md:py-20 text-center relative z-10">
+      <div className="container mx-auto px-4 md:px-6 pt-24 pb-16 md:pt-32 md:pb-20 text-center relative z-10">
         <div className="max-w-5xl mx-auto animate-fade-in">
           {/* Main Headlines - Enhanced Typography */}
           <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 md:mb-8 leading-tight tracking-tight">
