@@ -99,7 +99,7 @@ export const Footer = () => {
                 <Mail className="w-4 h-4 mr-2" style={{
                 color: '#FFB500'
               }} />
-                <span>support@truheirs.com</span>
+                <span>info@fampreneurs.com</span>
               </li>
               <li className="flex items-center">
                 <Phone className="w-4 h-4 mr-2" style={{
