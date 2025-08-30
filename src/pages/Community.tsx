@@ -1388,6 +1388,48 @@ function ServicesContent() {
     }
   }, [user?.id])
 
+  // Real-time subscriptions for family members and office roles changes
+  useEffect(() => {
+    if (!user?.id) return
+
+    const familyMembersChannel = supabase
+      .channel('family-members-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'family_members',
+          filter: `added_by=eq.${user.id}`
+        },
+        () => {
+          fetchFamilyOfficeMembers()
+        }
+      )
+      .subscribe()
+
+    const officeRolesChannel = supabase
+      .channel('office-roles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'office_roles_catalog',
+          filter: `created_by=eq.${user.id}`
+        },
+        () => {
+          fetchFamilyOfficeMembers()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(familyMembersChannel)
+      supabase.removeChannel(officeRolesChannel)
+    }
+  }, [user?.id])
+
   const fetchFamilyOfficeMembers = async () => {
     if (!user?.id) {
       setLoadingMembers(false)
@@ -1498,12 +1540,6 @@ function ServicesContent() {
       }
     })
 
-    // Also include services defined in the roles catalog, even if no members are assigned yet
-    Object.values(roleServicesMap).forEach((services) => {
-      if (Array.isArray(services)) {
-        services.forEach((service) => allServices.add(service))
-      }
-    })
 
     // Service to icon mapping
     const serviceIconMap: { [key: string]: any } = {
