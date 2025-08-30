@@ -42,7 +42,7 @@ export const socialLinks = {
   facebook: 'https://facebook.com/thefampreneurs',
   twitter: 'https://twitter.com/thefampreneurs', 
   linkedin: 'https://linkedin.com/company/thefampreneurs',
-  instagram: 'https://instagram.com/thefampreneurs'
+  instagram: 'https://www.instagram.com/thefampreneurs/'
 }
 
 // Contact information
