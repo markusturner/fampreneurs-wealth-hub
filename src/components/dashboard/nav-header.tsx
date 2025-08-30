@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { FeedbackDialog } from "@/components/dashboard/feedback-dialog"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { useAuth } from "@/contexts/AuthContext"
+import { useTheme } from "@/components/theme-provider"
 import { useFeedbackNotification } from "@/hooks/useFeedbackNotification"
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
@@ -25,6 +26,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const { profile, signOut } = useAuth()
+  const { theme } = useTheme()
   const { shouldShowFeedback, markFeedbackShown, temporarilyHideNotification } = useFeedbackNotification()
   const navigate = useNavigate()
   const location = useLocation()
@@ -234,7 +236,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
         <div className="flex items-center gap-1 sm:gap-2">
           
           <img 
-            src="/lovable-uploads/dc770169-00c8-4749-adba-57650fad0d94.png" 
+            src={theme === 'dark' ? "/lovable-uploads/dd1e87f3-4525-4007-9cd4-d7848dbeeed5.png" : "/lovable-uploads/dc770169-00c8-4749-adba-57650fad0d94.png"}
             alt="TruHeirs Logo" 
             className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
           />
