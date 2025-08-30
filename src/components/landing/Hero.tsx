@@ -124,7 +124,7 @@ export const Hero = () => {
 
         {/* Enhanced Scroll Indicator */}
         <div className="md:absolute md:bottom-8 md:left-1/2 md:transform md:-translate-x-1/2 animate-bounce flex justify-center items-center w-full mt-8 md:mt-0">
-          <button onClick={() => scrollToSection('features')} className="p-3 rounded-full bg-primary/10 backdrop-blur-sm border hover:bg-primary/20 transition-all duration-300 hover:scale-110 cursor-pointer" style={{
+          <button onClick={() => scrollToSection('features')} className="hidden md:block p-3 rounded-full bg-primary/10 backdrop-blur-sm border hover:bg-primary/20 transition-all duration-300 hover:scale-110 cursor-pointer" style={{
           borderColor: '#ffb500'
         }} aria-label="Scroll to features section">
             <ArrowDown className="w-6 h-6" style={{
