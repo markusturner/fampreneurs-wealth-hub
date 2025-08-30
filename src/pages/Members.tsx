@@ -120,7 +120,8 @@ export default function Members() {
 
       if (officeError) throw officeError
 
-      setFamilyMembers(familyData || [])
+      // Filter out family members who have office roles - they should only appear in office section
+      setFamilyMembers((familyData || []).filter(member => !member.office_role))
       // Map to UI shape
       setOfficeMembers(
         (officeData || []).map((fm: any) => ({
