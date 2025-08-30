@@ -3574,6 +3574,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      cleanup_sensitive_audit_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       generate_certificate_number: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -3734,6 +3738,10 @@ export type Database = {
       }
       users_are_family_members: {
         Args: { user1_id: string; user2_id: string }
+        Returns: boolean
+      }
+      validate_admin_financial_access: {
+        Args: { admin_user_id: string }
         Returns: boolean
       }
       validate_family_code: {
