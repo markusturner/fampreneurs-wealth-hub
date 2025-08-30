@@ -36,12 +36,12 @@ export function DashboardStats() {
         setDocumentCount(docCount)
       }
 
-      // Fetch family office member count for current user
+      // Fetch family office member count for current user (from family_members with office_role)
       const { count: officeCount, error: officeError } = await supabase
-        .from('family_office_members')
+        .from('family_members')
         .select('*', { count: 'exact', head: true })
         .eq('added_by', user.id)
-        .eq('status', 'active')
+        .not('office_role', 'is', null)
       
       if (!officeError && officeCount !== null) {
         setFamilyOfficeMemberCount(officeCount)
