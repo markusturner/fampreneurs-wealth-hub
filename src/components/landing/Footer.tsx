@@ -62,19 +62,6 @@ export const Footer = () => {
           </div>
 
 
-          {/* Resources */}
-          <div>
-            <h4 className="font-semibold mb-4" style={{
-            color: '#ffb500'
-          }}>Resources</h4>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-foreground transition-colors">Blog</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Help Center</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Webinars</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Case Studies</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">Community</a></li>
-            </ul>
-          </div>
 
           {/* Contact */}
           <div>
