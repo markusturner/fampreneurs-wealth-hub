@@ -174,13 +174,9 @@ export const Pricing = () => {
           ))}
         </div>
 
-        {/* Money Back Guarantee */}
+        {/* Features */}
         <div className="text-center mt-12">
           <div className="inline-flex items-center space-x-2 text-muted-foreground">
-            <Check className="w-5 h-5" style={{ color: '#FFB500' }} />
-            <span>30-day money-back guarantee</span>
-          </div>
-          <div className="inline-flex items-center space-x-2 text-muted-foreground ml-8">
             <Check className="w-5 h-5" style={{ color: '#FFB500' }} />
             <span>Cancel anytime</span>
           </div>
