@@ -121,7 +121,7 @@ export const Footer = () => {
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center pt-6 md:pt-8 text-xs md:text-sm text-muted-foreground">
           <div className="flex flex-wrap justify-center md:justify-start space-x-4 md:space-x-6 mb-4 md:mb-0">
-            <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
+            <a href="/privacy-policy" className="hover:text-foreground transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
             <a href="#" className="hover:text-foreground transition-colors">Cookie Policy</a>
           </div>

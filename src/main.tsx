@@ -23,6 +23,7 @@ import Search from "./pages/Search";
 import ProfileSettings from "./pages/ProfileSettings";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { AIChat } from "@/components/dashboard/ai-chat";
@@ -61,6 +62,7 @@ function AppWithNotifications() {
       <Route path="/profile-settings" element={<ProfileSettings />} />
       <Route path="/help" element={<Help />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/search" element={<Search />} />
     </Routes>
   )
