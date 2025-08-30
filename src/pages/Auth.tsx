@@ -72,7 +72,7 @@ export default function Auth() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        navigate('/')
+        navigate('/dashboard')
       }
     }
     checkUser()
@@ -155,7 +155,7 @@ export default function Auth() {
           title: "Welcome back!",
           description: "Successfully signed in to your family dashboard.",
         })
-        window.location.href = '/'
+        window.location.href = '/dashboard'
       }
     } catch (error) {
       toast({
@@ -370,7 +370,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: `${window.location.origin}/dashboard`
         }
       })
       
@@ -396,7 +396,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: `${window.location.origin}/dashboard`
         }
       })
       
@@ -422,7 +422,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'facebook',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: `${window.location.origin}/dashboard`
         }
       })
       
@@ -448,7 +448,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: `${window.location.origin}/dashboard`
         }
       })
       
@@ -474,7 +474,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: `${window.location.origin}/dashboard`
         }
       })
       
@@ -499,7 +499,7 @@ export default function Auth() {
       title: "Security setup complete!",
       description: `Two-factor authentication enabled using ${method}. Your account is now secure.`,
     })
-    window.location.href = '/'
+    window.location.href = '/dashboard'
   }
 
   const handleTwoFactorSkip = () => {
@@ -507,7 +507,7 @@ export default function Auth() {
       title: "Account ready!",
       description: "You can enable two-factor authentication later in your security settings.",
     })
-    window.location.href = '/'
+    window.location.href = '/dashboard'
   }
 
   // Show 2FA setup if user just signed up
