@@ -163,7 +163,7 @@ export const Pricing = () => {
                   style={{ 
                     backgroundColor: tier.popular ? '#FFB500' : '#2eb2ff',
                     borderColor: tier.popular ? '#FFB500' : '#2eb2ff',
-                    color: tier.popular ? '#290a52' : 'white'
+                    color: tier.popular ? '#290a52' : '#290a52'
                   }}
                   onClick={() => handlePurchase(tier.stripeAmount)}
                 >
