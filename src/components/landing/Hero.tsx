@@ -34,9 +34,11 @@ export const Hero = () => {
       <nav className="absolute top-0 left-0 right-0 z-50 p-3 md:p-6 backdrop-blur-sm bg-background/80 safe-area-top">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2 md:space-x-3">
-            <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg md:text-xl shadow-glow transition-smooth hover:scale-105">
-              T
-            </div>
+            <img 
+              src="/lovable-uploads/dc770169-00c8-4749-adba-57650fad0d94.png" 
+              alt="TruHeirs Logo" 
+              className="w-10 h-10 md:w-12 md:h-12 object-contain transition-smooth hover:scale-105"
+            />
             <div className="hidden sm:block">
               <h1 className="text-lg md:text-xl font-bold" style={{
               color: '#ffb500'
