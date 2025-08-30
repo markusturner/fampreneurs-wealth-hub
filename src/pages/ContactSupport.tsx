@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,8 +64,7 @@ const ContactSupport = () => {
           <div className="ml-auto">
             <Button 
               onClick={() => navigate('/auth')}
-              style={{ backgroundColor: '#290A52', color: 'white' }}
-              className="hover:opacity-90"
+              className="bg-primary text-primary-foreground hover:opacity-90"
             >
               Sign In
             </Button>
@@ -88,9 +86,9 @@ const ContactSupport = () => {
         <div className="grid gap-12 lg:grid-cols-3">
           {/* Contact Form */}
           <div className="lg:col-span-2">
-            <Card className="border-2 hover:border-[#290A52] transition-colors duration-300">
+            <Card className="border-2 hover:border-primary transition-colors duration-300">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-2xl" style={{ color: '#290A52' }}>
+                <CardTitle className="flex items-center gap-2 text-2xl text-primary">
                   <MessageSquare className="h-6 w-6" />
                   Send us a message
                 </CardTitle>
@@ -161,8 +159,7 @@ const ContactSupport = () => {
                   
                   <Button 
                     type="submit" 
-                    className="w-full gap-2 h-12 text-lg"
-                    style={{ backgroundColor: '#290A52', color: 'white' }}
+                    className="w-full gap-2 h-12 text-lg bg-primary text-primary-foreground"
                   >
                     <Send className="h-5 w-5" />
                     Send Message
@@ -206,7 +203,7 @@ const ContactSupport = () => {
                 <p className="text-muted-foreground mb-4">
                   Call our support line:
                 </p>
-                <p style={{ color: '#290A52' }} className="font-semibold text-lg mb-4">
+                <p className="font-semibold text-lg mb-4 text-primary">
                   +1 (470) 432-0220
                 </p>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -216,17 +213,16 @@ const ContactSupport = () => {
               </CardContent>
             </Card>
 
-            <Card className="border-2 hover:border-[#290A52] transition-colors duration-300">
+            <Card className="border-2 hover:border-primary transition-colors duration-300">
               <CardHeader>
-                <CardTitle style={{ color: '#290A52' }}>Get Started Today</CardTitle>
+                <CardTitle className="text-primary">Get Started Today</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">
                   Ready to transform your family's wealth building journey?
                 </p>
                 <Button 
-                  className="w-full" 
-                  style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                  className="w-full bg-secondary text-secondary-foreground" 
                   onClick={() => navigate('/auth')}
                 >
                   Start Your Free Trial
@@ -238,8 +234,8 @@ const ContactSupport = () => {
 
         {/* Bottom CTA */}
         <div className="text-center mt-20">
-          <div className="max-w-4xl mx-auto p-12 rounded-2xl" style={{ backgroundColor: 'rgba(41, 10, 82, 0.1)' }}>
-            <h3 className="text-3xl font-bold mb-6" style={{ color: '#ffb500' }}>
+          <div className="max-w-4xl mx-auto p-12 rounded-2xl bg-primary/10">
+            <h3 className="text-3xl font-bold mb-6 text-secondary">
               Join Thousands of Families Building Generational Wealth
             </h3>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -248,15 +244,13 @@ const ContactSupport = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 onClick={() => navigate('/auth')}
-                className="px-8 py-4 text-lg font-semibold rounded-lg hover:opacity-90 transition-opacity" 
-                style={{ backgroundColor: '#290A52', color: 'white' }}
+                className="px-8 py-4 text-lg font-semibold rounded-lg hover:opacity-90 transition-opacity bg-primary text-primary-foreground"
               >
                 Get Started Free
               </Button>
               <Button 
                 onClick={() => navigate('/')}
-                className="px-8 py-4 border-2 font-semibold rounded-lg hover:bg-opacity-10 transition-colors text-lg" 
-                style={{ borderColor: '#2EB2FF', color: '#2EB2FF' }}
+                className="px-8 py-4 border-2 font-semibold rounded-lg hover:bg-opacity-10 transition-colors text-lg border-blue-500 text-blue-500" 
                 variant="outline"
               >
                 Learn More
