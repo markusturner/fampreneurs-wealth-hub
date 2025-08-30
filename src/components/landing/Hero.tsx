@@ -37,14 +37,8 @@ export const Hero = () => {
             <img 
               src="/lovable-uploads/dc770169-00c8-4749-adba-57650fad0d94.png" 
               alt="TruHeirs Logo" 
-              className="w-10 h-10 md:w-12 md:h-12 object-contain transition-smooth hover:scale-105"
+              className="w-14 h-14 md:w-16 md:h-16 object-contain transition-smooth hover:scale-105"
             />
-            <div className="hidden sm:block">
-              <h1 className="text-lg md:text-xl font-bold" style={{
-              color: '#ffb500'
-            }}>TruHeirs</h1>
-              <p className="text-xs text-muted-foreground hidden md:block">Powered by The Fampreneurs</p>
-            </div>
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
             <ThemeToggle />

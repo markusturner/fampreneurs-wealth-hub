@@ -233,20 +233,11 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
       <div className="container flex h-14 sm:h-16 items-center px-3 sm:px-4">
         <div className="flex items-center gap-1 sm:gap-2">
           
-          <div className="flex items-center gap-2 sm:gap-3">
-            <img 
-              src="/lovable-uploads/dc770169-00c8-4749-adba-57650fad0d94.png" 
-              alt="The Fampreneurs Logo" 
-              className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-            />
-            <div className="hidden sm:block">
-              <h1 className="text-lg sm:text-xl font-oswald font-bold tracking-wide" style={{color: '#ffb500'}}>THE FAMPRENEURS</h1>
-              <p className="text-xs text-muted-foreground">BUILDING STRONG LEGACIES</p>
-            </div>
-            <div className="sm:hidden">
-              <h1 className="text-base font-oswald font-bold tracking-wide" style={{color: '#ffb500'}}>FAMPRENEURS</h1>
-            </div>
-          </div>
+          <img 
+            src="/lovable-uploads/dc770169-00c8-4749-adba-57650fad0d94.png" 
+            alt="TruHeirs Logo" 
+            className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+          />
         </div>
 
         {/* Navigation Links - Desktop & Tablet */}
