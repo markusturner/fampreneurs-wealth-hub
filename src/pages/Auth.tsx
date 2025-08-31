@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNavigate } from 'react-router-dom'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { useTheme } from '@/components/theme-provider'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
 import { TwoFactorSetup } from '@/components/auth/two-factor-setup'
 import { ProfilePhotoUpload } from '@/components/auth/ProfilePhotoUpload'
@@ -34,6 +35,7 @@ export default function Auth() {
   
   const { toast } = useToast()
   const navigate = useNavigate()
+  const { theme } = useTheme()
   
   useEffect(() => {
     // Check URL parameters for payment success
@@ -540,8 +542,12 @@ export default function Auth() {
           <ThemeToggle />
         </div>
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-[#ffb500]/10 rounded-full flex items-center justify-center mb-4">
-            <Shield className="h-6 w-6" style={{ color: '#ffb500' }} />
+          <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4">
+            <img 
+              src={theme === 'dark' ? "/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" : "/lovable-uploads/00df4658-d6df-420b-8c0d-7af68820837d.png"}
+              alt="TruHeirs Logo" 
+              className="w-12 h-12 object-contain"
+            />
           </div>
           <CardTitle className="text-2xl font-bold">TruHeirs</CardTitle>
           <CardDescription>
