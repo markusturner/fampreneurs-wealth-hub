@@ -208,38 +208,67 @@ export function TransactionMonitoring() {
   const fetchTransactions = async (offset = 0, append = false) => {
     try {
       if (user) {
-        // For authenticated users, fetch from Supabase
-        const { data: dbTransactions, error } = await supabase
-          .from('account_transactions')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('transaction_date', { ascending: false })
-          .range(offset, offset + 49)
+        // For authenticated users, fetch from both account_transactions and bank_statement_transactions
+        const [accountTransactionsResponse, bankStatementTransactionsResponse] = await Promise.all([
+          supabase
+            .from('account_transactions')
+            .select('*')
+            .eq('user_id', user.id),
+          supabase
+            .from('bank_statement_transactions')
+            .select('*')
+            .eq('user_id', user.id)
+        ])
 
-        if (error) {
-          console.error('Error fetching transactions:', error)
-          if (!append) setTransactions([])
-          return
+        if (accountTransactionsResponse.error) {
+          console.error('Error fetching account transactions:', accountTransactionsResponse.error)
         }
 
-        // Transform Supabase data to match our interface
-        const transformedTransactions: Transaction[] = (dbTransactions || []).map(tx => ({
-          id: tx.id,
-          date: tx.transaction_date,
-          description: tx.description || 'Transaction',
-          amount: Number(tx.amount),
-          type: tx.transaction_type === 'credit' ? 'income' : 'expense',
-          category: tx.category || 'Uncategorized',
-          account: 'Connected Account',
-          tags: [],
-          isRecurring: false,
-          status: tx.pending ? 'pending' : 'completed'
-        }))
+        if (bankStatementTransactionsResponse.error) {
+          console.error('Error fetching bank statement transactions:', bankStatementTransactionsResponse.error)
+        }
+
+        // Transform and combine both types of transactions
+        const transformedTransactions: Transaction[] = [
+          // Account transactions
+          ...(accountTransactionsResponse.data || []).map(tx => ({
+            id: tx.id,
+            date: tx.transaction_date,
+            description: tx.description || 'Transaction',
+            amount: Number(tx.amount),
+            type: (tx.transaction_type === 'credit' ? 'income' : 'expense') as 'income' | 'expense',
+            category: tx.category || 'Uncategorized',
+            account: 'Connected Account',
+            tags: [],
+            familyMember: undefined,
+            isRecurring: false,
+            status: (tx.pending ? 'pending' : 'completed') as 'completed' | 'pending'
+          })),
+          // Bank statement transactions
+          ...(bankStatementTransactionsResponse.data || []).map(tx => ({
+            id: tx.id,
+            date: tx.transaction_date,
+            description: tx.description,
+            amount: Number(tx.amount),
+            type: (tx.transaction_type === 'credit' ? 'income' : 'expense') as 'income' | 'expense',
+            category: tx.category || 'Uncategorized',
+            account: 'Uploaded Statement',
+            tags: [],
+            familyMember: undefined,
+            isRecurring: false,
+            status: 'completed' as const
+          }))
+        ]
+
+        // Sort by date and apply pagination
+        const sortedTransactions = transformedTransactions
+          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .slice(offset, offset + 50)
 
         if (append) {
-          setTransactions(prev => [...prev, ...transformedTransactions])
+          setTransactions(prev => [...prev, ...sortedTransactions])
         } else {
-          setTransactions(transformedTransactions)
+          setTransactions(sortedTransactions)
         }
 
         // Check if there are more transactions
