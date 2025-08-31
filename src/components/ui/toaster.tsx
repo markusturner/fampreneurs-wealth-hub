@@ -10,7 +10,12 @@ import {
 
 export function Toaster() {
   const { toasts } = useToast()
-  const visibleToasts = toasts.filter(t => t.title || t.description || t.action)
+  const visibleToasts = toasts
+    .filter(t => t.title || t.description || t.action)
+    .filter((t, i, arr) => {
+      const key = `${String(t.title ?? "")}||${String(t.description ?? "")}`
+      return i === arr.findIndex(u => `${String(u.title ?? "")}||${String(u.description ?? "")}` === key)
+    })
 
   return (
     <ToastProvider>
