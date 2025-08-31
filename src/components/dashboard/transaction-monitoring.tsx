@@ -364,10 +364,36 @@ export function TransactionMonitoring() {
                     .match(new RegExp(`(\"([^\"]|\"\")*\"|[^${delimiter}]+)(?=${delimiter}|$)`, 'g'))
                     ?.map((seg) => seg.replace(/^\"|\"$/g, '').replace(/\"\"/g, '"').trim()) || []
                 const parseAmount = (raw?: string) => {
-                  if (!raw) return NaN
-                  let s = raw.replace(/[$,\s]/g, '')
-                  if (/^\(.*\)$/.test(s)) s = '-' + s.slice(1, -1) // (123.45) -> -123.45
+                  if (raw == null) return NaN
+                  let s = String(raw).trim()
+                  if (s === '') return NaN
+                  s = s.replace(/[$,\s]/g, '')
+                  if (/^\(.*\)$/.test(s)) s = '-' + s.slice(1, -1)
+                  // normalize leading + or -
                   return parseFloat(s)
+                }
+                const parseDateIso = (raw?: string) => {
+                  if (!raw) return null
+                  const s = String(raw).trim()
+                  // try M/D/YYYY or MM/DD/YYYY
+                  const mdy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+                  if (mdy) {
+                    const [_, m, d, y] = mdy
+                    const dt = new Date(Number(y), Number(m) - 1, Number(d))
+                    return isNaN(dt.getTime()) ? null : dt.toISOString().split('T')[0]
+                  }
+                  const d = new Date(s)
+                  return isNaN(d.getTime()) ? null : d.toISOString().split('T')[0]
+                }
+                // helper (unused): would compute indices against header if needed
+
+                const getVal = (cols: string[], idx: number) =>
+                  idx >= 0 && cols[idx] !== undefined ? cols[idx] : undefined
+                const firstNonEmpty = (vals: (string | undefined)[]) => {
+                  for (const v of vals) {
+                    if (v != null && String(v).trim() !== '') return String(v).trim()
+                  }
+                  return undefined
                 }
                 
                 for (const statement of pending) {
@@ -411,8 +437,15 @@ export function TransactionMonitoring() {
                     const cols = parseCSVLine(lines[i], delimiter)
                     if (!cols.length) { skippedRows++; continue }
 
-                    const dateStr = idxDate >= 0 ? cols[idxDate] : cols[0] // fallback first col
-                    const descStr = idxDesc >= 0 ? cols[idxDesc] : cols[1] || 'Transaction'
+                    const dateStrRaw = (idxDate >= 0 ? cols[idxDate] : cols[0])
+                    const dateIso = parseDateIso(dateStrRaw)
+                    const descStr = firstNonEmpty([
+                      idxDesc >= 0 ? cols[idxDesc] : undefined,
+                      header.indexOf('payee') >= 0 ? cols[header.indexOf('payee')] : undefined,
+                      header.indexOf('reference') >= 0 ? cols[header.indexOf('reference')] : undefined,
+                      cols[1],
+                      'Transaction'
+                    ]) as string
 
                     // Amount resolution
                     let amountNum = NaN
@@ -424,16 +457,13 @@ export function TransactionMonitoring() {
                       amountNum = !isNaN(debitVal) ? -Math.abs(debitVal) : (!isNaN(creditVal) ? Math.abs(creditVal) : NaN)
                     }
 
-                    // Validate date
-                    const date = new Date(dateStr)
-                    const dateIso = !isNaN(date.getTime()) ? date.toISOString().split('T')[0] : null
-
                     if (!dateIso || isNaN(amountNum)) { skippedRows++; continue }
 
                     const type = amountNum < 0 ? 'expense' : 'income'
 
                     transactions.push({
                       user_id: user?.id,
+                      bank_statement_id: statement.id,
                       transaction_date: dateIso,
                       description: descStr,
                       amount: Math.abs(amountNum),
@@ -448,24 +478,32 @@ export function TransactionMonitoring() {
                       .insert(transactions)
                     if (insertError) {
                       console.error('Insert failed:', insertError)
+                      await supabase.from('bank_statement_uploads').update({
+                        processing_status: 'failed',
+                        processed_at: new Date().toISOString(),
+                        transactions_extracted: 0,
+                        error_message: (insertError as any)?.message?.slice(0, 500) ?? 'Insert failed'
+                      }).eq('id', statement.id)
                     } else {
                       totalProcessed += transactions.length
+                      await supabase.from('bank_statement_uploads').update({
+                        processing_status: 'completed',
+                        processed_at: new Date().toISOString(),
+                        transactions_extracted: transactions.length,
+                        error_message: null
+                      }).eq('id', statement.id)
                     }
                   } else {
                     filesWithNoValidRows.push(statement.filename)
+                    await supabase.from('bank_statement_uploads').update({
+                      processing_status: 'completed',
+                      processed_at: new Date().toISOString(),
+                      transactions_extracted: 0,
+                      error_message: 'No valid rows detected'
+                    }).eq('id', statement.id)
                   }
 
                   totalSkippedRows += skippedRows
-
-                  // Mark as completed
-                  await supabase
-                    .from('bank_statement_uploads')
-                    .update({ 
-                      processing_status: 'completed',
-                      processed_at: new Date().toISOString(),
-                      transactions_extracted: transactions.length
-                    })
-                    .eq('id', statement.id)
                 }
                 
                 await fetchConnectedAccountsAndTransactions()
