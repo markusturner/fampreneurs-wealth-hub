@@ -544,7 +544,7 @@ export default function Auth() {
         <CardHeader className="text-center">
           <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-4">
             <img 
-              src={theme === 'dark' ? "/lovable-uploads/yellow-tree-logo.png" : "/lovable-uploads/blue-tree-logo.png"}
+              src={theme === 'dark' ? "/lovable-uploads/dda07b1c-030c-4838-a761-8abd2b13313e.png" : "/lovable-uploads/cb7af8d2-0809-4d9d-8fa4-acfb507144de.png"}
               alt="TruHeirs Logo" 
               className="w-20 h-20 object-contain"
             />
