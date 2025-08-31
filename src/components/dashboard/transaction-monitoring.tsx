@@ -336,7 +336,7 @@ export function TransactionMonitoring() {
           <Button 
             variant="outline" 
             onClick={async () => {
-              // Simple CSV processing that actually works
+              // Intelligent CSV processing with header detection
               const pending = uploadedStatements.filter((s) => 
                 s.processing_status === 'pending' && 
                 s.filename?.toLowerCase().endsWith('.csv')
@@ -349,9 +349,23 @@ export function TransactionMonitoring() {
 
               try {
                 let totalProcessed = 0
+                let totalSkippedRows = 0
+                let filesWithNoValidRows: string[] = []
+                
+                const parseCSVLine = (line: string) =>
+                  line
+                    .match(/(\"([^\"]|\"\")*\"|[^,]+)(?=,|$)/g)
+                    ?.map((seg) => seg.replace(/^\"|\"$/g, '').replace(/\"\"/g, '"').trim()) || []
+                
+                const parseAmount = (raw?: string) => {
+                  if (!raw) return NaN
+                  let s = raw.replace(/[$,\s]/g, '')
+                  if (/^\(.*\)$/.test(s)) s = '-' + s.slice(1, -1) // (123.45) -> -123.45
+                  return parseFloat(s)
+                }
                 
                 for (const statement of pending) {
-                  // Download and parse CSV
+                  // Download CSV
                   const { data: fileData, error: downloadError } = await supabase
                     .storage
                     .from('bank-statements')
@@ -364,60 +378,78 @@ export function TransactionMonitoring() {
 
                   const csvText = await fileData.text()
                   const lines = csvText.split(/\r?\n/).filter(line => line.trim())
-                  
-                  if (lines.length <= 1) continue // Skip if no data rows
-                  
-                  const transactions = []
-                  
-                  // Parse each line (skip header)
+                  if (lines.length <= 1) {
+                    filesWithNoValidRows.push(statement.filename)
+                    // Mark as completed with 0
+                    await supabase.from('bank_statement_uploads').update({
+                      processing_status: 'completed',
+                      processed_at: new Date().toISOString(),
+                      transactions_extracted: 0
+                    }).eq('id', statement.id)
+                    continue
+                  }
+
+                  // Detect header columns
+                  const header = parseCSVLine(lines[0]).map(h => h.toLowerCase())
+                  const idxDate = header.findIndex(h => ['date','posted date','transaction date'].includes(h))
+                  const idxDesc = header.findIndex(h => ['description','details','payee','memo','note'].includes(h))
+                  const idxAmount = header.findIndex(h => ['amount','transaction amount','amt'].includes(h))
+                  const idxDebit = header.findIndex(h => ['debit','withdrawal'].includes(h))
+                  const idxCredit = header.findIndex(h => ['credit','deposit'].includes(h))
+
+                  const transactions: any[] = []
+                  let skippedRows = 0
+
                   for (let i = 1; i < lines.length; i++) {
-                    const line = lines[i].trim()
-                    if (!line) continue
-                    
-                    // Simple CSV parsing (handles quotes)
-                    const columns = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(col => 
-                      col.replace(/^"(.*)"$/, '$1').trim()
-                    ) || []
-                    
-                    if (columns.length < 3) continue
-                    
-                    const [dateStr, description, amountStr] = columns
-                    
-                    // Parse date
+                    const cols = parseCSVLine(lines[i])
+                    if (!cols.length) { skippedRows++; continue }
+
+                    const dateStr = idxDate >= 0 ? cols[idxDate] : cols[0] // fallback first col
+                    const descStr = idxDesc >= 0 ? cols[idxDesc] : cols[1] || 'Transaction'
+
+                    // Amount resolution
+                    let amountNum = NaN
+                    if (idxAmount >= 0 && cols[idxAmount] !== undefined) {
+                      amountNum = parseAmount(cols[idxAmount])
+                    } else if (idxDebit >= 0 || idxCredit >= 0) {
+                      const debitVal = idxDebit >= 0 ? parseAmount(cols[idxDebit]) : NaN
+                      const creditVal = idxCredit >= 0 ? parseAmount(cols[idxCredit]) : NaN
+                      amountNum = !isNaN(debitVal) ? -Math.abs(debitVal) : (!isNaN(creditVal) ? Math.abs(creditVal) : NaN)
+                    }
+
+                    // Validate date
                     const date = new Date(dateStr)
-                    if (isNaN(date.getTime())) continue
-                    
-                    // Parse amount
-                    const amount = parseFloat(amountStr.replace(/[$,]/g, ''))
-                    if (isNaN(amount)) continue
-                    
-                    // Determine transaction type
-                    const type = amount < 0 ? 'expense' : 'income'
-                    
+                    const dateIso = !isNaN(date.getTime()) ? date.toISOString().split('T')[0] : null
+
+                    if (!dateIso || isNaN(amountNum)) { skippedRows++; continue }
+
+                    const type = amountNum < 0 ? 'expense' : 'income'
+
                     transactions.push({
                       user_id: user?.id,
-                      transaction_date: date.toISOString().split('T')[0],
-                      description: description || 'Transaction',
-                      amount: Math.abs(amount),
+                      transaction_date: dateIso,
+                      description: descStr,
+                      amount: Math.abs(amountNum),
                       transaction_type: type,
                       category: 'Uncategorized'
                     })
                   }
-                  
-                  // Insert transactions
+
                   if (transactions.length > 0) {
                     const { error: insertError } = await supabase
                       .from('bank_statement_transactions')
                       .insert(transactions)
-                    
                     if (insertError) {
                       console.error('Insert failed:', insertError)
-                      continue
+                    } else {
+                      totalProcessed += transactions.length
                     }
-                    
-                    totalProcessed += transactions.length
+                  } else {
+                    filesWithNoValidRows.push(statement.filename)
                   }
-                  
+
+                  totalSkippedRows += skippedRows
+
                   // Mark as completed
                   await supabase
                     .from('bank_statement_uploads')
@@ -430,10 +462,18 @@ export function TransactionMonitoring() {
                 }
                 
                 await fetchConnectedAccountsAndTransactions()
-                toast({ 
-                  title: "Success!", 
-                  description: `Processed ${totalProcessed} transactions` 
-                })
+                
+                if (totalProcessed > 0) {
+                  toast({ 
+                    title: "Success!", 
+                    description: `Processed ${totalProcessed} transaction(s)${totalSkippedRows ? `, skipped ${totalSkippedRows} row(s)` : ''}` 
+                  })
+                } else {
+                  const reason = filesWithNoValidRows.length
+                    ? `No valid rows detected in: ${filesWithNoValidRows.join(', ')}`
+                    : 'No valid rows detected.'
+                  toast({ title: "0 transactions added", description: reason })
+                }
                 
               } catch (error) {
                 console.error('Processing failed:', error)
