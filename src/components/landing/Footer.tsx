@@ -16,11 +16,11 @@ export const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+              <div className="w-16 h-16 rounded-lg flex items-center justify-center">
                 <img 
                   src={theme === 'dark' ? "/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" : "/lovable-uploads/00df4658-d6df-420b-8c0d-7af68820837d.png"}
                   alt="TruHeirs Logo" 
-                  className="w-10 h-10 object-contain"
+                  className="w-16 h-16 object-contain"
                 />
               </div>
               <div>
