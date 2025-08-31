@@ -1246,6 +1246,61 @@ export function TransactionMonitoring() {
           <CardDescription>
             All transactions across your connected accounts
           </CardDescription>
+          
+          {/* Compact Bank Statements Display */}
+          {uploadedStatements.length > 0 && (
+            <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium">Uploaded Bank Statements</h4>
+                <Badge variant="outline" className="text-xs">{uploadedStatements.length} files</Badge>
+              </div>
+              <div className="space-y-2 max-h-32 overflow-y-auto">
+                {uploadedStatements.map((statement) => (
+                  <div key={statement.id} className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <FileCheck className="h-3 w-3 text-blue-600 flex-shrink-0" />
+                      <span className="truncate">{statement.filename}</span>
+                      <Badge 
+                        variant={statement.processing_status === 'completed' ? 'default' : 'secondary'}
+                        className="text-xs flex-shrink-0"
+                      >
+                        {statement.processing_status}
+                      </Badge>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                      onClick={async () => {
+                        try {
+                          const { error } = await supabase
+                            .from('bank_statement_uploads')
+                            .delete()
+                            .eq('id', statement.id)
+                          
+                          if (error) throw error
+                          
+                          setUploadedStatements(prev => prev.filter(s => s.id !== statement.id))
+                          toast({
+                            title: "Statement Deleted",
+                            description: `${statement.filename} has been removed`,
+                          })
+                        } catch (error) {
+                          toast({
+                            title: "Delete Failed",
+                            description: "Failed to delete bank statement",
+                            variant: "destructive"
+                          })
+                        }
+                      }}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -1336,75 +1391,6 @@ export function TransactionMonitoring() {
         </CardContent>
       </Card>
 
-      {/* Uploaded Bank Statements */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Uploaded Bank Statements</span>
-            <Badge variant="outline">{uploadedStatements.length} files</Badge>
-          </CardTitle>
-          <CardDescription>
-            PDF and CSV files you've uploaded for processing
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {uploadedStatements.length === 0 ? (
-            <div className="text-center text-muted-foreground py-8">
-              <div className="space-y-2">
-                <p>No bank statements uploaded yet</p>
-                <p className="text-sm">Upload CSV or PDF files to get started</p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {uploadedStatements.map((statement) => (
-                <div key={statement.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                      <FileCheck className="h-5 w-5 text-blue-600" />
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <div className="font-medium">{statement.filename}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {statement.file_size ? `${Math.round(statement.file_size / 1024)} KB` : 'Unknown size'}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge 
-                          variant={statement.processing_status === 'completed' ? 'default' : 
-                                   statement.processing_status === 'pending' ? 'secondary' : 'destructive'}
-                          className="text-xs"
-                        >
-                          {statement.processing_status}
-                        </Badge>
-                        {statement.filename.toLowerCase().endsWith('.pdf') && (
-                          <Badge variant="outline" className="text-xs">
-                            PDF - Manual processing required
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="text-right space-y-1">
-                    <div className="font-medium text-green-600">
-                      {statement.transactions_extracted || 0} transactions
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {statement.uploaded_at ? new Date(statement.uploaded_at).toLocaleDateString() : 'Unknown date'}
-                    </div>
-                    {statement.error_message && (
-                      <div className="text-xs text-red-600 max-w-40 truncate" title={statement.error_message}>
-                        Error: {statement.error_message}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   )
 }
