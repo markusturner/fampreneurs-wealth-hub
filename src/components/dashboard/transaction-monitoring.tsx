@@ -75,6 +75,7 @@ export function TransactionMonitoring() {
   const { toast } = useToast()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [connectedAccounts, setConnectedAccounts] = useState<any[]>([])
+  const [uploadedStatements, setUploadedStatements] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
@@ -127,6 +128,9 @@ export function TransactionMonitoring() {
 
   useEffect(() => {
     fetchConnectedAccountsAndTransactions()
+    if (user) {
+      fetchUploadedStatements()
+    }
   }, [user])
 
   // Auto-sync connected accounts on load with loading state
@@ -175,6 +179,29 @@ export function TransactionMonitoring() {
       setTransactions([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchUploadedStatements = async () => {
+    if (!user) return
+    
+    try {
+      const { data: statements, error } = await supabase
+        .from('bank_statement_uploads')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('uploaded_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching uploaded statements:', error)
+        setUploadedStatements([])
+        return
+      }
+
+      setUploadedStatements(statements || [])
+    } catch (error) {
+      console.error('Error fetching uploaded statements:', error)
+      setUploadedStatements([])
     }
   }
 
@@ -272,8 +299,9 @@ export function TransactionMonitoring() {
         description: `Processed ${totalTransactions} transactions from ${uploadFile.length} file(s)`,
       })
 
-      // Refresh transactions to show new data
+      // Refresh transactions and uploaded statements to show new data
       await fetchTransactions()
+      await fetchUploadedStatements()
       setShowUploadDialog(false)
       setUploadFile([])
 
@@ -1303,6 +1331,76 @@ export function TransactionMonitoring() {
                   </Button>
                 </div>
               )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Uploaded Bank Statements */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Uploaded Bank Statements</span>
+            <Badge variant="outline">{uploadedStatements.length} files</Badge>
+          </CardTitle>
+          <CardDescription>
+            PDF and CSV files you've uploaded for processing
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {uploadedStatements.length === 0 ? (
+            <div className="text-center text-muted-foreground py-8">
+              <div className="space-y-2">
+                <p>No bank statements uploaded yet</p>
+                <p className="text-sm">Upload CSV or PDF files to get started</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {uploadedStatements.map((statement) => (
+                <div key={statement.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                      <FileCheck className="h-5 w-5 text-blue-600" />
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="font-medium">{statement.filename}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {statement.file_size ? `${Math.round(statement.file_size / 1024)} KB` : 'Unknown size'}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant={statement.processing_status === 'completed' ? 'default' : 
+                                   statement.processing_status === 'pending' ? 'secondary' : 'destructive'}
+                          className="text-xs"
+                        >
+                          {statement.processing_status}
+                        </Badge>
+                        {statement.filename.toLowerCase().endsWith('.pdf') && (
+                          <Badge variant="outline" className="text-xs">
+                            PDF - Manual processing required
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-right space-y-1">
+                    <div className="font-medium text-green-600">
+                      {statement.transactions_extracted || 0} transactions
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {statement.uploaded_at ? new Date(statement.uploaded_at).toLocaleDateString() : 'Unknown date'}
+                    </div>
+                    {statement.error_message && (
+                      <div className="text-xs text-red-600 max-w-40 truncate" title={statement.error_message}>
+                        Error: {statement.error_message}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </CardContent>
