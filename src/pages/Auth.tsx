@@ -658,7 +658,7 @@ export default function Auth() {
                   disabled={isLoading}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Sign In {userType === 'family_member' ? '(Family Member)' : userType === 'mentee' ? '(Family Admin)' : '(Family Office)'}
+                  Sign In {userType === 'family_member' ? '(Family Member)' : userType === 'mentee' ? '(Trustees)' : '(Family Office)'}
                 </Button>
               </form>
               
