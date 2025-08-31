@@ -796,7 +796,25 @@ export function AccountIntegration() {
         </div>
       )}
 
-      <div className="grid gap-4">
+      <div 
+        className="grid gap-4"
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.currentTarget.classList.add('bg-muted/50', 'border-2', 'border-dashed', 'border-primary/50');
+        }}
+        onDragLeave={(e) => {
+          e.currentTarget.classList.remove('bg-muted/50', 'border-2', 'border-dashed', 'border-primary/50');
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          e.currentTarget.classList.remove('bg-muted/50', 'border-2', 'border-dashed', 'border-primary/50');
+          const files = Array.from(e.dataTransfer.files);
+          if (files.length > 0) {
+            // Handle file drop - you can process the files here
+            console.log('Files dropped:', files);
+          }
+        }}
+      >
         {loading ? (
           <Card>
             <CardContent className="p-6">
