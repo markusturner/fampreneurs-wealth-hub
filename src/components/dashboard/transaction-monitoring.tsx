@@ -81,7 +81,7 @@ export function TransactionMonitoring() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showFilterDialog, setShowFilterDialog] = useState(false)
   const [showUploadDialog, setShowUploadDialog] = useState(false)
-  const [uploadFile, setUploadFile] = useState<File | null>(null)
+  const [uploadFile, setUploadFile] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState<TransactionFilter>({
@@ -239,36 +239,43 @@ export function TransactionMonitoring() {
   }
 
   const handleFileUpload = async () => {
-    if (!uploadFile || !user || uploading) return
+    if (!uploadFile.length || !user || uploading) return
 
     setUploading(true)
 
     try {
-      // Convert file to base64
-      const fileBuffer = await uploadFile.arrayBuffer()
-      const base64Content = btoa(String.fromCharCode(...new Uint8Array(fileBuffer)))
+      let totalTransactions = 0
+      
+      // Process each file
+      for (const file of uploadFile) {
+        // Convert file to base64
+        const fileBuffer = await file.arrayBuffer()
+        const base64Content = btoa(String.fromCharCode(...new Uint8Array(fileBuffer)))
 
-      const { data, error } = await supabase.functions.invoke('process-bank-statement', {
-        body: {
-          fileName: uploadFile.name,
-          fileContent: base64Content,
-          fileType: uploadFile.type
+        const { data, error } = await supabase.functions.invoke('process-bank-statement', {
+          body: {
+            fileName: file.name,
+            fileContent: base64Content,
+            fileType: file.type
+          }
+        })
+
+        if (error) {
+          throw new Error(`Error processing ${file.name}: ${error.message}`)
         }
-      })
 
-      if (error) {
-        throw new Error(error.message)
+        totalTransactions += data.transactionsCount || 0
       }
 
       toast({
         title: "Upload Successful",
-        description: data.message || `Processed ${data.transactionsCount} transactions`,
+        description: `Processed ${totalTransactions} transactions from ${uploadFile.length} file(s)`,
       })
 
       // Refresh transactions to show new data
       await fetchTransactions()
       setShowUploadDialog(false)
-      setUploadFile(null)
+      setUploadFile([])
 
     } catch (error) {
       console.error('Error uploading bank statement:', error)
@@ -703,19 +710,24 @@ export function TransactionMonitoring() {
                   <Input
                     type="file"
                     accept=".csv,.pdf"
-                    onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                    multiple
+                    onChange={(e) => setUploadFile(Array.from(e.target.files || []))}
                   />
                   <p className="text-xs text-muted-foreground">
                     Supported formats: CSV and PDF files from your bank
                   </p>
                 </div>
                 
-                {uploadFile && (
-                  <div className="p-3 bg-muted rounded-lg">
-                    <p className="text-sm font-medium">{uploadFile.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {(uploadFile.size / 1024).toFixed(1)} KB
-                    </p>
+                {uploadFile.length > 0 && (
+                  <div className="space-y-2">
+                    {uploadFile.map((file, index) => (
+                      <div key={index} className="p-3 bg-muted rounded-lg">
+                        <p className="text-sm font-medium">{file.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {(file.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 )}
                 
@@ -724,7 +736,7 @@ export function TransactionMonitoring() {
                     variant="outline" 
                     onClick={() => {
                       setShowUploadDialog(false)
-                      setUploadFile(null)
+                      setUploadFile([])
                     }} 
                     className="flex-1"
                   >
@@ -732,7 +744,7 @@ export function TransactionMonitoring() {
                   </Button>
                   <Button 
                     onClick={handleFileUpload} 
-                    disabled={!uploadFile || uploading}
+                    disabled={uploadFile.length === 0 || uploading}
                     className="flex-1"
                   >
                     {uploading ? (
