@@ -209,6 +209,11 @@ export function TransactionMonitoring() {
     
     try {
       for (const file of fileArray) {
+        // Validate file type
+        if (!file.name.toLowerCase().endsWith('.csv')) {
+          throw new Error(`File ${file.name} is not a CSV file`)
+        }
+
         // Convert file to base64 for processing
         const fileContent = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader()
@@ -222,16 +227,33 @@ export function TransactionMonitoring() {
           reader.readAsDataURL(file)
         })
 
+        // Get current session for authentication
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (!session) {
+          throw new Error('User not authenticated')
+        }
+
         // Process the CSV file through the edge function
         const { data: processData, error: processError } = await supabase.functions.invoke('process-bank-statement', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
           body: {
             fileName: file.name,
             fileContent: fileContent,
-            fileType: file.type || 'text/csv'
+            fileType: 'text/csv'
           }
         })
 
-        if (processError) throw processError
+        if (processError) {
+          console.error('Edge function error:', processError)
+          throw new Error(`Processing failed: ${processError.message || 'Unknown error'}`)
+        }
+
+        if (!processData || processData.error) {
+          throw new Error(`Processing failed: ${processData?.error || 'No response from server'}`)
+        }
 
         console.log('File processed successfully:', processData)
       }
@@ -247,9 +269,10 @@ export function TransactionMonitoring() {
       
     } catch (error) {
       console.error('Upload and processing error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
       toast({
         title: "Upload Failed",
-        description: "Failed to upload and process files",
+        description: errorMessage,
         variant: "destructive"
       })
     }
