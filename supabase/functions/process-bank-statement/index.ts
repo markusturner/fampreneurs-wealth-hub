@@ -59,8 +59,12 @@ serve(async (req) => {
     
     if (fileType === 'text/csv' || fileName.toLowerCase().endsWith('.csv')) {
       transactions = parseCSV(textContent);
+    } else if (fileType === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf')) {
+      // For PDF files, we'll store them but note they need manual processing
+      transactions = []; // PDFs require OCR/parsing which we'll implement later
+      console.log('PDF file uploaded - manual processing required');
     } else {
-      throw new Error('Unsupported file type. Please upload a CSV file.');
+      throw new Error('Unsupported file type. Please upload a CSV or PDF file.');
     }
 
     console.log(`Parsed ${transactions.length} transactions`);
@@ -98,43 +102,51 @@ serve(async (req) => {
       throw new Error('Failed to record upload');
     }
 
-    // Insert transactions into account_transactions table
-    const transactionInserts = transactions.map(tx => ({
-      user_id: user.id,
-      account_id: uploadRecord.id, // Using upload record as account reference
-      transaction_id: `statement_${uploadRecord.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      amount: tx.amount,
-      description: tx.description,
-      transaction_date: tx.date,
-      transaction_type: tx.transaction_type,
-      category: tx.category || 'Uncategorized',
-      merchant_name: tx.merchant_name,
-      currency: 'USD',
-      pending: false,
-      metadata: {
-        source: 'bank_statement_upload',
-        upload_id: uploadRecord.id,
-        original_filename: fileName
+    // Insert transactions into account_transactions table (only if we have transactions)
+    if (transactions.length > 0) {
+      const transactionInserts = transactions.map(tx => ({
+        user_id: user.id,
+        account_id: uploadRecord.id, // Using upload record as account reference
+        transaction_id: `statement_${uploadRecord.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        amount: tx.amount,
+        description: tx.description,
+        transaction_date: tx.date,
+        transaction_type: tx.transaction_type,
+        category: tx.category || 'Uncategorized',
+        merchant_name: tx.merchant_name,
+        currency: 'USD',
+        pending: false,
+        metadata: {
+          source: 'bank_statement_upload',
+          upload_id: uploadRecord.id,
+          original_filename: fileName
+        }
+      }));
+
+      const { error: insertError } = await supabase
+        .from('account_transactions')
+        .insert(transactionInserts);
+
+      if (insertError) {
+        console.error('Error inserting transactions:', insertError);
+        throw new Error('Failed to insert transactions');
       }
-    }));
-
-    const { error: insertError } = await supabase
-      .from('account_transactions')
-      .insert(transactionInserts);
-
-    if (insertError) {
-      console.error('Error inserting transactions:', insertError);
-      throw new Error('Failed to insert transactions');
     }
 
     console.log(`Successfully inserted ${transactions.length} transactions`);
 
+    const isPDF = fileType === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf');
+    const message = isPDF 
+      ? `PDF file ${fileName} uploaded successfully. Manual processing will be required to extract transactions.`
+      : `Successfully processed ${transactions.length} transactions from ${fileName}`;
+
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Successfully processed ${transactions.length} transactions from ${fileName}`,
+        message: message,
         uploadId: uploadRecord.id,
-        transactionsCount: transactions.length
+        transactionsCount: transactions.length,
+        isPDF: isPDF
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
