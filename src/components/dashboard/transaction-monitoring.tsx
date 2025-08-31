@@ -457,11 +457,31 @@ export function TransactionMonitoring() {
                 toast({ title: "No accounts", description: "Connect bank accounts first" })
                 return
               }
-              
-              toast({ 
-                title: "Coming soon", 
-                description: "Bank sync feature is being set up" 
-              })
+
+              try {
+                const results = await Promise.allSettled(
+                  connectedAccounts.map(async (account) => {
+                    const { error } = await supabase.functions.invoke('plaid-fetch-transactions', {
+                      body: { account_id: account.external_account_id }
+                    })
+                    if (error) throw error
+                  })
+                )
+
+                const successes = results.filter(r => r.status === 'fulfilled').length
+                const failures = results.length - successes
+
+                await fetchConnectedAccountsAndTransactions()
+
+                if (successes > 0) {
+                  toast({ title: "Synced from bank", description: `${successes} account(s) updated${failures ? `, ${failures} failed` : ''}` })
+                } else {
+                  toast({ title: "Sync failed", description: "Could not sync any accounts", variant: "destructive" })
+                }
+              } catch (err) {
+                console.error(err)
+                toast({ title: "Sync error", description: "Something went wrong during sync", variant: "destructive" })
+              }
             }}
             className="flex items-center gap-2"
           >
