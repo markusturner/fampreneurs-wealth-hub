@@ -586,63 +586,6 @@ export function AccountIntegration() {
         setShowAddDialog(false)
         open()
       }
-    } else if (accountType === 'google_sheets') {
-      const sheetUrl = prompt('Enter your Google Sheets URL:')
-      const accountName = prompt('Enter a name for this account:')
-      
-      if (!sheetUrl || !accountName) {
-        toast({
-          title: "Missing Information",
-          description: "Google Sheets URL and account name are required",
-          variant: "destructive",
-        })
-        return
-      }
-
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) {
-          toast({
-            title: "Authentication Required",
-            description: "Please sign in to connect Google Sheets",
-            variant: "destructive",
-          })
-          return
-        }
-
-        const { data, error } = await supabase.functions.invoke('google-sheets-connect', {
-          body: { sheet_url: sheetUrl, account_name: accountName },
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        })
-
-        if (error) {
-          console.error('Error connecting Google Sheets:', error)
-          toast({
-            title: "Error",
-            description: "Failed to connect Google Sheets",
-            variant: "destructive",
-          })
-          return
-        }
-
-        toast({
-          title: "Success!",
-          description: data.message,
-        })
-
-        // Refresh accounts list
-        await fetchConnectedAccounts()
-        setShowAddDialog(false)
-      } catch (error) {
-        console.error('Error in Google Sheets connection:', error)
-        toast({
-          title: "Error",
-          description: "Failed to connect Google Sheets",
-          variant: "destructive",
-        })
-      }
     } else {
       // Fallback to mock account creation
       const mockAccount: ConnectedAccount = {
@@ -705,11 +648,11 @@ export function AccountIntegration() {
                 <DialogHeader>
                   <DialogTitle>Add Account</DialogTitle>
                   <DialogDescription>
-                    Connect your real financial accounts for automatic data synchronization
+                    Connect your financial accounts for automatic data synchronization
                   </DialogDescription>
                 </DialogHeader>
               
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                <div className="grid grid-cols-1 gap-4 py-4">
                   <div className="space-y-2">
                     <h3 className="font-semibold">Bank & Investment Accounts</h3>
                     <Button
@@ -723,21 +666,6 @@ export function AccountIntegration() {
                     </Button>
                     <p className="text-xs text-muted-foreground">
                       Securely connect bank and brokerage accounts
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h3 className="font-semibold">Business Accounts</h3>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start"
-                      onClick={() => handleConnectRealAccount('google_sheets')}
-                    >
-                      <Building2 className="w-4 h-4 mr-2" />
-                      Connect Google Sheets
-                    </Button>
-                    <p className="text-xs text-muted-foreground">
-                      Import data from Google Sheets
                     </p>
                   </div>
                 </div>
