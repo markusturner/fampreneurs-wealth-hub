@@ -209,31 +209,36 @@ export function TransactionMonitoring() {
     
     try {
       for (const file of fileArray) {
-        const fileName = `${user.id}/${Date.now()}_${file.name}`
-        
-        // Upload file to Supabase storage
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('bank-statements')
-          .upload(fileName, file)
+        // Convert file to base64 for processing
+        const fileContent = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => {
+            const base64 = reader.result as string
+            // Remove data:mime;base64, prefix
+            const base64Content = base64.split(',')[1]
+            resolve(base64Content)
+          }
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        })
 
-        if (uploadError) throw uploadError
+        // Process the CSV file through the edge function
+        const { data: processData, error: processError } = await supabase.functions.invoke('process-bank-statement', {
+          body: {
+            fileName: file.name,
+            fileContent: fileContent,
+            fileType: file.type || 'text/csv'
+          }
+        })
 
-        // Create record in database
-        const { error: dbError } = await supabase
-          .from('bank_statement_uploads')
-          .insert({
-            user_id: user.id,
-            filename: file.name,
-            file_path: uploadData.path,
-            file_size: file.size
-          })
+        if (processError) throw processError
 
-        if (dbError) throw dbError
+        console.log('File processed successfully:', processData)
       }
 
       toast({
-        title: "Upload Successful",
-        description: `${fileArray.length} file(s) uploaded successfully`
+        title: "Upload and Processing Successful",
+        description: `${fileArray.length} file(s) uploaded and processed successfully`
       })
 
       // Refresh data
@@ -241,10 +246,10 @@ export function TransactionMonitoring() {
       setShowUploadDialog(false)
       
     } catch (error) {
-      console.error('Upload error:', error)
+      console.error('Upload and processing error:', error)
       toast({
         title: "Upload Failed",
-        description: "Failed to upload files",
+        description: "Failed to upload and process files",
         variant: "destructive"
       })
     }
