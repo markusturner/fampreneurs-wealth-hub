@@ -95,6 +95,11 @@ export function TransactionMonitoring() {
     maxAmount: ''
   })
   
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1)
+  const [transactionsPerPage, setTransactionsPerPage] = useState(25)
+  const [totalTransactions, setTotalTransactions] = useState(0)
+  
   const [newTransaction, setNewTransaction] = useState({
     description: '',
     amount: '',
@@ -260,19 +265,14 @@ export function TransactionMonitoring() {
           }))
         ]
 
-        // Sort by date and apply pagination
+        // Sort all transactions by date
         const sortedTransactions = transformedTransactions
           .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-          .slice(offset, offset + 50)
 
-        if (append) {
-          setTransactions(prev => [...prev, ...sortedTransactions])
-        } else {
-          setTransactions(sortedTransactions)
-        }
-
-        // Check if there are more transactions
-        setHasMore(transformedTransactions.length === 50)
+        setTotalTransactions(sortedTransactions.length)
+        setTransactions(sortedTransactions)
+        setHasMore(false) // We load all transactions at once for proper pagination
+        setCurrentPage(1) // Reset to first page when fetching new data
       } else {
         // For non-authenticated users, only show transactions if they manually added them
         const storedTransactions = localStorage.getItem('manualTransactions')
@@ -610,13 +610,21 @@ export function TransactionMonitoring() {
     }
   }
 
-  const filteredTransactions = transactions.filter(transaction => {
+  // Apply filters and search
+  const allFilteredTransactions = transactions.filter(transaction => {
     const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          transaction.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          transaction.account.toLowerCase().includes(searchTerm.toLowerCase())
     
     return matchesSearch
   })
+
+  // Apply pagination
+  const startIndex = (currentPage - 1) * transactionsPerPage
+  const endIndex = startIndex + transactionsPerPage
+  const filteredTransactions = allFilteredTransactions.slice(startIndex, endIndex)
+  
+  const totalPages = Math.ceil(allFilteredTransactions.length / transactionsPerPage)
 
   const categories = [
     'Food & Dining', 'Transportation', 'Shopping', 'Entertainment', 'Bills & Utilities',
@@ -648,6 +656,25 @@ export function TransactionMonitoring() {
               Last refreshed: {lastRefreshed.toLocaleTimeString()}
             </div>
           )}
+          
+          {/* Pagination and Per Page Controls */}
+          <div className="flex items-center gap-2">
+            <Label className="text-sm">Show</Label>
+            <Select value={transactionsPerPage.toString()} onValueChange={(value) => {
+              setTransactionsPerPage(Number(value))
+              setCurrentPage(1)
+            }}>
+              <SelectTrigger className="w-20">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+            <Label className="text-sm">per page</Label>
+          </div>
           
           <Dialog open={showFilterDialog} onOpenChange={setShowFilterDialog}>
             <DialogTrigger asChild>
@@ -1270,7 +1297,7 @@ export function TransactionMonitoring() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Recent Transactions</span>
-            <Badge variant="outline">{filteredTransactions.length} transactions</Badge>
+            <Badge variant="outline">{allFilteredTransactions.length} total transactions</Badge>
           </CardTitle>
           <CardDescription>
             All transactions across your connected accounts
@@ -1334,7 +1361,7 @@ export function TransactionMonitoring() {
         <CardContent>
           {loading ? (
             <div className="text-center text-muted-foreground py-8">Loading transactions...</div>
-          ) : filteredTransactions.length === 0 ? (
+          ) : allFilteredTransactions.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
               <div className="space-y-2">
                 <p>No transactions available</p>
@@ -1392,27 +1419,33 @@ export function TransactionMonitoring() {
                 </div>
               ))}
               
-              {/* Load More Button */}
-              {hasMore && user && filteredTransactions.length > 0 && (
-                <div className="text-center pt-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={loadMoreTransactions}
-                    disabled={loadingMore}
-                    className="flex items-center gap-2"
-                  >
-                    {loadingMore ? (
-                      <>
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        <ArrowDownLeft className="h-4 w-4" />
-                        Load More Transactions
-                      </>
-                    )}
-                  </Button>
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {startIndex + 1}-{Math.min(endIndex, allFilteredTransactions.length)} of {allFilteredTransactions.length} transactions
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-sm">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setCurrentPage(prev => prev + 1)}
+                      disabled={currentPage >= totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
