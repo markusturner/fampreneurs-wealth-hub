@@ -352,11 +352,17 @@ export function TransactionMonitoring() {
                 let totalSkippedRows = 0
                 let filesWithNoValidRows: string[] = []
                 
-                const parseCSVLine = (line: string) =>
+                const detectDelimiter = (line: string) => {
+                  if (line.includes(';') && !line.includes(',')) return ';'
+                  if (line.includes('\t')) return '\t'
+                  if (line.includes('|')) return '|'
+                  return ','
+                }
+
+                const parseCSVLine = (line: string, delimiter: string) =>
                   line
-                    .match(/(\"([^\"]|\"\")*\"|[^,]+)(?=,|$)/g)
+                    .match(new RegExp(`(\"([^\"]|\"\")*\"|[^${delimiter}]+)(?=${delimiter}|$)`, 'g'))
                     ?.map((seg) => seg.replace(/^\"|\"$/g, '').replace(/\"\"/g, '"').trim()) || []
-                
                 const parseAmount = (raw?: string) => {
                   if (!raw) return NaN
                   let s = raw.replace(/[$,\s]/g, '')
@@ -389,19 +395,20 @@ export function TransactionMonitoring() {
                     continue
                   }
 
-                  // Detect header columns
-                  const header = parseCSVLine(lines[0]).map(h => h.toLowerCase())
-                  const idxDate = header.findIndex(h => ['date','posted date','transaction date'].includes(h))
-                  const idxDesc = header.findIndex(h => ['description','details','payee','memo','note'].includes(h))
-                  const idxAmount = header.findIndex(h => ['amount','transaction amount','amt'].includes(h))
-                  const idxDebit = header.findIndex(h => ['debit','withdrawal'].includes(h))
-                  const idxCredit = header.findIndex(h => ['credit','deposit'].includes(h))
+                  // Detect delimiter and header columns
+                  const delimiter = detectDelimiter(lines[0])
+                  const header = parseCSVLine(lines[0], delimiter).map(h => h.toLowerCase())
+                  const idxDate = header.findIndex(h => ['date','posted date','post date','transaction date','value date','date posted','transactiondate'].includes(h))
+                  const idxDesc = header.findIndex(h => ['description','details','payee','memo','note','narrative','reference','ref','transaction','transaction details'].includes(h))
+                  const idxAmount = header.findIndex(h => ['amount','transaction amount','amt','transactionamount','amount (usd)','amount usd','value'].includes(h))
+                  const idxDebit = header.findIndex(h => ['debit','withdrawal','debit amount','withdrawal amount','debits','payments'].includes(h))
+                  const idxCredit = header.findIndex(h => ['credit','deposit','credit amount','credits','deposits'].includes(h))
 
                   const transactions: any[] = []
                   let skippedRows = 0
 
                   for (let i = 1; i < lines.length; i++) {
-                    const cols = parseCSVLine(lines[i])
+                    const cols = parseCSVLine(lines[i], delimiter)
                     if (!cols.length) { skippedRows++; continue }
 
                     const dateStr = idxDate >= 0 ? cols[idxDate] : cols[0] // fallback first col
