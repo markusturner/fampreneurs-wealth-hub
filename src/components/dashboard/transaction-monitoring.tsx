@@ -693,7 +693,7 @@ export function TransactionMonitoring() {
               <DialogHeader>
                 <DialogTitle>Upload Bank Statement</DialogTitle>
                 <DialogDescription>
-                  Upload a CSV bank statement to import transaction history
+                  Upload a bank statement to import transaction history
                 </DialogDescription>
               </DialogHeader>
               
@@ -702,11 +702,11 @@ export function TransactionMonitoring() {
                   <Label>Bank Statement File</Label>
                   <Input
                     type="file"
-                    accept=".csv"
+                    accept=".csv,.pdf"
                     onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Supported formats: CSV files from your bank
+                    Supported formats: CSV and PDF files from your bank
                   </p>
                 </div>
                 
