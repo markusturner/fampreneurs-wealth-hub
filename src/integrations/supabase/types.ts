@@ -115,6 +115,59 @@ export type Database = {
         }
         Relationships: []
       }
+      bank_statement_transactions: {
+        Row: {
+          amount: number
+          balance_after: number | null
+          bank_statement_id: string | null
+          category: string | null
+          created_at: string
+          description: string
+          id: string
+          reference_number: string | null
+          transaction_date: string
+          transaction_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          balance_after?: number | null
+          bank_statement_id?: string | null
+          category?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          reference_number?: string | null
+          transaction_date: string
+          transaction_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number | null
+          bank_statement_id?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          reference_number?: string | null
+          transaction_date?: string
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_statement_transactions_bank_statement_id_fkey"
+            columns: ["bank_statement_id"]
+            isOneToOne: false
+            referencedRelation: "bank_statement_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bank_statement_uploads: {
         Row: {
           error_message: string | null

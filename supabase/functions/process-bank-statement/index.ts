@@ -102,29 +102,21 @@ serve(async (req) => {
       throw new Error('Failed to record upload');
     }
 
-    // Insert transactions into account_transactions table (only if we have transactions)
+    // Insert transactions into bank_statement_transactions table (only if we have transactions)
     if (transactions.length > 0) {
       const transactionInserts = transactions.map(tx => ({
         user_id: user.id,
-        account_id: uploadRecord.id, // Using upload record as account reference
-        transaction_id: `statement_${uploadRecord.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        amount: tx.amount,
-        description: tx.description,
+        bank_statement_id: uploadRecord.id,
         transaction_date: tx.date,
-        transaction_type: tx.transaction_type,
+        description: tx.description,
+        amount: tx.transaction_type === 'debit' ? -Math.abs(tx.amount) : Math.abs(tx.amount),
         category: tx.category || 'Uncategorized',
-        merchant_name: tx.merchant_name,
-        currency: 'USD',
-        pending: false,
-        metadata: {
-          source: 'bank_statement_upload',
-          upload_id: uploadRecord.id,
-          original_filename: fileName
-        }
+        transaction_type: tx.transaction_type,
+        reference_number: `stmt_${uploadRecord.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       }));
 
       const { error: insertError } = await supabase
-        .from('account_transactions')
+        .from('bank_statement_transactions')
         .insert(transactionInserts);
 
       if (insertError) {
