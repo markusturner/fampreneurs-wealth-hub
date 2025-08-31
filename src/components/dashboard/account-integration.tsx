@@ -614,7 +614,25 @@ export function AccountIntegration() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div 
+      className="space-y-4 sm:space-y-6"
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.currentTarget.classList.add('bg-muted/50', 'border-2', 'border-dashed', 'border-primary/50', 'rounded-lg');
+      }}
+      onDragLeave={(e) => {
+        e.currentTarget.classList.remove('bg-muted/50', 'border-2', 'border-dashed', 'border-primary/50', 'rounded-lg');
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove('bg-muted/50', 'border-2', 'border-dashed', 'border-primary/50', 'rounded-lg');
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) {
+          console.log('Files dropped:', files);
+          // Process CSV files here
+        }
+      }}
+    >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
