@@ -1,7 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Facebook, Twitter, Linkedin, Instagram, Mail, Phone, MapPin } from 'lucide-react';
 import { openExternalLink, socialLinks } from '@/utils/navigation';
+import { useTheme } from '@/components/theme-provider';
 export const Footer = () => {
+  const { theme } = useTheme();
   const scrollToPricing = () => {
     document.getElementById('pricing')?.scrollIntoView({
       behavior: 'smooth'
@@ -14,10 +16,12 @@ export const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xl" style={{
-              backgroundColor: '#290A52'
-            }}>
-                T
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                <img 
+                  src={theme === 'dark' ? "/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" : "/lovable-uploads/00df4658-d6df-420b-8c0d-7af68820837d.png"}
+                  alt="TruHeirs Logo" 
+                  className="w-10 h-10 object-contain"
+                />
               </div>
               <div>
                 <h3 className="text-xl font-bold" style={{
