@@ -542,11 +542,11 @@ export default function Auth() {
           <ThemeToggle />
         </div>
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4">
+          <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-4">
             <img 
               src={theme === 'dark' ? "/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" : "/lovable-uploads/00df4658-d6df-420b-8c0d-7af68820837d.png"}
               alt="TruHeirs Logo" 
-              className="w-12 h-12 object-contain"
+              className="w-20 h-20 object-contain"
             />
           </div>
           <CardTitle className="text-2xl font-bold">TruHeirs</CardTitle>
