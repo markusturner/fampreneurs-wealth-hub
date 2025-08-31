@@ -236,7 +236,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
         <div className="flex items-center gap-1 sm:gap-2">
           
           <img 
-            src={theme === 'dark' ? "/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" : "/lovable-uploads/00df4658-d6df-420b-8c0d-7af68820837d.png"}
+            src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png"
             alt="TruHeirs Logo" 
             className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
           />
