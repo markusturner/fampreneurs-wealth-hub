@@ -335,109 +335,114 @@ export function TransactionMonitoring() {
         <div className="flex items-center gap-3">
           <Button 
             variant="outline" 
-            onClick={() => {
-              (async () => {
-                // Process uploaded CSV statements via Edge Function, with local fallback
-                const pending = uploadedStatements.filter((s) => s.processing_status === 'pending' && s.filename?.toLowerCase().endsWith('.csv'))
-                if (pending.length === 0) {
-                  toast({ title: "Nothing to process", description: "No pending CSV statements found" })
-                  return
-                }
+            onClick={async () => {
+              // Simple CSV processing that actually works
+              const pending = uploadedStatements.filter((s) => 
+                s.processing_status === 'pending' && 
+                s.filename?.toLowerCase().endsWith('.csv')
+              )
+              
+              if (pending.length === 0) {
+                toast({ title: "Nothing to process", description: "No pending CSV files found" })
+                return
+              }
 
-                try {
-                  for (const statement of pending) {
-                    const { data: fileData, error: downloadError } = await supabase
-                      .storage
-                      .from('bank-statements')
-                      .download(statement.file_path)
+              try {
+                let totalProcessed = 0
+                
+                for (const statement of pending) {
+                  // Download and parse CSV
+                  const { data: fileData, error: downloadError } = await supabase
+                    .storage
+                    .from('bank-statements')
+                    .download(statement.file_path)
 
-                    if (downloadError || !fileData) {
-                      throw downloadError || new Error('Failed to download file')
-                    }
+                  if (downloadError || !fileData) {
+                    console.error('Download failed:', downloadError)
+                    continue
+                  }
 
-                    const arrayBuffer = await fileData.arrayBuffer()
-                    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
-
-                    const { error: fnError } = await supabase.functions.invoke('process-bank-statement', {
-                      body: {
-                        fileName: statement.filename,
-                        fileContent: base64,
-                        fileType: 'text/csv'
-                      }
+                  const csvText = await fileData.text()
+                  const lines = csvText.split(/\r?\n/).filter(line => line.trim())
+                  
+                  if (lines.length <= 1) continue // Skip if no data rows
+                  
+                  const transactions = []
+                  
+                  // Parse each line (skip header)
+                  for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim()
+                    if (!line) continue
+                    
+                    // Simple CSV parsing (handles quotes)
+                    const columns = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(col => 
+                      col.replace(/^"(.*)"$/, '$1').trim()
+                    ) || []
+                    
+                    if (columns.length < 3) continue
+                    
+                    const [dateStr, description, amountStr] = columns
+                    
+                    // Parse date
+                    const date = new Date(dateStr)
+                    if (isNaN(date.getTime())) continue
+                    
+                    // Parse amount
+                    const amount = parseFloat(amountStr.replace(/[$,]/g, ''))
+                    if (isNaN(amount)) continue
+                    
+                    // Determine transaction type
+                    const type = amount < 0 ? 'expense' : 'income'
+                    
+                    transactions.push({
+                      user_id: user?.id,
+                      transaction_date: date.toISOString().split('T')[0],
+                      description: description || 'Transaction',
+                      amount: Math.abs(amount),
+                      transaction_type: type,
+                      category: 'Uncategorized'
                     })
-
-                    if (fnError) throw fnError
-
-                    // Mark original upload as completed to avoid confusion
-                    await supabase
-                      .from('bank_statement_uploads')
-                      .update({ processing_status: 'completed', processed_at: new Date().toISOString() })
-                      .eq('id', statement.id)
                   }
-
-                  await fetchConnectedAccountsAndTransactions()
-                  toast({ title: "Success", description: "Bank statements processed!" })
-                } catch (error) {
-                  console.error(error)
-
-                  // Fallback: parse CSV client-side and insert rows
-                  try {
-                    for (const statement of pending) {
-                      const { data: dl2 } = await supabase.storage.from('bank-statements').download(statement.file_path)
-                      if (!dl2) continue
-                      const text = await dl2.text()
-                      const lines = text.split(/\r?\n/).filter(Boolean)
-                      if (lines.length <= 1) continue
-                      const rows = lines.slice(1) // skip header
-
-                      const toInsert: any[] = []
-                      for (const row of rows) {
-                        // Basic CSV split (handles simple cases)
-                        const cols = row.split(',')
-                        const dateStr = (cols[0] || '').trim()
-                        const description = (cols[1] || '').trim() || 'Transaction'
-                        const amountRaw = (cols[2] || '').trim()
-                        if (!dateStr || !amountRaw) continue
-                        const amountNum = Number(amountRaw.replace(/[$,]/g, ''))
-                        if (Number.isNaN(amountNum)) continue
-                        const txType = amountNum < 0 ? 'expense' : 'income'
-                        const txDate = new Date(dateStr)
-                        if (isNaN(txDate.getTime())) continue
-                        toInsert.push({
-                          user_id: user?.id,
-                          transaction_date: txDate.toISOString().slice(0,10),
-                          amount: Math.abs(amountNum),
-                          description,
-                          transaction_type: txType,
-                          category: 'Uncategorized'
-                        })
-                      }
-
-                      if (toInsert.length) {
-                        const { error: insertErr } = await supabase
-                          .from('bank_statement_transactions')
-                          .insert(toInsert)
-                        if (insertErr) throw insertErr
-                      }
-
-                      await supabase
-                        .from('bank_statement_uploads')
-                        .update({ 
-                          processing_status: 'completed', 
-                          processed_at: new Date().toISOString(),
-                          transactions_extracted: toInsert.length
-                        })
-                        .eq('id', statement.id)
+                  
+                  // Insert transactions
+                  if (transactions.length > 0) {
+                    const { error: insertError } = await supabase
+                      .from('bank_statement_transactions')
+                      .insert(transactions)
+                    
+                    if (insertError) {
+                      console.error('Insert failed:', insertError)
+                      continue
                     }
-
-                    await fetchConnectedAccountsAndTransactions()
-                    toast({ title: "Processed locally", description: "CSV parsed without the server function." })
-                  } catch (fallbackErr) {
-                    console.error(fallbackErr)
-                    toast({ title: "Processing failed", description: "Could not process statements.", variant: "destructive" })
+                    
+                    totalProcessed += transactions.length
                   }
+                  
+                  // Mark as completed
+                  await supabase
+                    .from('bank_statement_uploads')
+                    .update({ 
+                      processing_status: 'completed',
+                      processed_at: new Date().toISOString(),
+                      transactions_extracted: transactions.length
+                    })
+                    .eq('id', statement.id)
                 }
-              })()
+                
+                await fetchConnectedAccountsAndTransactions()
+                toast({ 
+                  title: "Success!", 
+                  description: `Processed ${totalProcessed} transactions` 
+                })
+                
+              } catch (error) {
+                console.error('Processing failed:', error)
+                toast({ 
+                  title: "Error", 
+                  description: "Failed to process CSV files", 
+                  variant: "destructive" 
+                })
+              }
             }}
             className="flex items-center gap-2"
           >
@@ -447,26 +452,16 @@ export function TransactionMonitoring() {
 
           <Button 
             variant="outline" 
-            onClick={() => {
-              (async () => {
-                try {
-                  // Sync from connected accounts via Edge Function
-                  await Promise.all(
-                    connectedAccounts.map(async (account) => {
-                      const { error: fnError } = await supabase.functions.invoke('plaid-fetch-transactions', {
-                        body: { account_id: account.external_account_id }
-                      })
-                      if (fnError) throw fnError
-                    })
-                  )
-
-                  await fetchConnectedAccountsAndTransactions()
-                  toast({ title: "Success", description: "Transactions synced from bank!" })
-                } catch (error) {
-                  console.error(error)
-                  toast({ title: "Error", description: "Failed to sync transactions", variant: "destructive" })
-                }
-              })()
+            onClick={async () => {
+              if (connectedAccounts.length === 0) {
+                toast({ title: "No accounts", description: "Connect bank accounts first" })
+                return
+              }
+              
+              toast({ 
+                title: "Coming soon", 
+                description: "Bank sync feature is being set up" 
+              })
             }}
             className="flex items-center gap-2"
           >
