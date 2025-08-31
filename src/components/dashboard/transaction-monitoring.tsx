@@ -209,23 +209,28 @@ export function TransactionMonitoring() {
     
     try {
       for (const file of fileArray) {
+        console.log('Processing file:', file.name, 'size:', file.size, 'type:', file.type)
+        
         // Validate file type
         if (!file.name.toLowerCase().endsWith('.csv')) {
           throw new Error(`File ${file.name} is not a CSV file`)
         }
 
-        // Convert file to base64 for processing
+        // Read file as text instead of base64 for CSV files
         const fileContent = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader()
           reader.onload = () => {
-            const base64 = reader.result as string
-            // Remove data:mime;base64, prefix
-            const base64Content = base64.split(',')[1]
-            resolve(base64Content)
+            const text = reader.result as string
+            resolve(text)
           }
           reader.onerror = reject
-          reader.readAsDataURL(file)
+          reader.readAsText(file)
         })
+
+        console.log('File content preview:', fileContent.substring(0, 200))
+
+        // Convert to base64 for the edge function
+        const base64Content = btoa(fileContent)
 
         // Get current session for authentication
         const { data: { session } } = await supabase.auth.getSession()
@@ -234,6 +239,8 @@ export function TransactionMonitoring() {
           throw new Error('User not authenticated')
         }
 
+        console.log('Calling edge function with user:', user.id)
+
         // Process the CSV file through the edge function
         const { data: processData, error: processError } = await supabase.functions.invoke('process-bank-statement', {
           headers: {
@@ -241,14 +248,16 @@ export function TransactionMonitoring() {
           },
           body: {
             fileName: file.name,
-            fileContent: fileContent,
+            fileContent: base64Content,
             fileType: 'text/csv'
           }
         })
 
+        console.log('Edge function response:', { data: processData, error: processError })
+
         if (processError) {
-          console.error('Edge function error:', processError)
-          throw new Error(`Processing failed: ${processError.message || 'Unknown error'}`)
+          console.error('Edge function error details:', processError)
+          throw new Error(`Processing failed: ${processError.message || JSON.stringify(processError)}`)
         }
 
         if (!processData || processData.error) {
