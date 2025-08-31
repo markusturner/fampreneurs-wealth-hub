@@ -37,7 +37,7 @@ export const Hero = () => {
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2 md:space-x-3">
             <img 
-              src={theme === 'dark' ? "/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" : "/lovable-uploads/00df4658-d6df-420b-8c0d-7af68820837d.png"}
+              src={theme === 'dark' ? "/lovable-uploads/04497296-47f8-41b8-8138-1326135c3c2e.png" : "/lovable-uploads/cb7af8d2-0809-4d9d-8fa4-acfb507144de.png"}
               alt="TruHeirs Logo" 
               className="w-14 h-14 md:w-16 md:h-16 object-contain transition-smooth hover:scale-105"
             />
