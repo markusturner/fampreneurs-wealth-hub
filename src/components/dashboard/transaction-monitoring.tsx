@@ -458,13 +458,31 @@ export function TransactionMonitoring() {
                 return
               }
 
+              // Only sync accounts with a Plaid account id available
+              const eligibleAccounts = connectedAccounts.filter((a) => a.external_account_id)
+              if (eligibleAccounts.length === 0) {
+                toast({ title: "No eligible accounts", description: "Reconnect bank accounts to enable syncing" })
+                return
+              }
+
               try {
                 const results = await Promise.allSettled(
-                  connectedAccounts.map(async (account) => {
-                    const { error } = await supabase.functions.invoke('plaid-fetch-transactions', {
+                  eligibleAccounts.map(async (account) => {
+                    const { data, error } = await supabase.functions.invoke('plaid-fetch-transactions', {
                       body: { account_id: account.external_account_id }
                     })
-                    if (error) throw error
+
+                    if (error) {
+                      const msg = typeof (error as any)?.message === 'string' ? (error as any).message : JSON.stringify(error)
+                      // Gracefully handle when Plaid Transactions product isn't enabled
+                      if (msg.includes('INVALID_PRODUCT') || msg.toLowerCase().includes('transactions not enabled')) {
+                        console.warn('Plaid Transactions not enabled for this environment. Skipping sync for account.', account.external_account_id)
+                        return 'skipped'
+                      }
+                      throw error
+                    }
+
+                    return data
                   })
                 )
 
@@ -474,9 +492,9 @@ export function TransactionMonitoring() {
                 await fetchConnectedAccountsAndTransactions()
 
                 if (successes > 0) {
-                  toast({ title: "Synced from bank", description: `${successes} account(s) updated${failures ? `, ${failures} failed` : ''}` })
+                  toast({ title: "Sync complete", description: `${successes} account(s) processed${failures ? `, ${failures} failed` : ''}` })
                 } else {
-                  toast({ title: "Sync failed", description: "Could not sync any accounts", variant: "destructive" })
+                  toast({ title: "No accounts synced", description: failures ? "All account syncs failed" : "Nothing to sync" })
                 }
               } catch (err) {
                 console.error(err)
