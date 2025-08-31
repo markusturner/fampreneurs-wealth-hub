@@ -333,6 +333,60 @@ export function TransactionMonitoring() {
         </div>
         
         <div className="flex items-center gap-3">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              // Process uploaded statements
+              uploadedStatements.forEach(async (statement) => {
+                if (statement.processing_status === 'pending') {
+                  try {
+                    const response = await fetch('/api/process-bank-statement', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ uploadId: statement.id })
+                    })
+                    if (response.ok) {
+                      await fetchConnectedAccountsAndTransactions()
+                      toast({ title: "Success", description: "Bank statements processed!" })
+                    }
+                  } catch (error) {
+                    toast({ title: "Error", description: "Failed to process statements", variant: "destructive" })
+                  }
+                }
+              })
+            }}
+            className="flex items-center gap-2"
+          >
+            <FileCheck className="h-4 w-4" />
+            Process Uploads
+          </Button>
+
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              // Sync from connected accounts
+              connectedAccounts.forEach(async (account) => {
+                try {
+                  const response = await fetch('/api/plaid-fetch-transactions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ accountId: account.external_account_id })
+                  })
+                  if (response.ok) {
+                    await fetchConnectedAccountsAndTransactions()
+                    toast({ title: "Success", description: "Transactions synced from bank!" })
+                  }
+                } catch (error) {
+                  toast({ title: "Error", description: "Failed to sync transactions", variant: "destructive" })
+                }
+              })
+            }}
+            className="flex items-center gap-2"
+          >
+            <Zap className="h-4 w-4" />
+            Sync from Bank
+          </Button>
+          
           <TransactionControls
             transactionsPerPage={transactionsPerPage}
             onTransactionsPerPageChange={(value) => {
