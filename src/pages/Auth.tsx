@@ -588,7 +588,7 @@ export default function Auth() {
                       onClick={() => setUserType('mentee')}
                       className="text-xs"
                     >
-                      Family Admin
+                      Trustees
                     </Button>
                   </div>
                   {userType === 'family_office' && (
