@@ -667,9 +667,9 @@ export default function Auth() {
             <TabsContent value="signup">
               <div className="space-y-4 p-4 bg-destructive/20 rounded-lg border border-destructive mb-4">
                 <div className="text-center">
-                  <h3 className="font-semibold text-foreground">Family Admin Registration Only</h3>
+                  <h3 className="font-semibold text-foreground">Trustees Registration Only</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Only family administrators can create accounts. Family members will receive access through their admin.
+                    Only trustees can create accounts. Family members will receive access through their trustees.
                   </p>
                 </div>
               </div>
