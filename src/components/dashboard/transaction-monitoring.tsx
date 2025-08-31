@@ -712,7 +712,7 @@ export function TransactionMonitoring() {
                     accept=".csv,.pdf"
                     multiple
                     onChange={(e) => setUploadFile(Array.from(e.target.files || []))}
-                    className="hover:bg-accent/50 transition-colors cursor-pointer file:cursor-pointer file:hover:bg-primary file:hover:text-primary-foreground file:transition-colors"
+                    className="file:cursor-pointer file:hover:bg-primary file:hover:text-primary-foreground file:transition-colors"
                   />
                   <p className="text-xs text-muted-foreground">
                     Supported formats: CSV and PDF files from your bank
