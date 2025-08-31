@@ -336,24 +336,52 @@ export function TransactionMonitoring() {
           <Button 
             variant="outline" 
             onClick={() => {
-              // Process uploaded statements
-              uploadedStatements.forEach(async (statement) => {
-                if (statement.processing_status === 'pending') {
-                  try {
-                    const response = await fetch('/api/process-bank-statement', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ uploadId: statement.id })
-                    })
-                    if (response.ok) {
-                      await fetchConnectedAccountsAndTransactions()
-                      toast({ title: "Success", description: "Bank statements processed!" })
-                    }
-                  } catch (error) {
-                    toast({ title: "Error", description: "Failed to process statements", variant: "destructive" })
-                  }
+              (async () => {
+                // Process uploaded CSV statements via Edge Function
+                const pending = uploadedStatements.filter((s) => s.processing_status === 'pending' && s.filename?.toLowerCase().endsWith('.csv'))
+                if (pending.length === 0) {
+                  toast({ title: "Nothing to process", description: "No pending CSV statements found" })
+                  return
                 }
-              })
+
+                try {
+                  for (const statement of pending) {
+                    const { data: fileData, error: downloadError } = await supabase
+                      .storage
+                      .from('bank-statements')
+                      .download(statement.file_path)
+
+                    if (downloadError || !fileData) {
+                      throw downloadError || new Error('Failed to download file')
+                    }
+
+                    const arrayBuffer = await fileData.arrayBuffer()
+                    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
+
+                    const { error: fnError } = await supabase.functions.invoke('process-bank-statement', {
+                      body: {
+                        fileName: statement.filename,
+                        fileContent: base64,
+                        fileType: 'text/csv'
+                      }
+                    })
+
+                    if (fnError) throw fnError
+
+                    // Mark original upload as completed to avoid confusion
+                    await supabase
+                      .from('bank_statement_uploads')
+                      .update({ processing_status: 'completed', processed_at: new Date().toISOString() })
+                      .eq('id', statement.id)
+                  }
+
+                  await fetchConnectedAccountsAndTransactions()
+                  toast({ title: "Success", description: "Bank statements processed!" })
+                } catch (error) {
+                  console.error(error)
+                  toast({ title: "Error", description: "Failed to process statements", variant: "destructive" })
+                }
+              })()
             }}
             className="flex items-center gap-2"
           >
@@ -364,22 +392,25 @@ export function TransactionMonitoring() {
           <Button 
             variant="outline" 
             onClick={() => {
-              // Sync from connected accounts
-              connectedAccounts.forEach(async (account) => {
+              (async () => {
                 try {
-                  const response = await fetch('/api/plaid-fetch-transactions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ accountId: account.external_account_id })
-                  })
-                  if (response.ok) {
-                    await fetchConnectedAccountsAndTransactions()
-                    toast({ title: "Success", description: "Transactions synced from bank!" })
-                  }
+                  // Sync from connected accounts via Edge Function
+                  await Promise.all(
+                    connectedAccounts.map(async (account) => {
+                      const { error: fnError } = await supabase.functions.invoke('plaid-fetch-transactions', {
+                        body: { account_id: account.external_account_id }
+                      })
+                      if (fnError) throw fnError
+                    })
+                  )
+
+                  await fetchConnectedAccountsAndTransactions()
+                  toast({ title: "Success", description: "Transactions synced from bank!" })
                 } catch (error) {
+                  console.error(error)
                   toast({ title: "Error", description: "Failed to sync transactions", variant: "destructive" })
                 }
-              })
+              })()
             }}
             className="flex items-center gap-2"
           >
