@@ -337,7 +337,7 @@ export function TransactionMonitoring() {
             variant="outline" 
             onClick={() => {
               (async () => {
-                // Process uploaded CSV statements via Edge Function
+                // Process uploaded CSV statements via Edge Function, with local fallback
                 const pending = uploadedStatements.filter((s) => s.processing_status === 'pending' && s.filename?.toLowerCase().endsWith('.csv'))
                 if (pending.length === 0) {
                   toast({ title: "Nothing to process", description: "No pending CSV statements found" })
@@ -379,7 +379,63 @@ export function TransactionMonitoring() {
                   toast({ title: "Success", description: "Bank statements processed!" })
                 } catch (error) {
                   console.error(error)
-                  toast({ title: "Error", description: "Failed to process statements", variant: "destructive" })
+
+                  // Fallback: parse CSV client-side and insert rows
+                  try {
+                    for (const statement of pending) {
+                      const { data: dl2 } = await supabase.storage.from('bank-statements').download(statement.file_path)
+                      if (!dl2) continue
+                      const text = await dl2.text()
+                      const lines = text.split(/\r?\n/).filter(Boolean)
+                      if (lines.length <= 1) continue
+                      const rows = lines.slice(1) // skip header
+
+                      const toInsert: any[] = []
+                      for (const row of rows) {
+                        // Basic CSV split (handles simple cases)
+                        const cols = row.split(',')
+                        const dateStr = (cols[0] || '').trim()
+                        const description = (cols[1] || '').trim() || 'Transaction'
+                        const amountRaw = (cols[2] || '').trim()
+                        if (!dateStr || !amountRaw) continue
+                        const amountNum = Number(amountRaw.replace(/[$,]/g, ''))
+                        if (Number.isNaN(amountNum)) continue
+                        const txType = amountNum < 0 ? 'expense' : 'income'
+                        const txDate = new Date(dateStr)
+                        if (isNaN(txDate.getTime())) continue
+                        toInsert.push({
+                          user_id: user?.id,
+                          transaction_date: txDate.toISOString().slice(0,10),
+                          amount: Math.abs(amountNum),
+                          description,
+                          transaction_type: txType,
+                          category: 'Uncategorized'
+                        })
+                      }
+
+                      if (toInsert.length) {
+                        const { error: insertErr } = await supabase
+                          .from('bank_statement_transactions')
+                          .insert(toInsert)
+                        if (insertErr) throw insertErr
+                      }
+
+                      await supabase
+                        .from('bank_statement_uploads')
+                        .update({ 
+                          processing_status: 'completed', 
+                          processed_at: new Date().toISOString(),
+                          transactions_extracted: toInsert.length
+                        })
+                        .eq('id', statement.id)
+                    }
+
+                    await fetchConnectedAccountsAndTransactions()
+                    toast({ title: "Processed locally", description: "CSV parsed without the server function." })
+                  } catch (fallbackErr) {
+                    console.error(fallbackErr)
+                    toast({ title: "Processing failed", description: "Could not process statements.", variant: "destructive" })
+                  }
                 }
               })()
             }}
