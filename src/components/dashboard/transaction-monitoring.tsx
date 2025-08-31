@@ -699,6 +699,7 @@ export function TransactionMonitoring() {
                 multiple
                 onChange={handleFileUpload}
                 disabled={uploading}
+                className="hover:bg-primary/10 hover:border-primary/50 transition-colors cursor-pointer file:cursor-pointer file:bg-primary/20 file:border-0 file:text-primary file:hover:bg-primary/30 file:transition-colors"
               />
               <p className="text-xs text-muted-foreground">
                 Only CSV files are supported for automatic transaction parsing
