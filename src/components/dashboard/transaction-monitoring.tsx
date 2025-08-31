@@ -458,43 +458,54 @@ export function TransactionMonitoring() {
                 return
               }
 
-              // Only sync accounts with a Plaid account id available
-              const eligibleAccounts = connectedAccounts.filter((a) => a.external_account_id)
+              // Only sync accounts that have Plaid linkage
+              const eligibleAccounts = connectedAccounts.filter((a) => a.external_account_id && a.provider === 'plaid')
               if (eligibleAccounts.length === 0) {
                 toast({ title: "No eligible accounts", description: "Reconnect bank accounts to enable syncing" })
                 return
               }
 
               try {
+                let totalAdded = 0
+                let skipped = 0
+
                 const results = await Promise.allSettled(
                   eligibleAccounts.map(async (account) => {
+                    // The edge function expects the connected_accounts.id, not the Plaid account_id
                     const { data, error } = await supabase.functions.invoke('plaid-fetch-transactions', {
-                      body: { account_id: account.external_account_id }
+                      body: { account_id: account.id }
                     })
 
                     if (error) {
                       const msg = typeof (error as any)?.message === 'string' ? (error as any).message : JSON.stringify(error)
-                      // Gracefully handle when Plaid Transactions product isn't enabled
-                      if (msg.includes('INVALID_PRODUCT') || msg.toLowerCase().includes('transactions not enabled')) {
-                        console.warn('Plaid Transactions not enabled for this environment. Skipping sync for account.', account.external_account_id)
+                      if (msg.includes('INVALID_PRODUCT') || msg.toLowerCase().includes('transactions product')) {
+                        skipped += 1
                         return 'skipped'
                       }
                       throw error
                     }
 
-                    return data
+                    if ((data as any)?.skipped || (data as any)?.reason === 'INVALID_PRODUCT') {
+                      skipped += 1
+                      return 'skipped'
+                    }
+
+                    const added = Array.isArray((data as any)?.transactions) ? (data as any).transactions.length : 0
+                    totalAdded += added
+                    return added
                   })
                 )
 
-                const successes = results.filter(r => r.status === 'fulfilled').length
-                const failures = results.length - successes
+                const fulfilled = results.filter(r => r.status === 'fulfilled').length
+                const failed = results.length - fulfilled
 
                 await fetchConnectedAccountsAndTransactions()
 
-                if (successes > 0) {
-                  toast({ title: "Sync complete", description: `${successes} account(s) processed${failures ? `, ${failures} failed` : ''}` })
+                if (totalAdded > 0) {
+                  toast({ title: "Sync complete", description: `${totalAdded} transaction(s) added across ${fulfilled} account(s)${skipped ? `, ${skipped} skipped` : ''}` })
                 } else {
-                  toast({ title: "No accounts synced", description: failures ? "All account syncs failed" : "Nothing to sync" })
+                  const desc = skipped ? 'Plaid Transactions is not enabled for these accounts. No transactions returned.' : (failed ? 'All account syncs failed.' : 'No new transactions found.')
+                  toast({ title: "0 transactions added", description: desc })
                 }
               } catch (err) {
                 console.error(err)
