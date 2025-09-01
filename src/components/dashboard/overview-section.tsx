@@ -324,20 +324,26 @@ export function OverviewSection() {
         <Card>
           <CardHeader>
             <CardTitle>Portfolio Performance</CardTitle>
-            <CardDescription>12-month investment growth</CardDescription>
+            <CardDescription>12-month account balance growth</CardDescription>
           </CardHeader>
           <CardContent>
-            <InvestmentChart />
+            <InvestmentChart 
+              accountsData={connectedAccounts} 
+              totalValue={getTotalNetWorth()} 
+            />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Asset Allocation</CardTitle>
-            <CardDescription>Current portfolio distribution</CardDescription>
+            <CardTitle>Account Allocation</CardTitle>
+            <CardDescription>Current account distribution</CardDescription>
           </CardHeader>
           <CardContent>
-            <AssetAllocation />
+            <AssetAllocation 
+              accountsData={connectedAccounts}
+              totalBalance={getAccountsBalance()} 
+            />
           </CardContent>
         </Card>
       </div>
