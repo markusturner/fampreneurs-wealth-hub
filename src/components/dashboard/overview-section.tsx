@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
@@ -33,6 +34,7 @@ interface Investment {
 export function OverviewSection() {
   const { user } = useAuth()
   const [investments, setInvestments] = useState<Investment[]>([])
+  const [connectedAccountsBalanceTotal, setConnectedAccountsBalanceTotal] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -54,6 +56,17 @@ export function OverviewSection() {
 
       if (error) throw error
       setInvestments(data || [])
+
+      // Fetch connected accounts balance total
+      const { data: accountsData, error: accountsDataError } = await supabase
+        .from('connected_accounts')
+        .select('balance')
+        .eq('user_id', user.id)
+
+      if (!accountsDataError && accountsData) {
+        const sum = accountsData.reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
+        setConnectedAccountsBalanceTotal(sum)
+      }
     } catch (error) {
       console.error('Error fetching investments:', error)
     } finally {
@@ -97,7 +110,14 @@ export function OverviewSection() {
   const connectedAccounts = getConnectedAccounts()
 
   const getAccountsBalance = () => {
-    return connectedAccounts.reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
+    const connectedLocalTotal = connectedAccounts.reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
+    // Use Supabase balance if user is authenticated, otherwise use localStorage
+    return user ? connectedAccountsBalanceTotal : connectedLocalTotal
+  }
+
+  // Calculate combined totals for comprehensive overview
+  const getTotalNetWorth = () => {
+    return getTotalPortfolioValue() + getAccountsBalance()
   }
 
   // Get active accounts count for current user
@@ -114,7 +134,7 @@ export function OverviewSection() {
 
   // Generate AI insights based on portfolio performance
   const generateAIInsights = () => {
-    const totalValue = getTotalPortfolioValue()
+    const totalValue = getTotalNetWorth()
     const dayChange = getTotalDayChange()
     const insights = []
 
@@ -173,6 +193,7 @@ export function OverviewSection() {
   }
 
   const aiInsights = generateAIInsights()
+  const totalNetWorth = getTotalNetWorth()
 
   if ((connectedAccounts.length === 0 && investments.length === 0)) {
     return (
@@ -211,7 +232,7 @@ export function OverviewSection() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-0 p-3 sm:p-4 lg:p-6">
-            <div className="text-sm sm:text-lg lg:text-2xl font-bold">{formatCurrency(getAccountsBalance() + getTotalPortfolioValue())}</div>
+            <div className="text-sm sm:text-lg lg:text-2xl font-bold">{formatCurrency(totalNetWorth)}</div>
             <div className="text-xs sm:text-sm text-green-600 flex items-center gap-1">
               <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3" />
               <span className="hidden sm:inline">Total Assets</span>
@@ -224,7 +245,7 @@ export function OverviewSection() {
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <PieChart className="h-4 w-4" />
-              Portfolio Value
+              Investment Value
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -294,7 +315,7 @@ export function OverviewSection() {
             AI Financial Insights
           </CardTitle>
           <CardDescription>
-            Personalized recommendations and alerts based on your financial data
+            Personalized recommendations and alerts based on your complete financial picture
           </CardDescription>
         </CardHeader>
         <CardContent>
