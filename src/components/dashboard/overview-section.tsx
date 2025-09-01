@@ -238,7 +238,7 @@ export function OverviewSection() {
   return (
     <div className="space-y-6">
       {/* Executive Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -270,21 +270,6 @@ export function OverviewSection() {
             <div className="text-2xl font-bold">{formatCurrency(getAccountsBalance())}</div>
             <div className="text-xs text-muted-foreground">
               Available funds
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Active Accounts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{getActiveAccountsCount()}</div>
-            <div className="text-xs text-muted-foreground">
-              Connected accounts
             </div>
           </CardContent>
         </Card>
