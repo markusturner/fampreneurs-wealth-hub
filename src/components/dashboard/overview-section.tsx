@@ -136,7 +136,17 @@ export function OverviewSection() {
   const generateAIInsights = () => {
     const totalValue = getTotalNetWorth()
     const dayChange = getTotalDayChange()
+    const accountsBalance = getAccountsBalance()
     const insights = []
+
+    // Connected accounts insights
+    if (accountsBalance > 0 && investments.length === 0) {
+      insights.push({
+        type: 'opportunity',
+        message: `You have ${formatCurrency(accountsBalance)} in connected accounts. Consider creating an investment portfolio to grow your wealth.`,
+        priority: 'medium'
+      })
+    }
 
     // Performance-based insights
     if (dayChange < -10000) {
@@ -158,6 +168,12 @@ export function OverviewSection() {
       insights.push({
         type: 'tip',
         message: 'With your portfolio size, consider diversifying into alternative investments like real estate or private equity.',
+        priority: 'medium'
+      })
+    } else if (totalValue > 1000 && totalValue < 10000) {
+      insights.push({
+        type: 'tip',
+        message: 'Consider setting up automatic investments to steadily grow your portfolio over time.',
         priority: 'medium'
       })
     }
