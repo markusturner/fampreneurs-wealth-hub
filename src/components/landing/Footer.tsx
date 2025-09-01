@@ -12,7 +12,7 @@ export const Footer = () => {
   return <footer className="bg-background border-t border-border">
       <div className="container mx-auto px-4 md:px-6 py-12 md:py-16">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8 md:mb-12 mx-auto max-w-4xl justify-items-center sm:justify-items-start">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8 md:mb-12 mx-auto max-w-4xl justify-items-center sm:justify-items-start items-center">
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
@@ -68,7 +68,7 @@ export const Footer = () => {
 
 
           {/* Contact */}
-          <div className="ml-24 max-w-xs">
+          <div className="ml-0 sm:ml-24 max-w-xs">
             <h4 className="font-semibold mb-4" style={{
             color: '#ffb500'
           }}>Contact</h4>
