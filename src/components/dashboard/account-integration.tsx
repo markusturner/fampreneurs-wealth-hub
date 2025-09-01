@@ -642,6 +642,14 @@ export function AccountIntegration() {
           <p className="text-xs sm:text-sm text-muted-foreground">
             Connect and manage all your financial accounts
           </p>
+          {accounts.length > 0 && (
+            <div className="mt-2 p-3 bg-muted/50 rounded-lg">
+              <div className="text-sm text-muted-foreground">Total Portfolio Value</div>
+              <div className="text-xl font-bold text-foreground">
+                {formatCurrency(accounts.reduce((sum, account) => sum + (account.balance || 0), 0))}
+              </div>
+            </div>
+          )}
         </div>
         
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
