@@ -31,12 +31,18 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const apiKey = Deno.env.get('RESEND_API_KEY')
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY is not configured in Supabase Function secrets')
+    }
+    const resend = new Resend(apiKey)
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+    // Use verified sender if provided, otherwise fall back to Resend sandbox sender
+    const fromAddress = Deno.env.get('RESEND_FROM_EMAIL') || 'Fampreneurs <onboarding@resend.dev>'
     const { 
       familyMemberId, 
       email, 
@@ -66,8 +72,8 @@ const handler = async (req: Request): Promise<Response> => {
     const fullName = `${firstName} ${lastName || ''}`.trim();
 
     // Send the invitation email (optimized for transactional deliverability)
-    const emailResponse = await resend.emails.send({
-      from: 'Family Office <info@fampreneurs.com>',
+    const { data: emailData, error: emailError } = await resend.emails.send({
+      from: fromAddress,
       to: [email],
       subject: `You're invited to join Fampreneurs Family Office, ${firstName}`,
       reply_to: 'info@fampreneurs.com',
@@ -81,16 +87,21 @@ const handler = async (req: Request): Promise<Response> => {
         <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 16px; color:#222;">
           <p>Dear ${fullName},</p>
           <p><strong>${inviterName}</strong> invited you to join the family office platform as a <strong>${familyPosition}</strong>.</p>
-          <p><strong>Email:</strong> ${email}<br/><strong>Temporary Password:</strong> <code style="background:#f2f4f7; padding:2px 6px; border-radius:4px;">${tempPassword}</code></p>
+          <p><strong>Email:</strong> ${email}<br/><strong>Temporary Password:</strong> <code style=\"background:#f2f4f7; padding:2px 6px; border-radius:4px;\">${tempPassword}</code></p>
           <p>
-            <a href="${supabaseUrl.replace('.supabase.co', '.vercel.app')}/auth" style="display:inline-block; background:#0a66c2; color:#fff; padding:10px 16px; text-decoration:none; border-radius:6px;">Sign in</a>
+            <a href=\"${supabaseUrl.replace('.supabase.co', '.vercel.app')}/auth\" style=\"display:inline-block; background:#0a66c2; color:#fff; padding:10px 16px; text-decoration:none; border-radius:6px;\">Sign in</a>
           </p>
-          <p style="margin-top:12px;">For security, please change your password after your first login.</p>
+          <p style=\"margin-top:12px;\">For security, please change your password after your first login.</p>
         </div>
       `,
-    });
+    })
 
-    console.log('Email send response:', emailResponse);
+    if (emailError) {
+      console.error('Resend email error:', emailError)
+      throw new Error(emailError.message || 'Failed to send invitation email')
+    }
+
+    console.log('Email sent with id:', emailData?.id)
 
     // Update the family member record to mark as invited
     const { error: updateError } = await supabase
@@ -111,7 +122,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: true, 
         message: 'Invitation sent successfully',
-        emailId: (emailResponse as any).data?.id 
+        emailId: emailData?.id 
       }),
       {
         status: 200,
