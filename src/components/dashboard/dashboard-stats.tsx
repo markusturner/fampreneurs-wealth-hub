@@ -41,8 +41,8 @@ export function DashboardStats() {
         .from('family_members')
         .select('*', { count: 'exact', head: true })
         .eq('added_by', user.id)
-        .not('office_role', 'is', null)
-      
+        .or('not.office_role.is.null,family_position.eq.Family Office Team')
+
       if (!officeError && officeCount !== null) {
         setFamilyOfficeMemberCount(officeCount)
       }
