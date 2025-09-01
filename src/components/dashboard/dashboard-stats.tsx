@@ -27,14 +27,17 @@ export function DashboardStats() {
     if (!user) return
 
     const fetchCounts = async () => {
-      // Fetch document count from family office secure documents
-      const { count: docCount, error: docError } = await supabase
-        .from('family_office_secure_documents')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-      
-      if (!docError && docCount !== null) {
-        setDocumentCount(docCount)
+      // Fetch document count from localStorage (where documents are actually stored)
+      const uploadedDocuments = localStorage.getItem('uploadedDocuments')
+      if (uploadedDocuments) {
+        try {
+          const parsed = JSON.parse(uploadedDocuments)
+          setDocumentCount(Object.keys(parsed).length)
+        } catch {
+          setDocumentCount(0)
+        }
+      } else {
+        setDocumentCount(0)
       }
 
       // Fetch members once and compute counts to match Members tab logic
