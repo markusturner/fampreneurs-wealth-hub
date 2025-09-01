@@ -30,7 +30,7 @@ export const Footer = () => {
                 <p className="text-xs text-muted-foreground">TruHeirs</p>
               </div>
             </div>
-            <p className="text-muted-foreground text-sm leading-relaxed">
+            <p className="text-muted-foreground text-sm leading-relaxed text-center sm:text-left">
               The complete DIY AI family office platform designed for busy professionals and entrepreneurs building generational wealth.
             </p>
             <div className="flex space-x-4">
