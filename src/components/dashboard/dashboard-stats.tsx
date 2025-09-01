@@ -36,28 +36,17 @@ export function DashboardStats() {
         setDocumentCount(docCount)
       }
 
-      // Fetch family office member count for current user (from family_members with office_role)
-      const { count: officeCount, error: officeError } = await supabase
+      // Fetch members once and compute counts to match Members tab logic
+      const { data: allMembers, error: membersError } = await supabase
         .from('family_members')
-        .select('*', { count: 'exact', head: true })
+        .select('office_role, family_position, status')
         .eq('added_by', user.id)
-        .or('not.office_role.is.null,family_position.eq.Family Office Team')
-
-      if (!officeError && officeCount !== null) {
-        setFamilyOfficeMemberCount(officeCount)
-      }
-
-      // Fetch family member count for current user
-      const { count: familyCount, error: familyError } = await supabase
-        .from('family_members')
-        .select('*', { count: 'exact', head: true })
-        .eq('added_by', user.id)
-        .neq('status', 'inactive')
-        .is('office_role', null)
-        .neq('family_position', 'Family Office Team')
-
-      if (!familyError && familyCount !== null) {
-        setFamilyMemberCount(familyCount)
+      
+      if (!membersError && allMembers) {
+        const officeList = allMembers.filter((m: any) => m.office_role !== null || m.family_position === 'Family Office Team')
+        const familyList = allMembers.filter((m: any) => m.office_role === null && m.family_position !== 'Family Office Team' && m.status !== 'inactive')
+        setFamilyOfficeMemberCount(officeList.length)
+        setFamilyMemberCount(familyList.length)
       }
 
       // Fetch connected accounts count for current user
