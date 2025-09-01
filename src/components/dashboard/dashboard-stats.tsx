@@ -54,6 +54,7 @@ export function DashboardStats() {
         .eq('added_by', user.id)
         .neq('status', 'inactive')
         .is('office_role', null)
+        .neq('family_position', 'Family Office Team')
 
       if (!familyError && familyCount !== null) {
         setFamilyMemberCount(familyCount)
