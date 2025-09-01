@@ -285,7 +285,7 @@ export function OverviewSection() {
             AI Financial Insights
           </CardTitle>
           <CardDescription>
-            Personalized recommendations and alerts based on your complete financial picture
+            AI-powered insights to grow, reduce taxes & sustain your wealth
           </CardDescription>
         </CardHeader>
         <CardContent>
