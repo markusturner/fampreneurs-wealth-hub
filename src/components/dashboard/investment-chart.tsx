@@ -43,7 +43,7 @@ export function InvestmentChart({ accountsData = [], totalValue = 0 }: Investmen
   }
 
   const chartData = generateChartData()
-  const hasData = accountsData.length > 0 && totalValue > 0
+  const hasData = accountsData.length > 0
 
   if (!hasData) {
     return (
