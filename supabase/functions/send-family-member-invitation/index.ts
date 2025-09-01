@@ -55,13 +55,23 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Processing family member invitation for:', { email, firstName, familyPosition });
 
     // Get the inviter's profile info
-    const { data: inviterProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('display_name, first_name, last_name')
-      .eq('user_id', req.headers.get('authorization')?.split(' ')[1] || '')
-      .single();
-
-    if (profileError) {
+    const authHeader = req.headers.get('authorization') || '';
+    const accessToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+    let inviterProfile: { display_name: string | null; first_name: string | null; last_name: string | null } | null = null;
+    try {
+      if (accessToken) {
+        const { data: userData } = await supabase.auth.getUser(accessToken);
+        const inviterUserId = userData?.user?.id;
+        if (inviterUserId) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('display_name, first_name, last_name')
+            .eq('user_id', inviterUserId)
+            .single();
+          inviterProfile = profile;
+        }
+      }
+    } catch (profileError) {
       console.warn('Inviter profile lookup warning (non-fatal):', profileError);
     }
 
@@ -81,7 +91,10 @@ const handler = async (req: Request): Promise<Response> => {
         'X-Entity-Ref-ID': familyMemberId,
         'Auto-Submitted': 'auto-generated',
       },
-      tags: ['transactional', 'family-invitation'],
+      tags: [
+        { name: 'category', value: 'transactional' },
+        { name: 'type', value: 'family-invitation' },
+      ],
       text: `Dear ${fullName},\n\n${inviterName} invited you to join as ${familyPosition}.\n\nEmail: ${email}\nTemporary password: ${tempPassword}\n\nSign in: ${supabaseUrl.replace('.supabase.co', '.vercel.app')}/auth\n\nFor security, change your password after first login.`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 16px; color:#222;">
