@@ -238,25 +238,7 @@ export function OverviewSection() {
   return (
     <div className="space-y-6">
       {/* Executive Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4">
-        <Card>
-          <CardHeader className="pb-2 sm:pb-3 p-3 sm:p-4 lg:p-6">
-            <CardTitle className="text-xs sm:text-sm lg:text-base font-medium flex items-center gap-1 sm:gap-2">
-              <Wallet className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Net Worth</span>
-              <span className="sm:hidden">Net</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0 p-3 sm:p-4 lg:p-6">
-            <div className="text-sm sm:text-lg lg:text-2xl font-bold">{formatCurrency(totalNetWorth)}</div>
-            <div className="text-xs sm:text-sm text-green-600 flex items-center gap-1">
-              <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3" />
-              <span className="hidden sm:inline">Total Assets</span>
-              <span className="sm:hidden">Assets</span>
-            </div>
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -303,21 +285,6 @@ export function OverviewSection() {
             <div className="text-2xl font-bold">{getActiveAccountsCount()}</div>
             <div className="text-xs text-muted-foreground">
               Connected accounts
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Investment Accounts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{investments.length}</div>
-            <div className="text-xs text-muted-foreground">
-              Investment portfolios
             </div>
           </CardContent>
         </Card>
