@@ -53,7 +53,8 @@ export function DashboardStats() {
         .select('*', { count: 'exact', head: true })
         .eq('added_by', user.id)
         .neq('status', 'inactive')
-      
+        .is('office_role', null)
+
       if (!familyError && familyCount !== null) {
         setFamilyMemberCount(familyCount)
       }
