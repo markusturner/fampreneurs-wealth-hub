@@ -221,9 +221,16 @@ export function InvestmentChart() {
               <AreaChart data={portfolioData}>
                 <defs>
                   <linearGradient id="totalGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#ffb500" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#ffb500" stopOpacity={0}/>
                   </linearGradient>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feMerge> 
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis 
@@ -240,10 +247,11 @@ export function InvestmentChart() {
                 <Area
                   type="monotone"
                   dataKey="total"
-                  stroke="hsl(var(--primary))"
+                  stroke="#ffb500"
                   fillOpacity={1}
                   fill="url(#totalGradient)"
-                  strokeWidth={2}
+                  strokeWidth={3}
+                  filter="url(#glow)"
                 />
               </AreaChart>
             </ResponsiveContainer>
