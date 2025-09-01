@@ -35,6 +35,7 @@ export function OverviewSection() {
   const { user } = useAuth()
   const [investments, setInvestments] = useState<Investment[]>([])
   const [connectedAccountsBalanceTotal, setConnectedAccountsBalanceTotal] = useState(0)
+  const [connectedAccountsData, setConnectedAccountsData] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -60,12 +61,13 @@ export function OverviewSection() {
       // Fetch connected accounts balance total
       const { data: accountsData, error: accountsDataError } = await supabase
         .from('connected_accounts')
-        .select('balance')
+        .select('id, account_name, balance, status, account_type, provider, currency, metadata')
         .eq('user_id', user.id)
 
       if (!accountsDataError && accountsData) {
         const sum = accountsData.reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
         setConnectedAccountsBalanceTotal(sum)
+        setConnectedAccountsData(accountsData)
       }
     } catch (error) {
       console.error('Error fetching investments:', error)
@@ -107,7 +109,7 @@ export function OverviewSection() {
     return savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id))
   }
 
-  const connectedAccounts = getConnectedAccounts()
+  const connectedAccounts = connectedAccountsData.length ? connectedAccountsData : getConnectedAccounts()
 
   const getAccountsBalance = () => {
     const connectedLocalTotal = connectedAccounts.reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
