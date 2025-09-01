@@ -12,7 +12,8 @@ const initialPortfolioData = [
     stocks: 4200000, 
     etfs: 2800000, 
     houseEquity: 1900000, 
-    business: 450000 
+    business: 450000,
+    total: 10200000
   },
   { 
     month: "Feb", 
@@ -20,7 +21,8 @@ const initialPortfolioData = [
     stocks: 4380000, 
     etfs: 2950000, 
     houseEquity: 1920000, 
-    business: 480000 
+    business: 480000,
+    total: 10650000
   },
   { 
     month: "Mar", 
@@ -28,7 +30,8 @@ const initialPortfolioData = [
     stocks: 4150000, 
     etfs: 2880000, 
     houseEquity: 1940000, 
-    business: 430000 
+    business: 430000,
+    total: 10180000
   },
   { 
     month: "Apr", 
@@ -36,7 +39,8 @@ const initialPortfolioData = [
     stocks: 4650000, 
     etfs: 3100000, 
     houseEquity: 1960000, 
-    business: 490000 
+    business: 490000,
+    total: 11320000
   },
   { 
     month: "May", 
@@ -44,7 +48,8 @@ const initialPortfolioData = [
     stocks: 4890000, 
     etfs: 3250000, 
     houseEquity: 1980000, 
-    business: 500000 
+    business: 500000,
+    total: 11800000
   },
   { 
     month: "Jun", 
@@ -52,7 +57,8 @@ const initialPortfolioData = [
     stocks: 5150000, 
     etfs: 3380000, 
     houseEquity: 2000000, 
-    business: 520000 
+    business: 520000,
+    total: 12400000
   },
   { 
     month: "Jul", 
@@ -60,7 +66,8 @@ const initialPortfolioData = [
     stocks: 5420000, 
     etfs: 3550000, 
     houseEquity: 2020000, 
-    business: 530000 
+    business: 530000,
+    total: 13000000
   },
   { 
     month: "Aug", 
@@ -68,7 +75,8 @@ const initialPortfolioData = [
     stocks: 5680000, 
     etfs: 3720000, 
     houseEquity: 2040000, 
-    business: 540000 
+    business: 540000,
+    total: 13600000
   },
 ]
 
@@ -141,8 +149,8 @@ export function InvestmentChart() {
     growth = ((currentTotal - previousTotal) / previousTotal) * 100
   } else {
     // Use mock data
-    currentTotal = currentData.crypto + currentData.stocks + currentData.etfs + currentData.houseEquity + currentData.business
-    previousTotal = previousData.crypto + previousData.stocks + previousData.etfs + previousData.houseEquity + previousData.business
+    currentTotal = currentData.total
+    previousTotal = previousData.total
     growth = ((currentTotal - previousTotal) / previousTotal) * 100
   }
 
@@ -186,7 +194,63 @@ export function InvestmentChart() {
   }
 
   if (!hasRealData) {
-    return null
+    // Show mock data when no real data is available
+    return (
+      <Card className="shadow-soft w-full">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl font-bold">Portfolio Performance</CardTitle>
+              <CardDescription>
+                Sample portfolio data - connect your accounts to see real data
+              </CardDescription>
+            </div>
+            <div className="text-right">
+              <div className="text-2xl font-bold text-foreground">
+                ${currentTotal.toLocaleString()}
+              </div>
+              <Badge variant="outline" className="text-muted-foreground">
+                Demo Data
+              </Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0 p-2 sm:p-6">
+          <div className="h-[250px] sm:h-[350px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={portfolioData}>
+                <defs>
+                  <linearGradient id="totalGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis 
+                  dataKey="month" 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                />
+                <YAxis 
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                  tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Area
+                  type="monotone"
+                  dataKey="total"
+                  stroke="hsl(var(--primary))"
+                  fillOpacity={1}
+                  fill="url(#totalGradient)"
+                  strokeWidth={2}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   // Real data view
