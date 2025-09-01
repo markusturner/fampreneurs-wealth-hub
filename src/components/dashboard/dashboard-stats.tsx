@@ -27,17 +27,27 @@ export function DashboardStats() {
     if (!user) return
 
     const fetchCounts = async () => {
-      // Fetch document count from localStorage (where documents are actually stored)
-      const uploadedDocuments = localStorage.getItem('uploadedDocuments')
-      if (uploadedDocuments) {
-        try {
-          const parsed = JSON.parse(uploadedDocuments)
-          setDocumentCount(Object.keys(parsed).length)
-        } catch {
+      // Fetch document count from localStorage using user-specific key
+      if (user?.id) {
+        const userDocumentKey = `uploadedDocuments_${user.id}`
+        const globalDocumentKey = 'uploadedDocuments'
+        
+        // Try user-specific key first, then global key
+        let uploadedDocuments = localStorage.getItem(userDocumentKey)
+        if (!uploadedDocuments) {
+          uploadedDocuments = localStorage.getItem(globalDocumentKey)
+        }
+        
+        if (uploadedDocuments) {
+          try {
+            const parsed = JSON.parse(uploadedDocuments)
+            setDocumentCount(Object.keys(parsed).length)
+          } catch {
+            setDocumentCount(0)
+          }
+        } else {
           setDocumentCount(0)
         }
-      } else {
-        setDocumentCount(0)
       }
 
       // Fetch members once and compute counts to match Members tab logic
