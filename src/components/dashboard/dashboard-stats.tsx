@@ -12,6 +12,7 @@ export function DashboardStats() {
   const [familyOfficeMemberCount, setFamilyOfficeMemberCount] = useState(0)
   const [familyMemberCount, setFamilyMemberCount] = useState(0)
   const [connectedAccountsCount, setConnectedAccountsCount] = useState(0)
+  const [connectedAccountsBalanceTotal, setConnectedAccountsBalanceTotal] = useState(0)
   // Alias to prevent runtime errors from stale references during HMR
   const financialAdvisorCount = familyOfficeMemberCount
   const [portfolioData, setPortfolioData] = useState({
@@ -49,7 +50,7 @@ export function DashboardStats() {
         setFamilyMemberCount(familyList.length)
       }
 
-      // Fetch connected accounts count for current user
+      // Fetch connected accounts count and balances for current user
       const { count: accountsCount, error: accountsError } = await supabase
         .from('connected_accounts')
         .select('*', { count: 'exact', head: true })
@@ -57,6 +58,16 @@ export function DashboardStats() {
       
       if (!accountsError && accountsCount !== null) {
         setConnectedAccountsCount(accountsCount)
+      }
+
+      const { data: accountsData, error: accountsDataError } = await supabase
+        .from('connected_accounts')
+        .select('balance')
+        .eq('user_id', user.id)
+
+      if (!accountsDataError && accountsData) {
+        const sum = accountsData.reduce((s: number, a: any) => s + Number(a.balance || 0), 0)
+        setConnectedAccountsBalanceTotal(sum)
       }
 
       // Fetch portfolio data for current user
@@ -101,8 +112,9 @@ export function DashboardStats() {
   }
 
   const connectedAccounts = getConnectedAccountsData()
-  const hasFinancialData = portfolioData.totalValue > 0 || connectedAccounts.length > 0
-
+  const connectedLocalTotal = connectedAccounts.reduce((sum: number, acc: any) => sum + (acc.balance || 0), 0)
+  const combinedTotal = (portfolioData.totalValue || 0) + (user ? connectedAccountsBalanceTotal : connectedLocalTotal)
+  const hasFinancialData = combinedTotal > 0
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -116,9 +128,9 @@ export function DashboardStats() {
     {
       title: "Total Portfolio Value",
       value: hasFinancialData 
-        ? formatCurrency(portfolioData.totalValue + connectedAccounts.reduce((sum, acc) => sum + (acc.balance || 0), 0))
+        ? formatCurrency(combinedTotal)
         : "$0",
-      change: hasFinancialData ? formatCurrency(portfolioData.dayChange) : "Connect accounts",
+       change: hasFinancialData ? formatCurrency(portfolioData.dayChange) : "Connect accounts",
       trend: portfolioData.dayChange >= 0 ? "up" : "down",
       icon: DollarSign,
       iconColor: "#10b981", // Green
