@@ -39,7 +39,7 @@ export function OverviewSection() {
 
   useEffect(() => {
     fetchInvestments()
-  }, [])
+  }, [user])
 
   const fetchInvestments = async () => {
     if (!user?.id) {
