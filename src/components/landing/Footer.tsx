@@ -15,7 +15,7 @@ export const Footer = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8 md:mb-12 mx-auto max-w-4xl justify-items-center sm:justify-items-start items-center">
           {/* Company Info */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 justify-center sm:justify-start">
               <div className="w-16 h-16 rounded-lg flex items-center justify-center">
                 <img 
                   src={theme === 'dark' ? "/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" : "/lovable-uploads/00df4658-d6df-420b-8c0d-7af68820837d.png"}
