@@ -42,7 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Use verified sender if provided, otherwise fall back to Resend sandbox sender
-    const fromAddress = Deno.env.get('RESEND_FROM_EMAIL') || 'Fampreneurs <onboarding@resend.dev>'
+    const fromAddress = Deno.env.get('RESEND_FROM_EMAIL') || 'onboarding@resend.dev'
     const { 
       familyMemberId, 
       email, 
@@ -84,17 +84,9 @@ const handler = async (req: Request): Promise<Response> => {
     // Send the invitation email (optimized for transactional deliverability)
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: fromAddress,
-      to: [email],
+      to: email,
       subject: `You're invited to join Fampreneurs Family Office, ${firstName}`,
-      reply_to: 'info@fampreneurs.com',
-      headers: {
-        'X-Entity-Ref-ID': familyMemberId,
-        'Auto-Submitted': 'auto-generated',
-      },
-      tags: [
-        { name: 'category', value: 'transactional' },
-        { name: 'type', value: 'family-invitation' },
-      ],
+      
       text: `Dear ${fullName},\n\n${inviterName} invited you to join as ${familyPosition}.\n\nEmail: ${email}\nTemporary password: ${tempPassword}\n\nSign in: ${supabaseUrl.replace('.supabase.co', '.vercel.app')}/auth\n\nFor security, change your password after first login.`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 16px; color:#222;">
