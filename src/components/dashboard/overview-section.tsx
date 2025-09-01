@@ -195,7 +195,7 @@ export function OverviewSection() {
   const aiInsights = generateAIInsights()
   const totalNetWorth = getTotalNetWorth()
 
-  if ((connectedAccounts.length === 0 && investments.length === 0)) {
+  if ((connectedAccountsBalanceTotal === 0 && investments.length === 0 && connectedAccounts.length === 0)) {
     return (
       <Card>
         <CardContent className="p-6">
