@@ -97,14 +97,14 @@ const handler = async (req: Request): Promise<Response> => {
       to: email,
       subject: `You're invited to join Fampreneurs Family Office, ${firstName}`,
       
-      text: `Dear ${fullName},\n\n${inviterName} invited you to join as ${familyPosition}.\n\nEmail: ${email}\nTemporary password: ${tempPassword}\n\nSign in: ${supabaseUrl.replace('.supabase.co', '.vercel.app')}/auth\n\nFor security, change your password after first login.`,
+      text: `Dear ${fullName},\n\n${inviterName} invited you to join as ${familyPosition}.\n\nEmail: ${email}\nTemporary password: ${tempPassword}\n\nSign in: https://27136ee7-1259-4a9a-9864-1109582fab4d.lovableproject.com/auth\n\nFor security, change your password after first login.`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 16px; color:#222;">
           <p>Dear ${fullName},</p>
           <p><strong>${inviterName}</strong> invited you to join the family office platform as a <strong>${familyPosition}</strong>.</p>
           <p><strong>Email:</strong> ${email}<br/><strong>Temporary Password:</strong> <code style="background:#f2f4f7; padding:2px 6px; border-radius:4px;">${tempPassword}</code></p>
           <p>
-            <a href="${supabaseUrl.replace('.supabase.co', '.vercel.app')}/auth" style="display:inline-block; background:#0a66c2; color:#fff; padding:10px 16px; text-decoration:none; border-radius:6px;">Sign in</a>
+            <a href="https://27136ee7-1259-4a9a-9864-1109582fab4d.lovableproject.com/auth" style="display:inline-block; background:#0a66c2; color:#fff; padding:10px 16px; text-decoration:none; border-radius:6px;">Sign in</a>
           </p>
           <p style="margin-top:12px;">For security, please change your password after your first login.</p>
         </div>
