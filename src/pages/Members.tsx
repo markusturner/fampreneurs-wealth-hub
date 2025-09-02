@@ -237,10 +237,7 @@ export default function Members() {
     try {
       console.log('Resending invitation for:', member.full_name)
       
-      // Generate new temporary password
-      const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8).toUpperCase()
-      
-      // Send family member invitation email
+      // Send family member invitation email with isResend flag
       const { data, error } = await supabase.functions.invoke('send-family-member-invitation', {
         body: {
           familyMemberId: member.id,
@@ -248,7 +245,7 @@ export default function Members() {
           firstName: member.full_name.split(' ')[0],
           lastName: member.full_name.split(' ').slice(1).join(' '),
           familyPosition: member.family_position || 'Family Member',
-          tempPassword: tempPassword
+          isResend: true
         }
       })
 

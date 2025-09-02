@@ -14,7 +14,8 @@ interface FamilyMemberInvitationRequest {
   firstName: string;
   lastName?: string;
   familyPosition: string;
-  tempPassword: string;
+  tempPassword?: string;
+  isResend?: boolean;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -59,7 +60,8 @@ const handler = async (req: Request): Promise<Response> => {
       firstName, 
       lastName, 
       familyPosition, 
-      tempPassword 
+      tempPassword,
+      isResend = false
     }: FamilyMemberInvitationRequest = await req.json();
 
     console.log('Processing family member invitation for:', { email, firstName, familyPosition });
@@ -91,25 +93,90 @@ const handler = async (req: Request): Promise<Response> => {
 
     const fullName = `${firstName} ${lastName || ''}`.trim();
 
-    // Send the invitation email (optimized for transactional deliverability)
-    const { data: emailData, error: emailError } = await resend.emails.send({
-      from: fromAddress,
-      to: email,
-      subject: `You're invited to join Fampreneurs Family Office, ${firstName}`,
-      
-      text: `Dear ${fullName},\n\n${inviterName} invited you to join as ${familyPosition}.\n\nEmail: ${email}\nTemporary password: ${tempPassword}\n\nSign in: https://27136ee7-1259-4a9a-9864-1109582fab4d.lovableproject.com/auth\n\nFor security, change your password after first login.`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 16px; color:#222;">
-          <p>Dear ${fullName},</p>
-          <p><strong>${inviterName}</strong> invited you to join the family office platform as a <strong>${familyPosition}</strong>.</p>
-          <p><strong>Email:</strong> ${email}<br/><strong>Temporary Password:</strong> <code style="background:#f2f4f7; padding:2px 6px; border-radius:4px;">${tempPassword}</code></p>
-          <p>
-            <a href="https://27136ee7-1259-4a9a-9864-1109582fab4d.lovableproject.com/auth" style="display:inline-block; background:#0a66c2; color:#fff; padding:10px 16px; text-decoration:none; border-radius:6px;">Sign in</a>
-          </p>
-          <p style="margin-top:12px;">For security, please change your password after your first login.</p>
-        </div>
-      `,
-    });
+    let emailData, emailError;
+
+    if (isResend) {
+      // For resend, generate a secure password reset link
+      const { data: resetLinkData, error: resetLinkError } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email: email,
+        options: {
+          redirectTo: 'https://27136ee7-1259-4a9a-9864-1109582fab4d.lovableproject.com/auth'
+        }
+      });
+
+      if (resetLinkError) {
+        console.error('Error generating reset link:', resetLinkError);
+        return new Response(
+          JSON.stringify({
+            success: false,
+            code: 'RESET_LINK_FAILED',
+            error: 'Failed to generate password reset link'
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+
+      // Send resend invitation email with password reset link
+      const resetResponse = await resend.emails.send({
+        from: fromAddress,
+        to: email,
+        subject: `Set your password - Fampreneurs Family Office`,
+        
+        text: `Dear ${fullName},\n\n${inviterName} has resent your invitation to join as ${familyPosition}.\n\nTo set your password and access your account, click the link below:\n${resetLinkData.properties?.action_link}\n\nThis link will expire in 1 hour for security.\n\nIf you have trouble accessing your account, please contact your family office administrator.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 16px; color:#222;">
+            <p>Dear ${fullName},</p>
+            <p><strong>${inviterName}</strong> has resent your invitation to join the family office platform as a <strong>${familyPosition}</strong>.</p>
+            <p>To set your password and access your account, click the button below:</p>
+            <p>
+              <a href="${resetLinkData.properties?.action_link}" style="display:inline-block; background:#0a66c2; color:#fff; padding:12px 24px; text-decoration:none; border-radius:6px; font-weight:bold;">Set Your Password</a>
+            </p>
+            <p style="margin-top:16px; font-size:12px; color:#666;">
+              This link will expire in 1 hour for security. If you have trouble accessing your account, please contact your family office administrator.
+            </p>
+          </div>
+        `,
+      });
+
+      emailData = resetResponse.data;
+      emailError = resetResponse.error;
+    } else {
+      // Original invitation with temporary password
+      if (!tempPassword) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            code: 'TEMP_PASSWORD_REQUIRED',
+            error: 'Temporary password is required for new invitations'
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+
+      // Send the invitation email (optimized for transactional deliverability)
+      const inviteResponse = await resend.emails.send({
+        from: fromAddress,
+        to: email,
+        subject: `You're invited to join Fampreneurs Family Office, ${firstName}`,
+        
+        text: `Dear ${fullName},\n\n${inviterName} invited you to join as ${familyPosition}.\n\nEmail: ${email}\nTemporary password: ${tempPassword}\n\nSign in: https://27136ee7-1259-4a9a-9864-1109582fab4d.lovableproject.com/auth\n\nFor security, change your password after first login.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 16px; color:#222;">
+            <p>Dear ${fullName},</p>
+            <p><strong>${inviterName}</strong> invited you to join the family office platform as a <strong>${familyPosition}</strong>.</p>
+            <p><strong>Email:</strong> ${email}<br/><strong>Temporary Password:</strong> <code style="background:#f2f4f7; padding:2px 6px; border-radius:4px;">${tempPassword}</code></p>
+            <p>
+              <a href="https://27136ee7-1259-4a9a-9864-1109582fab4d.lovableproject.com/auth" style="display:inline-block; background:#0a66c2; color:#fff; padding:10px 16px; text-decoration:none; border-radius:6px;">Sign in</a>
+            </p>
+            <p style="margin-top:12px;">For security, please change your password after your first login.</p>
+          </div>
+        `,
+      });
+
+      emailData = inviteResponse.data;
+      emailError = inviteResponse.error;
+    }
 
     if (emailError) {
       console.error('Resend email error:', emailError);
