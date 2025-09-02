@@ -252,6 +252,17 @@ export default function Members() {
         }
       })
 
+      // Handle soft-failures returned by the edge function without throwing
+      if (data && (data as any).success === false) {
+        console.error('Invitation function responded with failure:', data)
+        toast({
+          title: 'Email not sent',
+          description: (data as any).hint || (data as any).error || 'Email service not configured. Verify Resend domain and RESEND_FROM_EMAIL.',
+          variant: 'destructive'
+        })
+        return
+      }
+
       if (error) {
         console.error('Error resending invitation:', error)
         throw error
@@ -313,6 +324,16 @@ export default function Members() {
           isOfficeTeam: true // Flag to differentiate office members
         }
       })
+
+      if (data && (data as any).success === false) {
+        console.error('Office invitation function responded with failure:', data)
+        toast({
+          title: 'Email not sent',
+          description: (data as any).hint || (data as any).error || 'Email service not configured. Verify Resend domain and RESEND_FROM_EMAIL.',
+          variant: 'destructive'
+        })
+        return
+      }
 
       if (error) {
         console.error('Error resending office invitation:', error)

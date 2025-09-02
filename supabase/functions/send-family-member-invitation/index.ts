@@ -31,18 +31,28 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const apiKey = Deno.env.get('RESEND_API_KEY')
+    const apiKey = Deno.env.get('RESEND_API_KEY');
     if (!apiKey) {
-      throw new Error('RESEND_API_KEY is not configured in Supabase Function secrets')
+      // Return 200 with explicit failure so client doesn't get generic FunctionsHttpError
+      return new Response(
+        JSON.stringify({
+          success: false,
+          code: 'RESEND_API_KEY_MISSING',
+          error: 'Email service is not configured',
+          hint: 'Add RESEND_API_KEY in Supabase secrets and set RESEND_FROM_EMAIL to a verified sender.'
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
     }
-    const resend = new Resend(apiKey)
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const resend = new Resend(apiKey);
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Use verified sender if provided, otherwise fall back to Resend sandbox sender
-    const fromAddress = Deno.env.get('RESEND_FROM_EMAIL') || 'onboarding@resend.dev'
+    const fromAddress = Deno.env.get('RESEND_FROM_EMAIL') || 'onboarding@resend.dev';
+
     const { 
       familyMemberId, 
       email, 
@@ -92,21 +102,34 @@ const handler = async (req: Request): Promise<Response> => {
         <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 16px; color:#222;">
           <p>Dear ${fullName},</p>
           <p><strong>${inviterName}</strong> invited you to join the family office platform as a <strong>${familyPosition}</strong>.</p>
-          <p><strong>Email:</strong> ${email}<br/><strong>Temporary Password:</strong> <code style=\"background:#f2f4f7; padding:2px 6px; border-radius:4px;\">${tempPassword}</code></p>
+          <p><strong>Email:</strong> ${email}<br/><strong>Temporary Password:</strong> <code style="background:#f2f4f7; padding:2px 6px; border-radius:4px;">${tempPassword}</code></p>
           <p>
-            <a href=\"${supabaseUrl.replace('.supabase.co', '.vercel.app')}/auth\" style=\"display:inline-block; background:#0a66c2; color:#fff; padding:10px 16px; text-decoration:none; border-radius:6px;\">Sign in</a>
+            <a href="${supabaseUrl.replace('.supabase.co', '.vercel.app')}/auth" style="display:inline-block; background:#0a66c2; color:#fff; padding:10px 16px; text-decoration:none; border-radius:6px;">Sign in</a>
           </p>
-          <p style=\"margin-top:12px;\">For security, please change your password after your first login.</p>
+          <p style="margin-top:12px;">For security, please change your password after your first login.</p>
         </div>
       `,
-    })
+    });
 
     if (emailError) {
-      console.error('Resend email error:', emailError)
-      throw new Error(emailError.message || 'Failed to send invitation email')
+      console.error('Resend email error:', emailError);
+      const sc = (emailError as any)?.statusCode;
+      const message = (emailError as any)?.error || (emailError as any)?.message || 'Failed to send invitation email';
+      // Return 200 with explicit failure details to avoid generic FunctionsHttpError on client
+      return new Response(
+        JSON.stringify({
+          success: false,
+          code: sc === 403 ? 'RESEND_DOMAIN_NOT_VERIFIED' : 'RESEND_ERROR',
+          error: message,
+          hint: sc === 403 
+            ? 'Verify your domain at resend.com/domains and set RESEND_FROM_EMAIL to a verified sender on that domain.' 
+            : 'Check RESEND_API_KEY and sender/from address.'
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
     }
 
-    console.log('Email sent with id:', emailData?.id)
+    console.log('Email sent with id:', emailData?.id);
 
     // Update the family member record to mark as invited
     const { error: updateError } = await supabase
@@ -120,7 +143,15 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (updateError) {
       console.error('Error updating family member status:', updateError);
-      throw updateError;
+      // Still return success false if DB update failed
+      return new Response(
+        JSON.stringify({
+          success: false,
+          code: 'DB_UPDATE_FAILED',
+          error: updateError.message || 'Failed to update member status'
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
     }
 
     return new Response(
@@ -140,13 +171,14 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error('Error in send-family-member-invitation function:', error);
+    // Return 200 with failure to avoid FunctionsHttpError masking message
     return new Response(
       JSON.stringify({ 
-        error: error.message,
+        error: error?.message || 'Unexpected error sending invitation',
         success: false 
       }),
       {
-        status: 500,
+        status: 200,
         headers: { 
           'Content-Type': 'application/json', 
           ...corsHeaders 
