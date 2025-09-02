@@ -1176,11 +1176,14 @@ export type Database = {
       family_members: {
         Row: {
           access_count: number | null
+          access_level: string | null
           added_by: string
           approved_at: string | null
           approved_by: string | null
+          company: string | null
           created_at: string | null
           data_classification: string | null
+          department: string | null
           email: string | null
           encrypted_notes: string | null
           family_position: string
@@ -1203,11 +1206,14 @@ export type Database = {
         }
         Insert: {
           access_count?: number | null
+          access_level?: string | null
           added_by: string
           approved_at?: string | null
           approved_by?: string | null
+          company?: string | null
           created_at?: string | null
           data_classification?: string | null
+          department?: string | null
           email?: string | null
           encrypted_notes?: string | null
           family_position: string
@@ -1230,11 +1236,14 @@ export type Database = {
         }
         Update: {
           access_count?: number | null
+          access_level?: string | null
           added_by?: string
           approved_at?: string | null
           approved_by?: string | null
+          company?: string | null
           created_at?: string | null
           data_classification?: string | null
+          department?: string | null
           email?: string | null
           encrypted_notes?: string | null
           family_position?: string
