@@ -411,6 +411,9 @@ export default function Members() {
           phone: updatedMember.phone,
           office_role: updatedMember.role,
           office_services: updatedMember.specialties || updatedMember.services,
+          company: updatedMember.company || null,
+          department: updatedMember.department || null,
+          access_level: updatedMember.access_level || null,
           notes: updatedMember.notes,
           updated_at: new Date().toISOString()
         })

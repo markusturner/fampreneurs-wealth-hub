@@ -87,6 +87,7 @@ export function AddFamilyOfficeMemberDialog({
     role: '',
     company: '',
     department: '',
+    accessLevel: '',
     notes: ''
   })
   
@@ -222,6 +223,7 @@ export function AddFamilyOfficeMemberDialog({
       role: '',
       company: '',
       department: '',
+      accessLevel: '',
       notes: ''
     })
   }
@@ -236,6 +238,7 @@ export function AddFamilyOfficeMemberDialog({
         role: member.office_role || member.role || '',
         company: member.company || '',
         department: member.department || '',
+        accessLevel: member.access_level || '',
         notes: member.notes || ''
       })
     } else {
@@ -629,6 +632,9 @@ export function AddFamilyOfficeMemberDialog({
             phone: formData.phone.trim() || null,
             office_role: formData.role || null,
             office_services: selectedServices.length > 0 ? selectedServices : null,
+            company: formData.company.trim() || null,
+            department: formData.department.trim() || null,
+            access_level: formData.accessLevel || null,
             notes: formData.notes.trim() || null,
             updated_at: new Date().toISOString()
           })
@@ -660,6 +666,9 @@ export function AddFamilyOfficeMemberDialog({
           family_position: 'Family Office Team',
           office_role: formData.role || null,
           office_services: selectedServices.length > 0 ? selectedServices : null,
+          company: formData.company.trim() || null,
+          department: formData.department.trim() || null,
+          access_level: formData.accessLevel || null,
           notes: formData.notes.trim() || null,
           status: 'active'
         })
@@ -1002,6 +1011,44 @@ export function AddFamilyOfficeMemberDialog({
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Additional Professional Details */}
+              <div>
+                <Label htmlFor="company">Company</Label>
+                <Input
+                  id="company"
+                  value={formData.company}
+                  onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
+                  placeholder="Company name"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="department">Department</Label>
+                <Input
+                  id="department"
+                  value={formData.department}
+                  onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+                  placeholder="Department or division"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="accessLevel">Access Level</Label>
+                <Select value={formData.accessLevel} onValueChange={(value) => setFormData(prev => ({ ...prev, accessLevel: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select access level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Full Access">Full Access</SelectItem>
+                    <SelectItem value="Financial Reports Only">Financial Reports Only</SelectItem>
+                    <SelectItem value="Investment Data Only">Investment Data Only</SelectItem>
+                    <SelectItem value="Administrative Access">Administrative Access</SelectItem>
+                    <SelectItem value="Limited Access">Limited Access</SelectItem>
+                    <SelectItem value="View Only">View Only</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
             </div>
