@@ -1050,7 +1050,6 @@ export function AddFamilyOfficeMemberDialog({
                   </SelectContent>
                 </Select>
               </div>
-
             </div>
           </div>
 
