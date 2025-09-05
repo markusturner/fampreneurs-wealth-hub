@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ArrowDown, Star, Users, TrendingUp } from 'lucide-react';
 import { navigateToRoute, scrollToSection } from '@/utils/navigation';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { useTheme } from '@/components/theme-provider';
 export const Hero = () => {
   const { theme } = useTheme();
@@ -43,7 +42,6 @@ export const Hero = () => {
             />
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
-            <ThemeToggle />
             <Button variant="ghost" size="sm" className="text-xs md:text-sm hover:bg-primary/10 transition-smooth px-3 md:px-4" style={{
             backgroundColor: '#ffb500',
             color: '#290a52'
