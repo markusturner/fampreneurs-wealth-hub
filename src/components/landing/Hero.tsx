@@ -2,13 +2,22 @@ import { Button } from '@/components/ui/button';
 import { ArrowDown, Star, Users, TrendingUp } from 'lucide-react';
 import { navigateToRoute, scrollToSection } from '@/utils/navigation';
 import { useTheme } from '@/components/theme-provider';
+import { FlowSelectionModal } from './FlowSelectionModal';
+import { useState } from 'react';
 export const Hero = () => {
   const { theme } = useTheme();
+  const [showFlowModal, setShowFlowModal] = useState(false);
+  
   const scrollToPricing = () => {
     scrollToSection('pricing');
   };
+  
   const handleLoginClick = () => {
     navigateToRoute('/auth');
+  };
+
+  const handleGetStarted = () => {
+    setShowFlowModal(true);
   };
   return <section className="relative min-h-[100dvh] min-h-screen flex items-center justify-center bg-background overflow-hidden"
     style={{
@@ -87,7 +96,7 @@ export const Hero = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-12 md:mb-16">
             <Button size="lg" className="w-full sm:w-auto text-base md:text-lg lg:text-xl px-8 md:px-12 py-4 md:py-6 hover:bg-primary/90 text-primary-foreground font-bold shadow-strong hover:shadow-glow transition-all duration-300 hover:scale-105 group" style={{
             backgroundColor: '#2eb2ff'
-          }} onClick={scrollToPricing}>
+          }} onClick={handleGetStarted}>
               <span className="group-hover:animate-pulse" style={{color: '#290a52'}}>Start Building Your Legacy</span>
             </Button>
           </div>
@@ -130,5 +139,9 @@ export const Hero = () => {
         </div>
       </div>
       
+      <FlowSelectionModal 
+        open={showFlowModal} 
+        onOpenChange={setShowFlowModal} 
+      />
     </section>;
 };

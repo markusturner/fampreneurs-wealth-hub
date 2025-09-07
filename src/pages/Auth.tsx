@@ -63,23 +63,34 @@ export default function Auth() {
   }, [debouncedEmail, membershipType])
   
   useEffect(() => {
-    // Check URL parameters for payment success
+    // Check URL parameters for different flows
     const urlParams = new URLSearchParams(window.location.search)
+    const flow = urlParams.get('flow')
+    const accessToken = urlParams.get('access_token')
     const paymentStatus = urlParams.get('payment')
     const planName = urlParams.get('plan')
     
-    if (paymentStatus === 'success') {
-      // Show success message for completed payment
+    if (flow === 'fampreneur') {
+      // Fampreneur member flow - enable community verification
+      setMembershipType('community')
+      toast({
+        title: "Welcome Fampreneur Member! 👋",
+        description: "Enter your email to verify your community membership and get your exclusive trial access.",
+        duration: 6000,
+      })
+    } else if (flow === 'purchase' && accessToken) {
+      // New user who completed purchase - validate the Stripe session
+      handlePurchaseValidation(accessToken)
+    } else if (paymentStatus === 'success') {
+      // Legacy payment success handling (keeping for backward compatibility)
       toast({
         title: "Payment Successful! 🎉",
         description: `Welcome to ${planName || 'TruHeirs'}! Please create your account to get started.`,
         duration: 8000,
       })
       
-      // Set membership type to paid if coming from payment
       setMembershipType('paid')
       
-      // Extract price from plan name and set it
       if (planName?.includes('Starter')) {
         setCustomPrice('97')
         setSelectedProgram('TruHeirs Starter')
@@ -90,8 +101,10 @@ export default function Auth() {
         setCustomPrice('497')
         setSelectedProgram('TruHeirs Enterprise')
       }
-      
-      // Clean up URL parameters
+    }
+    
+    // Clean up URL parameters
+    if (flow || accessToken || paymentStatus) {
       window.history.replaceState({}, document.title, window.location.pathname)
     }
     
@@ -189,6 +202,62 @@ export default function Auth() {
       })
     } finally {
       setIsVerifyingEmail(false)
+    }
+  }
+
+  const handlePurchaseValidation = async (sessionId: string) => {
+    setIsLoading(true)
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-purchase', {
+        body: { sessionId }
+      })
+
+      if (error || !data?.valid) {
+        toast({
+          title: "Purchase Validation Failed",
+          description: data?.error || "Unable to validate your purchase. Please contact support.",
+          variant: "destructive",
+        })
+        navigate('/')
+        return
+      }
+
+      // Purchase validated successfully
+      toast({
+        title: "Purchase Validated! 🎉",
+        description: `Welcome to TruHeirs! Your ${data.planName} access is confirmed.`,
+        duration: 8000,
+      })
+
+      // Pre-populate form with purchase data
+      if (data.customerEmail) {
+        setEmail(data.customerEmail)
+      }
+      
+      setMembershipType('paid')
+      setSelectedProgram(data.planName || 'TruHeirs Starter')
+      
+      // Set pricing based on plan
+      const amount = data.amount || 9700
+      if (amount === 9700) {
+        setCustomPrice('97')
+      } else if (amount === 29700) {
+        setCustomPrice('297') 
+      } else if (amount === 49700) {
+        setCustomPrice('497')
+      }
+
+    } catch (error) {
+      console.error('Purchase validation error:', error)
+      toast({
+        title: "Validation Error",
+        description: "Unable to validate your purchase. Please contact support.",
+        variant: "destructive",
+      })
+      navigate('/')
+    } finally {
+      setIsLoading(false)
     }
   }
 
