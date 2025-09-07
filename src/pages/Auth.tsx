@@ -416,7 +416,10 @@ export default function Auth() {
           .update({
             program_name: selectedProgram,
             membership_type: membershipType,
-            ...(avatarUrl && { avatar_url: avatarUrl })
+            ...(avatarUrl && { 
+              avatar_url: avatarUrl,
+              profile_photo_uploaded: true
+            })
           })
           .eq('user_id', data.user.id)
 
