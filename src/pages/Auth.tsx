@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, Shield, Upload, User, CreditCard, ArrowLeft } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
@@ -15,6 +16,7 @@ import { useTheme } from '@/components/theme-provider'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
 import { TwoFactorSetup } from '@/components/auth/two-factor-setup'
 import { ProfilePhotoUpload } from '@/components/auth/ProfilePhotoUpload'
+import { CommunityCallBooking } from '@/components/community/CommunityCallBooking'
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false)
@@ -711,6 +713,104 @@ export default function Auth() {
                   currentPhotoUrl={profilePhotoUrl}
                 />
 
+                {/* Community Membership Selection */}
+                <div className="space-y-4 p-4 bg-muted/50 rounded-lg border">
+                  <div className="flex items-center space-x-3">
+                    <Checkbox
+                      id="community-member"
+                      checked={membershipType === 'community'}
+                      onCheckedChange={(checked) => {
+                        setMembershipType(checked ? 'community' : 'free')
+                        if (!checked) {
+                          setSelectedProgram('')
+                        }
+                      }}
+                    />
+                    <Label htmlFor="community-member" className="text-sm font-medium">
+                      I'm a member of the Fampreneurs community
+                    </Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Community members get 50% off all pricing tiers and access to exclusive programs with free trials.
+                  </p>
+
+                  {membershipType === 'community' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="program-select">Select Your Program</Label>
+                      <Select
+                        value={selectedProgram}
+                        onValueChange={setSelectedProgram}
+                      >
+                        <SelectTrigger className="bg-background">
+                          <SelectValue placeholder="Choose your program" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border shadow-md z-50">
+                          <SelectItem value="">General Community Member</SelectItem>
+                          <SelectItem value="The Family Vault Program">
+                            The Family Vault Program (30-day free trial)
+                          </SelectItem>
+                          <SelectItem value="Family Business Accelerator Program">
+                            Family Business Accelerator Program (90-day free trial)
+                          </SelectItem>
+                          <SelectItem value="Family Legacy: VIP Weekend Program">
+                            Family Legacy: VIP Weekend Program (120-day free trial)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {membershipType !== 'community' && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">
+                        Not a community member yet? 
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          // This will open the call booking dialog
+                          const event = new CustomEvent('openCommunityBooking');
+                          window.dispatchEvent(event);
+                        }}
+                        className="w-full"
+                      >
+                        Book a Call to Join Community & Get 50% Off
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Pricing Preview */}
+                  {(membershipType === 'community' || membershipType === 'free') && (
+                    <div className="space-y-2 p-3 bg-primary/10 rounded-md">
+                      <h4 className="text-sm font-medium">Your Pricing Preview:</h4>
+                      {membershipType === 'community' && selectedProgram ? (
+                        <div className="text-xs space-y-1">
+                          {selectedProgram === 'The Family Vault Program' && (
+                            <p className="text-green-600">✓ 30-day free trial, then $97/mo, $297/mo, $497/mo</p>
+                          )}
+                          {selectedProgram === 'Family Business Accelerator Program' && (
+                            <p className="text-green-600">✓ 90-day free trial, then $97/mo, $297/mo, $497/mo</p>
+                          )}
+                          {selectedProgram === 'Family Legacy: VIP Weekend Program' && (
+                            <p className="text-green-600">✓ 120-day free trial, then $97/mo, $297/mo, $497/mo</p>
+                          )}
+                          {selectedProgram === '' && (
+                            <p className="text-green-600">✓ Community pricing: $97/mo, $297/mo, $497/mo</p>
+                          )}
+                        </div>
+                      ) : membershipType === 'community' ? (
+                        <p className="text-xs text-muted-foreground">Select a program to see your pricing</p>
+                      ) : (
+                        <div className="text-xs space-y-1">
+                          <p className="text-muted-foreground">Standard pricing: $297/mo, $497/mo, $997/mo</p>
+                          <p className="text-green-600">💡 Join community for 50% savings!</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email *</Label>
@@ -763,6 +863,7 @@ export default function Auth() {
           </Tabs>
         </CardContent>
       </Card>
+      <CommunityCallBooking />
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Check, Crown, Zap, Rocket } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { useDynamicPricing } from '@/hooks/useDynamicPricing'
+import { CommunityCallBooking } from '@/components/community/CommunityCallBooking'
 
 const pricingIconColors = [
   '#FF6B6B', // Coral red for Starter
@@ -46,6 +47,42 @@ export const Pricing = () => {
             Professional family office tools at a fraction of traditional costs. No contracts, cancel anytime.
           </p>
         </div>
+
+        {/* Community Benefits Banner */}
+        {userStatus.isCommunityMember ? (
+          <div className="mb-8 p-6 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/20 max-w-4xl mx-auto">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <h3 className="font-semibold text-primary">Welcome, Community Member!</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-2">
+              You're getting exclusive community pricing with 50% savings on all tiers.
+            </p>
+            {userStatus.program && (
+              <p className="text-xs text-primary font-medium">
+                Program: {userStatus.program}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="mb-8 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800 max-w-4xl mx-auto">
+            <div className="text-center space-y-3">
+              <h3 className="font-semibold text-foreground">Join the Fampreneurs Community</h3>
+              <p className="text-sm text-muted-foreground">
+                Get 50% off all pricing tiers, access to exclusive programs with free trials, and priority support.
+              </p>
+              <Button
+                onClick={() => {
+                  const event = new CustomEvent('openCommunityBooking');
+                  window.dispatchEvent(event);
+                }}
+                className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
+              >
+                Book a Free Consultation Call
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
           {pricingTiers.map((tier, index) => {
@@ -159,6 +196,7 @@ export const Pricing = () => {
           </div>
         </div>
       </div>
+      <CommunityCallBooking />
     </section>
   )
 }

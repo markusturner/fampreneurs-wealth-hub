@@ -431,6 +431,51 @@ export type Database = {
         }
         Relationships: []
       }
+      community_call_bookings: {
+        Row: {
+          created_at: string | null
+          current_situation: string | null
+          email: string
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          preferred_time_slots: string[] | null
+          scheduled_date: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_situation?: string | null
+          email: string
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          preferred_time_slots?: string[] | null
+          scheduled_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_situation?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          preferred_time_slots?: string[] | null
+          scheduled_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       community_comment_reactions: {
         Row: {
           comment_id: string
@@ -3180,35 +3225,50 @@ export type Database = {
       }
       subscribers: {
         Row: {
+          community_join_date: string | null
           created_at: string
+          early_payment_date: string | null
           email: string
           id: string
           stripe_customer_id: string | null
           subscribed: boolean
           subscription_end: string | null
           subscription_tier: string | null
+          trial_days_remaining: number | null
+          trial_end_date: string | null
+          trial_start_date: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          community_join_date?: string | null
           created_at?: string
+          early_payment_date?: string | null
           email: string
           id?: string
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
           subscription_tier?: string | null
+          trial_days_remaining?: number | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          community_join_date?: string | null
           created_at?: string
+          early_payment_date?: string | null
           email?: string
           id?: string
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
           subscription_tier?: string | null
+          trial_days_remaining?: number | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
           updated_at?: string
           user_id?: string | null
         }
