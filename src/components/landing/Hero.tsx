@@ -48,7 +48,9 @@ export const Hero = () => {
             />
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
-            <Button size="sm" className="text-xs md:text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-medium hover:shadow-glow transition-smooth hover:scale-105 px-3 md:px-4" onClick={scrollToPricing}>
+            <Button size="sm" className="text-xs md:text-sm shadow-medium hover:shadow-glow transition-smooth hover:scale-105 px-3 md:px-4" style={{
+              backgroundColor: '#2eb2ff'
+            }} onClick={scrollToPricing}>
               Get Started
             </Button>
           </div>
