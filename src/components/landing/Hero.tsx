@@ -12,9 +12,6 @@ export const Hero = () => {
     scrollToSection('pricing');
   };
   
-  const handleLoginClick = () => {
-    navigateToRoute('/auth');
-  };
 
   const handleGetStarted = () => {
     setShowFlowModal(true);
@@ -51,12 +48,6 @@ export const Hero = () => {
             />
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
-            <Button variant="ghost" size="sm" className="text-xs md:text-sm hover:bg-primary/10 transition-smooth px-3 md:px-4" style={{
-            backgroundColor: '#ffb500',
-            color: '#290a52'
-          }} onClick={handleLoginClick}>
-              Login
-            </Button>
             <Button size="sm" className="text-xs md:text-sm bg-primary hover:bg-primary/90 text-primary-foreground shadow-medium hover:shadow-glow transition-smooth hover:scale-105 px-3 md:px-4" onClick={scrollToPricing}>
               Get Started
             </Button>
