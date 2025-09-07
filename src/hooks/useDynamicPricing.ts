@@ -136,12 +136,12 @@ export const useDynamicPricing = (): DynamicPricing => {
       icon: [() => null, () => null, () => null][index]
     }))
   } else {
-    // Default pricing (double): $194, $594, $994
+    // Default pricing for non-community members: $297, $497, $997
     pricingTiers = baseTiers.map((tier, index) => ({
       ...tier, 
-      price: ["$194", "$594", "$994"][index],
+      price: ["$297", "$497", "$997"][index],
       period: "/month",
-      stripeAmount: [19400, 59400, 99400][index],
+      stripeAmount: [29700, 49700, 99700][index],
       icon: [() => null, () => null, () => null][index]
     }))
   }
