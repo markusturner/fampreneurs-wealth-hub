@@ -74,7 +74,7 @@ export const Pricing = () => {
               <Button
                 onClick={() => {
                   // PASTE YOUR CALENDAR BOOKING LINK HERE:
-                  const calendarLink = 'PASTE_YOUR_CALENDAR_LINK_HERE'
+                  const calendarLink = 'https://calendly.com/turnermarkus50/tfba'
                   window.open(calendarLink, '_blank')
                 }}
                 className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
