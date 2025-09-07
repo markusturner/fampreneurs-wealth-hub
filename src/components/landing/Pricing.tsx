@@ -73,12 +73,13 @@ export const Pricing = () => {
               </p>
               <Button
                 onClick={() => {
-                  const event = new CustomEvent('openCommunityBooking');
-                  window.dispatchEvent(event);
+                  // Replace with your actual calendar booking link
+                  const calendarLink = 'https://calendly.com/your-username/consultation' // Update this with your actual Calendly or booking link
+                  window.open(calendarLink, '_blank')
                 }}
                 className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
               >
-                Book a Free Consultation Call
+                Schedule Your Free Consultation
               </Button>
             </div>
           </div>
