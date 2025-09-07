@@ -3725,6 +3725,13 @@ export type Database = {
         Args: { user_id: string }
         Returns: boolean
       }
+      check_skool_membership: {
+        Args: { email_address: string }
+        Returns: {
+          is_member: boolean
+          member_data: Json
+        }[]
+      }
       cleanup_expired_verification_codes: {
         Args: Record<PropertyKey, never>
         Returns: undefined
