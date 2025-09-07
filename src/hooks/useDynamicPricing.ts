@@ -27,6 +27,10 @@ export const useDynamicPricing = (): DynamicPricing => {
   const { profile } = useAuth()
   const { subscriptionStatus } = useSubscription()
   
+  // Debug logging
+  console.log('useDynamicPricing - profile:', profile)
+  console.log('useDynamicPricing - subscriptionStatus:', subscriptionStatus)
+  
   // Determine user status
   const isCommunityMember = profile?.membership_type === 'community' || 
                            profile?.program_name !== null ||
