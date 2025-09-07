@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Shield, Upload, User, CreditCard, ArrowLeft } from 'lucide-react'
+import { Loader2, Shield, Upload, User, CreditCard, ArrowLeft, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNavigate } from 'react-router-dom'
@@ -17,6 +17,7 @@ import { RecoveryDialog } from '@/components/auth/recovery-dialog'
 import { TwoFactorSetup } from '@/components/auth/two-factor-setup'
 import { ProfilePhotoUpload } from '@/components/auth/ProfilePhotoUpload'
 import { CommunityCallBooking } from '@/components/community/CommunityCallBooking'
+import { useDebounce } from '@/hooks/useDebounce'
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false)
@@ -35,9 +36,31 @@ export default function Auth() {
   const [signupEmail, setSignupEmail] = useState('')
   const [userType, setUserType] = useState<'family_office' | 'family_member' | 'mentee'>('family_office')
   
+  // Verification states
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false)
+  const [skoolVerification, setSkoolVerification] = useState<{
+    status: 'pending' | 'verified' | 'failed' | null
+    message: string
+  }>({ status: null, message: '' })
+  const [programDetection, setProgramDetection] = useState<{
+    status: 'pending' | 'detected' | 'not_found' | 'failed' | null
+    program: string | null
+    message: string
+  }>({ status: null, program: null, message: '' })
+  
+  // Debounce email for verification
+  const debouncedEmail = useDebounce(email, 1000)
+  
   const { toast } = useToast()
   const navigate = useNavigate()
   const { theme } = useTheme()
+  
+  // Handle email verification when email changes (debounced)
+  useEffect(() => {
+    if (debouncedEmail && debouncedEmail.includes('@') && membershipType === 'community') {
+      handleEmailVerification(debouncedEmail)
+    }
+  }, [debouncedEmail, membershipType])
   
   useEffect(() => {
     // Check URL parameters for payment success
@@ -93,6 +116,80 @@ export default function Auth() {
         sessionStorage.removeItem(key)
       }
     })
+  }
+
+  const handleEmailVerification = async (emailToVerify: string) => {
+    setIsVerifyingEmail(true)
+    setSkoolVerification({ status: 'pending', message: 'Checking Skool community membership...' })
+    setProgramDetection({ status: null, program: null, message: '' })
+
+    try {
+      // Step 1: Check Skool membership
+      const { data: skoolData, error: skoolError } = await supabase.functions.invoke('check-skool-membership', {
+        body: { email: emailToVerify }
+      })
+
+      if (skoolError || !skoolData?.success) {
+        setSkoolVerification({ 
+          status: 'failed', 
+          message: 'Unable to verify Skool membership' 
+        })
+        setIsVerifyingEmail(false)
+        return
+      }
+
+      if (!skoolData.is_member) {
+        setSkoolVerification({ 
+          status: 'failed', 
+          message: 'Email not found in Fampreneurs community' 
+        })
+        setIsVerifyingEmail(false)
+        return
+      }
+
+      setSkoolVerification({ 
+        status: 'verified', 
+        message: 'Verified as Fampreneurs community member' 
+      })
+
+      // Step 2: Detect program from GoHighLevel
+      setProgramDetection({ status: 'pending', program: null, message: 'Detecting your program...' })
+
+      const { data: programData, error: programError } = await supabase.functions.invoke('detect-user-program', {
+        body: { email: emailToVerify }
+      })
+
+      if (programError || !programData?.success) {
+        setProgramDetection({ 
+          status: 'failed', 
+          program: null, 
+          message: 'Unable to detect program enrollment' 
+        })
+      } else if (programData.program_detected && programData.program_name) {
+        setProgramDetection({ 
+          status: 'detected', 
+          program: programData.program_name, 
+          message: `Program detected: ${programData.program_name}` 
+        })
+        // Auto-populate program selection
+        setSelectedProgram(programData.program_name)
+      } else {
+        setProgramDetection({ 
+          status: 'not_found', 
+          program: null, 
+          message: 'No specific program enrollment found' 
+        })
+      }
+
+    } catch (error: any) {
+      console.error('Email verification error:', error)
+      setSkoolVerification({ 
+        status: 'failed', 
+        message: 'Verification failed. Please try again.' 
+      })
+    } finally {
+      setIsVerifyingEmail(false)
+    }
   }
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -715,50 +812,65 @@ export default function Auth() {
 
                 {/* Community Membership Selection */}
                 <div className="space-y-4 p-4 bg-muted/50 rounded-lg border">
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="community-member"
-                      checked={membershipType === 'community'}
-                      onCheckedChange={(checked) => {
-                        setMembershipType(checked ? 'community' : 'free')
-                        if (!checked) {
-                          setSelectedProgram('')
-                        }
-                      }}
-                    />
-                    <Label htmlFor="community-member" className="text-sm font-medium">
-                      I'm a member of the Fampreneurs community
-                    </Label>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Community members get 50% off all pricing tiers and access to exclusive programs with free trials.
-                  </p>
+                     <div className="flex items-center space-x-3">
+                     <Checkbox
+                       id="community-member"
+                       checked={membershipType === 'community'}
+                       onCheckedChange={(checked) => {
+                         setMembershipType(checked ? 'community' : 'free')
+                         if (!checked) {
+                           setSelectedProgram('')
+                           setSkoolVerification({ status: null, message: '' })
+                           setProgramDetection({ status: null, program: null, message: '' })
+                         }
+                       }}
+                     />
+                     <Label htmlFor="community-member" className="text-sm font-medium">
+                       I'm a member of the Fampreneurs community
+                     </Label>
+                   </div>
+                   <p className="text-xs text-muted-foreground">
+                     Community members get 50% off all pricing tiers and access to exclusive programs with free trials. Verification required.
+                   </p>
 
-                  {membershipType === 'community' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="program-select">Select Your Program</Label>
-                      <Select
-                        value={selectedProgram}
-                        onValueChange={setSelectedProgram}
-                      >
-                        <SelectTrigger className="bg-background">
-                          <SelectValue placeholder="Choose your program" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background border shadow-md z-50">
-                          <SelectItem value="">General Community Member</SelectItem>
-                          <SelectItem value="The Family Vault Program">
-                            The Family Vault Program (30-day free trial)
-                          </SelectItem>
-                          <SelectItem value="Family Business Accelerator Program">
-                            Family Business Accelerator Program (90-day free trial)
-                          </SelectItem>
-                          <SelectItem value="Family Legacy: VIP Weekend Program">
-                            Family Legacy: VIP Weekend Program (120-day free trial)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
+                   {membershipType === 'community' && (
+                     <div className="space-y-2">
+                       <Label htmlFor="program-select">Select Your Program</Label>
+                       <Select
+                         value={selectedProgram}
+                         onValueChange={setSelectedProgram}
+                         disabled={programDetection.status === 'pending'}
+                       >
+                         <SelectTrigger className="bg-background">
+                           <SelectValue placeholder={
+                             programDetection.status === 'pending' 
+                               ? "Detecting your program..." 
+                               : programDetection.program 
+                               ? `Auto-detected: ${programDetection.program}`
+                               : "Choose your program"
+                           } />
+                         </SelectTrigger>
+                         <SelectContent className="bg-background border shadow-md z-50">
+                           <SelectItem value="">General Community Member</SelectItem>
+                           <SelectItem value="The Family Vault">
+                             The Family Vault (30-day free trial)
+                           </SelectItem>
+                           <SelectItem value="The Family Business Accelerator">
+                             The Family Business Accelerator (90-day free trial)
+                           </SelectItem>
+                           <SelectItem value="The Family Legacy: VIP Weekend">
+                             The Family Legacy: VIP Weekend (120-day free trial)
+                           </SelectItem>
+                         </SelectContent>
+                       </Select>
+                       
+                       {programDetection.program && (
+                         <p className="text-xs text-green-600">
+                           ✓ Your program was automatically detected and selected
+                         </p>
+                       )}
+                     </div>
+                   )}
 
                   {membershipType !== 'community' && (
                     <div className="space-y-2">
@@ -785,20 +897,20 @@ export default function Auth() {
                     <div className="space-y-2 p-3 bg-primary/10 rounded-md">
                       <h4 className="text-sm font-medium">Your Pricing Preview:</h4>
                       {membershipType === 'community' && selectedProgram ? (
-                        <div className="text-xs space-y-1">
-                          {selectedProgram === 'The Family Vault Program' && (
-                            <p className="text-green-600">✓ 30-day free trial, then $97/mo, $297/mo, $497/mo</p>
-                          )}
-                          {selectedProgram === 'Family Business Accelerator Program' && (
-                            <p className="text-green-600">✓ 90-day free trial, then $97/mo, $297/mo, $497/mo</p>
-                          )}
-                          {selectedProgram === 'Family Legacy: VIP Weekend Program' && (
-                            <p className="text-green-600">✓ 120-day free trial, then $97/mo, $297/mo, $497/mo</p>
-                          )}
-                          {selectedProgram === '' && (
-                            <p className="text-green-600">✓ Community pricing: $97/mo, $297/mo, $497/mo</p>
-                          )}
-                        </div>
+                         <div className="text-xs space-y-1">
+                           {selectedProgram === 'The Family Vault' && (
+                             <p className="text-green-600">✓ 30-day free trial, then $97/mo, $297/mo, $497/mo</p>
+                           )}
+                           {selectedProgram === 'The Family Business Accelerator' && (
+                             <p className="text-green-600">✓ 90-day free trial, then $97/mo, $297/mo, $497/mo</p>
+                           )}
+                           {selectedProgram === 'The Family Legacy: VIP Weekend' && (
+                             <p className="text-green-600">✓ 120-day free trial, then $97/mo, $297/mo, $497/mo</p>
+                           )}
+                           {selectedProgram === '' && (
+                             <p className="text-green-600">✓ Community pricing: $97/mo, $297/mo, $497/mo</p>
+                           )}
+                         </div>
                       ) : membershipType === 'community' ? (
                         <p className="text-xs text-muted-foreground">Select a program to see your pricing</p>
                       ) : (
@@ -811,18 +923,65 @@ export default function Auth() {
                   )}
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email *</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="signup-email">Email *</Label>
+                   <Input
+                     id="signup-email"
+                     type="email"
+                     placeholder="Enter your email"
+                     value={email}
+                     onChange={(e) => setEmail(e.target.value)}
+                     required
+                     disabled={isLoading}
+                   />
+                   
+                   {/* Email Verification Status */}
+                   {membershipType === 'community' && email && email.includes('@') && (
+                     <div className="space-y-2">
+                       {isVerifyingEmail && (
+                         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                           <Loader2 className="h-4 w-4 animate-spin" />
+                           <span>Verifying membership...</span>
+                         </div>
+                       )}
+                       
+                       {/* Skool Verification Status */}
+                       {skoolVerification.status && (
+                         <div className={`flex items-center space-x-2 text-sm p-2 rounded-md ${
+                           skoolVerification.status === 'verified' 
+                             ? 'bg-green-50 text-green-700 border border-green-200' 
+                             : skoolVerification.status === 'failed'
+                             ? 'bg-red-50 text-red-700 border border-red-200'
+                             : 'bg-blue-50 text-blue-700 border border-blue-200'
+                         }`}>
+                           {skoolVerification.status === 'verified' && <CheckCircle className="h-4 w-4" />}
+                           {skoolVerification.status === 'failed' && <XCircle className="h-4 w-4" />}
+                           {skoolVerification.status === 'pending' && <Loader2 className="h-4 w-4 animate-spin" />}
+                           <span>{skoolVerification.message}</span>
+                         </div>
+                       )}
+                       
+                       {/* Program Detection Status */}
+                       {programDetection.status && (
+                         <div className={`flex items-center space-x-2 text-sm p-2 rounded-md ${
+                           programDetection.status === 'detected' 
+                             ? 'bg-green-50 text-green-700 border border-green-200' 
+                             : programDetection.status === 'not_found'
+                             ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                             : programDetection.status === 'failed'
+                             ? 'bg-red-50 text-red-700 border border-red-200'
+                             : 'bg-blue-50 text-blue-700 border border-blue-200'
+                         }`}>
+                           {programDetection.status === 'detected' && <CheckCircle className="h-4 w-4" />}
+                           {programDetection.status === 'not_found' && <AlertCircle className="h-4 w-4" />}
+                           {programDetection.status === 'failed' && <XCircle className="h-4 w-4" />}
+                           {programDetection.status === 'pending' && <Loader2 className="h-4 w-4 animate-spin" />}
+                           <span>{programDetection.message}</span>
+                         </div>
+                       )}
+                     </div>
+                   )}
+                 </div>
                  <div className="space-y-2">
                    <Label htmlFor="signup-password">Password *</Label>
                    <Input
@@ -846,7 +1005,14 @@ export default function Auth() {
                    type="submit" 
                    className="w-full" 
                    style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                   disabled={isLoading || !firstName || !lastName || (membershipType === 'paid' && !customPrice)}
+                   disabled={
+                     isLoading || 
+                     !firstName || 
+                     !lastName || 
+                     (membershipType === 'paid' && !customPrice) ||
+                     (membershipType === 'community' && skoolVerification.status === 'failed') ||
+                     isVerifyingEmail
+                   }
                  >
                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                    {membershipType === 'paid' ? 'Create Account & Pay' : 'Create Account'}
