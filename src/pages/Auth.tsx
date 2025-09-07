@@ -770,9 +770,8 @@ export default function Auth() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          // This will open the call booking dialog
-                          const event = new CustomEvent('openCommunityBooking');
-                          window.dispatchEvent(event);
+                          // Open Calendly booking link
+                          window.open('https://calendly.com/turnermarkus50/tfba', '_blank')
                         }}
                         className="w-full"
                       >
