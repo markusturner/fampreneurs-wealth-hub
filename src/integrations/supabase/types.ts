@@ -3846,13 +3846,13 @@ export type Database = {
       }
       log_family_office_action: {
         Args: {
-          p_action: string
-          p_metadata?: Json
-          p_new_values?: Json
-          p_old_values?: Json
-          p_record_id?: string
-          p_risk_level?: string
-          p_table_name: string
+          action_name: string
+          metadata?: Json
+          new_values?: Json
+          old_values?: Json
+          record_id: string
+          risk_level?: string
+          table_name: string
         }
         Returns: string
       }
