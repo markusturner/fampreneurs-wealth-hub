@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Loader2, Shield, Upload, User, CreditCard, ArrowLeft, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { useTheme } from '@/components/theme-provider'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
@@ -53,7 +53,11 @@ export default function Auth() {
   
   const { toast } = useToast()
   const navigate = useNavigate()
+  const location = useLocation()
   const { theme } = useTheme()
+  
+  // Determine default tab based on route
+  const defaultTab = location.pathname === '/sign-up' ? 'signup' : 'signin'
   
   // Handle email verification when email changes (debounced)
   useEffect(() => {
@@ -726,7 +730,7 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs defaultValue={defaultTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup">Sign Up</TabsTrigger>
