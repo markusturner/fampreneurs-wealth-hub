@@ -17,7 +17,7 @@ export const FlowSelectionModal = ({ open, onOpenChange }: FlowSelectionModalPro
   const { toast } = useToast();
 
   const handleFampreneurFlow = () => {
-    navigateToRoute('/auth?flow=fampreneur');
+    navigateToRoute('/sign-up?flow=fampreneur');
     onOpenChange(false);
   };
 

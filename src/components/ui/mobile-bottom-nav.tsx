@@ -35,7 +35,7 @@ export function MobileBottomNav() {
   const [unreadCount, setUnreadCount] = useState(0)
 
   // Only show mobile nav when user is authenticated and not on auth/landing pages
-  const shouldShowNav = user && !location.pathname.includes('/auth') && location.pathname !== '/'
+  const shouldShowNav = user && !location.pathname.includes('/sign-up') && !location.pathname.includes('/auth') && location.pathname !== '/'
 
   useEffect(() => {
     const checkUserRole = async () => {
