@@ -599,15 +599,29 @@ export default function Documents() {
             <p className="text-muted-foreground">
               The foundation of your family's values and principles
             </p>
-            {governanceData && (
+            {!governanceData ? (
+              <div className="mt-4 p-6 border-2 border-dashed border-primary/20 rounded-lg bg-primary/5">
+                <h3 className="font-semibold mb-2">Set Up Your Family Constitution</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Create a comprehensive family governance framework with our step-by-step wizard
+                </p>
+                <Button 
+                  onClick={() => navigate('/family-constitution/setup')}
+                  className="gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  Start Constitution Setup
+                </Button>
+              </div>
+            ) : (
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => resetOnboarding()}
-                className="mt-2"
+                onClick={() => navigate('/family-constitution/setup')}
+                className="mt-2 gap-2"
               >
-                <Settings className="h-4 w-4 mr-2" />
-                Edit Governance Setup
+                <Settings className="h-4 w-4" />
+                Edit Constitution
               </Button>
             )}
           </div>
@@ -1545,11 +1559,35 @@ export default function Documents() {
         </Dialog>
       </div>
 
-      {/* Governance Onboarding Modal */}
-      <GovernanceOnboardingModal
-        isOpen={shouldShowOnboarding}
-        onComplete={completeOnboarding}
-        userId={user?.id || ''}
-      />
+      {/* Keep modal as fallback but redirect to full-page setup */}
+      {shouldShowOnboarding && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <Card className="max-w-md">
+            <CardHeader>
+              <CardTitle>Set Up Family Constitution</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Complete your family constitution setup with our improved step-by-step wizard.
+              </p>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => navigate('/family-constitution/setup')}
+                  className="flex-1 gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  Start Setup
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={completeOnboarding}
+                >
+                  Skip
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>;
 }

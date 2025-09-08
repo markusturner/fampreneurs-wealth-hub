@@ -19,6 +19,7 @@ import Calendar from "./pages/Calendar";
 import Investments from "./pages/Investments";
 
 import FamilyGovernance from "./pages/FamilyGovernance";
+import FamilyConstitutionSetup from "./pages/FamilyConstitutionSetup";
 import Search from "./pages/Search";
 
 import ProfileSettings from "./pages/ProfileSettings";
@@ -77,6 +78,7 @@ function AppWithNotifications() {
         <Route path="/documents" element={<Documents />} />
         <Route path="/family-roundtable" element={<Dashboard />} />
         <Route path="/family-governance" element={<FamilyGovernance />} />
+        <Route path="/family-constitution/setup" element={<FamilyConstitutionSetup />} />
         <Route path="/calendar" element={<Calendar />} />
         <Route path="/members" element={<Members />} />
         <Route path="/investments" element={<Investments />} />
