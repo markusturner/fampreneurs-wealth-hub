@@ -239,11 +239,11 @@ export function useFamilyOfficeSecurity() {
   ) => {
     try {
       const { error } = await supabase.rpc('log_family_office_action', {
-        p_action: action,
-        p_table_name: tableName,
-        p_record_id: recordId,
-        p_risk_level: riskLevel,
-        p_metadata: metadata || {}
+        action_name: action,
+        table_name: tableName,
+        record_id: recordId,
+        risk_level: riskLevel,
+        metadata: metadata || {}
       })
 
       if (error) {
