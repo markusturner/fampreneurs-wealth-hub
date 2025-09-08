@@ -10,36 +10,13 @@ export interface PricingTier {
   popular: boolean
   features: string[]
   stripeAmount: number
-  freeTrialDays?: number
-  isFreeTrial?: boolean
 }
 
 export interface DynamicPricing {
   tiers: PricingTier[]
-  userStatus: {
-    isCommunityMember: boolean
-    program: string | null
-    hasActiveTrial: boolean
-  }
 }
 
 export const useDynamicPricing = (): DynamicPricing => {
-  const { profile } = useAuth()
-  const { subscriptionStatus } = useSubscription()
-  
-  // Debug logging
-  console.log('useDynamicPricing - profile:', profile)
-  console.log('useDynamicPricing - subscriptionStatus:', subscriptionStatus)
-  
-  // Determine user status
-  const isCommunityMember = (profile?.membership_type === 'community') || 
-                           (profile?.program_name != null) ||
-                           subscriptionStatus.subscribed
-  
-  const program = profile?.program_name
-  const hasActiveTrial = subscriptionStatus.subscribed && 
-                        subscriptionStatus.subscription_tier === 'trial'
-
   // Base pricing structure
   const baseTiers = [
     {
@@ -94,68 +71,16 @@ export const useDynamicPricing = (): DynamicPricing => {
     }
   ]
 
-  // Apply dynamic pricing logic
-  let pricingTiers: PricingTier[]
-
-  if (program === 'Family Legacy: VIP Weekend Program') {
-    // 120-day free trial
-    pricingTiers = baseTiers.map((tier, index) => ({
-      ...tier,
-      price: index === 0 ? "FREE" : ["$97", "$297", "$497"][index],
-      period: index === 0 ? "120 days" : "/month",
-      stripeAmount: index === 0 ? 0 : [9700, 29700, 49700][index],
-      freeTrialDays: 120,
-      isFreeTrial: index === 0,
-      icon: [() => null, () => null, () => null][index] // Will be set properly in component
-    }))
-  } else if (program === 'Family Business Accelerator Program') {
-    // 90-day free trial
-    pricingTiers = baseTiers.map((tier, index) => ({
-      ...tier,
-      price: index === 0 ? "FREE" : ["$97", "$297", "$497"][index], 
-      period: index === 0 ? "90 days" : "/month",
-      stripeAmount: index === 0 ? 0 : [9700, 29700, 49700][index],
-      freeTrialDays: 90,
-      isFreeTrial: index === 0,
-      icon: [() => null, () => null, () => null][index]
-    }))
-  } else if (program === 'The Family Vault Program') {
-    // 30-day free trial then $97/mo
-    pricingTiers = baseTiers.map((tier, index) => ({
-      ...tier,
-      price: index === 0 ? "FREE" : ["$97", "$297", "$497"][index],
-      period: index === 0 ? "30 days" : "/month", 
-      stripeAmount: index === 0 ? 0 : [9700, 29700, 49700][index],
-      freeTrialDays: 30,
-      isFreeTrial: index === 0,
-      icon: [() => null, () => null, () => null][index]
-    }))
-  } else if (isCommunityMember) {
-    // Community member pricing: $97, $297, $497
-    pricingTiers = baseTiers.map((tier, index) => ({
-      ...tier,
-      price: ["$97", "$297", "$497"][index],
-      period: "/month",
-      stripeAmount: [9700, 29700, 49700][index],
-      icon: [() => null, () => null, () => null][index]
-    }))
-  } else {
-    // Default pricing for non-community members: $297, $497, $997
-    pricingTiers = baseTiers.map((tier, index) => ({
-      ...tier, 
-      price: ["$297", "$497", "$997"][index],
-      period: "/month",
-      stripeAmount: [29700, 49700, 99700][index],
-      icon: [() => null, () => null, () => null][index]
-    }))
-  }
+  // Simple pricing structure: $97, $297, $497
+  const pricingTiers: PricingTier[] = baseTiers.map((tier, index) => ({
+    ...tier,
+    price: ["$97", "$297", "$497"][index],
+    period: "/month",
+    stripeAmount: [9700, 29700, 49700][index],
+    icon: [() => null, () => null, () => null][index]
+  }))
 
   return {
-    tiers: pricingTiers,
-    userStatus: {
-      isCommunityMember,
-      program,
-      hasActiveTrial
-    }
+    tiers: pricingTiers
   }
 }

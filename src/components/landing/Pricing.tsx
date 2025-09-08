@@ -12,7 +12,7 @@ const pricingIconColors = [
 ]
 
 export const Pricing = () => {
-  const { tiers: pricingTiers, userStatus } = useDynamicPricing()
+  const { tiers: pricingTiers } = useDynamicPricing()
   const iconMap = [Zap, Crown, Rocket]
   
   const handlePurchase = async (amount: number) => {
@@ -48,42 +48,6 @@ export const Pricing = () => {
           </p>
         </div>
 
-        {/* Community Benefits Banner */}
-        {userStatus.isCommunityMember ? (
-          <div className="mb-8 p-6 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg border border-primary/20 max-w-4xl mx-auto">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-2 h-2 rounded-full bg-green-500"></div>
-              <h3 className="font-semibold text-primary">Welcome, Community Member!</h3>
-            </div>
-            <p className="text-sm text-muted-foreground mb-2">
-              You're getting exclusive community pricing with 50% savings on all tiers.
-            </p>
-            {userStatus.program && (
-              <p className="text-xs text-primary font-medium">
-                Program: {userStatus.program}
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="mb-8 p-6 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800 max-w-4xl mx-auto">
-            <div className="text-center space-y-3">
-              <h3 className="font-semibold text-foreground">Join the Fampreneurs Community</h3>
-              <p className="text-sm text-muted-foreground">
-                Get 50% off all pricing tiers, access to exclusive programs with free trials, and priority support.
-              </p>
-              <Button
-                onClick={() => {
-                  // PASTE YOUR CALENDAR BOOKING LINK HERE:
-                  const calendarLink = 'https://calendly.com/turnermarkus50/tfba'
-                  window.open(calendarLink, '_blank')
-                }}
-                className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
-              >
-                Schedule Your Free Consultation
-              </Button>
-            </div>
-          </div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
           {pricingTiers.map((tier, index) => {
@@ -105,13 +69,6 @@ export const Pricing = () => {
                   </div>
                 )}
 
-                {tier.isFreeTrial && (
-                  <div className="absolute -top-4 right-4">
-                    <div className="text-xs font-bold px-3 py-1 rounded-full bg-green-500 text-white">
-                      FREE TRIAL
-                    </div>
-                  </div>
-                )}
 
                 <CardHeader className="text-center pb-4">
                   <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${pricingIconColors[index]}20` }}>
@@ -121,16 +78,11 @@ export const Pricing = () => {
                     {tier.name}
                   </CardTitle>
                   <div className="flex items-baseline justify-center mb-2">
-                    <span className="text-3xl md:text-4xl font-bold" style={{ color: tier.isFreeTrial ? '#10b981' : '#ffb500' }}>
+                    <span className="text-3xl md:text-4xl font-bold" style={{ color: '#ffb500' }}>
                       {tier.price}
                     </span>
                     <span className="text-muted-foreground ml-1">{tier.period}</span>
                   </div>
-                  {tier.freeTrialDays && (
-                    <div className="text-sm text-green-400 mb-2">
-                      {tier.freeTrialDays}-day free trial
-                    </div>
-                  )}
                   <CardDescription className="text-center text-sm md:text-base">
                     {tier.description}
                   </CardDescription>
@@ -153,14 +105,13 @@ export const Pricing = () => {
                         : 'border-2'
                     }`}
                     style={{ 
-                      backgroundColor: tier.isFreeTrial ? '#10b981' : tier.popular ? '#FFB500' : '#2eb2ff',
-                      borderColor: tier.isFreeTrial ? '#10b981' : tier.popular ? '#FFB500' : '#2eb2ff',
-                      color: tier.popular ? '#290a52' : '#290a52'
+                      backgroundColor: tier.popular ? '#FFB500' : '#2eb2ff',
+                      borderColor: tier.popular ? '#FFB500' : '#2eb2ff',
+                      color: '#290a52'
                     }}
                     onClick={() => handlePurchase(tier.stripeAmount)}
-                    disabled={tier.stripeAmount === 0}
                   >
-                    {tier.isFreeTrial ? `Start ${tier.freeTrialDays}-Day Free Trial` : 'Start Building Wealth'}
+                    Start Building Wealth
                   </Button>
                 </CardContent>
               </Card>
@@ -168,22 +119,6 @@ export const Pricing = () => {
           })}
         </div>
 
-        {/* Pricing Status Banner */}
-        {userStatus.program && (
-          <div className="text-center mt-8 p-4 bg-green-500/10 border border-green-500/20 rounded-lg max-w-2xl mx-auto">
-            <p className="text-green-400 font-semibold">
-              🎉 Welcome {userStatus.program} member! You have special pricing access.
-            </p>
-          </div>
-        )}
-        
-        {!userStatus.isCommunityMember && (
-          <div className="text-center mt-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg max-w-2xl mx-auto">
-            <p className="text-blue-400">
-              💡 Join the Fampreneurs Community to unlock 50% savings on all plans!
-            </p>
-          </div>
-        )}
 
         {/* Features */}
         <div className="text-center mt-12">
