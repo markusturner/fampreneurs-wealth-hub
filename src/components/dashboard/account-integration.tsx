@@ -401,6 +401,30 @@ export function AccountIntegration() {
     setSelectedAccountType('')
   }
 
+  const refreshAccountData = async () => {
+    if (!user) return
+    
+    setLoading(true)
+    try {
+      // Refresh all connected accounts from Supabase
+      await fetchConnectedAccounts()
+      
+      toast({
+        title: "Accounts Refreshed",
+        description: "Account data has been updated from your connected institutions",
+      })
+    } catch (err) {
+      console.error('Refresh error:', err)
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to refresh account data",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleSync = async (accountId: string) => {
     const account = accounts.find(acc => acc.id === accountId)
     if (!account) return
@@ -663,6 +687,16 @@ export function AccountIntegration() {
           </Label>
 
           <div className="flex items-center gap-2">
+            <Button 
+              onClick={refreshAccountData}
+              variant="outline"
+              disabled={loading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              <span className="text-sm">Refresh All</span>
+            </Button>
+            
             <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
               <DialogTrigger asChild>
                 <Button className="flex items-center gap-2 w-full sm:w-auto">
