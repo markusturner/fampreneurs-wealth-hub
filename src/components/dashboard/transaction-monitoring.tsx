@@ -799,6 +799,41 @@ export function TransactionMonitoring() {
         </Button>
       </div>
 
+      {/* Uploaded Statements */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Uploaded Statements</span>
+            <span className="text-xs text-muted-foreground">CSVs can be processed here; PDFs require manual parsing</span>
+          </CardTitle>
+          <CardDescription>See the status of your recent uploads</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {uploadedStatements.length === 0 ? (
+            <div className="text-sm text-muted-foreground">No statements uploaded yet.</div>
+          ) : (
+            <div className="space-y-2">
+              {uploadedStatements.slice(0, 6).map((s) => (
+                <div key={s.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{s.filename}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(s.uploaded_at).toLocaleString()} • {String(s.file_type || 'unknown').toUpperCase()} • {s.transactions_extracted ?? 0} transactions
+                    </p>
+                    {String(s.file_type).toLowerCase() === 'pdf' && s.processing_status !== 'completed' && (
+                      <p className="text-xs text-muted-foreground mt-1">PDFs are uploaded for manual processing and will not appear in the transaction list until parsed.</p>
+                    )}
+                  </div>
+                  <Badge variant={s.processing_status === 'completed' ? 'default' : s.processing_status === 'failed' ? 'destructive' : 'secondary'}>
+                    {s.processing_status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Transaction List */}
       <Card>
         <CardHeader>
