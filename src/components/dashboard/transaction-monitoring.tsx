@@ -211,65 +211,125 @@ export function TransactionMonitoring() {
       for (const file of fileArray) {
         console.log('Processing file:', file.name, 'size:', file.size, 'type:', file.type)
         
-        // Validate file type
-        if (!file.name.toLowerCase().endsWith('.csv')) {
-          throw new Error(`File ${file.name} is not a CSV file`)
-        }
-
-        // Read file as text instead of base64 for CSV files
-        const fileContent = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = () => {
-            const text = reader.result as string
-            resolve(text)
-          }
-          reader.onerror = reject
-          reader.readAsText(file)
-        })
-
-        console.log('File content preview:', fileContent.substring(0, 200))
-
-        // Convert to base64 for the edge function
-        const base64Content = btoa(fileContent)
-
-        // Get current session for authentication
-        const { data: { session } } = await supabase.auth.getSession()
+        // Validate file type - accept both CSV and PDF
+        const fileName = file.name.toLowerCase()
+        const isCSV = fileName.endsWith('.csv') || file.type === 'text/csv'
+        const isPDF = fileName.endsWith('.pdf') || file.type === 'application/pdf'
         
-        if (!session) {
-          throw new Error('User not authenticated')
+        if (!isCSV && !isPDF) {
+          throw new Error(`File ${file.name} must be either CSV or PDF format`)
         }
 
-        console.log('Calling edge function with user:', user.id)
+        let fileContent: string
+        let fileType: string
 
-        // Process the CSV file through the edge function
-        const { data: processData, error: processError } = await supabase.functions.invoke('process-bank-statement', {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: {
-            fileName: file.name,
-            fileContent: base64Content,
-            fileType: 'text/csv'
+        if (isCSV) {
+          // Handle CSV files - read as text for processing
+          fileContent = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = () => {
+              const text = reader.result as string
+              resolve(text)
+            }
+            reader.onerror = reject
+            reader.readAsText(file)
+          })
+          fileType = 'text/csv'
+          
+          console.log('CSV content preview:', fileContent.substring(0, 200))
+          
+          // Convert to base64 for the edge function
+          const base64Content = btoa(fileContent)
+
+          // Get current session for authentication
+          const { data: { session } } = await supabase.auth.getSession()
+          
+          if (!session) {
+            throw new Error('User not authenticated')
           }
-        })
 
-        console.log('Edge function response:', { data: processData, error: processError })
+          console.log('Calling edge function with user:', user.id)
 
-        if (processError) {
-          console.error('Edge function error details:', processError)
-          throw new Error(`Processing failed: ${processError.message || JSON.stringify(processError)}`)
+          // Process the CSV file through the edge function
+          const { data: processData, error: processError } = await supabase.functions.invoke('process-bank-statement', {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            body: {
+              fileName: file.name,
+              fileContent: base64Content,
+              fileType: fileType
+            }
+          })
+
+          console.log('Edge function response:', { data: processData, error: processError })
+
+          if (processError) {
+            console.error('Edge function error details:', processError)
+            throw new Error(`Processing failed: ${processError.message || JSON.stringify(processError)}`)
+          }
+
+          if (!processData || processData.error) {
+            throw new Error(`Processing failed: ${processData?.error || 'No response from server'}`)
+          }
+
+          console.log('CSV file processed successfully:', processData)
+          
+        } else if (isPDF) {
+          // Handle PDF files - store in Supabase Storage for manual processing
+          const timestamp = new Date().getTime()
+          const fileName = `${user.id}/${timestamp}-${file.name}`
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('bank-statements')
+            .upload(fileName, file, {
+              cacheControl: '3600',
+              upsert: false
+            })
+
+          if (uploadError) {
+            throw new Error(`PDF upload failed: ${uploadError.message}`)
+          }
+
+          // Record the upload in the database
+          const { error: dbError } = await supabase
+            .from('bank_statement_uploads')
+            .insert({
+              user_id: user.id,
+              filename: file.name,
+              file_path: uploadData.path,
+              file_type: 'pdf',
+              storage_path: fileName,
+              file_size: file.size,
+              processing_status: 'uploaded'
+            })
+
+          if (dbError) {
+            console.error('Database insert error:', dbError)
+            // Clean up uploaded file if database insert fails
+            await supabase.storage.from('bank-statements').remove([fileName])
+            throw new Error(`Failed to record PDF upload: ${dbError.message}`)
+          }
+
+          console.log('PDF file uploaded successfully to storage:', uploadData.path)
         }
+      }
 
-        if (!processData || processData.error) {
-          throw new Error(`Processing failed: ${processData?.error || 'No response from server'}`)
-        }
-
-        console.log('File processed successfully:', processData)
+      const csvCount = fileArray.filter(f => f.name.toLowerCase().endsWith('.csv')).length
+      const pdfCount = fileArray.filter(f => f.name.toLowerCase().endsWith('.pdf')).length
+      
+      let description = ''
+      if (csvCount > 0 && pdfCount > 0) {
+        description = `${csvCount} CSV file(s) processed and ${pdfCount} PDF file(s) uploaded`
+      } else if (csvCount > 0) {
+        description = `${csvCount} CSV file(s) processed successfully`
+      } else {
+        description = `${pdfCount} PDF file(s) uploaded for review`
       }
 
       toast({
-        title: "Upload and Processing Successful",
-        description: `${fileArray.length} file(s) uploaded and processed successfully`
+        title: "Upload Successful",
+        description: description
       })
 
       // Refresh data
@@ -686,23 +746,23 @@ export function TransactionMonitoring() {
           <DialogHeader>
             <DialogTitle>Upload Bank Statement</DialogTitle>
             <DialogDescription>
-              Upload a CSV bank statement to import transaction history
+              Upload a CSV or PDF bank statement to import transaction history
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Bank Statement File (CSV only)</Label>
+              <Label>Bank Statement File</Label>
               <Input
                 type="file"
-                accept=".csv"
+                accept=".csv,.pdf,application/pdf,text/csv"
                 multiple
                 onChange={handleFileUpload}
                 disabled={uploading}
                 className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer file:cursor-pointer file:bg-primary file:border-0 file:text-white file:hover:bg-primary/80 file:transition-all file:duration-200 file:px-4 file:py-2 file:rounded-md file:mr-4"
               />
               <p className="text-xs text-muted-foreground">
-                Only CSV files are supported for automatic transaction parsing
+                Supported formats: CSV (automatic parsing) and PDF (manual review)
               </p>
             </div>
           </div>
