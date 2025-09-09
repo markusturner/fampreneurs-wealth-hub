@@ -275,6 +275,9 @@ export function TransactionMonitoring() {
 
           console.log('CSV file processed successfully:', processData)
           
+          // Refresh transactions to show newly imported data
+          await fetchConnectedAccountsAndTransactions()
+          
         } else if (isPDF) {
           // Handle PDF files - store in Supabase Storage for manual processing
           const timestamp = new Date().getTime()
