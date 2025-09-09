@@ -141,13 +141,71 @@ export function OverviewSection() {
     const accountsBalance = getAccountsBalance()
     const insights = []
 
+    // Business and income level recommendations based on portfolio size
+    const monthlyIncomeEstimate = totalValue * 0.007 // Rough 7% annual return / 12 months
+    
+    // Below $10k/month income level - Focus on business creation/acquisition
+    if (monthlyIncomeEstimate < 10000) {
+      if (totalValue >= 10000) {
+        insights.push({
+          type: 'opportunity',
+          message: `Business Acquisition ($${totalValue.toLocaleString()} available): Buy laundromat ($50-150k, 20-35% ROI), car wash ($40-200k, 15-25% ROI), or vending route ($5-50k, 35-50% ROI). Use SBA 7(a) loan (90% financing, 11-13% rates). Search BizBuySell.com, contact broker immediately.`,
+          priority: 'high'
+        })
+        insights.push({
+          type: 'tip',
+          message: 'Service Business Starter: Pressure washing ($2k startup, $150-300/day), lawn care ($5k startup, $40-80/hr), handyman service ($3k tools, $50-100/hr). Get LLC ($100), insurance ($300/year), start local marketing immediately.',
+          priority: 'high'
+        })
+      } else {
+        insights.push({
+          type: 'opportunity',
+          message: 'Digital Business Launch: Dropshipping ($500 startup, use Shopify + Facebook Ads), YouTube automation ($1k startup, faceless channels), or Amazon FBA ($3-5k startup). Goal: $3k/month profit within 6 months.',
+          priority: 'high'
+        })
+        insights.push({
+          type: 'tip',
+          message: 'Skill-Based Business: Web design ($0 startup, $2-10k/project), social media management ($0 startup, $500-2k/client), virtual assistance ($0 startup, $15-50/hr). Build portfolio on Fiverr/Upwork first.',
+          priority: 'high'
+        })
+      }
+    }
+    
+    // $10k-30k/month income - Focus on scaling existing business
+    else if (monthlyIncomeEstimate >= 10000 && monthlyIncomeEstimate < 30000) {
+      insights.push({
+        type: 'opportunity',
+        message: 'Scale Current Business: Hire 2-3 employees ($40-60k/year each), implement systems (CRM: HubSpot $50/mo, accounting: QuickBooks $30/mo), expand to 3 new markets. Target: Double revenue in 12 months through delegation.',
+        priority: 'high'
+      })
+      insights.push({
+        type: 'tip',
+        message: 'Business Expansion: Launch complementary service lines, create recurring revenue model (subscriptions/maintenance), build email list (10k+ subscribers), partner with 5 local businesses for referrals. Reinvest 70% of profits for growth.',
+        priority: 'medium'
+      })
+    }
+    
+    // $30k+/month income - Advanced wealth building and business empire
+    else if (monthlyIncomeEstimate >= 30000) {
+      insights.push({
+        type: 'opportunity',
+        message: 'Business Empire Building: Acquire 2-3 complementary businesses ($500k-2M each using seller financing), hire CEO for main business ($120k/year), create holding company structure. Target: $1M+ monthly revenue across portfolio.',
+        priority: 'high'
+      })
+      insights.push({
+        type: 'tip',
+        message: 'Advanced Wealth Strategy: Real estate syndications (min $50k, 15-20% IRR), private equity funds (min $250k, 20-25% returns), start family office, create trust structures. Diversify across 7+ asset classes.',
+        priority: 'medium'
+      })
+    }
+
     // Connected accounts insights with specific investment recommendations
     if (accountsBalance > 0 && investments.length === 0) {
       const investmentAmount = Math.min(accountsBalance * 0.8, 10000) // Invest 80% or max $10k to start
       insights.push({
         type: 'opportunity',
         message: `Invest ${formatCurrency(investmentAmount)} immediately: 60% VTI (Total Stock Market ETF), 30% VXUS (International ETF), 10% BND (Bond ETF). Open Fidelity/Schwab account online, fund with ACH transfer, buy these ETFs. Expected 7-10% annual return.`,
-        priority: 'high'
+        priority: 'medium'
       })
     }
 
@@ -195,7 +253,7 @@ export function OverviewSection() {
       insights.push({
         type: 'tip',
         message: 'Getting started: Open Fidelity account, buy FZROX (zero fees). Start with $100/month automatic investment. Build to $10k, then diversify. Use Fidelity cashback credit card for 2% on all purchases.',
-        priority: 'high'
+        priority: 'medium'
       })
     }
 
