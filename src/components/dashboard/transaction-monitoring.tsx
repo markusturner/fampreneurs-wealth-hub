@@ -437,13 +437,15 @@ export function TransactionMonitoring() {
             variant="outline" 
             onClick={async () => {
               // Intelligent CSV processing with header detection
-              const pending = uploadedStatements.filter((s) => 
-                s.processing_status === 'pending' && 
-                s.filename?.toLowerCase().endsWith('.csv')
-              )
+              const processable = uploadedStatements.filter((s) => {
+                const isCsv = String(s.filename || '').toLowerCase().endsWith('.csv') || String(s.file_type || '').toLowerCase() === 'csv'
+                const status = String(s.processing_status || '').toLowerCase()
+                const zeroOrUnknown = (s.transactions_extracted ?? 0) === 0
+                return isCsv && (status === 'pending' || status === 'uploaded' || (status === 'completed' && zeroOrUnknown))
+              })
               
-              if (pending.length === 0) {
-                toast({ title: "Nothing to process", description: "No pending CSV files found" })
+              if (processable.length === 0) {
+                toast({ title: "Nothing to process", description: "No CSV files pending or eligible for reprocessing" })
                 return
               }
 
@@ -496,7 +498,7 @@ export function TransactionMonitoring() {
                   return undefined
                 }
                 
-                for (const statement of pending) {
+                for (const statement of processable) {
                   // Download CSV
                   const { data: fileData, error: downloadError } = await supabase
                     .storage
@@ -521,9 +523,28 @@ export function TransactionMonitoring() {
                     continue
                   }
 
-                  // Detect delimiter and header columns
-                  const delimiter = detectDelimiter(lines[0])
-                  const header = parseCSVLine(lines[0], delimiter).map(h => h.toLowerCase())
+                  // Detect header row within first 10 lines and delimiter
+                  let headerLineIndex = 0
+                  let delimiter = detectDelimiter(lines[0])
+                  let header = parseCSVLine(lines[0], delimiter).map(h => h.toLowerCase())
+                  const isHeaderValid = (h: string[]) => {
+                    const joined = h.join(' ').toLowerCase()
+                    const keys = ['date','posted date','post date','transaction date','value date','date posted','transactiondate','description','details','payee','memo','reference','amount','transaction amount','amt','transactionamount','debit','withdrawal','credit','deposit']
+                    return keys.some(k => h.includes(k) || joined.includes(k))
+                  }
+                  if (!isHeaderValid(header)) {
+                    for (let i = 1; i < Math.min(10, lines.length); i++) {
+                      const d = detectDelimiter(lines[i])
+                      const cand = parseCSVLine(lines[i], d).map(h => h.toLowerCase())
+                      if (isHeaderValid(cand)) {
+                        headerLineIndex = i
+                        delimiter = d
+                        header = cand
+                        break
+                      }
+                    }
+                  }
+
                   const idxDate = header.findIndex(h => ['date','posted date','post date','transaction date','value date','date posted','transactiondate'].includes(h))
                   const idxDesc = header.findIndex(h => ['description','details','payee','memo','note','narrative','reference','ref','transaction','transaction details'].includes(h))
                   const idxAmount = header.findIndex(h => ['amount','transaction amount','amt','transactionamount','amount (usd)','amount usd','value'].includes(h))
@@ -533,7 +554,7 @@ export function TransactionMonitoring() {
                   const transactions: any[] = []
                   let skippedRows = 0
 
-                  for (let i = 1; i < lines.length; i++) {
+                  for (let i = headerLineIndex + 1; i < lines.length; i++) {
                     const cols = parseCSVLine(lines[i], delimiter)
                     if (!cols.length) { skippedRows++; continue }
 
