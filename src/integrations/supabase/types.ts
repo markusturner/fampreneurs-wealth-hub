@@ -173,10 +173,12 @@ export type Database = {
           error_message: string | null
           file_path: string
           file_size: number | null
+          file_type: string | null
           filename: string
           id: string
           processed_at: string | null
           processing_status: string | null
+          storage_path: string | null
           transactions_extracted: number | null
           uploaded_at: string | null
           user_id: string
@@ -185,10 +187,12 @@ export type Database = {
           error_message?: string | null
           file_path: string
           file_size?: number | null
+          file_type?: string | null
           filename: string
           id?: string
           processed_at?: string | null
           processing_status?: string | null
+          storage_path?: string | null
           transactions_extracted?: number | null
           uploaded_at?: string | null
           user_id: string
@@ -197,10 +201,12 @@ export type Database = {
           error_message?: string | null
           file_path?: string
           file_size?: number | null
+          file_type?: string | null
           filename?: string
           id?: string
           processed_at?: string | null
           processing_status?: string | null
+          storage_path?: string | null
           transactions_extracted?: number | null
           uploaded_at?: string | null
           user_id?: string
