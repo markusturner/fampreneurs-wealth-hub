@@ -162,42 +162,106 @@ serve(async (req) => {
 });
 
 function parseCSV(csvContent: string): ParsedTransaction[] {
-  const lines = csvContent.trim().split('\n');
-  const transactions: ParsedTransaction[] = [];
+  const rawLines = csvContent.split(/\r?\n/).map(l => l.trim());
+  // Find the first non-empty line as header
+  let headerLineIndex = rawLines.findIndex(l => l.length > 0);
+  if (headerLineIndex < 0) return [];
 
-  // Skip header row if it exists
-  const startIndex = lines[0] && lines[0].toLowerCase().includes('date') ? 1 : 0;
-
-  for (let i = startIndex; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-
-    try {
-      // Parse CSV line (basic CSV parsing - handles quoted fields)
-      const fields = parseCSVLine(line);
-      
-      if (fields.length < 3) continue; // Need at least date, description, amount
-
-      const date = parseDate(fields[0]);
-      const description = fields[1] || 'Unknown Transaction';
-      const amount = parseFloat(fields[2].replace(/[,$]/g, ''));
-
-      if (isNaN(amount) || !date) continue;
-
-      const transaction: ParsedTransaction = {
-        date: date,
-        description: description.trim(),
-        amount: Math.abs(amount),
-        transaction_type: amount >= 0 ? 'credit' : 'debit',
-        category: categorizeTransaction(description),
-        merchant_name: extractMerchantName(description)
-      };
-
-      transactions.push(transaction);
-    } catch (error) {
-      console.warn(`Error parsing line ${i + 1}: ${line}`, error);
-      continue;
+  const headerFields = parseCSVLine(rawLines[headerLineIndex]);
+  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const headersNorm = headerFields.map(h => normalize(h));
+  const findIndex = (candidates: string[]) => {
+    for (const c of candidates) {
+      const ci = headersNorm.findIndex(h => h.includes(normalize(c)));
+      if (ci !== -1) return ci;
     }
+    return -1;
+  };
+
+  // Common header candidates across banks (incl. Venmo)
+  const dateIdx = findIndex(['transaction date', 'date', 'posted', 'posted date']);
+  const descIdx = findIndex(['description', 'details', 'memo', 'note', 'statement description']);
+  const fromIdx = findIndex(['from']);
+  const toIdx = findIndex(['to', 'counterparty', 'name']);
+  const amountNetIdx = findIndex(['amount (net)', 'amount net']);
+  const amountTotalIdx = findIndex(['amount (total)', 'amount total', 'amount']);
+  const creditIdx = findIndex(['credit']);
+  const debitIdx = findIndex(['debit']);
+  const typeIdx = findIndex(['type', 'transaction type']);
+
+  const parseAmount = (s: string | undefined) => {
+    if (!s) return NaN;
+    let v = s.replace(/\$/g, '').replace(/,/g, '').trim();
+    if (/^\(.*\)$/.test(v)) v = '-' + v.slice(1, -1);
+    v = v.replace(/^\+/, '');
+    return parseFloat(v);
+  };
+
+  const transactions: ParsedTransaction[] = [];
+  for (let i = headerLineIndex + 1; i < rawLines.length; i++) {
+    const line = rawLines[i];
+    if (!line) continue;
+    const fields = parseCSVLine(line);
+    if (!fields || fields.length < 2) continue;
+
+    // Get date
+    let dateStr: string | undefined;
+    if (dateIdx >= 0 && fields[dateIdx] !== undefined) {
+      dateStr = fields[dateIdx];
+    } else {
+      // Fallback to first column
+      dateStr = fields[0];
+    }
+    const parsedDate = parseDate(dateStr || '');
+    if (!parsedDate) continue;
+
+    // Derive description
+    let description = '';
+    if (descIdx >= 0 && fields[descIdx]) description = fields[descIdx];
+    if (!description) {
+      const from = fromIdx >= 0 ? fields[fromIdx] : '';
+      const to = toIdx >= 0 ? fields[toIdx] : '';
+      const parts = [from, to].filter(Boolean);
+      description = parts.length ? parts.join(' → ') : 'Transaction';
+    }
+
+    // Determine amount
+    let amount = NaN;
+    if (amountNetIdx >= 0) amount = parseAmount(fields[amountNetIdx]);
+    if (isNaN(amount) && amountTotalIdx >= 0) amount = parseAmount(fields[amountTotalIdx]);
+
+    // If CSV has separate credit/debit columns
+    if (isNaN(amount) && (creditIdx >= 0 || debitIdx >= 0)) {
+      const creditVal = creditIdx >= 0 ? parseAmount(fields[creditIdx]) : NaN;
+      const debitVal = debitIdx >= 0 ? parseAmount(fields[debitIdx]) : NaN;
+      if (!isNaN(creditVal)) amount = Math.abs(creditVal);
+      else if (!isNaN(debitVal)) amount = -Math.abs(debitVal);
+    }
+
+    // As a last resort, try the 3rd column (legacy behavior)
+    if (isNaN(amount) && fields[2] !== undefined) amount = parseAmount(fields[2]);
+
+    if (isNaN(amount)) continue;
+
+    // Determine transaction type
+    let txType: 'credit' | 'debit' = amount >= 0 ? 'credit' : 'debit';
+    if (typeIdx >= 0 && fields[typeIdx]) {
+      const t = normalize(fields[typeIdx]);
+      if (t.includes('debit') || t.includes('payment') || t.includes('withdrawal')) txType = 'debit';
+      if (t.includes('credit') || t.includes('deposit') || t.includes('refund')) txType = 'credit';
+    }
+
+    const cleanAmount = Math.abs(amount);
+    const tx: ParsedTransaction = {
+      date: parsedDate,
+      description: description.trim(),
+      amount: cleanAmount,
+      transaction_type: txType,
+      category: categorizeTransaction(description),
+      merchant_name: extractMerchantName(description),
+    };
+
+    transactions.push(tx);
   }
 
   return transactions;
