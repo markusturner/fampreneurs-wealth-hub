@@ -141,67 +141,96 @@ export function OverviewSection() {
     const accountsBalance = getAccountsBalance()
     const insights = []
 
-    // Connected accounts insights
+    // Connected accounts insights with specific investment recommendations
     if (accountsBalance > 0 && investments.length === 0) {
+      const investmentAmount = Math.min(accountsBalance * 0.8, 10000) // Invest 80% or max $10k to start
       insights.push({
         type: 'opportunity',
-        message: `You have ${formatCurrency(accountsBalance)} in connected accounts. Consider creating an investment portfolio to grow your wealth.`,
-        priority: 'medium'
+        message: `Invest ${formatCurrency(investmentAmount)} immediately: 60% VTI (Total Stock Market ETF), 30% VXUS (International ETF), 10% BND (Bond ETF). Open Fidelity/Schwab account online, fund with ACH transfer, buy these ETFs. Expected 7-10% annual return.`,
+        priority: 'high'
       })
     }
 
-    // Performance-based insights
+    // Performance-based insights with specific actions
     if (dayChange < -10000) {
       insights.push({
         type: 'alert',
-        message: `Portfolio declined by ${formatCurrency(Math.abs(dayChange))} today. Consider reviewing your risk tolerance and rebalancing.`,
+        message: `Portfolio down ${formatCurrency(Math.abs(dayChange))} today. ACTION: Don't panic sell. If you have cash, consider buying more VTI/VXUS while prices are low (dollar-cost averaging). Set stop losses at -20% from peak if needed.`,
         priority: 'high'
       })
     } else if (dayChange > 20000) {
       insights.push({
         type: 'opportunity',
-        message: `Strong portfolio performance today (+${formatCurrency(dayChange)}). Consider taking profits on overperforming positions.`,
+        message: `Strong gains (+${formatCurrency(dayChange)}) today. ACTION: Sell 25% of overperforming individual stocks, rebalance into VTI if concentration >10% in single stock. Consider taking profits on speculative positions.`,
         priority: 'medium'
       })
     }
 
-    // Portfolio size insights
+    // Specific portfolio size strategies
     if (totalValue > 10000000) {
       insights.push({
         type: 'tip',
-        message: 'With your portfolio size, consider diversifying into alternative investments like real estate or private equity.',
-        priority: 'medium'
+        message: 'With $10M+ net worth: Allocate 20% to REITs (VNQ), 15% to alternative investments via Fundrise/YieldStreet, consider private equity minimums. Hire fee-only financial advisor. Set up family trust.',
+        priority: 'high'
       })
-    } else if (totalValue > 1000 && totalValue < 10000) {
+    } else if (totalValue > 1000000) {
       insights.push({
         type: 'tip',
-        message: 'Consider setting up automatic investments to steadily grow your portfolio over time.',
+        message: 'Millionaire strategy: 70% VTI, 20% VXUS, 10% BND. Add 5% crypto (BTC/ETH) via Coinbase. Max out 401k ($23,000), backdoor Roth IRA ($7,000). Open taxable account at Fidelity.',
         priority: 'medium'
+      })
+    } else if (totalValue > 100000) {
+      insights.push({
+        type: 'tip',
+        message: 'Growing wealth strategy: Invest additional $1,000/month automatically. 80% VTI, 15% VXUS, 5% BND. Use M1 Finance for automatic rebalancing. Target: $1M in 7-10 years at this pace.',
+        priority: 'medium'
+      })
+    } else if (totalValue > 10000) {
+      insights.push({
+        type: 'tip',
+        message: 'Building foundation: Start with VTI only, add $500/month. Use Fidelity ZERO fee funds (FZROX). Emergency fund first: 3-6 months expenses in high-yield savings (Marcus/Ally at 4.5% APY).',
+        priority: 'medium'
+      })
+    } else if (totalValue > 1000) {
+      insights.push({
+        type: 'tip',
+        message: 'Getting started: Open Fidelity account, buy FZROX (zero fees). Start with $100/month automatic investment. Build to $10k, then diversify. Use Fidelity cashback credit card for 2% on all purchases.',
+        priority: 'high'
       })
     }
 
-    // Cash allocation insight
+    // Cash allocation with specific actions
     const cashBalance = getTotalCashBalance()
     const cashPercentage = totalValue > 0 ? (cashBalance / totalValue) * 100 : 0
-    if (cashPercentage > 10) {
+    if (cashPercentage > 15) {
+      const excessCash = cashBalance * 0.7 // Invest 70% of cash
       insights.push({
         type: 'opportunity',
-        message: `You have ${cashPercentage.toFixed(1)}% in cash. Consider investing excess cash for better returns.`,
+        message: `You have ${cashPercentage.toFixed(1)}% in cash. INVEST ${formatCurrency(excessCash)} NOW: 70% VTI, 30% VXUS. Keep only 3-6 months expenses in high-yield savings (Ally Bank 4.5% APY). Opportunity cost: losing $${(excessCash * 0.07 / 12).toFixed(0)}/month.`,
+        priority: 'high'
+      })
+    }
+
+    // Specific tax optimization strategies
+    if (totalValue > 50000) {
+      insights.push({
+        type: 'tip',
+        message: 'Tax optimization: Max 401k ($23,000), Roth IRA backdoor conversion ($7,000), HSA if eligible ($4,300). Use tax-loss harvesting in taxable accounts. Hold VTI >1 year for long-term capital gains (15% vs 37%).',
         priority: 'medium'
       })
     }
 
-    // Default insights if none generated
+    // Default specific insights if none generated
     if (insights.length === 0) {
       insights.push(
         {
           type: 'tip',
-          message: 'Your portfolio is well-balanced. Consider regular rebalancing to maintain target allocations.',
+          message: 'Optimal allocation: 60% VTI (US Total Market), 30% VXUS (International), 10% BND (Bonds). Rebalance quarterly or when allocation drifts >5%. Use Fidelity/Schwab for $0 commissions.',
           priority: 'low'
         },
         {
           type: 'opportunity',
-          message: 'Tax-loss harvesting opportunities may be available in your taxable accounts.',
+          message: 'Tax-loss harvesting: If any positions are down >$1,000, sell and buy similar ETF (VTI→SWTSX) to harvest losses. Offset up to $3,000 in ordinary income annually.',
           priority: 'low'
         }
       )
