@@ -403,22 +403,31 @@ export function AccountIntegration() {
 
   const refreshAccountData = async () => {
     if (!user) return
-    
+
     setLoading(true)
     try {
-      // Refresh all connected accounts from Supabase
+      // Invoke edge function to refresh balances from Plaid, then reload from DB
+      const { error } = await supabase.functions.invoke('plaid-refresh-accounts', {
+        body: {}
+      })
+
+      if (error) {
+        console.error('plaid-refresh-accounts error:', error)
+        throw error
+      }
+
       await fetchConnectedAccounts()
-      
+
       toast({
-        title: "Accounts Refreshed",
-        description: "Account data has been updated from your connected institutions",
+        title: 'Accounts Refreshed',
+        description: 'Latest balances pulled from your institutions',
       })
     } catch (err) {
       console.error('Refresh error:', err)
       toast({
-        title: "Refresh Failed",
-        description: "Failed to refresh account data",
-        variant: "destructive"
+        title: 'Refresh Failed',
+        description: 'Could not refresh account balances',
+        variant: 'destructive'
       })
     } finally {
       setLoading(false)
@@ -435,7 +444,11 @@ export function AccountIntegration() {
 
     try {
       if (user && account.provider === 'plaid') {
-        // Fetch transactions for Plaid accounts
+        // Refresh latest balances for this account first
+        await supabase.functions.invoke('plaid-refresh-accounts', { body: { account_id: accountId } })
+        await fetchConnectedAccounts()
+        
+        // Then fetch transactions for Plaid accounts
         const { data, error } = await supabase.functions.invoke('plaid-fetch-transactions', {
           body: { account_id: accountId },
         })
