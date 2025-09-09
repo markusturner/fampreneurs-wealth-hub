@@ -199,14 +199,36 @@ export function OverviewSection() {
       })
     }
 
-    // Connected accounts insights with specific investment recommendations
+    // Connected accounts insights with specific investment recommendations based on income level
     if (accountsBalance > 0 && investments.length === 0) {
-      const investmentAmount = Math.min(accountsBalance * 0.8, 10000) // Invest 80% or max $10k to start
-      insights.push({
-        type: 'opportunity',
-        message: `Invest ${formatCurrency(investmentAmount)} immediately: 60% VTI (Total Stock Market ETF), 30% VXUS (International ETF), 10% BND (Bond ETF). Open Fidelity/Schwab account online, fund with ACH transfer, buy these ETFs. Expected 7-10% annual return.`,
-        priority: 'medium'
-      })
+      if (monthlyIncomeEstimate < 10000) {
+        // Low income - keep most cash for business opportunities, minimal investing
+        const emergencyFund = 6000 // 6 months emergency fund
+        const businessCash = Math.max(accountsBalance * 0.7, 5000) // Keep 70% or min $5k for business
+        const investmentAmount = Math.max(0, accountsBalance - emergencyFund - businessCash)
+        
+        if (investmentAmount > 1000) {
+          insights.push({
+            type: 'tip',
+            message: `Cash Strategy: Keep ${formatCurrency(emergencyFund)} emergency fund + ${formatCurrency(businessCash)} for business opportunities. Only invest ${formatCurrency(investmentAmount)} in VTI until income increases. Focus on business first, not stock market.`,
+            priority: 'medium'
+          })
+        } else {
+          insights.push({
+            type: 'tip',
+            message: `Cash First: Keep all ${formatCurrency(accountsBalance)} liquid. You need cash for business startup costs, emergencies, and opportunities. Don't invest in stocks until you have $10k+ monthly income from business.`,
+            priority: 'high'
+          })
+        }
+      } else {
+        // Higher income - can invest more aggressively
+        const investmentAmount = Math.min(accountsBalance * 0.8, 50000)
+        insights.push({
+          type: 'opportunity',
+          message: `Invest ${formatCurrency(investmentAmount)} immediately: 60% VTI (Total Stock Market ETF), 30% VXUS (International ETF), 10% BND (Bond ETF). Open Fidelity/Schwab account online, fund with ACH transfer, buy these ETFs. Expected 7-10% annual return.`,
+          priority: 'medium'
+        })
+      }
     }
 
     // Performance-based insights with specific actions
