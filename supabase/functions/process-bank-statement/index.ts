@@ -209,10 +209,31 @@ function parseCSV(csvContent: string): ParsedTransaction[] {
 
   const parseAmount = (s: string | undefined) => {
     if (!s) return NaN;
-    let v = s.replace(/\$/g, '').replace(/,/g, '').trim();
-    if (/^\(.*\)$/.test(v)) v = '-' + v.slice(1, -1);
+    let v = s.trim().toLowerCase();
+    // Remove common currency symbols and spaces
+    v = v.replace(/[$€£\s]/g, '');
+    // Parentheses denote negative
+    const isParenNegative = /^\(.*\)$/.test(v);
+    if (isParenNegative) v = v.slice(1, -1);
+    // Remove leading plus
     v = v.replace(/^\+/, '');
-    return parseFloat(v);
+    // Handle CR/DR markers (common in statements)
+    let sign = 1;
+    if (/\bdr\b/.test(v)) sign = -1;
+    if (/\bcr\b/.test(v)) sign = 1;
+    v = v.replace(/\b(dr|cr)\b/g, '');
+    // Determine decimal separator
+    if (v.includes(',') && !v.includes('.')) {
+      // Assume comma is decimal separator, dot as thousands
+      v = v.replace(/\./g, '');
+      v = v.replace(/,/g, '.');
+    } else {
+      // Assume comma is thousands separator
+      v = v.replace(/,/g, '');
+    }
+    const n = parseFloat(v);
+    if (isNaN(n)) return NaN;
+    return (isParenNegative ? -1 : 1) * sign * n;
   };
 
   const transactions: ParsedTransaction[] = [];
@@ -309,26 +330,42 @@ function parseCSVLine(line: string): string[] {
 
 function parseDate(dateStr: string): string | null {
   try {
-    // Try various date formats
     const cleanDate = dateStr.replace(/['"]/g, '').trim();
-    
-    // Format: MM/DD/YYYY
-    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(cleanDate)) {
-      const [month, day, year] = cleanDate.split('/');
-      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+
+    // DD/MM/YYYY or D/M/YY(YY)
+    let m: RegExpMatchArray | null;
+    if ((m = cleanDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/))) {
+      let [_, d, mon, yr] = m;
+      if (yr.length === 2) yr = (Number(yr) > 70 ? '19' : '20') + yr;
+      return `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`;
     }
-    
-    // Format: YYYY-MM-DD
-    if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(cleanDate)) {
-      return cleanDate;
+
+    // DD-MM-YYYY or DD.MM.YYYY or D-M-YY
+    if ((m = cleanDate.match(/^(\d{1,2})[-.](\d{1,2})[-.](\d{2}|\d{4})$/))) {
+      let [_, d, mon, yr] = m;
+      if (yr.length === 2) yr = (Number(yr) > 70 ? '19' : '20') + yr;
+      return `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`;
     }
-    
-    // Try parsing as Date
+
+    // MM/DD/YYYY
+    if ((m = cleanDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/))) {
+      const [_, mon, d, yr] = m;
+      return `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    }
+
+    // YYYY-MM-DD or YYYY/MM/DD
+    if (/^\d{4}[-\/]\d{1,2}[-\/]\d{1,2}$/.test(cleanDate)) {
+      const parts = cleanDate.includes('/') ? cleanDate.split('/') : cleanDate.split('-');
+      const [yr, mon, d] = parts;
+      return `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    }
+
+    // Fallback to Date parser
     const parsed = new Date(cleanDate);
     if (!isNaN(parsed.getTime())) {
       return parsed.toISOString().split('T')[0];
     }
-    
+
     return null;
   } catch {
     return null;

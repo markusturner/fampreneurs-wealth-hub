@@ -467,22 +467,60 @@ export function TransactionMonitoring() {
                     ?.map((seg) => seg.replace(/^\"|\"$/g, '').replace(/\"\"/g, '"').trim()) || []
                 const parseAmount = (raw?: string) => {
                   if (raw == null) return NaN
-                  let s = String(raw).trim()
+                  let s = String(raw).trim().toLowerCase()
                   if (s === '') return NaN
-                  s = s.replace(/[$,\s]/g, '')
-                  if (/^\(.*\)$/.test(s)) s = '-' + s.slice(1, -1)
-                  // normalize leading + or -
-                  return parseFloat(s)
+                  // Remove currency symbols and spaces
+                  s = s.replace(/[$€£\s]/g, '')
+                  // Parentheses negative
+                  const isParenNegative = /^\(.*\)$/.test(s)
+                  if (isParenNegative) s = s.slice(1, -1)
+                  // Remove leading +
+                  s = s.replace(/^\+/, '')
+                  // CR/DR markers
+                  let sign = 1
+                  if (/\bdr\b/.test(s)) sign = -1
+                  if (/\bcr\b/.test(s)) sign = 1
+                  s = s.replace(/\b(dr|cr)\b/g, '')
+                  // Decimal/comma handling
+                  if (s.includes(',') && !s.includes('.')) {
+                    s = s.replace(/\./g, '')
+                    s = s.replace(/,/g, '.')
+                  } else {
+                    s = s.replace(/,/g, '')
+                  }
+                  const n = parseFloat(s)
+                  if (isNaN(n)) return NaN
+                  return (isParenNegative ? -1 : 1) * sign * n
                 }
                 const parseDateIso = (raw?: string) => {
                   if (!raw) return null
                   const s = String(raw).trim()
-                  // try M/D/YYYY or MM/DD/YYYY
-                  const mdy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
-                  if (mdy) {
-                    const [_, m, d, y] = mdy
-                    const dt = new Date(Number(y), Number(m) - 1, Number(d))
+                  // DD/MM/YYYY or D/M/YY(YY)
+                  let m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/)
+                  if (m) {
+                    let [_, d, mon, yr] = m
+                    if (yr.length === 2) yr = (Number(yr) > 70 ? '19' : '20') + yr
+                    return `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`
+                  }
+                  // DD-MM-YYYY or DD.MM.YYYY
+                  m = s.match(/^(\d{1,2})[-.](\d{1,2})[-.](\d{2}|\d{4})$/)
+                  if (m) {
+                    let [_, d, mon, yr] = m
+                    if (yr.length === 2) yr = (Number(yr) > 70 ? '19' : '20') + yr
+                    return `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`
+                  }
+                  // MM/DD/YYYY
+                  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+                  if (m) {
+                    const [_, mon, d, yr] = m
+                    const dt = new Date(Number(yr), Number(mon) - 1, Number(d))
                     return isNaN(dt.getTime()) ? null : dt.toISOString().split('T')[0]
+                  }
+                  // YYYY-MM-DD or YYYY/MM/DD
+                  if (/^\d{4}[-\/]\d{1,2}[-\/]\d{1,2}$/.test(s)) {
+                    const parts = s.includes('/') ? s.split('/') : s.split('-')
+                    const [yr, mon, d] = parts
+                    return `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`
                   }
                   const d = new Date(s)
                   return isNaN(d.getTime()) ? null : d.toISOString().split('T')[0]
