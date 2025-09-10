@@ -546,8 +546,13 @@ export function TransactionMonitoring() {
                   }
 
                   const idxDate = header.findIndex(h => ['date','posted date','post date','transaction date','value date','date posted','transactiondate'].includes(h))
-                  const idxDesc = header.findIndex(h => ['description','details','payee','memo','note','narrative','reference','ref','transaction','transaction details'].includes(h))
-                  const idxAmount = header.findIndex(h => ['amount','transaction amount','amt','transactionamount','amount (usd)','amount usd','value'].includes(h))
+                  const idxDesc = header.findIndex(h => ['description','details','payee','memo','note','narrative','reference','ref','transaction','transaction details','statement description'].includes(h))
+                  const idxAmount = header.findIndex(h => [
+                    'amount','transaction amount','amt','transactionamount',
+                    'amount (usd)','amount usd','value',
+                    'amount (total)','amount total','total amount',
+                    'amount (net)','amount net','net amount'
+                  ].includes(h))
                   const idxDebit = header.findIndex(h => ['debit','withdrawal','debit amount','withdrawal amount','debits','payments'].includes(h))
                   const idxCredit = header.findIndex(h => ['credit','deposit','credit amount','credits','deposits'].includes(h))
 
