@@ -173,21 +173,18 @@ export function TransactionMonitoring() {
           isRecurring: false,
           status: 'completed' as const
         })),
-        ...(bankTransactions || []).map(t => {
-          const mappedType = t.transaction_type === 'debit' ? 'expense' : t.transaction_type === 'credit' ? 'income' : t.transaction_type
-          return {
-            id: t.id,
-            date: t.transaction_date,
-            description: t.description,
-            amount: t.amount,
-            type: mappedType as 'income' | 'expense' | 'transfer' | 'investment',
-            category: t.category || 'Other',
-            account: 'Bank Statement',
-            tags: [],
-            isRecurring: false,
-            status: 'completed' as const
-          }
-        })
+        ...(bankTransactions || []).map(t => ({
+          id: t.id,
+          date: t.transaction_date,
+          description: t.description,
+          amount: t.amount,
+          type: t.transaction_type as 'income' | 'expense' | 'transfer' | 'investment',
+          category: t.category || 'Other',
+          account: 'Bank Statement',
+          tags: [],
+          isRecurring: false,
+          status: 'completed' as const
+        }))
       ]
 
       setTransactions(combinedTransactions)
@@ -590,7 +587,7 @@ export function TransactionMonitoring() {
                       bank_statement_id: statement.id,
                       transaction_date: dateIso,
                       description: descStr,
-                      amount: Math.abs(amountNum),
+                      amount: Math.abs(amountNum), // Always store positive amount
                       transaction_type: type,
                       category: 'Uncategorized'
                     })

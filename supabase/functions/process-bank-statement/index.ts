@@ -17,7 +17,7 @@ interface ParsedTransaction {
   date: string;
   description: string;
   amount: number;
-  transaction_type: 'credit' | 'debit';
+  transaction_type: 'income' | 'expense';
   category?: string;
   merchant_name?: string;
 }
@@ -104,25 +104,43 @@ serve(async (req) => {
 
     // Insert transactions into bank_statement_transactions table (only if we have transactions)
     if (transactions.length > 0) {
+      console.log(`Preparing to insert ${transactions.length} transactions for user ${user.id}`);
+      
       const transactionInserts = transactions.map(tx => ({
         user_id: user.id,
         bank_statement_id: uploadRecord.id,
         transaction_date: tx.date,
         description: tx.description,
-        amount: tx.transaction_type === 'debit' ? -Math.abs(tx.amount) : Math.abs(tx.amount),
+        amount: Math.abs(tx.amount), // Always store positive amount
         category: tx.category || 'Uncategorized',
-        transaction_type: tx.transaction_type,
+        transaction_type: tx.transaction_type, // Now uses 'expense' | 'income'
         reference_number: `stmt_${uploadRecord.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       }));
 
-      const { error: insertError } = await supabase
+      console.log('Sample transaction insert:', transactionInserts[0]);
+
+      const { error: insertError, data: insertedData } = await supabase
         .from('bank_statement_transactions')
-        .insert(transactionInserts);
+        .insert(transactionInserts)
+        .select();
 
       if (insertError) {
         console.error('Error inserting transactions:', insertError);
-        throw new Error('Failed to insert transactions');
+        console.error('Failed insert data sample:', transactionInserts.slice(0, 2));
+        
+        // Update upload record with error
+        await supabase
+          .from('bank_statement_uploads')
+          .update({
+            processing_status: 'failed',
+            error_message: `Database insertion failed: ${insertError.message}`
+          })
+          .eq('id', uploadRecord.id);
+          
+        throw new Error(`Failed to insert transactions: ${insertError.message}`);
       }
+
+      console.log(`Successfully inserted ${insertedData?.length || 0} transactions`);
     }
 
     console.log(`Successfully inserted ${transactions.length} transactions`);
@@ -244,11 +262,11 @@ function parseCSV(csvContent: string): ParsedTransaction[] {
     if (isNaN(amount)) continue;
 
     // Determine transaction type
-    let txType: 'credit' | 'debit' = amount >= 0 ? 'credit' : 'debit';
+    let txType: 'income' | 'expense' = amount >= 0 ? 'income' : 'expense';
     if (typeIdx >= 0 && fields[typeIdx]) {
       const t = normalize(fields[typeIdx]);
-      if (t.includes('debit') || t.includes('payment') || t.includes('withdrawal')) txType = 'debit';
-      if (t.includes('credit') || t.includes('deposit') || t.includes('refund')) txType = 'credit';
+      if (t.includes('debit') || t.includes('payment') || t.includes('withdrawal')) txType = 'expense';
+      if (t.includes('credit') || t.includes('deposit') || t.includes('refund')) txType = 'income';
     }
 
     const cleanAmount = Math.abs(amount);
