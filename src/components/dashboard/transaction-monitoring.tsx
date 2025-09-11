@@ -871,11 +871,11 @@ export function TransactionMonitoring() {
               <Label>Bank Statement File</Label>
               <Input
                 type="file"
-                accept=".csv,.pdf,application/pdf,text/csv"
+                accept=".csv,.pdf,application/pdf,text/csv,text/plain"
                 multiple
                 onChange={handleFileUpload}
                 disabled={uploading}
-                className="hover:bg-primary/10 hover:border-primary transition-colors cursor-pointer file:cursor-pointer file:bg-primary file:border-0 file:text-white file:hover:bg-primary/80 file:transition-all file:duration-200 file:px-4 file:py-2 file:rounded-md file:mr-4"
+                className="cursor-pointer file:cursor-pointer file:bg-primary file:text-primary-foreground file:border-0 file:rounded file:px-3 file:py-1 file:mr-3 file:hover:bg-primary/80"
               />
               <p className="text-xs text-muted-foreground">
                 Supported formats: CSV (automatic parsing) and PDF (manual review)
