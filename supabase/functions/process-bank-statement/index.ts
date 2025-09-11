@@ -57,14 +57,21 @@ serve(async (req) => {
     // Parse transactions based on file type
     let transactions: ParsedTransaction[] = [];
     
-    if (fileType === 'text/csv' || fileName.toLowerCase().endsWith('.csv')) {
-      transactions = parseCSV(textContent);
-    } else if (fileType === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf')) {
-      // For PDF files, we'll store them but note they need manual processing
-      transactions = []; // PDFs require OCR/parsing which we'll implement later
-      console.log('PDF file uploaded - manual processing required');
-    } else {
-      throw new Error('Unsupported file type. Please upload a CSV or PDF file.');
+    try {
+      if (fileType === 'text/csv' || fileName.toLowerCase().endsWith('.csv')) {
+        console.log('Starting CSV parsing...');
+        transactions = parseCSV(textContent);
+        console.log(`CSV parsing completed. Found ${transactions.length} transactions`);
+      } else if (fileType === 'application/pdf' || fileName.toLowerCase().endsWith('.pdf')) {
+        // For PDF files, we'll store them but note they need manual processing
+        transactions = []; // PDFs require OCR/parsing which we'll implement later
+        console.log('PDF file uploaded - manual processing required');
+      } else {
+        throw new Error('Unsupported file type. Please upload a CSV or PDF file.');
+      }
+    } catch (parseError) {
+      console.error('Error parsing file:', parseError);
+      throw new Error(`File parsing failed: ${parseError.message}`);
     }
 
     console.log(`Parsed ${transactions.length} transactions`);
@@ -180,130 +187,175 @@ serve(async (req) => {
 });
 
 function parseCSV(csvContent: string): ParsedTransaction[] {
-  const rawLines = csvContent.split(/\r?\n/).map(l => l.trim());
-  // Find the first non-empty line as header
-  let headerLineIndex = rawLines.findIndex(l => l.length > 0);
-  if (headerLineIndex < 0) return [];
-
-  const headerFields = parseCSVLine(rawLines[headerLineIndex]);
-  const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-  const headersNorm = headerFields.map(h => normalize(h));
-  const findIndex = (candidates: string[]) => {
-    for (const c of candidates) {
-      const ci = headersNorm.findIndex(h => h.includes(normalize(c)));
-      if (ci !== -1) return ci;
-    }
-    return -1;
-  };
-
-  // Common header candidates across banks (incl. Venmo)
-  const dateIdx = findIndex(['transaction date', 'date', 'posted', 'posted date']);
-  const descIdx = findIndex(['description', 'details', 'memo', 'note', 'statement description']);
-  const fromIdx = findIndex(['from']);
-  const toIdx = findIndex(['to', 'counterparty', 'name']);
-  const amountNetIdx = findIndex(['amount (net)', 'amount net']);
-  const amountTotalIdx = findIndex(['amount (total)', 'amount total', 'amount']);
-  const creditIdx = findIndex(['credit']);
-  const debitIdx = findIndex(['debit']);
-  const typeIdx = findIndex(['type', 'transaction type']);
-
-  const parseAmount = (s: string | undefined) => {
-    if (!s) return NaN;
-    let v = s.trim().toLowerCase();
-    // Remove common currency symbols and spaces
-    v = v.replace(/[$€£\s]/g, '');
-    // Parentheses denote negative
-    const isParenNegative = /^\(.*\)$/.test(v);
-    if (isParenNegative) v = v.slice(1, -1);
-    // Remove leading plus
-    v = v.replace(/^\+/, '');
-    // Handle CR/DR markers (common in statements)
-    let sign = 1;
-    if (/\bdr\b/.test(v)) sign = -1;
-    if (/\bcr\b/.test(v)) sign = 1;
-    v = v.replace(/\b(dr|cr)\b/g, '');
-    // Determine decimal separator
-    if (v.includes(',') && !v.includes('.')) {
-      // Assume comma is decimal separator, dot as thousands
-      v = v.replace(/\./g, '');
-      v = v.replace(/,/g, '.');
-    } else {
-      // Assume comma is thousands separator
-      v = v.replace(/,/g, '');
-    }
-    const n = parseFloat(v);
-    if (isNaN(n)) return NaN;
-    return (isParenNegative ? -1 : 1) * sign * n;
-  };
-
-  const transactions: ParsedTransaction[] = [];
-  for (let i = headerLineIndex + 1; i < rawLines.length; i++) {
-    const line = rawLines[i];
-    if (!line) continue;
-    const fields = parseCSVLine(line);
-    if (!fields || fields.length < 2) continue;
-
-    // Get date
-    let dateStr: string | undefined;
-    if (dateIdx >= 0 && fields[dateIdx] !== undefined) {
-      dateStr = fields[dateIdx];
-    } else {
-      // Fallback to first column
-      dateStr = fields[0];
-    }
-    const parsedDate = parseDate(dateStr || '');
-    if (!parsedDate) continue;
-
-    // Derive description
-    let description = '';
-    if (descIdx >= 0 && fields[descIdx]) description = fields[descIdx];
-    if (!description) {
-      const from = fromIdx >= 0 ? fields[fromIdx] : '';
-      const to = toIdx >= 0 ? fields[toIdx] : '';
-      const parts = [from, to].filter(Boolean);
-      description = parts.length ? parts.join(' → ') : 'Transaction';
+  try {
+    console.log('Starting CSV parsing...');
+    const rawLines = csvContent.split(/\r?\n/).map(l => l.trim());
+    console.log(`Found ${rawLines.length} lines in CSV`);
+    
+    // Find the first non-empty line as header
+    let headerLineIndex = rawLines.findIndex(l => l.length > 0);
+    if (headerLineIndex < 0) {
+      console.log('No header found');
+      return [];
     }
 
-    // Determine amount
-    let amount = NaN;
-    if (amountNetIdx >= 0) amount = parseAmount(fields[amountNetIdx]);
-    if (isNaN(amount) && amountTotalIdx >= 0) amount = parseAmount(fields[amountTotalIdx]);
-
-    // If CSV has separate credit/debit columns
-    if (isNaN(amount) && (creditIdx >= 0 || debitIdx >= 0)) {
-      const creditVal = creditIdx >= 0 ? parseAmount(fields[creditIdx]) : NaN;
-      const debitVal = debitIdx >= 0 ? parseAmount(fields[debitIdx]) : NaN;
-      if (!isNaN(creditVal)) amount = Math.abs(creditVal);
-      else if (!isNaN(debitVal)) amount = -Math.abs(debitVal);
-    }
-
-    // As a last resort, try the 3rd column (legacy behavior)
-    if (isNaN(amount) && fields[2] !== undefined) amount = parseAmount(fields[2]);
-
-    if (isNaN(amount)) continue;
-
-    // Determine transaction type
-    let txType: 'income' | 'expense' = amount >= 0 ? 'income' : 'expense';
-    if (typeIdx >= 0 && fields[typeIdx]) {
-      const t = normalize(fields[typeIdx]);
-      if (t.includes('debit') || t.includes('payment') || t.includes('withdrawal')) txType = 'expense';
-      if (t.includes('credit') || t.includes('deposit') || t.includes('refund')) txType = 'income';
-    }
-
-    const cleanAmount = Math.abs(amount);
-    const tx: ParsedTransaction = {
-      date: parsedDate,
-      description: description.trim(),
-      amount: cleanAmount,
-      transaction_type: txType,
-      category: categorizeTransaction(description),
-      merchant_name: extractMerchantName(description),
+    const headerFields = parseCSVLine(rawLines[headerLineIndex]);
+    console.log('Header fields:', headerFields);
+    
+    const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const headersNorm = headerFields.map(h => normalize(h));
+    console.log('Normalized headers:', headersNorm);
+    
+    const findIndex = (candidates: string[]) => {
+      for (const c of candidates) {
+        const ci = headersNorm.findIndex(h => h.includes(normalize(c)));
+        if (ci !== -1) return ci;
+      }
+      return -1;
     };
 
-    transactions.push(tx);
-  }
+    // Common header candidates across banks (incl. Venmo)
+    const dateIdx = findIndex(['transaction date', 'date', 'posted', 'posted date']);
+    const descIdx = findIndex(['description', 'details', 'memo', 'note', 'statement description', 'payee']);
+    const fromIdx = findIndex(['from']);
+    const toIdx = findIndex(['to', 'counterparty', 'name']);
+    const amountNetIdx = findIndex(['amount (net)', 'amount net']);
+    const amountTotalIdx = findIndex(['amount (total)', 'amount total', 'amount']);
+    const creditIdx = findIndex(['credit']);
+    const debitIdx = findIndex(['debit']);
+    const typeIdx = findIndex(['type', 'transaction type']);
+    
+    console.log('Column indices:', {
+      dateIdx, descIdx, fromIdx, toIdx, amountNetIdx, amountTotalIdx, creditIdx, debitIdx, typeIdx
+    });
 
-  return transactions;
+    const parseAmount = (s: string | undefined) => {
+      if (!s) return NaN;
+      let v = s.trim().toLowerCase();
+      // Remove common currency symbols and spaces
+      v = v.replace(/[$€£\s]/g, '');
+      // Parentheses denote negative
+      const isParenNegative = /^\(.*\)$/.test(v);
+      if (isParenNegative) v = v.slice(1, -1);
+      // Remove leading plus
+      v = v.replace(/^\+/, '');
+      // Handle CR/DR markers (common in statements)
+      let sign = 1;
+      if (/\bdr\b/.test(v)) sign = -1;
+      if (/\bcr\b/.test(v)) sign = 1;
+      v = v.replace(/\b(dr|cr)\b/g, '');
+      // Determine decimal separator
+      if (v.includes(',') && !v.includes('.')) {
+        // Assume comma is decimal separator, dot as thousands
+        v = v.replace(/\./g, '');
+        v = v.replace(/,/g, '.');
+      } else {
+        // Assume comma is thousands separator
+        v = v.replace(/,/g, '');
+      }
+      const n = parseFloat(v);
+      if (isNaN(n)) return NaN;
+      return (isParenNegative ? -1 : 1) * sign * n;
+    };
+
+    const transactions: ParsedTransaction[] = [];
+    let processedCount = 0;
+    let skippedCount = 0;
+    
+    for (let i = headerLineIndex + 1; i < rawLines.length; i++) {
+      try {
+        const line = rawLines[i];
+        if (!line) continue;
+        const fields = parseCSVLine(line);
+        if (!fields || fields.length < 2) continue;
+
+        // Get date
+        let dateStr: string | undefined;
+        if (dateIdx >= 0 && fields[dateIdx] !== undefined) {
+          dateStr = fields[dateIdx];
+        } else {
+          // Fallback to first column
+          dateStr = fields[0];
+        }
+        const parsedDate = parseDate(dateStr || '');
+        if (!parsedDate) {
+          console.log(`Skipping row ${i}: invalid date "${dateStr}"`);
+          skippedCount++;
+          continue;
+        }
+
+        // Derive description
+        let description = '';
+        if (descIdx >= 0 && fields[descIdx]) description = fields[descIdx];
+        if (!description) {
+          const from = fromIdx >= 0 ? fields[fromIdx] : '';
+          const to = toIdx >= 0 ? fields[toIdx] : '';
+          const parts = [from, to].filter(Boolean);
+          description = parts.length ? parts.join(' → ') : 'Transaction';
+        }
+
+        // Determine amount
+        let amount = NaN;
+        if (amountNetIdx >= 0) amount = parseAmount(fields[amountNetIdx]);
+        if (isNaN(amount) && amountTotalIdx >= 0) amount = parseAmount(fields[amountTotalIdx]);
+
+        // If CSV has separate credit/debit columns
+        if (isNaN(amount) && (creditIdx >= 0 || debitIdx >= 0)) {
+          const creditVal = creditIdx >= 0 ? parseAmount(fields[creditIdx]) : NaN;
+          const debitVal = debitIdx >= 0 ? parseAmount(fields[debitIdx]) : NaN;
+          if (!isNaN(creditVal)) amount = Math.abs(creditVal);
+          else if (!isNaN(debitVal)) amount = -Math.abs(debitVal);
+        }
+
+        // As a last resort, try parsing different columns for amount
+        if (isNaN(amount)) {
+          for (let col = 0; col < fields.length; col++) {
+            const testAmount = parseAmount(fields[col]);
+            if (!isNaN(testAmount)) {
+              amount = testAmount;
+              break;
+            }
+          }
+        }
+
+        if (isNaN(amount)) {
+          console.log(`Skipping row ${i}: invalid amount in fields:`, fields);
+          skippedCount++;
+          continue;
+        }
+
+        // Determine transaction type
+        let txType: 'income' | 'expense' = amount >= 0 ? 'income' : 'expense';
+        if (typeIdx >= 0 && fields[typeIdx]) {
+          const t = normalize(fields[typeIdx]);
+          if (t.includes('debit') || t.includes('payment') || t.includes('withdrawal') || t.includes('spend')) txType = 'expense';
+          if (t.includes('credit') || t.includes('deposit') || t.includes('refund')) txType = 'income';
+        }
+
+        const cleanAmount = Math.abs(amount);
+        const tx: ParsedTransaction = {
+          date: parsedDate,
+          description: description.trim(),
+          amount: cleanAmount,
+          transaction_type: txType,
+          category: categorizeTransaction(description),
+          merchant_name: extractMerchantName(description),
+        };
+
+        transactions.push(tx);
+        processedCount++;
+      } catch (rowError) {
+        console.error(`Error processing row ${i}:`, rowError);
+        skippedCount++;
+      }
+    }
+    
+    console.log(`CSV parsing complete. Processed: ${processedCount}, Skipped: ${skippedCount}, Total: ${transactions.length}`);
+    return transactions;
+  } catch (error) {
+    console.error('Error in CSV parsing:', error);
+    throw new Error(`CSV parsing failed: ${error.message}`);
+  }
 }
 
 function parseCSVLine(line: string): string[] {
@@ -331,43 +383,56 @@ function parseCSVLine(line: string): string[] {
 function parseDate(dateStr: string): string | null {
   try {
     const cleanDate = dateStr.replace(/['"]/g, '').trim();
+    console.log(`Parsing date: "${cleanDate}"`);
+
+    // Handle M/D/YYYY format (like 8/31/2025)
+    let m: RegExpMatchArray | null;
+    if ((m = cleanDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/))) {
+      const [_, mon, d, yr] = m;
+      const result = `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      console.log(`Parsed M/D/YYYY: ${cleanDate} -> ${result}`);
+      return result;
+    }
 
     // DD/MM/YYYY or D/M/YY(YY)
-    let m: RegExpMatchArray | null;
     if ((m = cleanDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/))) {
       let [_, d, mon, yr] = m;
       if (yr.length === 2) yr = (Number(yr) > 70 ? '19' : '20') + yr;
-      return `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      const result = `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      console.log(`Parsed DD/MM/YYYY: ${cleanDate} -> ${result}`);
+      return result;
     }
 
     // DD-MM-YYYY or DD.MM.YYYY or D-M-YY
     if ((m = cleanDate.match(/^(\d{1,2})[-.](\d{1,2})[-.](\d{2}|\d{4})$/))) {
       let [_, d, mon, yr] = m;
       if (yr.length === 2) yr = (Number(yr) > 70 ? '19' : '20') + yr;
-      return `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`;
-    }
-
-    // MM/DD/YYYY
-    if ((m = cleanDate.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/))) {
-      const [_, mon, d, yr] = m;
-      return `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      const result = `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      console.log(`Parsed DD-MM-YYYY: ${cleanDate} -> ${result}`);
+      return result;
     }
 
     // YYYY-MM-DD or YYYY/MM/DD
     if (/^\d{4}[-\/]\d{1,2}[-\/]\d{1,2}$/.test(cleanDate)) {
       const parts = cleanDate.includes('/') ? cleanDate.split('/') : cleanDate.split('-');
       const [yr, mon, d] = parts;
-      return `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      const result = `${yr}-${mon.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      console.log(`Parsed YYYY-MM-DD: ${cleanDate} -> ${result}`);
+      return result;
     }
 
     // Fallback to Date parser
     const parsed = new Date(cleanDate);
     if (!isNaN(parsed.getTime())) {
-      return parsed.toISOString().split('T')[0];
+      const result = parsed.toISOString().split('T')[0];
+      console.log(`Parsed with Date constructor: ${cleanDate} -> ${result}`);
+      return result;
     }
 
+    console.log(`Failed to parse date: "${cleanDate}"`);
     return null;
-  } catch {
+  } catch (error) {
+    console.error(`Error parsing date "${dateStr}":`, error);
     return null;
   }
 }
