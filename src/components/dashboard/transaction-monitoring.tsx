@@ -42,7 +42,8 @@ import {
   Coffee,
   Gamepad2,
   Heart,
-  Plane
+  Plane,
+  Trash2
 } from 'lucide-react'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 
@@ -927,7 +928,7 @@ export function TransactionMonitoring() {
             <div className="space-y-1">
               {uploadedStatements.slice(0, 6).map((s) => (
                 <div key={s.id} className="flex items-center justify-between p-2 border rounded-md">
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium truncate">{s.filename}</p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(s.uploaded_at).toLocaleString()} • {String(s.file_type || 'unknown').toUpperCase()} • {s.transactions_extracted ?? 0} transactions
@@ -936,9 +937,57 @@ export function TransactionMonitoring() {
                       <p className="text-xs text-muted-foreground">PDFs are uploaded for manual processing and will not appear in the transaction list until parsed.</p>
                     )}
                   </div>
-                  <Badge variant={s.processing_status === 'completed' ? 'default' : s.processing_status === 'failed' ? 'destructive' : 'secondary'} className="text-xs">
-                    {s.processing_status}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={s.processing_status === 'completed' ? 'default' : s.processing_status === 'failed' ? 'destructive' : 'secondary'} className="text-xs">
+                      {s.processing_status}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          // Delete from storage if it exists
+                          if (s.storage_path || s.file_path) {
+                            await supabase.storage
+                              .from('bank-statements')
+                              .remove([s.storage_path || s.file_path])
+                          }
+                          
+                          // Delete from database
+                          const { error } = await supabase
+                            .from('bank_statement_uploads')
+                            .delete()
+                            .eq('id', s.id)
+                          
+                          if (error) throw error
+                          
+                          // Also delete associated transactions
+                          await supabase
+                            .from('bank_statement_transactions')
+                            .delete()
+                            .eq('bank_statement_id', s.id)
+                          
+                          toast({
+                            title: "Statement Deleted",
+                            description: "Upload and associated transactions have been removed"
+                          })
+                          
+                          // Refresh the data
+                          await fetchConnectedAccountsAndTransactions()
+                        } catch (error) {
+                          console.error('Delete error:', error)
+                          toast({
+                            title: "Delete Failed",
+                            description: "Could not delete the statement",
+                            variant: "destructive"
+                          })
+                        }
+                      }}
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
