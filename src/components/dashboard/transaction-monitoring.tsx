@@ -583,23 +583,63 @@ export function TransactionMonitoring() {
                     }
                   }
 
-                  const idxDate = header.findIndex(h => ['date','posted date','post date','transaction date','value date','date posted','transactiondate'].includes(h))
-                  const idxDesc = header.findIndex(h => ['description','details','payee','memo','note','narrative','reference','ref','transaction','transaction details','statement description'].includes(h))
-                  const idxAmount = header.findIndex(h => [
+                  // Detect indices from header
+                  let idxDate = header.findIndex(h => ['date','posted date','post date','transaction date','value date','date posted','transactiondate'].includes(h))
+                  let idxDesc = header.findIndex(h => ['description','details','payee','memo','note','narrative','reference','ref','transaction','transaction details','statement description'].includes(h))
+                  let idxAmount = header.findIndex(h => [
                     'amount','transaction amount','amt','transactionamount',
                     'amount (usd)','amount usd','value',
                     'amount (total)','amount total','total amount',
                     'amount (net)','amount net','net amount'
                   ].includes(h))
-                  const idxDebit = header.findIndex(h => ['debit','withdrawal','debit amount','withdrawal amount','debits','payments'].includes(h))
-                  const idxCredit = header.findIndex(h => ['credit','deposit','credit amount','credits','deposits'].includes(h))
+                  let idxDebit = header.findIndex(h => ['debit','withdrawal','debit amount','withdrawal amount','debits','payments'].includes(h))
+                  let idxCredit = header.findIndex(h => ['credit','deposit','credit amount','credits','deposits'].includes(h))
+
+                  // Fallback auto-detection if headers are unconventional
+                  if (idxDate === -1 || (idxAmount === -1 && idxDebit === -1 && idxCredit === -1)) {
+                    const headerColsCount = parseCSVLine(lines[headerLineIndex], delimiter).length
+                    const dateScore = Array(headerColsCount).fill(0)
+                    const amountScore = Array(headerColsCount).fill(0)
+                    const sampleEnd = Math.min(lines.length, headerLineIndex + 11)
+
+                    for (let i = headerLineIndex + 1; i < sampleEnd; i++) {
+                      const cols = parseCSVLine(lines[i], delimiter)
+                      for (let c = 0; c < headerColsCount; c++) {
+                        const v = cols[c]
+                        if (v != null && String(v).trim() !== '') {
+                          if (parseDateIso(String(v))) dateScore[c]++
+                          const n = parseAmount(String(v))
+                          if (!isNaN(n)) amountScore[c]++
+                        }
+                      }
+                    }
+
+                    if (idxDate === -1) {
+                      const bestDate = Math.max(...dateScore)
+                      const bestDateIdx = dateScore.indexOf(bestDate)
+                      if (bestDate > 0) idxDate = bestDateIdx
+                    }
+                    if (idxAmount === -1 && idxDebit === -1 && idxCredit === -1) {
+                      const bestAmt = Math.max(...amountScore)
+                      const bestAmtIdx = amountScore.indexOf(bestAmt)
+                      if (bestAmt > 0) idxAmount = bestAmtIdx
+                    }
+                  }
+
+                  console.info('CSV detection summary', {
+                    file: statement.filename,
+                    delimiter,
+                    header,
+                    idxDate, idxDesc, idxAmount, idxDebit, idxCredit
+                  })
 
                   const transactions: any[] = []
                   let skippedRows = 0
+                  const skippedReasons = { empty: 0, invalidDate: 0, invalidAmount: 0 }
 
                   for (let i = headerLineIndex + 1; i < lines.length; i++) {
                     const cols = parseCSVLine(lines[i], delimiter)
-                    if (!cols.length) { skippedRows++; continue }
+                    if (!cols.length) { skippedRows++; skippedReasons.empty++; continue }
 
                     const dateStrRaw = (idxDate >= 0 ? cols[idxDate] : cols[0])
                     const dateIso = parseDateIso(dateStrRaw)
@@ -621,7 +661,8 @@ export function TransactionMonitoring() {
                       amountNum = !isNaN(debitVal) ? -Math.abs(debitVal) : (!isNaN(creditVal) ? Math.abs(creditVal) : NaN)
                     }
 
-                    if (!dateIso || isNaN(amountNum)) { skippedRows++; continue }
+                    if (!dateIso) { skippedRows++; skippedReasons.invalidDate++; continue }
+                    if (isNaN(amountNum)) { skippedRows++; skippedReasons.invalidAmount++; continue }
 
                     const type = amountNum < 0 ? 'expense' : 'income'
 
@@ -635,6 +676,13 @@ export function TransactionMonitoring() {
                       category: 'Uncategorized'
                     })
                   }
+
+                  console.info('Processing summary', {
+                    file: statement.filename,
+                    added: transactions.length,
+                    skippedRows,
+                    skippedReasons
+                  })
 
                   if (transactions.length > 0) {
                     const { error: insertError } = await supabase
