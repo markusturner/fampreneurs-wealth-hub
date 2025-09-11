@@ -874,21 +874,21 @@ export function TransactionMonitoring() {
         </CardHeader>
         <CardContent>
           {uploadedStatements.length === 0 ? (
-            <div className="text-sm text-muted-foreground">No statements uploaded yet.</div>
+            <div className="text-xs text-muted-foreground">No statements uploaded yet.</div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1">
               {uploadedStatements.slice(0, 6).map((s) => (
-                <div key={s.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div key={s.id} className="flex items-center justify-between p-2 border rounded-md">
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{s.filename}</p>
+                    <p className="text-sm font-medium truncate">{s.filename}</p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(s.uploaded_at).toLocaleString()} • {String(s.file_type || 'unknown').toUpperCase()} • {s.transactions_extracted ?? 0} transactions
                     </p>
                     {String(s.file_type).toLowerCase() === 'pdf' && s.processing_status !== 'completed' && (
-                      <p className="text-xs text-muted-foreground mt-1">PDFs are uploaded for manual processing and will not appear in the transaction list until parsed.</p>
+                      <p className="text-xs text-muted-foreground">PDFs are uploaded for manual processing and will not appear in the transaction list until parsed.</p>
                     )}
                   </div>
-                  <Badge variant={s.processing_status === 'completed' ? 'default' : s.processing_status === 'failed' ? 'destructive' : 'secondary'}>
+                  <Badge variant={s.processing_status === 'completed' ? 'default' : s.processing_status === 'failed' ? 'destructive' : 'secondary'} className="text-xs">
                     {s.processing_status}
                   </Badge>
                 </div>
