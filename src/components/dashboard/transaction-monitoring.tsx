@@ -120,6 +120,7 @@ export function TransactionMonitoring() {
   const [enablePlaidTransactions, setEnablePlaidTransactions] = useState(false)
   const [aiBookkeepingEnabled, setAiBookkeepingEnabled] = useState(false)
   const [aiProcessing, setAiProcessing] = useState(false)
+  const [aiProgress, setAiProgress] = useState({ current: 0, total: 0 })
 
   useEffect(() => {
     fetchConnectedAccountsAndTransactions()
@@ -357,6 +358,8 @@ export function TransactionMonitoring() {
     if (!user) return
     
     setAiProcessing(true)
+    setAiProgress({ current: 0, total: 0 })
+    
     try {
       // Get transactions that need categorization (uncategorized or "Other")
       const uncategorizedTransactions = transactions.filter(t => 
@@ -371,6 +374,8 @@ export function TransactionMonitoring() {
         setAiProcessing(false)
         return
       }
+
+      setAiProgress({ current: 0, total: uncategorizedTransactions.length })
 
       toast({
         title: "Processing transactions...",
@@ -391,7 +396,7 @@ export function TransactionMonitoring() {
 
       if (error) throw error
 
-      // Update transactions with new categories
+      // Update transactions with new categories and show progress
       let updatedCount = 0
       for (const update of data.categorizedTransactions) {
         // Update bank statement transactions
@@ -413,6 +418,9 @@ export function TransactionMonitoring() {
             updatedCount++
           }
         }
+        
+        // Update progress in real-time
+        setAiProgress({ current: updatedCount, total: uncategorizedTransactions.length })
       }
 
       toast({
@@ -432,6 +440,7 @@ export function TransactionMonitoring() {
       })
     }
     setAiProcessing(false)
+    setAiProgress({ current: 0, total: 0 })
   }
 
   const getTransactionIcon = (type: string) => {
@@ -966,7 +975,14 @@ export function TransactionMonitoring() {
           className="flex items-center gap-2"
         >
           {aiProcessing ? (
-            <RefreshCw className="h-4 w-4 animate-spin" />
+            <>
+              <RefreshCw className="h-4 w-4 animate-spin" />
+              {aiProgress.total > 0 && (
+                <span className="text-sm">
+                  {aiProgress.current}/{aiProgress.total}
+                </span>
+              )}
+            </>
           ) : (
             <Bot className="h-4 w-4" />
           )}
