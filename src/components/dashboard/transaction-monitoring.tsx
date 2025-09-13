@@ -121,6 +121,8 @@ export function TransactionMonitoring() {
   const [aiBookkeepingEnabled, setAiBookkeepingEnabled] = useState(false)
   const [aiProcessing, setAiProcessing] = useState(false)
   const [aiProgress, setAiProgress] = useState({ current: 0, total: 0 })
+  const [categorizedTransactions, setCategorizedTransactions] = useState<{id: string, category: string, description: string}[]>([])
+  const [currentlyProcessing, setCurrentlyProcessing] = useState<string | null>(null)
 
   useEffect(() => {
     fetchConnectedAccountsAndTransactions()
@@ -359,6 +361,8 @@ export function TransactionMonitoring() {
     
     setAiProcessing(true)
     setAiProgress({ current: 0, total: 0 })
+    setCategorizedTransactions([])
+    setCurrentlyProcessing(null)
     
     try {
       // Get transactions that need categorization (uncategorized or "Other")
@@ -398,7 +402,21 @@ export function TransactionMonitoring() {
 
       // Update transactions with new categories and show progress
       let updatedCount = 0
+      const processedTransactions: {id: string, category: string, description: string}[] = []
+      
       for (const update of data.categorizedTransactions) {
+        // Show which transaction is currently being processed
+        const transaction = uncategorizedTransactions.find(t => t.id === update.id)
+        if (transaction) {
+          setCurrentlyProcessing(transaction.description)
+          processedTransactions.push({
+            id: update.id,
+            category: update.category,
+            description: transaction.description
+          })
+          setCategorizedTransactions([...processedTransactions])
+        }
+
         // Update bank statement transactions
         const { error: bankError } = await supabase
           .from('bank_statement_transactions')
@@ -421,7 +439,12 @@ export function TransactionMonitoring() {
         
         // Update progress in real-time
         setAiProgress({ current: updatedCount, total: uncategorizedTransactions.length })
+        
+        // Small delay to show the process
+        await new Promise(resolve => setTimeout(resolve, 100))
       }
+
+      setCurrentlyProcessing(null)
 
       toast({
         title: "AI Bookkeeping Complete",
@@ -430,6 +453,11 @@ export function TransactionMonitoring() {
       
       // Refresh transactions to show updated categories
       await fetchConnectedAccountsAndTransactions()
+      
+      // Clear the categorization display after a delay
+      setTimeout(() => {
+        setCategorizedTransactions([])
+      }, 3000)
       
     } catch (error) {
       console.error('AI bookkeeping error:', error)
@@ -441,6 +469,7 @@ export function TransactionMonitoring() {
     }
     setAiProcessing(false)
     setAiProgress({ current: 0, total: 0 })
+    setCurrentlyProcessing(null)
   }
 
   const getTransactionIcon = (type: string) => {
@@ -989,6 +1018,42 @@ export function TransactionMonitoring() {
           AI Bookkeeping
         </Button>
       </div>
+
+      {/* AI Categorization Display */}
+      {aiProcessing && categorizedTransactions.length > 0 && (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Bot className="h-4 w-4 text-primary" />
+              AI Categorization in Progress
+              <Badge variant="secondary" className="ml-auto">
+                {aiProgress.current}/{aiProgress.total}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            {currentlyProcessing && (
+              <div className="mb-3 p-2 bg-primary/10 rounded-md">
+                <div className="flex items-center gap-2 text-sm">
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                  <span className="font-medium">Currently processing:</span>
+                  <span className="text-muted-foreground">{currentlyProcessing}</span>
+                </div>
+              </div>
+            )}
+            <div className="space-y-1 max-h-40 overflow-y-auto">
+              {categorizedTransactions.map((transaction, index) => (
+                <div key={transaction.id} className="flex items-center justify-between p-2 bg-background rounded-sm border text-sm">
+                  <span className="truncate flex-1 mr-2">{transaction.description}</span>
+                  <Badge variant="outline" className="text-xs">
+                    {transaction.category}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Uploaded Statements */}
       <Card>
