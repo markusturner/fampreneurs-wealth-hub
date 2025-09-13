@@ -302,6 +302,13 @@ export default function Community() {
                 <span>Accounts</span>
               </TabsTrigger>
               <TabsTrigger 
+                value="reports" 
+                className="flex items-center gap-2 py-3 px-4 text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
+              >
+                <BarChart3 className="h-4 w-4" />
+                <span>Reports</span>
+              </TabsTrigger>
+              <TabsTrigger 
                 value="transactions" 
                 className="flex items-center gap-2 py-3 px-4 text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
               >
@@ -344,9 +351,12 @@ export default function Community() {
             <AccountIntegration />
           </TabsContent>
 
+          <TabsContent value="reports" className="space-y-4 sm:space-y-6 animate-fade-in">
+            <FinancialReports />
+          </TabsContent>
+
           <TabsContent value="transactions" className="space-y-4 sm:space-y-6 animate-fade-in">
             <TransactionMonitoring />
-            <FinancialReports />
           </TabsContent>
 
           <TabsContent value="budget" className="space-y-4 sm:space-y-6 animate-fade-in">
