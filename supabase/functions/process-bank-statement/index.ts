@@ -17,7 +17,7 @@ interface ParsedTransaction {
   date: string;
   description: string;
   amount: number;
-  transaction_type: 'income' | 'expense';
+  transaction_type: 'debit' | 'credit';
   category?: string;
   merchant_name?: string;
 }
@@ -325,11 +325,11 @@ function parseCSV(csvContent: string): ParsedTransaction[] {
         }
 
         // Determine transaction type
-        let txType: 'income' | 'expense' = amount >= 0 ? 'income' : 'expense';
+        let txType: 'debit' | 'credit' = amount >= 0 ? 'credit' : 'debit';
         if (typeIdx >= 0 && fields[typeIdx]) {
           const t = normalize(fields[typeIdx]);
-          if (t.includes('debit') || t.includes('payment') || t.includes('withdrawal') || t.includes('spend')) txType = 'expense';
-          if (t.includes('credit') || t.includes('deposit') || t.includes('refund')) txType = 'income';
+          if (t.includes('debit') || t.includes('payment') || t.includes('withdrawal') || t.includes('spend')) txType = 'debit';
+          if (t.includes('credit') || t.includes('deposit') || t.includes('refund')) txType = 'credit';
         }
 
         const cleanAmount = Math.abs(amount);
