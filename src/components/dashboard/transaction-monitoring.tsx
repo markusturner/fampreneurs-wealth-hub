@@ -1182,6 +1182,7 @@ export function TransactionMonitoring() {
                       </div>
                       <div>
                         <p className="font-medium">{transaction.description}</p>
+                        <p className="text-xs text-muted-foreground">{transaction.account}</p>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <span>{transaction.account}</span>
                           <span>•</span>
