@@ -101,6 +101,7 @@ export function TransactionMonitoring() {
   const [lastRefreshed, setLastRefreshed] = useState<Date>()
   const [currentPage, setCurrentPage] = useState(1)
   const [transactionsPerPage, setTransactionsPerPage] = useState(5)
+  const [showAllStatements, setShowAllStatements] = useState(false)
   const [filters, setFilters] = useState<TransactionFilter>({
     dateRange: 'all',
     account: 'all', 
@@ -925,7 +926,7 @@ export function TransactionMonitoring() {
             <div className="text-xs text-muted-foreground py-2">No statements uploaded yet.</div>
           ) : (
             <div className="space-y-0.5">
-              {uploadedStatements.slice(0, 3).map((s) => (
+              {(showAllStatements ? uploadedStatements : uploadedStatements.slice(0, 3)).map((s) => (
                 <div key={s.id} className="flex items-center justify-between p-1.5 border rounded text-xs hover:bg-muted/50">
                   <div className="min-w-0 flex-1">
                     <p className="font-medium truncate text-xs">{s.filename}</p>
@@ -986,6 +987,18 @@ export function TransactionMonitoring() {
                   </div>
                 </div>
               ))}
+              {uploadedStatements.length > 3 && (
+                <div className="pt-1 border-t">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAllStatements(!showAllStatements)}
+                    className="w-full text-xs h-6"
+                  >
+                    {showAllStatements ? 'Show less' : `Show ${uploadedStatements.length - 3} more`}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
