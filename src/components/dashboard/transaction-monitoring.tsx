@@ -354,19 +354,80 @@ export function TransactionMonitoring() {
   }
 
   const handleAIBookkeeping = async () => {
+    if (!user) return
+    
     setAiProcessing(true)
     try {
-      // Simulate AI processing
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Get transactions that need categorization (uncategorized or "Other")
+      const uncategorizedTransactions = transactions.filter(t => 
+        !t.category || t.category === 'Other' || t.category === 'Uncategorized'
+      )
       
+      if (uncategorizedTransactions.length === 0) {
+        toast({
+          title: "No transactions to process",
+          description: "All transactions are already categorized"
+        })
+        setAiProcessing(false)
+        return
+      }
+
+      toast({
+        title: "Processing transactions...",
+        description: `Categorizing ${uncategorizedTransactions.length} transactions with AI`
+      })
+
+      // Call the AI categorization edge function
+      const { data, error } = await supabase.functions.invoke('ai-categorize-transactions', {
+        body: {
+          transactions: uncategorizedTransactions.map(t => ({
+            id: t.id,
+            description: t.description,
+            amount: t.amount,
+            type: t.type
+          }))
+        }
+      })
+
+      if (error) throw error
+
+      // Update transactions with new categories
+      let updatedCount = 0
+      for (const update of data.categorizedTransactions) {
+        // Update bank statement transactions
+        const { error: bankError } = await supabase
+          .from('bank_statement_transactions')
+          .update({ category: update.category })
+          .eq('id', update.id)
+
+        if (!bankError) {
+          updatedCount++
+        } else {
+          // Try account transactions if bank statement update failed
+          const { error: accountError } = await supabase
+            .from('account_transactions')
+            .update({ category: update.category })
+            .eq('id', update.id)
+          
+          if (!accountError) {
+            updatedCount++
+          }
+        }
+      }
+
       toast({
         title: "AI Bookkeeping Complete",
-        description: "Transactions have been categorized and analyzed"
+        description: `Successfully categorized ${updatedCount} transactions`
       })
+      
+      // Refresh transactions to show updated categories
+      await fetchConnectedAccountsAndTransactions()
+      
     } catch (error) {
+      console.error('AI bookkeeping error:', error)
       toast({
         title: "AI Processing Failed",
-        description: "Failed to process transactions",
+        description: error instanceof Error ? error.message : "Unable to process transactions",
         variant: "destructive"
       })
     }
