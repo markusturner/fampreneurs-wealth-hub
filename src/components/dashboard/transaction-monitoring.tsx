@@ -914,31 +914,27 @@ export function TransactionMonitoring() {
 
       {/* Uploaded Statements */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center justify-between">
             <span>Uploaded Statements</span>
-            <span className="text-xs text-muted-foreground">CSVs can be processed here; PDFs require manual parsing</span>
+            <span className="text-xs text-muted-foreground font-normal">CSVs processed automatically</span>
           </CardTitle>
-          <CardDescription>See the status of your recent uploads</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           {uploadedStatements.length === 0 ? (
-            <div className="text-xs text-muted-foreground">No statements uploaded yet.</div>
+            <div className="text-xs text-muted-foreground py-2">No statements uploaded yet.</div>
           ) : (
-            <div className="space-y-1">
-              {uploadedStatements.slice(0, 6).map((s) => (
-                <div key={s.id} className="flex items-center justify-between p-2 border rounded-md">
+            <div className="space-y-0.5">
+              {uploadedStatements.slice(0, 3).map((s) => (
+                <div key={s.id} className="flex items-center justify-between p-1.5 border rounded text-xs hover:bg-muted/50">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{s.filename}</p>
+                    <p className="font-medium truncate text-xs">{s.filename}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(s.uploaded_at).toLocaleString()} • {String(s.file_type || 'unknown').toUpperCase()} • {s.transactions_extracted ?? 0} transactions
+                      {new Date(s.uploaded_at).toLocaleDateString()} • {s.transactions_extracted ?? 0} transactions
                     </p>
-                    {String(s.file_type).toLowerCase() === 'pdf' && s.processing_status !== 'completed' && (
-                      <p className="text-xs text-muted-foreground">PDFs are uploaded for manual processing and will not appear in the transaction list until parsed.</p>
-                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={s.processing_status === 'completed' ? 'default' : s.processing_status === 'failed' ? 'destructive' : 'secondary'} className="text-xs">
+                  <div className="flex items-center gap-1">
+                    <Badge variant={s.processing_status === 'completed' ? 'default' : s.processing_status === 'failed' ? 'destructive' : 'secondary'} className="text-xs px-1 py-0">
                       {s.processing_status}
                     </Badge>
                     <Button
