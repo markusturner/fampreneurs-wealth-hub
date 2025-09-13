@@ -64,6 +64,7 @@ import { AssetAllocation } from '@/components/dashboard/asset-allocation'
 import { AccountIntegration } from '@/components/dashboard/account-integration'
 import { TransactionMonitoring } from '@/components/dashboard/transaction-monitoring'
 import { BudgetingAnalytics } from '@/components/dashboard/budgeting-analytics'
+import { FinancialReports } from '@/components/dashboard/financial-reports'
 import { FamilyMemberManagement } from '@/components/dashboard/family-member-management'
 
 interface Investment {
@@ -359,17 +360,7 @@ export default function Community() {
           </TabsContent>
 
           <TabsContent value="reports" className="space-y-4 sm:space-y-6 animate-fade-in">
-            <Card className="hover-scale">
-              <CardContent className="p-6 sm:p-8">
-                <div className="text-center">
-                  <FileText className="h-16 w-16 sm:h-20 sm:w-20 mx-auto mb-6 text-muted-foreground" />
-                  <h3 className="text-xl sm:text-2xl font-semibold mb-4">Financial Reports</h3>
-                  <p className="text-muted-foreground text-base sm:text-lg max-w-md mx-auto">
-                    Comprehensive reports will be available once you connect accounts or add investment data.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <FinancialReports />
           </TabsContent>
 
           <TabsContent value="documents" className="space-y-6 animate-fade-in">
