@@ -100,7 +100,7 @@ export function TransactionMonitoring() {
   const [searchTerm, setSearchTerm] = useState('')
   const [lastRefreshed, setLastRefreshed] = useState<Date>()
   const [currentPage, setCurrentPage] = useState(1)
-  const [transactionsPerPage, setTransactionsPerPage] = useState(25)
+  const [transactionsPerPage, setTransactionsPerPage] = useState(5)
   const [filters, setFilters] = useState<TransactionFilter>({
     dateRange: 'all',
     account: 'all', 
