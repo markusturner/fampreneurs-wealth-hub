@@ -385,8 +385,8 @@ export function TransactionMonitoring() {
     switch (type) {
       case 'income': return 'text-green-600'
       case 'expense': return 'text-red-600'
-      case 'transfer': return 'text-blue-600'
-      default: return 'text-gray-600'
+      case 'transfer': return 'text-[hsl(var(--transaction-blue))]'
+      default: return 'text-[hsl(var(--transaction-blue))]'
     }
   }
 

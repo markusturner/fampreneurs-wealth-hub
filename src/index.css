@@ -32,6 +32,10 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     --accent: 270 86% 43%;
     --accent-foreground: 0 0% 100%;
 
+    /* Transaction colors */
+    --transaction-blue: 205 100% 59%;
+    --transaction-blue-foreground: 0 0% 100%;
+
     /* Supporting colors */
     --muted: 220 13% 96%;
     --muted-foreground: 215 20% 45%;
@@ -97,6 +101,10 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     /* Accent: Yellow (#ffb500) for dark mode */
     --accent: 41 100% 50%;
     --accent-foreground: 262 86% 8%;
+
+    /* Transaction colors - dark mode */
+    --transaction-blue: 205 100% 59%;
+    --transaction-blue-foreground: 0 0% 100%;
 
     --muted: 262 50% 15%;
     --muted-foreground: 215 20% 65%;
