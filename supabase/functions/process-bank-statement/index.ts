@@ -189,6 +189,15 @@ serve(async (req) => {
 function parseCSV(csvContent: string): ParsedTransaction[] {
   try {
     console.log('Starting CSV parsing...');
+    
+    // Helper function for currency formatting
+    const formatCurrency = (amount: number) => {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD'
+      }).format(amount);
+    };
+    
     const rawLines = csvContent.split(/\r?\n/).map(l => l.trim());
     console.log(`Found ${rawLines.length} lines in CSV`);
     
@@ -284,14 +293,63 @@ function parseCSV(csvContent: string): ParsedTransaction[] {
           continue;
         }
 
-        // Derive description
+        // Derive description with improved extraction
         let description = '';
-        if (descIdx >= 0 && fields[descIdx]) description = fields[descIdx];
+        
+        // Primary: Try description field
+        if (descIdx >= 0 && fields[descIdx]) {
+          description = fields[descIdx].trim();
+        }
+        
+        // Secondary: Try from/to fields  
         if (!description) {
           const from = fromIdx >= 0 ? fields[fromIdx] : '';
           const to = toIdx >= 0 ? fields[toIdx] : '';
           const parts = [from, to].filter(Boolean);
-          description = parts.length ? parts.join(' → ') : 'Transaction';
+          if (parts.length) {
+            description = parts.join(' → ');
+          }
+        }
+        
+        // Tertiary: Try to find any descriptive field
+        if (!description || description === 'Unknown' || description === 'Transaction') {
+          // Look for merchant-like fields in other columns
+          const merchantCandidates = ['merchant', 'payee', 'vendor', 'name', 'reference', 'memo'];
+          for (const candidate of merchantCandidates) {
+            const idx = headersNorm.findIndex(h => h.includes(normalize(candidate)));
+            if (idx >= 0 && fields[idx] && fields[idx].trim() && 
+                fields[idx].trim().toLowerCase() !== 'unknown' &&
+                fields[idx].trim().toLowerCase() !== 'transaction') {
+              description = fields[idx].trim();
+              break;
+            }
+          }
+        }
+        
+        // Fallback: Try to extract from any non-numeric, non-date field
+        if (!description || description === 'Unknown' || description === 'Transaction') {
+          for (let col = 0; col < fields.length; col++) {
+            if (col === dateIdx || col === amountNetIdx || col === amountTotalIdx || 
+                col === creditIdx || col === debitIdx) continue; // Skip known numeric/date columns
+                
+            const field = fields[col]?.trim();
+            if (field && field.length > 2 && 
+                !/^\d+(\.\d+)?$/.test(field) && // Not just a number
+                !parseDate(field) && // Not a date
+                field.toLowerCase() !== 'unknown' &&
+                field.toLowerCase() !== 'transaction' &&
+                field.toLowerCase() !== 'n/a' &&
+                field.toLowerCase() !== 'na') {
+              description = field;
+              break;
+            }
+          }
+        }
+        
+        // Final fallback with more context
+        if (!description || description === 'Unknown' || description === 'Transaction') {
+          const transType = txType === 'credit' ? 'Deposit' : 'Payment';
+          description = `${transType} ${formatCurrency(Math.abs(amount))}`;
         }
 
         // Determine amount
@@ -466,10 +524,32 @@ function categorizeTransaction(description: string): string {
 }
 
 function extractMerchantName(description: string): string {
-  // Simple merchant name extraction
-  const cleaned = description.replace(/[0-9]/g, '').replace(/\s+/g, ' ').trim();
-  const words = cleaned.split(' ');
+  // Clean up the description to extract merchant name
+  let cleaned = description.trim();
   
-  // Take first few meaningful words
-  return words.slice(0, 3).join(' ').substring(0, 50);
+  // Remove common transaction prefixes
+  cleaned = cleaned.replace(/^(pos|atm|card|purchase|payment|transfer|deposit|withdrawal)\s*/i, '');
+  
+  // Remove dates and times
+  cleaned = cleaned.replace(/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g, '');
+  cleaned = cleaned.replace(/\b\d{1,2}:\d{2}(:\d{2})?\s*(am|pm)?\b/gi, '');
+  
+  // Remove reference numbers and IDs
+  cleaned = cleaned.replace(/\b[a-z]*\d{4,}\b/gi, '');
+  cleaned = cleaned.replace(/\b(ref|id|trans|conf|auth)[\s#:]*[a-z0-9]+\b/gi, '');
+  
+  // Remove excessive numbers but keep street addresses
+  cleaned = cleaned.replace(/\b\d{5,}\b/g, '');
+  
+  // Clean up extra whitespace
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  
+  // If we have a meaningful result, return first 3 words
+  if (cleaned && cleaned.length > 3 && cleaned.toLowerCase() !== 'unknown') {
+    const words = cleaned.split(' ').filter(word => word.length > 1);
+    return words.slice(0, 3).join(' ').substring(0, 50);
+  }
+  
+  // Fallback to original description
+  return description.substring(0, 50);
 }
