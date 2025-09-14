@@ -311,22 +311,30 @@ function parseCSV(csvContent: string): ParsedTransaction[] {
           }
         }
         
-        // Tertiary: Try to find any descriptive field
+        // Tertiary: Try to find any descriptive field - expanded candidates
         if (!description || description === 'Unknown' || description === 'Transaction') {
-          // Look for merchant-like fields in other columns
-          const merchantCandidates = ['merchant', 'payee', 'vendor', 'name', 'reference', 'memo'];
+          // Look for merchant-like fields in other columns - expanded list
+          const merchantCandidates = [
+            'merchant', 'payee', 'vendor', 'name', 'reference', 'memo', 'note', 
+            'counterparty', 'company', 'business', 'description', 'details',
+            'transaction description', 'statement description', 'payment to',
+            'payment from', 'recipient', 'sender', 'beneficiary'
+          ];
           for (const candidate of merchantCandidates) {
             const idx = headersNorm.findIndex(h => h.includes(normalize(candidate)));
             if (idx >= 0 && fields[idx] && fields[idx].trim() && 
                 fields[idx].trim().toLowerCase() !== 'unknown' &&
-                fields[idx].trim().toLowerCase() !== 'transaction') {
+                fields[idx].trim().toLowerCase() !== 'transaction' &&
+                fields[idx].trim().toLowerCase() !== 'n/a' &&
+                fields[idx].trim().toLowerCase() !== 'na' &&
+                fields[idx].trim().length > 1) {
               description = fields[idx].trim();
               break;
             }
           }
         }
         
-        // Fallback: Try to extract from any non-numeric, non-date field
+        // Fallback: Try to extract from any non-numeric, non-date field with better filtering
         if (!description || description === 'Unknown' || description === 'Transaction') {
           for (let col = 0; col < fields.length; col++) {
             if (col === dateIdx || col === amountNetIdx || col === amountTotalIdx || 
@@ -335,22 +343,23 @@ function parseCSV(csvContent: string): ParsedTransaction[] {
             const field = fields[col]?.trim();
             if (field && field.length > 2 && 
                 !/^\d+(\.\d+)?$/.test(field) && // Not just a number
+                !/^\$?\d+(\.\d+)?$/.test(field) && // Not just currency
                 !parseDate(field) && // Not a date
                 field.toLowerCase() !== 'unknown' &&
                 field.toLowerCase() !== 'transaction' &&
                 field.toLowerCase() !== 'n/a' &&
-                field.toLowerCase() !== 'na') {
+                field.toLowerCase() !== 'na' &&
+                field.toLowerCase() !== 'pending' &&
+                field.toLowerCase() !== 'completed' &&
+                field.toLowerCase() !== 'cleared' &&
+                !field.match(/^[A-Z]{2,3}$/)) { // Not currency codes like USD, EUR
               description = field;
               break;
             }
           }
         }
         
-        // Final fallback with more context
-        if (!description || description === 'Unknown' || description === 'Transaction') {
-          const transType = txType === 'credit' ? 'Deposit' : 'Payment';
-          description = `${transType} ${formatCurrency(Math.abs(amount))}`;
-        }
+        // This will be handled after txType is determined
 
         // Determine amount
         let amount = NaN;
@@ -382,12 +391,18 @@ function parseCSV(csvContent: string): ParsedTransaction[] {
           continue;
         }
 
-        // Determine transaction type
+        // Determine transaction type (moved up to use in description fallback)
         let txType: 'debit' | 'credit' = amount >= 0 ? 'credit' : 'debit';
         if (typeIdx >= 0 && fields[typeIdx]) {
           const t = normalize(fields[typeIdx]);
           if (t.includes('debit') || t.includes('payment') || t.includes('withdrawal') || t.includes('spend')) txType = 'debit';
           if (t.includes('credit') || t.includes('deposit') || t.includes('refund')) txType = 'credit';
+        }
+
+        // Final fallback for description if still empty/generic (using txType after it's defined)
+        if (!description || description === 'Unknown' || description === 'Transaction') {
+          const transType = txType === 'credit' ? 'Deposit' : 'Payment';
+          description = `${transType} ${formatCurrency(Math.abs(amount))}`;
         }
 
         const cleanAmount = Math.abs(amount);

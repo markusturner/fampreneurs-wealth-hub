@@ -124,6 +124,7 @@ export function TransactionMonitoring() {
   const [categorizedTransactions, setCategorizedTransactions] = useState<{id: string, category: string, description: string}[]>([])
   const [currentlyProcessing, setCurrentlyProcessing] = useState<string | null>(null)
   const [editingCategory, setEditingCategory] = useState<string | null>(null)
+  const [editingDescription, setEditingDescription] = useState<string | null>(null)
   const [customCategories, setCustomCategories] = useState<string[]>([
     'Food & Dining', 'Transportation', 'Shopping', 'Utilities', 'Healthcare',
     'Income', 'Entertainment', 'Business', 'Investment', 'Insurance', 'Rent',
@@ -537,8 +538,54 @@ export function TransactionMonitoring() {
     } catch (error) {
       console.error('Category update error:', error)
       toast({
-        title: "Update Failed",
+        title: "Update Failed", 
         description: "Could not update transaction category",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleDescriptionUpdate = async (transactionId: string, newDescription: string) => {
+    if (!user) return
+    
+    try {
+      // Update bank statement transactions first
+      const { error: bankError } = await supabase
+        .from('bank_statement_transactions')
+        .update({ description: newDescription })
+        .eq('id', transactionId)
+
+      if (bankError) {
+        // Try account transactions if bank statement update failed
+        const { error: accountError } = await supabase
+          .from('account_transactions')
+          .update({ description: newDescription })
+          .eq('id', transactionId)
+        
+        if (accountError) {
+          throw accountError
+        }
+      }
+
+      // Update local state
+      setTransactions(prev => 
+        prev.map(t => 
+          t.id === transactionId ? { ...t, description: newDescription } : t
+        )
+      )
+
+      toast({
+        title: "Description Updated",
+        description: "Transaction description changed successfully"
+      })
+
+      setEditingDescription(null)
+      
+    } catch (error) {
+      console.error('Description update error:', error)
+      toast({
+        title: "Update Failed", 
+        description: "Could not update transaction description",
         variant: "destructive"
       })
     }
@@ -1307,9 +1354,58 @@ export function TransactionMonitoring() {
                       <div className={`p-2 rounded-full bg-muted ${colorClass}`}>
                         <Icon className="h-4 w-4" />
                       </div>
-                       <div>
-                         <p className="font-medium">{transaction.description.split(' - ')[0] || transaction.description.substring(0, 50)}</p>
-                         <p className="text-xs text-muted-foreground truncate">{transaction.description}</p>
+                        <div>
+                          {editingDescription === transaction.id ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                defaultValue={transaction.description}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    const newDesc = e.currentTarget.value
+                                    handleDescriptionUpdate(transaction.id, newDesc)
+                                  } else if (e.key === 'Escape') {
+                                    setEditingDescription(null)
+                                  }
+                                }}
+                                className="flex-1 px-2 py-1 text-sm bg-background border rounded"
+                                autoFocus
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  const input = e.currentTarget.parentElement?.querySelector('input')
+                                  if (input) {
+                                    handleDescriptionUpdate(transaction.id, input.value)
+                                  }
+                                }}
+                                className="h-6 w-6 p-0 text-green-600"
+                              >
+                                ✓
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setEditingDescription(null)}
+                                className="h-6 w-6 p-0 text-red-600"
+                              >
+                                ×
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="group">
+                              <p 
+                                className="font-medium cursor-pointer hover:bg-muted/50 rounded px-1 -mx-1"
+                                onClick={() => setEditingDescription(transaction.id)}
+                                title="Click to edit description"
+                              >
+                                {transaction.description.split(' - ')[0] || transaction.description.substring(0, 50)}
+                                <span className="opacity-0 group-hover:opacity-100 ml-2 text-xs text-muted-foreground">✏️</span>
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">{transaction.description}</p>
+                            </div>
+                          )}
                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
                            <span>{transaction.account}</span>
                            <span>•</span>
