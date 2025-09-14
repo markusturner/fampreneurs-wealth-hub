@@ -1361,7 +1361,7 @@ export function TransactionMonitoring() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setEditingCategory(transaction.id)}
-                                className="h-6 px-2 text-xs border-dashed hover:border-solid hover:bg-muted"
+                                className="h-6 px-2 text-xs border-dashed hover:border-solid hover:bg-[hsl(var(--edit-button))] hover:text-[hsl(var(--edit-button-foreground))]"
                               >
                                 {transaction.category || 'Uncategorized'}
                                 <Tag className="h-3 w-3 ml-1" />
