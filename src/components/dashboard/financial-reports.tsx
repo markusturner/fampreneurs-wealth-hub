@@ -96,7 +96,7 @@ export function FinancialReports() {
       ]
 
       setTransactions(allTransactions)
-      processFinancialData(allTransactions)
+      await processFinancialData(allTransactions)
     } catch (error) {
       console.error('Error fetching transactions:', error)
     }
@@ -104,7 +104,7 @@ export function FinancialReports() {
     setLoading(false)
   }
 
-  const processFinancialData = (transactions: Transaction[]) => {
+  const processFinancialData = async (transactions: Transaction[]) => {
     const income: { [category: string]: number } = {}
     const expenses: { [category: string]: number } = {}
     const assets: { [category: string]: number } = {}
@@ -113,30 +113,68 @@ export function FinancialReports() {
     let totalIncome = 0
     let totalExpenses = 0
 
+    // Fetch transaction categories to determine types
+    const { data: categoryData } = await supabase
+      .from('transaction_categories')
+      .select('name, category_type')
+
+    const categoryTypeMap = new Map(
+      (categoryData || []).map(cat => [cat.name.toLowerCase(), cat.category_type])
+    )
+
     transactions.forEach(transaction => {
       const amount = Math.abs(transaction.amount)
       const category = transaction.category || 'Uncategorized'
       
-      // Classify as income or expense based on amount sign and category
-      if (transaction.amount > 0 || 
-          category.toLowerCase().includes('salary') ||
-          category.toLowerCase().includes('income') ||
-          category.toLowerCase().includes('deposit')) {
-        income[category] = (income[category] || 0) + amount
-        totalIncome += amount
-        
-        // Assets (cash/bank accounts increase with income)
-        assets['Cash & Bank Accounts'] = (assets['Cash & Bank Accounts'] || 0) + amount
-      } else {
-        expenses[category] = (expenses[category] || 0) + amount
-        totalExpenses += amount
-        
-        // Classify expenses into assets or liabilities
-        if (category.toLowerCase().includes('loan') ||
-            category.toLowerCase().includes('credit') ||
-            category.toLowerCase().includes('debt')) {
-          liabilities[category] = (liabilities[category] || 0) + amount
+      // Determine type based on transaction_type field first, then category type, then fallback logic
+      let transactionType = transaction.transaction_type
+      
+      if (!transactionType) {
+        // Use category type mapping
+        const categoryType = categoryTypeMap.get(category.toLowerCase())
+        if (categoryType) {
+          transactionType = categoryType
+        } else {
+          // Fallback to amount-based classification
+          transactionType = transaction.amount > 0 ? 'income' : 'expense'
         }
+      }
+
+      // Classify based on determined type
+      switch (transactionType) {
+        case 'income':
+          income[category] = (income[category] || 0) + amount
+          totalIncome += amount
+          // Assets (cash/bank accounts increase with income)
+          assets['Cash & Bank Accounts'] = (assets['Cash & Bank Accounts'] || 0) + amount
+          break
+          
+        case 'expense':
+          expenses[category] = (expenses[category] || 0) + amount
+          totalExpenses += amount
+          
+          // Classify expenses into assets or liabilities based on category
+          if (category.toLowerCase().includes('loan') ||
+              category.toLowerCase().includes('credit') ||
+              category.toLowerCase().includes('debt') ||
+              category.toLowerCase().includes('mortgage')) {
+            liabilities[category] = (liabilities[category] || 0) + amount
+          }
+          break
+          
+        case 'investment':
+          // Investments are assets but don't count as expenses
+          assets[category] = (assets[category] || 0) + amount
+          break
+          
+        case 'transfer':
+          // Transfers don't affect income/expense calculation
+          break
+          
+        default:
+          // Default to expense for unknown types
+          expenses[category] = (expenses[category] || 0) + amount
+          totalExpenses += amount
       }
     })
 

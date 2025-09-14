@@ -45,6 +45,7 @@ import {
   Plane,
   Trash2
 } from 'lucide-react'
+import { TransactionCategorySelector } from '../ui/transaction-category-selector'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 
 // Small helper component to launch Plaid Link update flow
@@ -125,17 +126,27 @@ export function TransactionMonitoring() {
   const [currentlyProcessing, setCurrentlyProcessing] = useState<string | null>(null)
   const [editingCategory, setEditingCategory] = useState<string | null>(null)
   const [editingDescription, setEditingDescription] = useState<string | null>(null)
-  const [customCategories, setCustomCategories] = useState<string[]>([
-    'Food & Dining', 'Transportation', 'Shopping', 'Utilities', 'Healthcare',
-    'Income', 'Entertainment', 'Business', 'Investment', 'Insurance', 'Rent',
-    'Mortgage', 'Education', 'Travel', 'Gifts', 'Charity', 'Personal Care',
-    'Home Improvement', 'Subscriptions', 'Other'
-  ])
+  const [transactionCategories, setTransactionCategories] = useState<any[]>([])
   const [newCategoryInput, setNewCategoryInput] = useState('')
 
   useEffect(() => {
     fetchConnectedAccountsAndTransactions()
+    fetchTransactionCategories()
   }, [user])
+
+  const fetchTransactionCategories = async () => {
+    try {
+      const { data } = await supabase
+        .from('transaction_categories')
+        .select('*')
+        .order('category_type', { ascending: true })
+        .order('name', { ascending: true })
+
+      setTransactionCategories(data || [])
+    } catch (error) {
+      console.error('Error fetching transaction categories:', error)
+    }
+  }
 
   const fetchConnectedAccountsAndTransactions = async () => {
     if (!user) return
@@ -591,16 +602,6 @@ export function TransactionMonitoring() {
     }
   }
 
-  const addCustomCategory = () => {
-    if (newCategoryInput.trim() && !customCategories.includes(newCategoryInput.trim())) {
-      setCustomCategories(prev => [...prev, newCategoryInput.trim()])
-      setNewCategoryInput('')
-      toast({
-        title: "Category Added",
-        description: `New category "${newCategoryInput.trim()}" has been added`
-      })
-    }
-  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -1280,47 +1281,17 @@ export function TransactionMonitoring() {
                   </DialogHeader>
                   
                   <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Add New Category</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Enter category name"
-                          value={newCategoryInput}
-                          onChange={(e) => setNewCategoryInput(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && addCustomCategory()}
-                        />
-                        <Button onClick={addCustomCategory} size="sm">
-                          Add
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Current Categories</Label>
-                      <div className="max-h-48 overflow-y-auto space-y-1">
-                        {customCategories.map((category, index) => (
-                          <div key={category} className="flex items-center justify-between p-2 border rounded text-sm">
-                            <span>{category}</span>
-                            {index >= 20 && ( // Only allow deletion of custom categories (not default ones)
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setCustomCategories(prev => prev.filter(c => c !== category))
-                                  toast({
-                                    title: "Category Removed",
-                                    description: `Category "${category}" has been removed`
-                                  })
-                                }}
-                                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <h3 className="text-lg font-semibold">Category Management</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Manage your transaction categories and their types. Categories help organize your finances for better reporting.
+                    </p>
+                    <TransactionCategorySelector 
+                      value=""
+                      onValueChange={() => {}}
+                      label="Transaction Categories"
+                      placeholder="Manage categories below"
+                      showTypeFilter={false}
+                    />
                   </div>
                 </DialogContent>
               </Dialog>
@@ -1410,39 +1381,32 @@ export function TransactionMonitoring() {
                            <span>{transaction.account}</span>
                            <span>•</span>
                            {editingCategory === transaction.id ? (
-                             <div className="flex items-center gap-2">
-                               <Select 
-                                 value={transaction.category || 'Uncategorized'} 
-                                 onValueChange={(value) => {
-                                   if (value === 'add-new') {
-                                     // Handle adding new category
-                                     const newCategory = prompt('Enter new category name:')
-                                     if (newCategory && newCategory.trim()) {
-                                       const trimmedCategory = newCategory.trim()
-                                       if (!customCategories.includes(trimmedCategory)) {
-                                         setCustomCategories(prev => [...prev, trimmedCategory])
-                                       }
-                                       handleCategoryUpdate(transaction.id, trimmedCategory)
-                                     }
-                                   } else {
-                                     handleCategoryUpdate(transaction.id, value)
-                                   }
-                                 }}
-                               >
-                                 <SelectTrigger className="w-auto min-w-[120px] h-6 text-xs">
-                                   <SelectValue />
-                                 </SelectTrigger>
-                                 <SelectContent className="bg-background border shadow-md z-50">
-                                   {customCategories.map((category) => (
-                                     <SelectItem key={category} value={category} className="text-xs">
-                                       {category}
-                                     </SelectItem>
-                                   ))}
-                                   <SelectItem value="add-new" className="text-xs font-medium text-primary">
-                                     + Add New Category
-                                   </SelectItem>
-                                 </SelectContent>
-                               </Select>
+                              <div className="flex items-center gap-2">
+                                <Select 
+                                  value={transaction.category || 'Uncategorized'} 
+                                  onValueChange={(value) => handleCategoryUpdate(transaction.id, value)}
+                                >
+                                  <SelectTrigger className="w-auto min-w-[120px] h-6 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-background border shadow-md z-50">
+                                    {transactionCategories.map((category) => (
+                                      <SelectItem key={category.id} value={category.name} className="text-xs">
+                                        <div className="flex items-center gap-2">
+                                          <span>{category.name}</span>
+                                          <span className={`text-xs ${
+                                            category.category_type === 'expense' ? 'text-red-600' :
+                                            category.category_type === 'income' ? 'text-green-600' :
+                                            category.category_type === 'transfer' ? 'text-blue-600' :
+                                            'text-purple-600'
+                                          }`}>
+                                            ({category.category_type})
+                                          </span>
+                                        </div>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                                <Button
                                  variant="ghost"
                                  size="sm"
