@@ -280,7 +280,7 @@ export function TransactionCategorySelector({
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-background border shadow-md z-50">
               <SelectItem value="expense">🔴 Expense</SelectItem>
               <SelectItem value="income">🟢 Income</SelectItem>
               <SelectItem value="transfer">🔵 Transfer</SelectItem>
@@ -319,13 +319,13 @@ export function TransactionCategorySelector({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="expense">🔴 Expenses Only</SelectItem>
-                <SelectItem value="income">🟢 Income Only</SelectItem>
-                <SelectItem value="transfer">🔵 Transfers Only</SelectItem>
-                <SelectItem value="investment">🟡 Investments Only</SelectItem>
-              </SelectContent>
+            <SelectContent className="bg-background border shadow-md z-50 max-h-[200px] overflow-y-auto">
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="expense">🔴 Expenses Only</SelectItem>
+              <SelectItem value="income">🟢 Income Only</SelectItem>
+              <SelectItem value="transfer">🔵 Transfers Only</SelectItem>
+              <SelectItem value="investment">🟡 Investments Only</SelectItem>
+            </SelectContent>
             </Select>
           )}
           <div className="flex gap-2">
@@ -333,7 +333,7 @@ export function TransactionCategorySelector({
               <SelectTrigger className="flex-1">
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border shadow-md z-50 max-h-[300px] overflow-y-auto">
                 {filteredCategories.map((cat) => {
                   const Icon = getCategoryIcon(cat.category_type)
                   return (
@@ -361,7 +361,7 @@ export function TransactionCategorySelector({
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuContent align="end" className="w-48 bg-background border shadow-md z-50">
                 <DropdownMenuItem onClick={() => setIsCreating(true)}>
                   <Plus className="mr-2 h-3 w-3" />
                   Add Category
@@ -448,7 +448,7 @@ export function TransactionCategorySelector({
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-background border shadow-md z-50">
               <SelectItem value="expense">🔴 Expense</SelectItem>
               <SelectItem value="income">🟢 Income</SelectItem>
               <SelectItem value="transfer">🔵 Transfer</SelectItem>
