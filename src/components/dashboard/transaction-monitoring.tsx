@@ -1357,14 +1357,15 @@ export function TransactionMonitoring() {
                                </Button>
                              </div>
                            ) : (
-                             <Button
-                               variant="ghost"
-                               onClick={() => setEditingCategory(transaction.id)}
-                               className="h-auto p-0 font-normal text-sm text-muted-foreground hover:text-primary"
-                             >
-                               {transaction.category || 'Uncategorized'}
-                               <Tag className="h-3 w-3 ml-1" />
-                             </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingCategory(transaction.id)}
+                                className="h-6 px-2 text-xs border-dashed hover:border-solid hover:bg-muted"
+                              >
+                                {transaction.category || 'Uncategorized'}
+                                <Tag className="h-3 w-3 ml-1" />
+                              </Button>
                            )}
                            <span>•</span>
                            <span>{new Date(transaction.date).toLocaleDateString()}</span>
