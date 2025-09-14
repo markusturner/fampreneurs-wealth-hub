@@ -376,14 +376,14 @@ export function TransactionCategorySelector({
                       const Icon = getCategoryIcon(cat.category_type)
                       return (
                         <div key={cat.id} className="group">
-                          <div className="flex items-center justify-between px-2 py-1 text-sm hover:bg-muted rounded-sm mx-1">
-                            <div className="flex items-center gap-2 truncate flex-1">
-                              <Icon className={`h-3 w-3 ${getCategoryColor(cat.category_type)}`} />
-                              <span className="truncate">{cat.name}</span>
-                              <Badge variant={getCategoryBadgeVariant(cat.category_type)} className="text-xs">
-                                {cat.category_type}
-                              </Badge>
-                            </div>
+                           <div className="flex items-center justify-between px-2 py-1 text-sm hover:bg-muted rounded-sm mx-1">
+                             <div className="flex items-center gap-2 flex-1 min-w-0">
+                               <Icon className={`h-3 w-3 flex-shrink-0 ${getCategoryColor(cat.category_type)}`} />
+                               <span className="flex-1">{cat.name}</span>
+                               <Badge variant={getCategoryBadgeVariant(cat.category_type)} className="text-xs flex-shrink-0">
+                                 {cat.category_type}
+                               </Badge>
+                             </div>
                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <Button
                                 variant="ghost"
