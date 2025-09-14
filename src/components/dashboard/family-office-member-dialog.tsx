@@ -160,13 +160,22 @@ export function AddFamilyOfficeMemberDialog({
         return
       }
 
-      setAvailableServices(services.map(service => ({
-        id: service.id,
-        name: service.name,
-        description: service.description,
-        is_default: service.is_default,
-        is_active: service.is_active
-      })))
+      // Deduplicate services by name (case-insensitive)
+      const uniqueServices = services.reduce((acc, service) => {
+        const existingService = acc.find(s => s.name.toLowerCase() === service.name.toLowerCase())
+        if (!existingService) {
+          acc.push({
+            id: service.id,
+            name: service.name,
+            description: service.description,
+            is_default: service.is_default,
+            is_active: service.is_active
+          })
+        }
+        return acc
+      }, [] as OfficeService[])
+      
+      setAvailableServices(uniqueServices)
     } catch (error) {
       console.error('Error loading services:', error)
     }
