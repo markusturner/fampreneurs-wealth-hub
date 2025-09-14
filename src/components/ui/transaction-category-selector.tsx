@@ -384,34 +384,34 @@ export function TransactionCategorySelector({
                                  {cat.category_type}
                                </Badge>
                              </div>
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-5 w-5 p-0"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  startEdit(cat)
-                                }}
-                              >
-                                <Edit className="h-2.5 w-2.5" />
-                              </Button>
-                              {cat.created_by && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-5 w-5 p-0 text-destructive hover:text-destructive"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    if (confirm(`Are you sure you want to delete "${cat.name}"?`)) {
-                                      deleteCategory(cat)
-                                    }
-                                  }}
-                                >
-                                  <Trash2 className="h-2.5 w-2.5" />
-                                </Button>
-                              )}
-                            </div>
+                             <div className="flex gap-1 opacity-100 transition-opacity">
+                               <Button
+                                 variant="ghost"
+                                 size="sm"
+                                 className="h-6 w-6 p-0"
+                                 onClick={(e) => {
+                                   e.stopPropagation()
+                                   startEdit(cat)
+                                 }}
+                               >
+                                 <Edit className="h-3 w-3" />
+                               </Button>
+                               {cat.created_by && (
+                                 <Button
+                                   variant="ghost"
+                                   size="sm"
+                                   className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                                   onClick={(e) => {
+                                     e.stopPropagation()
+                                     if (confirm("Are you sure you want to delete this category?")) {
+                                       deleteCategory(cat)
+                                     }
+                                   }}
+                                 >
+                                   <Trash2 className="h-3 w-3" />
+                                 </Button>
+                               )}
+                             </div>
                           </div>
                         </div>
                       )
