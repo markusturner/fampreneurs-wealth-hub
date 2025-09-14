@@ -361,7 +361,7 @@ export function TransactionCategorySelector({
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-background border shadow-md z-50">
+              <DropdownMenuContent align="end" className="w-48 bg-background border shadow-md z-50 max-h-[300px] overflow-y-auto">
                 <DropdownMenuItem onClick={() => setIsCreating(true)}>
                   <Plus className="mr-2 h-3 w-3" />
                   Add Category
