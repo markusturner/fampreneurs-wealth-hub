@@ -30,7 +30,8 @@ import {
   DollarSign,
   Calendar,
   MapPin,
-  X
+  X,
+  Edit
 } from 'lucide-react'
 
 interface ConnectedAccount {
@@ -1316,18 +1317,18 @@ export function AccountIntegration() {
                         </Button>
                       )}
 
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedAccount(account)
-                          setShowEditDialog(true)
-                        }}
-                        title="Edit account"
-                        className="flex-1 sm:flex-none"
-                      >
-                        <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
-                      </Button>
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => {
+                           setSelectedAccount(account)
+                           setShowEditDialog(true)
+                         }}
+                         title="Edit account"
+                         className="flex-1 sm:flex-none"
+                       >
+                         <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                       </Button>
 
                       <Button
                         variant="outline"
