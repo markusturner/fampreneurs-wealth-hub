@@ -181,7 +181,7 @@ serve(async (req) => {
       user_id: user.id,
       account_id: account.id,
       transaction_id: transaction.transaction_id,
-      description: transaction.name,
+      description: transaction.merchant_name || transaction.name,
       merchant_name: transaction.merchant_name,
       amount: Math.abs(transaction.amount), // Plaid amounts are negative for debits
       transaction_type: transaction.amount > 0 ? 'credit' : 'debit',

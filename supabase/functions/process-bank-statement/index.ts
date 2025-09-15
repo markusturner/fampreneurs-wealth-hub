@@ -401,8 +401,9 @@ function parseCSV(csvContent: string): ParsedTransaction[] {
 
         // Final fallback for description if still empty/generic (using txType after it's defined)
         if (!description || description === 'Unknown' || description === 'Transaction') {
-          const transType = txType === 'credit' ? 'Deposit' : 'Payment';
-          description = `${transType} ${formatCurrency(Math.abs(amount))}`;
+          // Use a more meaningful fallback that includes the row number for identification
+          const transType = txType === 'credit' ? 'Incoming Transfer' : 'Outgoing Transfer';
+          description = `${transType} - Row ${i}`;
         }
 
         const cleanAmount = Math.abs(amount);
