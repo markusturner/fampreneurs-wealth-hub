@@ -112,7 +112,7 @@ export default function Community() {
         .from('family_members')
         .select('*')
         .eq('added_by', user.id)
-        .eq('status', 'active')
+        .in('status', ['active', 'invited'])
         .not('office_role', 'is', null)
         .order('created_at', { ascending: false })
 
@@ -1491,7 +1491,7 @@ function ServicesContent() {
         .from('family_members')
         .select('*')
         .eq('added_by', user.id)
-        .eq('status', 'active')
+        .in('status', ['active', 'invited'])
         .not('office_role', 'is', null)
         .order('created_at', { ascending: false })
 
