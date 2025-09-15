@@ -36,12 +36,22 @@ import {
 interface ConnectedAccount {
   id: string
   name: string
-  type: 'bank' | 'brokerage' | 'crypto' | 'business'
+  type: 'bank' | 'brokerage' | 'crypto' | 'business' | 'investment'
   provider: string
   balance: number
   lastSync: string
   status: 'connected' | 'disconnected' | 'syncing' | 'error'
   credentials?: any
+  // Investment-specific fields
+  account_subtype?: string  // 401k, IRA, Roth_IRA, Brokerage, HSA
+  investment_type?: string  // stocks, bonds, mutual_funds, etf, crypto, real_estate
+  holdings?: any[]
+  total_shares?: number
+  avg_cost_basis?: number
+  day_change?: number
+  day_change_percent?: number
+  manual_balance_override?: boolean
+  manual_balance_amount?: number
 }
 
 export function AccountIntegration() {
@@ -52,6 +62,7 @@ export function AccountIntegration() {
   const [showAddDialog, setShowAddDialog] = useState(false)
   const [showSettingsDialog, setShowSettingsDialog] = useState(false)
   const [showViewDialog, setShowViewDialog] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false)
   const [selectedAccount, setSelectedAccount] = useState<ConnectedAccount | null>(null)
   const [selectedAccountType, setSelectedAccountType] = useState<string>('')
   const [realTimeUpdates, setRealTimeUpdates] = useState(true)
@@ -61,7 +72,7 @@ export function AccountIntegration() {
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
   const [newAccount, setNewAccount] = useState<{
     name: string
-    type: 'bank' | 'brokerage' | 'crypto' | 'business'
+    type: 'bank' | 'brokerage' | 'crypto' | 'business' | 'investment'
     provider: string
     apiKey: string
     apiSecret: string
@@ -69,6 +80,11 @@ export function AccountIntegration() {
     routingNumber: string
     address: string
     notes: string
+    // Investment-specific fields
+    account_subtype: string
+    investment_type: string
+    manual_balance_amount: string
+    manual_balance_override: boolean
   }>({
     name: '',
     type: 'bank',
@@ -78,7 +94,11 @@ export function AccountIntegration() {
     accountNumber: '',
     routingNumber: '',
     address: '',
-    notes: ''
+    notes: '',
+    account_subtype: '',
+    investment_type: '',
+    manual_balance_amount: '',
+    manual_balance_override: false
   })
 
   useEffect(() => {
@@ -134,12 +154,21 @@ export function AccountIntegration() {
       const transformedAccounts: ConnectedAccount[] = supabaseAccounts.map(account => ({
         id: account.id,
         name: account.account_name,
-        type: account.account_type as 'bank' | 'brokerage' | 'crypto' | 'business',
+        type: account.account_type as 'bank' | 'brokerage' | 'crypto' | 'business' | 'investment',
         provider: account.provider,
-        balance: Number(account.balance),
+        balance: account.manual_balance_override ? Number(account.manual_balance_amount || 0) : Number(account.balance),
         lastSync: account.last_sync,
         status: account.status as 'connected' | 'disconnected' | 'syncing' | 'error',
-        credentials: account.metadata
+        credentials: account.metadata,
+        account_subtype: account.account_subtype,
+        investment_type: account.investment_type,
+        holdings: account.holdings as any[] || [],
+        total_shares: Number(account.total_shares || 0),
+        avg_cost_basis: Number(account.avg_cost_basis || 0),
+        day_change: Number(account.day_change || 0),
+        day_change_percent: Number(account.day_change_percent || 0),
+        manual_balance_override: account.manual_balance_override,
+        manual_balance_amount: Number(account.manual_balance_amount || 0)
       }))
 
       setAccounts(transformedAccounts)
@@ -331,6 +360,67 @@ export function AccountIntegration() {
     }
   }
 
+  const handleUpdateAccount = async () => {
+    if (!selectedAccount) return
+
+    try {
+      if (user) {
+        // Update in Supabase for authenticated users
+        const updateData = {
+          account_name: selectedAccount.name,
+          provider: selectedAccount.provider,
+          account_subtype: selectedAccount.account_subtype || null,
+          investment_type: selectedAccount.investment_type || null,
+          manual_balance_override: selectedAccount.manual_balance_override || false,
+          manual_balance_amount: selectedAccount.manual_balance_override ? 
+            (selectedAccount.manual_balance_amount || 0) : null
+        }
+
+        const { error } = await supabase
+          .from('connected_accounts')
+          .update(updateData)
+          .eq('id', selectedAccount.id)
+          .eq('user_id', user.id)
+
+        if (error) {
+          console.error('Error updating account in Supabase:', error)
+          toast({
+            title: "Error",
+            description: "Failed to update account",
+            variant: "destructive"
+          })
+          return
+        }
+
+        // Refresh accounts list
+        await fetchConnectedAccounts()
+      } else {
+        // Update in localStorage for non-authenticated users
+        const updatedAccounts = accounts.map(acc => 
+          acc.id === selectedAccount.id ? selectedAccount : acc
+        )
+        setAccounts(updatedAccounts)
+        localStorage.setItem('connectedAccounts', JSON.stringify(updatedAccounts))
+      }
+      
+      setShowEditDialog(false)
+      setSelectedAccount(null)
+
+      toast({
+        title: "Account Updated",
+        description: "Successfully updated account information",
+      })
+
+    } catch (error) {
+      console.error('Error updating account:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update account",
+        variant: "destructive"
+      })
+    }
+  }
+
   const handleAddAccount = async () => {
     if (!newAccount.name || !newAccount.provider) {
       toast({
@@ -342,45 +432,82 @@ export function AccountIntegration() {
     }
 
     try {
-      const account: ConnectedAccount = {
-        id: Date.now().toString(),
-        name: newAccount.name,
-        type: newAccount.type,
-        provider: newAccount.provider,
-        balance: 0,
-        lastSync: new Date().toISOString(),
-        status: 'syncing'
-      }
+      if (user) {
+        // Save to Supabase for authenticated users
+        const accountData = {
+          user_id: user.id,
+          account_name: newAccount.name,
+          account_type: newAccount.type,
+          provider: newAccount.provider,
+          balance: 0,
+          status: 'connected',
+          last_sync: new Date().toISOString(),
+          account_subtype: newAccount.account_subtype || null,
+          investment_type: newAccount.investment_type || null,
+          manual_balance_override: newAccount.manual_balance_override,
+          manual_balance_amount: newAccount.manual_balance_override ? parseFloat(newAccount.manual_balance_amount) || 0 : null,
+          metadata: {
+            apiKey: newAccount.apiKey,
+            apiSecret: newAccount.apiSecret,
+            accountNumber: newAccount.accountNumber,
+            routingNumber: newAccount.routingNumber,
+            address: newAccount.address,
+            notes: newAccount.notes
+          }
+        }
 
-      const updatedAccounts = [...accounts, account]
-      setAccounts(updatedAccounts)
-      
-      // Persist to localStorage for mock accounts
-      localStorage.setItem('connectedAccounts', JSON.stringify(updatedAccounts))
+        const { data, error } = await supabase
+          .from('connected_accounts')
+          .insert(accountData)
+          .select()
+          .single()
+
+        if (error) {
+          console.error('Error saving account to Supabase:', error)
+          toast({
+            title: "Error",
+            description: "Failed to save account",
+            variant: "destructive"
+          })
+          return
+        }
+
+        // Refresh accounts list
+        await fetchConnectedAccounts()
+      } else {
+        // Fallback to localStorage for non-authenticated users
+        const account: ConnectedAccount = {
+          id: Date.now().toString(),
+          name: newAccount.name,
+          type: newAccount.type,
+          provider: newAccount.provider,
+          balance: newAccount.manual_balance_override ? parseFloat(newAccount.manual_balance_amount) || 0 : 0,
+          lastSync: new Date().toISOString(),
+          status: 'connected',
+          account_subtype: newAccount.account_subtype,
+          investment_type: newAccount.investment_type,
+          manual_balance_override: newAccount.manual_balance_override,
+          manual_balance_amount: parseFloat(newAccount.manual_balance_amount) || 0
+        }
+
+        const updatedAccounts = [...accounts, account]
+        setAccounts(updatedAccounts)
+        localStorage.setItem('connectedAccounts', JSON.stringify(updatedAccounts))
+      }
       
       setShowAddDialog(false)
       resetForm()
 
-      // Simulate API integration
-      setTimeout(() => {
-        const finalAccount = { ...account, status: 'connected' as const, balance: Math.random() * 1000000 }
-        const finalAccounts = updatedAccounts.map(acc => 
-          acc.id === account.id ? finalAccount : acc
-        )
-        setAccounts(finalAccounts)
-        localStorage.setItem('connectedAccounts', JSON.stringify(finalAccounts))
-        
-        toast({
-          title: "Account Connected",
-          description: `Successfully connected ${newAccount.name}`,
-        })
-      }, 2000)
+      toast({
+        title: "Account Added",
+        description: `Successfully added ${newAccount.name}`,
+      })
 
     } catch (error) {
       console.error('Error adding account:', error)
       toast({
         title: "Error",
-        description: "Failed to connect account",
+        description: "Failed to add account",
         variant: "destructive"
       })
     }
@@ -389,14 +516,18 @@ export function AccountIntegration() {
   const resetForm = () => {
     setNewAccount({
       name: '',
-      type: 'bank' as 'bank' | 'brokerage' | 'crypto' | 'business',
+      type: 'bank',
       provider: '',
       apiKey: '',
       apiSecret: '',
       accountNumber: '',
       routingNumber: '',
       address: '',
-      notes: ''
+      notes: '',
+      account_subtype: '',
+      investment_type: '',
+      manual_balance_amount: '',
+      manual_balance_override: false
     })
     setSelectedAccountType('')
   }
@@ -647,7 +778,8 @@ export function AccountIntegration() {
     bank: ['Chase Bank', 'Bank of America', 'Wells Fargo', 'Citibank', 'US Bank', 'PNC Bank'],
     brokerage: ['Fidelity', 'Charles Schwab', 'Vanguard', 'E*TRADE', 'TD Ameritrade', 'Interactive Brokers'],
     crypto: ['Coinbase', 'Binance', 'Kraken', 'Gemini', 'KuCoin', 'FTX'],
-    business: ['QuickBooks', 'Xero', 'FreshBooks', 'Wave Accounting', 'Sage']
+    business: ['QuickBooks', 'Xero', 'FreshBooks', 'Wave Accounting', 'Sage'],
+    investment: ['Fidelity', 'Charles Schwab', 'Vanguard', 'E*TRADE', 'Interactive Brokers', 'TD Ameritrade', 'Robinhood', 'Webull']
   }
 
   return (
@@ -763,6 +895,7 @@ export function AccountIntegration() {
                           <SelectItem value="brokerage">Brokerage Account</SelectItem>
                           <SelectItem value="crypto">Cryptocurrency</SelectItem>
                           <SelectItem value="business">Business Account</SelectItem>
+                          <SelectItem value="investment">Investment Account</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -917,6 +1050,87 @@ export function AccountIntegration() {
                             value={newAccount.address}
                             onChange={(e) => setNewAccount(prev => ({ ...prev, address: e.target.value }))}
                             placeholder="Business address"
+                          />
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* Investment Account Specific Fields */}
+                    {newAccount.type === 'investment' && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="accountSubtype">Account Subtype</Label>
+                          <Select 
+                            value={newAccount.account_subtype} 
+                            onValueChange={(value) => setNewAccount(prev => ({ ...prev, account_subtype: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select account subtype" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="401k">401(k)</SelectItem>
+                              <SelectItem value="IRA">Traditional IRA</SelectItem>
+                              <SelectItem value="Roth_IRA">Roth IRA</SelectItem>
+                              <SelectItem value="Brokerage">Taxable Brokerage</SelectItem>
+                              <SelectItem value="HSA">HSA</SelectItem>
+                              <SelectItem value="529">529 Education</SelectItem>
+                              <SelectItem value="Trust">Trust Account</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="investmentType">Investment Type</Label>
+                          <Select 
+                            value={newAccount.investment_type} 
+                            onValueChange={(value) => setNewAccount(prev => ({ ...prev, investment_type: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select investment type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="stocks">Stocks</SelectItem>
+                              <SelectItem value="bonds">Bonds</SelectItem>
+                              <SelectItem value="mutual_funds">Mutual Funds</SelectItem>
+                              <SelectItem value="etf">ETFs</SelectItem>
+                              <SelectItem value="crypto">Cryptocurrency</SelectItem>
+                              <SelectItem value="real_estate">Real Estate</SelectItem>
+                              <SelectItem value="mixed">Mixed Portfolio</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox 
+                              id="manualBalance"
+                              checked={newAccount.manual_balance_override}
+                              onCheckedChange={(checked) => setNewAccount(prev => ({ ...prev, manual_balance_override: checked as boolean }))}
+                            />
+                            <Label htmlFor="manualBalance">Enter balance manually</Label>
+                          </div>
+                        </div>
+
+                        {newAccount.manual_balance_override && (
+                          <div className="space-y-2">
+                            <Label htmlFor="manualBalanceAmount">Account Balance</Label>
+                            <Input
+                              id="manualBalanceAmount"
+                              type="number"
+                              value={newAccount.manual_balance_amount}
+                              onChange={(e) => setNewAccount(prev => ({ ...prev, manual_balance_amount: e.target.value }))}
+                              placeholder="0.00"
+                            />
+                          </div>
+                        )}
+
+                        <div className="space-y-2">
+                          <Label htmlFor="accountNumber">Account Number (Optional)</Label>
+                          <Input
+                            id="accountNumber"
+                            value={newAccount.accountNumber}
+                            onChange={(e) => setNewAccount(prev => ({ ...prev, accountNumber: e.target.value }))}
+                            placeholder="Enter account number"
                           />
                         </div>
                       </>
@@ -1107,6 +1321,19 @@ export function AccountIntegration() {
                         size="sm"
                         onClick={() => {
                           setSelectedAccount(account)
+                          setShowEditDialog(true)
+                        }}
+                        title="Edit account"
+                        className="flex-1 sm:flex-none"
+                      >
+                        <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedAccount(account)
                           setShowViewDialog(true)
                         }}
                         title="View details"
@@ -1189,6 +1416,18 @@ export function AccountIntegration() {
                   <span className="text-sm font-medium">Account ID:</span>
                   <span className="text-sm font-mono">{selectedAccount.id.slice(0, 8)}...</span>
                 </div>
+                {selectedAccount.account_subtype && (
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium">Account Type:</span>
+                    <span className="text-sm">{selectedAccount.account_subtype}</span>
+                  </div>
+                )}
+                {selectedAccount.investment_type && (
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium">Investment Type:</span>
+                    <span className="text-sm capitalize">{selectedAccount.investment_type.replace('_', ' ')}</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-2 pt-4">
@@ -1208,6 +1447,135 @@ export function AccountIntegration() {
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Sync Now
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Account Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Account</DialogTitle>
+            <DialogDescription>
+              Update your account information
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedAccount && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Account Name</Label>
+                <Input
+                  id="edit-name"
+                  value={selectedAccount.name}
+                  onChange={(e) => setSelectedAccount(prev => prev ? { ...prev, name: e.target.value } : null)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-provider">Provider</Label>
+                <Input
+                  id="edit-provider"
+                  value={selectedAccount.provider}
+                  onChange={(e) => setSelectedAccount(prev => prev ? { ...prev, provider: e.target.value } : null)}
+                />
+              </div>
+
+              {(selectedAccount.type === 'investment' || selectedAccount.type === 'brokerage') && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-subtype">Account Subtype</Label>
+                    <Select 
+                      value={selectedAccount.account_subtype || ''} 
+                      onValueChange={(value) => setSelectedAccount(prev => prev ? { ...prev, account_subtype: value } : null)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select account subtype" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="401k">401(k)</SelectItem>
+                        <SelectItem value="IRA">Traditional IRA</SelectItem>
+                        <SelectItem value="Roth_IRA">Roth IRA</SelectItem>
+                        <SelectItem value="Brokerage">Taxable Brokerage</SelectItem>
+                        <SelectItem value="HSA">HSA</SelectItem>
+                        <SelectItem value="529">529 Education</SelectItem>
+                        <SelectItem value="Trust">Trust Account</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-investment-type">Investment Type</Label>
+                    <Select 
+                      value={selectedAccount.investment_type || ''} 
+                      onValueChange={(value) => setSelectedAccount(prev => prev ? { ...prev, investment_type: value } : null)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select investment type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="stocks">Stocks</SelectItem>
+                        <SelectItem value="bonds">Bonds</SelectItem>
+                        <SelectItem value="mutual_funds">Mutual Funds</SelectItem>
+                        <SelectItem value="etf">ETFs</SelectItem>
+                        <SelectItem value="crypto">Cryptocurrency</SelectItem>
+                        <SelectItem value="real_estate">Real Estate</SelectItem>
+                        <SelectItem value="mixed">Mixed Portfolio</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="edit-manual-balance"
+                        checked={selectedAccount.manual_balance_override || false}
+                        onCheckedChange={(checked) => setSelectedAccount(prev => prev ? { 
+                          ...prev, 
+                          manual_balance_override: checked as boolean 
+                        } : null)}
+                      />
+                      <Label htmlFor="edit-manual-balance">Override with manual balance</Label>
+                    </div>
+                  </div>
+
+                  {selectedAccount.manual_balance_override && (
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-manual-amount">Manual Balance Amount</Label>
+                      <Input
+                        id="edit-manual-amount"
+                        type="number"
+                        value={selectedAccount.manual_balance_amount || 0}
+                        onChange={(e) => setSelectedAccount(prev => prev ? { 
+                          ...prev, 
+                          manual_balance_amount: parseFloat(e.target.value) || 0 
+                        } : null)}
+                        placeholder="0.00"
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div className="flex gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowEditDialog(false)
+                    setSelectedAccount(null)
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => handleUpdateAccount()}
+                  className="flex-1"
+                >
+                  Save Changes
                 </Button>
               </div>
             </div>

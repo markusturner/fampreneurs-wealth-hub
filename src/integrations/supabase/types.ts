@@ -701,58 +701,85 @@ export type Database = {
       connected_accounts: {
         Row: {
           account_name: string
+          account_subtype: string | null
           account_type: string
+          avg_cost_basis: number | null
           balance: number | null
           created_at: string
           credentials: Json | null
           currency: string | null
+          day_change: number | null
+          day_change_percent: number | null
           external_account_id: string | null
           google_sheet_id: string | null
+          holdings: Json | null
           id: string
+          investment_type: string | null
           last_sync: string | null
+          manual_balance_amount: number | null
+          manual_balance_override: boolean | null
           metadata: Json | null
           plaid_access_token: string | null
           plaid_item_id: string | null
           provider: string
           status: string | null
+          total_shares: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           account_name: string
+          account_subtype?: string | null
           account_type: string
+          avg_cost_basis?: number | null
           balance?: number | null
           created_at?: string
           credentials?: Json | null
           currency?: string | null
+          day_change?: number | null
+          day_change_percent?: number | null
           external_account_id?: string | null
           google_sheet_id?: string | null
+          holdings?: Json | null
           id?: string
+          investment_type?: string | null
           last_sync?: string | null
+          manual_balance_amount?: number | null
+          manual_balance_override?: boolean | null
           metadata?: Json | null
           plaid_access_token?: string | null
           plaid_item_id?: string | null
           provider: string
           status?: string | null
+          total_shares?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           account_name?: string
+          account_subtype?: string | null
           account_type?: string
+          avg_cost_basis?: number | null
           balance?: number | null
           created_at?: string
           credentials?: Json | null
           currency?: string | null
+          day_change?: number | null
+          day_change_percent?: number | null
           external_account_id?: string | null
           google_sheet_id?: string | null
+          holdings?: Json | null
           id?: string
+          investment_type?: string | null
           last_sync?: string | null
+          manual_balance_amount?: number | null
+          manual_balance_override?: boolean | null
           metadata?: Json | null
           plaid_access_token?: string | null
           plaid_item_id?: string | null
           provider?: string
           status?: string | null
+          total_shares?: number | null
           updated_at?: string
           user_id?: string
         }

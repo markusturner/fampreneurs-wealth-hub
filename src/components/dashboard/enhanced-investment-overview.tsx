@@ -14,36 +14,43 @@ import {
   PieChart,
   AlertCircle,
   CheckCircle,
-  Plus
+  Plus,
+  Edit,
+  Settings
 } from 'lucide-react'
 import { InvestmentChart } from './investment-chart'
 import { AssetAllocation } from './asset-allocation'
 import { InvestmentIntegrationDialog } from './investment-integration-dialog'
 
-interface Investment {
+interface ConnectedAccount {
   id: string
-  platform_id: string
-  total_value: number
-  cash_balance: number | null
-  day_change: number | null
-  day_change_percent: number | null
-  positions: any
-  last_updated: string | null
+  account_name: string
+  account_type: string
+  provider: string
+  balance: number
+  last_sync: string
+  status: string
+  account_subtype?: string
+  investment_type?: string
+  manual_balance_override?: boolean
+  manual_balance_amount?: number
+  day_change?: number
+  day_change_percent?: number
 }
 
 export function EnhancedInvestmentOverview() {
   const { user } = useAuth()
-  const [investments, setInvestments] = useState<Investment[]>([])
+  const [investmentAccounts, setInvestmentAccounts] = useState<ConnectedAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [showIntegrationDialog, setShowIntegrationDialog] = useState(false)
 
   useEffect(() => {
     if (user) {
-      fetchInvestments()
+      fetchInvestmentAccounts()
     }
   }, [user])
 
-  const fetchInvestments = async () => {
+  const fetchInvestmentAccounts = async () => {
     if (!user?.id) {
       setLoading(false)
       return
@@ -51,15 +58,16 @@ export function EnhancedInvestmentOverview() {
     
     try {
       const { data, error } = await supabase
-        .from('investment_portfolios')
+        .from('connected_accounts')
         .select('*')
         .eq('user_id', user.id)
+        .in('account_type', ['investment', 'brokerage'])
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setInvestments(data || [])
+      setInvestmentAccounts(data || [])
     } catch (error) {
-      console.error('Error fetching investments:', error)
+      console.error('Error fetching investment accounts:', error)
     } finally {
       setLoading(false)
     }
@@ -79,51 +87,54 @@ export function EnhancedInvestmentOverview() {
   }
 
   const getTotalValue = () => {
-    return investments.reduce((sum, inv) => sum + inv.total_value, 0)
+    return investmentAccounts.reduce((sum, account) => {
+      const balance = account.manual_balance_override ? 
+        (account.manual_balance_amount || 0) : account.balance
+      return sum + balance
+    }, 0)
   }
 
   const getTotalDayChange = () => {
-    return investments.reduce((sum, inv) => sum + (inv.day_change || 0), 0)
+    return investmentAccounts.reduce((sum, account) => sum + (account.day_change || 0), 0)
   }
 
   const getTotalCashBalance = () => {
-    return investments.reduce((sum, inv) => sum + (inv.cash_balance || 0), 0)
+    // For investment accounts, we'll consider the entire balance as investable cash if no specific cash balance is set
+    return investmentAccounts
+      .filter(account => account.investment_type === 'cash' || account.account_subtype === 'savings')
+      .reduce((sum, account) => {
+        const balance = account.manual_balance_override ? 
+          (account.manual_balance_amount || 0) : account.balance
+        return sum + balance
+      }, 0)
   }
 
   const getAveragePerformance = () => {
-    if (investments.length === 0) return 0
+    if (investmentAccounts.length === 0) return 0
     const totalValue = getTotalValue()
     const totalChange = getTotalDayChange()
     return totalValue > 0 ? (totalChange / totalValue) * 100 : 0
   }
 
-  const getPlatformName = (platformId: string) => {
+  const getPlatformName = (provider: string) => {
     const platforms: { [key: string]: string } = {
-      'fidelity': 'Fidelity',
-      'schwab': 'Charles Schwab',
-      'vanguard': 'Vanguard',
-      'etrade': 'E*TRADE',
-      'interactive_brokers': 'Interactive Brokers',
-      'alpaca': 'Alpaca Markets',
-      'polygon': 'Polygon.io',
-      'coinbase': 'Coinbase Pro'
+      'Fidelity': 'Fidelity',
+      'Charles Schwab': 'Charles Schwab',
+      'Vanguard': 'Vanguard',
+      'E*TRADE': 'E*TRADE',
+      'Interactive Brokers': 'Interactive Brokers',
+      'TD Ameritrade': 'TD Ameritrade',
+      'Robinhood': 'Robinhood',
+      'Webull': 'Webull'
     }
-    return platforms[platformId] || platformId
+    return platforms[provider] || provider
   }
 
-  const getPlatformIcon = (platformId: string) => {
-    const iconMap: { [key: string]: any } = {
-      'fidelity': Building2,
-      'schwab': Building2,
-      'vanguard': Building2,
-      'etrade': TrendingUp,
-      'interactive_brokers': Building2,
-      'alpaca': TrendingUp,
-      'polygon': TrendingUp,
-      'coinbase': Bitcoin
+  const getPlatformIcon = (provider: string) => {
+    if (provider.toLowerCase().includes('coinbase') || provider.toLowerCase().includes('crypto')) {
+      return <Bitcoin className="h-4 w-4" />
     }
-    const IconComponent = iconMap[platformId] || Wallet
-    return <IconComponent className="h-4 w-4" />
+    return <Building2 className="h-4 w-4" />
   }
 
   if (loading) {
@@ -144,7 +155,7 @@ export function EnhancedInvestmentOverview() {
     )
   }
 
-  if (investments.length === 0) {
+  if (investmentAccounts.length === 0) {
     return (
       <Card>
         <CardContent className="p-6">
@@ -216,7 +227,7 @@ export function EnhancedInvestmentOverview() {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{investments.length}</div>
+            <div className="text-2xl font-bold">{investmentAccounts.length}</div>
             <Button 
               variant="link" 
               className="p-0 h-auto text-xs text-primary"
@@ -241,25 +252,40 @@ export function EnhancedInvestmentOverview() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {investments.map((investment) => {
-              const dayChangePercent = investment.day_change_percent || 0
+            {investmentAccounts.map((account) => {
+              const dayChangePercent = account.day_change_percent || 0
+              const accountBalance = account.manual_balance_override ? 
+                (account.manual_balance_amount || 0) : account.balance
+              
               return (
-                <div key={investment.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div key={account.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center gap-3">
-                    {getPlatformIcon(investment.platform_id)}
+                    {getPlatformIcon(account.provider)}
                     <div>
-                      <div className="font-medium">{getPlatformName(investment.platform_id)}</div>
+                      <div className="font-medium flex items-center gap-2">
+                        {getPlatformName(account.provider)}
+                        {account.account_subtype && (
+                          <Badge variant="secondary" className="text-xs">
+                            {account.account_subtype}
+                          </Badge>
+                        )}
+                      </div>
                       <div className="text-sm text-muted-foreground">
-                        Last synced: {new Date(investment.last_updated || '').toLocaleDateString()}
+                        {account.account_name} • Last synced: {new Date(account.last_sync || '').toLocaleDateString()}
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-semibold">{formatCurrency(investment.total_value)}</div>
-                    <div className={`text-sm flex items-center gap-1 ${dayChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {dayChangePercent >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {formatPercent(dayChangePercent)}
+                  <div className="text-right flex items-center gap-2">
+                    <div>
+                      <div className="font-semibold">{formatCurrency(accountBalance)}</div>
+                      <div className={`text-sm flex items-center gap-1 ${dayChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {dayChangePercent >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                        {formatPercent(dayChangePercent)}
+                      </div>
                     </div>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <Settings className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               )
@@ -276,7 +302,7 @@ export function EnhancedInvestmentOverview() {
             <CardDescription>Investment value over time</CardDescription>
           </CardHeader>
           <CardContent>
-            <InvestmentChart accountsData={investments} totalValue={totalValue} />
+            <InvestmentChart accountsData={investmentAccounts} totalValue={totalValue} />
           </CardContent>
         </Card>
 
@@ -286,11 +312,15 @@ export function EnhancedInvestmentOverview() {
             <CardDescription>Distribution across platforms</CardDescription>
           </CardHeader>
           <CardContent>
-            <AssetAllocation data={investments.map(inv => ({
-              name: getPlatformName(inv.platform_id),
-              value: (inv.total_value / totalValue) * 100,
-              color: `hsl(${Math.abs(inv.platform_id.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % 360}, 70%, 50%)`
-            }))} />
+            <AssetAllocation data={investmentAccounts.map(account => {
+              const balance = account.manual_balance_override ? 
+                (account.manual_balance_amount || 0) : account.balance
+              return {
+                name: getPlatformName(account.provider),
+                value: totalValue > 0 ? (balance / totalValue) * 100 : 0,
+                color: `hsl(${Math.abs(account.provider.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % 360}, 70%, 50%)`
+              }
+            })} />
           </CardContent>
         </Card>
       </div>
