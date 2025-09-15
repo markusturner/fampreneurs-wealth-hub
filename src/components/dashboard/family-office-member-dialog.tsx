@@ -1011,7 +1011,10 @@ export function AddFamilyOfficeMemberDialog({
                             </div>
                             {role.services && role.services.length > 0 && (
                               <div className="mt-2 text-xs text-muted-foreground">
-                                Selected: {role.services.join(', ')}
+                                <span className="font-medium">Services for this role:</span> {role.services.join(', ')}
+                                <div className="text-xs text-muted-foreground/80 mt-1">
+                                  These services will be automatically assigned when selecting this role
+                                </div>
                               </div>
                             )}
                           </div>
