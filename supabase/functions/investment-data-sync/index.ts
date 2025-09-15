@@ -111,6 +111,76 @@ serve(async (req) => {
         cash: 0,
         lastUpdated: new Date().toISOString()
       }
+    } else if (platformId === 'fidelity') {
+      portfolioData = {
+        totalValue: 3250000,
+        dayChange: 25000,
+        dayChangePercent: 0.78,
+        positions: [
+          { symbol: 'FXAIX', quantity: 1500, marketValue: 850000, unrealizedPL: 45000 },
+          { symbol: 'FTEC', quantity: 800, marketValue: 425000, unrealizedPL: 22000 },
+          { symbol: 'FSKAX', quantity: 2000, marketValue: 650000, unrealizedPL: 18000 },
+          { symbol: 'Individual Stocks', quantity: 1, marketValue: 1125000, unrealizedPL: 75000 }
+        ],
+        cash: 200000,
+        lastUpdated: new Date().toISOString()
+      }
+    } else if (platformId === 'schwab') {
+      portfolioData = {
+        totalValue: 2880000,
+        dayChange: 18500,
+        dayChangePercent: 0.65,
+        positions: [
+          { symbol: 'SWTSX', quantity: 3000, marketValue: 950000, unrealizedPL: 65000 },
+          { symbol: 'SCHB', quantity: 1200, marketValue: 485000, unrealizedPL: 28000 },
+          { symbol: 'SCHF', quantity: 800, marketValue: 320000, unrealizedPL: 15000 },
+          { symbol: '401k Holdings', quantity: 1, marketValue: 925000, unrealizedPL: 125000 }
+        ],
+        cash: 200000,
+        lastUpdated: new Date().toISOString()
+      }
+    } else if (platformId === 'vanguard') {
+      portfolioData = {
+        totalValue: 4150000,
+        dayChange: 32000,
+        dayChangePercent: 0.78,
+        positions: [
+          { symbol: 'VTSAX', quantity: 2500, marketValue: 1250000, unrealizedPL: 185000 },
+          { symbol: 'VTIAX', quantity: 1800, marketValue: 750000, unrealizedPL: 95000 },
+          { symbol: 'VBTLX', quantity: 3000, marketValue: 450000, unrealizedPL: 25000 },
+          { symbol: 'IRA Rollover', quantity: 1, marketValue: 1450000, unrealizedPL: 250000 }
+        ],
+        cash: 250000,
+        lastUpdated: new Date().toISOString()
+      }
+    } else if (platformId === 'interactive_brokers') {
+      portfolioData = {
+        totalValue: 1950000,
+        dayChange: 15500,
+        dayChangePercent: 0.80,
+        positions: [
+          { symbol: 'SPY', quantity: 1000, marketValue: 485000, unrealizedPL: 25000 },
+          { symbol: 'QQQ', quantity: 600, marketValue: 285000, unrealizedPL: 18000 },
+          { symbol: 'IWM', quantity: 400, marketValue: 180000, unrealizedPL: 8500 },
+          { symbol: 'International ETFs', quantity: 1, marketValue: 850000, unrealizedPL: 45000 }
+        ],
+        cash: 150000,
+        lastUpdated: new Date().toISOString()
+      }
+    } else if (platformId === 'etrade') {
+      portfolioData = {
+        totalValue: 1250000,
+        dayChange: 8500,
+        dayChangePercent: 0.69,
+        positions: [
+          { symbol: 'AAPL', quantity: 200, marketValue: 365000, unrealizedPL: 25000 },
+          { symbol: 'MSFT', quantity: 150, marketValue: 285000, unrealizedPL: 18000 },
+          { symbol: 'AMZN', quantity: 80, marketValue: 185000, unrealizedPL: 12000 },
+          { symbol: 'ROTH IRA', quantity: 1, marketValue: 315000, unrealizedPL: 85000 }
+        ],
+        cash: 100000,
+        lastUpdated: new Date().toISOString()
+      }
     } else {
       // For manual connections, extract balance from bio
       const bioMatch = connection.bio?.match(/Balance: \$([0-9,]+)/)

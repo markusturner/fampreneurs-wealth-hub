@@ -46,6 +46,7 @@ import { AccountIntegration } from '@/components/dashboard/account-integration'
 import { TransactionMonitoring } from '@/components/dashboard/transaction-monitoring'
 import { BudgetingAnalytics } from '@/components/dashboard/budgeting-analytics'
 import { FamilyMemberManagement } from '@/components/dashboard/family-member-management'
+import { EnhancedInvestmentOverview } from '@/components/dashboard/enhanced-investment-overview'
 
 interface Investment {
   id: string
@@ -324,11 +325,15 @@ export default function FamilyOffice() {
           <TabsContent value="accounts" className="space-y-6">
             <div className="lg:hidden">
               <div className="space-y-4">
+                <EnhancedInvestmentOverview />
                 <AccountIntegration />
               </div>
             </div>
             <div className="hidden lg:block">
-              <AccountIntegration />
+              <div className="grid gap-6 lg:grid-cols-1">
+                <EnhancedInvestmentOverview />
+                <AccountIntegration />
+              </div>
             </div>
           </TabsContent>
 

@@ -73,14 +73,14 @@ const investmentPlatforms: InvestmentPlatform[] = [
     website: "https://pro.coinbase.com"
   },
   {
-    id: "plaid",
-    name: "Plaid Connected Banks",
-    category: "bank",
-    icon: Wallet,
-    description: "Connect multiple bank accounts via Plaid",
+    id: "interactive_brokers",
+    name: "Interactive Brokers",
+    category: "brokerage",
+    icon: Building2,
+    description: "Professional trading platform with global markets",
     isPopular: true,
     connectionType: "api",
-    website: "https://plaid.com"
+    website: "https://www.interactivebrokers.com"
   },
   {
     id: "fidelity",
@@ -517,9 +517,9 @@ export function InvestmentIntegrationDialog({ open, onOpenChange }: InvestmentIn
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-base sm:text-lg">Connect Investment Accounts</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">Connect Investment & Banking Accounts</DialogTitle>
           <DialogDescription className="text-sm">
-            Connect your investment and banking accounts to track your portfolio.
+            Connect your brokerage, 401k, IRA, and banking accounts directly - no Plaid needed! Works with all major investment platforms.
           </DialogDescription>
         </DialogHeader>
 
