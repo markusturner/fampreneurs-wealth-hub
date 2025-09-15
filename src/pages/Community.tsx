@@ -1255,7 +1255,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                            )}
                          </div>
                          <p className="text-xs text-muted-foreground truncate mb-1">{member.role}</p>
-                          <p className={`text-xs truncate ${member.hasUnread ? 'font-medium text-foreground' : 'text-muted-foreground'}`} style={{ color: !member.hasUnread ? '#290a52' : undefined }}>
+                          <p className={`text-xs truncate text-white ${member.hasUnread ? 'font-medium' : ''}`}>
                             {member.lastMessage}
                           </p>
                          <p className="text-xs text-muted-foreground">{member.lastSeen}</p>
