@@ -203,7 +203,7 @@ export function TransactionMonitoring() {
           date: t.transaction_date,
           description: t.description,
           amount: t.amount,
-          type: t.transaction_type === 'credit' ? 'income' : t.transaction_type === 'debit' ? 'expense' : 'transfer' as 'income' | 'expense' | 'transfer' | 'investment',
+          type: t.transaction_type === 'debit' ? 'expense' : t.transaction_type === 'credit' ? 'income' : 'transfer' as 'income' | 'expense' | 'transfer' | 'investment',
           category: t.category || 'Other',
           account: 'Bank Statement',
           tags: [],

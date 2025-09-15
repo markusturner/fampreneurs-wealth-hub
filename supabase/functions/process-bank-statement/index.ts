@@ -391,12 +391,19 @@ function parseCSV(csvContent: string): ParsedTransaction[] {
           continue;
         }
 
-        // Determine transaction type (moved up to use in description fallback)
-        let txType: 'debit' | 'credit' = amount >= 0 ? 'credit' : 'debit';
+        // Determine transaction type based on context, not just amount sign
+        // Most bank statements show expenses as positive amounts
+        let txType: 'debit' | 'credit' = 'debit'; // Default to expense for positive amounts
+        
+        // Check for explicit type indicators first
         if (typeIdx >= 0 && fields[typeIdx]) {
           const t = normalize(fields[typeIdx]);
           if (t.includes('debit') || t.includes('payment') || t.includes('withdrawal') || t.includes('spend')) txType = 'debit';
           if (t.includes('credit') || t.includes('deposit') || t.includes('refund')) txType = 'credit';
+        } else {
+          // If no explicit type, use amount sign as secondary indicator
+          // Negative amounts are typically income (deposits) in many formats
+          txType = amount < 0 ? 'credit' : 'debit';
         }
 
         // Final fallback for description if still empty/generic (using txType after it's defined)
