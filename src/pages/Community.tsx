@@ -1809,7 +1809,7 @@ function ServicesContent() {
           <div className="flex items-start space-x-4 sm:space-x-6">
             <div className="flex-shrink-0">
               <div className="p-4 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full">
-                <Star className="h-8 w-8 sm:h-10 sm:w-10 text-primary" />
+                <Star className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
               </div>
             </div>
             <div className="flex-1">
