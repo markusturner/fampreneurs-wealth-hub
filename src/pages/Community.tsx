@@ -1210,7 +1210,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                 filteredMembers.map((member) => (
                    <div
                      key={member.id}
-                     className={`p-4 border-b cursor-pointer transition-colors hover:bg-accent/50 ${
+                     className={`p-4 border-b cursor-pointer transition-colors bg-muted/20 hover:bg-accent/50 ${
                        selectedConversation === member.id ? 'bg-accent' : ''
                      } ${member.hasUnread ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
                      onClick={() => {
