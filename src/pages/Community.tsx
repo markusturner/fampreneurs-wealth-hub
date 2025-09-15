@@ -814,7 +814,23 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
     '4': []
   }
 
-  const [conversationMessages, setConversationMessages] = useState(conversations)
+  const [conversationMessages, setConversationMessages] = useState(() => {
+    // Load persisted conversation messages from localStorage
+    const persistedMessages = localStorage.getItem('conversationMessages')
+    if (persistedMessages) {
+      try {
+        return JSON.parse(persistedMessages)
+      } catch (error) {
+        console.error('Failed to parse persisted conversation messages:', error)
+      }
+    }
+    return conversations
+  })
+
+  // Persist conversation messages to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('conversationMessages', JSON.stringify(conversationMessages))
+  }, [conversationMessages])
 
   // Handle pending message from service requests
   useEffect(() => {
