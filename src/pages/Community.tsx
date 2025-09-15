@@ -1245,7 +1245,7 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                        </div>
                        <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between mb-1">
-                            <p className={`text-sm font-medium truncate ${member.hasUnread ? 'font-bold' : ''}`} style={{ color: !member.hasUnread ? '#2eb2ff' : undefined }}>
+                            <p className={`text-sm font-medium truncate text-white ${member.hasUnread ? 'font-bold' : ''}`}>
                               {member.name}
                             </p>
                            {member.unreadCount > 0 && (
