@@ -680,10 +680,19 @@ export function AccountIntegration() {
     }
   }
 
+  // Helper function to check if a string is a valid UUID
+  const isValidUUID = (str: string) => {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  }
+
   const handleDeleteAccount = async (accountId: string) => {
     try {
-      if (user) {
-        // Delete from Supabase for authenticated users
+      // Check if this is a Supabase account (valid UUID) or a local account (timestamp)
+      const isSupabaseAccount = user && isValidUUID(accountId)
+      
+      if (isSupabaseAccount) {
+        // Delete from Supabase for authenticated users with valid UUID accounts
         const { error } = await supabase
           .from('connected_accounts')
           .delete()
@@ -700,10 +709,11 @@ export function AccountIntegration() {
           return
         }
       } else {
-        // For mock accounts, use localStorage deletion tracking
-        const deletedAccounts = JSON.parse(localStorage.getItem('deletedAccounts') || '[]')
+        // For local/mock accounts or non-authenticated users, use localStorage deletion tracking
+        const deletedKey = user ? `deletedAccounts_${user.id}` : 'deletedAccounts'
+        const deletedAccounts = JSON.parse(localStorage.getItem(deletedKey) || '[]')
         deletedAccounts.push(accountId)
-        localStorage.setItem('deletedAccounts', JSON.stringify(deletedAccounts))
+        localStorage.setItem(deletedKey, JSON.stringify(deletedAccounts))
       }
       
       setAccounts(prev => prev.filter(acc => acc.id !== accountId))
