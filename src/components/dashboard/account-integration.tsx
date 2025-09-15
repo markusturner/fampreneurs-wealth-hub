@@ -796,6 +796,143 @@ export function AccountIntegration() {
                       />
                     </div>
                     
+                    {/* Bank Account Specific Fields */}
+                    {newAccount.type === 'bank' && (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="accountNumber">Account Number</Label>
+                            <Input
+                              id="accountNumber"
+                              value={newAccount.accountNumber}
+                              onChange={(e) => setNewAccount(prev => ({ ...prev, accountNumber: e.target.value }))}
+                              placeholder="****1234"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="routingNumber">Routing Number</Label>
+                            <Input
+                              id="routingNumber"
+                              value={newAccount.routingNumber}
+                              onChange={(e) => setNewAccount(prev => ({ ...prev, routingNumber: e.target.value }))}
+                              placeholder="123456789"
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* Brokerage Account Specific Fields */}
+                    {newAccount.type === 'brokerage' && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="accountNumber">Account Number</Label>
+                          <Input
+                            id="accountNumber"
+                            value={newAccount.accountNumber}
+                            onChange={(e) => setNewAccount(prev => ({ ...prev, accountNumber: e.target.value }))}
+                            placeholder="Enter brokerage account number"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="apiKey">API Key (Optional)</Label>
+                            <Input
+                              id="apiKey"
+                              type="password"
+                              value={newAccount.apiKey}
+                              onChange={(e) => setNewAccount(prev => ({ ...prev, apiKey: e.target.value }))}
+                              placeholder="Enter API key if available"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="apiSecret">API Secret (Optional)</Label>
+                            <Input
+                              id="apiSecret"
+                              type="password"
+                              value={newAccount.apiSecret}
+                              onChange={(e) => setNewAccount(prev => ({ ...prev, apiSecret: e.target.value }))}
+                              placeholder="Enter API secret if available"
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* Crypto Account Specific Fields */}
+                    {newAccount.type === 'crypto' && (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="apiKey">API Key</Label>
+                            <Input
+                              id="apiKey"
+                              type="password"
+                              value={newAccount.apiKey}
+                              onChange={(e) => setNewAccount(prev => ({ ...prev, apiKey: e.target.value }))}
+                              placeholder="Enter API key"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="apiSecret">API Secret</Label>
+                            <Input
+                              id="apiSecret"
+                              type="password"
+                              value={newAccount.apiSecret}
+                              onChange={(e) => setNewAccount(prev => ({ ...prev, apiSecret: e.target.value }))}
+                              placeholder="Enter API secret"
+                            />
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* Business Account Specific Fields */}
+                    {newAccount.type === 'business' && (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="accountNumber">Account Number</Label>
+                            <Input
+                              id="accountNumber"
+                              value={newAccount.accountNumber}
+                              onChange={(e) => setNewAccount(prev => ({ ...prev, accountNumber: e.target.value }))}
+                              placeholder="Business account number"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="routingNumber">Routing Number</Label>
+                            <Input
+                              id="routingNumber"
+                              value={newAccount.routingNumber}
+                              onChange={(e) => setNewAccount(prev => ({ ...prev, routingNumber: e.target.value }))}
+                              placeholder="Business routing number"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="address">Business Address</Label>
+                          <Input
+                            id="address"
+                            value={newAccount.address}
+                            onChange={(e) => setNewAccount(prev => ({ ...prev, address: e.target.value }))}
+                            placeholder="Business address"
+                          />
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* Notes field for all account types */}
+                    <div className="space-y-2">
+                      <Label htmlFor="notes">Notes (Optional)</Label>
+                      <Input
+                        id="notes"
+                        value={newAccount.notes}
+                        onChange={(e) => setNewAccount(prev => ({ ...prev, notes: e.target.value }))}
+                        placeholder="Additional notes about this account"
+                      />
+                    </div>
+                    
                     <div className="flex gap-2 pt-4">
                       <Button variant="outline" onClick={() => { setShowAddDialog(false); resetForm() }} className="flex-1">
                         Cancel
