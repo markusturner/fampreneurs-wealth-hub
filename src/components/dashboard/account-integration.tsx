@@ -105,19 +105,80 @@ export function AccountIntegration() {
   useEffect(() => {
     fetchConnectedAccounts()
     
-    // Set up real-time updates simulation for mock accounts only
+    // Set up real-time updates for Supabase data
+    let channel: any = null
+    
+    if (realTimeUpdates && user) {
+      // Subscribe to real-time changes for connected_accounts
+      channel = supabase
+        .channel('connected-accounts-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
+            schema: 'public',
+            table: 'connected_accounts',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('Real-time update received:', payload)
+            
+            if (payload.eventType === 'INSERT') {
+              setAccounts(prev => [...prev, transformAccount(payload.new)])
+            } else if (payload.eventType === 'UPDATE') {
+              setAccounts(prev => prev.map(acc => 
+                acc.id === payload.new.id ? transformAccount(payload.new) : acc
+              ))
+            } else if (payload.eventType === 'DELETE') {
+              setAccounts(prev => prev.filter(acc => acc.id !== payload.old.id))
+            }
+          }
+        )
+        .subscribe()
+    }
+    
+    // Set up mock account updates for demonstration
+    let mockInterval: any = null
     if (realTimeUpdates) {
-      const interval = setInterval(() => {
+      mockInterval = setInterval(() => {
         setAccounts(prev => prev.map(account => ({
           ...account,
           balance: account.provider === 'mock' ? account.balance + (Math.random() - 0.5) * 1000 : account.balance,
-          lastSync: new Date().toISOString()
+          lastSync: account.provider === 'mock' ? new Date().toISOString() : account.lastSync
         })))
       }, 30000)
-      
-      return () => clearInterval(interval)
     }
-  }, [realTimeUpdates])
+    
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+      if (mockInterval) {
+        clearInterval(mockInterval)
+      }
+    }
+  }, [realTimeUpdates, user])
+
+  // Helper function to transform Supabase account data
+  const transformAccount = (account: any): ConnectedAccount => ({
+    id: account.id,
+    name: account.account_name,
+    type: account.account_type as 'bank' | 'brokerage' | 'crypto' | 'business' | 'investment',
+    provider: account.provider,
+    balance: account.manual_balance_override ? Number(account.manual_balance_amount || 0) : Number(account.balance),
+    lastSync: account.last_sync,
+    status: account.status as 'connected' | 'disconnected' | 'syncing' | 'error',
+    credentials: account.metadata,
+    account_subtype: account.account_subtype,
+    investment_type: account.investment_type,
+    holdings: account.holdings as any[] || [],
+    total_shares: Number(account.total_shares || 0),
+    avg_cost_basis: Number(account.avg_cost_basis || 0),
+    day_change: Number(account.day_change || 0),
+    day_change_percent: Number(account.day_change_percent || 0),
+    manual_balance_override: account.manual_balance_override,
+    manual_balance_amount: Number(account.manual_balance_amount || 0)
+  })
 
   const fetchConnectedAccounts = async () => {
     try {
@@ -152,25 +213,7 @@ export function AccountIntegration() {
       }
 
       // Transform Supabase data to match our interface
-      const transformedAccounts: ConnectedAccount[] = supabaseAccounts.map(account => ({
-        id: account.id,
-        name: account.account_name,
-        type: account.account_type as 'bank' | 'brokerage' | 'crypto' | 'business' | 'investment',
-        provider: account.provider,
-        balance: account.manual_balance_override ? Number(account.manual_balance_amount || 0) : Number(account.balance),
-        lastSync: account.last_sync,
-        status: account.status as 'connected' | 'disconnected' | 'syncing' | 'error',
-        credentials: account.metadata,
-        account_subtype: account.account_subtype,
-        investment_type: account.investment_type,
-        holdings: account.holdings as any[] || [],
-        total_shares: Number(account.total_shares || 0),
-        avg_cost_basis: Number(account.avg_cost_basis || 0),
-        day_change: Number(account.day_change || 0),
-        day_change_percent: Number(account.day_change_percent || 0),
-        manual_balance_override: account.manual_balance_override,
-        manual_balance_amount: Number(account.manual_balance_amount || 0)
-      }))
+      const transformedAccounts: ConnectedAccount[] = supabaseAccounts.map(transformAccount)
 
       setAccounts(transformedAccounts)
     } catch (error) {
