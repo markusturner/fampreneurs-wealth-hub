@@ -1761,7 +1761,7 @@ function ServicesContent() {
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-base sm:text-lg mb-2 group-hover:text-primary transition-colors duration-300">
+                            <h4 className="font-semibold text-base sm:text-lg mb-2 transition-colors duration-300 group-hover:[color:#ffb500]">
                               {service.name}
                             </h4>
                             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed mb-3">
