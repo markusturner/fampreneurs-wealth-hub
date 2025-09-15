@@ -129,7 +129,12 @@ export function FinancialReports() {
       // Determine type based on transaction_type field first, then category type, then fallback logic
       let transactionType = transaction.transaction_type
       
-      if (!transactionType) {
+      // Map database transaction_type values to financial report categories
+      if (transactionType === 'credit') {
+        transactionType = 'income'
+      } else if (transactionType === 'debit') {
+        transactionType = 'expense'
+      } else if (!transactionType) {
         // Use category type mapping
         const categoryType = categoryTypeMap.get(category.toLowerCase())
         if (categoryType) {
