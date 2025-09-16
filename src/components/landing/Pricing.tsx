@@ -15,10 +15,17 @@ export const Pricing = () => {
   const { tiers: pricingTiers } = useDynamicPricing()
   const iconMap = [Zap, Crown, Rocket]
   
-  const handlePurchase = async (amount: number) => {
+  const handlePurchase = async (amount: number, tierIndex: number) => {
     try {
+      const billingIntervals = ['month', 'quarter', 'year'];
+      const tierNames = ['Starter', 'Professional', 'Enterprise'];
+      
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { amount }
+        body: { 
+          amount,
+          billingInterval: billingIntervals[tierIndex],
+          tierName: tierNames[tierIndex]
+        }
       })
 
       if (error) {
@@ -109,7 +116,7 @@ export const Pricing = () => {
                       borderColor: tier.popular ? '#FFB500' : '#2eb2ff',
                       color: '#290a52'
                     }}
-                    onClick={() => handlePurchase(tier.stripeAmount)}
+                    onClick={() => handlePurchase(tier.stripeAmount, index)}
                   >
                     Start Building Wealth
                   </Button>

@@ -14,28 +14,41 @@ serve(async (req) => {
   try {
     console.log("Processing checkout request");
     
-    // Get the amount from the request body
-    const { amount } = await req.json();
+    // Get the amount and billing info from the request body
+    const { amount, billingInterval, tierName } = await req.json();
     
     if (!amount || typeof amount !== 'number') {
       throw new Error("Valid amount is required");
     }
     
-    console.log("Processing payment for amount:", amount);
+    if (!billingInterval || !['month', 'quarter', 'year'].includes(billingInterval)) {
+      throw new Error("Valid billing interval is required");
+    }
+    
+    console.log("Processing payment for amount:", amount, "billing:", billingInterval);
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
     });
 
-    // Determine product name based on amount
+    // Determine product name and recurring interval based on amount and billing
     let productName = "TruHeirs Subscription";
+    let recurringInterval: "month" | "year" = "month";
+    let intervalCount = 1;
+    
     if (amount === 9700) {
-      productName = "TruHeirs Starter Plan";
-    } else if (amount === 29700) {
-      productName = "TruHeirs Professional Plan";
-    } else if (amount === 49700) {
-      productName = "TruHeirs Enterprise Plan";
+      productName = "TruHeirs Starter Plan (Monthly)";
+      recurringInterval = "month";
+      intervalCount = 1;
+    } else if (amount === 24700) {
+      productName = "TruHeirs Professional Plan (Quarterly)";
+      recurringInterval = "month";
+      intervalCount = 3; // 3 months = quarterly
+    } else if (amount === 89700) {
+      productName = "TruHeirs Enterprise Plan (Annual)";
+      recurringInterval = "year";
+      intervalCount = 1;
     }
 
     // Create a subscription checkout session (no authentication required for guest checkout)
@@ -50,7 +63,10 @@ serve(async (req) => {
               description: "Complete DIY AI family office platform"
             },
             unit_amount: amount,
-            recurring: { interval: "month" },
+            recurring: { 
+              interval: recurringInterval,
+              interval_count: intervalCount
+            },
           },
           quantity: 1,
         },
