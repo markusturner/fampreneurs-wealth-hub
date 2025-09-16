@@ -98,6 +98,7 @@ export function TransactionMonitoring() {
   const [showUploadDialog, setShowUploadDialog] = useState(false)
   const [uploadFile, setUploadFile] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
+  const [reprocessing, setReprocessing] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [lastRefreshed, setLastRefreshed] = useState<Date>()
   const [currentPage, setCurrentPage] = useState(1)
@@ -490,6 +491,45 @@ export function TransactionMonitoring() {
     setAiProcessing(false)
     setAiProgress({ current: 0, total: 0 })
     setCurrentlyProcessing(null)
+  }
+
+  const handleReprocessStatements = async () => {
+    if (!user) return
+
+    setReprocessing(true)
+    try {
+      toast({
+        title: "Reprocessing statements...",
+        description: "Updating transaction descriptions with enhanced payee data"
+      })
+
+      const { data, error } = await supabase.functions.invoke('reprocess-bank-statements', {
+        body: {}
+      })
+
+      if (error) throw error
+
+      if (data.success) {
+        toast({
+          title: "Reprocessing Complete",
+          description: `Updated ${data.totalUpdated} transaction descriptions`
+        })
+        
+        // Refresh transactions to show updated data
+        await fetchConnectedAccountsAndTransactions()
+      } else {
+        throw new Error(data.error || 'Reprocessing failed')
+      }
+      
+    } catch (error) {
+      console.error('Reprocessing error:', error)
+      toast({
+        title: "Reprocessing Failed",
+        description: error instanceof Error ? error.message : "Unable to reprocess statements",
+        variant: "destructive"
+      })
+    }
+    setReprocessing(false)
   }
 
   const getTransactionIcon = (type: string) => {
@@ -1129,6 +1169,20 @@ export function TransactionMonitoring() {
             <Bot className="h-4 w-4" />
           )}
           AI Bookkeeping
+        </Button>
+
+        <Button 
+          variant="outline" 
+          onClick={handleReprocessStatements}
+          disabled={reprocessing}
+          className="flex items-center gap-2"
+        >
+          {reprocessing ? (
+            <RefreshCw className="h-4 w-4 animate-spin" />
+          ) : (
+            <Wand2 className="h-4 w-4" />
+          )}
+          Reprocess Statements
         </Button>
       </div>
 
