@@ -15,7 +15,6 @@ import {
   TrendingUp, 
   TrendingDown, 
   DollarSign, 
-  PieChart, 
   Wallet, 
   BarChart3,
   Building2,
@@ -63,7 +62,7 @@ import { InvestmentChart } from '@/components/dashboard/investment-chart'
 import { AssetAllocation } from '@/components/dashboard/asset-allocation'
 import { AccountIntegration } from '@/components/dashboard/account-integration'
 import { TransactionMonitoring } from '@/components/dashboard/transaction-monitoring'
-import { BudgetingAnalytics } from '@/components/dashboard/budgeting-analytics'
+
 import { FinancialReports } from '@/components/dashboard/financial-reports'
 import { FamilyMemberManagement } from '@/components/dashboard/family-member-management'
 
@@ -316,13 +315,6 @@ export default function Community() {
                 <span>Transactions</span>
               </TabsTrigger>
               <TabsTrigger 
-                value="budget" 
-                className="flex items-center gap-2 py-3 px-4 text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
-              >
-                <PieChart className="h-4 w-4" />
-                <span>Budget</span>
-              </TabsTrigger>
-              <TabsTrigger 
                 value="documents" 
                 className="flex items-center gap-2 py-3 px-4 text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
               >
@@ -359,9 +351,6 @@ export default function Community() {
             <TransactionMonitoring />
           </TabsContent>
 
-          <TabsContent value="budget" className="space-y-4 sm:space-y-6 animate-fade-in">
-            <BudgetingAnalytics />
-          </TabsContent>
 
 
           <TabsContent value="documents" className="space-y-6 animate-fade-in">
