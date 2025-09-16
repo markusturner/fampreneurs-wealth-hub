@@ -418,6 +418,248 @@ export function BudgetingAnalytics() {
           </CardContent>
         </Card>
       )}
+
+      {/* Budget Overview Cards */}
+      {(budgetCategories.length > 0 || financialGoals.length > 0) && (
+        <>
+          {/* Summary Stats */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Budget</p>
+                    <p className="text-2xl font-bold">{formatCurrency(getTotalBudgeted())}</p>
+                  </div>
+                  <DollarSign className="h-8 w-8 text-muted-foreground" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Total Spent</p>
+                    <p className="text-2xl font-bold">{formatCurrency(getTotalSpent())}</p>
+                  </div>
+                  <TrendingDown className="h-8 w-8 text-red-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">Remaining</p>
+                    <p className="text-2xl font-bold">{formatCurrency(getTotalRemaining())}</p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-green-500" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Budget Categories */}
+          {budgetCategories.length > 0 && (
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Budget Categories</CardTitle>
+                  <CardDescription>Track spending across different categories</CardDescription>
+                </div>
+                <Dialog open={showBudgetDialog} onOpenChange={setShowBudgetDialog}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Add Category
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Budget Category</DialogTitle>
+                      <DialogDescription>
+                        Create a new budget category with monthly limit
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Category Name</Label>
+                        <Input
+                          id="name"
+                          value={newBudget.name}
+                          onChange={(e) => setNewBudget(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="e.g., Food & Dining, Entertainment"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="amount">Monthly Budget Amount</Label>
+                        <Input
+                          id="amount"
+                          type="number"
+                          value={newBudget.amount}
+                          onChange={(e) => setNewBudget(prev => ({ ...prev, amount: e.target.value }))}
+                          placeholder="1000"
+                        />
+                      </div>
+                      
+                      <div className="flex gap-2 pt-4">
+                        <Button variant="outline" onClick={() => setShowBudgetDialog(false)} className="flex-1">
+                          Cancel
+                        </Button>
+                        <Button onClick={handleAddBudget} className="flex-1">
+                          Add Budget
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {budgetCategories.map((category) => (
+                    <div key={category.id} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium">{category.name}</h4>
+                        <div className="text-sm text-muted-foreground">
+                          {formatCurrency(category.spent)} / {formatCurrency(category.budgeted)}
+                        </div>
+                      </div>
+                      <Progress value={category.percentage} className="h-2" />
+                      <div className="flex items-center justify-between text-sm">
+                        <span className={category.isOverBudget ? "text-red-500" : "text-green-500"}>
+                          {category.isOverBudget ? "Over budget" : "On track"}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {formatCurrency(category.remaining)} remaining
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Financial Goals */}
+          {financialGoals.length > 0 && (
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Financial Goals</CardTitle>
+                  <CardDescription>Track progress toward your financial objectives</CardDescription>
+                </div>
+                <Dialog open={showGoalDialog} onOpenChange={setShowGoalDialog}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Add Goal
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Financial Goal</DialogTitle>
+                      <DialogDescription>
+                        Set a new financial goal to track your progress
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="goalName">Goal Name</Label>
+                        <Input
+                          id="goalName"
+                          value={newGoal.name}
+                          onChange={(e) => setNewGoal(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="e.g., Emergency Fund, Vacation"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="targetAmount">Target Amount</Label>
+                        <Input
+                          id="targetAmount"
+                          type="number"
+                          value={newGoal.targetAmount}
+                          onChange={(e) => setNewGoal(prev => ({ ...prev, targetAmount: e.target.value }))}
+                          placeholder="50000"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="targetDate">Target Date</Label>
+                        <Input
+                          id="targetDate"
+                          type="date"
+                          value={newGoal.targetDate}
+                          onChange={(e) => setNewGoal(prev => ({ ...prev, targetDate: e.target.value }))}
+                        />
+                      </div>
+                      
+                      <div className="flex gap-2 pt-4">
+                        <Button variant="outline" onClick={() => setShowGoalDialog(false)} className="flex-1">
+                          Cancel
+                        </Button>
+                        <Button onClick={handleAddGoal} className="flex-1">
+                          Add Goal
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {financialGoals.map((goal) => (
+                    <div key={goal.id} className="p-4 border rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">{goal.name}</h4>
+                        <Badge variant="outline" className={getPriorityColor(goal.priority)}>
+                          {goal.priority}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>{formatCurrency(goal.currentAmount)}</span>
+                          <span>{formatCurrency(goal.targetAmount)}</span>
+                        </div>
+                        <Progress value={(goal.currentAmount / goal.targetAmount) * 100} className="h-2" />
+                        <div className="flex justify-between text-sm text-muted-foreground">
+                          <span>{Math.round((goal.currentAmount / goal.targetAmount) * 100)}% complete</span>
+                          <span>Due: {new Date(goal.targetDate).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Spending Trends Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Spending Trends</CardTitle>
+              <CardDescription>Monthly budget vs actual spending comparison</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={spendingTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                  <Bar dataKey="budget" fill="hsl(var(--primary))" name="Budget" />
+                  <Bar dataKey="actual" fill="hsl(var(--muted-foreground))" name="Actual" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </>
+      )}
     </div>
   )
 }
