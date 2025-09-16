@@ -225,7 +225,10 @@ function parseCSV(csvContent: string): ParsedTransaction[] {
 
     // Common header candidates across banks (incl. Venmo)
     const dateIdx = findIndex(['transaction date', 'date', 'posted', 'posted date']);
-    const descIdx = findIndex(['description', 'details', 'memo', 'note', 'statement description', 'payee']);
+    
+    // Prioritize payee column for transaction names
+    const payeeIdx = findIndex(['payee', 'merchant', 'vendor', 'merchant name', 'business name', 'payee name']);
+    const descIdx = findIndex(['description', 'details', 'memo', 'note', 'statement description']);
     const fromIdx = findIndex(['from']);
     const toIdx = findIndex(['to', 'counterparty', 'name']);
     const amountNetIdx = findIndex(['amount (net)', 'amount net']);
@@ -235,7 +238,7 @@ function parseCSV(csvContent: string): ParsedTransaction[] {
     const typeIdx = findIndex(['type', 'transaction type']);
     
     console.log('Column indices:', {
-      dateIdx, descIdx, fromIdx, toIdx, amountNetIdx, amountTotalIdx, creditIdx, debitIdx, typeIdx
+      dateIdx, payeeIdx, descIdx, fromIdx, toIdx, amountNetIdx, amountTotalIdx, creditIdx, debitIdx, typeIdx
     });
 
     const parseAmount = (s: string | undefined) => {
@@ -293,15 +296,34 @@ function parseCSV(csvContent: string): ParsedTransaction[] {
           continue;
         }
 
-        // Derive description with improved extraction
+        // Derive description with enhanced payee prioritization
         let description = '';
         
-        // Primary: Try description field
-        if (descIdx >= 0 && fields[descIdx]) {
-          description = fields[descIdx].trim();
+        // Primary: Try payee field first (highest priority)
+        if (payeeIdx >= 0 && fields[payeeIdx]) {
+          const payeeValue = fields[payeeIdx].trim();
+          if (payeeValue && 
+              payeeValue.toLowerCase() !== 'unknown' &&
+              payeeValue.toLowerCase() !== 'transaction' &&
+              payeeValue.toLowerCase() !== 'n/a' &&
+              payeeValue.toLowerCase() !== 'na' &&
+              payeeValue.length > 1) {
+            description = cleanPayeeName(payeeValue);
+          }
         }
         
-        // Secondary: Try from/to fields  
+        // Secondary: Try description field if payee not available
+        if (!description && descIdx >= 0 && fields[descIdx]) {
+          const descValue = fields[descIdx].trim();
+          if (descValue &&
+              descValue.toLowerCase() !== 'unknown' &&
+              descValue.toLowerCase() !== 'transaction' &&
+              descValue.length > 1) {
+            description = descValue;
+          }
+        }
+        
+        // Tertiary: Try from/to fields  
         if (!description) {
           const from = fromIdx >= 0 ? fields[fromIdx] : '';
           const to = toIdx >= 0 ? fields[toIdx] : '';
@@ -635,26 +657,50 @@ function categorizeTransaction(description: string): string {
   return 'Other';
 }
 
+function cleanPayeeName(payee: string): string {
+  if (!payee) return '';
+  
+  // Enhanced payee cleaning for better merchant names
+  let cleaned = payee
+    // Remove common transaction prefixes
+    .replace(/^(purchase|payment|deposit|withdrawal|transfer|debit|credit)\s+(at\s+|to\s+|from\s+)?/i, '')
+    // Remove location codes and timestamps
+    .replace(/\s+\d{4}-\d{2}-\d{2}.*$/i, '')
+    .replace(/\s+\d{2}\/\d{2}\/\d{4}.*$/i, '')
+    // Remove reference numbers (common patterns)
+    .replace(/\s+(ref|reference|conf|confirmation)[\s#:]*\w+/i, '')
+    .replace(/\s+#\w+/g, '')
+    // Remove transaction IDs
+    .replace(/\s+[A-Z0-9]{6,}/g, '')
+    // Clean up business suffixes
+    .replace(/\s+(inc|llc|corp|co|ltd|company|corporation)\.?$/i, '')
+    // Remove redundant spaces and special chars
+    .replace(/\s+/g, ' ')
+    .replace(/[*#]+/g, '')
+    .trim();
+  
+  // If cleaning removed too much, return original
+  if (cleaned.length < 2) return payee;
+  
+  return cleaned;
+}
+
 function extractMerchantName(description: string): string {
-  // Clean up the description to extract merchant name
-  let cleaned = description.trim();
+  if (!description) return '';
   
-  // Remove common transaction prefixes
-  cleaned = cleaned.replace(/^(pos|atm|card|purchase|payment|transfer|deposit|withdrawal)\s*/i, '');
+  // Use the enhanced payee cleaning function for consistency
+  let cleaned = cleanPayeeName(description);
   
-  // Remove dates and times
-  cleaned = cleaned.replace(/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g, '');
-  cleaned = cleaned.replace(/\b\d{1,2}:\d{2}(:\d{2})?\s*(am|pm)?\b/gi, '');
-  
-  // Remove reference numbers and IDs
-  cleaned = cleaned.replace(/\b[a-z]*\d{4,}\b/gi, '');
-  cleaned = cleaned.replace(/\b(ref|id|trans|conf|auth)[\s#:]*[a-z0-9]+\b/gi, '');
-  
-  // Remove excessive numbers but keep street addresses
-  cleaned = cleaned.replace(/\b\d{5,}\b/g, '');
-  
-  // Clean up extra whitespace
-  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  // Additional merchant-specific cleaning
+  cleaned = cleaned
+    // Remove common transaction prefixes specific to merchants
+    .replace(/^(pos|atm|card)\s*/i, '')
+    // Remove dates and times
+    .replace(/\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g, '')
+    .replace(/\b\d{1,2}:\d{2}(:\d{2})?\s*(am|pm)?\b/gi, '')
+    // Remove excessive numbers but keep meaningful ones
+    .replace(/\b\d{5,}\b/g, '')
+    .trim();
   
   // If we have a meaningful result, return first 3 words
   if (cleaned && cleaned.length > 3 && cleaned.toLowerCase() !== 'unknown') {
