@@ -521,26 +521,115 @@ function parseDate(dateStr: string): string | null {
 function categorizeTransaction(description: string): string {
   const desc = description.toLowerCase();
   
-  if (desc.includes('grocery') || desc.includes('supermarket') || desc.includes('food')) {
+  // Food & Dining
+  if (desc.includes('restaurant') || desc.includes('food') || 
+      desc.includes('cafe') || desc.includes('pizza') ||
+      desc.includes('starbucks') || desc.includes('mcdonald') ||
+      desc.includes('grocery') || desc.includes('supermarket') ||
+      desc.includes('dining') || desc.includes('kitchen') ||
+      desc.includes('bakery') || desc.includes('deli') ||
+      desc.includes('burger') || desc.includes('taco') ||
+      desc.includes('subway') || desc.includes('domino') ||
+      desc.includes('kfc') || desc.includes('wendys')) {
     return 'Food & Dining';
   }
-  if (desc.includes('gas') || desc.includes('fuel') || desc.includes('station')) {
+  
+  // Transportation
+  if (desc.includes('gas') || desc.includes('fuel') ||
+      desc.includes('uber') || desc.includes('lyft') ||
+      desc.includes('parking') || desc.includes('metro') ||
+      desc.includes('taxi') || desc.includes('bus') ||
+      desc.includes('station') || desc.includes('shell') ||
+      desc.includes('chevron') || desc.includes('exxon') ||
+      desc.includes('mobil') || desc.includes('bp ') ||
+      desc.includes('airline') || desc.includes('airport') ||
+      desc.includes('train') || desc.includes('transit')) {
     return 'Transportation';
   }
-  if (desc.includes('restaurant') || desc.includes('cafe') || desc.includes('dining')) {
-    return 'Food & Dining';
-  }
-  if (desc.includes('amazon') || desc.includes('walmart') || desc.includes('target')) {
+  
+  // Shopping
+  if (desc.includes('amazon') || desc.includes('target') ||
+      desc.includes('walmart') || desc.includes('store') ||
+      desc.includes('shop') || desc.includes('retail') ||
+      desc.includes('mall') || desc.includes('bestbuy') ||
+      desc.includes('costco') || desc.includes('home depot') ||
+      desc.includes('lowes') || desc.includes('macys') ||
+      desc.includes('nordstrom') || desc.includes('tj maxx') ||
+      desc.includes('kohls') || desc.includes('cvs') ||
+      desc.includes('walgreens') || desc.includes('rite aid')) {
     return 'Shopping';
   }
-  if (desc.includes('netflix') || desc.includes('spotify') || desc.includes('subscription')) {
-    return 'Entertainment';
-  }
-  if (desc.includes('rent') || desc.includes('mortgage') || desc.includes('utilities')) {
+  
+  // Bills & Utilities
+  if (desc.includes('electric') || desc.includes('water') ||
+      desc.includes('internet') || desc.includes('phone') ||
+      desc.includes('cable') || desc.includes('utility') ||
+      desc.includes('rent') || desc.includes('mortgage') ||
+      desc.includes('insurance') || desc.includes('bill') ||
+      desc.includes('verizon') || desc.includes('att') ||
+      desc.includes('comcast') || desc.includes('spectrum') ||
+      desc.includes('tmobile') || desc.includes('sprint')) {
     return 'Bills & Utilities';
   }
-  if (desc.includes('medical') || desc.includes('pharmacy') || desc.includes('doctor')) {
+  
+  // Healthcare
+  if (desc.includes('medical') || desc.includes('doctor') ||
+      desc.includes('pharmacy') || desc.includes('hospital') ||
+      desc.includes('health') || desc.includes('dental') ||
+      desc.includes('clinic') || desc.includes('urgent care') ||
+      desc.includes('lab') || desc.includes('radiology') ||
+      desc.includes('prescription') || desc.includes('copay')) {
     return 'Healthcare';
+  }
+  
+  // Entertainment
+  if (desc.includes('movie') || desc.includes('netflix') ||
+      desc.includes('spotify') || desc.includes('game') ||
+      desc.includes('entertainment') || desc.includes('theater') ||
+      desc.includes('subscription') || desc.includes('streaming') ||
+      desc.includes('hulu') || desc.includes('disney') ||
+      desc.includes('apple music') || desc.includes('youtube') ||
+      desc.includes('xbox') || desc.includes('playstation') ||
+      desc.includes('cinema') || desc.includes('concert')) {
+    return 'Entertainment';
+  }
+  
+  // Business & Professional
+  if (desc.includes('office') || desc.includes('business') ||
+      desc.includes('software') || desc.includes('service') ||
+      desc.includes('consulting') || desc.includes('legal') ||
+      desc.includes('accounting') || desc.includes('professional') ||
+      desc.includes('meeting') || desc.includes('conference') ||
+      desc.includes('microsoft') || desc.includes('adobe') ||
+      desc.includes('zoom') || desc.includes('slack')) {
+    return 'Business';
+  }
+  
+  // Banking & Finance
+  if (desc.includes('bank') || desc.includes('fee') ||
+      desc.includes('overdraft') || desc.includes('transfer') ||
+      desc.includes('atm') || desc.includes('interest') ||
+      desc.includes('loan') || desc.includes('credit') ||
+      desc.includes('investment') || desc.includes('dividend') ||
+      desc.includes('deposit') || desc.includes('withdrawal')) {
+    return 'Banking & Finance';
+  }
+  
+  // Income indicators
+  if (desc.includes('salary') || desc.includes('payroll') ||
+      desc.includes('direct deposit') || desc.includes('payment received') ||
+      desc.includes('refund') || desc.includes('cashback') ||
+      desc.includes('reimbursement') || desc.includes('bonus') ||
+      desc.includes('commission')) {
+    return 'Income';
+  }
+  
+  // Travel
+  if (desc.includes('hotel') || desc.includes('airbnb') ||
+      desc.includes('booking') || desc.includes('expedia') ||
+      desc.includes('travel') || desc.includes('vacation') ||
+      desc.includes('flight') || desc.includes('rental car')) {
+    return 'Travel';
   }
   
   return 'Other';

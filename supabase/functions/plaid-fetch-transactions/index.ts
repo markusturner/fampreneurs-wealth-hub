@@ -6,6 +6,86 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Smart categorization function to replace generic categories with meaningful ones
+function getSmartCategory(transaction: any): string {
+  const description = (transaction.merchant_name || transaction.name || '').toLowerCase()
+  const plaidCategory = transaction.category ? transaction.category[0] : ''
+  
+  // If Plaid provides specific categories, map them to our system
+  if (plaidCategory) {
+    const categoryMap: { [key: string]: string } = {
+      'Payment': 'Transfer',
+      'Deposit': 'Income', 
+      'Transfer': 'Transfer',
+      'Food and Drink': 'Food & Dining',
+      'Shops': 'Shopping',
+      'Recreation': 'Entertainment',
+      'Transportation': 'Transportation',
+      'Healthcare': 'Healthcare',
+      'Service': 'Services',
+      'Travel': 'Travel'
+    }
+    
+    if (categoryMap[plaidCategory]) {
+      return categoryMap[plaidCategory]
+    }
+  }
+  
+  // AI-powered categorization based on description
+  if (description.includes('restaurant') || description.includes('food') || 
+      description.includes('cafe') || description.includes('pizza') ||
+      description.includes('starbucks') || description.includes('mcdonald') ||
+      description.includes('grocery') || description.includes('supermarket') ||
+      description.includes('dining')) {
+    return 'Food & Dining'
+  }
+  
+  if (description.includes('gas') || description.includes('fuel') ||
+      description.includes('uber') || description.includes('lyft') ||
+      description.includes('parking') || description.includes('metro') ||
+      description.includes('taxi') || description.includes('bus')) {
+    return 'Transportation'
+  }
+  
+  if (description.includes('amazon') || description.includes('target') ||
+      description.includes('walmart') || description.includes('store') ||
+      description.includes('shop') || description.includes('retail')) {
+    return 'Shopping'
+  }
+  
+  if (description.includes('electric') || description.includes('water') ||
+      description.includes('internet') || description.includes('phone') ||
+      description.includes('cable') || description.includes('utility')) {
+    return 'Utilities'
+  }
+  
+  if (description.includes('medical') || description.includes('doctor') ||
+      description.includes('pharmacy') || description.includes('hospital') ||
+      description.includes('health') || description.includes('dental')) {
+    return 'Healthcare'
+  }
+  
+  if (transaction.amount > 0 || description.includes('salary') || 
+      description.includes('payroll') || description.includes('deposit') || 
+      description.includes('payment received')) {
+    return 'Income'
+  }
+  
+  if (description.includes('movie') || description.includes('netflix') ||
+      description.includes('spotify') || description.includes('game') ||
+      description.includes('entertainment') || description.includes('theater')) {
+    return 'Entertainment'
+  }
+  
+  if (description.includes('office') || description.includes('business') ||
+      description.includes('software') || description.includes('subscription')) {
+    return 'Business'
+  }
+  
+  // Return the original Plaid category if it's meaningful, otherwise 'Other'
+  return plaidCategory && plaidCategory !== 'Payment' && plaidCategory !== 'Transfer' ? plaidCategory : 'Other'
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -185,7 +265,7 @@ serve(async (req) => {
       merchant_name: transaction.merchant_name,
       amount: Math.abs(transaction.amount), // Plaid amounts are negative for debits
       transaction_type: transaction.amount > 0 ? 'credit' : 'debit',
-      category: transaction.category ? transaction.category[0] : 'Other',
+      category: getSmartCategory(transaction),
       transaction_date: transaction.date,
       authorized_date: transaction.authorized_date,
       pending: transaction.pending,
