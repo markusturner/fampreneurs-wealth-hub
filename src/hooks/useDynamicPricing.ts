@@ -17,57 +17,41 @@ export interface DynamicPricing {
 }
 
 export const useDynamicPricing = (): DynamicPricing => {
+  // Shared features for all tiers
+  const sharedFeatures = [
+    "AI-powered financial insights",
+    "Advanced investment analytics", 
+    "Unlimited family members",
+    "Document storage (100GB)",
+    "Advanced courses & webinars",
+    "Family meeting tools",
+    "Tax optimization insights",
+    "Priority support", 
+    "Custom financial goals",
+    "Mobile app access",
+    "Real-time alerts",
+    "Weekly wealth reports"
+  ]
+
   // Base pricing structure
   const baseTiers = [
     {
       name: "Starter",
       description: "Perfect for individuals getting started with wealth building",
       popular: false,
-      features: [
-        "AI-powered financial insights",
-        "Basic investment tracking", 
-        "Up to 5 family members",
-        "Document storage (10GB)",
-        "Basic financial education",
-        "Email support",
-        "Mobile app access",
-        "Monthly wealth reports"
-      ]
+      features: sharedFeatures
     },
     {
       name: "Professional", 
       description: "Ideal for growing families with multiple income streams",
       popular: true,
-      features: [
-        "Everything in Starter",
-        "Advanced investment analytics",
-        "Unlimited family members", 
-        "Document storage (100GB)",
-        "Advanced courses & webinars",
-        "Family meeting tools",
-        "Tax optimization insights",
-        "Priority support", 
-        "Custom financial goals",
-        "Weekly wealth reports"
-      ]
+      features: sharedFeatures
     },
     {
       name: "Enterprise",
       description: "Complete family office solution for serious wealth builders", 
       popular: false,
-      features: [
-        "Everything in Professional",
-        "Dedicated account manager",
-        "Custom integrations",
-        "White-label options", 
-        "Advanced security features",
-        "Unlimited document storage",
-        "Private community access",
-        "1-on-1 strategy calls",
-        "Estate planning tools",
-        "Real-time alerts",
-        "Daily wealth reports"
-      ]
+      features: sharedFeatures
     }
   ]
 
