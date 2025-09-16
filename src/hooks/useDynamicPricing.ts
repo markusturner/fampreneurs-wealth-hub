@@ -71,12 +71,12 @@ export const useDynamicPricing = (): DynamicPricing => {
     }
   ]
 
-  // Simple pricing structure: $97, $297, $497
+  // Updated pricing structure: $97/mo, $247/quarter, $897/annual
   const pricingTiers: PricingTier[] = baseTiers.map((tier, index) => ({
     ...tier,
-    price: ["$97", "$297", "$497"][index],
-    period: "/month",
-    stripeAmount: [9700, 29700, 49700][index],
+    price: ["$97", "$247", "$897"][index],
+    period: ["/month", "/quarter", "/annual"][index],
+    stripeAmount: [9700, 24700, 89700][index],
     icon: [() => null, () => null, () => null][index]
   }))
 
