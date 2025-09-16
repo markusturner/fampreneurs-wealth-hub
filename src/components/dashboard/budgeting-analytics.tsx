@@ -300,7 +300,7 @@ export function BudgetingAnalytics() {
               <div className="flex justify-center">
                 <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
                 <DialogTrigger asChild>
-                  <Button className="flex items-center gap-2" style={{ backgroundColor: '#2eb2ff' }}>
+                  <Button className="flex items-center gap-2" style={{ backgroundColor: '#ffb500' }}>
                     <Plus className="h-4 w-4" />
                     Add Budget Item
                   </Button>
