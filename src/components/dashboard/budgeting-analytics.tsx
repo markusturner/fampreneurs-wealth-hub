@@ -559,18 +559,95 @@ export function BudgetingAnalytics() {
                   <CardTitle>Financial Goals</CardTitle>
                   <CardDescription>Track progress toward your financial objectives</CardDescription>
                 </div>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="flex items-center gap-2"
-                  onClick={() => {
-                    setAddType('goal')
-                    setShowAddDialog(true)
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Goal
-                </Button>
+                <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Goal
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add to Your Budget</DialogTitle>
+                      <DialogDescription>
+                        Create a budget category or set a financial goal
+                      </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="space-y-4">
+                      {/* Type Selection */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          variant={addType === 'budget' ? 'default' : 'outline'}
+                          onClick={() => setAddType('budget')}
+                          className="flex items-center gap-2"
+                        >
+                          <PieChart className="h-4 w-4" />
+                          Budget Category
+                        </Button>
+                        <Button
+                          variant={addType === 'goal' ? 'default' : 'outline'}
+                          onClick={() => setAddType('goal')}
+                          className="flex items-center gap-2"
+                        >
+                          <Target className="h-4 w-4" />
+                          Financial Goal
+                        </Button>
+                      </div>
+                      
+                      {/* Form Fields */}
+                      <div className="space-y-2">
+                        <Label htmlFor="itemName">
+                          {addType === 'budget' ? 'Category Name' : 'Goal Name'}
+                        </Label>
+                        <Input
+                          id="itemName"
+                          value={newItem.name}
+                          onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder={addType === 'budget' ? 'e.g., Food & Dining, Entertainment' : 'e.g., Emergency Fund, Vacation'}
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="itemAmount">
+                          {addType === 'budget' ? 'Monthly Budget Amount' : 'Target Amount'}
+                        </Label>
+                        <Input
+                          id="itemAmount"
+                          type="number"
+                          value={newItem.amount}
+                          onChange={(e) => setNewItem(prev => ({ ...prev, amount: e.target.value }))}
+                          placeholder={addType === 'budget' ? '1000' : '50000'}
+                        />
+                      </div>
+                      
+                      {addType === 'goal' && (
+                        <div className="space-y-2">
+                          <Label htmlFor="itemDate">Target Date</Label>
+                          <Input
+                            id="itemDate"
+                            type="date"
+                            value={newItem.targetDate}
+                            onChange={(e) => setNewItem(prev => ({ ...prev, targetDate: e.target.value }))}
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="flex gap-2 pt-4">
+                        <Button variant="outline" onClick={() => setShowAddDialog(false)} className="flex-1">
+                          Cancel
+                        </Button>
+                        <Button onClick={handleAddItem} className="flex-1">
+                          {addType === 'budget' ? 'Add Budget' : 'Add Goal'}
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-2">
