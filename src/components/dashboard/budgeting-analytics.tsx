@@ -613,10 +613,10 @@ export function BudgetingAnalytics() {
                     filter: drop-shadow(0 0 8px currentColor);
                   }
                   .glow-orange {
-                    filter: drop-shadow(0 0 4px rgba(255, 181, 0, 0.4)) drop-shadow(0 0 8px rgba(255, 181, 0, 0.2));
+                    filter: drop-shadow(0 0 2px rgba(255, 181, 0, 0.2)) drop-shadow(0 0 4px rgba(255, 181, 0, 0.1));
                   }
                   .glow-white {
-                    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
+                    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.15)) drop-shadow(0 0 4px rgba(255, 255, 255, 0.05));
                   }
                 `}
               </style>
