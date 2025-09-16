@@ -607,14 +607,27 @@ export function BudgetingAnalytics() {
               <CardDescription>Monthly budget vs actual spending comparison</CardDescription>
             </CardHeader>
             <CardContent>
+              <style>
+                {`
+                  .recharts-bar-rectangle {
+                    filter: drop-shadow(0 0 8px currentColor);
+                  }
+                  .glow-orange {
+                    filter: drop-shadow(0 0 12px #ffb500) drop-shadow(0 0 24px #ffb500);
+                  }
+                  .glow-white {
+                    filter: drop-shadow(0 0 12px #ffffff) drop-shadow(0 0 24px #ffffff);
+                  }
+                `}
+              </style>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={spendingTrendData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                  <Bar dataKey="budget" fill="hsl(var(--primary))" name="Budget" />
-                  <Bar dataKey="actual" fill="hsl(var(--muted-foreground))" name="Actual" />
+                  <Bar dataKey="budget" fill="#ffb500" name="Budget" className="glow-orange" />
+                  <Bar dataKey="actual" fill="#ffffff" name="Actual" className="glow-white" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
