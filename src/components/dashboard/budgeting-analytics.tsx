@@ -64,19 +64,14 @@ export function BudgetingAnalytics() {
   const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([])
   const [connectedAccounts, setConnectedAccounts] = useState<any[]>([])
   const [transactions, setTransactions] = useState<any[]>([])
-  const [showBudgetDialog, setShowBudgetDialog] = useState(false)
-  const [showGoalDialog, setShowGoalDialog] = useState(false)
+  const [showAddDialog, setShowAddDialog] = useState(false)
+  const [addType, setAddType] = useState<'budget' | 'goal'>('budget')
   const [loading, setLoading] = useState(true)
   const [isOperational, setIsOperational] = useState(false)
 
-  const [newBudget, setNewBudget] = useState({
+  const [newItem, setNewItem] = useState({
     name: '',
-    amount: ''
-  })
-
-  const [newGoal, setNewGoal] = useState({
-    name: '',
-    targetAmount: '',
+    amount: '',
     targetDate: '',
     category: 'savings'
   })
@@ -162,8 +157,8 @@ export function BudgetingAnalytics() {
     }
   }
 
-  const handleAddBudget = async () => {
-    if (!newBudget.name || !newBudget.amount) {
+  const handleAddItem = async () => {
+    if (!newItem.name || !newItem.amount) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -172,56 +167,53 @@ export function BudgetingAnalytics() {
       return
     }
 
-    const budget: BudgetCategory = {
-      id: Date.now().toString(),
-      name: newBudget.name,
-      budgeted: parseFloat(newBudget.amount),
-      spent: 0,
-      remaining: parseFloat(newBudget.amount),
-      percentage: 0,
-      color: '#6b7280',
-      isOverBudget: false
-    }
+    if (addType === 'budget') {
+      const budget: BudgetCategory = {
+        id: Date.now().toString(),
+        name: newItem.name,
+        budgeted: parseFloat(newItem.amount),
+        spent: 0,
+        remaining: parseFloat(newItem.amount),
+        percentage: 0,
+        color: '#6b7280',
+        isOverBudget: false
+      }
 
-    setBudgetCategories(prev => [...prev, budget])
-    setShowBudgetDialog(false)
-    setNewBudget({ name: '', amount: '' })
-
-    toast({
-      title: "Budget Added",
-      description: `Successfully created budget for ${newBudget.name}`,
-    })
-  }
-
-  const handleAddGoal = async () => {
-    if (!newGoal.name || !newGoal.targetAmount || !newGoal.targetDate) {
+      setBudgetCategories(prev => [...prev, budget])
       toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
+        title: "Budget Category Added",
+        description: `Successfully created budget for ${newItem.name}`,
       })
-      return
+    } else {
+      if (!newItem.targetDate) {
+        toast({
+          title: "Error",
+          description: "Please set a target date for your goal",
+          variant: "destructive"
+        })
+        return
+      }
+
+      const goal: FinancialGoal = {
+        id: Date.now().toString(),
+        name: newItem.name,
+        targetAmount: parseFloat(newItem.amount),
+        currentAmount: 0,
+        targetDate: newItem.targetDate,
+        category: newItem.category,
+        priority: 'medium',
+        isCompleted: false
+      }
+
+      setFinancialGoals(prev => [...prev, goal])
+      toast({
+        title: "Financial Goal Added",
+        description: `Successfully created goal: ${newItem.name}`,
+      })
     }
 
-    const goal: FinancialGoal = {
-      id: Date.now().toString(),
-      name: newGoal.name,
-      targetAmount: parseFloat(newGoal.targetAmount),
-      currentAmount: 0,
-      targetDate: newGoal.targetDate,
-      category: newGoal.category,
-      priority: 'medium',
-      isCompleted: false
-    }
-
-    setFinancialGoals(prev => [...prev, goal])
-    setShowGoalDialog(false)
-    setNewGoal({ name: '', targetAmount: '', targetDate: '', category: 'savings' })
-
-    toast({
-      title: "Goal Added",
-      description: `Successfully created goal: ${newGoal.name}`,
-    })
+    setShowAddDialog(false)
+    setNewItem({ name: '', amount: '', targetDate: '', category: 'savings' })
   }
 
   const formatCurrency = (amount: number) => {
@@ -305,115 +297,91 @@ export function BudgetingAnalytics() {
               <p className="text-muted-foreground mb-4">
                 Start by adding budget categories and financial goals to track your progress.
               </p>
-              <div className="flex gap-4 justify-center">
-                <Dialog open={showBudgetDialog} onOpenChange={setShowBudgetDialog}>
-                  <DialogTrigger asChild>
-                    <Button className="flex items-center gap-2">
-                      <Plus className="h-4 w-4" />
-                      Add Budget Category
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add Budget Category</DialogTitle>
-                      <DialogDescription>
-                        Create a new budget category with monthly limit
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Category Name</Label>
-                        <Input
-                          id="name"
-                          value={newBudget.name}
-                          onChange={(e) => setNewBudget(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="e.g., Food & Dining, Entertainment"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="amount">Monthly Budget Amount</Label>
-                        <Input
-                          id="amount"
-                          type="number"
-                          value={newBudget.amount}
-                          onChange={(e) => setNewBudget(prev => ({ ...prev, amount: e.target.value }))}
-                          placeholder="1000"
-                        />
-                      </div>
-                      
-                      <div className="flex gap-2 pt-4">
-                        <Button variant="outline" onClick={() => setShowBudgetDialog(false)} className="flex-1">
-                          Cancel
-                        </Button>
-                        <Button onClick={handleAddBudget} className="flex-1">
-                          Add Budget
-                        </Button>
-                      </div>
+              <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+                <DialogTrigger asChild>
+                  <Button className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add Budget Item
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add to Your Budget</DialogTitle>
+                    <DialogDescription>
+                      Create a budget category or set a financial goal
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4">
+                    {/* Type Selection */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant={addType === 'budget' ? 'default' : 'outline'}
+                        onClick={() => setAddType('budget')}
+                        className="flex items-center gap-2"
+                      >
+                        <PieChart className="h-4 w-4" />
+                        Budget Category
+                      </Button>
+                      <Button
+                        variant={addType === 'goal' ? 'default' : 'outline'}
+                        onClick={() => setAddType('goal')}
+                        className="flex items-center gap-2"
+                      >
+                        <Target className="h-4 w-4" />
+                        Financial Goal
+                      </Button>
                     </div>
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog open={showGoalDialog} onOpenChange={setShowGoalDialog}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="flex items-center gap-2">
-                      <Plus className="h-4 w-4" />
-                      Add Financial Goal
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add Financial Goal</DialogTitle>
-                      <DialogDescription>
-                        Set a new financial goal to track your progress
-                      </DialogDescription>
-                    </DialogHeader>
                     
-                    <div className="space-y-4">
+                    {/* Form Fields */}
+                    <div className="space-y-2">
+                      <Label htmlFor="itemName">
+                        {addType === 'budget' ? 'Category Name' : 'Goal Name'}
+                      </Label>
+                      <Input
+                        id="itemName"
+                        value={newItem.name}
+                        onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder={addType === 'budget' ? 'e.g., Food & Dining, Entertainment' : 'e.g., Emergency Fund, Vacation'}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="itemAmount">
+                        {addType === 'budget' ? 'Monthly Budget Amount' : 'Target Amount'}
+                      </Label>
+                      <Input
+                        id="itemAmount"
+                        type="number"
+                        value={newItem.amount}
+                        onChange={(e) => setNewItem(prev => ({ ...prev, amount: e.target.value }))}
+                        placeholder={addType === 'budget' ? '1000' : '50000'}
+                      />
+                    </div>
+                    
+                    {addType === 'goal' && (
                       <div className="space-y-2">
-                        <Label htmlFor="goalName">Goal Name</Label>
+                        <Label htmlFor="itemDate">Target Date</Label>
                         <Input
-                          id="goalName"
-                          value={newGoal.name}
-                          onChange={(e) => setNewGoal(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="e.g., Emergency Fund, Vacation"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="targetAmount">Target Amount</Label>
-                        <Input
-                          id="targetAmount"
-                          type="number"
-                          value={newGoal.targetAmount}
-                          onChange={(e) => setNewGoal(prev => ({ ...prev, targetAmount: e.target.value }))}
-                          placeholder="50000"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="targetDate">Target Date</Label>
-                        <Input
-                          id="targetDate"
+                          id="itemDate"
                           type="date"
-                          value={newGoal.targetDate}
-                          onChange={(e) => setNewGoal(prev => ({ ...prev, targetDate: e.target.value }))}
+                          value={newItem.targetDate}
+                          onChange={(e) => setNewItem(prev => ({ ...prev, targetDate: e.target.value }))}
                         />
                       </div>
-                      
-                      <div className="flex gap-2 pt-4">
-                        <Button variant="outline" onClick={() => setShowGoalDialog(false)} className="flex-1">
-                          Cancel
-                        </Button>
-                        <Button onClick={handleAddGoal} className="flex-1">
-                          Add Goal
-                        </Button>
-                      </div>
+                    )}
+                    
+                    <div className="flex gap-2 pt-4">
+                      <Button variant="outline" onClick={() => setShowAddDialog(false)} className="flex-1">
+                        Cancel
+                      </Button>
+                      <Button onClick={handleAddItem} className="flex-1">
+                        {addType === 'budget' ? 'Add Budget' : 'Add Goal'}
+                      </Button>
                     </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardContent>
         </Card>
@@ -469,49 +437,86 @@ export function BudgetingAnalytics() {
                   <CardTitle>Budget Categories</CardTitle>
                   <CardDescription>Track spending across different categories</CardDescription>
                 </div>
-                <Dialog open={showBudgetDialog} onOpenChange={setShowBudgetDialog}>
+                <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
                   <DialogTrigger asChild>
-                    <Button size="sm" className="flex items-center gap-2">
+                    <Button size="sm" className="flex items-center gap-2" onClick={() => setAddType('budget')}>
                       <Plus className="h-4 w-4" />
                       Add Category
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Add Budget Category</DialogTitle>
+                      <DialogTitle>Add to Your Budget</DialogTitle>
                       <DialogDescription>
-                        Create a new budget category with monthly limit
+                        Create a budget category or set a financial goal
                       </DialogDescription>
                     </DialogHeader>
                     
                     <div className="space-y-4">
+                      {/* Type Selection */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          variant={addType === 'budget' ? 'default' : 'outline'}
+                          onClick={() => setAddType('budget')}
+                          className="flex items-center gap-2"
+                        >
+                          <PieChart className="h-4 w-4" />
+                          Budget Category
+                        </Button>
+                        <Button
+                          variant={addType === 'goal' ? 'default' : 'outline'}
+                          onClick={() => setAddType('goal')}
+                          className="flex items-center gap-2"
+                        >
+                          <Target className="h-4 w-4" />
+                          Financial Goal
+                        </Button>
+                      </div>
+                      
+                      {/* Form Fields */}
                       <div className="space-y-2">
-                        <Label htmlFor="name">Category Name</Label>
+                        <Label htmlFor="itemName">
+                          {addType === 'budget' ? 'Category Name' : 'Goal Name'}
+                        </Label>
                         <Input
-                          id="name"
-                          value={newBudget.name}
-                          onChange={(e) => setNewBudget(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="e.g., Food & Dining, Entertainment"
+                          id="itemName"
+                          value={newItem.name}
+                          onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder={addType === 'budget' ? 'e.g., Food & Dining, Entertainment' : 'e.g., Emergency Fund, Vacation'}
                         />
                       </div>
                       
                       <div className="space-y-2">
-                        <Label htmlFor="amount">Monthly Budget Amount</Label>
+                        <Label htmlFor="itemAmount">
+                          {addType === 'budget' ? 'Monthly Budget Amount' : 'Target Amount'}
+                        </Label>
                         <Input
-                          id="amount"
+                          id="itemAmount"
                           type="number"
-                          value={newBudget.amount}
-                          onChange={(e) => setNewBudget(prev => ({ ...prev, amount: e.target.value }))}
-                          placeholder="1000"
+                          value={newItem.amount}
+                          onChange={(e) => setNewItem(prev => ({ ...prev, amount: e.target.value }))}
+                          placeholder={addType === 'budget' ? '1000' : '50000'}
                         />
                       </div>
+                      
+                      {addType === 'goal' && (
+                        <div className="space-y-2">
+                          <Label htmlFor="itemDate">Target Date</Label>
+                          <Input
+                            id="itemDate"
+                            type="date"
+                            value={newItem.targetDate}
+                            onChange={(e) => setNewItem(prev => ({ ...prev, targetDate: e.target.value }))}
+                          />
+                        </div>
+                      )}
                       
                       <div className="flex gap-2 pt-4">
-                        <Button variant="outline" onClick={() => setShowBudgetDialog(false)} className="flex-1">
+                        <Button variant="outline" onClick={() => setShowAddDialog(false)} className="flex-1">
                           Cancel
                         </Button>
-                        <Button onClick={handleAddBudget} className="flex-1">
-                          Add Budget
+                        <Button onClick={handleAddItem} className="flex-1">
+                          {addType === 'budget' ? 'Add Budget' : 'Add Goal'}
                         </Button>
                       </div>
                     </div>
@@ -552,64 +557,18 @@ export function BudgetingAnalytics() {
                   <CardTitle>Financial Goals</CardTitle>
                   <CardDescription>Track progress toward your financial objectives</CardDescription>
                 </div>
-                <Dialog open={showGoalDialog} onOpenChange={setShowGoalDialog}>
-                  <DialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="flex items-center gap-2">
-                      <Plus className="h-4 w-4" />
-                      Add Goal
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add Financial Goal</DialogTitle>
-                      <DialogDescription>
-                        Set a new financial goal to track your progress
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="goalName">Goal Name</Label>
-                        <Input
-                          id="goalName"
-                          value={newGoal.name}
-                          onChange={(e) => setNewGoal(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="e.g., Emergency Fund, Vacation"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="targetAmount">Target Amount</Label>
-                        <Input
-                          id="targetAmount"
-                          type="number"
-                          value={newGoal.targetAmount}
-                          onChange={(e) => setNewGoal(prev => ({ ...prev, targetAmount: e.target.value }))}
-                          placeholder="50000"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="targetDate">Target Date</Label>
-                        <Input
-                          id="targetDate"
-                          type="date"
-                          value={newGoal.targetDate}
-                          onChange={(e) => setNewGoal(prev => ({ ...prev, targetDate: e.target.value }))}
-                        />
-                      </div>
-                      
-                      <div className="flex gap-2 pt-4">
-                        <Button variant="outline" onClick={() => setShowGoalDialog(false)} className="flex-1">
-                          Cancel
-                        </Button>
-                        <Button onClick={handleAddGoal} className="flex-1">
-                          Add Goal
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="flex items-center gap-2"
+                  onClick={() => {
+                    setAddType('goal')
+                    setShowAddDialog(true)
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Goal
+                </Button>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-2">
