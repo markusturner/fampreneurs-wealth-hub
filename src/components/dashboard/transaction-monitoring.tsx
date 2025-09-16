@@ -1139,7 +1139,7 @@ export function TransactionMonitoring() {
       </Dialog>
 
       {/* Search Bar */}
-      <div className="flex items-center gap-4">
+      <div className="space-y-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -1150,40 +1150,43 @@ export function TransactionMonitoring() {
           />
         </div>
         
-        <Button 
-          variant="outline" 
-          onClick={handleAIBookkeeping}
-          disabled={aiProcessing}
-          className="flex items-center gap-2"
-        >
-          {aiProcessing ? (
-            <>
-              <RefreshCw className="h-4 w-4 animate-spin" />
-              {aiProgress.total > 0 && (
-                <span className="text-sm">
-                  {aiProgress.current}/{aiProgress.total}
-                </span>
-              )}
-            </>
-          ) : (
-            <Bot className="h-4 w-4" />
-          )}
-          AI Bookkeeping
-        </Button>
+        {/* Action buttons - now always visible */}
+        <div className="flex flex-wrap gap-2">
+          <Button 
+            variant="outline" 
+            onClick={handleAIBookkeeping}
+            disabled={aiProcessing}
+            className="flex items-center gap-2"
+          >
+            {aiProcessing ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                {aiProgress.total > 0 && (
+                  <span className="text-sm">
+                    {aiProgress.current}/{aiProgress.total}
+                  </span>
+                )}
+              </>
+            ) : (
+              <Bot className="h-4 w-4" />
+            )}
+            AI Bookkeeping
+          </Button>
 
-        <Button 
-          variant="outline" 
-          onClick={handleReprocessStatements}
-          disabled={reprocessing}
-          className="flex items-center gap-2"
-        >
-          {reprocessing ? (
-            <RefreshCw className="h-4 w-4 animate-spin" />
-          ) : (
-            <Wand2 className="h-4 w-4" />
-          )}
-          Reprocess Statements
-        </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleReprocessStatements}
+            disabled={reprocessing}
+            className="flex items-center gap-2"
+          >
+            {reprocessing ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <Wand2 className="h-4 w-4" />
+            )}
+            Reprocess Statements
+          </Button>
+        </div>
       </div>
 
       {/* AI Categorization Display */}
