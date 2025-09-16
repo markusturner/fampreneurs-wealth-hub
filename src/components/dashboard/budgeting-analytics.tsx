@@ -83,6 +83,44 @@ export function BudgetingAnalytics() {
     checkDataAvailabilityAndFetchBudget()
   }, [user])
 
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    if (user) {
+      const savedBudgets = localStorage.getItem(`budgets_${user.id}`)
+      const savedGoals = localStorage.getItem(`goals_${user.id}`)
+      const savedOperational = localStorage.getItem(`operational_${user.id}`)
+      
+      if (savedBudgets) {
+        setBudgetCategories(JSON.parse(savedBudgets))
+      }
+      if (savedGoals) {
+        setFinancialGoals(JSON.parse(savedGoals))
+      }
+      if (savedOperational === 'true') {
+        setIsOperational(true)
+      }
+    }
+  }, [user])
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    if (user && budgetCategories.length > 0) {
+      localStorage.setItem(`budgets_${user.id}`, JSON.stringify(budgetCategories))
+    }
+  }, [budgetCategories, user])
+
+  useEffect(() => {
+    if (user && financialGoals.length > 0) {
+      localStorage.setItem(`goals_${user.id}`, JSON.stringify(financialGoals))
+    }
+  }, [financialGoals, user])
+
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem(`operational_${user.id}`, isOperational.toString())
+    }
+  }, [isOperational, user])
+
   const checkDataAvailabilityAndFetchBudget = async () => {
     try {
       setLoading(true)
