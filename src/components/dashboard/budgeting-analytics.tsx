@@ -68,6 +68,9 @@ export function BudgetingAnalytics() {
   const [addType, setAddType] = useState<'budget' | 'goal'>('budget')
   const [loading, setLoading] = useState(true)
   const [isOperational, setIsOperational] = useState(false)
+  const [editingGoal, setEditingGoal] = useState<FinancialGoal | null>(null)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [goalToDelete, setGoalToDelete] = useState<string | null>(null)
 
   const [newItem, setNewItem] = useState({
     name: '',
@@ -214,6 +217,67 @@ export function BudgetingAnalytics() {
 
     setShowAddDialog(false)
     setNewItem({ name: '', amount: '', targetDate: '', category: 'savings' })
+  }
+
+  const handleEditGoal = (goal: FinancialGoal) => {
+    setEditingGoal(goal)
+    setNewItem({
+      name: goal.name,
+      amount: goal.targetAmount.toString(),
+      targetDate: goal.targetDate,
+      category: goal.category
+    })
+    setAddType('goal')
+    setShowAddDialog(true)
+  }
+
+  const handleUpdateGoal = () => {
+    if (!editingGoal || !newItem.name || !newItem.amount || !newItem.targetDate) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      })
+      return
+    }
+
+    const updatedGoal: FinancialGoal = {
+      ...editingGoal,
+      name: newItem.name,
+      targetAmount: parseFloat(newItem.amount),
+      targetDate: newItem.targetDate,
+      category: newItem.category
+    }
+
+    setFinancialGoals(prev => prev.map(goal => 
+      goal.id === editingGoal.id ? updatedGoal : goal
+    ))
+
+    toast({
+      title: "Goal Updated",
+      description: `Successfully updated ${newItem.name}`,
+    })
+
+    setShowAddDialog(false)
+    setEditingGoal(null)
+    setNewItem({ name: '', amount: '', targetDate: '', category: 'savings' })
+  }
+
+  const handleDeleteGoal = (goalId: string) => {
+    setGoalToDelete(goalId)
+    setShowDeleteDialog(true)
+  }
+
+  const confirmDeleteGoal = () => {
+    if (goalToDelete) {
+      setFinancialGoals(prev => prev.filter(goal => goal.id !== goalToDelete))
+      toast({
+        title: "Goal Deleted",
+        description: "Successfully deleted the financial goal",
+      })
+    }
+    setShowDeleteDialog(false)
+    setGoalToDelete(null)
   }
 
   const formatCurrency = (amount: number) => {
@@ -448,9 +512,9 @@ export function BudgetingAnalytics() {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Add to Your Budget</DialogTitle>
+                      <DialogTitle>{editingGoal ? 'Edit Financial Goal' : 'Add to Your Budget'}</DialogTitle>
                       <DialogDescription>
-                        Create a budget category or set a financial goal
+                        {editingGoal ? 'Update your financial goal details' : 'Create a budget category or set a financial goal'}
                       </DialogDescription>
                     </DialogHeader>
                     
@@ -514,11 +578,15 @@ export function BudgetingAnalytics() {
                       )}
                       
                       <div className="flex gap-2 pt-4">
-                        <Button variant="outline" onClick={() => setShowAddDialog(false)} className="flex-1">
+                        <Button variant="outline" onClick={() => {
+                          setShowAddDialog(false)
+                          setEditingGoal(null)
+                          setNewItem({ name: '', amount: '', targetDate: '', category: 'savings' })
+                        }} className="flex-1">
                           Cancel
                         </Button>
-                        <Button onClick={handleAddItem} className="flex-1">
-                          {addType === 'budget' ? 'Add Budget' : 'Add Goal'}
+                        <Button onClick={editingGoal ? handleUpdateGoal : handleAddItem} className="flex-1">
+                          {editingGoal ? 'Update Goal' : (addType === 'budget' ? 'Add Budget' : 'Add Goal')}
                         </Button>
                       </div>
                     </div>
@@ -655,9 +723,27 @@ export function BudgetingAnalytics() {
                     <div key={goal.id} className="p-4 border rounded-lg">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-medium">{goal.name}</h4>
-                        <Badge variant="outline" className={getPriorityColor(goal.priority)}>
-                          {goal.priority}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className={getPriorityColor(goal.priority)}>
+                            {goal.priority}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleEditGoal(goal)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteGoal(goal.id)}
+                            className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
@@ -711,6 +797,26 @@ export function BudgetingAnalytics() {
           </Card>
         </>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Financial Goal</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this financial goal? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 pt-4">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} className="flex-1">
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDeleteGoal} className="flex-1">
+              Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
