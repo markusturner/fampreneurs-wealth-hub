@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Slider } from '@/components/ui/slider'
 import { useToast } from '@/hooks/use-toast'
 import { 
   Plus, 
@@ -21,99 +22,85 @@ import {
   CheckCircle,
   BrainCircuit,
   Edit,
-  Trash2
+  Trash2,
+  Wallet,
+  RefreshCw
 } from 'lucide-react'
-import { PieChart as RechartsPieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 
-interface BudgetCategory {
+interface ProfitFirstAccount {
   id: string
   name: string
-  budgeted: number
-  spent: number
-  remaining: number
-  percentage: number
-  color: string
-  isOverBudget: boolean
-}
-
-interface FinancialGoal {
-  id: string
-  name: string
+  targetPercentage: number
+  currentPercentage: number
   targetAmount: number
   currentAmount: number
-  targetDate: string
-  category: string
-  priority: 'high' | 'medium' | 'low'
-  isCompleted: boolean
+  color: string
+  isCustom: boolean
 }
 
-interface AIRecommendation {
-  id: string
-  type: 'savings' | 'spending' | 'investment' | 'goal'
-  title: string
-  description: string
-  impact: number
-  priority: 'high' | 'medium' | 'low'
+interface MonthlyTrend {
+  month: string
+  revenue: number
+  profit: number
+  ownersPay: number
+  tax: number
+  opex: number
 }
 
 export function BudgetingAnalytics() {
   const { user } = useAuth()
   const { toast } = useToast()
-  const [budgetCategories, setBudgetCategories] = useState<BudgetCategory[]>([])
-  const [financialGoals, setFinancialGoals] = useState<FinancialGoal[]>([])
-  const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>([])
-  const [connectedAccounts, setConnectedAccounts] = useState<any[]>([])
-  const [transactions, setTransactions] = useState<any[]>([])
-  const [showAddDialog, setShowAddDialog] = useState(false)
-  const [addType, setAddType] = useState<'budget' | 'goal'>('budget')
+  const [profitFirstAccounts, setProfitFirstAccounts] = useState<ProfitFirstAccount[]>([])
+  const [bankAccounts, setBankAccounts] = useState<any[]>([])
+  const [monthlyRevenue, setMonthlyRevenue] = useState<number>(0)
+  const [showSetupDialog, setShowSetupDialog] = useState(false)
+  const [showRevenueDialog, setShowRevenueDialog] = useState(false)
   const [loading, setLoading] = useState(true)
   const [isOperational, setIsOperational] = useState(false)
-  const [editingGoal, setEditingGoal] = useState<FinancialGoal | null>(null)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [goalToDelete, setGoalToDelete] = useState<string | null>(null)
-
-  const [newItem, setNewItem] = useState({
-    name: '',
-    amount: '',
-    targetDate: '',
-    category: 'savings'
-  })
+  const [monthlyTrends, setMonthlyTrends] = useState<MonthlyTrend[]>([])
+  const [revenueInput, setRevenueInput] = useState('')
 
   useEffect(() => {
-    checkDataAvailabilityAndFetchBudget()
+    checkDataAvailabilityAndFetchAccounts()
   }, [user])
 
-  // Load data from localStorage on component mount
+  // Load Profit First data from localStorage
   useEffect(() => {
     if (user) {
-      const savedBudgets = localStorage.getItem(`budgets_${user.id}`)
-      const savedGoals = localStorage.getItem(`goals_${user.id}`)
+      const savedAccounts = localStorage.getItem(`profit_first_${user.id}`)
+      const savedRevenue = localStorage.getItem(`monthly_revenue_${user.id}`)
       const savedOperational = localStorage.getItem(`operational_${user.id}`)
       
-      if (savedBudgets) {
-        setBudgetCategories(JSON.parse(savedBudgets))
+      if (savedAccounts) {
+        setProfitFirstAccounts(JSON.parse(savedAccounts))
+      } else {
+        // Initialize default Profit First accounts
+        initializeDefaultAccounts()
       }
-      if (savedGoals) {
-        setFinancialGoals(JSON.parse(savedGoals))
+      
+      if (savedRevenue) {
+        setMonthlyRevenue(parseFloat(savedRevenue))
       }
+      
       if (savedOperational === 'true') {
         setIsOperational(true)
       }
     }
   }, [user])
 
-  // Save to localStorage whenever data changes
+  // Save Profit First data to localStorage
   useEffect(() => {
-    if (user && budgetCategories.length > 0) {
-      localStorage.setItem(`budgets_${user.id}`, JSON.stringify(budgetCategories))
+    if (user && profitFirstAccounts.length > 0) {
+      localStorage.setItem(`profit_first_${user.id}`, JSON.stringify(profitFirstAccounts))
     }
-  }, [budgetCategories, user])
+  }, [profitFirstAccounts, user])
 
   useEffect(() => {
-    if (user && financialGoals.length > 0) {
-      localStorage.setItem(`goals_${user.id}`, JSON.stringify(financialGoals))
+    if (user && monthlyRevenue > 0) {
+      localStorage.setItem(`monthly_revenue_${user.id}`, monthlyRevenue.toString())
     }
-  }, [financialGoals, user])
+  }, [monthlyRevenue, user])
 
   useEffect(() => {
     if (user) {
@@ -121,201 +108,212 @@ export function BudgetingAnalytics() {
     }
   }, [isOperational, user])
 
-  const checkDataAvailabilityAndFetchBudget = async () => {
+  const initializeDefaultAccounts = () => {
+    const defaultAccounts: ProfitFirstAccount[] = [
+      {
+        id: 'profit',
+        name: 'Profit Account',
+        targetPercentage: 5,
+        currentPercentage: 0,
+        targetAmount: 0,
+        currentAmount: 0,
+        color: '#22c55e',
+        isCustom: false
+      },
+      {
+        id: 'owners-pay',
+        name: "Owner's Pay",
+        targetPercentage: 50,
+        currentPercentage: 0,
+        targetAmount: 0,
+        currentAmount: 0,
+        color: '#3b82f6',
+        isCustom: false
+      },
+      {
+        id: 'tax',
+        name: 'Tax Account',
+        targetPercentage: 15,
+        currentPercentage: 0,
+        targetAmount: 0,
+        currentAmount: 0,
+        color: '#ef4444',
+        isCustom: false
+      },
+      {
+        id: 'opex',
+        name: 'Operating Expenses',
+        targetPercentage: 30,
+        currentPercentage: 0,
+        targetAmount: 0,
+        currentAmount: 0,
+        color: '#f59e0b',
+        isCustom: false
+      }
+    ]
+    setProfitFirstAccounts(defaultAccounts)
+  }
+
+  const checkDataAvailabilityAndFetchAccounts = async () => {
     try {
       setLoading(true)
       
-      // Check for connected accounts and transactions
-      let hasAccounts = false
-      let hasTransactions = false
-      
       if (!user) {
-        // For non-authenticated users, use empty data
-        setBudgetCategories([])
-        setFinancialGoals([])
-        setAiRecommendations([])
         setIsOperational(false)
         return
       }
       
-      // For authenticated users, fetch from Supabase
+      // Fetch only bank accounts (not investment accounts)
       const { data: accounts, error: accountsError } = await supabase
         .from('connected_accounts')
         .select('*')
         .eq('user_id', user.id)
+        .eq('account_type', 'bank')
 
       if (!accountsError && accounts) {
-        setConnectedAccounts(accounts)
-        hasAccounts = accounts.length > 0
-      }
-
-      const { data: dbTransactions, error: transactionsError } = await supabase
-        .from('account_transactions')
-        .select('*')
-        .eq('user_id', user.id)
-        .limit(10)
-
-      if (!transactionsError && dbTransactions) {
-        setTransactions(dbTransactions)
-        hasTransactions = dbTransactions.length > 0
-      }
-
-      // Don't automatically load mock data - only set operational state
-      if (hasAccounts || hasTransactions) {
-        setIsOperational(true)
-        // Only show empty state initially, user can choose to load sample data or create manual budgets
+        setBankAccounts(accounts)
+        setIsOperational(accounts.length > 0)
+        
+        // Generate monthly trends from account data
+        if (accounts.length > 0) {
+          generateMonthlyTrends(accounts)
+        }
       } else {
-        setBudgetCategories([])
-        setFinancialGoals([])
-        setAiRecommendations([])
+        setBankAccounts([])
         setIsOperational(false)
       }
     } catch (error) {
       console.error('Error checking data availability:', error)
-      setBudgetCategories([])
-      setFinancialGoals([])
-      setAiRecommendations([])
+      setBankAccounts([])
       setIsOperational(false)
     } finally {
       setLoading(false)
     }
   }
 
-  const fetchBudgetData = async () => {
-    try {
-      // This function is only called when there are actual accounts/transactions
-      // For now, we'll keep it empty and only allow manual budget creation
-      // Real budget data should come from actual transaction analysis
+  const generateMonthlyTrends = (accounts: any[]) => {
+    // Generate mock monthly trends based on account balances
+    // In real implementation, this would analyze transaction history
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    const currentMonth = new Date().getMonth()
+    
+    const trends: MonthlyTrend[] = months.slice(0, currentMonth + 1).map((month, index) => {
+      const baseRevenue = monthlyRevenue || 10000
+      const variation = Math.random() * 0.3 - 0.15 // ±15% variation
+      const revenue = baseRevenue * (1 + variation)
       
-      // No mock data - users must create their own budgets
-      setBudgetCategories([])
-      setFinancialGoals([])
-      setAiRecommendations([])
-    } catch (error) {
-      console.error('Error fetching budget data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleAddItem = async () => {
-    if (!newItem.name || !newItem.amount) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      })
-      return
-    }
-
-    if (addType === 'budget') {
-      const budget: BudgetCategory = {
-        id: Date.now().toString(),
-        name: newItem.name,
-        budgeted: parseFloat(newItem.amount),
-        spent: 0,
-        remaining: parseFloat(newItem.amount),
-        percentage: 0,
-        color: '#6b7280',
-        isOverBudget: false
+      return {
+        month,
+        revenue,
+        profit: revenue * 0.05,
+        ownersPay: revenue * 0.50,
+        tax: revenue * 0.15,
+        opex: revenue * 0.30
       }
-
-      setBudgetCategories(prev => [...prev, budget])
-      toast({
-        title: "Budget Category Added",
-        description: `Successfully created budget for ${newItem.name}`,
-      })
-    } else {
-      if (!newItem.targetDate) {
-        toast({
-          title: "Error",
-          description: "Please set a target date for your goal",
-          variant: "destructive"
-        })
-        return
-      }
-
-      const goal: FinancialGoal = {
-        id: Date.now().toString(),
-        name: newItem.name,
-        targetAmount: parseFloat(newItem.amount),
-        currentAmount: 0,
-        targetDate: newItem.targetDate,
-        category: newItem.category,
-        priority: 'medium',
-        isCompleted: false
-      }
-
-      setFinancialGoals(prev => [...prev, goal])
-      toast({
-        title: "Financial Goal Added",
-        description: `Successfully created goal: ${newItem.name}`,
-      })
-    }
-
-    setShowAddDialog(false)
-    setNewItem({ name: '', amount: '', targetDate: '', category: 'savings' })
-  }
-
-  const handleEditGoal = (goal: FinancialGoal) => {
-    setEditingGoal(goal)
-    setNewItem({
-      name: goal.name,
-      amount: goal.targetAmount.toString(),
-      targetDate: goal.targetDate,
-      category: goal.category
     })
-    setAddType('goal')
-    setShowAddDialog(true)
+    
+    setMonthlyTrends(trends)
   }
 
-  const handleUpdateGoal = () => {
-    if (!editingGoal || !newItem.name || !newItem.amount || !newItem.targetDate) {
+  const updateAccountPercentage = (accountId: string, percentage: number) => {
+    setProfitFirstAccounts(prev => prev.map(account => 
+      account.id === accountId 
+        ? { 
+            ...account, 
+            targetPercentage: percentage,
+            targetAmount: monthlyRevenue * (percentage / 100)
+          }
+        : account
+    ))
+  }
+
+  const allocateRevenue = async () => {
+    if (!monthlyRevenue || monthlyRevenue <= 0) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: "Please set your monthly revenue first",
         variant: "destructive"
       })
       return
     }
 
-    const updatedGoal: FinancialGoal = {
-      ...editingGoal,
-      name: newItem.name,
-      targetAmount: parseFloat(newItem.amount),
-      targetDate: newItem.targetDate,
-      category: newItem.category
+    const totalPercentage = profitFirstAccounts.reduce((sum, account) => sum + account.targetPercentage, 0)
+    
+    if (totalPercentage !== 100) {
+      toast({
+        title: "Error",
+        description: `Percentages must add up to 100%. Current total: ${totalPercentage}%`,
+        variant: "destructive"
+      })
+      return
     }
 
-    setFinancialGoals(prev => prev.map(goal => 
-      goal.id === editingGoal.id ? updatedGoal : goal
-    ))
+    // Update current amounts based on revenue allocation
+    setProfitFirstAccounts(prev => prev.map(account => ({
+      ...account,
+      targetAmount: monthlyRevenue * (account.targetPercentage / 100),
+      currentAmount: monthlyRevenue * (account.targetPercentage / 100),
+      currentPercentage: account.targetPercentage
+    })))
+
+    // Update monthly trends
+    generateMonthlyTrends(bankAccounts)
 
     toast({
-      title: "Goal Updated",
-      description: `Successfully updated ${newItem.name}`,
+      title: "Revenue Allocated",
+      description: `Successfully allocated ${formatCurrency(monthlyRevenue)} across your Profit First accounts`,
     })
-
-    setShowAddDialog(false)
-    setEditingGoal(null)
-    setNewItem({ name: '', amount: '', targetDate: '', category: 'savings' })
   }
 
-  const handleDeleteGoal = (goalId: string) => {
-    setGoalToDelete(goalId)
-    setShowDeleteDialog(true)
-  }
-
-  const confirmDeleteGoal = () => {
-    if (goalToDelete) {
-      setFinancialGoals(prev => prev.filter(goal => goal.id !== goalToDelete))
+  const handleRevenueInput = () => {
+    const revenue = parseFloat(revenueInput)
+    if (isNaN(revenue) || revenue <= 0) {
       toast({
-        title: "Goal Deleted",
-        description: "Successfully deleted the financial goal",
+        title: "Error",
+        description: "Please enter a valid revenue amount",
+        variant: "destructive"
       })
+      return
     }
-    setShowDeleteDialog(false)
-    setGoalToDelete(null)
+
+    setMonthlyRevenue(revenue)
+    
+    // Update target amounts for all accounts
+    setProfitFirstAccounts(prev => prev.map(account => ({
+      ...account,
+      targetAmount: revenue * (account.targetPercentage / 100)
+    })))
+
+    generateMonthlyTrends(bankAccounts)
+    setShowRevenueDialog(false)
+    setRevenueInput('')
+
+    toast({
+      title: "Revenue Updated",
+      description: `Monthly revenue set to ${formatCurrency(revenue)}`,
+    })
+  }
+
+  const resetPercentages = () => {
+    setProfitFirstAccounts(prev => prev.map(account => {
+      const defaultPercentages: Record<string, number> = {
+        'profit': 5,
+        'owners-pay': 50,
+        'tax': 15,
+        'opex': 30
+      }
+      
+      return {
+        ...account,
+        targetPercentage: defaultPercentages[account.id] || account.targetPercentage,
+        targetAmount: monthlyRevenue * ((defaultPercentages[account.id] || account.targetPercentage) / 100)
+      }
+    }))
+
+    toast({
+      title: "Percentages Reset",
+      description: "Profit First percentages have been reset to defaults",
+    })
   }
 
   const formatCurrency = (amount: number) => {
@@ -327,27 +325,9 @@ export function BudgetingAnalytics() {
     }).format(amount)
   }
 
-  const getTotalBudgeted = () => budgetCategories.reduce((sum, cat) => sum + cat.budgeted, 0)
-  const getTotalSpent = () => budgetCategories.reduce((sum, cat) => sum + cat.spent, 0)
-  const getTotalRemaining = () => budgetCategories.reduce((sum, cat) => sum + cat.remaining, 0)
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800'
-      case 'medium': return 'bg-yellow-100 text-yellow-800'
-      case 'low': return 'bg-green-100 text-green-800'
-      default: return 'bg-gray-100 text-gray-800'
-    }
-  }
-
-  const spendingTrendData = [
-    { month: 'Jan', budget: 4600, actual: 4200 },
-    { month: 'Feb', budget: 4600, actual: 4500 },
-    { month: 'Mar', budget: 4600, actual: 4800 },
-    { month: 'Apr', budget: 4600, actual: 4300 },
-    { month: 'May', budget: 4600, actual: 4700 },
-    { month: 'Jun', budget: 4600, actual: 4020 }
-  ]
+  const getTotalAllocated = () => profitFirstAccounts.reduce((sum, account) => sum + account.targetAmount, 0)
+  const getTotalPercentage = () => profitFirstAccounts.reduce((sum, account) => sum + account.targetPercentage, 0)
+  const getBankAccountsBalance = () => bankAccounts.reduce((sum, account) => sum + (account.balance || 0), 0)
 
   if (!isOperational) {
     return (
@@ -355,30 +335,27 @@ export function BudgetingAnalytics() {
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
-              <BrainCircuit className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">Budget & Analytics</h3>
+              <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">Profit First Budgeting</h3>
               <p className="text-muted-foreground mb-4">
-                Connect your accounts or add transactions to start using advanced budgeting and analytics tools.
+                Connect your bank accounts to start using the Profit First budgeting system.
               </p>
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Budget categories and spending analytics will appear once you have transaction data.
+                  This system will automatically allocate your revenue into Profit, Owner's Pay, Tax, and Operating Expense accounts.
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  You can still manually add budget categories and financial goals to get started.
+                  You can also set up manual budgeting if you don't have connected accounts.
                 </p>
               </div>
               <Button 
                 onClick={() => {
                   setIsOperational(true)
-                  // Clear any existing mock data and just enable the UI
-                  setBudgetCategories([])
-                  setFinancialGoals([])
-                  setAiRecommendations([])
+                  initializeDefaultAccounts()
                 }} 
                 className="mt-4"
               >
-                Create Manual Budget
+                Start Manual Profit First Setup
               </Button>
             </div>
           </CardContent>
@@ -389,472 +366,217 @@ export function BudgetingAnalytics() {
 
   return (
     <div className="space-y-6">
-      {/* Only show empty message when operational but no data exists */}
-      {isOperational && budgetCategories.length === 0 && financialGoals.length === 0 && (
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <BrainCircuit className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-2">Ready to Create Your Budget</h3>
-              <p className="text-muted-foreground mb-4">
-                Start by adding budget categories and financial goals to track your progress.
-              </p>
-              <div className="flex justify-center">
-                <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-                <DialogTrigger asChild>
-                  <Button className="flex items-center gap-2" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
-                    <Plus className="h-4 w-4" />
-                    Add Budget Item
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add to Your Budget</DialogTitle>
-                    <DialogDescription>
-                      Create a budget category or set a financial goal
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  <div className="space-y-4">
-                    {/* Type Selection */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        variant={addType === 'budget' ? 'default' : 'outline'}
-                        onClick={() => setAddType('budget')}
-                        className="flex items-center gap-2"
-                      >
-                        <PieChart className="h-4 w-4" />
-                        Budget Category
-                      </Button>
-                      <Button
-                        variant={addType === 'goal' ? 'default' : 'outline'}
-                        onClick={() => setAddType('goal')}
-                        className="flex items-center gap-2"
-                      >
-                        <Target className="h-4 w-4" />
-                        Financial Goal
-                      </Button>
-                    </div>
-                    
-                    {/* Form Fields */}
-                    <div className="space-y-2">
-                      <Label htmlFor="itemName">
-                        {addType === 'budget' ? 'Category Name' : 'Goal Name'}
-                      </Label>
-                      <Input
-                        id="itemName"
-                        value={newItem.name}
-                        onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-                        placeholder={addType === 'budget' ? 'e.g., Food & Dining, Entertainment' : 'e.g., Emergency Fund, Vacation'}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="itemAmount">
-                        {addType === 'budget' ? 'Monthly Budget Amount' : 'Target Amount'}
-                      </Label>
-                      <Input
-                        id="itemAmount"
-                        type="number"
-                        value={newItem.amount}
-                        onChange={(e) => setNewItem(prev => ({ ...prev, amount: e.target.value }))}
-                        placeholder={addType === 'budget' ? '1000' : '50000'}
-                      />
-                    </div>
-                    
-                    {addType === 'goal' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="itemDate">Target Date</Label>
-                        <Input
-                          id="itemDate"
-                          type="date"
-                          value={newItem.targetDate}
-                          onChange={(e) => setNewItem(prev => ({ ...prev, targetDate: e.target.value }))}
-                        />
-                      </div>
-                    )}
-                    
-                    <div className="flex gap-2 pt-4">
-                      <Button variant="outline" onClick={() => setShowAddDialog(false)} className="flex-1">
-                        Cancel
-                      </Button>
-                      <Button onClick={handleAddItem} className="flex-1">
-                        {addType === 'budget' ? 'Add Budget' : 'Add Goal'}
-                      </Button>
-                    </div>
+      {/* Revenue Input Card */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Monthly Revenue</CardTitle>
+            <CardDescription>Set your monthly revenue to enable automatic allocation</CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Dialog open={showRevenueDialog} onOpenChange={setShowRevenueDialog}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline">
+                  <Edit className="h-4 w-4 mr-2" />
+                  {monthlyRevenue > 0 ? 'Update' : 'Set'} Revenue
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Set Monthly Revenue</DialogTitle>
+                  <DialogDescription>
+                    Enter your average monthly business revenue for Profit First allocation
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="revenue">Monthly Revenue ($)</Label>
+                    <Input
+                      id="revenue"
+                      type="number"
+                      value={revenueInput}
+                      onChange={(e) => setRevenueInput(e.target.value)}
+                      placeholder="25000"
+                    />
                   </div>
-                </DialogContent>
-              </Dialog>
-              </div>
+                  <div className="flex gap-2 pt-4">
+                    <Button variant="outline" onClick={() => {
+                      setShowRevenueDialog(false)
+                      setRevenueInput('')
+                    }} className="flex-1">
+                      Cancel
+                    </Button>
+                    <Button onClick={handleRevenueInput} className="flex-1">
+                      Set Revenue
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+            {monthlyRevenue > 0 && (
+              <Button size="sm" onClick={allocateRevenue} className="bg-primary">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Allocate
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center">
+            <p className="text-3xl font-bold">{formatCurrency(monthlyRevenue)}</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {monthlyRevenue > 0 ? 'Current monthly revenue' : 'Set your monthly revenue to get started'}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bank Accounts Overview */}
+      {bankAccounts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Connected Bank Accounts</CardTitle>
+            <CardDescription>Your business accounts available for allocation</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {bankAccounts.map((account) => (
+                <div key={account.id} className="p-4 border rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium">{account.account_name}</h4>
+                    <Badge variant="outline" className="text-xs">
+                      {account.provider}
+                    </Badge>
+                  </div>
+                  <p className="text-2xl font-bold">{formatCurrency(account.balance || 0)}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Last synced: {new Date(account.last_sync).toLocaleDateString()}
+                  </p>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Budget Overview Cards */}
-      {(budgetCategories.length > 0 || financialGoals.length > 0) && (
-        <>
-          {/* Summary Stats */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Budget</p>
-                    <p className="text-2xl font-bold">{formatCurrency(getTotalBudgeted())}</p>
+      {/* Profit First Allocation */}
+      {profitFirstAccounts.length > 0 && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Profit First Allocation</CardTitle>
+              <CardDescription>Allocate your revenue across the four pillars</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" onClick={resetPercentages}>
+                Reset to Default
+              </Button>
+              <Badge variant={getTotalPercentage() === 100 ? "default" : "destructive"}>
+                {getTotalPercentage()}%
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {profitFirstAccounts.map((account) => (
+                <div key={account.id} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div 
+                        className="w-4 h-4 rounded-full" 
+                        style={{ backgroundColor: account.color }}
+                      />
+                      <h4 className="font-medium">{account.name}</h4>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">{formatCurrency(account.targetAmount)}</p>
+                      <p className="text-xs text-muted-foreground">{account.targetPercentage}%</p>
+                    </div>
                   </div>
-                  <DollarSign className="h-8 w-8 text-muted-foreground" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Spent</p>
-                    <p className="text-2xl font-bold">{formatCurrency(getTotalSpent())}</p>
+                  
+                  <div className="space-y-2">
+                    <Slider
+                      value={[account.targetPercentage]}
+                      onValueChange={(value) => updateAccountPercentage(account.id, value[0])}
+                      max={100}
+                      step={1}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>0%</span>
+                      <span>100%</span>
+                    </div>
                   </div>
-                  <TrendingDown className="h-8 w-8 text-red-500" />
+                  
+                  <Progress 
+                    value={account.currentAmount > 0 ? (account.currentAmount / account.targetAmount) * 100 : 0} 
+                    className="h-2"
+                    style={{ 
+                      backgroundColor: `${account.color}20`,
+                    }}
+                  />
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Remaining</p>
-                    <p className="text-2xl font-bold">{formatCurrency(getTotalRemaining())}</p>
-                  </div>
-                  <TrendingUp className="h-8 w-8 text-green-500" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Budget Categories */}
-          {budgetCategories.length > 0 && (
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Budget Categories</CardTitle>
-                  <CardDescription>Track spending across different categories</CardDescription>
-                </div>
-                <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-                  <DialogTrigger asChild>
-                    <Button size="sm" className="flex items-center gap-2" onClick={() => setAddType('budget')}>
-                      <Plus className="h-4 w-4" />
-                      Add Category
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>{editingGoal ? 'Edit Financial Goal' : 'Add to Your Budget'}</DialogTitle>
-                      <DialogDescription>
-                        {editingGoal ? 'Update your financial goal details' : 'Create a budget category or set a financial goal'}
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="space-y-4">
-                      {/* Type Selection */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          variant={addType === 'budget' ? 'default' : 'outline'}
-                          onClick={() => setAddType('budget')}
-                          className="flex items-center gap-2"
-                        >
-                          <PieChart className="h-4 w-4" />
-                          Budget Category
-                        </Button>
-                        <Button
-                          variant={addType === 'goal' ? 'default' : 'outline'}
-                          onClick={() => setAddType('goal')}
-                          className="flex items-center gap-2"
-                        >
-                          <Target className="h-4 w-4" />
-                          Financial Goal
-                        </Button>
-                      </div>
-                      
-                      {/* Form Fields */}
-                      <div className="space-y-2">
-                        <Label htmlFor="itemName">
-                          {addType === 'budget' ? 'Category Name' : 'Goal Name'}
-                        </Label>
-                        <Input
-                          id="itemName"
-                          value={newItem.name}
-                          onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder={addType === 'budget' ? 'e.g., Food & Dining, Entertainment' : 'e.g., Emergency Fund, Vacation'}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="itemAmount">
-                          {addType === 'budget' ? 'Monthly Budget Amount' : 'Target Amount'}
-                        </Label>
-                        <Input
-                          id="itemAmount"
-                          type="number"
-                          value={newItem.amount}
-                          onChange={(e) => setNewItem(prev => ({ ...prev, amount: e.target.value }))}
-                          placeholder={addType === 'budget' ? '1000' : '50000'}
-                        />
-                      </div>
-                      
-                      {addType === 'goal' && (
-                        <div className="space-y-2">
-                          <Label htmlFor="itemDate">Target Date</Label>
-                          <Input
-                            id="itemDate"
-                            type="date"
-                            value={newItem.targetDate}
-                            onChange={(e) => setNewItem(prev => ({ ...prev, targetDate: e.target.value }))}
-                          />
-                        </div>
-                      )}
-                      
-                      <div className="flex gap-2 pt-4">
-                        <Button variant="outline" onClick={() => {
-                          setShowAddDialog(false)
-                          setEditingGoal(null)
-                          setNewItem({ name: '', amount: '', targetDate: '', category: 'savings' })
-                        }} className="flex-1">
-                          Cancel
-                        </Button>
-                        <Button onClick={editingGoal ? handleUpdateGoal : handleAddItem} className="flex-1">
-                          {editingGoal ? 'Update Goal' : (addType === 'budget' ? 'Add Budget' : 'Add Goal')}
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {budgetCategories.map((category) => (
-                    <div key={category.id} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium">{category.name}</h4>
-                        <div className="text-sm text-muted-foreground">
-                          {formatCurrency(category.spent)} / {formatCurrency(category.budgeted)}
-                        </div>
-                      </div>
-                      <Progress value={category.percentage} className="h-2" />
-                      <div className="flex items-center justify-between text-sm">
-                        <span className={category.isOverBudget ? "text-red-500" : "text-green-500"}>
-                          {category.isOverBudget ? "Over budget" : "On track"}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {formatCurrency(category.remaining)} remaining
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Financial Goals */}
-          {financialGoals.length > 0 && (
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Financial Goals</CardTitle>
-                  <CardDescription>Track progress toward your financial objectives</CardDescription>
-                </div>
-                <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="flex items-center gap-2"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Add Goal
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add to Your Budget</DialogTitle>
-                      <DialogDescription>
-                        Create a budget category or set a financial goal
-                      </DialogDescription>
-                    </DialogHeader>
-                    
-                    <div className="space-y-4">
-                      {/* Type Selection */}
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          variant={addType === 'budget' ? 'default' : 'outline'}
-                          onClick={() => setAddType('budget')}
-                          className="flex items-center gap-2"
-                        >
-                          <PieChart className="h-4 w-4" />
-                          Budget Category
-                        </Button>
-                        <Button
-                          variant={addType === 'goal' ? 'default' : 'outline'}
-                          onClick={() => setAddType('goal')}
-                          className="flex items-center gap-2"
-                        >
-                          <Target className="h-4 w-4" />
-                          Financial Goal
-                        </Button>
-                      </div>
-                      
-                      {/* Form Fields */}
-                      <div className="space-y-2">
-                        <Label htmlFor="itemName">
-                          {addType === 'budget' ? 'Category Name' : 'Goal Name'}
-                        </Label>
-                        <Input
-                          id="itemName"
-                          value={newItem.name}
-                          onChange={(e) => setNewItem(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder={addType === 'budget' ? 'e.g., Food & Dining, Entertainment' : 'e.g., Emergency Fund, Vacation'}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="itemAmount">
-                          {addType === 'budget' ? 'Monthly Budget Amount' : 'Target Amount'}
-                        </Label>
-                        <Input
-                          id="itemAmount"
-                          type="number"
-                          value={newItem.amount}
-                          onChange={(e) => setNewItem(prev => ({ ...prev, amount: e.target.value }))}
-                          placeholder={addType === 'budget' ? '1000' : '50000'}
-                        />
-                      </div>
-                      
-                      {addType === 'goal' && (
-                        <div className="space-y-2">
-                          <Label htmlFor="itemDate">Target Date</Label>
-                          <Input
-                            id="itemDate"
-                            type="date"
-                            value={newItem.targetDate}
-                            onChange={(e) => setNewItem(prev => ({ ...prev, targetDate: e.target.value }))}
-                          />
-                        </div>
-                      )}
-                      
-                      <div className="flex gap-2 pt-4">
-                        <Button variant="outline" onClick={() => setShowAddDialog(false)} className="flex-1">
-                          Cancel
-                        </Button>
-                        <Button onClick={handleAddItem} className="flex-1">
-                          {addType === 'budget' ? 'Add Budget' : 'Add Goal'}
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 md:grid-cols-2">
-                  {financialGoals.map((goal) => (
-                    <div key={goal.id} className="p-4 border rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">{goal.name}</h4>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className={getPriorityColor(goal.priority)}>
-                            {goal.priority}
-                          </Badge>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleEditGoal(goal)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleDeleteGoal(goal.id)}
-                            className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span>{formatCurrency(goal.currentAmount)}</span>
-                          <span>{formatCurrency(goal.targetAmount)}</span>
-                        </div>
-                        <Progress value={(goal.currentAmount / goal.targetAmount) * 100} className="h-2" />
-                        <div className="flex justify-between text-sm text-muted-foreground">
-                          <span>{Math.round((goal.currentAmount / goal.targetAmount) * 100)}% complete</span>
-                          <span>Due: {new Date(goal.targetDate).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Spending Trends Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Spending Trends</CardTitle>
-              <CardDescription>Monthly budget vs actual spending comparison</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <style>
-                {`
-                  .recharts-bar-rectangle {
-                    filter: drop-shadow(0 0 8px currentColor);
-                  }
-                  .glow-orange {
-                    filter: drop-shadow(0 0 2px rgba(255, 181, 0, 0.2)) drop-shadow(0 0 4px rgba(255, 181, 0, 0.1));
-                  }
-                  .glow-white {
-                    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.15)) drop-shadow(0 0 4px rgba(255, 255, 255, 0.05));
-                  }
-                `}
-              </style>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={spendingTrendData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
-                  <Bar dataKey="budget" fill="#ffb500" name="Budget" className="glow-orange" />
-                  <Bar dataKey="actual" fill="#ffffff" name="Actual" className="glow-white" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Financial Goal</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this financial goal? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-2 pt-4">
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} className="flex-1">
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={confirmDeleteGoal} className="flex-1">
-              Delete
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Monthly Performance Trend */}
+      {monthlyTrends.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Monthly Profit First Performance</CardTitle>
+            <CardDescription>Track your allocation performance throughout the year</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={400}>
+              <LineChart data={monthlyTrends}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                <Line 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="#8884d8" 
+                  strokeWidth={3}
+                  name="Revenue"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="profit" 
+                  stroke="#22c55e" 
+                  strokeWidth={2}
+                  name="Profit"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="ownersPay" 
+                  stroke="#3b82f6" 
+                  strokeWidth={2}
+                  name="Owner's Pay"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="tax" 
+                  stroke="#ef4444" 
+                  strokeWidth={2}
+                  name="Tax"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="opex" 
+                  stroke="#f59e0b" 
+                  strokeWidth={2}
+                  name="Operating Expenses"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
     </div>
   )
 }
