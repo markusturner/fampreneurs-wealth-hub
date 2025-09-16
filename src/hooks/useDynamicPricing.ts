@@ -37,19 +37,19 @@ export const useDynamicPricing = (): DynamicPricing => {
   const baseTiers = [
     {
       name: "Starter",
-      description: "Perfect for individuals getting started with wealth building",
+      description: "Full access with monthly billing flexibility",
       popular: false,
       features: sharedFeatures
     },
     {
       name: "Professional", 
-      description: "Ideal for growing families with multiple income streams",
+      description: "Best value with quarterly billing savings",
       popular: true,
       features: sharedFeatures
     },
     {
       name: "Enterprise",
-      description: "Complete family office solution for serious wealth builders", 
+      description: "Maximum savings with annual commitment", 
       popular: false,
       features: sharedFeatures
     }
