@@ -158,7 +158,7 @@ export default function Documents() {
     duration: "4 weeks",
     description: "Essential principles for successful family business management",
     status: "published",
-    videos: ["https://youtu.be/example1", "https://youtu.be/example2"],
+    videos: [{ url: "https://youtu.be/example1", type: "youtube" }, { url: "https://youtu.be/example2", type: "youtube" }],
     modules: [{
       name: "Introduction to Family Business",
       duration: "45 minutes"
@@ -175,7 +175,7 @@ export default function Documents() {
     duration: "6 weeks",
     description: "Advanced strategies for preserving and growing family wealth across generations",
     status: "published",
-    videos: ["https://youtu.be/example3"],
+    videos: [{ url: "https://youtu.be/example3", type: "youtube" }],
     modules: [{
       name: "Investment Principles",
       duration: "50 minutes"
@@ -212,7 +212,11 @@ export default function Documents() {
     description: '',
     status: 'draft'
   });
-  const [videoUrls, setVideoUrls] = useState<string[]>(['']);
+  const [videoUrls, setVideoUrls] = useState<Array<{
+    url: string;
+    type: 'youtube' | 'loom' | 'file';
+    fileName?: string;
+  }>>([{ url: '', type: 'youtube' }]);
   const [courseModules, setCourseModules] = useState<Array<{
     name: string;
     duration: string;
@@ -502,11 +506,11 @@ export default function Documents() {
     }
   };
   const addVideoUrl = () => {
-    setVideoUrls([...videoUrls, '']);
+    setVideoUrls([...videoUrls, { url: '', type: 'youtube' }]);
   };
-  const updateVideoUrl = (index: number, url: string) => {
+  const updateVideoUrl = (index: number, field: 'url' | 'type' | 'fileName', value: string) => {
     const updated = [...videoUrls];
-    updated[index] = url;
+    updated[index] = { ...updated[index], [field]: value };
     setVideoUrls(updated);
   };
   const removeVideoUrl = (index: number) => {
@@ -537,7 +541,7 @@ export default function Documents() {
     }
     const course = {
       ...newCourse,
-      videos: videoUrls.filter(url => url.trim()),
+      videos: videoUrls.filter(video => video.url.trim()),
       modules: courseModules.filter(module => module.name.trim())
     };
     
@@ -551,7 +555,7 @@ export default function Documents() {
       description: '',
       status: 'draft'
     });
-    setVideoUrls(['']);
+    setVideoUrls([{ url: '', type: 'youtube' }]);
     setCourseModules([{
       name: '',
       duration: ''
@@ -568,7 +572,14 @@ export default function Documents() {
       description: course.description,
       status: course.status
     });
-    setVideoUrls(course.videos?.length ? course.videos : ['']);
+    setVideoUrls(course.videos?.length ? 
+      course.videos.map((v: any) => 
+        typeof v === 'string' 
+          ? { url: v, type: 'youtube' as const } 
+          : { url: v.url || '', type: (v.type || 'youtube') as 'youtube' | 'loom' | 'file', fileName: v.fileName }
+      ) : 
+      [{ url: '', type: 'youtube' as const }]
+    );
     setCourseModules(course.modules?.length ? course.modules : [{
       name: '',
       duration: ''
@@ -583,7 +594,7 @@ export default function Documents() {
     }
     const updatedCourse = {
       ...newCourse,
-      videos: videoUrls.filter(url => url.trim()),
+      videos: videoUrls.filter(video => video.url.trim()),
       modules: courseModules.filter(module => module.name.trim())
     };
     
@@ -601,7 +612,7 @@ export default function Documents() {
       description: '',
       status: 'draft'
     });
-    setVideoUrls(['']);
+    setVideoUrls([{ url: '', type: 'youtube' }]);
     setCourseModules([{
       name: '',
       duration: ''
@@ -1400,9 +1411,21 @@ export default function Documents() {
                 {selectedCourse.videos && selectedCourse.videos.length > 0 && <div>
                     <h4 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">Course Videos</h4>
                     <div className="grid gap-3 sm:gap-4">
-                      {selectedCourse.videos.map((videoUrl: string, index: number) => <div key={index} className="aspect-video bg-muted rounded-lg overflow-hidden">
-                          <iframe src={videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')} title={`${selectedCourse.title} - Video ${index + 1}`} className="w-full h-full" allowFullScreen />
-                        </div>)}
+                      {selectedCourse.videos.map((video: any, index: number) => {
+                        const videoUrl = typeof video === 'string' ? video : video.url;
+                        const embedUrl = videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/').replace('loom.com/share/', 'loom.com/embed/');
+                        
+                        return (
+                          <div key={index} className="aspect-video bg-muted rounded-lg overflow-hidden">
+                            <iframe 
+                              src={embedUrl} 
+                              title={`${selectedCourse.title} - Video ${index + 1}`} 
+                              className="w-full h-full" 
+                              allowFullScreen 
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>}
                 
@@ -1751,17 +1774,18 @@ export default function Documents() {
 
       {/* Create Course Dialog */}
       <Dialog open={showCreateCourseDialog} onOpenChange={setShowCreateCourseDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create New Course</DialogTitle>
             <DialogDescription>
-              Add a new family business education course
+              Add a new family business education course with modules and videos
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Basic Course Info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="course-title">Course Title</Label>
+                <Label htmlFor="course-title">Course Title *</Label>
                 <Input
                   id="course-title"
                   value={newCourse.title}
@@ -1770,7 +1794,7 @@ export default function Documents() {
                 />
               </div>
               <div>
-                <Label htmlFor="course-instructor">Instructor</Label>
+                <Label htmlFor="course-instructor">Instructor *</Label>
                 <Input
                   id="course-instructor"
                   value={newCourse.instructor}
@@ -1812,8 +1836,115 @@ export default function Documents() {
                 rows={3}
               />
             </div>
-            <div className="flex gap-2 pt-4">
-              <Button onClick={handleCreateCourse}>Create Course</Button>
+
+            {/* Videos Section */}
+            <div>
+              <Label className="text-base font-semibold">Course Videos</Label>
+              <p className="text-sm text-muted-foreground mb-3">Add videos via YouTube URL, Loom URL, or file upload</p>
+              <div className="space-y-3">
+                {videoUrls.map((url, index) => (
+                  <div key={index} className="flex gap-2 items-start">
+                    <div className="flex-1">
+                      <Select 
+                        value={url.type || 'youtube'} 
+                        onValueChange={(value) => updateVideoUrl(index, 'type', value)}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="youtube">YouTube</SelectItem>
+                          <SelectItem value="loom">Loom</SelectItem>
+                          <SelectItem value="file">File Upload</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex-[2]">
+                      {url.type === 'file' ? (
+                        <Input
+                          type="file"
+                          accept="video/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              updateVideoUrl(index, 'url', URL.createObjectURL(file));
+                              updateVideoUrl(index, 'fileName', file.name);
+                            }
+                          }}
+                        />
+                      ) : (
+                        <Input
+                          value={url.url || ''}
+                          onChange={(e) => updateVideoUrl(index, 'url', e.target.value)}
+                          placeholder={
+                            url.type === 'loom' 
+                              ? "Enter Loom URL (e.g., https://loom.com/share/...)"
+                              : "Enter YouTube URL (e.g., https://youtu.be/...)"
+                          }
+                        />
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeVideoUrl(index)}
+                      disabled={videoUrls.length === 1}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" onClick={addVideoUrl} className="w-full">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add Video
+                </Button>
+              </div>
+            </div>
+
+            {/* Modules Section */}
+            <div>
+              <Label className="text-base font-semibold">Course Modules</Label>
+              <p className="text-sm text-muted-foreground mb-3">Define the learning modules for this course</p>
+              <div className="space-y-3">
+                {courseModules.map((module, index) => (
+                  <div key={index} className="flex gap-2 items-start p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <Input
+                        value={module.name}
+                        onChange={(e) => updateModule(index, 'name', e.target.value)}
+                        placeholder="Module name (e.g., Introduction to Leadership)"
+                      />
+                    </div>
+                    <div className="w-32">
+                      <Input
+                        value={module.duration}
+                        onChange={(e) => updateModule(index, 'duration', e.target.value)}
+                        placeholder="Duration"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeModule(index)}
+                      disabled={courseModules.length === 1}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" onClick={addModule} className="w-full">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add Module
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-4 border-t">
+              <Button onClick={handleCreateCourse} className="flex-1">
+                Create Course
+              </Button>
               <Button variant="outline" onClick={() => setShowCreateCourseDialog(false)}>
                 Cancel
               </Button>
@@ -1824,17 +1955,18 @@ export default function Documents() {
 
       {/* Edit Course Dialog */}
       <Dialog open={showEditCourseDialog} onOpenChange={setShowEditCourseDialog}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Course</DialogTitle>
             <DialogDescription>
-              Update course information
+              Update course information, modules, and videos
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Basic Course Info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="edit-course-title">Course Title</Label>
+                <Label htmlFor="edit-course-title">Course Title *</Label>
                 <Input
                   id="edit-course-title"
                   value={newCourse.title}
@@ -1843,7 +1975,7 @@ export default function Documents() {
                 />
               </div>
               <div>
-                <Label htmlFor="edit-course-instructor">Instructor</Label>
+                <Label htmlFor="edit-course-instructor">Instructor *</Label>
                 <Input
                   id="edit-course-instructor"
                   value={newCourse.instructor}
@@ -1885,8 +2017,115 @@ export default function Documents() {
                 rows={3}
               />
             </div>
-            <div className="flex gap-2 pt-4">
-              <Button onClick={handleUpdateCourse}>Update Course</Button>
+
+            {/* Videos Section */}
+            <div>
+              <Label className="text-base font-semibold">Course Videos</Label>
+              <p className="text-sm text-muted-foreground mb-3">Add videos via YouTube URL, Loom URL, or file upload</p>
+              <div className="space-y-3">
+                {videoUrls.map((url, index) => (
+                  <div key={index} className="flex gap-2 items-start">
+                    <div className="flex-1">
+                      <Select 
+                        value={url.type || 'youtube'} 
+                        onValueChange={(value) => updateVideoUrl(index, 'type', value)}
+                      >
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="youtube">YouTube</SelectItem>
+                          <SelectItem value="loom">Loom</SelectItem>
+                          <SelectItem value="file">File Upload</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex-[2]">
+                      {url.type === 'file' ? (
+                        <Input
+                          type="file"
+                          accept="video/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              updateVideoUrl(index, 'url', URL.createObjectURL(file));
+                              updateVideoUrl(index, 'fileName', file.name);
+                            }
+                          }}
+                        />
+                      ) : (
+                        <Input
+                          value={url.url || ''}
+                          onChange={(e) => updateVideoUrl(index, 'url', e.target.value)}
+                          placeholder={
+                            url.type === 'loom' 
+                              ? "Enter Loom URL (e.g., https://loom.com/share/...)"
+                              : "Enter YouTube URL (e.g., https://youtu.be/...)"
+                          }
+                        />
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeVideoUrl(index)}
+                      disabled={videoUrls.length === 1}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" onClick={addVideoUrl} className="w-full">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add Video
+                </Button>
+              </div>
+            </div>
+
+            {/* Modules Section */}
+            <div>
+              <Label className="text-base font-semibold">Course Modules</Label>
+              <p className="text-sm text-muted-foreground mb-3">Define the learning modules for this course</p>
+              <div className="space-y-3">
+                {courseModules.map((module, index) => (
+                  <div key={index} className="flex gap-2 items-start p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <Input
+                        value={module.name}
+                        onChange={(e) => updateModule(index, 'name', e.target.value)}
+                        placeholder="Module name (e.g., Introduction to Leadership)"
+                      />
+                    </div>
+                    <div className="w-32">
+                      <Input
+                        value={module.duration}
+                        onChange={(e) => updateModule(index, 'duration', e.target.value)}
+                        placeholder="Duration"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeModule(index)}
+                      disabled={courseModules.length === 1}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+                <Button type="button" variant="outline" onClick={addModule} className="w-full">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add Module
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-4 border-t">
+              <Button onClick={handleUpdateCourse} className="flex-1">
+                Update Course
+              </Button>
               <Button variant="outline" onClick={() => setShowEditCourseDialog(false)}>
                 Cancel
               </Button>
