@@ -2187,5 +2187,12 @@ export default function Documents() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Governance Onboarding Modal */}
+      <GovernanceOnboardingModal 
+        isOpen={shouldShowOnboarding} 
+        onComplete={completeOnboarding}
+        userId={user?.id || ''}
+      />
     </div>;
 }
