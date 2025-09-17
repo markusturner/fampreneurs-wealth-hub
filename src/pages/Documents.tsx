@@ -150,6 +150,61 @@ export default function Documents() {
   const [showCreateCourseDialog, setShowCreateCourseDialog] = useState(false);
   const [showEditCourseDialog, setShowEditCourseDialog] = useState(false);
   const [editingCourseIndex, setEditingCourseIndex] = useState<number | null>(null);
+  
+  // Convert businessCourses to state so buttons can modify it
+  const [businessCourses, setBusinessCourses] = useState([{
+    title: "Family Business Fundamentals",
+    instructor: "Dr. Sarah Johnson",
+    duration: "4 weeks",
+    description: "Essential principles for successful family business management",
+    status: "published",
+    videos: ["https://youtu.be/example1", "https://youtu.be/example2"],
+    modules: [{
+      name: "Introduction to Family Business",
+      duration: "45 minutes"
+    }, {
+      name: "Strategic Planning",
+      duration: "60 minutes"
+    }, {
+      name: "Leadership Transition",
+      duration: "55 minutes"
+    }]
+  }, {
+    title: "Wealth Management Strategies", 
+    instructor: "Michael Chen, CFA",
+    duration: "6 weeks",
+    description: "Advanced strategies for preserving and growing family wealth across generations",
+    status: "published",
+    videos: ["https://youtu.be/example3"],
+    modules: [{
+      name: "Investment Principles",
+      duration: "50 minutes"
+    }, {
+      name: "Risk Management",
+      duration: "40 minutes"
+    }, {
+      name: "Estate Planning",
+      duration: "70 minutes"
+    }]
+  }, {
+    title: "Next Generation Leadership",
+    instructor: "Prof. Amanda Rodriguez", 
+    duration: "8 weeks",
+    description: "Developing leadership skills in family business successors",
+    status: "draft",
+    videos: [],
+    modules: [{
+      name: "Leadership Fundamentals",
+      duration: "40 minutes"
+    }, {
+      name: "Communication Skills", 
+      duration: "55 minutes"
+    }, {
+      name: "Decision Making",
+      duration: "70 minutes"
+    }]
+  }]);
+  
   const [newCourse, setNewCourse] = useState({
     title: '',
     instructor: '',
@@ -485,7 +540,10 @@ export default function Documents() {
       videos: videoUrls.filter(url => url.trim()),
       modules: courseModules.filter(module => module.name.trim())
     };
-    businessCourses.push(course);
+    
+    // Update state instead of directly modifying array
+    setBusinessCourses(prev => [...prev, course]);
+    
     setNewCourse({
       title: '',
       instructor: '',
@@ -528,7 +586,14 @@ export default function Documents() {
       videos: videoUrls.filter(url => url.trim()),
       modules: courseModules.filter(module => module.name.trim())
     };
-    businessCourses[editingCourseIndex] = updatedCourse;
+    
+    // Update state instead of directly modifying array
+    setBusinessCourses(prev => {
+      const updated = [...prev];
+      updated[editingCourseIndex] = updatedCourse;
+      return updated;
+    });
+    
     setNewCourse({
       title: '',
       instructor: '',
@@ -545,8 +610,10 @@ export default function Documents() {
     setShowEditCourseDialog(false);
     toast.success('Course updated successfully!');
   };
+  
   const handleDeleteCourse = (index: number) => {
-    businessCourses.splice(index, 1);
+    // Update state instead of directly modifying array
+    setBusinessCourses(prev => prev.filter((_, i) => i !== index));
     toast.success('Course deleted successfully!');
   };
   const sendMessage = async () => {
@@ -1678,5 +1745,151 @@ export default function Documents() {
           </Card>
         </div>
       )}
+
+      {/* Create Course Dialog */}
+      <Dialog open={showCreateCourseDialog} onOpenChange={setShowCreateCourseDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Create New Course</DialogTitle>
+            <DialogDescription>
+              Add a new family business education course
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="course-title">Course Title</Label>
+                <Input
+                  id="course-title"
+                  value={newCourse.title}
+                  onChange={(e) => setNewCourse({...newCourse, title: e.target.value})}
+                  placeholder="Enter course title"
+                />
+              </div>
+              <div>
+                <Label htmlFor="course-instructor">Instructor</Label>
+                <Input
+                  id="course-instructor"
+                  value={newCourse.instructor}
+                  onChange={(e) => setNewCourse({...newCourse, instructor: e.target.value})}
+                  placeholder="Enter instructor name"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="course-duration">Duration</Label>
+                <Input
+                  id="course-duration"
+                  value={newCourse.duration}
+                  onChange={(e) => setNewCourse({...newCourse, duration: e.target.value})}
+                  placeholder="e.g., 4 weeks"
+                />
+              </div>
+              <div>
+                <Label htmlFor="course-status">Status</Label>
+                <Select value={newCourse.status} onValueChange={(value) => setNewCourse({...newCourse, status: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="course-description">Description</Label>
+              <Textarea
+                id="course-description"
+                value={newCourse.description}
+                onChange={(e) => setNewCourse({...newCourse, description: e.target.value})}
+                placeholder="Enter course description"
+                rows={3}
+              />
+            </div>
+            <div className="flex gap-2 pt-4">
+              <Button onClick={handleCreateCourse}>Create Course</Button>
+              <Button variant="outline" onClick={() => setShowCreateCourseDialog(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Course Dialog */}
+      <Dialog open={showEditCourseDialog} onOpenChange={setShowEditCourseDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Course</DialogTitle>
+            <DialogDescription>
+              Update course information
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-course-title">Course Title</Label>
+                <Input
+                  id="edit-course-title"
+                  value={newCourse.title}
+                  onChange={(e) => setNewCourse({...newCourse, title: e.target.value})}
+                  placeholder="Enter course title"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-course-instructor">Instructor</Label>
+                <Input
+                  id="edit-course-instructor"
+                  value={newCourse.instructor}
+                  onChange={(e) => setNewCourse({...newCourse, instructor: e.target.value})}
+                  placeholder="Enter instructor name"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-course-duration">Duration</Label>
+                <Input
+                  id="edit-course-duration"
+                  value={newCourse.duration}
+                  onChange={(e) => setNewCourse({...newCourse, duration: e.target.value})}
+                  placeholder="e.g., 4 weeks"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-course-status">Status</Label>
+                <Select value={newCourse.status} onValueChange={(value) => setNewCourse({...newCourse, status: value})}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="edit-course-description">Description</Label>
+              <Textarea
+                id="edit-course-description"
+                value={newCourse.description}
+                onChange={(e) => setNewCourse({...newCourse, description: e.target.value})}
+                placeholder="Enter course description"
+                rows={3}
+              />
+            </div>
+            <div className="flex gap-2 pt-4">
+              <Button onClick={handleUpdateCourse}>Update Course</Button>
+              <Button variant="outline" onClick={() => setShowEditCourseDialog(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>;
 }
