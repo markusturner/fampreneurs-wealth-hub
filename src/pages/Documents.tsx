@@ -1348,7 +1348,10 @@ export default function Documents() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 sm:flex-col sm:gap-1">
-                        <Button size="sm" variant="outline" className="flex-1 sm:flex-none text-xs" onClick={() => setSelectedCourse(course)}>
+                        <Button size="sm" variant="outline" className="flex-1 sm:flex-none text-xs" onClick={() => {
+                          console.log('View button clicked for course:', course.title);
+                          setSelectedCourse(course);
+                        }}>
                           <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                           View
                         </Button>
