@@ -50,10 +50,14 @@ serve(async (req) => {
       .eq('processing_status', 'completed')
 
     if (statementsError) {
+      console.error('Error fetching statements:', statementsError)
       throw new Error(`Failed to fetch statements: ${statementsError.message}`)
     }
 
     console.log(`Found ${statements?.length || 0} statements to reprocess`)
+    if (statements && statements.length > 0) {
+      console.log('First statement details:', JSON.stringify(statements[0], null, 2))
+    }
 
     let totalUpdated = 0
     let totalProcessed = 0
@@ -62,15 +66,30 @@ serve(async (req) => {
       console.log(`Processing statement: ${statement.filename}`)
       
       try {
-        // Download the CSV file from storage
+        // Download the CSV file from storage - try storage_path first, then file_path
+        const filePath = statement.storage_path || statement.file_path
+        console.log(`Downloading file from path: ${filePath}`)
+        
+        if (!filePath) {
+          console.error(`No file path found for statement ${statement.id}`)
+          continue
+        }
+
         const { data: fileData, error: downloadError } = await supabase.storage
           .from('bank-statements')
-          .download(statement.storage_path || statement.file_path)
+          .download(filePath)
 
         if (downloadError) {
           console.error(`Failed to download ${statement.filename}:`, downloadError)
           continue
         }
+
+        if (!fileData) {
+          console.error(`No file data for ${statement.filename}`)
+          continue
+        }
+
+        console.log(`Successfully downloaded ${statement.filename}, size: ${fileData.size} bytes`)
 
         // Convert blob to text
         const csvContent = await fileData.text()
@@ -90,7 +109,10 @@ serve(async (req) => {
           continue
         }
 
+        console.log(`Found ${existingTransactions?.length || 0} existing transactions for statement ${statement.id}`)
+
         // Update transactions that still have generic descriptions
+        let statementUpdated = 0
         for (let i = 0; i < Math.min(parsedTransactions.length, existingTransactions?.length || 0); i++) {
           const existing = existingTransactions![i]
           const parsed = parsedTransactions[i]
@@ -101,7 +123,10 @@ serve(async (req) => {
           if (existing.description === 'Unknown Transaction' || 
               existing.description === 'Transaction' || 
               existing.description === 'Bank Transaction' ||
+              existing.description === 'Unknown' ||
               existing.description.startsWith('Transaction ')) {
+            
+            console.log(`Updating transaction ${existing.id}: "${existing.description}" -> "${parsed.description}"`)
             
             const { error: updateError } = await supabase
               .from('bank_statement_transactions')
@@ -115,10 +140,12 @@ serve(async (req) => {
               console.error(`Failed to update transaction ${existing.id}:`, updateError)
             } else {
               totalUpdated++
-              console.log(`Updated transaction: ${existing.description} -> ${parsed.description}`)
+              statementUpdated++
             }
           }
         }
+        
+        console.log(`Updated ${statementUpdated} transactions in statement ${statement.filename}`)
 
       } catch (error) {
         console.error(`Error processing statement ${statement.filename}:`, error)
