@@ -600,7 +600,7 @@ export default function Documents() {
               The foundation of your family's values and principles
             </p>
             {!governanceData ? (
-              <div className="mt-4 p-6 border-2 border-dashed border-muted rounded-lg bg-muted/30">
+              <div className="mt-4 p-6 border-2 border-dashed border-secondary rounded-lg bg-muted/30">
                 <h3 className="font-semibold mb-2">Set Up Your Family Constitution</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Create a comprehensive family governance framework with our step-by-step wizard
