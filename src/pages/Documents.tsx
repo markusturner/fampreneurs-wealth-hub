@@ -21,6 +21,7 @@ import { DynamicFamilyTreeVisualization } from "@/components/family-tree/Dynamic
 import { FamilyDocumentsTab } from "@/components/dashboard/family-documents-tab";
 import { GovernanceOnboardingModal } from "@/components/governance/GovernanceOnboardingModal";
 import { useGovernanceOnboarding } from "@/hooks/useGovernanceOnboarding";
+import { useMessageNotifications } from "@/hooks/useMessageNotifications";
 const familyEducationModules = [{
   title: "Family Business Education",
   description: "Learn the fundamentals of running a successful family business",
@@ -131,6 +132,10 @@ export default function Documents() {
     user,
     profile
   } = useAuth();
+  
+  // Initialize message notifications
+  useMessageNotifications();
+  
   const [showCodeDialog, setShowCodeDialog] = useState(false);
   const [accessCode, setAccessCode] = useState('');
   const [showAdminPanel, setShowAdminPanel] = useState(false);
@@ -545,17 +550,40 @@ export default function Documents() {
     toast.success('Course deleted successfully!');
   };
   const sendMessage = async () => {
-    if (!newMessage.trim()) return;
-    const message = {
-      id: Date.now().toString(),
-      content: newMessage,
-      sender_id: user?.id,
-      sender_name: profile?.display_name || 'You',
-      created_at: new Date().toISOString()
-    };
-    setMessages([...messages, message]);
-    setNewMessage('');
-    toast.success('Message sent!');
+    if (!newMessage.trim() || !user?.id) return;
+    
+    try {
+      // Insert message into the database which will trigger notifications
+      const { error } = await supabase
+        .from('family_messages')
+        .insert({
+          content: newMessage,
+          sender_id: user.id,
+          message_type: 'text',
+          recipient_id: user.id // For now, sending to self for testing
+        });
+
+      if (error) {
+        console.error('Error sending message:', error);
+        toast.error('Failed to send message');
+        return;
+      }
+
+      // Update local state for immediate UI feedback
+      const message = {
+        id: Date.now().toString(),
+        content: newMessage,
+        sender_id: user?.id,
+        sender_name: profile?.display_name || 'You',
+        created_at: new Date().toISOString()
+      };
+      setMessages([...messages, message]);
+      setNewMessage('');
+      toast.success('Message sent!');
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Failed to send message');
+    }
   };
   // Load governance onboarding data
   const [governanceData, setGovernanceData] = useState<any>(null);
