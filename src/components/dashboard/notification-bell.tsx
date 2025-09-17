@@ -76,6 +76,15 @@ export function NotificationBell() {
     } else if (notification.notification_type === 'video_call_started') {
       // For video call notifications, navigate to the community page where the call banner appears
       window.location.href = '/community'
+    } else if (notification.notification_type === 'family_message') {
+      // Navigate to family messages section
+      window.location.href = '/community'
+    } else if (notification.notification_type === 'group_message') {
+      // Navigate to community for group messages
+      window.location.href = '/community'
+    } else if (notification.notification_type === 'message') {
+      // Navigate to community for general messages (family office)
+      window.location.href = '/community'
     }
   }
 
