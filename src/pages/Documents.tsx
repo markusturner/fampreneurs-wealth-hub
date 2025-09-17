@@ -1342,7 +1342,7 @@ export default function Documents() {
               })}
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex gap-2 p-1">
                 <Input value={newMessage} onChange={e => setNewMessage(e.target.value)} onKeyDown={e => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
