@@ -1806,12 +1806,26 @@ export default function Documents() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="course-duration">Duration</Label>
-                <Input
-                  id="course-duration"
+                <Select
                   value={newCourse.duration}
-                  onChange={(e) => setNewCourse({...newCourse, duration: e.target.value})}
-                  placeholder="e.g., 4 weeks"
-                />
+                  onValueChange={(value) => setNewCourse({...newCourse, duration: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50">
+                    <SelectItem value="1 week">1 week</SelectItem>
+                    <SelectItem value="2 weeks">2 weeks</SelectItem>
+                    <SelectItem value="3 weeks">3 weeks</SelectItem>
+                    <SelectItem value="4 weeks">4 weeks</SelectItem>
+                    <SelectItem value="6 weeks">6 weeks</SelectItem>
+                    <SelectItem value="8 weeks">8 weeks</SelectItem>
+                    <SelectItem value="10 weeks">10 weeks</SelectItem>
+                    <SelectItem value="12 weeks">12 weeks</SelectItem>
+                    <SelectItem value="3 months">3 months</SelectItem>
+                    <SelectItem value="6 months">6 months</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="course-status">Status</Label>
@@ -2000,12 +2014,26 @@ export default function Documents() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="edit-course-duration">Duration</Label>
-                <Input
-                  id="edit-course-duration"
+                <Select
                   value={newCourse.duration}
-                  onChange={(e) => setNewCourse({...newCourse, duration: e.target.value})}
-                  placeholder="e.g., 4 weeks"
-                />
+                  onValueChange={(value) => setNewCourse({...newCourse, duration: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50">
+                    <SelectItem value="1 week">1 week</SelectItem>
+                    <SelectItem value="2 weeks">2 weeks</SelectItem>
+                    <SelectItem value="3 weeks">3 weeks</SelectItem>
+                    <SelectItem value="4 weeks">4 weeks</SelectItem>
+                    <SelectItem value="6 weeks">6 weeks</SelectItem>
+                    <SelectItem value="8 weeks">8 weeks</SelectItem>
+                    <SelectItem value="10 weeks">10 weeks</SelectItem>
+                    <SelectItem value="12 weeks">12 weeks</SelectItem>
+                    <SelectItem value="3 months">3 months</SelectItem>
+                    <SelectItem value="6 months">6 months</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="edit-course-status">Status</Label>
