@@ -1120,6 +1120,67 @@ export default function Documents() {
           )}
         </section>
 
+        {/* Family Education & Courses Section */}
+        <section className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+              <GraduationCap className="h-6 w-6 text-emerald-600" />
+              Family Education & Courses
+            </h2>
+            <p className="text-muted-foreground">
+              Comprehensive education programs for family business success
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {familyEducationModules.map((module, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <module.icon className={`h-5 w-5 ${module.color}`} />
+                    {module.title}
+                  </CardTitle>
+                  <CardDescription className="text-sm">
+                    {module.description}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Lessons</span>
+                      <span className="font-medium">{module.lessons}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Duration</span>
+                      <span className="font-medium">{module.duration}</span>
+                    </div>
+                    <Badge variant="secondary">
+                      {module.status}
+                    </Badge>
+                    <Button 
+                      variant="outline" 
+                      className="w-full mt-4"
+                      onClick={() => setShowCoursesDialog(true)}
+                    >
+                      View Course Details
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Button 
+              onClick={() => setShowCoursesDialog(true)}
+              className="gap-2"
+            >
+              <BookOpen className="h-4 w-4" />
+              View All Courses
+            </Button>
+          </div>
+        </section>
+
         {/* Quick Actions & Resources */}
         <section className="space-y-4">
           <div className="text-center">
