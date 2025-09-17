@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { BookOpen, Crown, Users, MessageCircle, Image, TreePine, Lock, Scroll, Building2, Scale, Shield, GraduationCap, ArrowLeft, Heart, FileText, Video, Settings, Eye, EyeOff, CheckCircle, Key, Edit, Trash2, FileCheck, Loader2, UserPlus, Gavel, UserCheck, X } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 import { NavHeader } from "@/components/dashboard/nav-header";
 import { FamilySecretCodesAdmin } from "@/components/dashboard/family-secret-codes-admin";
 import { useNavigate } from "react-router-dom";
@@ -674,6 +675,51 @@ export default function Documents() {
       }
     }
   }, [user?.id]);
+
+  // Vote helper functions (after governanceData is defined)
+  const calculateVoteResults = (vote: any) => {
+    const totalVotes = Object.keys(vote.votes || {}).length;
+    if (totalVotes === 0) return { yesCount: 0, noCount: 0, yesPercent: 0, noPercent: 0, totalVotes: 0 };
+    
+    const yesCount = Object.values(vote.votes || {}).filter(v => v === 'yes').length;
+    const noCount = Object.values(vote.votes || {}).filter(v => v === 'no').length;
+    const yesPercent = Math.round((yesCount / totalVotes) * 100);
+    const noPercent = Math.round((noCount / totalVotes) * 100);
+    
+    return { yesCount, noCount, yesPercent, noPercent, totalVotes };
+  };
+
+  const resolveVote = (vote: any) => {
+    const { yesPercent } = calculateVoteResults(vote);
+    const threshold = governanceData?.quorumPercentage || 50;
+    
+    if (yesPercent >= threshold) {
+      return 'passed';
+    } else if (new Date() > vote.expiresAt) {
+      return 'failed';
+    }
+    return 'active';
+  };
+
+  const updateVoteStatuses = () => {
+    setActiveVotes(prevVotes => 
+      prevVotes.map(vote => ({
+        ...vote,
+        status: resolveVote(vote)
+      }))
+    );
+  };
+
+  // Auto-update vote statuses every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(updateVoteStatuses, 30000);
+    return () => clearInterval(interval);
+  }, [governanceData?.quorumPercentage]);
+
+  // Update statuses when votes change
+  useEffect(() => {
+    updateVoteStatuses();
+  }, [activeVotes.length, governanceData?.quorumPercentage]);
 
   return <div className="min-h-screen bg-background">
       <NavHeader />
@@ -1658,71 +1704,134 @@ export default function Documents() {
                   </Button>
                 </div>
               ) : (
-                activeVotes.map((vote) => (
-                  <Card key={vote.id}>
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">{vote.title}</CardTitle>
-                          <CardDescription className="mt-1">{vote.description}</CardDescription>
-                        </div>
-                        <Badge variant={vote.type === 'major' ? 'destructive' : 'secondary'}>
-                          {vote.type === 'major' ? 'Major' : 'Routine'} Decision
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="text-sm text-muted-foreground">
-                          Expires: {vote.expiresAt.toLocaleDateString()} at {vote.expiresAt.toLocaleTimeString()}
-                        </div>
-                        
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            className="flex-1"
-                            onClick={() => {
-                              // Cast vote logic
-                              const updatedVotes = activeVotes.map(v => 
-                                v.id === vote.id 
-                                  ? {...v, votes: {...v.votes, [user?.id || '']: 'yes'}}
-                                  : v
-                              );
-                              setActiveVotes(updatedVotes);
-                              toast.success('Vote cast: Yes');
-                            }}
-                          >
-                            <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
-                            Vote Yes
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            className="flex-1"
-                            onClick={() => {
-                              // Cast vote logic
-                              const updatedVotes = activeVotes.map(v => 
-                                v.id === vote.id 
-                                  ? {...v, votes: {...v.votes, [user?.id || '']: 'no'}}
-                                  : v
-                              );
-                              setActiveVotes(updatedVotes);
-                              toast.success('Vote cast: No');
-                            }}
-                          >
-                            <X className="h-4 w-4 mr-2 text-red-600" />
-                            Vote No
-                          </Button>
-                        </div>
-                        
-                        {vote.votes[user?.id || ''] && (
-                          <div className="text-sm text-muted-foreground">
-                            Your vote: <strong>{vote.votes[user?.id || '']}</strong>
+                activeVotes.map((vote) => {
+                  const results = calculateVoteResults(vote);
+                  const threshold = governanceData?.quorumPercentage || 50;
+                  const voteStatus = resolveVote(vote);
+                  const isExpired = new Date() > vote.expiresAt;
+                  const hasVoted = vote.votes[user?.id || ''];
+                  
+                  return (
+                    <Card key={vote.id} className={`${voteStatus === 'passed' ? 'border-green-200 bg-green-50' : voteStatus === 'failed' ? 'border-red-200 bg-red-50' : ''}`}>
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <CardTitle className="text-lg">{vote.title}</CardTitle>
+                            <CardDescription className="mt-1">{vote.description}</CardDescription>
                           </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+                          <div className="flex flex-col items-end gap-2">
+                            <Badge variant={vote.type === 'major' ? 'destructive' : 'secondary'}>
+                              {vote.type === 'major' ? 'Major' : 'Routine'} Decision
+                            </Badge>
+                            <Badge variant={
+                              voteStatus === 'passed' ? 'default' : 
+                              voteStatus === 'failed' ? 'destructive' : 
+                              'secondary'
+                            }>
+                              {voteStatus === 'passed' ? 'PASSED' : 
+                               voteStatus === 'failed' ? 'FAILED' : 
+                               'ACTIVE'}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {/* Vote Progress */}
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center text-sm">
+                              <span>Progress to threshold ({threshold}%)</span>
+                              <span className="font-medium">{results.yesPercent}% Yes</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-3">
+                              <div 
+                                className={`h-3 rounded-full transition-all duration-300 ${
+                                  results.yesPercent >= threshold ? 'bg-green-500' : 'bg-blue-500'
+                                }`}
+                                style={{ width: `${Math.min(results.yesPercent, 100)}%` }}
+                              />
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground">
+                              <span>Yes: {results.yesCount} ({results.yesPercent}%)</span>
+                              <span>No: {results.noCount} ({results.noPercent}%)</span>
+                              <span>Total: {results.totalVotes}</span>
+                            </div>
+                          </div>
+
+                          <div className="text-sm text-muted-foreground">
+                            {isExpired ? (
+                              <span className="text-red-600 font-medium">Expired: {vote.expiresAt.toLocaleDateString()}</span>
+                            ) : (
+                              <span>Expires: {vote.expiresAt.toLocaleDateString()} at {vote.expiresAt.toLocaleTimeString()}</span>
+                            )}
+                          </div>
+                          
+                          {/* Voting Buttons */}
+                          {voteStatus === 'active' && !isExpired && (
+                            <div className="flex gap-2">
+                              <Button 
+                                variant={hasVoted === 'yes' ? 'default' : 'outline'}
+                                className="flex-1"
+                                onClick={() => {
+                                  const updatedVotes = activeVotes.map(v => 
+                                    v.id === vote.id 
+                                      ? {...v, votes: {...v.votes, [user?.id || '']: 'yes'}}
+                                      : v
+                                  );
+                                  setActiveVotes(updatedVotes);
+                                  toast.success('Vote cast: Yes');
+                                }}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                                Vote Yes
+                              </Button>
+                              <Button 
+                                variant={hasVoted === 'no' ? 'default' : 'outline'}
+                                className="flex-1"
+                                onClick={() => {
+                                  const updatedVotes = activeVotes.map(v => 
+                                    v.id === vote.id 
+                                      ? {...v, votes: {...v.votes, [user?.id || '']: 'no'}}
+                                      : v
+                                  );
+                                  setActiveVotes(updatedVotes);
+                                  toast.success('Vote cast: No');
+                                }}
+                              >
+                                <X className="h-4 w-4 mr-2 text-red-600" />
+                                Vote No
+                              </Button>
+                            </div>
+                          )}
+                          
+                          {hasVoted && (
+                            <div className="text-sm text-muted-foreground bg-gray-50 p-2 rounded">
+                              Your vote: <strong className={hasVoted === 'yes' ? 'text-green-600' : 'text-red-600'}>
+                                {hasVoted.toUpperCase()}
+                              </strong>
+                            </div>
+                          )}
+
+                          {/* Vote Results for completed votes */}
+                          {voteStatus !== 'active' && (
+                            <div className={`p-3 rounded-lg border-l-4 ${
+                              voteStatus === 'passed' 
+                                ? 'border-l-green-500 bg-green-50' 
+                                : 'border-l-red-500 bg-red-50'
+                            }`}>
+                              <div className="font-medium text-sm">
+                                {voteStatus === 'passed' ? 'Vote Passed!' : 'Vote Failed'}
+                              </div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                Final result: {results.yesPercent}% Yes, {results.noPercent}% No (needed {threshold}%)
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
               )}
             </div>
           </DialogContent>
