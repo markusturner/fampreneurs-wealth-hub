@@ -1917,11 +1917,24 @@ export default function Documents() {
                       />
                     </div>
                     <div className="w-32">
-                      <Input
+                      <Select
                         value={module.duration}
-                        onChange={(e) => updateModule(index, 'duration', e.target.value)}
-                        placeholder="Duration"
-                      />
+                        onValueChange={(value) => updateModule(index, 'duration', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Duration" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border shadow-lg z-50">
+                          <SelectItem value="15 minutes">15 minutes</SelectItem>
+                          <SelectItem value="30 minutes">30 minutes</SelectItem>
+                          <SelectItem value="45 minutes">45 minutes</SelectItem>
+                          <SelectItem value="1 hour">1 hour</SelectItem>
+                          <SelectItem value="1.5 hours">1.5 hours</SelectItem>
+                          <SelectItem value="2 hours">2 hours</SelectItem>
+                          <SelectItem value="2.5 hours">2.5 hours</SelectItem>
+                          <SelectItem value="3 hours">3 hours</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <Button
                       type="button"
@@ -2098,11 +2111,24 @@ export default function Documents() {
                       />
                     </div>
                     <div className="w-32">
-                      <Input
+                      <Select
                         value={module.duration}
-                        onChange={(e) => updateModule(index, 'duration', e.target.value)}
-                        placeholder="Duration"
-                      />
+                        onValueChange={(value) => updateModule(index, 'duration', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Duration" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border shadow-lg z-50">
+                          <SelectItem value="15 minutes">15 minutes</SelectItem>
+                          <SelectItem value="30 minutes">30 minutes</SelectItem>
+                          <SelectItem value="45 minutes">45 minutes</SelectItem>
+                          <SelectItem value="1 hour">1 hour</SelectItem>
+                          <SelectItem value="1.5 hours">1.5 hours</SelectItem>
+                          <SelectItem value="2 hours">2 hours</SelectItem>
+                          <SelectItem value="2.5 hours">2.5 hours</SelectItem>
+                          <SelectItem value="3 hours">3 hours</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <Button
                       type="button"
