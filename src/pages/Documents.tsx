@@ -864,21 +864,9 @@ export default function Documents() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <Label className="text-sm font-medium">Quorum Percentage</Label>
+                  <Label className="text-sm font-medium">Voting Threshold</Label>
                   <p className="text-2xl font-bold text-blue-600">
                     {governanceData?.quorumPercentage || 0}%
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Routine Decisions Threshold</Label>
-                  <p className="text-lg font-semibold">
-                    {governanceData?.routineThreshold || 0}%
-                  </p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Major Decisions Threshold</Label>
-                  <p className="text-lg font-semibold">
-                    {governanceData?.majorThreshold || 0}%
                   </p>
                 </div>
                 <Separator className="my-4" />
