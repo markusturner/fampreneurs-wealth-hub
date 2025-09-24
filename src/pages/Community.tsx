@@ -826,16 +826,16 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
     const pendingMessageData = sessionStorage.getItem('pendingMessage')
     if (pendingMessageData) {
       try {
-        const { memberId, memberName, serviceName, message } = JSON.parse(pendingMessageData)
+        const { memberId, memberName, serviceName, message, autoSend } = JSON.parse(pendingMessageData)
         
         // Set the selected conversation to the member
         setSelectedConversation(memberId)
         
-        // Add the message to the conversation
+        // Add the message to the conversation as already sent
         setConversationMessages(prev => {
           const existing = prev[memberId] || []
           const newMessage = {
-            id: `pending_${Date.now()}`,
+            id: `sent_${Date.now()}`,
             sender: 'You',
             message: message,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -852,10 +852,17 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
         // Clear the pending message
         sessionStorage.removeItem('pendingMessage')
         
-        toast({
-          title: "Message Sent",
-          description: `Your service request for ${serviceName} has been sent to ${memberName}.`,
-        })
+        if (autoSend) {
+          toast({
+            title: "Service Request Sent",
+            description: `Your service request for ${serviceName} has been automatically sent to ${memberName}.`,
+          })
+        } else {
+          toast({
+            title: "Message Sent",
+            description: `Your service request for ${serviceName} has been sent to ${memberName}.`,
+          })
+        }
         
       } catch (error) {
         console.error('Error processing pending message:', error)
@@ -1535,15 +1542,16 @@ function ServicesContent() {
     const member = findMemberForService(serviceName)
     
     if (member) {
-      // Create a message and navigate to messages tab
+      // Create and automatically send the service request message
       const message = `Hi ${member.full_name}, I would like to request the "${serviceName}" service. Please let me know how we can proceed. Thank you!`
       
-      // Store the message data temporarily
+      // Store the message data with auto-send flag
       sessionStorage.setItem('pendingMessage', JSON.stringify({
         memberId: member.id,
         memberName: member.full_name,
         serviceName: serviceName,
-        message: message
+        message: message,
+        autoSend: true
       }))
       
       // Navigate to messages tab
@@ -1559,8 +1567,8 @@ function ServicesContent() {
       }
       
       toast({
-        title: "Redirected to Messages",
-        description: `Opening conversation with ${member.full_name} for ${serviceName} service.`,
+        title: "Service Request Sent",
+        description: `Automatically created and sent message to ${member.full_name} for ${serviceName} service.`,
       })
     }
   }
