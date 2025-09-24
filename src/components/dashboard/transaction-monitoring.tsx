@@ -26,8 +26,6 @@ import {
   RefreshCw,
   Bell,
   Tag,
-  Bot,
-  Wand2,
   FileCheck,
   Zap,
   ChevronLeft,
@@ -120,11 +118,6 @@ export function TransactionMonitoring() {
   ]
 
   const [enablePlaidTransactions, setEnablePlaidTransactions] = useState(false)
-  const [aiBookkeepingEnabled, setAiBookkeepingEnabled] = useState(false)
-  const [aiProcessing, setAiProcessing] = useState(false)
-  const [aiProgress, setAiProgress] = useState({ current: 0, total: 0 })
-  const [categorizedTransactions, setCategorizedTransactions] = useState<{id: string, category: string, description: string}[]>([])
-  const [currentlyProcessing, setCurrentlyProcessing] = useState<string | null>(null)
   const [editingCategory, setEditingCategory] = useState<string | null>(null)
   const [editingDescription, setEditingDescription] = useState<string | null>(null)
   const [transactionCategories, setTransactionCategories] = useState<any[]>([])
@@ -377,121 +370,6 @@ export function TransactionMonitoring() {
     setUploading(false)
   }
 
-  const handleAIBookkeeping = async () => {
-    if (!user) return
-    
-    setAiProcessing(true)
-    setAiProgress({ current: 0, total: 0 })
-    setCategorizedTransactions([])
-    setCurrentlyProcessing(null)
-    
-    try {
-      // Get transactions that need categorization (uncategorized or "Other")
-      const uncategorizedTransactions = transactions.filter(t => 
-        !t.category || t.category === 'Other' || t.category === 'Uncategorized'
-      )
-      
-      if (uncategorizedTransactions.length === 0) {
-        toast({
-          title: "No transactions to process",
-          description: "All transactions are already categorized"
-        })
-        setAiProcessing(false)
-        return
-      }
-
-      setAiProgress({ current: 0, total: uncategorizedTransactions.length })
-
-      toast({
-        title: "Processing transactions...",
-        description: `Categorizing ${uncategorizedTransactions.length} transactions with AI`
-      })
-
-      // Call the AI categorization edge function
-      const { data, error } = await supabase.functions.invoke('ai-categorize-transactions', {
-        body: {
-          transactions: uncategorizedTransactions.map(t => ({
-            id: t.id,
-            description: t.description,
-            amount: t.amount,
-            type: t.type
-          }))
-        }
-      })
-
-      if (error) throw error
-
-      // Update transactions with new categories and show progress
-      let updatedCount = 0
-      const processedTransactions: {id: string, category: string, description: string}[] = []
-      
-      for (const update of data.categorizedTransactions) {
-        // Show which transaction is currently being processed
-        const transaction = uncategorizedTransactions.find(t => t.id === update.id)
-        if (transaction) {
-          setCurrentlyProcessing(transaction.description)
-          processedTransactions.push({
-            id: update.id,
-            category: update.category,
-            description: transaction.description
-          })
-          setCategorizedTransactions([...processedTransactions])
-        }
-
-        // Update bank statement transactions
-        const { error: bankError } = await supabase
-          .from('bank_statement_transactions')
-          .update({ category: update.category })
-          .eq('id', update.id)
-
-        if (!bankError) {
-          updatedCount++
-        } else {
-          // Try account transactions if bank statement update failed
-          const { error: accountError } = await supabase
-            .from('account_transactions')
-            .update({ category: update.category })
-            .eq('id', update.id)
-          
-          if (!accountError) {
-            updatedCount++
-          }
-        }
-        
-        // Update progress in real-time
-        setAiProgress({ current: updatedCount, total: uncategorizedTransactions.length })
-        
-        // Small delay to show the process
-        await new Promise(resolve => setTimeout(resolve, 100))
-      }
-
-      setCurrentlyProcessing(null)
-
-      toast({
-        title: "AI Bookkeeping Complete",
-        description: `Successfully categorized ${updatedCount} transactions`
-      })
-      
-      // Refresh transactions to show updated categories
-      await fetchConnectedAccountsAndTransactions()
-      
-      // Clear the categorization display after a delay
-      setTimeout(() => {
-        setCategorizedTransactions([])
-      }, 3000)
-      
-    } catch (error) {
-      console.error('AI bookkeeping error:', error)
-      toast({
-        title: "AI Processing Failed",
-        description: error instanceof Error ? error.message : "Unable to process transactions",
-        variant: "destructive"
-      })
-    }
-    setAiProcessing(false)
-    setAiProgress({ current: 0, total: 0 })
-    setCurrentlyProcessing(null)
-  }
 
   const handleReprocessStatements = async () => {
     if (!user) return
@@ -1154,27 +1032,6 @@ export function TransactionMonitoring() {
         <div className="flex flex-wrap gap-2">
           <Button 
             variant="outline" 
-            onClick={handleAIBookkeeping}
-            disabled={aiProcessing}
-            className="flex items-center gap-2"
-          >
-            {aiProcessing ? (
-              <>
-                <RefreshCw className="h-4 w-4 animate-spin" />
-                {aiProgress.total > 0 && (
-                  <span className="text-sm">
-                    {aiProgress.current}/{aiProgress.total}
-                  </span>
-                )}
-              </>
-            ) : (
-              <Bot className="h-4 w-4" />
-            )}
-            AI Bookkeeping
-          </Button>
-
-          <Button 
-            variant="outline" 
             onClick={handleReprocessStatements}
             disabled={reprocessing}
             className="flex items-center gap-2"
@@ -1182,48 +1039,13 @@ export function TransactionMonitoring() {
             {reprocessing ? (
               <RefreshCw className="h-4 w-4 animate-spin" />
             ) : (
-              <Wand2 className="h-4 w-4" />
+              <RefreshCw className="h-4 w-4" />
             )}
             Reprocess Statements
           </Button>
         </div>
       </div>
 
-      {/* AI Categorization Display */}
-      {aiProcessing && categorizedTransactions.length > 0 && (
-        <Card className="border-primary/20 bg-primary/5">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Bot className="h-4 w-4 text-primary" />
-              AI Categorization in Progress
-              <Badge variant="secondary" className="ml-auto">
-                {aiProgress.current}/{aiProgress.total}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            {currentlyProcessing && (
-              <div className="mb-3 p-2 bg-primary/10 rounded-md">
-                <div className="flex items-center gap-2 text-sm">
-                  <RefreshCw className="h-3 w-3 animate-spin" />
-                  <span className="font-medium">Currently processing:</span>
-                  <span className="text-muted-foreground">{currentlyProcessing}</span>
-                </div>
-              </div>
-            )}
-            <div className="space-y-1 max-h-40 overflow-y-auto">
-              {categorizedTransactions.map((transaction, index) => (
-                <div key={transaction.id} className="flex items-center justify-between p-2 bg-background rounded-sm border text-sm">
-                  <span className="truncate flex-1 mr-2">{transaction.description}</span>
-                  <Badge variant="outline" className="text-xs">
-                    {transaction.category}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Uploaded Statements */}
       <Card>
