@@ -769,7 +769,7 @@ export default function Documents() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={openOnboarding}
+                onClick={() => navigate('/family-constitution/setup')}
                 className="mt-2 gap-2"
               >
                 <Settings className="h-4 w-4" />
