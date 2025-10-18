@@ -296,44 +296,28 @@ export default function Community() {
         </div>
 
         <Tabs defaultValue="accounts" className="space-y-6 animate-fade-in">
-          {/* Mobile-Optimized Tab Navigation */}
+          {/* Responsive Tab Navigation */}
           <div className="w-full">
-            {/* Single Row Horizontal Tabs */}
-            <TabsList className="flex gap-2 p-2 min-w-max bg-muted rounded-xl overflow-x-auto scrollbar-hide">
-              <TabsTrigger 
-                value="accounts" 
-                className="flex items-center gap-2 py-3 px-4 text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
-              >
-                <CreditCard className="h-4 w-4" />
-                <span>Accounts</span>
+            <TabsList>
+              <TabsTrigger value="accounts">
+                <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
+                <span className="hidden md:inline">Accounts</span>
               </TabsTrigger>
-              <TabsTrigger 
-                value="reports" 
-                className="flex items-center gap-2 py-3 px-4 text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
-              >
-                <BarChart3 className="h-4 w-4" />
-                <span>Reports</span>
+              <TabsTrigger value="reports">
+                <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
+                <span className="hidden md:inline">Reports</span>
               </TabsTrigger>
-              <TabsTrigger 
-                value="transactions" 
-                className="flex items-center gap-2 py-3 px-4 text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
-              >
-                <ArrowUpRight className="h-4 w-4" />
-                <span>Transactions</span>
+              <TabsTrigger value="transactions">
+                <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
+                <span className="hidden md:inline">Transactions</span>
               </TabsTrigger>
-              <TabsTrigger 
-                value="documents" 
-                className="flex items-center gap-2 py-3 px-4 text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
-              >
-                <FileText className="h-4 w-4" />
-                <span>Documents</span>
+              <TabsTrigger value="documents">
+                <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
+                <span className="hidden md:inline">Documents</span>
               </TabsTrigger>
-              <TabsTrigger 
-                value="messages" 
-                className="flex items-center gap-2 py-3 px-4 text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
-              >
-                <BrainCircuit className="h-4 w-4" />
-                <span>AI Experts</span>
+              <TabsTrigger value="messages">
+                <BrainCircuit className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" style={{ color: '#2eb2ff' }} />
+                <span className="hidden md:inline">AI Experts</span>
               </TabsTrigger>
             </TabsList>
           </div>
