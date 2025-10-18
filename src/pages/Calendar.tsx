@@ -163,7 +163,7 @@ export default function Calendar() {
         ? newMeeting.attendees.split(',').map(a => a.trim()).filter(a => a)
         : []
 
-      const { error } = await supabase
+      const { data: insertedMeeting, error } = await supabase
         .from('meetings' as any)
         .insert({
           title: newMeeting.title.trim(),
@@ -176,12 +176,33 @@ export default function Calendar() {
           created_by: user.id,
           status: 'scheduled'
         })
+        .select()
+        .single()
 
       if (error) throw error
 
+      // Send notifications to all users
+      const meetingData = insertedMeeting as any
+      if (meetingData?.id) {
+        try {
+          await supabase.functions.invoke('notify-meeting-creation', {
+            body: {
+              meetingId: meetingData.id,
+              meetingTitle: newMeeting.title.trim(),
+              meetingDate: format(newMeeting.meeting_date, 'yyyy-MM-dd'),
+              meetingTime: newMeeting.meeting_time,
+              createdBy: user.id
+            }
+          });
+        } catch (notifyError) {
+          console.error('Error sending notifications:', notifyError);
+          // Don't fail the meeting creation if notifications fail
+        }
+      }
+
       toast({
         title: "Success",
-        description: "Meeting created successfully"
+        description: "Meeting created and notifications sent"
       })
 
       setNewMeeting({
