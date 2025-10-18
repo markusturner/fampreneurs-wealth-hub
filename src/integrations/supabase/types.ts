@@ -1291,7 +1291,7 @@ export type Database = {
           department: string | null
           email: string | null
           encrypted_notes: string | null
-          family_position: string
+          family_position: string | null
           full_name: string
           governance_branch: string | null
           id: string
@@ -1321,7 +1321,7 @@ export type Database = {
           department?: string | null
           email?: string | null
           encrypted_notes?: string | null
-          family_position: string
+          family_position?: string | null
           full_name: string
           governance_branch?: string | null
           id?: string
@@ -1351,7 +1351,7 @@ export type Database = {
           department?: string | null
           email?: string | null
           encrypted_notes?: string | null
-          family_position?: string
+          family_position?: string | null
           full_name?: string
           governance_branch?: string | null
           id?: string
