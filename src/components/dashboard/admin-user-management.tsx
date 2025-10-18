@@ -56,9 +56,9 @@ export function AdminUserManagement() {
       }
 
       toast({
-        title: 'User Created Successfully!',
-        description: data.warning 
-          ? `${firstName} ${lastName} has been added. Warning: ${data.warning}`
+        title: data.isExistingUser ? 'Credentials Updated!' : 'User Created Successfully!',
+        description: data.isExistingUser
+          ? `New credentials have been sent to ${email}`
           : `${firstName} ${lastName} has been added as ${role.replace(/_/g, ' ')}.`,
       })
 
@@ -96,7 +96,7 @@ export function AdminUserManagement() {
           <CardTitle>Admin User Management</CardTitle>
         </div>
         <CardDescription>
-          Add users to the platform manually without requiring payment
+          Add new users or resend credentials to existing users by entering their information
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -153,12 +153,12 @@ export function AdminUserManagement() {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Adding User...
+              Processing...
             </>
           ) : (
             <>
               <UserPlus className="mr-2 h-4 w-4" />
-              Add User
+              Add / Resend Credentials
             </>
           )}
         </Button>

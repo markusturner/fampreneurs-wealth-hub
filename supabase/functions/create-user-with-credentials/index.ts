@@ -92,59 +92,89 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Check if user already exists
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+    const existingUser = existingUsers?.users?.find(u => u.email === email);
+    
     // Generate temporary password
     const tempPassword = generateSecurePassword();
+    
+    let authUser;
+    let isExistingUser = false;
 
-    console.log("Creating user with email:", email);
-
-    // Create user in Auth
-    const { data: authUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: {
-        first_name: firstName,
-        last_name: lastName || "",
-        role: role,
-      },
-    });
-
-    if (createError) {
-      console.error("Error creating auth user:", createError);
+    if (existingUser) {
+      console.log("User already exists, updating password:", email);
+      isExistingUser = true;
       
-      // Handle specific error cases - return 200 with error in body so client can read it
-      if (createError.message?.includes('already been registered') || createError.status === 422) {
+      // Update existing user's password and metadata
+      const { data: updatedUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+        existingUser.id,
+        {
+          password: tempPassword,
+          user_metadata: {
+            first_name: firstName,
+            last_name: lastName || "",
+            role: role,
+          },
+        }
+      );
+
+      if (updateError) {
+        console.error("Error updating user:", updateError);
         return new Response(
           JSON.stringify({ 
             success: false,
-            error: `A user with email ${email} already exists. Please use a different email address or delete the existing user first.`
+            error: updateError.message || "Failed to update user credentials" 
           }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      
-      return new Response(
-        JSON.stringify({ 
-          success: false,
-          error: createError.message || "Failed to create user" 
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
-    console.log("User created successfully:", authUser.user.id);
+      authUser = { user: updatedUser.user };
+    } else {
+      console.log("Creating new user with email:", email);
 
-    // Insert role into user_roles table
-    const { error: roleError } = await supabaseAdmin
-      .from("user_roles")
-      .insert({
-        user_id: authUser.user.id,
-        role: role,
-        assigned_by: requestingUser.id,
+      // Create user in Auth
+      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
+          first_name: firstName,
+          last_name: lastName || "",
+          role: role,
+        },
       });
 
-    if (roleError) {
-      console.error("Error creating user role:", roleError);
+      if (createError) {
+        console.error("Error creating auth user:", createError);
+        return new Response(
+          JSON.stringify({ 
+            success: false,
+            error: createError.message || "Failed to create user" 
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      authUser = newUser;
+    }
+
+    console.log(isExistingUser ? "User credentials updated:" : "User created successfully:", authUser.user.id);
+
+    // Insert or update role into user_roles table (only for new users)
+    if (!isExistingUser) {
+      const { error: roleError } = await supabaseAdmin
+        .from("user_roles")
+        .insert({
+          user_id: authUser.user.id,
+          role: role,
+          assigned_by: requestingUser.id,
+        });
+
+      if (roleError) {
+        console.error("Error creating user role:", roleError);
+      }
     }
 
     // Send email in background (non-blocking)
@@ -176,7 +206,7 @@ const handler = async (req: Request): Promise<Response> => {
                 </div>
                 <div class="content">
                   <p>Hi ${firstName},</p>
-                  <p>Your account has been created. Below are your login credentials:</p>
+                  <p>${isExistingUser ? 'Your login credentials have been updated' : 'Your account has been created'}. Below are your login credentials:</p>
                   
                   <div class="credentials">
                     <div class="credential-item">
@@ -244,8 +274,10 @@ const handler = async (req: Request): Promise<Response> => {
         success: true,
         userId: authUser.user.id,
         email: email,
-        message: "User created successfully. Email will be sent if domain is verified in Resend.",
-        warning: "To send emails, verify your domain at resend.com/domains"
+        message: isExistingUser 
+          ? "User credentials updated and email sent successfully."
+          : "User created successfully. Email will be sent if domain is verified in Resend.",
+        isExistingUser: isExistingUser
       }),
       {
         status: 200,
