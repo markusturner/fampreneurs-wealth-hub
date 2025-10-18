@@ -562,39 +562,31 @@ export function AdminAllUsersManagement() {
                     <div>
                       <p className="text-sm font-medium mb-2">🏠 Dashboard</p>
                       <div className="flex flex-wrap gap-1 ml-4">
-                        <Badge variant="secondary" className="text-xs">✓ Overview</Badge>
-                        <Badge variant="secondary" className="text-xs">✓ Analytics</Badge>
-                        <Badge variant="secondary" className="text-xs">✓ Quick Actions</Badge>
+                        <Badge variant="outline" className="text-xs">✓ View Only</Badge>
                       </div>
                     </div>
                     <div>
                       <p className="text-sm font-medium mb-2">🏛️ Family Office</p>
                       <div className="flex flex-wrap gap-1 ml-4">
-                        <Badge variant="secondary" className="text-xs">✓ Governance</Badge>
-                        <Badge variant="secondary" className="text-xs">✓ Documents</Badge>
-                        <Badge variant="secondary" className="text-xs">✓ Investments</Badge>
+                        <Badge variant="outline" className="text-xs">✓ View Only</Badge>
                       </div>
                     </div>
                     <div>
                       <p className="text-sm font-medium mb-2">📜 Family Constitution</p>
                       <div className="flex flex-wrap gap-1 ml-4">
-                        <Badge variant="secondary" className="text-xs">✓ Setup & Edit</Badge>
-                        <Badge variant="secondary" className="text-xs">✓ View & Review</Badge>
+                        <Badge variant="outline" className="text-xs">✓ View Only</Badge>
                       </div>
                     </div>
                     <div>
                       <p className="text-sm font-medium mb-2">📅 Calendar</p>
                       <div className="flex flex-wrap gap-1 ml-4">
-                        <Badge variant="secondary" className="text-xs">✓ Meetings</Badge>
-                        <Badge variant="secondary" className="text-xs">✓ Events</Badge>
-                        <Badge variant="secondary" className="text-xs">✓ Scheduling</Badge>
+                        <Badge variant="outline" className="text-xs">✓ View Only</Badge>
                       </div>
                     </div>
                     <div>
                       <p className="text-sm font-medium mb-2">👥 Members</p>
                       <div className="flex flex-wrap gap-1 ml-4">
-                        <Badge variant="secondary" className="text-xs">✓ Family Directory</Badge>
-                        <Badge variant="secondary" className="text-xs">✓ Scoreboard</Badge>
+                        <Badge variant="outline" className="text-xs">✓ View Only</Badge>
                       </div>
                     </div>
                   </div>
