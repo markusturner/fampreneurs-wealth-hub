@@ -80,10 +80,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Key Metrics */}
+        {/* Key Metrics - Portfolio Value, Investments, Family Office Members, Family Members, Documents */}
         <DashboardStats />
 
-        {/* Overview Section */}
+        {/* Financial Overview - Cash, Investments, AI Insights, Charts, Allocations */}
         <OverviewSection />
 
       </main>
