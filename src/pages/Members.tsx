@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
 import { useToast } from '@/hooks/use-toast'
 import { NavHeader } from '@/components/dashboard/nav-header'
 import { AddFamilyMemberDialog } from '@/components/dashboard/add-family-member-dialog'
-import { AddFamilyOfficeMemberDialog } from '@/components/dashboard/family-office-member-dialog'
+
 import { EditFamilyMemberDialog } from '@/components/dashboard/edit-family-member-dialog'
 import { 
   UserPlus, 
@@ -19,9 +19,7 @@ import {
   Edit, 
   Trash2, 
   Users, 
-  Crown, 
-  Building2, 
-  Briefcase 
+  Crown
 } from 'lucide-react'
 
 interface FamilyMember {
@@ -42,35 +40,14 @@ interface FamilyMember {
   invitation_sent_at: string | null
 }
 
-  interface FamilyOfficeMember {
-    id: string
-    full_name: string
-    email: string
-    phone?: string
-    role?: string
-    company?: string
-    department?: string
-    access_level?: string
-    specialties?: string[]
-    services?: string[]
-    status?: string
-    notes?: string
-    added_by?: string
-    created_at?: string
-    updated_at?: string
-    joined_at?: string
-  }
 
 export default function Members() {
   const { user } = useAuth()
   const { toast } = useToast()
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
-  const [officeMembers, setOfficeMembers] = useState<FamilyOfficeMember[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddFamilyDialog, setShowAddFamilyDialog] = useState(false)
-  const [showAddOfficeDialog, setShowAddOfficeDialog] = useState(false)
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null)
-  const [editingOfficeMember, setEditingOfficeMember] = useState<FamilyOfficeMember | null>(null)
 
   useEffect(() => {
     fetchMembers()
@@ -95,42 +72,19 @@ export default function Members() {
     try {
       console.log('Fetching family members for user:', user.id)
       
-      // Fetch all members for this user once, split client-side into family vs office
-      const { data: allData, error: membersError } = await supabase
+      const { data: familyData, error: membersError } = await supabase
         .from('family_members')
         .select('*')
         .eq('added_by', user.id)
+        .is('office_role', null)
         .order('created_at', { ascending: false })
 
-      console.log('All members data:', allData)
+      console.log('Family members data:', familyData)
       console.log('Members error:', membersError)
 
       if (membersError) throw membersError
 
-      const familyList = (allData || []).filter((m: any) => !m.office_role && m.family_position !== 'Family Office Team')
-      const officeList = (allData || []).filter((m: any) => m.office_role || m.family_position === 'Family Office Team')
-
-      setFamilyMembers(familyList)
-      setOfficeMembers(
-        officeList.map((fm: any) => ({
-          id: fm.id,
-          full_name: fm.full_name,
-          email: fm.email,
-          phone: fm.phone || undefined,
-          role: fm.office_role || undefined,
-          company: fm.company || undefined,
-          department: fm.department || undefined,
-          access_level: fm.access_level || undefined,
-          specialties: fm.office_services || [],
-          services: fm.office_services || [],
-          status: fm.status || undefined,
-          notes: fm.notes || undefined,
-          added_by: fm.added_by,
-          created_at: fm.created_at,
-          updated_at: fm.updated_at,
-          joined_at: fm.joined_at,
-        }))
-      )
+      setFamilyMembers(familyData || [])
     } catch (error) {
       console.error('Error fetching members:', error)
       toast({
@@ -305,145 +259,6 @@ export default function Members() {
     }
   }
 
-  const handleResendOfficeInvitation = async (member: FamilyOfficeMember) => {
-    try {
-      console.log('Resending office invitation for:', member.full_name)
-      
-      // Generate new temporary password
-      const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8).toUpperCase()
-      
-      // Send office member invitation email using the same function (we can enhance it later)
-      const { data, error } = await supabase.functions.invoke('send-family-member-invitation', {
-        body: {
-          familyMemberId: member.id,
-          email: member.email,
-          firstName: member.full_name.split(' ')[0],
-          lastName: member.full_name.split(' ').slice(1).join(' '),
-          familyPosition: member.role || 'Team Member',
-          tempPassword: tempPassword,
-          isOfficeTeam: true // Flag to differentiate office members
-        }
-      })
-
-      if (data && (data as any).success === false) {
-        console.error('Office invitation function responded with failure:', data)
-        toast({
-          title: 'Email not sent',
-          description: (data as any).hint || (data as any).error || 'Email service not configured. Verify Resend domain and RESEND_FROM_EMAIL.',
-          variant: 'destructive'
-        })
-        return
-      }
-
-      if (error) {
-        console.error('Error resending office invitation:', error)
-        throw error
-      }
-
-      // Update the member status to indicate invitation was sent
-      const { error: updateError } = await supabase
-        .from('family_members')
-        .update({
-          status: 'invited',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', member.id)
-
-      if (updateError) {
-        console.error('Error updating invitation status:', updateError)
-      }
-
-      // Update local state
-      setOfficeMembers(prev => 
-        prev.map(m => 
-          m.id === member.id 
-            ? { ...m, status: 'invited', updated_at: new Date().toISOString() }
-            : m
-        )
-      )
-
-      toast({
-        title: "Invitation Resent",
-        description: `Invitation email has been resent to ${member.full_name}`,
-      })
-
-    } catch (error) {
-      console.error('Error resending office invitation:', error)
-      toast({
-        title: "Error",
-        description: "Failed to resend invitation. Please try again.",
-        variant: "destructive"
-      })
-    }
-  }
-
-  const handleDeleteOfficeMember = async (memberId: string) => {
-    try {
-      const { error } = await supabase
-        .from('family_members')
-        .delete()
-        .eq('id', memberId)
-
-      if (error) throw error
-
-      setOfficeMembers(prev => prev.filter(member => member.id !== memberId))
-      toast({
-        title: "Success",
-        description: "Family office member deleted successfully"
-      })
-    } catch (error) {
-      console.error('Error deleting family office member:', error)
-      toast({
-        title: "Error",
-        description: "Failed to delete family office member",
-        variant: "destructive"
-      })
-    }
-  }
-
-  const handleUpdateOfficeMember = async (updatedMember: Partial<FamilyOfficeMember> & { id: string }) => {
-    try {
-      const { error } = await supabase
-        .from('family_members')
-        .update({
-          full_name: updatedMember.full_name,
-          email: updatedMember.email,
-          phone: updatedMember.phone,
-          office_role: updatedMember.role,
-          office_services: updatedMember.specialties || updatedMember.services,
-          company: updatedMember.company || null,
-          department: updatedMember.department || null,
-          access_level: updatedMember.access_level || null,
-          notes: updatedMember.notes,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', updatedMember.id)
-
-      if (error) throw error
-
-      // Update local state
-      setOfficeMembers(prev => 
-        prev.map(member => 
-          member.id === updatedMember.id 
-            ? { ...member, ...updatedMember, updated_at: new Date().toISOString() }
-            : member
-        )
-      )
-
-      setEditingOfficeMember(null)
-      toast({
-        title: "Success",
-        description: "Office member updated successfully"
-      })
-    } catch (error) {
-      console.error('Error updating office member:', error)
-      toast({
-        title: "Error",
-        description: "Failed to update office member",
-        variant: "destructive"
-      })
-    }
-  }
 
   const getTrustPositionColor = (position: string) => {
     const colors = {
@@ -457,17 +272,6 @@ export default function Members() {
     return colors[position as keyof typeof colors] || 'bg-gray-100 text-gray-800'
   }
 
-  const getAccessLevelColor = (level: string) => {
-    const colors = {
-      'Full Access': 'bg-red-100 text-red-800',
-      'Financial Reports Only': 'bg-blue-100 text-blue-800',
-      'Investment Data Only': 'bg-green-100 text-green-800',
-      'Administrative Access': 'bg-purple-100 text-purple-800',
-      'Limited Access': 'bg-yellow-100 text-yellow-800',
-      'View Only': 'bg-gray-100 text-gray-800'
-    }
-    return colors[level as keyof typeof colors] || 'bg-gray-100 text-gray-800'
-  }
 
   const LoadingSkeleton = () => (
     <div className="space-y-3 sm:space-y-4">
@@ -482,26 +286,14 @@ export default function Members() {
     </div>
   )
 
-  const EmptyState = ({ type }: { type: 'family' | 'office' }) => (
+  const EmptyState = () => (
     <Card className="w-full">
       <CardContent className="p-3 sm:p-6 text-center">
-        {type === 'family' ? (
-          <>
-            <Users className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 sm:mb-3 text-muted-foreground opacity-50" />
-            <h3 className="text-sm sm:text-base font-medium mb-1 sm:mb-2">No family members added</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
-              Start building your family directory
-            </p>
-          </>
-        ) : (
-          <>
-            <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 sm:mb-3 text-muted-foreground opacity-50" />
-            <h3 className="text-sm sm:text-base font-medium mb-1 sm:mb-2">No office members added</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
-              Build your professional team
-            </p>
-          </>
-        )}
+        <Users className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 sm:mb-3 text-muted-foreground opacity-50" />
+        <h3 className="text-sm sm:text-base font-medium mb-1 sm:mb-2">No family members added</h3>
+        <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
+          Start building your family directory
+        </p>
       </CardContent>
     </Card>
   )
@@ -518,25 +310,7 @@ export default function Members() {
           </p>
         </div>
 
-        <Tabs defaultValue="family" className="space-y-4 sm:space-y-6">
-          <TabsList>
-            <TabsTrigger value="family" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-              <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span>Family</span>
-              <Badge variant="secondary" className="ml-1 text-xs h-5 px-1.5">
-                {familyMembers.length}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger value="office" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-              <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span>Office</span>
-              <Badge variant="secondary" className="ml-1 text-xs h-5 px-1.5">
-                {officeMembers.length}
-              </Badge>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="family" className="space-y-4">
+        <div className="space-y-4 sm:space-y-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-base sm:text-lg font-semibold">Family Members</h2>
@@ -560,7 +334,7 @@ export default function Members() {
               {loading ? (
                 <LoadingSkeleton />
               ) : familyMembers.length === 0 ? (
-                <EmptyState type="family" />
+                <EmptyState />
               ) : (
                 familyMembers.map((member) => (
                   <Card key={member.id} className="hover:shadow-md transition-shadow">
@@ -665,177 +439,18 @@ export default function Members() {
                 ))
               )}
             </div>
-          </TabsContent>
-
-          <TabsContent value="office" className="space-y-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-base sm:text-lg font-semibold">Family Office Team</h2>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-                  Manage your professional advisors and staff
-                </p>
-              </div>
-              
-              <Button 
-                onClick={() => setShowAddOfficeDialog(true)} 
-                className="flex items-center gap-2 text-sm h-9"
-                size="sm"
-              >
-                <UserPlus className="h-4 w-4" />
-                <span className="hidden xs:inline">Add Office Member</span>
-                <span className="xs:hidden">Add Member</span>
-              </Button>
-            </div>
-
-            <div className="grid gap-4">
-              {loading ? (
-                <LoadingSkeleton />
-              ) : officeMembers.length === 0 ? (
-                <EmptyState type="office" />
-              ) : (
-                officeMembers.map((member) => (
-                  <Card key={member.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-3 sm:p-4 md:p-6">
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
-                        {/* Mobile: Header with Avatar and Name */}
-                        <div className="flex items-center gap-3 sm:items-start">
-                          <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
-                            <AvatarImage src="" />
-                            <AvatarFallback className="bg-primary/10 text-xs sm:text-sm">
-                              {member.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h3 className="font-semibold text-sm sm:text-base truncate">{member.full_name}</h3>
-                              <Badge variant="outline" className="text-xs">
-                                {member.status}
-                              </Badge>
-                            </div>
-                            
-                            <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
-                              {member.role && (
-                                <Badge variant="secondary" className="text-xs">{member.role}</Badge>
-                              )}
-                              {member.company && (
-                                <span className="text-xs">• {member.company}</span>
-                              )}
-                              {member.department && (
-                                <span className="text-xs">• {member.department}</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Mobile: Action Buttons */}
-                        <div className="flex items-center gap-2 sm:ml-auto sm:flex-shrink-0">
-                          {member.email && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleResendOfficeInvitation(member)}
-                              className="text-xs h-8 px-2"
-                              disabled={!!member.joined_at}
-                            >
-                              <Mail className="h-3 w-3 sm:mr-1" />
-                              <span className="hidden sm:inline">
-                                {member.joined_at ? 'Accepted' : 'Resend'}
-                              </span>
-                            </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setEditingOfficeMember(member)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteOfficeMember(member.id)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Access Level */}
-                      {member.access_level && (
-                        <div className="mt-3">
-                          <Badge
-                            variant="outline"
-                            className={`text-xs ${getAccessLevelColor(member.access_level)}`}
-                          >
-                            {member.access_level}
-                          </Badge>
-                        </div>
-                      )}
-
-                      {/* Services */}
-                      {((member.services && member.services.length > 0) || (member.specialties && member.specialties.length > 0)) && (
-                        <div className="flex flex-wrap gap-1 mt-3">
-                          {(member.services || member.specialties || []).map((svc) => (
-                            <Badge
-                              key={svc}
-                              variant="outline"
-                              className="text-xs bg-blue-50 text-blue-700"
-                            >
-                              {svc}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Contact Info */}
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mt-3">
-                        <div className="flex items-center gap-1 min-w-0">
-                          <Mail className="h-3 w-3 flex-shrink-0" />
-                          <span className="truncate">{member.email}</span>
-                        </div>
-                        {member.phone && (
-                          <div className="flex items-center gap-1">
-                            <Phone className="h-3 w-3 flex-shrink-0" />
-                            <span>{member.phone}</span>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
+        </div>
 
         {/* Dialogs */}
         <AddFamilyMemberDialog 
           open={showAddFamilyDialog} 
           onOpenChange={setShowAddFamilyDialog}
         />
-        
-        <AddFamilyOfficeMemberDialog 
-          open={showAddOfficeDialog} 
-          onOpenChange={setShowAddOfficeDialog}
-          onMemberAdded={fetchMembers}
-          mode="add"
-        />
 
         <EditFamilyMemberDialog
           member={editingMember}
           onClose={() => setEditingMember(null)}
           onUpdate={handleUpdateFamilyMember}
-        />
-
-        <AddFamilyOfficeMemberDialog 
-          open={!!editingOfficeMember}
-          onOpenChange={(open) => !open && setEditingOfficeMember(null)}
-          onMemberAdded={fetchMembers}
-          member={editingOfficeMember}
-          mode="edit"
         />
       </div>
     </div>
