@@ -146,11 +146,12 @@ export function AdminAllUsersManagement() {
     if (!deletingUserId) return
 
     try {
-      const { error } = await supabase.functions.invoke('delete-user', {
+      const { data, error } = await supabase.functions.invoke('delete-user', {
         body: { userId: deletingUserId }
       })
 
       if (error) throw error
+      if (data?.error) throw new Error(data.error)
 
       toast({
         title: "Success",
