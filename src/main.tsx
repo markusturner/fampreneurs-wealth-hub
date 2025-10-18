@@ -32,6 +32,7 @@ import CookiePolicy from "./pages/CookiePolicy";
 
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { AIChat } from "@/components/dashboard/ai-chat";
+import { AnnouncementBanner } from "@/components/ui/announcement-banner";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
 
@@ -68,6 +69,7 @@ function AppWithNotifications() {
   useZapierNotifications()
   return (
     <>
+      <AnnouncementBanner />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/dashboard" element={<Dashboard />} />
