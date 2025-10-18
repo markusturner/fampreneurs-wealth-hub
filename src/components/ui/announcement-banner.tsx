@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { X, Calendar, Users, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useAuth } from '@/contexts/AuthContext'
 
 export const AnnouncementBanner = () => {
+  const { user } = useAuth()
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -21,7 +23,7 @@ export const AnnouncementBanner = () => {
     setIsVisible(false)
   }
 
-  if (!isVisible) return null
+  if (!isVisible || !user) return null
 
   return (
     <div className="relative w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white shadow-lg animate-fade-in">
