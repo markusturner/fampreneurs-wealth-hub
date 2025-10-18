@@ -2,10 +2,16 @@ import { useState, useEffect } from 'react'
 import { X, Calendar, Users, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/AuthContext'
+import { useLocation } from 'react-router-dom'
 
 export const AnnouncementBanner = () => {
   const { user } = useAuth()
+  const location = useLocation()
   const [isVisible, setIsVisible] = useState(false)
+  
+  // Don't show on public pages
+  const publicPages = ['/landing', '/auth', '/privacy-policy', '/terms-of-service', '/cookie-policy', '/contact']
+  const isPublicPage = publicPages.includes(location.pathname)
 
   useEffect(() => {
     const dismissed = localStorage.getItem('truheirs-announcement-dismissed')
@@ -23,7 +29,7 @@ export const AnnouncementBanner = () => {
     setIsVisible(false)
   }
 
-  if (!isVisible || !user) return null
+  if (!isVisible || !user || isPublicPage) return null
 
   return (
     <div className="relative w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white shadow-lg animate-fade-in">
