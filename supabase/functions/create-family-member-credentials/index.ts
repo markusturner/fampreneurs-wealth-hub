@@ -70,7 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
       user_metadata: {
         first_name: firstName,
         last_name: lastName || '',
-        role: 'family_office_only'
+        role: 'family_member'
       }
     });
 
@@ -86,7 +86,7 @@ const handler = async (req: Request): Promise<Response> => {
         family_member_id: familyMemberId,
         email: email,
         password_hash: 'managed_by_auth', // We let Supabase Auth handle the actual password
-        role: 'family_office_only'
+        role: 'family_member'
       });
 
     if (credentialsError) {
