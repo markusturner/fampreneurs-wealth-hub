@@ -47,8 +47,8 @@ serve(async (req) => {
       throw new Error('Invalid authentication')
     }
 
-    // Check if the user is an admin
-    const { data: profile, error: profileError } = await supabaseClient
+    // Check if the user is an admin (use admin client to bypass RLS)
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('is_admin')
       .eq('user_id', user.id)
