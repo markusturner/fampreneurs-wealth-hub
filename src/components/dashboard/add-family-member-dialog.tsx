@@ -76,9 +76,6 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
     governancePosition: 'none',
     notes: ''
   })
-  const [selectedTrustPositions, setSelectedTrustPositions] = useState<string[]>([])
-  const [customTrustPosition, setCustomTrustPosition] = useState('')
-
   const resetForm = () => {
     setFormData({
       fullName: '',
@@ -90,25 +87,6 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
       governancePosition: 'none',
       notes: ''
     })
-    setSelectedTrustPositions([])
-    setCustomTrustPosition('')
-  }
-
-  const addTrustPosition = (position: string) => {
-    if (position && !selectedTrustPositions.includes(position)) {
-      setSelectedTrustPositions([...selectedTrustPositions, position])
-    }
-  }
-
-  const removeTrustPosition = (position: string) => {
-    setSelectedTrustPositions(selectedTrustPositions.filter(p => p !== position))
-  }
-
-  const addCustomTrustPosition = () => {
-    if (customTrustPosition.trim()) {
-      addTrustPosition(customTrustPosition.trim())
-      setCustomTrustPosition('')
-    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -125,13 +103,6 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
 
     setLoading(true)
     try {
-      // Merge governance position with trust positions
-      let finalTrustPositions = [...selectedTrustPositions]
-      
-      if (formData.governancePosition && formData.governancePosition !== '' && formData.governancePosition !== 'none') {
-        finalTrustPositions = [...finalTrustPositions, formData.governancePosition]
-      }
-
       // First, insert the family member
       const { data: familyMemberData, error: familyMemberError } = await supabase
         .from('family_members')
@@ -141,7 +112,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
           email: formData.email.trim() || null,
           phone: formData.phone.trim() || null,
           family_position: formData.familyPosition || null,
-          trust_positions: finalTrustPositions.length > 0 ? finalTrustPositions : null,
+          trust_positions: formData.governancePosition && formData.governancePosition !== 'none' ? [formData.governancePosition] : null,
           relationship_to_family: formData.relationshipToFamily.trim() || null,
           governance_branch: formData.governanceBranch && formData.governanceBranch !== 'none' ? formData.governanceBranch : null,
           notes: formData.notes.trim() || null,
