@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
-import { Users, Calendar, BookOpen, Home, MessageSquare, TrendingUp, FileText, Settings } from 'lucide-react'
+import { Users, Calendar, BookOpen, Home, MessageSquare, FileText, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useEffect, useState } from 'react'
@@ -15,7 +15,7 @@ interface NavItem {
 // Navigation for family office members (full access)
 const familyOfficeItems: NavItem[] = [
   { name: 'Documents', href: '/documents', icon: FileText },
-  { name: 'Investments', href: '/investments', icon: TrendingUp },
+  { name: 'Community', href: '/community', icon: MessageSquare },
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Calendar', href: '/calendar', icon: Calendar },
   { name: 'Members', href: '/members', icon: Users },
