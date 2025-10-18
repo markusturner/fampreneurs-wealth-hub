@@ -519,7 +519,7 @@ export default function Members() {
         </div>
 
         <Tabs defaultValue="family" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-2 h-12">
+          <TabsList>
             <TabsTrigger value="family" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
               <Users className="h-3 w-3 sm:h-4 sm:w-4" />
               <span className="hidden xs:inline">Family</span>
