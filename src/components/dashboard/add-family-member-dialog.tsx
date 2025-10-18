@@ -101,13 +101,14 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
       return
     }
 
-    // Check for duplicate email if email is provided
+    // Check for duplicate email if email is provided (only check visible family members, not office members)
     if (formData.email.trim()) {
       const { data: existingMember } = await supabase
         .from('family_members')
         .select('id, full_name')
         .eq('email', formData.email.trim())
         .eq('added_by', user?.id)
+        .is('office_role', null)
         .maybeSingle()
 
       if (existingMember) {
