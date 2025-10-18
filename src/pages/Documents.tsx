@@ -633,19 +633,33 @@ export default function Documents() {
     
     try {
       // Insert message into the database which will trigger notifications
-      const { error } = await supabase
+      const { data: insertedData, error } = await supabase
         .from('family_messages')
         .insert({
           content: newMessage,
           sender_id: user.id,
           message_type: 'text',
           recipient_id: user.id // For now, sending to self for testing
-        });
+        })
+        .select()
+        .single();
 
       if (error) {
         console.error('Error sending message:', error);
         toast.error('Failed to send message');
         return;
+      }
+
+      // Send email notifications in background
+      if (insertedData) {
+        supabase.functions.invoke('notify-message-email', {
+          body: {
+            messageId: insertedData.id,
+            messageContent: newMessage,
+            senderId: user.id,
+            recipientId: null // null = broadcast to all
+          }
+        }).catch(err => console.error('Error sending message notification:', err));
       }
 
       // Update local state for immediate UI feedback
@@ -658,7 +672,7 @@ export default function Documents() {
       };
       setMessages([...messages, message]);
       setNewMessage('');
-      toast.success('Message sent!');
+      toast.success('Message sent and notifications sent!');
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');
