@@ -724,14 +724,14 @@ export default function Documents() {
   return <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <div className="max-w-7xl mx-auto px-2 xs:px-3 sm:px-4 md:px-5 lg:px-6 py-3 xs:py-4 sm:py-5 md:py-6 space-y-4 xs:space-y-5 sm:space-y-6 md:space-y-7 lg:space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 space-y-6 sm:space-y-8 lg:space-y-10">
 
         {/* Family Constitution Header */}
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+        <div className="text-center space-y-3 sm:space-y-4 px-2">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
             {governanceData?.constitutionName || "Family Constitution"}
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             {governanceData?.familyConstitution || "Your comprehensive family governance framework and foundational documents"}
           </p>
           {governanceData?.constitutionDate && (
@@ -742,35 +742,36 @@ export default function Documents() {
         </div>
 
         {/* Identity & Core Documents Section */}
-        <section className="space-y-6">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-              <Crown className="h-6 w-6 text-amber-600" />
+        <section className="space-y-4 sm:space-y-6">
+          <div className="text-center px-2">
+            <h2 className="text-xl sm:text-2xl font-bold mb-2 flex items-center justify-center gap-2 flex-wrap">
+              <Crown className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600" />
               Identity & Core Documents
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
               The foundation of your family's values and principles
             </p>
             {!governanceData ? (
-              <div className="mt-4 p-6 border-2 border-dashed border-secondary rounded-lg bg-muted/30">
-                <h3 className="font-semibold mb-2">Set Up Your Family Constitution</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+              <div className="mt-4 p-4 sm:p-6 border-2 border-dashed border-secondary rounded-lg bg-muted/30">
+                <h3 className="font-semibold mb-2 text-base sm:text-lg">Set Up Your Family Constitution</h3>
+                <p className="text-sm sm:text-base text-muted-foreground mb-4 leading-relaxed">
                   Create a comprehensive family governance framework with our step-by-step wizard
                 </p>
                 <Button 
                   onClick={openOnboarding}
-                  className="gap-2"
+                  className="gap-2 w-full sm:w-auto min-h-[44px]"
+                  size="lg"
                 >
-                  <FileText className="h-4 w-4" />
+                  <FileText className="h-5 w-5" />
                   Start Constitution Setup
                 </Button>
               </div>
             ) : (
               <Button 
                 variant="outline" 
-                size="sm" 
+                size="default"
                 onClick={() => navigate('/family-constitution/setup')}
-                className="mt-2 gap-2"
+                className="mt-2 gap-2 min-h-[44px] px-4"
               >
                 <Settings className="h-4 w-4" />
                 Edit Constitution
@@ -779,7 +780,7 @@ export default function Documents() {
           </div>
 
           {/* Mission, Vision, Values Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <Card className="border-l-4 border-l-blue-500">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-blue-700">
@@ -832,7 +833,7 @@ export default function Documents() {
           </div>
 
           {/* Wealth Philosophy & Founding Story */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -888,13 +889,13 @@ export default function Documents() {
         </section>
 
         {/* Governance & Authority Section */}
-        <section className="space-y-6">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-              <Scale className="h-6 w-6 text-blue-600" />
+        <section className="space-y-4 sm:space-y-6">
+          <div className="text-center px-2">
+            <h2 className="text-xl sm:text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+              <Scale className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
               Governance & Authority
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Decision-making processes and organizational structure
             </p>
           </div>
@@ -1133,19 +1134,19 @@ export default function Documents() {
         </section>
 
         {/* Legacy & Development Section */}
-        <section className="space-y-6">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-              <GraduationCap className="h-6 w-6 text-emerald-600" />
+        <section className="space-y-4 sm:space-y-6">
+          <div className="text-center px-2">
+            <h2 className="text-xl sm:text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+              <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
               Legacy & Development
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
               Education, philanthropy, and future planning
             </p>
           </div>
 
           {/* Education & Philanthropy */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -1261,45 +1262,45 @@ export default function Documents() {
         </section>
 
         {/* Family Education & Courses Section */}
-        <section className="space-y-6">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
-              <GraduationCap className="h-6 w-6 text-emerald-600" />
+        <section className="space-y-4 sm:space-y-6">
+          <div className="text-center px-2">
+            <h2 className="text-xl sm:text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+              <GraduationCap className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600" />
               Family Education & Courses
             </h2>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
               Comprehensive education programs for family business success
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {familyEducationModules.map((module, index) => (
               <Card key={index} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                     <module.icon className={`h-5 w-5 ${module.color}`} />
                     {module.title}
                   </CardTitle>
-                  <CardDescription className="text-sm">
+                  <CardDescription className="text-xs sm:text-sm leading-relaxed">
                     {module.description}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0">
                   <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-muted-foreground">Lessons</span>
                       <span className="font-medium">{module.lessons}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-muted-foreground">Duration</span>
                       <span className="font-medium">{module.duration}</span>
                     </div>
-                    <Badge variant="secondary">
+                    <Badge variant="secondary" className="text-xs">
                       {module.status}
                     </Badge>
                     <Button 
                       variant="outline" 
-                      className="w-full mt-4"
+                      className="w-full mt-4 min-h-[44px]"
                       onClick={() => setShowCoursesDialog(true)}
                     >
                       View Course Details
@@ -1313,9 +1314,10 @@ export default function Documents() {
           <div className="text-center">
             <Button 
               onClick={() => setShowCoursesDialog(true)}
-              className="gap-2"
+              className="gap-2 w-full sm:w-auto min-h-[44px] px-6"
+              size="lg"
             >
-              <BookOpen className="h-4 w-4" />
+              <BookOpen className="h-5 w-5" />
               View All Courses
             </Button>
           </div>
@@ -1323,25 +1325,25 @@ export default function Documents() {
 
         {/* Quick Actions & Resources */}
         <section className="space-y-4">
-          <div className="text-center">
-            <h2 className="text-xl font-bold mb-2">Quick Actions</h2>
+          <div className="text-center px-2">
+            <h2 className="text-lg sm:text-xl font-bold mb-2">Quick Actions</h2>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => setShowFamilyTreeDialog(true)}>
-              <TreePine className="h-6 w-6 text-emerald-600" />
-              <span className="text-sm">Family Tree</span>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+            <Button variant="outline" className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3" onClick={() => setShowFamilyTreeDialog(true)}>
+              <TreePine className="h-6 w-6 sm:h-7 sm:w-7 text-emerald-600" />
+              <span className="text-xs sm:text-sm font-medium text-center">Family Tree</span>
             </Button>
             
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => setShowFamilyDocuments(true)}>
-              <FileText className="h-6 w-6 text-blue-600" />
-              <span className="text-sm">Documents</span>
+            <Button variant="outline" className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3" onClick={() => setShowFamilyDocuments(true)}>
+              <FileText className="h-6 w-6 sm:h-7 sm:w-7 text-blue-600" />
+              <span className="text-xs sm:text-sm font-medium text-center">Documents</span>
             </Button>
             
             
-            <Button variant="outline" className="h-auto p-4 flex flex-col items-center gap-2" onClick={() => setShowMessagesDialog(true)}>
-              <MessageCircle className="h-6 w-6 text-purple-600" />
-              <span className="text-sm">Messages</span>
+            <Button variant="outline" className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3 col-span-2 sm:col-span-1" onClick={() => setShowMessagesDialog(true)}>
+              <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7 text-purple-600" />
+              <span className="text-xs sm:text-sm font-medium text-center">Messages</span>
             </Button>
           </div>
         </section>
@@ -1355,13 +1357,13 @@ export default function Documents() {
 
         {/* Business Courses Dialog */}
         <Dialog open={showCoursesDialog} onOpenChange={setShowCoursesDialog}>
-          <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
+          <DialogContent className="w-[96vw] sm:w-[90vw] max-w-2xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto p-4 sm:p-6">
+            <DialogHeader className="space-y-2 pb-4">
+              <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Building2 className="h-5 w-5 sm:h-6 sm:w-6" />
                 Family Business Education Courses
               </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm">
+              <DialogDescription className="text-sm sm:text-base leading-relaxed">
                 Comprehensive courses designed for family business success
               </DialogDescription>
             </DialogHeader>
