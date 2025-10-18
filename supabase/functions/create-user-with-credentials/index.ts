@@ -210,14 +210,16 @@ const handler = async (req: Request): Promise<Response> => {
         `;
 
         const { error: emailError } = await resend.emails.send({
-          from: "Platform <onboarding@resend.dev>",
+          from: "TruHeirs <noreply@fampreneurs.com>",
           to: [email],
-          subject: "Your Account Credentials",
+          subject: "Your Account Credentials - TruHeirs",
           html: emailHtml,
         });
 
         if (emailError) {
           console.error("Background email error:", emailError);
+          // Log but don't fail - email issues shouldn't block user creation
+          console.log("⚠️ Email failed to send. Please verify your domain at resend.com/domains");
         } else {
           console.log("Background email sent successfully to:", email);
         }
@@ -242,7 +244,8 @@ const handler = async (req: Request): Promise<Response> => {
         success: true,
         userId: authUser.user.id,
         email: email,
-        message: "User created successfully and credentials sent via email",
+        message: "User created successfully. Email will be sent if domain is verified in Resend.",
+        warning: "To send emails, verify your domain at resend.com/domains"
       }),
       {
         status: 200,
