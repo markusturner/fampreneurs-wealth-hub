@@ -1,15 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-interface FamilyCodeRequest {
-  code: string
-  ip_address?: string
-  user_agent?: string
 }
 
 serve(async (req) => {
@@ -19,20 +14,34 @@ serve(async (req) => {
   }
 
   try {
-    const { code, ip_address, user_agent }: FamilyCodeRequest = await req.json()
-
-    if (!code) {
+    // Validate input
+    const RequestSchema = z.object({
+      code: z.string()
+        .min(1, { message: "Code cannot be empty" })
+        .max(50, { message: "Code must be less than 50 characters" })
+        .regex(/^[A-Za-z0-9-_]+$/, { message: "Code contains invalid characters" }),
+      ip_address: z.string().max(45).optional(),
+      user_agent: z.string().max(500).optional()
+    });
+    
+    const body = await req.json();
+    const validation = RequestSchema.safeParse(body);
+    
+    if (!validation.success) {
       return new Response(
         JSON.stringify({ 
-          success: false, 
-          message: 'Family secret code is required' 
-        }),
+          success: false,
+          error: 'Invalid input', 
+          details: validation.error.flatten() 
+        }), 
         { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
-      )
+      );
     }
+    
+    const { code, ip_address, user_agent } = validation.data;
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!

@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
@@ -19,11 +20,31 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not configured');
     }
 
-    const { message, context } = await req.json();
-
-    if (!message) {
-      throw new Error('Message is required');
+    // Validate input
+    const RequestSchema = z.object({
+      message: z.string()
+        .min(1, { message: "Message cannot be empty" })
+        .max(4000, { message: "Message must be less than 4000 characters" }),
+      context: z.string().max(8000).optional()
+    });
+    
+    const body = await req.json();
+    const validation = RequestSchema.safeParse(body);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: validation.error.flatten() 
+        }), 
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
     }
+    
+    const { message, context } = validation.data;
 
     // Family office specific system prompt
     const systemPrompt = `You are an expert Family Office AI assistant. You have deep knowledge in:
