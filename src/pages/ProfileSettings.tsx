@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AffiliateProgram } from '@/components/dashboard/affiliate-program'
 import { AccountSettings } from '@/components/dashboard/account-settings'
 import { AdminUserManagement } from '@/components/dashboard/admin-user-management'
+import { AdminMassNotification } from '@/components/dashboard/admin-mass-notification'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Settings, Heart, ArrowLeft, User, Shield } from 'lucide-react'
@@ -95,8 +96,9 @@ export function ProfileSettings() {
         </TabsContent>
 
         {isAdmin && (
-          <TabsContent value="admin">
+          <TabsContent value="admin" className="space-y-6">
             <AdminUserManagement />
+            <AdminMassNotification />
           </TabsContent>
         )}
       </Tabs>
