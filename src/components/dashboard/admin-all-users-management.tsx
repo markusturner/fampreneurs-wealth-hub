@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Switch } from '@/components/ui/switch'
 import {
   Table,
   TableBody,
@@ -111,7 +112,8 @@ export function AdminAllUsersManagement() {
     if (!editingUser) return
 
     try {
-      const { error } = await supabase
+      // Update profile fields
+      const { error: profileError } = await supabase
         .from('profiles')
         .update({
           first_name: editingUser.first_name,
@@ -123,7 +125,25 @@ export function AdminAllUsersManagement() {
         })
         .eq('user_id', editingUser.user_id)
 
-      if (error) throw error
+      if (profileError) throw profileError
+
+      // Update admin role
+      if (editingUser.is_admin) {
+        const { error: adminError } = await supabase.rpc('assign_admin_role', {
+          target_user_id: editingUser.user_id,
+          assigner_user_id: (await supabase.auth.getUser()).data.user?.id
+        })
+        if (adminError) console.error('Admin role error:', adminError)
+      }
+
+      // Update moderator role
+      if (editingUser.is_moderator) {
+        const { error: modError } = await supabase.rpc('assign_moderator_role', {
+          target_user_id: editingUser.user_id,
+          assigner_user_id: (await supabase.auth.getUser()).data.user?.id
+        })
+        if (modError) console.error('Moderator role error:', modError)
+      }
 
       toast({
         title: "Success",
@@ -370,9 +390,34 @@ export function AdminAllUsersManagement() {
                   <SelectContent>
                     <SelectItem value="trustee">Trustee</SelectItem>
                     <SelectItem value="family_member">Family Member</SelectItem>
-                    <SelectItem value="member">Member</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t">
+                <Label>User Roles</Label>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="is-admin">Admin Access</Label>
+                    <p className="text-sm text-muted-foreground">Full system access and user management</p>
+                  </div>
+                  <Switch
+                    id="is-admin"
+                    checked={editingUser.is_admin}
+                    onCheckedChange={(checked) => setEditingUser({...editingUser, is_admin: checked})}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="is-moderator">Moderator Access</Label>
+                    <p className="text-sm text-muted-foreground">Content moderation and community management</p>
+                  </div>
+                  <Switch
+                    id="is-moderator"
+                    checked={editingUser.is_moderator}
+                    onCheckedChange={(checked) => setEditingUser({...editingUser, is_moderator: checked})}
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
