@@ -2,16 +2,19 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
+import localforage from 'localforage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
 import { NavHeader } from '@/components/dashboard/nav-header'
 import { useToast } from '@/hooks/use-toast'
 import { 
   TrendingUp, 
   TrendingDown, 
   DollarSign, 
-  PieChart, 
   Wallet, 
   BarChart3,
   Building2,
@@ -37,16 +40,38 @@ import {
   Scroll,
   Landmark,
   Crown,
+  Eye,
+  X,
+  LifeBuoy,
+  Building,
+  Globe,
   ArrowUpRight,
-  MessageSquare
-} from 'lucide-react'
+  ExternalLink,
+  Star,
+  Sparkles,
+  Clock,
+  Calendar,
+  MessageSquare,
+  GraduationCap,
+  Award,
+  CheckCircle2,
+  Mail,
+  Linkedin,
+  Search,
+  Send,
+  ArrowRight,
+  UserCheck,
+  Check
+} from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
 import { AssetAllocation } from '@/components/dashboard/asset-allocation'
 import { AccountIntegration } from '@/components/dashboard/account-integration'
 import { TransactionMonitoring } from '@/components/dashboard/transaction-monitoring'
-import { BudgetingAnalytics } from '@/components/dashboard/budgeting-analytics'
+import { FinancialReports } from '@/components/dashboard/financial-reports'
 import { FamilyMemberManagement } from '@/components/dashboard/family-member-management'
-import { EnhancedInvestmentOverview } from '@/components/dashboard/enhanced-investment-overview'
+import { MessagesContentAI } from '@/components/community/MessagesContentAI'
 
 interface Investment {
   id: string
@@ -68,7 +93,7 @@ interface AssetAllocationData {
   color: string
 }
 
-export default function FamilyOffice() {
+export default function Investments() {
   const { user, profile } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -81,6 +106,30 @@ export default function FamilyOffice() {
     fetchInvestments()
     fetchFamilyOfficeMembers()
   }, [])
+
+  const fetchFamilyOfficeMembers = async () => {
+    if (!user?.id) {
+      setLoadingMembers(false)
+      return
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('family_members')
+        .select('*')
+        .eq('added_by', user.id)
+        .in('status', ['active', 'invited'])
+        .not('office_role', 'is', null)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setFamilyOfficeMembers(data || [])
+    } catch (error) {
+      console.error('Error fetching family office members:', error)
+    } finally {
+      setLoadingMembers(false)
+    }
+  }
 
   const fetchInvestments = async () => {
     if (!user?.id) {
@@ -101,29 +150,6 @@ export default function FamilyOffice() {
       console.error('Error fetching investments:', error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const fetchFamilyOfficeMembers = async () => {
-    if (!user?.id) {
-      setLoadingMembers(false)
-      return
-    }
-    
-    try {
-      const { data, error } = await supabase
-        .from('family_members')
-        .select('*')
-        .eq('added_by', user.id)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setFamilyOfficeMembers(data || [])
-    } catch (error) {
-      console.error('Error fetching family office members:', error)
-    } finally {
-      setLoadingMembers(false)
     }
   }
 
@@ -170,7 +196,6 @@ export default function FamilyOffice() {
     return connectedAccounts.reduce((sum: number, account: any) => sum + (account.balance || 0), 0)
   }
 
-
   // Get active accounts count for current user
   const getActiveAccountsCount = () => {
     if (!user) return 0
@@ -185,7 +210,6 @@ export default function FamilyOffice() {
 
   // Generate asset allocation based on account types from accounts section
   const generateAssetAllocation = () => {
-    // This is now based on actual account data from the accounts section
     const mockAccountTypes = [
       { name: 'Brokerage', value: 62, color: '#3b82f6' },
       { name: 'Bank', value: 18, color: '#10b981' },
@@ -263,142 +287,226 @@ export default function FamilyOffice() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      
-      <div className="container mx-auto px-3 py-4 space-y-4 max-w-full touch-manipulation sm:px-4 sm:py-6 sm:space-y-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-7xl">
         <div className="animate-fade-in">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Digital Family Office</h1>
-          <p className="text-base sm:text-lg text-muted-foreground">
+          <p className="text-sm sm:text-lg text-muted-foreground">
             Complete financial ecosystem management and wealth tracking
           </p>
         </div>
 
-        <Tabs defaultValue="accounts" className="space-y-6 animate-fade-in">
+        <Tabs defaultValue="accounts" className="space-y-4 sm:space-y-6 animate-fade-in">
           {/* Mobile-Optimized Tab Navigation */}
           <div className="w-full">
-            {/* All Tabs in Grid Layout */}
-            <TabsList className="grid grid-cols-4 gap-1 p-2 h-auto bg-muted rounded-xl md:grid-cols-7">
+            {/* Single Row Horizontal Tabs */}
+            <TabsList className="flex gap-1 sm:gap-2 p-1.5 sm:p-2 min-w-max bg-muted rounded-xl overflow-x-auto scrollbar-hide">
               <TabsTrigger 
                 value="accounts" 
-                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm"
+                className="flex items-center gap-1.5 sm:gap-2 py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
               >
+                <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>Accounts</span>
               </TabsTrigger>
               <TabsTrigger 
-                value="transactions" 
-                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm"
-              >
-                <span>Transactions</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="budget" 
-                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm"
-              >
-                <span>Budget</span>
-              </TabsTrigger>
-              <TabsTrigger 
                 value="reports" 
-                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm"
+                className="flex items-center gap-1.5 sm:gap-2 py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
               >
+                <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>Reports</span>
               </TabsTrigger>
               <TabsTrigger 
-                value="documents" 
-                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm lg:col-start-5"
+                value="transactions" 
+                className="flex items-center gap-1.5 sm:gap-2 py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
               >
+                <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span>Transactions</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="documents" 
+                className="flex items-center gap-1.5 sm:gap-2 py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
+              >
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>Documents</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="messages" 
-                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm"
+                className="flex items-center gap-1.5 sm:gap-2 py-2 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
               >
-                <span>Messages</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="services" 
-                className="flex flex-col items-center gap-1 py-2 px-2 text-xs font-semibold rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md touch-manipulation sm:gap-1.5 sm:py-3 sm:px-3 sm:text-sm"
-              >
-                <span>Services</span>
+                <BrainCircuit className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span>AI Experts</span>
               </TabsTrigger>
             </TabsList>
           </div>
 
-          <TabsContent value="accounts" className="space-y-6">
-            <div className="lg:hidden">
-              <div className="space-y-4">
-                <EnhancedInvestmentOverview />
-                <AccountIntegration />
-              </div>
-            </div>
-            <div className="hidden lg:block">
-              <div className="grid gap-6 lg:grid-cols-1">
-                <EnhancedInvestmentOverview />
-                <AccountIntegration />
-              </div>
-            </div>
+
+          <TabsContent value="accounts" className="space-y-4 sm:space-y-6 animate-fade-in">
+            <AccountIntegration />
           </TabsContent>
 
-          <TabsContent value="transactions" className="space-y-6">
-            <div className="lg:hidden">
-              <div className="space-y-4">
-                <TransactionMonitoring />
-              </div>
-            </div>
-            <div className="hidden lg:block">
-              <TransactionMonitoring />
-            </div>
+          <TabsContent value="reports" className="space-y-4 sm:space-y-6 animate-fade-in">
+            <FinancialReports />
           </TabsContent>
 
-          <TabsContent value="budget" className="space-y-6">
-            <BudgetingAnalytics />
+          <TabsContent value="transactions" className="space-y-4 sm:space-y-6 animate-fade-in">
+            <TransactionMonitoring />
           </TabsContent>
 
-          <TabsContent value="reports" className="space-y-6">
-            <Card>
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">Financial Reports</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Reports will be available once you connect accounts or add investment data.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
-          <TabsContent value="documents" className="space-y-6">
+
+          <TabsContent value="documents" className="space-y-4 sm:space-y-6 animate-fade-in">
             <DocumentsContent />
           </TabsContent>
 
-          <TabsContent value="messages" className="space-y-6">
-            <MessagesContent familyOfficeMembers={familyOfficeMembers} loadingMembers={loadingMembers} />
-          </TabsContent>
-
-          <TabsContent value="services" className="space-y-6">
-            <ServicesContent />
+          <TabsContent value="messages" className="space-y-4 sm:space-y-6 animate-fade-in" data-value="messages">
+            <MessagesContentAI />
           </TabsContent>
         </Tabs>
       </div>
       
+      {/* Mobile Bottom Navigation Spacing */}
+      <div className="pb-16 sm:pb-0" />
     </div>
   )
 }
 
 // Documents content component (moved from Documents page)
 function DocumentsContent() {
+  const { toast } = useToast()
   const [uploadingDocument, setUploadingDocument] = useState<string | null>(null)
+  const [uploadedDocuments, setUploadedDocuments] = useState<{[key: string]: {storageKey: string, name: string, type: string}}>(() => {
+    // Load lightweight metadata index from localStorage
+    const saved = localStorage.getItem('uploadedDocuments')
+    if (!saved) return {}
+    try {
+      const parsed = JSON.parse(saved)
+      const normalized: {[key: string]: {storageKey: string, name: string, type: string}} = {}
+      Object.keys(parsed).forEach((k) => {
+        const v = parsed[k]
+        normalized[k] = {
+          storageKey: v.storageKey || '',
+          name: v.name,
+          type: v.type,
+        }
+      })
+      return normalized
+    } catch {
+      return {}
+    }
+  })
+  const [previewDocument, setPreviewDocument] = useState<{name: string, url: string, type: string} | null>(null)
 
   const handleUpload = (documentName: string) => {
-    setUploadingDocument(documentName)
-    // TODO: Implement actual upload logic
-    setTimeout(() => {
-      setUploadingDocument(null)
-    }, 2000)
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.pdf,.doc,.docx,.png,.jpg,.jpeg,.mp4,.mov'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) {
+        setUploadingDocument(documentName)
+        try {
+          const storageKey = `uploadedDocuments/${documentName}`
+          // Store the file blob in IndexedDB via localforage (avoids localStorage quota issues)
+          await localforage.setItem(storageKey, file)
+          const meta = { storageKey, name: file.name, type: file.type || 'application/octet-stream' }
+          setUploadedDocuments(prev => {
+            const updated = { ...prev, [documentName]: meta }
+            try {
+              localStorage.setItem('uploadedDocuments', JSON.stringify(updated))
+            } catch (err) {
+              console.error('Failed to persist metadata to localStorage', err)
+              toast({
+                title: 'Storage limit reached',
+                description: 'Saved file locally but could not persist metadata. You may need to clear space.',
+                variant: 'destructive',
+              })
+            }
+            return updated
+          })
+        } catch (err) {
+          console.error('Failed to save file', err)
+          toast({
+            title: 'Upload failed',
+            description: 'We could not save this file locally. Try a smaller file or contact support.',
+            variant: 'destructive',
+          })
+        } finally {
+          setUploadingDocument(null)
+        }
+      }
+    }
+    input.click()
   }
 
-  const handleDownload = (documentName: string) => {
-    // TODO: Implement actual download logic
-    console.log("Downloading:", documentName)
+  const handleDownload = async (documentName: string) => {
+    const meta = uploadedDocuments[documentName]
+    if (!meta?.storageKey) {
+      toast({ title: 'File unavailable', description: 'Please re-upload this document to download it.' })
+      return
+    }
+    const blob = await localforage.getItem<Blob>(meta.storageKey)
+    if (blob) {
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = meta.name
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 0)
+    } else {
+      toast({ title: 'File not found', description: 'Please re-upload this document.' })
+    }
+  }
+
+  const handleReplace = (documentName: string) => {
+    handleUpload(documentName) // Reuse upload logic to replace
+  }
+
+  const handleDelete = async (documentName: string) => {
+    const meta = uploadedDocuments[documentName]
+    if (meta?.storageKey) {
+      try {
+        // Remove from IndexedDB
+        await localforage.removeItem(meta.storageKey)
+        // Remove from state and localStorage
+        setUploadedDocuments(prev => {
+          const updated = { ...prev }
+          delete updated[documentName]
+          try {
+            localStorage.setItem('uploadedDocuments', JSON.stringify(updated))
+          } catch (err) {
+            console.error('Failed to update localStorage after delete', err)
+          }
+          return updated
+        })
+        toast({
+          title: 'Document deleted',
+          description: 'The document has been successfully removed.',
+        })
+      } catch (err) {
+        console.error('Failed to delete file', err)
+        toast({
+          title: 'Delete failed',
+          description: 'Could not delete the document. Please try again.',
+          variant: 'destructive',
+        })
+      }
+    }
+  }
+
+  const handlePreview = async (documentName: string) => {
+    const meta = uploadedDocuments[documentName]
+    if (!meta?.storageKey) {
+      toast({ title: 'Preview unavailable', description: 'Please re-upload this document to preview it.' })
+      return
+    }
+    const blob = await localforage.getItem<Blob>(meta.storageKey)
+    if (blob) {
+      const url = URL.createObjectURL(blob)
+      setPreviewDocument({ name: documentName, url, type: meta.type })
+    } else {
+      toast({ title: 'File not found', description: 'Please re-upload this document.' })
+    }
   }
 
   const documentCategories = [
@@ -408,17 +516,15 @@ function DocumentsContent() {
       documents: [
         { name: "Family Trust Document", icon: FileText, type: "file" },
         { name: "Business Trust Document", icon: Building2, type: "file" },
-        { name: "Tax-Exempt Trust Document", icon: Shield, type: "file" },
-        { name: "Power of Attorney Document", icon: FileText, type: "file" }
+        { name: "Tax-Exempt Trust Document", icon: Shield, type: "file" }
       ]
     },
     {
       title: "Certificates & Legal",
       icon: Shield,
       documents: [
-        { name: "Trademark Certificate", icon: Crown, type: "file" },
-        { name: "Family Constitution", icon: Scroll, type: "file" },
-        { name: "Family Crest", icon: Crown, type: "file" }
+        { name: "Power of Attorney Document", icon: FileText, type: "file" },
+        { name: "Trademark Certificate", icon: Crown, type: "file" }
       ]
     },
     {
@@ -454,74 +560,136 @@ function DocumentsContent() {
       documents: [
         { name: "Legacy Video", icon: Video, type: "file" },
         { name: "The Life-Legacy Letter", icon: Heart, type: "file" },
-        { name: "Sorry I Died On You Letter", icon: Heart, type: "file" }
+        { name: "Sorry I Died On You Letter", icon: Heart, type: "file" },
+        { name: "Family Constitution", icon: Scroll, type: "file" },
+        { name: "Family Identity Manual", icon: FileText, type: "file" },
+        { name: "Family Crest", icon: Crown, type: "file" },
+        { name: "Family Corporate Seal", icon: Shield, type: "file" }
       ]
     }
   ]
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-xl font-semibold mb-2">Family Documents</h3>
-        <p className="text-muted-foreground text-sm mb-6">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="animate-fade-in">
+        <h3 className="text-2xl sm:text-3xl font-bold mb-3">Family Documents</h3>
+        <p className="text-muted-foreground text-base sm:text-lg">
           Manage your trust and family documents securely
         </p>
       </div>
       
-      <div className="grid gap-4 sm:gap-6">
-        {documentCategories.map((category) => {
+      <div className="grid gap-6 sm:gap-8">
+        {documentCategories.map((category, categoryIndex) => {
           const CategoryIcon = category.icon
+          const iconColors = [
+            'text-blue-600',      // Trust Documents
+            'text-green-600',     // Certificates & Legal  
+            'text-purple-600',    // EIN Numbers
+            'text-orange-600',    // Addresses
+            'text-red-600',       // Phone Numbers
+            'text-pink-600'       // Legacy Documents
+          ]
+          const iconColor = iconColors[categoryIndex] || 'text-primary'
           
           return (
-            <Card key={category.title} className="shadow-soft">
-              <CardHeader className="pb-3 sm:pb-6">
-                <CardTitle className="flex items-center space-x-2 text-base sm:text-lg">
-                  <CategoryIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <Card key={category.title} className="hover-scale animate-fade-in border-2 hover:border-primary/20 transition-all duration-300">
+              <CardHeader className="pb-4 sm:pb-6">
+                <CardTitle className="flex items-center space-x-3 text-lg sm:text-xl">
+                  <CategoryIcon className={`h-6 w-6 sm:h-7 sm:w-7 ${iconColor}`} />
                   <span>{category.title}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="grid gap-2 sm:gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 sm:gap-6 sm:grid-cols-1 lg:grid-cols-2">
                   {category.documents.map((document) => {
                     const DocumentIcon = document.icon
                     const isUploading = uploadingDocument === document.name
+                    const isUploaded = uploadedDocuments[document.name]
                     
                     return (
                       <div
                         key={document.name}
-                        className="flex items-center justify-between p-2 sm:p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                        className={`flex items-center justify-between p-4 sm:p-5 rounded-xl border-2 transition-all duration-300 hover-scale ${
+                          isUploaded 
+                            ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 hover:border-green-300' 
+                            : 'bg-card hover:bg-accent/30 border-border hover:border-primary/30'
+                        }`}
                       >
-                        <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                          <DocumentIcon className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
-                          <span className="text-xs sm:text-sm font-medium truncate">
-                            {document.name}
-                          </span>
+                        <div className="flex items-center space-x-4 flex-1 min-w-0">
+                          <DocumentIcon className={`h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 ${
+                            isUploaded ? 'text-green-600' : 'text-muted-foreground'
+                          }`} />
+                          <div className="min-w-0 flex-1">
+                            <span className="text-sm sm:text-base font-medium block truncate">
+                              {document.name}
+                            </span>
+                            {isUploaded && (
+                              <span className="text-xs sm:text-sm text-green-600 truncate block mt-1">
+                                {uploadedDocuments[document.name].name}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         
-                        <div className="flex items-center space-x-1 sm:space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleUpload(document.name)}
-                            disabled={isUploading}
-                            className="h-7 px-2 sm:h-8 sm:px-3"
-                            title="Upload"
-                          >
-                            {isUploading ? (
-                              <div className="h-2 w-2 sm:h-3 sm:w-3 animate-spin rounded-full border border-current border-t-transparent" />
-                            ) : (
-                              <Upload className="h-2 w-2 sm:h-3 sm:w-3" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDownload(document.name)}
-                            className="h-7 px-2 sm:h-8 sm:px-3"
-                            title="Download"
-                          >
-                            <Download className="h-2 w-2 sm:h-3 sm:w-3" />
-                          </Button>
+                        <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+                          {isUploaded ? (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handlePreview(document.name)}
+                                className="h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg hover:bg-primary/10"
+                                title="Preview"
+                              >
+                                <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleReplace(document.name)}
+                                className="h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg border-2"
+                                title="Replace"
+                              >
+                                <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
+                              </Button>
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => handleDownload(document.name)}
+                                className="h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg"
+                                title="Download"
+                              >
+                                <Download className="h-4 w-4 sm:h-5 sm:w-5" />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDelete(document.name)}
+                                className="h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg"
+                                title="Delete"
+                              >
+                                <X className="h-4 w-4 sm:h-5 sm:w-5" />
+                              </Button>
+                            </>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleUpload(document.name)}
+                              disabled={isUploading}
+                              className="h-10 px-4 sm:h-11 sm:px-6 rounded-lg border-2 hover:border-primary/50 font-medium"
+                              title="Upload"
+                            >
+                              {isUploading ? (
+                                <div className="h-4 w-4 sm:h-5 sm:w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                              ) : (
+                                <>
+                                  <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                                  <span className="hidden sm:inline">Upload</span>
+                                </>
+                              )}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     )
@@ -532,56 +700,61 @@ function DocumentsContent() {
           )
         })}
       </div>
+
+      {/* Enhanced Preview Dialog */}
+      <Dialog open={!!previewDocument} onOpenChange={(open) => { if (!open) { if (previewDocument?.url?.startsWith('blob:')) { URL.revokeObjectURL(previewDocument.url) } setPreviewDocument(null) } }}>
+        <DialogContent className="sm:max-w-5xl max-h-[90vh] flex flex-col bg-background border-2 animate-scale-in">
+          <DialogHeader className="pb-6">
+            <DialogTitle className="flex items-center gap-3 text-xl font-bold">
+              <Eye className="h-6 w-6 text-primary" />
+              {previewDocument?.name}
+            </DialogTitle>
+            <DialogDescription className="text-base text-muted-foreground">
+              Preview of uploaded document: {previewDocument?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto min-h-0 bg-muted/20 border-2 rounded-lg p-4">
+            {previewDocument && (
+              <div className="w-full h-full">
+                {previewDocument.type.startsWith('image/') ? (
+                  <img 
+                    src={previewDocument.url} 
+                    alt={previewDocument.name}
+                    className="max-w-full h-auto mx-auto rounded-lg shadow-lg"
+                  />
+                ) : previewDocument.type.startsWith('video/') ? (
+                  <video 
+                    src={previewDocument.url} 
+                    controls
+                    className="max-w-full h-auto mx-auto rounded-lg shadow-lg"
+                  />
+                ) : previewDocument.type === 'application/pdf' ? (
+                  <embed 
+                    src={previewDocument.url} 
+                    type="application/pdf"
+                    className="w-full h-full min-h-[600px] rounded-lg"
+                  />
+                ) : (
+                  <div className="text-center py-20">
+                    <FileText className="h-20 w-20 mx-auto mb-6 text-muted-foreground" />
+                    <p className="text-lg text-muted-foreground mb-6">
+                      Preview not available for this file type. Use the download button to view the file.
+                    </p>
+                    <Button 
+                      onClick={() => handleDownload(previewDocument.name)}
+                      className="px-8 py-3 text-base"
+                      size="lg"
+                    >
+                      <Download className="h-5 w-5 mr-2" />
+                      Download File
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
-  )
-}
-
-// Messages content component
-function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOfficeMembers: any[], loadingMembers: boolean }) {
-  return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="text-center">
-          <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-semibold mb-2">Family Messages</h3>
-          <p className="text-muted-foreground mb-4">
-            Communication hub for family office members
-          </p>
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Message board and notifications will appear here
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {loadingMembers ? 'Loading members...' : `${familyOfficeMembers.length} family members`}
-            </p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  )
-}
-
-// Services content component
-function ServicesContent() {
-  return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="text-center">
-          <Briefcase className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-lg font-semibold mb-2">Family Office Services</h3>
-          <p className="text-muted-foreground mb-4">
-            Professional services and support for your family office
-          </p>
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Investment advisory, tax planning, and legal services
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Connect with certified professionals
-            </p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   )
 }
