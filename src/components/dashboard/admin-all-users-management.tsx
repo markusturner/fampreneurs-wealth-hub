@@ -111,9 +111,11 @@ export function AdminAllUsersManagement() {
   const handleUpdateUser = async () => {
     if (!editingUser) return
 
+    console.log('Updating user with membership_type:', editingUser.membership_type)
+
     try {
       // Update profile fields
-      const { error: profileError } = await supabase
+      const { data: updatedData, error: profileError } = await supabase
         .from('profiles')
         .update({
           first_name: editingUser.first_name,
@@ -122,10 +124,18 @@ export function AdminAllUsersManagement() {
           phone: editingUser.phone,
           program_name: editingUser.program_name,
           membership_type: editingUser.membership_type,
+          is_admin: editingUser.is_admin,
+          is_moderator: editingUser.is_moderator,
         })
         .eq('user_id', editingUser.user_id)
+        .select()
 
-      if (profileError) throw profileError
+      if (profileError) {
+        console.error('Profile update error:', profileError)
+        throw profileError
+      }
+
+      console.log('Profile updated successfully:', updatedData)
 
       // Update admin role
       if (editingUser.is_admin) {
@@ -151,7 +161,10 @@ export function AdminAllUsersManagement() {
       })
       
       setEditingUser(null)
-      fetchUsers()
+      
+      // Refresh the user list
+      await fetchUsers()
+      console.log('Users refreshed after update')
     } catch (error: any) {
       console.error('Error updating user:', error)
       toast({
