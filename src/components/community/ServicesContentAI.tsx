@@ -45,7 +45,7 @@ export function ServicesContentAI() {
           return (
             <Card 
               key={service.name}
-              className="cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all"
+              className="cursor-pointer hover:shadow-lg hover:border-[#ffb500] hover:scale-105 transition-all duration-300"
               onClick={() => handleServiceClick(service)}
             >
               <CardHeader>
