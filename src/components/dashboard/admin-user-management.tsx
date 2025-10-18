@@ -54,9 +54,18 @@ export function AdminUserManagement() {
       setRole('family_member')
     } catch (error: any) {
       console.error('Error adding user:', error)
+      
+      let errorMessage = 'Failed to add user. Please try again.'
+      
+      if (error.message?.includes('Failed to fetch')) {
+        errorMessage = 'The user creation service is still deploying. Please wait 2-3 minutes and try again.'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
       toast({
         title: 'Error Adding User',
-        description: error.message || 'Failed to add user. Please try again.',
+        description: errorMessage,
         variant: 'destructive',
       })
     } finally {
