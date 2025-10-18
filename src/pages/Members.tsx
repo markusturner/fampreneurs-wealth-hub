@@ -51,6 +51,26 @@ export default function Members() {
 
   useEffect(() => {
     fetchMembers()
+    
+    // Set up realtime subscription for family_members changes
+    const channel = supabase
+      .channel('family_members_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'family_members'
+        },
+        () => {
+          fetchMembers()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [user?.id])
 
   useEffect(() => {
@@ -116,12 +136,43 @@ export default function Members() {
 
   const handleDeleteFamilyMember = async (memberId: string) => {
     try {
+      // Get the family member's email before deleting
+      const memberToDelete = familyMembers.find(m => m.id === memberId)
+      
+      if (!memberToDelete) {
+        throw new Error('Family member not found')
+      }
+
+      // Delete the family member record
       const { error } = await supabase
         .from('family_members')
         .delete()
         .eq('id', memberId)
 
       if (error) throw error
+
+      // If the family member has an email, try to delete their user account
+      if (memberToDelete.email) {
+        try {
+          // Find the user account with this email
+          const { data: profiles, error: profileError } = await supabase
+            .from('profiles')
+            .select('user_id')
+            .eq('email', memberToDelete.email)
+            .maybeSingle()
+
+          if (!profileError && profiles?.user_id) {
+            // Delete the user account
+            await supabase.functions.invoke('delete-user', {
+              body: { userId: profiles.user_id }
+            })
+            console.log('Associated user account deleted')
+          }
+        } catch (userDeleteError) {
+          console.error('Error deleting associated user account:', userDeleteError)
+          // Don't throw - the family member was already deleted
+        }
+      }
 
       setFamilyMembers(prev => prev.filter(member => member.id !== memberId))
       toast({

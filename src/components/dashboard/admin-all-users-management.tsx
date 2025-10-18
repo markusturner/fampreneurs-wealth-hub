@@ -92,6 +92,26 @@ export function AdminAllUsersManagement() {
 
   useEffect(() => {
     fetchUsers()
+    
+    // Set up realtime subscription for profiles changes
+    const channel = supabase
+      .channel('profiles_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        () => {
+          fetchUsers()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   useEffect(() => {
