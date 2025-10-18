@@ -92,7 +92,30 @@ serve(async (req) => {
 
     console.log('Attempting to delete user:', userId)
 
-    // Delete the user from auth.users using admin client
+    // Get user's email before deletion
+    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(userId)
+    
+    if (userError) {
+      console.error('Error fetching user data:', userError)
+      throw userError
+    }
+
+    // Delete associated family_members records first
+    if (userData?.user?.email) {
+      const { error: familyMemberError } = await supabaseAdmin
+        .from('family_members')
+        .delete()
+        .eq('email', userData.user.email)
+      
+      if (familyMemberError) {
+        console.error('Error deleting family member records:', familyMemberError)
+        // Don't throw - continue with user deletion even if family member deletion fails
+      } else {
+        console.log('Family member records deleted successfully')
+      }
+    }
+
+    // Delete the user from auth.users using admin client (this will cascade delete profiles)
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
 
     if (deleteError) {
