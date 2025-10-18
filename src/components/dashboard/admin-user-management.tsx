@@ -89,7 +89,7 @@ export function AdminUserManagement() {
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-primary" />
+          <Shield className="h-5 w-5" style={{ color: '#ffb500' }} />
           <CardTitle>Admin User Management</CardTitle>
         </div>
         <CardDescription>
