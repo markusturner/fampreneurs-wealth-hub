@@ -270,23 +270,23 @@ export default function FamilyMembers() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       
-      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-7xl">
+        <div className="flex flex-col gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Family Members</h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Family Members</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-1">
               Manage your family members and their roles with enhanced security
             </p>
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Button 
               onClick={() => setShowSecurity(!showSecurity)} 
               variant="outline" 
-              className="gap-2"
+              className="gap-2 w-full sm:w-auto"
             >
               <Shield className="h-4 w-4" />
-              Security Settings
+              <span>Security Settings</span>
             </Button>
             
             <Dialog open={dialogOpen} onOpenChange={(open) => {
@@ -296,47 +296,47 @@ export default function FamilyMembers() {
               <DialogTrigger asChild>
                 <Button className="gap-2 w-full sm:w-auto">
                   <UserPlus className="h-4 w-4" />
-                  <span className="hidden sm:inline">Add Family Member</span>
-                  <span className="sm:hidden">Add Member</span>
+                  <span>Add Family Member</span>
                 </Button>
               </DialogTrigger>
-            <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto mx-3 sm:mx-0 max-w-[calc(100vw-24px)]">
+            <DialogContent className="sm:max-w-[600px] lg:max-w-[700px] max-h-[85vh] overflow-y-auto p-4 sm:p-6">
               <DialogHeader>
                 <DialogTitle className="text-lg sm:text-xl">
                   {editingMember ? 'Edit Family Member' : 'Add Family Member'}
                 </DialogTitle>
-                <DialogDescription className="text-sm">
+                <DialogDescription className="text-xs sm:text-sm">
                   {editingMember ? 'Update family member information' : 'Add a new member to your family'}
                 </DialogDescription>
               </DialogHeader>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                 {/* Basic Information */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <h3 className="font-medium text-sm">Basic Information</h3>
                   
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <div>
-                      <Label htmlFor="fullName">Full Name *</Label>
+                      <Label htmlFor="fullName" className="text-xs sm:text-sm">Full Name *</Label>
                       <Input
                         id="fullName"
                         value={formData.fullName}
                         onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
                         placeholder="Enter full name"
                         required
+                        className="text-sm"
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div>
-                        <Label htmlFor="familyPosition">Family Position *</Label>
+                        <Label htmlFor="familyPosition" className="text-xs sm:text-sm">Family Position *</Label>
                         <Select value={formData.familyPosition} onValueChange={(value) => setFormData(prev => ({ ...prev, familyPosition: value }))}>
-                          <SelectTrigger>
+                          <SelectTrigger className="text-sm">
                             <SelectValue placeholder="Select position" />
                           </SelectTrigger>
                           <SelectContent>
                             {familyPositions.map((position) => (
-                              <SelectItem key={position} value={position}>
+                              <SelectItem key={position} value={position} className="text-sm">
                                 {position}
                               </SelectItem>
                             ))}
@@ -345,36 +345,39 @@ export default function FamilyMembers() {
                       </div>
 
                       <div>
-                        <Label htmlFor="relationshipToFamily">Relationship</Label>
+                        <Label htmlFor="relationshipToFamily" className="text-xs sm:text-sm">Relationship</Label>
                         <Input
                           id="relationshipToFamily"
                           value={formData.relationshipToFamily}
                           onChange={(e) => setFormData(prev => ({ ...prev, relationshipToFamily: e.target.value }))}
                           placeholder="e.g., Father-in-law"
+                          className="text-sm"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div>
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email" className="text-xs sm:text-sm">Email</Label>
                         <Input
                           id="email"
                           type="email"
                           value={formData.email}
                           onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                           placeholder="email@example.com"
+                          className="text-sm"
                         />
                       </div>
 
                       <div>
-                        <Label htmlFor="phone">Phone</Label>
+                        <Label htmlFor="phone" className="text-xs sm:text-sm">Phone</Label>
                         <Input
                           id="phone"
                           type="tel"
                           value={formData.phone}
                           onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                           placeholder="(555) 123-4567"
+                          className="text-sm"
                         />
                       </div>
                     </div>
@@ -382,18 +385,18 @@ export default function FamilyMembers() {
                 </div>
 
                 {/* Trust Positions */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <h3 className="font-medium text-sm">Trust Positions</h3>
                   
                   <div>
-                    <Label>Trust/Entity Positions</Label>
+                    <Label className="text-xs sm:text-sm">Trust/Entity Positions</Label>
                     <Select onValueChange={addTrustPosition}>
-                      <SelectTrigger>
+                      <SelectTrigger className="text-sm">
                         <SelectValue placeholder="Add trust position" />
                       </SelectTrigger>
                       <SelectContent>
                         {trustPositions.map((position) => (
-                          <SelectItem key={position} value={position}>
+                          <SelectItem key={position} value={position} className="text-sm">
                             {position}
                           </SelectItem>
                         ))}
@@ -404,7 +407,7 @@ export default function FamilyMembers() {
                   {selectedTrustPositions.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {selectedTrustPositions.map((position) => (
-                        <Badge key={position} variant="secondary" className="cursor-pointer">
+                        <Badge key={position} variant="secondary" className="cursor-pointer text-xs">
                           {position}
                           <button
                             type="button"
@@ -420,19 +423,19 @@ export default function FamilyMembers() {
                 </div>
 
                 {/* Governance Branch */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <h3 className="font-medium text-sm">Family Governance Position</h3>
                   
                   <div>
-                    <Label htmlFor="governanceBranch">Governance Branch</Label>
+                    <Label htmlFor="governanceBranch" className="text-xs sm:text-sm">Governance Branch</Label>
                     <Select value={formData.governanceBranch} onValueChange={(value) => setFormData(prev => ({ ...prev, governanceBranch: value }))}>
-                      <SelectTrigger>
+                      <SelectTrigger className="text-sm">
                         <SelectValue placeholder="Select governance branch (optional)" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="none" className="text-sm">None</SelectItem>
                         {governanceBranches.map((branch) => (
-                          <SelectItem key={branch.value} value={branch.value}>
+                          <SelectItem key={branch.value} value={branch.value} className="text-sm">
                             {branch.label}
                           </SelectItem>
                         ))}
@@ -445,26 +448,27 @@ export default function FamilyMembers() {
                 </div>
 
                 {/* Additional Information */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <h3 className="font-medium text-sm">Additional Information</h3>
                   
                   <div>
-                    <Label htmlFor="notes">Notes</Label>
+                    <Label htmlFor="notes" className="text-xs sm:text-sm">Notes</Label>
                     <Textarea
                       id="notes"
                       value={formData.notes}
                       onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                       placeholder="Additional notes about this family member"
                       rows={3}
+                      className="text-sm"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
+                  <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} className="w-full sm:w-auto text-sm">
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={submitting}>
+                  <Button type="submit" disabled={submitting} className="w-full sm:w-auto text-sm">
                     {submitting ? 'Saving...' : editingMember ? 'Update Member' : 'Add Member'}
                   </Button>
                 </div>
@@ -486,65 +490,65 @@ export default function FamilyMembers() {
         <Scoreboard />
         
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Total Members</CardTitle>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Members</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{members.length}</div>
+              <div className="text-xl sm:text-2xl font-bold">{members.length}</div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Active Members</CardTitle>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium">Active Members</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{members.filter(m => m.status === 'active').length}</div>
+              <div className="text-xl sm:text-2xl font-bold">{members.filter(m => m.status === 'active').length}</div>
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium">Trust Positions</CardTitle>
+            <CardHeader className="pb-2 sm:pb-3">
+              <CardTitle className="text-xs sm:text-sm font-medium">Trust Positions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{members.filter(m => m.trust_positions && m.trust_positions.length > 0).length}</div>
+              <div className="text-xl sm:text-2xl font-bold">{members.filter(m => m.trust_positions && m.trust_positions.length > 0).length}</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Members List */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
               Family Members
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm">
               Manage your family members and their roles in the family office
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0">
             {loading ? (
               <div className="space-y-3">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="animate-pulse flex items-center space-x-4 p-4 border rounded-lg">
-                    <div className="w-12 h-12 bg-muted rounded-full"></div>
+                  <div key={i} className="animate-pulse flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 border rounded-lg">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted rounded-full"></div>
                     <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-muted rounded w-1/4"></div>
-                      <div className="h-3 bg-muted rounded w-1/3"></div>
+                      <div className="h-3 sm:h-4 bg-muted rounded w-1/4"></div>
+                      <div className="h-2 sm:h-3 bg-muted rounded w-1/3"></div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : members.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                <p>No family members found</p>
-                <p className="text-sm">Add your first family member to get started</p>
+                <Users className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm sm:text-base">No family members found</p>
+                <p className="text-xs sm:text-sm mt-1">Add your first family member to get started</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {members.map((member) => (
                   <SecureFamilyMemberCard
                     key={member.id}

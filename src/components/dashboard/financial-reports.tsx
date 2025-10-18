@@ -32,6 +32,7 @@ export function FinancialReports() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPeriod, setSelectedPeriod] = useState('month')
+  const [showingDemoData, setShowingDemoData] = useState(false)
   const [financialData, setFinancialData] = useState<FinancialData>({
     income: {},
     expenses: {},
@@ -381,24 +382,45 @@ export function FinancialReports() {
     )
   }
 
+  // Generate demo data if no transactions exist
   if (transactions.length === 0) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-xl font-semibold mb-2">No Transaction Data</h3>
-          <p className="text-muted-foreground">
-            Connect accounts or upload bank statements to generate financial reports.
-          </p>
-        </CardContent>
-      </Card>
-    )
+    const demoTransactions: Transaction[] = [
+      { id: 'demo-1', amount: 5000, category: 'Salary', transaction_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), description: 'Monthly Salary', transaction_type: 'income' },
+      { id: 'demo-2', amount: -1200, category: 'Rent', transaction_date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), description: 'Monthly Rent Payment', transaction_type: 'expense' },
+      { id: 'demo-3', amount: -350, category: 'Groceries', transaction_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), description: 'Weekly Groceries', transaction_type: 'expense' },
+      { id: 'demo-4', amount: -85, category: 'Utilities', transaction_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), description: 'Electric Bill', transaction_type: 'expense' },
+      { id: 'demo-5', amount: 1000, category: 'Investment Income', transaction_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), description: 'Dividend Payment', transaction_type: 'income' },
+    ]
+    
+    // Process demo data
+    const demoData: FinancialData = {
+      income: { 'Salary': 5000, 'Investment Income': 1000 },
+      expenses: { 'Rent': 1200, 'Groceries': 350, 'Utilities': 85 },
+      assets: {},
+      liabilities: {},
+      totalIncome: 6000,
+      totalExpenses: 1635,
+      netIncome: 4365
+    }
+    
+    setTransactions(demoTransactions)
+    setFinancialData(demoData)
+    setShowingDemoData(true)
+    setLoading(false)
+    return null // Return null to re-render with demo data
   }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-2xl font-bold">Financial Reports</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-2xl font-bold">Financial Reports</h2>
+          {showingDemoData && (
+            <Badge variant="secondary" className="text-xs">
+              Demo Data
+            </Badge>
+          )}
+        </div>
         <div className="flex items-center gap-4">
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
             <SelectTrigger className="w-32">
