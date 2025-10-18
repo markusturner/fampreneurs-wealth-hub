@@ -300,23 +300,23 @@ export default function Community() {
           <div className="w-full">
             <TabsList>
               <TabsTrigger value="accounts">
-                <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
+                <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden md:inline">Accounts</span>
               </TabsTrigger>
               <TabsTrigger value="reports">
-                <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
+                <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden md:inline">Reports</span>
               </TabsTrigger>
               <TabsTrigger value="transactions">
-                <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
+                <ArrowUpRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden md:inline">Transactions</span>
               </TabsTrigger>
               <TabsTrigger value="documents">
-                <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" />
+                <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden md:inline">Documents</span>
               </TabsTrigger>
               <TabsTrigger value="messages">
-                <BrainCircuit className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:mr-2" style={{ color: '#2eb2ff' }} />
+                <BrainCircuit className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: '#2eb2ff' }} />
                 <span className="hidden md:inline">AI Experts</span>
               </TabsTrigger>
             </TabsList>
