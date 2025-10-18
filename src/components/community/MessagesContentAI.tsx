@@ -121,7 +121,7 @@ export function MessagesContentAI() {
     <div className="space-y-6">
       <div>
         <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-          <BrainCircuit className="h-5 w-5 text-primary" />
+          <BrainCircuit className="h-5 w-5 text-foreground" />
           AI Family Office Experts
         </h3>
         <p className="text-muted-foreground text-sm mb-6">
