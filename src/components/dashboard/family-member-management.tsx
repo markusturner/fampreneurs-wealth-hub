@@ -48,6 +48,26 @@ export function FamilyMemberManagement() {
 
   useEffect(() => {
     fetchFamilyMembers()
+    
+    // Set up realtime subscription for family_members changes
+    const channel = supabase
+      .channel('family_members_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'family_members'
+        },
+        () => {
+          fetchFamilyMembers()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   const fetchFamilyMembers = async () => {
