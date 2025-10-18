@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -22,7 +23,32 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, firstName, lastName, familyMemberId, tempPassword }: FamilyMemberCredentialsRequest = await req.json();
+    // Validate input
+    const CredentialsSchema = z.object({
+      email: z.string().email('Invalid email format').max(255),
+      firstName: z.string().min(1).max(100),
+      lastName: z.string().max(100).optional(),
+      familyMemberId: z.string().uuid('Invalid family member ID'),
+      tempPassword: z.string().min(8, 'Password must be at least 8 characters').max(100)
+    });
+    
+    const body = await req.json();
+    const validation = CredentialsSchema.safeParse(body);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: validation.error.flatten() 
+        }), 
+        { 
+          status: 400, 
+          headers: { "Content-Type": "application/json", ...corsHeaders } 
+        }
+      );
+    }
+    
+    const { email, firstName, lastName, familyMemberId, tempPassword } = validation.data;
 
     // Initialize Supabase Admin Client
     const supabaseAdmin = createClient(

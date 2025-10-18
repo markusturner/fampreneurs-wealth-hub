@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -57,8 +58,28 @@ serve(async (req) => {
       throw new Error('Insufficient permissions - admin required')
     }
 
-    // Get the request body
-    const { userId } = await req.json()
+    // Validate input
+    const DeleteUserSchema = z.object({
+      userId: z.string().uuid('Invalid user ID format')
+    });
+    
+    const body = await req.json();
+    const validation = DeleteUserSchema.safeParse(body);
+    
+    if (!validation.success) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: validation.error.flatten() 
+        }), 
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+    
+    const { userId } = validation.data;
 
     if (!userId) {
       throw new Error('userId is required')
