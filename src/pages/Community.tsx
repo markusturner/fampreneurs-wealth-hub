@@ -48,14 +48,21 @@ import {
   ArrowUpRight,
   ExternalLink,
   Star,
-  CheckCircle,
-  ArrowRight,
+  Sparkles,
+  Clock,
+  Calendar,
   MessageSquare,
-  Send,
+  GraduationCap,
+  Award,
+  CheckCircle2,
+  Mail,
+  Linkedin,
   Search,
+  Send,
+  ArrowRight,
   UserCheck,
-  Clock
-} from 'lucide-react'
+  Check
+} from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
@@ -770,134 +777,108 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [messageInput, setMessageInput] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [chatMode, setChatMode] = useState<'real' | 'ai'>('real')
-  const [showAIMemberSelector, setShowAIMemberSelector] = useState(false)
-  const [selectedAIMember, setSelectedAIMember] = useState<string | null>(null)
 
-  // Predefined AI chatbot experts
+  // AI chatbot experts
   const aiChatbotExperts = [
-    { id: 'ai-financial-advisor', name: 'Sarah Chen', role: 'Senior Financial Advisor', avatar: 'SC' },
-    { id: 'ai-tax-specialist', name: 'Michael Rodriguez', role: 'Tax Planning Specialist', avatar: 'MR' },
-    { id: 'ai-estate-planner', name: 'Jennifer Williams', role: 'Estate Planning Attorney', avatar: 'JW' },
-    { id: 'ai-investment-manager', name: 'David Thompson', role: 'Portfolio Manager', avatar: 'DT' },
-    { id: 'ai-insurance-expert', name: 'Lisa Park', role: 'Insurance Specialist', avatar: 'LP' },
-    { id: 'ai-business-consultant', name: 'Robert Johnson', role: 'Business Strategy Consultant', avatar: 'RJ' },
-    { id: 'ai-trust-officer', name: 'Amanda Foster', role: 'Trust Officer', avatar: 'AF' },
-    { id: 'ai-crypto-advisor', name: 'Alex Kumar', role: 'Digital Assets Specialist', avatar: 'AK' }
+    { id: 'ai-financial-advisor', name: 'Sarah Chen', role: 'Financial Advisor', avatar: 'SC', specialty: 'Investment Strategy & Wealth Planning' },
+    { id: 'ai-tax-specialist', name: 'Michael Rodriguez', role: 'Tax Specialist', avatar: 'MR', specialty: 'Tax Optimization & Planning' },
+    { id: 'ai-estate-planner', name: 'Jennifer Williams', role: 'Estate Planner', avatar: 'JW', specialty: 'Estate Planning & Succession' },
+    { id: 'ai-investment-manager', name: 'David Thompson', role: 'Investment Manager', avatar: 'DT', specialty: 'Portfolio Management' },
+    { id: 'ai-insurance-expert', name: 'Lisa Park', role: 'Insurance Expert', avatar: 'LP', specialty: 'Risk & Insurance Planning' },
+    { id: 'ai-business-consultant', name: 'Robert Johnson', role: 'Business Consultant', avatar: 'RJ', specialty: 'Business Strategy & Advisory' },
+    { id: 'ai-trust-officer', name: 'Amanda Foster', role: 'Trust Officer', avatar: 'AF', specialty: 'Trust Administration' },
+    { id: 'ai-crypto-advisor', name: 'Alex Kumar', role: 'Crypto Advisor', avatar: 'AK', specialty: 'Digital Assets & Crypto' }
   ]
 
-  // Mock conversation data - in real app this would come from database
-  const conversations: {[key: string]: Array<{id: string, sender: string, message: string, timestamp: string, isCurrentUser: boolean, isRead?: boolean}> } = {
-    '1': [
-      { id: '1', sender: 'John Smith', message: 'Hi! I wanted to discuss the quarterly trust review meeting.', timestamp: '2:30 PM', isCurrentUser: false, isRead: false },
-      { id: '2', sender: 'You', message: 'Perfect timing. I was just reviewing the documents.', timestamp: '2:32 PM', isCurrentUser: true },
-      { id: '3', sender: 'John Smith', message: 'Great! Should we schedule it for next week?', timestamp: '2:35 PM', isCurrentUser: false, isRead: false }
-    ],
-    '2': [
-      { id: '1', sender: 'Sarah Johnson', message: 'Thanks for updating the investment portfolio.', timestamp: 'Yesterday', isCurrentUser: false, isRead: false },
-      { id: '2', sender: 'You', message: 'You\'re welcome! The new allocations look good.', timestamp: 'Yesterday', isCurrentUser: true }
-    ],
-    '3': [
-      { id: '1', sender: 'Michael Davis', message: 'I need your signature on the trust amendment.', timestamp: '3 hours ago', isCurrentUser: false, isRead: false }
-    ],
-    '4': []
-  }
-
-  const [conversationMessages, setConversationMessages] = useState(() => {
-    // Load persisted conversation messages from localStorage
-    const persistedMessages = localStorage.getItem('conversationMessages')
+  // AI conversation storage
+  const [conversationMessages, setConversationMessages] = useState<{[key: string]: Array<{id: string, sender: string, message: string, timestamp: string, isCurrentUser: boolean, isRead?: boolean}>}>(() => {
+    // Load persisted AI conversation messages from localStorage
+    const persistedMessages = localStorage.getItem('aiConversationMessages')
     if (persistedMessages) {
       try {
         return JSON.parse(persistedMessages)
       } catch (error) {
-        console.error('Failed to parse persisted conversation messages:', error)
+        console.error('Failed to parse persisted AI conversation messages:', error)
       }
     }
-    return conversations
+    return {}
   })
 
-  // Persist conversation messages to localStorage whenever they change
+  // Persist AI conversation messages to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem('conversationMessages', JSON.stringify(conversationMessages))
+    localStorage.setItem('aiConversationMessages', JSON.stringify(conversationMessages))
   }, [conversationMessages])
 
-  // Handle pending message from service requests
+  // Handle pending AI service request from services tab
   useEffect(() => {
-    const pendingMessageData = sessionStorage.getItem('pendingMessage')
-    if (pendingMessageData) {
+    const pendingAIChat = sessionStorage.getItem('pendingAIChat')
+    if (pendingAIChat) {
       try {
-        const { memberId, memberName, serviceName, message, autoSend } = JSON.parse(pendingMessageData)
+        const { aiId, aiName, serviceName, greeting } = JSON.parse(pendingAIChat)
         
-        // Set the selected conversation to the member
-        setSelectedConversation(memberId)
+        // Set the selected conversation to the AI expert
+        setSelectedConversation(aiId)
         
-        // Add the message to the conversation as already sent
+        // Initialize conversation with AI greeting
         setConversationMessages(prev => {
-          const existing = prev[memberId] || []
-          const newMessage = {
-            id: `sent_${Date.now()}`,
-            sender: 'You',
-            message: message,
+          const existing = prev[aiId] || []
+          const greetingMessage = {
+            id: `greeting_${Date.now()}`,
+            sender: aiName,
+            message: greeting,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isCurrentUser: true,
-            isRead: true
+            isCurrentUser: false,
+            isRead: false
           }
           
           return {
             ...prev,
-            [memberId]: [...existing, newMessage]
+            [aiId]: [...existing, greetingMessage]
           }
         })
         
-        // Clear the pending message
-        sessionStorage.removeItem('pendingMessage')
+        // Clear the pending chat
+        sessionStorage.removeItem('pendingAIChat')
         
-        if (autoSend) {
-          toast({
-            title: "Service Request Sent",
-            description: `Your service request for ${serviceName} has been automatically sent to ${memberName}.`,
-          })
-        } else {
-          toast({
-            title: "Message Sent",
-            description: `Your service request for ${serviceName} has been sent to ${memberName}.`,
-          })
-        }
+        toast({
+          title: "AI Expert Ready",
+          description: `${aiName} is ready to assist you with ${serviceName}.`,
+        })
         
       } catch (error) {
-        console.error('Error processing pending message:', error)
-        sessionStorage.removeItem('pendingMessage')
+        console.error('Error processing pending AI chat:', error)
+        sessionStorage.removeItem('pendingAIChat')
       }
     }
   }, [toast])
 
-  // Handle URL parameter for member selection
+  // Handle URL parameter for AI expert selection
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
-    const memberParam = urlParams.get('member')
+    const aiParam = urlParams.get('ai')
     
-    if (memberParam && familyOfficeMembers.length > 0) {
-      // Check if this member exists in our family office members
-      const memberExists = familyOfficeMembers.find(member => member.id === memberParam)
-      if (memberExists) {
-        setSelectedConversation(memberParam)
+    if (aiParam) {
+      // Check if this AI expert exists
+      const aiExists = aiChatbotExperts.find(expert => expert.id === aiParam)
+      if (aiExists) {
+        setSelectedConversation(aiParam)
       }
     }
-  }, [familyOfficeMembers])
+  }, [])
 
-  // Convert family office members to the format expected by the component
-  const formattedMembers = familyOfficeMembers.map((member, index) => {
-    const memberConversations = conversationMessages[member.id] || []
-    const lastMessage = memberConversations[memberConversations.length - 1]
+  // Convert AI experts to the format expected by the component
+  const formattedMembers = aiChatbotExperts.map((expert) => {
+    const expertConversations = conversationMessages[expert.id] || []
+    const lastMessage = expertConversations[expertConversations.length - 1]
     
-    // Count unread messages (messages from other users - simplified logic)
-    const unreadCount = memberConversations.filter(msg => !msg.isCurrentUser && !msg.isRead).length
+    // Count unread messages (messages from AI expert)
+    const unreadCount = expertConversations.filter(msg => !msg.isCurrentUser && !msg.isRead).length
     
     return {
-      id: member.id,
-      name: member.full_name,
-      role: member.family_position || 'Family Member',
-      avatar: member.full_name?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'FM',
+      id: expert.id,
+      name: expert.name,
+      role: expert.role,
+      avatar: expert.avatar,
       lastSeen: lastMessage ? lastMessage.timestamp : 'No messages',
       status: unreadCount > 0 ? 'online' : 'offline',
       unreadCount: unreadCount,
@@ -927,53 +908,26 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
       }
     })
 
-  // Combine real members and AI conversations
-  const allMembersWithAI = [
-    ...formattedMembers.map(m => ({ ...m, isAI: false })),
-    ...aiConversationMembers,
-  ]
+  // AI-Only: Only show formatted AI members
+  const allMembersWithAI = formattedMembers
 
-  // Enhanced conversations with sample data for family members
+  // Enhanced conversations - remove real member conversations
   useEffect(() => {
-    if (familyOfficeMembers.length === 0) return
-    
-    const enhancedConversations = { ...conversations }
-    
-    // Add sample conversations for the first few members if they don't have any
-    if (familyOfficeMembers.length > 0 && !enhancedConversations[familyOfficeMembers[0]?.id]) {
-      enhancedConversations[familyOfficeMembers[0]?.id] = [
-        { id: `${familyOfficeMembers[0].id}_1`, sender: familyOfficeMembers[0].full_name, message: 'Good morning! I wanted to discuss the quarterly review.', timestamp: '9:15 AM', isCurrentUser: false, isRead: false },
-        { id: `${familyOfficeMembers[0].id}_2`, sender: 'You', message: 'Perfect timing. I just reviewed the documents.', timestamp: '9:18 AM', isCurrentUser: true },
-        { id: `${familyOfficeMembers[0].id}_3`, sender: familyOfficeMembers[0].full_name, message: 'Great! Should we schedule the meeting for next week?', timestamp: '9:20 AM', isCurrentUser: false, isRead: false }
-      ]
-    }
-
-    if (familyOfficeMembers.length > 1 && !enhancedConversations[familyOfficeMembers[1]?.id]) {
-      enhancedConversations[familyOfficeMembers[1]?.id] = [
-        { id: `${familyOfficeMembers[1].id}_1`, sender: familyOfficeMembers[1].full_name, message: 'The investment portfolio updates are ready for your review.', timestamp: 'Yesterday', isCurrentUser: false, isRead: false },
-        { id: `${familyOfficeMembers[1].id}_2`, sender: 'You', message: 'Thank you! I\'ll review them this afternoon.', timestamp: 'Yesterday', isCurrentUser: true },
-        { id: `${familyOfficeMembers[1].id}_3`, sender: familyOfficeMembers[1].full_name, message: 'Also, we have some new investment opportunities to discuss.', timestamp: '2 hours ago', isCurrentUser: false, isRead: false }
-      ]
-    }
-
-    setConversationMessages(prev => ({
-      ...prev,
-      ...enhancedConversations
-    }))
-  }, [familyOfficeMembers.length])
+    // No longer needed - we're AI-only now
+  }, [])
 
   const generateExpertGreeting = (expert: any) => {
     const greetings = {
-      'ai-financial-advisor': "Hello! I'm Sarah Chen, your Senior Financial Advisor. I specialize in comprehensive wealth management, portfolio optimization, and strategic financial planning. How can I assist you with your financial goals today?",
-      'ai-tax-specialist': "Greetings! Michael Rodriguez here, your Tax Planning Specialist. I help families navigate complex tax strategies, optimize tax efficiency, and ensure compliance with all regulations. What tax matters can I help you with?",
-      'ai-estate-planner': "Good day! I'm Jennifer Williams, your Estate Planning Attorney. I focus on wealth transfer strategies, trust structures, and legacy planning. How can I help you protect and transfer your family's wealth?",
-      'ai-investment-manager': "Hello! David Thompson, Portfolio Manager at your service. I specialize in investment strategy, risk management, and market analysis for high-net-worth families. What investment questions can I help you with?",
-      'ai-insurance-expert': "Hi there! Lisa Park, Insurance Specialist. I help families protect their wealth through comprehensive insurance strategies including life, property, and liability coverage. How can I assist with your insurance needs?",
-      'ai-business-consultant': "Welcome! Robert Johnson, Business Strategy Consultant. I advise on business operations, succession planning, and strategic growth initiatives. What business challenges can I help you address?",
-      'ai-trust-officer': "Hello! Amanda Foster, Trust Officer. I manage trust administration, fiduciary services, and family governance structures. How can I assist you with your trust and family office needs?",
-      'ai-crypto-advisor': "Greetings! Alex Kumar, Digital Assets Specialist. I help families navigate cryptocurrency investments, blockchain technology, and digital asset management. What digital asset questions do you have?"
+      'ai-financial-advisor': "Hey! How are you? I'm Sarah Chen, your Financial Advisor specializing in investment strategy and wealth planning. I'm here to help you build and grow your wealth!",
+      'ai-tax-specialist': "Hey! How are you? I'm Michael Rodriguez, your Tax Specialist. I focus on tax optimization and strategic planning to help you keep more of what you earn!",
+      'ai-estate-planner': "Hey! How are you? I'm Jennifer Williams, your Estate Planner. I specialize in succession planning and wealth transfer to protect your family's legacy!",
+      'ai-investment-manager': "Hey! How are you? I'm David Thompson, your Investment Manager. I help manage portfolios and optimize investment strategies for long-term growth!",
+      'ai-insurance-expert': "Hey! How are you? I'm Lisa Park, your Insurance Expert. I specialize in risk management and insurance planning to protect your assets!",
+      'ai-business-consultant': "Hey! How are you? I'm Robert Johnson, your Business Consultant. I advise on business strategy, operations, and growth initiatives!",
+      'ai-trust-officer': "Hey! How are you? I'm Amanda Foster, your Trust Officer. I specialize in trust administration and family governance structures!",
+      'ai-crypto-advisor': "Hey! How are you? I'm Alex Kumar, your Crypto Advisor. I help navigate digital assets and cryptocurrency investments!"
     }
-    return greetings[expert.id] || `Hello! I'm ${expert.name}, your ${expert.role}. How can I help you today?`
+    return greetings[expert.id] || `Hey! How are you? I'm ${expert.name}, your ${expert.role}. Ready to help you succeed!`
   }
 
   const initializeExpertConversation = (expert: any) => {
@@ -1097,86 +1051,26 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
     <div className="space-y-6">
       <div>
         <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-          <MessageSquare className="h-5 w-5" />
-          Family Office Messages
+          <BrainCircuit className="h-5 w-5 text-primary" />
+          AI Family Office Experts
         </h3>
         <p className="text-muted-foreground text-sm mb-6">
-          Secure messaging between family office members and administrators
+          Chat with your AI wealth management specialists available 24/7
         </p>
         
-        {/* Chat Mode Toggle */}
-        <div className="flex items-center gap-4 mb-6 p-4 bg-muted/20 rounded-lg border">
+        {/* AI Expert Info Banner */}
+        <div className="flex items-center gap-4 mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Chat Mode:</span>
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-primary">All conversations are AI-powered</span>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant={chatMode === 'real' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setChatMode('real')}
-              className="text-xs"
-            >
-              <UserCheck className="h-3 w-3 mr-2" />
-              Real Member
-            </Button>
-            <Popover open={showAIMemberSelector} onOpenChange={setShowAIMemberSelector}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={chatMode === 'ai' ? 'default' : 'outline'}
-                  size="sm"
-                  className="text-xs"
-                >
-                  <BrainCircuit className="h-3 w-3 mr-2" />
-                  AI Expert
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 p-0" side="bottom" align="end">
-                <div className="p-4 border-b">
-                  <h4 className="font-medium text-sm mb-1">Select AI Assistant</h4>
-                  <p className="text-xs text-muted-foreground">
-                    Choose a family office member for AI simulation
-                  </p>
-                </div>
-                <div className="max-h-60 overflow-y-auto">
-                  {aiChatbotExperts.length > 0 ? (
-                    aiChatbotExperts.map((expert) => (
-                      <div
-                        key={expert.id}
-                        className="flex items-center p-3 hover:bg-accent cursor-pointer border-b last:border-0"
-                        onClick={() => {
-                          console.log('Selecting AI expert:', expert.name, expert.id)
-                          setSelectedAIMember(expert.id)
-                          setChatMode('ai')
-                          setSelectedConversation(expert.id)
-                          initializeExpertConversation(expert)
-                          setShowAIMemberSelector(false)
-                          console.log('AI expert selected, conversation should be initialized')
-                        }}
-                      >
-                        <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm mr-3">
-                          {expert.avatar}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{expert.name}</p>
-                          <p className="text-xs text-muted-foreground">{expert.role}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <BrainCircuit className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">AI</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-4 text-center text-muted-foreground">
-                      <BrainCircuit className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">AI Experts Available</p>
-                      <p className="text-xs">Select an AI specialist to chat with</p>
-                    </div>
-                  )}
-                </div>
-              </PopoverContent>
-            </Popover>
+          <div className="flex gap-2 ml-auto">
+            <Badge variant="secondary" className="text-xs">
+              Available 24/7
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              Instant Responses
+            </Badge>
           </div>
         </div>
       </div>
@@ -1186,11 +1080,11 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
           <div className="md:col-span-3 flex items-center justify-center">
             <div className="text-center text-muted-foreground">
               <div className="h-8 w-8 animate-spin rounded-full border border-current border-t-transparent mx-auto mb-4" />
-              <p>Loading family office members...</p>
+              <p>Loading AI experts...</p>
             </div>
           </div>
         </div>
-      ) : (chatMode === 'real' && familyOfficeMembers.length === 0) ? (
+      ) : (
         <div className="grid md:grid-cols-3 gap-6 h-[600px]">
           <div className="md:col-span-3 flex items-center justify-center">
             <div className="text-center text-muted-foreground">
@@ -1235,19 +1129,11 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
                            )
                          }))
                        }
-                       
-                       if ((member as any).isAI) {
-                         const expert = aiChatbotExperts.find(e => e.id === member.id)
-                         setChatMode('ai')
-                         setSelectedAIMember(member.id)
-                         setSelectedConversation(member.id)
-                         if (expert) initializeExpertConversation(expert)
-                       } else {
-                         setChatMode('real')
-                         setSelectedConversation(member.id)
-                       }
-                     }}
-                   >
+                        const aiExpert = aiChatbotExperts.find(e => e.id === member.id)
+                        setSelectedConversation(member.id)
+                        if (aiExpert) initializeExpertConversation(aiExpert)
+                      }}
+                    >
                      <div className="flex items-center space-x-3">
                        <div className="relative">
                          <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium">
@@ -1289,48 +1175,34 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
             <>
                {/* Chat Header */}
                <div className="p-4 border-b flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
+                   <div className="flex items-center space-x-3">
                     <div className="relative">
                       <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm">
-                        {chatMode === 'ai' && selectedAIMember 
-                          ? aiChatbotExperts.find(e => e.id === selectedConversation)?.avatar
-                          : formattedMembers.find(m => m.id === selectedConversation)?.avatar}
+                        {aiChatbotExperts.find(e => e.id === selectedConversation)?.avatar}
                       </div>
-                      <div className={`absolute -bottom-0 -right-0 w-2 h-2 rounded-full border border-background ${
-                        chatMode === 'ai' ? 'bg-green-500' : 
-                        getStatusColor(formattedMembers.find(m => m.id === selectedConversation)?.status || 'offline')
-                      }`} />
+                      <div className="absolute -bottom-0 -right-0 w-2 h-2 rounded-full border border-background bg-green-500" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="font-medium text-sm">
-                          {chatMode === 'ai' && selectedAIMember 
-                            ? aiChatbotExperts.find(e => e.id === selectedConversation)?.name
-                            : formattedMembers.find(m => m.id === selectedConversation)?.name}
+                          {aiChatbotExperts.find(e => e.id === selectedConversation)?.name}
                         </p>
-                        {chatMode === 'ai' && (
-                          <Badge variant="secondary" className="text-xs">
-                            <BrainCircuit className="h-3 w-3 mr-1" />
-                            AI Expert
-                          </Badge>
-                        )}
+                        <Badge variant="secondary" className="text-xs">
+                          <BrainCircuit className="h-3 w-3 mr-1" />
+                          AI Expert
+                        </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {chatMode === 'ai' && selectedAIMember
-                          ? aiChatbotExperts.find(e => e.id === selectedConversation)?.role
-                          : formattedMembers.find(m => m.id === selectedConversation)?.role
-                        }
+                        {aiChatbotExperts.find(e => e.id === selectedConversation)?.specialty}
                       </p>
                     </div>
                   </div>
-                 
-                 {chatMode === 'ai' && (
-                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                     <span>AI Mode</span>
-                   </div>
-                 )}
-               </div>
+                  
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span>Online</span>
+                  </div>
+                </div>
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -1372,17 +1244,13 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
               <div className="p-4 border-t">
                 <div className="flex space-x-2">
                   <Textarea
-                    placeholder={
-                      chatMode === 'ai' 
-                        ? `Ask ${aiChatbotExperts.find(e => e.id === selectedConversation)?.name || 'the AI expert'}...`
-                        : "Type your message..."
-                    }
+                    placeholder={`Ask ${aiChatbotExperts.find(e => e.id === selectedConversation)?.name || 'the AI expert'}...`}
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault()
-                        sendMessage()
+                        handleSendMessage()
                       }
                     }}
                     className="flex-1 min-h-[60px] resize-none"
@@ -1412,11 +1280,9 @@ function MessagesContent({ familyOfficeMembers, loadingMembers }: { familyOffice
               </div>
             </div>
           )}
-        </div>
-        </div>
       )}
 
-      {/* Security Notice */}
+      {/* AI-Powered Notice */}
       <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
         <CardContent className="p-4">
           <div className="flex items-start space-x-3">
@@ -1539,38 +1405,55 @@ function ServicesContent() {
   }
 
   const handleServiceClick = (serviceName: string) => {
-    const member = findMemberForService(serviceName)
-    
-    if (member) {
-      // Create and automatically send the service request message
-      const message = `Hi ${member.full_name}, I would like to request the "${serviceName}" service. Please let me know how we can proceed. Thank you!`
-      
-      // Store the message data with auto-send flag
-      sessionStorage.setItem('pendingMessage', JSON.stringify({
-        memberId: member.id,
-        memberName: member.full_name,
-        serviceName: serviceName,
-        message: message,
-        autoSend: true
-      }))
-      
-      // Navigate to messages tab
-      const url = new URL(window.location.href)
-      url.searchParams.set('tab', 'messages')
-      url.searchParams.set('member', member.id)
-      window.history.pushState({}, '', url.toString())
-      
-      // Trigger tab change
-      const tabElement = document.querySelector('[data-value="messages"]') as HTMLElement
-      if (tabElement) {
-        tabElement.click()
-      }
-      
-      toast({
-        title: "Service Request Sent",
-        description: `Automatically created and sent message to ${member.full_name} for ${serviceName} service.`,
-      })
+    // Map service to AI expert
+    const serviceToExpertMap: {[key: string]: string} = {
+      'Investment Management': 'ai-financial-advisor',
+      'Wealth Planning': 'ai-financial-advisor',
+      'Tax Planning': 'ai-tax-specialist',
+      'Estate Planning': 'ai-estate-planner',
+      'Trust Administration': 'ai-trust-officer',
+      'Portfolio Management': 'ai-investment-manager',
+      'Risk Management': 'ai-insurance-expert',
+      'Insurance Planning': 'ai-insurance-expert',
+      'Business Advisory': 'ai-business-consultant',
+      'Crypto Strategy': 'ai-crypto-advisor'
     }
+    
+    const aiExpertId = serviceToExpertMap[serviceName] || 'ai-financial-advisor'
+    const aiExpert = aiChatbotExperts.find(e => e.id === aiExpertId)
+    
+    if (!aiExpert) {
+      toast({ title: 'Service unavailable', description: 'This service is not available yet.' })
+      return
+    }
+
+    // Create AI greeting
+    const greeting = `Hey! How are you? I'm ${aiExpert.name}, your ${aiExpert.role}. I saw you're interested in ${serviceName}. I'm here to help you with that!`
+    
+    // Store the AI chat data
+    sessionStorage.setItem('pendingAIChat', JSON.stringify({
+      aiId: aiExpert.id,
+      aiName: aiExpert.name,
+      serviceName: serviceName,
+      greeting: greeting
+    }))
+    
+    // Navigate to messages tab
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', 'messages')
+    url.searchParams.set('ai', aiExpert.id)
+    window.history.pushState({}, '', url.toString())
+    
+    // Trigger tab change
+    const tabElement = document.querySelector('[data-value="messages"]') as HTMLElement
+    if (tabElement) {
+      tabElement.click()
+    }
+    
+    toast({
+      title: "AI Expert Ready",
+      description: `${aiExpert.name} is ready to help you with ${serviceName}.`,
+    })
   }
 
   // Create dynamic service categories based on family office members' specialties
@@ -1817,7 +1700,7 @@ function ServicesContent() {
               </p>
               <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-base">
                 <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
                   <span className="font-medium">24/7 Support Available</span>
                 </div>
                 <div className="flex items-center space-x-3">
