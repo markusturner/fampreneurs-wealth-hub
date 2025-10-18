@@ -31,6 +31,8 @@ export function AdminUserManagement() {
     setIsLoading(true)
 
     try {
+      console.log("Attempting to create user:", { email, firstName, lastName, role });
+      
       const { data, error } = await supabase.functions.invoke('create-user-with-credentials', {
         body: {
           email,
@@ -40,7 +42,17 @@ export function AdminUserManagement() {
         },
       })
 
-      if (error) throw error
+      console.log("Function response:", { data, error });
+
+      if (error) {
+        console.error("Function error:", error);
+        throw new Error(error.message || "Failed to create user");
+      }
+
+      if (data?.error) {
+        console.error("Data error:", data.error);
+        throw new Error(data.error);
+      }
 
       toast({
         title: 'User Created & Credentials Sent',

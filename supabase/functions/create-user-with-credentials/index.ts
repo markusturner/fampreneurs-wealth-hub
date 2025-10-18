@@ -31,11 +31,16 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  console.log("=== Create User Request Started ===");
+
   try {
     const { email, firstName, lastName, role }: CreateUserRequest = await req.json();
+    
+    console.log("Request data:", { email, firstName, lastName, role });
 
     // Validate input
     if (!email || !firstName || !role) {
+      console.error("Missing required fields");
       return new Response(
         JSON.stringify({ error: "Missing required fields: email, firstName, and role are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -218,9 +223,16 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
-    console.error("Error in create-user-with-credentials function:", error);
+    console.error("=== ERROR in create-user-with-credentials ===");
+    console.error("Error details:", error);
+    console.error("Error message:", error.message);
+    console.error("Error stack:", error.stack);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || "An unexpected error occurred",
+        details: error.toString()
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
