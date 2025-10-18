@@ -196,7 +196,7 @@ export function AdminAllUsersManagement() {
     if (user.is_moderator) badges.push(<Badge key="mod" variant="secondary">Moderator</Badge>)
     if (user.membership_type === 'trustee') badges.push(<Badge key="trustee" variant="default">Trustee</Badge>)
     if (user.membership_type === 'family_member') badges.push(<Badge key="family" variant="outline">Family Member</Badge>)
-    if (badges.length === 0) badges.push(<Badge key="user" variant="outline">Member</Badge>)
+    if (badges.length === 0) badges.push(<Badge key="user" variant="outline">Trustee</Badge>)
     return badges
   }
 
@@ -210,7 +210,7 @@ export function AdminAllUsersManagement() {
     if (user.membership_type === 'family_member') {
       return "Family member view: Limited access to announcements, contacts, document requests, and basic family information."
     }
-    return "Standard member view: Access to community features, courses, messages, and basic platform functionality."
+    return "Standard trustee view: Access to community features, courses, messages, and basic platform functionality."
   }
 
   return (
