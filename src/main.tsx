@@ -71,7 +71,6 @@ function AppWithNotifications() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/sign-up" element={<Auth />} />
         <Route path="/auth" element={<Auth />} /> {/* Legacy redirect */}
         <Route path="/community" element={<Community />} />
         <Route path="/courses" element={<Courses />} />
