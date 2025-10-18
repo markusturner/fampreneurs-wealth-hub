@@ -23,7 +23,7 @@ export function useUserRole(): UserRole {
       try {
         // Check if user is family office only
         const { data: familyOfficeOnly, error } = await supabase.rpc('is_family_office_only_user', {
-          user_id: user.id
+          p_user_id: user.id
         })
 
         if (!error) {
