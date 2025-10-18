@@ -126,6 +126,16 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
       // If email is provided, create login credentials and send via email
       if (formData.email.trim()) {
         try {
+          // Fetch active family secret code
+          const { data: secretCodes } = await supabase
+            .from('family_secret_codes')
+            .select('code')
+            .eq('is_active', true)
+            .limit(1)
+            .single();
+
+          const familyCode = secretCodes?.code || null;
+
           // Generate temporary password
           const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
           
@@ -159,7 +169,8 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
                     firstName: formData.fullName.split(' ')[0],
                     lastName: formData.fullName.split(' ').slice(1).join(' '),
                     familyPosition: formData.familyPosition || 'Family Member',
-                    tempPassword: tempPassword
+                    tempPassword: tempPassword,
+                    familyCode: familyCode
                   }
                 });
 
