@@ -217,7 +217,7 @@ export function MessagesContentAI() {
       {!selectedConversation ? (
         <>
           <div className="text-center space-y-3">
-            <BrainCircuit className="h-16 w-16 mx-auto text-primary" />
+            <BrainCircuit className="h-16 w-16 mx-auto" color="#2eb2ff" />
             <h2 className="text-3xl font-bold">AI Experts</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Get instant expert advice from our AI specialists. Click any service to start chatting.
