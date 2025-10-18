@@ -3889,7 +3889,7 @@ export type Database = {
         Returns: boolean
       }
       is_family_office_only_user: {
-        Args: { user_id: string }
+        Args: { p_user_id: string }
         Returns: boolean
       }
       is_group_member: {
