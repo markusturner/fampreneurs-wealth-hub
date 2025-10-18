@@ -91,7 +91,7 @@ export const Hero = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-12 md:mb-16">
             <Button size="lg" className="w-full sm:w-auto text-base md:text-lg lg:text-xl px-8 md:px-12 py-4 md:py-6 hover:bg-primary/90 text-primary-foreground font-bold shadow-strong hover:shadow-glow transition-all duration-300 hover:scale-105 group" style={{
             backgroundColor: '#2eb2ff'
-          }} onClick={handleGetStarted}>
+          }} onClick={scrollToPricing}>
               <span className="group-hover:animate-pulse" style={{color: '#290a52'}}>Start Building Your Legacy</span>
             </Button>
           </div>
