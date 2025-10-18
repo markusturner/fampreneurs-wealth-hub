@@ -63,32 +63,28 @@ export const Hero = () => {
         <div className="max-w-5xl mx-auto animate-fade-in">
           {/* Main Headlines - Enhanced Typography */}
           <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 md:mb-8 leading-tight tracking-tight">
-            <span className="text-foreground">Your</span>{' '}
-            <span className="text-secondary">
-              AI-Powered
+            <span className="text-foreground">How to build</span>{' '}
+            <span style={{ color: '#ffb500' }}>
+              generational wealth
             </span>{' '}
-            <span style={{
-            color: '#2eb2ff'
-          }}>Family Office</span>{' '}
-            <span className="text-accent">
-              Team
+            <span style={{ color: '#2eb2ff' }}>without</span>{' '}
+            <span style={{ color: '#ffb500' }}>
+              expensive
+            </span>{' '}
+            <span style={{ color: '#ffb500' }}>
+              wealth managers
             </span>
           </h1>
           
           <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-muted-foreground mb-8 md:mb-10 max-w-4xl mx-auto font-light leading-relaxed">
-            24/7 access to AI financial advisors, tax specialists & estate planners.
-            <br />
-            <span className="font-semibold text-foreground">No $1M minimum. No 1-2% fees. Just $97/month.</span>
+            Even if you're busy with your 9-5 and don't have millions yet
           </p>
 
           {/* Enhanced Value Proposition */}
           <div className="mb-8 md:mb-12 p-4 md:p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 shadow-medium max-w-3xl mx-auto">
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-foreground font-semibold leading-relaxed">
-              Meet Rachel & your 8 AI specialists. Professional wealth guidance for $75k+ earners, without the $1M minimum.
+              The Complete DIY AI Family Office Platform for $75k+ earning professionals and entrepreneurs
             </p>
-            <div className="mt-3 inline-block px-3 py-1 bg-primary/10 text-primary rounded-full text-xs md:text-sm font-semibold">
-              🎯 Human advisory team coming Q2 2025
-            </div>
           </div>
 
           {/* Enhanced CTA Buttons */}
@@ -96,7 +92,7 @@ export const Hero = () => {
             <Button size="lg" className="w-full sm:w-auto text-base md:text-lg lg:text-xl px-8 md:px-12 py-4 md:py-6 hover:bg-primary/90 text-primary-foreground font-bold shadow-strong hover:shadow-glow transition-all duration-300 hover:scale-105 group" style={{
             backgroundColor: '#2eb2ff'
           }} onClick={handleGetStarted}>
-              <span className="group-hover:animate-pulse" style={{color: '#290a52'}}>Talk to Rachel AI Now</span>
+              <span className="group-hover:animate-pulse" style={{color: '#290a52'}}>Start Building Your Legacy</span>
             </Button>
           </div>
 
