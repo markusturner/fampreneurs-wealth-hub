@@ -46,12 +46,13 @@ export function AdminUserManagement() {
 
       if (error) {
         console.error("Function error:", error);
-        throw new Error(error.message || "Failed to create user");
+        throw new Error("Failed to create user. Please check the logs for details.");
       }
 
-      if (data?.error) {
+      // Check if the response indicates failure
+      if (data?.success === false || data?.error) {
         console.error("Data error:", data.error);
-        throw new Error(data.error);
+        throw new Error(data.error || "Failed to create user");
       }
 
       toast({
