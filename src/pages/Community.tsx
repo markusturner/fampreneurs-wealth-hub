@@ -316,7 +316,7 @@ export default function Community() {
                 <span className="hidden md:inline">Documents</span>
               </TabsTrigger>
               <TabsTrigger value="messages">
-                <BrainCircuit className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: '#2eb2ff' }} />
+                <BrainCircuit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 <span className="hidden md:inline">AI Experts</span>
               </TabsTrigger>
             </TabsList>
