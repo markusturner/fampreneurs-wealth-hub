@@ -132,82 +132,94 @@ const handler = async (req: Request): Promise<Response> => {
       console.error("Error creating user role:", roleError);
     }
 
-    // Send credentials email using Resend
-    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-    
-    const emailHtml = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #4F46E5; color: white; padding: 20px; text-align: center; }
-            .content { background-color: #f9fafb; padding: 30px; }
-            .credentials { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
-            .credential-item { margin: 15px 0; }
-            .label { font-weight: bold; color: #6B7280; }
-            .value { font-family: monospace; background-color: #F3F4F6; padding: 8px 12px; border-radius: 4px; display: inline-block; margin-top: 5px; }
-            .button { display: inline-block; background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
-            .footer { text-align: center; color: #6B7280; font-size: 12px; margin-top: 30px; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Welcome to the Platform!</h1>
-            </div>
-            <div class="content">
-              <p>Hi ${firstName},</p>
-              <p>Your account has been created. Below are your login credentials:</p>
-              
-              <div class="credentials">
-                <div class="credential-item">
-                  <div class="label">Email:</div>
-                  <div class="value">${email}</div>
+    // Send email in background (non-blocking)
+    const sendEmailInBackground = async () => {
+      try {
+        const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+        
+        const emailHtml = `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background-color: #4F46E5; color: white; padding: 20px; text-align: center; }
+                .content { background-color: #f9fafb; padding: 30px; }
+                .credentials { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+                .credential-item { margin: 15px 0; }
+                .label { font-weight: bold; color: #6B7280; }
+                .value { font-family: monospace; background-color: #F3F4F6; padding: 8px 12px; border-radius: 4px; display: inline-block; margin-top: 5px; }
+                .button { display: inline-block; background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+                .footer { text-align: center; color: #6B7280; font-size: 12px; margin-top: 30px; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>Welcome to the Platform!</h1>
                 </div>
-                <div class="credential-item">
-                  <div class="label">Temporary Password:</div>
-                  <div class="value">${tempPassword}</div>
+                <div class="content">
+                  <p>Hi ${firstName},</p>
+                  <p>Your account has been created. Below are your login credentials:</p>
+                  
+                  <div class="credentials">
+                    <div class="credential-item">
+                      <div class="label">Email:</div>
+                      <div class="value">${email}</div>
+                    </div>
+                    <div class="credential-item">
+                      <div class="label">Temporary Password:</div>
+                      <div class="value">${tempPassword}</div>
+                    </div>
+                    <div class="credential-item">
+                      <div class="label">Role:</div>
+                      <div class="value">${role}</div>
+                    </div>
+                  </div>
+
+                  <p><strong>Important:</strong> Please change your password after your first login for security purposes.</p>
+                  
+                  <a href="${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || 'https://your-app-url.com'}/auth" class="button">
+                    Login to Your Account
+                  </a>
+
+                  <p>If you have any questions, please don't hesitate to reach out to our support team.</p>
                 </div>
-                <div class="credential-item">
-                  <div class="label">Role:</div>
-                  <div class="value">${role}</div>
+                <div class="footer">
+                  <p>This is an automated message. Please do not reply to this email.</p>
                 </div>
               </div>
+            </body>
+          </html>
+        `;
 
-              <p><strong>Important:</strong> Please change your password after your first login for security purposes.</p>
-              
-              <a href="${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || 'https://your-app-url.com'}/auth" class="button">
-                Login to Your Account
-              </a>
+        const { error: emailError } = await resend.emails.send({
+          from: "Platform <onboarding@resend.dev>",
+          to: [email],
+          subject: "Your Account Credentials",
+          html: emailHtml,
+        });
 
-              <p>If you have any questions, please don't hesitate to reach out to our support team.</p>
-            </div>
-            <div class="footer">
-              <p>This is an automated message. Please do not reply to this email.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
-    try {
-      const { error: emailError } = await resend.emails.send({
-        from: "Platform <onboarding@resend.dev>",
-        to: [email],
-        subject: "Your Account Credentials",
-        html: emailHtml,
-      });
-
-      if (emailError) {
-        console.error("Error sending email:", emailError);
-        // Don't fail the whole request if email fails
-      } else {
-        console.log("Credentials email sent successfully to:", email);
+        if (emailError) {
+          console.error("Background email error:", emailError);
+        } else {
+          console.log("Background email sent successfully to:", email);
+        }
+      } catch (error) {
+        console.error("Background email task failed:", error);
       }
-    } catch (emailError) {
-      console.error("Failed to send credentials email:", emailError);
+    };
+
+    // Start background email task (non-blocking)
+    // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
+    if (typeof EdgeRuntime !== 'undefined') {
+      // @ts-ignore
+      EdgeRuntime.waitUntil(sendEmailInBackground());
+      console.log("Email scheduled for background delivery");
+    } else {
+      // Fallback for local development
+      sendEmailInBackground().catch(console.error);
     }
 
     return new Response(

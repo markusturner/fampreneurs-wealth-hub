@@ -55,8 +55,8 @@ export function AdminUserManagement() {
       }
 
       toast({
-        title: 'User Created & Credentials Sent',
-        description: `${firstName} ${lastName} has been added as ${role.replace(/_/g, ' ')}. Login credentials have been sent to ${email}.`,
+        title: 'User Created Successfully!',
+        description: `${firstName} ${lastName} has been added as ${role.replace(/_/g, ' ')}. Login credentials are being sent to ${email}.`,
       })
 
       // Reset form
