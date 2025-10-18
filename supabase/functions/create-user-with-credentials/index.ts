@@ -210,7 +210,7 @@ const handler = async (req: Request): Promise<Response> => {
         `;
 
         const { error: emailError } = await resend.emails.send({
-          from: "TruHeirs <noreply@fampreneurs.com>",
+          from: "TruHeirs <noreply@truheirs.app>",
           to: [email],
           subject: "Your Account Credentials - TruHeirs",
           html: emailHtml,
