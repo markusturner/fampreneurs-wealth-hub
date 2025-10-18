@@ -24,6 +24,16 @@ export function ServicesContentAI() {
       greeting: greeting
     }));
     
+    // Dispatch custom event to notify messages component
+    window.dispatchEvent(new CustomEvent('openAIChat', {
+      detail: {
+        aiId: service.aiId,
+        aiName: service.aiName,
+        serviceName: service.name,
+        greeting: greeting
+      }
+    }));
+    
     const tabElement = document.querySelector('[data-value="messages"]') as HTMLElement;
     if (tabElement) tabElement.click();
     

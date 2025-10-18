@@ -61,12 +61,69 @@ export function MessagesContentAI() {
 
   // Handle service-triggered AI chat
   useEffect(() => {
+    const handleOpenAIChat = (event: CustomEvent) => {
+      const { aiId, aiName, serviceName, greeting } = event.detail;
+      
+      // Set the selected conversation
+      setSelectedConversation(aiId);
+      
+      // Initialize conversation with AI greeting if no messages exist
+      setConversations(prev => {
+        const existing = prev[aiId] || [];
+        if (existing.length === 0) {
+          const greetingMessage = {
+            id: `greeting_${Date.now()}`,
+            sender: aiName,
+            message: greeting,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isCurrentUser: false,
+            isRead: false
+          };
+          return {
+            ...prev,
+            [aiId]: [greetingMessage]
+          };
+        }
+        return prev;
+      });
+      
+      sessionStorage.removeItem('pendingAIChat');
+    };
+
+    // Listen for custom event from services
+    window.addEventListener('openAIChat' as any, handleOpenAIChat);
+    
+    // Also check sessionStorage on mount
     const pendingAIChat = sessionStorage.getItem('pendingAIChat');
     if (pendingAIChat) {
-      const { aiId, greeting } = JSON.parse(pendingAIChat);
+      const { aiId, aiName, greeting } = JSON.parse(pendingAIChat);
       setSelectedConversation(aiId);
+      
+      setConversations(prev => {
+        const existing = prev[aiId] || [];
+        if (existing.length === 0) {
+          const greetingMessage = {
+            id: `greeting_${Date.now()}`,
+            sender: aiName,
+            message: greeting,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isCurrentUser: false,
+            isRead: false
+          };
+          return {
+            ...prev,
+            [aiId]: [greetingMessage]
+          };
+        }
+        return prev;
+      });
+      
       sessionStorage.removeItem('pendingAIChat');
     }
+    
+    return () => {
+      window.removeEventListener('openAIChat' as any, handleOpenAIChat);
+    };
   }, []);
 
   const handleSendMessage = async () => {
