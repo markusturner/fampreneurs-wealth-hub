@@ -128,10 +128,10 @@ export function MessagesContentAI() {
           Chat with your AI wealth management specialists available 24/7
         </p>
         
-        <div className="flex items-center gap-4 mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium text-primary">All conversations are AI-powered</span>
-          <Badge variant="secondary" className="text-xs ml-auto">Available 24/7</Badge>
+        <div className="flex items-center gap-4 mb-6 p-4 bg-accent rounded-lg border-2">
+          <Sparkles className="h-5 w-5 text-foreground" />
+          <span className="text-sm font-semibold text-foreground">All conversations are AI-powered</span>
+          <Badge variant="default" className="text-xs ml-auto">Available 24/7</Badge>
         </div>
       </div>
 
