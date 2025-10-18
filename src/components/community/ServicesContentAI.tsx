@@ -50,15 +50,15 @@ export function ServicesContentAI() {
             >
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-base">
-                  <div className="p-2 rounded-lg bg-primary/10">
-                    <Icon className="h-5 w-5 text-primary" />
+                  <div className="p-2 rounded-lg bg-accent">
+                    <Icon className="h-5 w-5 text-foreground" />
                   </div>
                   <span>{service.name}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-2">{service.description}</p>
-                <p className="text-xs text-primary font-medium">Chat with {service.aiName}</p>
+                <p className="text-xs text-foreground font-semibold">Chat with {service.aiName}</p>
               </CardContent>
             </Card>
           );
