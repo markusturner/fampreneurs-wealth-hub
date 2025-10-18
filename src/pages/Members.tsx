@@ -522,16 +522,14 @@ export default function Members() {
           <TabsList>
             <TabsTrigger value="family" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
               <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Family</span>
-              <span className="xs:hidden">Fam</span>
+              <span>Family</span>
               <Badge variant="secondary" className="ml-1 text-xs h-5 px-1.5">
                 {familyMembers.length}
               </Badge>
             </TabsTrigger>
             <TabsTrigger value="office" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
               <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Office</span>
-              <span className="xs:hidden">Off</span>
+              <span>Office</span>
               <Badge variant="secondary" className="ml-1 text-xs h-5 px-1.5">
                 {officeMembers.length}
               </Badge>
