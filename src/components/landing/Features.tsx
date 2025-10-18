@@ -12,44 +12,44 @@ import {
 
 const features = [
   {
-    icon: Brain,
-    title: "AI-Powered Family Office Management",
-    description: "Get professional-level financial insights and automated wealth management recommendations without the $1M+ minimums."
+    icon: Users,
+    title: "AI Family Office Team",
+    description: "Meet Rachel (AI Director) and 8 specialized AI advisors available 24/7. From financial planning to tax optimization, your complete AI-powered advisory team."
   },
   {
     icon: TrendingUp,
-    title: "Wealth & Investment Tracking",
-    description: "Connect all your accounts and track your family's complete financial picture in real-time with advanced analytics."
-  },
-  {
-    icon: Users,
-    title: "Family Member Coordination",
-    description: "Keep your entire family aligned with secure communication, role-based access, and transparent wealth visibility."
-  },
-  {
-    icon: FileText,
-    title: "Secure Document Management",
-    description: "Store wills, trusts, insurance policies, and important documents in one encrypted, accessible location."
-  },
-  {
-    icon: Calendar,
-    title: "Meeting & Calendar Management",
-    description: "Schedule family meetings, track financial reviews, and never miss important wealth-building milestones."
+    title: "Investment Tracking & AI Insights",
+    description: "Connect all accounts for real-time portfolio monitoring. Get AI-powered investment recommendations and wealth optimization strategies."
   },
   {
     icon: GraduationCap,
     title: "Financial Education & Courses",
-    description: "Access exclusive courses on wealth building, tax strategies, and generational wealth transfer."
+    description: "Master The F.L.I.P. Formula™ with expert courses, webinars, and AI-guided learning paths to build sustainable wealth."
+  },
+  {
+    icon: Brain,
+    title: "Estate Planning & Wealth Protection",
+    description: "AI-assisted estate planning tools and asset protection strategies to secure your family's financial future across generations."
   },
   {
     icon: MessageSquare,
-    title: "Community & Networking",
-    description: "Connect with other successful families building generational wealth and share strategies."
+    title: "Family Governance & Goals",
+    description: "Involve your whole family in wealth building. Set goals, track progress, and build financial literacy with AI guidance."
   },
   {
     icon: BarChart3,
-    title: "Real-time Analytics & Reporting",
-    description: "Get detailed reports on your wealth growth, investment performance, and financial goal progress."
+    title: "Performance Analytics & Reports",
+    description: "Comprehensive AI-generated reports and analytics to understand wealth growth, identify opportunities, and optimize your strategy."
+  },
+  {
+    icon: FileText,
+    title: "Secure Document Management",
+    description: "Store wills, trusts, insurance policies, and important documents in one encrypted, accessible location with AI organization."
+  },
+  {
+    icon: Calendar,
+    title: "Meeting & Calendar Management",
+    description: "Schedule family meetings, track financial reviews, and never miss important wealth-building milestones with AI reminders."
   }
 ]
 
@@ -70,12 +70,15 @@ export const Features = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-6" style={{ color: '#2eb2ff' }}>
-            Everything You Need to Build
-            <span style={{ color: '#FFB500' }}> Generational Wealth</span>
+            Your Complete AI-Powered
+            <span style={{ color: '#FFB500' }}> Family Office</span>
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-            Professional family office tools designed for busy professionals and entrepreneurs who want to scale their wealth without the traditional barriers.
+            Meet your 8 AI specialists and Rachel, your AI Family Office Director. Professional guidance 24/7, no $1M minimum required.
           </p>
+          <div className="mt-4 inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-semibold">
+            🎯 Human advisory team launching Q2 2025 for premium members
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
@@ -126,10 +129,10 @@ export const Features = () => {
               <div>
                 <h4 className="font-bold text-lg mb-2" style={{ color: '#6215c8' }}>TruHeirs Platform</h4>
                 <ul className="text-white text-left space-y-1">
-                  <li className="flex items-start"><span className="mr-2">•</span><span>Start with any amount</span></li>
-                  <li className="flex items-start"><span className="mr-2">•</span><span>Fixed monthly pricing</span></li>
-                  <li className="flex items-start"><span className="mr-2">•</span><span>Full family engagement</span></li>
-                  <li className="flex items-start"><span className="mr-2">•</span><span>AI-powered insights</span></li>
+                  <li className="flex items-start"><span className="mr-2">•</span><span>AI-first approach with 8 specialists</span></li>
+                  <li className="flex items-start"><span className="mr-2">•</span><span>$97/mo (not 1-2% fees)</span></li>
+                  <li className="flex items-start"><span className="mr-2">•</span><span>24/7 unlimited AI guidance</span></li>
+                  <li className="flex items-start"><span className="mr-2">•</span><span>Human advisory coming Q2 2025</span></li>
                 </ul>
               </div>
             </div>
