@@ -258,7 +258,7 @@ export default function Documents() {
   const [codeAccessLevel, setCodeAccessLevel] = useState('');
   const [isCreatingCode, setIsCreatingCode] = useState(false);
   const [createdCode, setCreatedCode] = useState<string | null>(null);
-  const { shouldShowOnboarding, completeOnboarding, resetOnboarding } = useGovernanceOnboarding(user?.id || null);
+  const { shouldShowOnboarding, completeOnboarding, openOnboarding, resetOnboarding } = useGovernanceOnboarding(user?.id || null);
   const isAdmin = profile?.is_admin || false;
   useEffect(() => {
     if (user && isAdmin) {
@@ -758,7 +758,7 @@ export default function Documents() {
                   Create a comprehensive family governance framework with our step-by-step wizard
                 </p>
                 <Button 
-                  onClick={() => navigate('/family-constitution/setup')}
+                  onClick={openOnboarding}
                   className="gap-2"
                 >
                   <FileText className="h-4 w-4" />
@@ -769,7 +769,7 @@ export default function Documents() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => navigate('/family-constitution/setup')}
+                onClick={openOnboarding}
                 className="mt-2 gap-2"
               >
                 <Settings className="h-4 w-4" />
@@ -1837,37 +1837,6 @@ export default function Documents() {
           </DialogContent>
         </Dialog>
       </div>
-
-      {/* Keep modal as fallback but redirect to full-page setup */}
-      {shouldShowOnboarding && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <Card className="max-w-md">
-            <CardHeader>
-              <CardTitle>Set Up Family Constitution</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Complete your family constitution setup with our improved step-by-step wizard.
-              </p>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => navigate('/family-constitution/setup')}
-                  className="flex-1 gap-2"
-                >
-                  <FileText className="h-4 w-4" />
-                  Start Setup
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={completeOnboarding}
-                >
-                  Skip
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Create Course Dialog */}
       <Dialog open={showCreateCourseDialog} onOpenChange={setShowCreateCourseDialog}>

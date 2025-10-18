@@ -15,8 +15,8 @@ export const useGovernanceOnboarding = (userId: string | null) => {
         const completed = localStorage.getItem(`governance_onboarding_complete_${userId}`);
         const hasData = localStorage.getItem(`governance_onboarding_${userId}`);
         
-        // Show onboarding if not completed and user is on documents page
-        setShouldShowOnboarding(!completed);
+        // Don't auto-show onboarding - only show when manually triggered
+        setShouldShowOnboarding(false);
         setIsLoading(false);
       } catch (error) {
         console.error('Error checking onboarding status:', error);
@@ -31,6 +31,10 @@ export const useGovernanceOnboarding = (userId: string | null) => {
     setShouldShowOnboarding(false);
   };
 
+  const openOnboarding = () => {
+    setShouldShowOnboarding(true);
+  };
+
   const resetOnboarding = () => {
     if (userId) {
       localStorage.removeItem(`governance_onboarding_complete_${userId}`);
@@ -43,6 +47,7 @@ export const useGovernanceOnboarding = (userId: string | null) => {
     shouldShowOnboarding,
     isLoading,
     completeOnboarding,
+    openOnboarding,
     resetOnboarding
   };
 };
