@@ -556,12 +556,6 @@ export function AdminAllUsersManagement() {
                         <Badge variant="secondary" className="text-xs">✓ Scoreboard</Badge>
                       </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium mb-2">⚙️ Admin Features</p>
-                      <div className="flex flex-wrap gap-1 ml-4">
-                        <Badge className="opacity-50 text-xs">✗ No Access</Badge>
-                      </div>
-                    </div>
                   </div>
                 ) : previewUser.membership_type === 'family_member' ? (
                   <div className="space-y-3">
@@ -593,12 +587,6 @@ export function AdminAllUsersManagement() {
                     </div>
                     <div>
                       <p className="text-sm font-medium mb-2">👥 Members</p>
-                      <div className="flex flex-wrap gap-1 ml-4">
-                        <Badge className="opacity-50 text-xs">✗ No Access</Badge>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium mb-2">⚙️ Admin Features</p>
                       <div className="flex flex-wrap gap-1 ml-4">
                         <Badge className="opacity-50 text-xs">✗ No Access</Badge>
                       </div>
@@ -642,12 +630,6 @@ export function AdminAllUsersManagement() {
                       <div className="flex flex-wrap gap-1 ml-4">
                         <Badge variant="secondary" className="text-xs">✓ Family Directory</Badge>
                         <Badge variant="secondary" className="text-xs">✓ Scoreboard</Badge>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium mb-2">⚙️ Admin Features</p>
-                      <div className="flex flex-wrap gap-1 ml-4">
-                        <Badge className="opacity-50 text-xs">✗ No Access</Badge>
                       </div>
                     </div>
                   </div>
