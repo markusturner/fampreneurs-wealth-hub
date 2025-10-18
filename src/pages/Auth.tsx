@@ -407,30 +407,38 @@ export default function Auth() {
       return
     }
 
-    // Validate paid membership fields
-    if (membershipType === 'paid') {
-      if (!customPrice) {
-        toast({
-          title: "Missing paid membership fields",
-          description: "Please enter the price for paid membership.",
-          variant: "destructive",
-        })
-        return
-      }
+    if (!email || !password) {
+      toast({
+        title: "Missing required fields",
+        description: "Please provide email and password.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      })
+      return
     }
     
     setIsLoading(true)
 
     try {
+      console.log('Starting signup process...')
       cleanupAuthState()
       
       try {
         await supabase.auth.signOut({ scope: 'global' })
       } catch (err) {
-        // Continue even if this fails
+        console.log('Signout error (expected):', err)
       }
 
-      const redirectUrl = `${window.location.origin}/`
+      const redirectUrl = `${window.location.origin}/dashboard`
+      console.log('Redirect URL:', redirectUrl)
 
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -441,15 +449,18 @@ export default function Auth() {
             first_name: firstName,
             last_name: lastName,
             display_name: `${firstName} ${lastName}`.trim(),
-            occupation: occupation,
-            membership_type: membershipType,
-            program_name: selectedProgram,
-            custom_price: customPrice
+            occupation: occupation || '',
+            membership_type: membershipType || 'free',
+            program_name: selectedProgram || '',
+            custom_price: customPrice || ''
           }
         }
       })
 
+      console.log('Signup response:', { data, error })
+
       if (error) {
+        console.error('Signup error:', error)
         if (error.message.includes('User already registered')) {
           toast({
             title: "Account exists",
@@ -466,29 +477,26 @@ export default function Auth() {
         return
       }
 
-        if (data.user) {
-        // Store email for 2FA setup
-        setSignupEmail(email)
+      if (data.user) {
+        console.log('User created:', data.user.id)
         
         // Upload profile photo if selected
         let avatarUrl = null
         if (profilePhoto) {
+          console.log('Uploading profile photo...')
           avatarUrl = await uploadProfilePhoto(profilePhoto, data.user.id)
           if (!avatarUrl) {
-            toast({
-              title: "Photo upload failed",
-              description: "Your account was created but the profile photo failed to upload.",
-              variant: "destructive",
-            })
+            console.error('Photo upload failed')
           }
         }
         
-        // Update profile with program and membership info
-        await supabase
+        // Update profile with additional info
+        console.log('Updating profile...')
+        const { error: profileError } = await supabase
           .from('profiles')
           .update({
-            program_name: selectedProgram,
-            membership_type: membershipType,
+            program_name: selectedProgram || null,
+            membership_type: membershipType || 'free',
             ...(avatarUrl && { 
               avatar_url: avatarUrl,
               profile_photo_uploaded: true
@@ -496,44 +504,26 @@ export default function Auth() {
           })
           .eq('user_id', data.user.id)
 
-        // Handle Stripe payment for paid membership
-        if (membershipType === 'paid' && customPrice) {
-          try {
-            const { data: stripeData, error: stripeError } = await supabase.functions.invoke('create-session-payment', {
-              body: {
-                amount: parseFloat(customPrice) * 100, // Convert to cents
-                program_name: selectedProgram,
-                user_id: data.user.id
-              }
-            })
-
-            if (stripeError) throw stripeError
-
-            if (stripeData?.url) {
-              window.open(stripeData.url, '_blank')
-            }
-          } catch (stripeError: any) {
-            console.error('Stripe payment error:', stripeError)
-            toast({
-              title: "Payment setup failed",
-              description: "Account created but payment setup failed. You can set up payment later.",
-              variant: "destructive",
-            })
-          }
+        if (profileError) {
+          console.error('Profile update error:', profileError)
         }
 
-        // Show 2FA setup instead of immediate redirect
+        // Success! Skip 2FA and go straight to dashboard
         toast({
-          title: "Account created!",
-          description: "Now let's secure your account with two-factor authentication.",
+          title: "Account created successfully!",
+          description: "Welcome to TruHeirs. Redirecting to your dashboard...",
         })
         
-        setShowTwoFactor(true)
+        // Redirect to dashboard after a short delay
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 1500)
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Unexpected signup error:', error)
       toast({
         title: "Something went wrong",
-        description: "Please try again later.",
+        description: error?.message || "Please try again later.",
         variant: "destructive",
       })
     } finally {
@@ -687,7 +677,8 @@ export default function Auth() {
     window.location.href = '/dashboard'
   }
 
-  // Show 2FA setup if user just signed up
+  // Show 2FA setup if user just signed up (commented out - 2FA is now optional)
+  /*
   if (showTwoFactor) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
@@ -699,6 +690,7 @@ export default function Auth() {
       </div>
     )
   }
+  */
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
@@ -840,15 +832,6 @@ export default function Auth() {
             </TabsContent>
 
             <TabsContent value="signup">
-              <div className="space-y-4 p-4 bg-destructive/20 rounded-lg border border-destructive mb-4">
-                <div className="text-center">
-                  <h3 className="font-semibold text-foreground">Trustees Registration Only</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Only trustees can create accounts. Family members will receive access through their trustees.
-                  </p>
-                </div>
-              </div>
-              
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-2">
@@ -972,14 +955,14 @@ export default function Auth() {
                    disabled={
                      isLoading || 
                      !firstName || 
-                     !lastName || 
-                     (membershipType === 'paid' && !customPrice) ||
-                     (membershipType === 'community' && skoolVerification.status === 'failed') ||
-                     isVerifyingEmail
+                     !lastName ||
+                     !email ||
+                     !password ||
+                     password.length < 6
                    }
                  >
                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                   {membershipType === 'paid' ? 'Create Account & Pay' : 'Create Account'}
+                   Create Account
                  </Button>
                 
                 <p className="text-xs text-muted-foreground text-center">
