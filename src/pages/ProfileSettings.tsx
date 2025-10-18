@@ -6,16 +6,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 import { AffiliateProgram } from '@/components/dashboard/affiliate-program'
 import { AccountSettings } from '@/components/dashboard/account-settings'
+import { AdminUserManagement } from '@/components/dashboard/admin-user-management'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Settings, Heart, ArrowLeft, User } from 'lucide-react'
+import { Settings, Heart, ArrowLeft, User, Shield } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 export function ProfileSettings() {
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const navigate = useNavigate()
   const isMobile = useIsMobile()
+  const isAdmin = profile?.is_admin && user?.email === 'markusturner94@gmail.com'
 
   const handleBackToDashboard = () => {
     navigate('/dashboard')
@@ -51,7 +53,7 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="account" className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? 'grid-cols-2 h-auto' : 'grid-cols-2'}`}>
+        <TabsList className={`grid w-full ${isMobile ? (isAdmin ? 'grid-cols-3 h-auto' : 'grid-cols-2 h-auto') : (isAdmin ? 'grid-cols-3' : 'grid-cols-2')}`}>
           <TabsTrigger 
             value="account" 
             className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
@@ -70,6 +72,17 @@ export function ProfileSettings() {
               {isMobile ? "Affiliate" : "Affiliate Program"}
             </span>
           </TabsTrigger>
+          {isAdmin && (
+            <TabsTrigger 
+              value="admin" 
+              className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
+            >
+              <Shield className="h-4 w-4 shrink-0" />
+              <span className={isMobile ? "text-center leading-tight" : ""}>
+                {isMobile ? "Admin" : "Admin Panel"}
+              </span>
+            </TabsTrigger>
+          )}
         </TabsList>
 
 
@@ -80,6 +93,12 @@ export function ProfileSettings() {
         <TabsContent value="affiliate">
           <AffiliateProgram />
         </TabsContent>
+
+        {isAdmin && (
+          <TabsContent value="admin">
+            <AdminUserManagement />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )
