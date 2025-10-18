@@ -109,6 +109,18 @@ const handler = async (req: Request): Promise<Response> => {
       console.error('Error updating family member:', updateError);
     }
 
+    // Update profile membership_type to family_member
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .update({ 
+        membership_type: 'family_member'
+      })
+      .eq('user_id', authUser.user.id);
+
+    if (profileError) {
+      console.error('Error updating profile membership type:', profileError);
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
