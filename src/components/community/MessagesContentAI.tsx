@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { BrainCircuit, MessageSquare, Send, Search, Sparkles, Users, TrendingUp, Target, Scroll, Shield, Heart, Briefcase, Landmark, Bitcoin } from 'lucide-react';
+import { BrainCircuit, MessageSquare, Send, Search, Sparkles, Users, TrendingUp, Target, Scroll, Shield, Heart, Briefcase, Landmark, Bitcoin, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -214,184 +214,109 @@ export function MessagesContentAI() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
-          <BrainCircuit className="h-5 w-5 text-foreground" />
-          AI Family Office Experts
-        </h3>
-        <p className="text-muted-foreground text-sm mb-6">
-          Chat with your AI wealth management specialists available 24/7
-        </p>
-        
-        <div className="flex items-center gap-4 mb-6 p-4 bg-accent rounded-lg border-2">
-          <Sparkles className="h-5 w-5 text-foreground" />
-          <span className="text-sm font-semibold text-foreground">All conversations are AI-powered</span>
-          <Badge variant="default" className="text-xs ml-auto">Available 24/7</Badge>
-        </div>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-6 h-[600px]">
-        <div className="md:col-span-1 border rounded-lg">
-          <div className="p-4 border-b">
-            <div className="relative">
-              <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search experts..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
+      {!selectedConversation ? (
+        <>
+          <div className="text-center space-y-3">
+            <BrainCircuit className="h-16 w-16 mx-auto text-primary" />
+            <h2 className="text-3xl font-bold">AI Experts</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Get instant expert advice from our AI specialists. Click any service to start chatting.
+            </p>
+            <Badge variant="default" className="text-sm px-4 py-2">
+              <Sparkles className="h-4 w-4 mr-2" />
+              Available 24/7
+            </Badge>
           </div>
-          
-          <div className="overflow-y-auto max-h-[520px]">
-            {filteredExperts.map((expert) => {
-              const msgs = conversations[expert.id] || [];
-              const lastMsg = msgs[msgs.length - 1];
-              const unread = msgs.filter(m => !m.isCurrentUser && !m.isRead).length;
-              
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-7xl mx-auto">
+            {services.map((service) => {
+              const Icon = service.icon;
               return (
-                <div
-                  key={expert.id}
-                  className={`p-4 border-b cursor-pointer transition-colors hover:bg-accent/50 ${
-                    selectedConversation === expert.id ? 'bg-accent' : ''
-                  }`}
-                  onClick={() => setSelectedConversation(expert.id)}
+                <Card 
+                  key={service.name}
+                  className="cursor-pointer hover:shadow-lg hover:border-[#ffb500] hover:scale-105 transition-all duration-300"
+                  onClick={() => handleServiceClick(service)}
                 >
-                  <div className="flex items-center space-x-3">
-                    <div className="relative">
-                      <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium">
-                        {expert.avatar}
-                      </div>
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-background bg-green-500" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <p className="text-sm font-medium truncate">{expert.name}</p>
-                        {unread > 0 && <Badge variant="secondary" className="text-xs">{unread}</Badge>}
-                      </div>
-                      <p className="text-xs text-muted-foreground truncate">{expert.role}</p>
-                      <p className="text-xs truncate">{lastMsg?.message || 'Start chatting'}</p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="md:col-span-2 border rounded-lg flex flex-col">
-          {selectedConversation ? (
-            <>
-              <div className="p-4 border-b flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">
-                    {aiExperts.find(e => e.id === selectedConversation)?.avatar}
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{aiExperts.find(e => e.id === selectedConversation)?.name}</p>
-                    <p className="text-xs text-muted-foreground">{aiExperts.find(e => e.id === selectedConversation)?.specialty}</p>
-                  </div>
-                </div>
-                <Badge variant="secondary" className="text-xs"><BrainCircuit className="h-3 w-3 mr-1" />AI Expert</Badge>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {(conversations[selectedConversation] || []).map((msg) => (
-                  <div key={msg.id} className={`flex ${msg.isCurrentUser ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] p-3 rounded-lg ${msg.isCurrentUser ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                      <p className="text-sm">{msg.message}</p>
-                      <p className="text-xs opacity-70 mt-1">{msg.timestamp}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="p-4 border-t">
-                <div className="flex space-x-2">
-                  <Textarea
-                    placeholder={`Ask ${aiExperts.find(e => e.id === selectedConversation)?.name}...`}
-                    value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }}
-                    className="flex-1 min-h-[60px]"
-                  />
-                  <Button onClick={handleSendMessage} size="icon" className="h-[60px] w-[60px]">
-                    <Send className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 overflow-y-auto p-6">
-              <div className="max-w-4xl mx-auto space-y-6">
-                <div className="text-center mb-8">
-                  <BrainCircuit className="h-16 w-16 mx-auto mb-4 text-primary" />
-                  <h2 className="text-2xl font-bold mb-2">Choose Your AI Expert</h2>
-                  <p className="text-muted-foreground">Select a service below to start chatting with a specialized AI advisor</p>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {services.map((service) => {
-                    const Icon = service.icon;
-                    return (
-                      <Card 
-                        key={service.name}
-                        className="cursor-pointer hover:shadow-lg hover:border-[#ffb500] hover:scale-105 transition-all duration-300"
-                        onClick={() => handleServiceClick(service)}
-                      >
-                        <div className="p-5">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="p-2 rounded-lg bg-accent">
-                              <Icon className="h-5 w-5 text-foreground" />
-                            </div>
-                            <h3 className="font-semibold text-base">{service.name}</h3>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-2">{service.description}</p>
-                          <p className="text-xs text-foreground font-semibold">Chat with {service.aiName}</p>
-                        </div>
-                      </Card>
-                    );
-                  })}
-                </div>
-
-                <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 mt-8">
                   <CardContent className="p-6">
-                    <div className="flex items-start space-x-3">
-                      <Sparkles className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
+                    <div className="space-y-4">
+                      <div className="p-3 rounded-lg bg-accent w-fit">
+                        <Icon className="h-8 w-8 text-foreground" />
+                      </div>
                       <div>
-                        <h4 className="font-semibold mb-2">Available 24/7</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Our AI specialists are always ready to assist with your wealth management needs. Click any service above to start an instant conversation.
-                        </p>
+                        <h3 className="font-bold text-lg mb-2">{service.name}</h3>
+                        <p className="text-sm text-muted-foreground mb-3">{service.description}</p>
+                        <div className="flex items-center text-sm font-semibold text-foreground">
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          Chat with {service.aiName}
+                        </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
+              );
+            })}
+          </div>
+        </>
+      ) : (
+        <div className="max-w-6xl mx-auto">
+          <Button 
+            variant="ghost" 
+            onClick={() => setSelectedConversation(null)}
+            className="mb-4"
+          >
+            ← Back to AI Experts
+          </Button>
+
+          <Card className="h-[700px] flex flex-col">
+            <div className="p-4 border-b flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-semibold">
+                  {aiExperts.find(e => e.id === selectedConversation)?.avatar}
+                </div>
+                <div>
+                  <p className="font-semibold">{aiExperts.find(e => e.id === selectedConversation)?.name}</p>
+                  <p className="text-sm text-muted-foreground">{aiExperts.find(e => e.id === selectedConversation)?.specialty}</p>
+                </div>
+              </div>
+              <Badge variant="secondary" className="text-sm">
+                <BrainCircuit className="h-4 w-4 mr-1" />
+                AI Expert
+              </Badge>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-muted/20">
+              {(conversations[selectedConversation] || []).map((msg) => (
+                <div key={msg.id} className={`flex ${msg.isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[75%] p-4 rounded-2xl ${msg.isCurrentUser ? 'bg-primary text-primary-foreground' : 'bg-background border shadow-sm'}`}>
+                    <p className="text-sm leading-relaxed">{msg.message}</p>
+                    <p className="text-xs opacity-60 mt-2">{msg.timestamp}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-6 border-t bg-background">
+              <div className="flex space-x-3">
+                <Textarea
+                  placeholder={`Ask ${aiExperts.find(e => e.id === selectedConversation)?.name} anything...`}
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  className="flex-1 min-h-[80px] resize-none"
+                />
+                <Button onClick={handleSendMessage} size="lg" className="h-[80px] w-[80px]">
+                  <Send className="h-6 w-6" />
+                </Button>
               </div>
             </div>
-          )}
+          </Card>
         </div>
-      </div>
-
-      <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20">
-        <CardContent className="p-4">
-          <div className="flex items-start space-x-3">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <div>
-              <h4 className="font-medium mb-1">AI-Powered Conversations</h4>
-              <p className="text-sm text-muted-foreground">
-                All conversations powered by advanced AI. Available 24/7 with instant responses.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      )}
     </div>
   );
 }

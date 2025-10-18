@@ -332,8 +332,8 @@ export default function Community() {
                 value="messages" 
                 className="flex items-center gap-2 py-3 px-4 text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
               >
-                <MessageSquare className="h-4 w-4" />
-                <span>AI Services & Messages</span>
+                <BrainCircuit className="h-4 w-4" />
+                <span>AI Experts</span>
               </TabsTrigger>
             </TabsList>
           </div>
