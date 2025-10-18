@@ -472,46 +472,179 @@ export function AdminAllUsersManagement() {
                 </p>
               </div>
 
-              <div className="space-y-3">
-                <h4 className="font-medium">Available Features:</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  {previewUser.is_admin ? (
-                    <>
-                      <Badge variant="secondary">✓ All Features</Badge>
-                      <Badge variant="secondary">✓ User Management</Badge>
-                      <Badge variant="secondary">✓ Admin Panel</Badge>
-                      <Badge variant="secondary">✓ Mass Notifications</Badge>
-                    </>
-                  ) : previewUser.membership_type === 'trustee' ? (
-                    <>
-                      <Badge variant="secondary">✓ Dashboard</Badge>
-                      <Badge variant="secondary">✓ Family Governance</Badge>
-                      <Badge variant="secondary">✓ Documents</Badge>
-                      <Badge variant="secondary">✓ Calendar</Badge>
-                      <Badge variant="secondary">✓ Investments</Badge>
-                      <Badge variant="secondary">✓ Family Constitution</Badge>
-                      <Badge variant="secondary">✓ Community</Badge>
-                      <Badge variant="secondary">✓ Courses</Badge>
-                    </>
-                  ) : previewUser.membership_type === 'family_member' ? (
-                    <>
-                      <Badge variant="outline">✓ Announcements</Badge>
-                      <Badge variant="outline">✓ Team Contacts</Badge>
-                      <Badge variant="outline">✓ Document Requests</Badge>
-                      <Badge variant="outline">✓ Quick Actions</Badge>
-                      <Badge className="opacity-50">✗ Full Dashboard</Badge>
-                      <Badge className="opacity-50">✗ Governance</Badge>
-                    </>
-                  ) : (
-                    <>
-                      <Badge variant="secondary">✓ Community</Badge>
-                      <Badge variant="secondary">✓ Courses</Badge>
-                      <Badge variant="secondary">✓ Messages</Badge>
-                      <Badge variant="secondary">✓ Calendar</Badge>
-                      <Badge className="opacity-50">✗ Admin Features</Badge>
-                    </>
-                  )}
-                </div>
+              <div className="space-y-4">
+                <h4 className="font-medium">Available Features by Tab:</h4>
+                
+                {previewUser.is_admin ? (
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm font-medium mb-2">🏠 Dashboard</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="secondary" className="text-xs">✓ Full Access</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">🏛️ Family Office</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="secondary" className="text-xs">✓ Full Access</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">📜 Family Constitution</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="secondary" className="text-xs">✓ Full Access</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">📅 Calendar</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="secondary" className="text-xs">✓ Full Access</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">👥 Members</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="secondary" className="text-xs">✓ Full Access</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">⚙️ Admin Features</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="secondary" className="text-xs">✓ User Management</Badge>
+                        <Badge variant="secondary" className="text-xs">✓ Mass Notifications</Badge>
+                        <Badge variant="secondary" className="text-xs">✓ System Settings</Badge>
+                      </div>
+                    </div>
+                  </div>
+                ) : previewUser.membership_type === 'trustee' ? (
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm font-medium mb-2">🏠 Dashboard</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="secondary" className="text-xs">✓ Overview</Badge>
+                        <Badge variant="secondary" className="text-xs">✓ Analytics</Badge>
+                        <Badge variant="secondary" className="text-xs">✓ Quick Actions</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">🏛️ Family Office</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="secondary" className="text-xs">✓ Governance</Badge>
+                        <Badge variant="secondary" className="text-xs">✓ Documents</Badge>
+                        <Badge variant="secondary" className="text-xs">✓ Investments</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">📜 Family Constitution</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="secondary" className="text-xs">✓ Setup & Edit</Badge>
+                        <Badge variant="secondary" className="text-xs">✓ View & Review</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">📅 Calendar</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="secondary" className="text-xs">✓ Meetings</Badge>
+                        <Badge variant="secondary" className="text-xs">✓ Events</Badge>
+                        <Badge variant="secondary" className="text-xs">✓ Scheduling</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">👥 Members</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="secondary" className="text-xs">✓ Family Directory</Badge>
+                        <Badge variant="secondary" className="text-xs">✓ Scoreboard</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">⚙️ Admin Features</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge className="opacity-50 text-xs">✗ No Access</Badge>
+                      </div>
+                    </div>
+                  </div>
+                ) : previewUser.membership_type === 'family_member' ? (
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm font-medium mb-2">🏠 Dashboard</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="outline" className="text-xs">✓ Announcements</Badge>
+                        <Badge variant="outline" className="text-xs">✓ Quick Actions</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">🏛️ Family Office</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="outline" className="text-xs">✓ Document Requests</Badge>
+                        <Badge variant="outline" className="text-xs">✓ Team Contacts</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">📜 Family Constitution</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge className="opacity-50 text-xs">✗ Limited View</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">📅 Calendar</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge className="opacity-50 text-xs">✗ Limited Access</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">👥 Members</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge className="opacity-50 text-xs">✗ No Access</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">⚙️ Admin Features</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge className="opacity-50 text-xs">✗ No Access</Badge>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm font-medium mb-2">🏠 Dashboard</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge className="opacity-50 text-xs">✗ No Access</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">🏛️ Family Office</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge className="opacity-50 text-xs">✗ No Access</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">📜 Family Constitution</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge className="opacity-50 text-xs">✗ No Access</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">📅 Calendar</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="secondary" className="text-xs">✓ View Only</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">👥 Members</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge variant="secondary" className="text-xs">✓ Community</Badge>
+                        <Badge variant="secondary" className="text-xs">✓ Messages</Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-2">⚙️ Admin Features</p>
+                      <div className="flex flex-wrap gap-1 ml-4">
+                        <Badge className="opacity-50 text-xs">✗ No Access</Badge>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
