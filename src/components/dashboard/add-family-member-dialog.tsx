@@ -376,53 +376,6 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
             </div>
           </div>
 
-          {/* Trust Positions */}
-          <div className="space-y-4">
-            <h3 className="font-medium text-sm">Trust & Financial Positions</h3>
-            
-            <div>
-              <Label>Select Trust Positions</Label>
-              <Select onValueChange={addTrustPosition}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Add trust position" />
-                </SelectTrigger>
-                <SelectContent>
-                  {trustPositions.map((position) => (
-                    <SelectItem key={position} value={position}>
-                      {position}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex gap-2">
-              <Input
-                value={customTrustPosition}
-                onChange={(e) => setCustomTrustPosition(e.target.value)}
-                placeholder="Add custom trust position"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomTrustPosition())}
-              />
-              <Button type="button" onClick={addCustomTrustPosition} variant="outline" size="sm">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {selectedTrustPositions.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {selectedTrustPositions.map((position) => (
-                  <Badge key={position} variant="secondary" className="cursor-pointer">
-                    {position}
-                    <X 
-                      className="h-3 w-3 ml-1" 
-                      onClick={() => removeTrustPosition(position)}
-                    />
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* Notes */}
           <div>
             <Label htmlFor="notes">Additional Notes</Label>
