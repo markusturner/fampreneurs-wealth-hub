@@ -55,7 +55,7 @@ export const AnnouncementBanner = () => {
               asChild
             >
               <a
-                href="https://www.skool.com/truheirs"
+                href="https://www.skool.com/the-family-dynasty-1157/calendar"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2"
