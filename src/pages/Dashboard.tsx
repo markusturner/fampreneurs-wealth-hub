@@ -46,23 +46,7 @@ const Dashboard = () => {
 
   const displayName = profile?.display_name || profile?.first_name || 'Family'
 
-  // Render family member dashboard for limited access users
-  if (isFamilyOfficeOnly) {
-    return (
-      <div className="min-h-screen bg-background">
-        <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        
-        <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full overflow-hidden">
-          <FamilyMemberDashboard />
-        </main>
-        
-        {/* Mobile Bottom Navigation */}
-        <div className="pb-16 md:pb-0" />
-      </div>
-    )
-  }
-
-  // Render full admin dashboard for family office administrators
+  // Always render full comprehensive dashboard with financial overview
   return (
     <div className="min-h-screen bg-background">
       <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
