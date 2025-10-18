@@ -31,7 +31,7 @@ export function AdminUserManagement() {
     setIsLoading(true)
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-admin-user', {
+      const { data, error } = await supabase.functions.invoke('create-user-with-credentials', {
         body: {
           email,
           firstName,
@@ -43,8 +43,8 @@ export function AdminUserManagement() {
       if (error) throw error
 
       toast({
-        title: 'User Added Successfully',
-        description: `${firstName} ${lastName} has been added as ${role.replace(/_/g, ' ')}`,
+        title: 'User Created & Credentials Sent',
+        description: `${firstName} ${lastName} has been added as ${role.replace(/_/g, ' ')}. Login credentials have been sent to ${email}.`,
       })
 
       // Reset form

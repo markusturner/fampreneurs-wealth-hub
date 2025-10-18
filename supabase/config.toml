@@ -1,5 +1,8 @@
 project_id = "tbofkvyezmpovoezjyyl"
 
+[functions.create-user-with-credentials]
+verify_jwt = true
+
 [functions.zapier-notifications]
 verify_jwt = false
 
