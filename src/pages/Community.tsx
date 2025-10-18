@@ -72,7 +72,6 @@ import { TransactionMonitoring } from '@/components/dashboard/transaction-monito
 import { FinancialReports } from '@/components/dashboard/financial-reports'
 import { FamilyMemberManagement } from '@/components/dashboard/family-member-management'
 import { MessagesContentAI } from '@/components/community/MessagesContentAI'
-import { ServicesContentAI } from '@/components/community/ServicesContentAI'
 
 interface Investment {
   id: string
@@ -334,14 +333,7 @@ export default function Community() {
                 className="flex items-center gap-2 py-3 px-4 text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
               >
                 <MessageSquare className="h-4 w-4" />
-                <span>Messages</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="services" 
-                className="flex items-center gap-2 py-3 px-4 text-sm font-medium rounded-lg transition-all hover:bg-background data-[state=active]:bg-background data-[state=active]:shadow-md whitespace-nowrap"
-              >
-                <Briefcase className="h-4 w-4" />
-                <span>Services</span>
+                <span>AI Services & Messages</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -367,10 +359,6 @@ export default function Community() {
 
           <TabsContent value="messages" className="space-y-6 animate-fade-in" data-value="messages">
             <MessagesContentAI />
-          </TabsContent>
-
-          <TabsContent value="services" className="space-y-6 animate-fade-in">
-            <ServicesContentAI />
           </TabsContent>
         </Tabs>
       </div>

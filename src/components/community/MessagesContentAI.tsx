@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { BrainCircuit, MessageSquare, Send, Search, Sparkles, Users } from 'lucide-react';
+import { BrainCircuit, MessageSquare, Send, Search, Sparkles, Users, TrendingUp, Target, Scroll, Shield, Heart, Briefcase, Landmark, Bitcoin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -26,6 +26,17 @@ const aiExperts = [
   { id: 'ai-business-consultant', name: 'Robert Johnson', role: 'Business Consultant', avatar: 'RJ', specialty: 'Business Strategy & Advisory' },
   { id: 'ai-trust-officer', name: 'Amanda Foster', role: 'Trust Officer', avatar: 'AF', specialty: 'Trust Administration' },
   { id: 'ai-crypto-advisor', name: 'Alex Kumar', role: 'Crypto Advisor', avatar: 'AK', specialty: 'Digital Assets & Crypto' }
+];
+
+const services = [
+  { name: 'Investment Management', icon: TrendingUp, aiId: 'ai-financial-advisor', aiName: 'Sarah Chen', description: 'Portfolio strategy and wealth building' },
+  { name: 'Tax Planning', icon: Target, aiId: 'ai-tax-specialist', aiName: 'Michael Rodriguez', description: 'Tax optimization strategies' },
+  { name: 'Estate Planning', icon: Scroll, aiId: 'ai-estate-planner', aiName: 'Jennifer Williams', description: 'Succession and legacy planning' },
+  { name: 'Risk Management', icon: Shield, aiId: 'ai-insurance-expert', aiName: 'Lisa Park', description: 'Insurance and risk protection' },
+  { name: 'Philanthropy Advisory', icon: Heart, aiId: 'ai-financial-advisor', aiName: 'Sarah Chen', description: 'Charitable giving strategies' },
+  { name: 'Business Advisory', icon: Briefcase, aiId: 'ai-business-consultant', aiName: 'Robert Johnson', description: 'Business strategy guidance' },
+  { name: 'Trust Administration', icon: Landmark, aiId: 'ai-trust-officer', aiName: 'Amanda Foster', description: 'Trust management services' },
+  { name: 'Crypto Strategy', icon: Bitcoin, aiId: 'ai-crypto-advisor', aiName: 'Alex Kumar', description: 'Digital asset management' },
 ];
 
 export function MessagesContentAI() {
@@ -174,6 +185,33 @@ export function MessagesContentAI() {
     e.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleServiceClick = (service: typeof services[0]) => {
+    const greeting = `Hey! How are you? I'm ${service.aiName}, your ${service.name} specialist. I saw you're interested in ${service.name}. I'm here to help!`;
+    
+    setSelectedConversation(service.aiId);
+    
+    setConversations(prev => {
+      const existing = prev[service.aiId] || [];
+      if (existing.length === 0) {
+        const greetingMessage = {
+          id: `greeting_${Date.now()}`,
+          sender: service.aiName,
+          message: greeting,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          isCurrentUser: false,
+          isRead: false
+        };
+        return {
+          ...prev,
+          [service.aiId]: [greetingMessage]
+        };
+      }
+      return prev;
+    });
+    
+    toast.success(`${service.aiName} is ready to help with ${service.name}`);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -290,11 +328,51 @@ export function MessagesContentAI() {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <BrainCircuit className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium">Select an AI Expert</p>
-                <p className="text-sm">Choose a specialist to start chatting</p>
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-4xl mx-auto space-y-6">
+                <div className="text-center mb-8">
+                  <BrainCircuit className="h-16 w-16 mx-auto mb-4 text-primary" />
+                  <h2 className="text-2xl font-bold mb-2">Choose Your AI Expert</h2>
+                  <p className="text-muted-foreground">Select a service below to start chatting with a specialized AI advisor</p>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {services.map((service) => {
+                    const Icon = service.icon;
+                    return (
+                      <Card 
+                        key={service.name}
+                        className="cursor-pointer hover:shadow-lg hover:border-[#ffb500] hover:scale-105 transition-all duration-300"
+                        onClick={() => handleServiceClick(service)}
+                      >
+                        <div className="p-5">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="p-2 rounded-lg bg-accent">
+                              <Icon className="h-5 w-5 text-foreground" />
+                            </div>
+                            <h3 className="font-semibold text-base">{service.name}</h3>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">{service.description}</p>
+                          <p className="text-xs text-foreground font-semibold">Chat with {service.aiName}</p>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                <Card className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 mt-8">
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-3">
+                      <Sparkles className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
+                      <div>
+                        <h4 className="font-semibold mb-2">Available 24/7</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Our AI specialists are always ready to assist with your wealth management needs. Click any service above to start an instant conversation.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           )}
