@@ -214,7 +214,7 @@ export function FinancialReports() {
         {/* Revenue Section */}
         <div>
           <h4 className="font-semibold text-lg mb-2 text-green-600">Revenue</h4>
-          {Object.entries(financialData.income).map(([category, amount]) => (
+          {Object.entries(displayData.income).map(([category, amount]) => (
             <div key={category} className="flex justify-between py-1">
               <span className="text-sm">{category}</span>
               <span className="text-sm font-medium text-green-600">{formatCurrency(amount)}</span>
@@ -223,7 +223,7 @@ export function FinancialReports() {
           <div className="border-t pt-2 mt-2">
             <div className="flex justify-between font-semibold">
               <span>Total Revenue</span>
-              <span className="text-green-600">{formatCurrency(financialData.totalIncome)}</span>
+              <span className="text-green-600">{formatCurrency(displayData.totalIncome)}</span>
             </div>
           </div>
         </div>
@@ -231,7 +231,7 @@ export function FinancialReports() {
         {/* Expenses Section */}
         <div>
           <h4 className="font-semibold text-lg mb-2 text-red-600">Expenses</h4>
-          {Object.entries(financialData.expenses).map(([category, amount]) => (
+          {Object.entries(displayData.expenses).map(([category, amount]) => (
             <div key={category} className="flex justify-between py-1">
               <span className="text-sm">{category}</span>
               <span className="text-sm font-medium text-red-600">{formatCurrency(amount)}</span>
@@ -240,7 +240,7 @@ export function FinancialReports() {
           <div className="border-t pt-2 mt-2">
             <div className="flex justify-between font-semibold">
               <span>Total Expenses</span>
-              <span className="text-red-600">{formatCurrency(financialData.totalExpenses)}</span>
+              <span className="text-red-600">{formatCurrency(displayData.totalExpenses)}</span>
             </div>
           </div>
         </div>
@@ -249,8 +249,8 @@ export function FinancialReports() {
         <div className="border-t-2 pt-4">
           <div className="flex justify-between font-bold text-lg">
             <span>Net Income</span>
-            <span className={financialData.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}>
-              {formatCurrency(financialData.netIncome)}
+            <span className={displayData.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}>
+              {formatCurrency(displayData.netIncome)}
             </span>
           </div>
         </div>
@@ -270,7 +270,7 @@ export function FinancialReports() {
         {/* Assets */}
         <div>
           <h4 className="font-semibold text-lg mb-2 text-blue-600">Assets</h4>
-          {Object.entries(financialData.assets).map(([category, amount]) => (
+          {Object.entries(displayData.assets).map(([category, amount]) => (
             <div key={category} className="flex justify-between py-1">
               <span className="text-sm">{category}</span>
               <span className="text-sm font-medium">{formatCurrency(amount)}</span>
@@ -279,7 +279,7 @@ export function FinancialReports() {
           <div className="border-t pt-2 mt-2">
             <div className="flex justify-between font-semibold">
               <span>Total Assets</span>
-              <span>{formatCurrency(Object.values(financialData.assets).reduce((a, b) => a + b, 0))}</span>
+              <span>{formatCurrency(Object.values(displayData.assets).reduce((a, b) => a + b, 0))}</span>
             </div>
           </div>
         </div>
@@ -287,8 +287,8 @@ export function FinancialReports() {
         {/* Liabilities */}
         <div>
           <h4 className="font-semibold text-lg mb-2 text-red-600">Liabilities</h4>
-          {Object.keys(financialData.liabilities).length > 0 ? (
-            Object.entries(financialData.liabilities).map(([category, amount]) => (
+          {Object.keys(displayData.liabilities).length > 0 ? (
+            Object.entries(displayData.liabilities).map(([category, amount]) => (
               <div key={category} className="flex justify-between py-1">
                 <span className="text-sm">{category}</span>
                 <span className="text-sm font-medium">{formatCurrency(amount)}</span>
@@ -300,7 +300,7 @@ export function FinancialReports() {
           <div className="border-t pt-2 mt-2">
             <div className="flex justify-between font-semibold">
               <span>Total Liabilities</span>
-              <span>{formatCurrency(Object.values(financialData.liabilities).reduce((a, b) => a + b, 0))}</span>
+              <span>{formatCurrency(Object.values(displayData.liabilities).reduce((a, b) => a + b, 0))}</span>
             </div>
           </div>
         </div>
@@ -310,10 +310,10 @@ export function FinancialReports() {
           <h4 className="font-semibold text-lg mb-2">Equity</h4>
           <div className="flex justify-between font-bold">
             <span>Net Worth</span>
-            <span className={financialData.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}>
+            <span className={displayData.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}>
               {formatCurrency(
-                Object.values(financialData.assets).reduce((a, b) => a + b, 0) -
-                Object.values(financialData.liabilities).reduce((a, b) => a + b, 0)
+                Object.values(displayData.assets).reduce((a, b) => a + b, 0) -
+                Object.values(displayData.liabilities).reduce((a, b) => a + b, 0)
               )}
             </span>
           </div>
@@ -329,7 +329,7 @@ export function FinancialReports() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total Income</p>
-              <p className="text-xl font-bold text-green-600">{formatCurrency(financialData.totalIncome)}</p>
+              <p className="text-xl font-bold text-green-600">{formatCurrency(displayData.totalIncome)}</p>
             </div>
             <TrendingUp className="h-8 w-8 text-green-600" />
           </div>
@@ -341,7 +341,7 @@ export function FinancialReports() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total Expenses</p>
-              <p className="text-xl font-bold text-red-600">{formatCurrency(financialData.totalExpenses)}</p>
+              <p className="text-xl font-bold text-red-600">{formatCurrency(displayData.totalExpenses)}</p>
             </div>
             <TrendingDown className="h-8 w-8 text-red-600" />
           </div>
@@ -353,8 +353,8 @@ export function FinancialReports() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Net Income</p>
-              <p className={`text-xl font-bold ${financialData.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatCurrency(financialData.netIncome)}
+              <p className={`text-xl font-bold ${displayData.netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatCurrency(displayData.netIncome)}
               </p>
             </div>
             <DollarSign className="h-8 w-8 text-blue-600" />
@@ -382,40 +382,25 @@ export function FinancialReports() {
     )
   }
 
-  // Generate demo data if no transactions exist
-  if (transactions.length === 0) {
-    const demoTransactions: Transaction[] = [
-      { id: 'demo-1', amount: 5000, category: 'Salary', transaction_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), description: 'Monthly Salary', transaction_type: 'income' },
-      { id: 'demo-2', amount: -1200, category: 'Rent', transaction_date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), description: 'Monthly Rent Payment', transaction_type: 'expense' },
-      { id: 'demo-3', amount: -350, category: 'Groceries', transaction_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), description: 'Weekly Groceries', transaction_type: 'expense' },
-      { id: 'demo-4', amount: -85, category: 'Utilities', transaction_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), description: 'Electric Bill', transaction_type: 'expense' },
-      { id: 'demo-5', amount: 1000, category: 'Investment Income', transaction_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), description: 'Dividend Payment', transaction_type: 'income' },
-    ]
-    
-    // Process demo data
-    const demoData: FinancialData = {
-      income: { 'Salary': 5000, 'Investment Income': 1000 },
-      expenses: { 'Rent': 1200, 'Groceries': 350, 'Utilities': 85 },
-      assets: {},
-      liabilities: {},
-      totalIncome: 6000,
-      totalExpenses: 1635,
-      netIncome: 4365
-    }
-    
-    setTransactions(demoTransactions)
-    setFinancialData(demoData)
-    setShowingDemoData(true)
-    setLoading(false)
-    return null // Return null to re-render with demo data
-  }
+  // Use demo data if no transactions exist
+  const displayData = transactions.length === 0 ? {
+    income: { 'Salary': 5000, 'Investment Income': 1000 },
+    expenses: { 'Rent': 1200, 'Groceries': 350, 'Utilities': 85 },
+    assets: { 'Cash & Bank Accounts': 6000 },
+    liabilities: {},
+    totalIncome: 6000,
+    totalExpenses: 1635,
+    netIncome: 4365
+  } : financialData
+
+  const isShowingDemo = transactions.length === 0
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold">Financial Reports</h2>
-          {showingDemoData && (
+          {isShowingDemo && (
             <Badge variant="secondary" className="text-xs">
               Demo Data
             </Badge>
@@ -471,7 +456,7 @@ export function FinancialReports() {
                   <h4 className="font-semibold mb-2">Operating Activities</h4>
                   <div className="flex justify-between">
                     <span>Net Income</span>
-                    <span>{formatCurrency(financialData.netIncome)}</span>
+                    <span>{formatCurrency(displayData.netIncome)}</span>
                   </div>
                 </div>
                 <div className="border-t pt-4">
