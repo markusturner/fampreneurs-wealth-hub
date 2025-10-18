@@ -554,15 +554,15 @@ function DocumentsContent() {
   ]
 
   return (
-    <div className="space-y-6 sm:space-y-8">
+    <div className="space-y-4 sm:space-y-6">
       <div className="animate-fade-in">
-        <h3 className="text-2xl sm:text-3xl font-bold mb-3">Family Documents</h3>
-        <p className="text-muted-foreground text-base sm:text-lg">
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2">Family Documents</h3>
+        <p className="text-muted-foreground text-sm sm:text-base md:text-lg">
           Manage your trust and family documents securely
         </p>
       </div>
       
-      <div className="grid gap-6 sm:gap-8">
+      <div className="grid gap-4 sm:gap-6">
         {documentCategories.map((category, categoryIndex) => {
           const CategoryIcon = category.icon
           const iconColors = [
@@ -577,14 +577,14 @@ function DocumentsContent() {
           
           return (
             <Card key={category.title} className="hover-scale animate-fade-in border-2 hover:border-primary/20 transition-all duration-300">
-              <CardHeader className="pb-4 sm:pb-6">
-                <CardTitle className="flex items-center space-x-3 text-lg sm:text-xl">
-                  <CategoryIcon className={`h-6 w-6 sm:h-7 sm:w-7 ${iconColor}`} />
+              <CardHeader className="pb-3 sm:pb-4 md:pb-6">
+                <CardTitle className="flex items-center space-x-2 sm:space-x-3 text-base sm:text-lg md:text-xl">
+                  <CategoryIcon className={`h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 ${iconColor}`} />
                   <span>{category.title}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="grid gap-4 sm:gap-6 sm:grid-cols-1 lg:grid-cols-2">
+                <div className="grid gap-3 sm:gap-4 md:gap-6 sm:grid-cols-1 lg:grid-cols-2">
                   {category.documents.map((document) => {
                     const DocumentIcon = document.icon
                     const isUploading = uploadingDocument === document.name
@@ -593,66 +593,66 @@ function DocumentsContent() {
                     return (
                       <div
                         key={document.name}
-                        className={`flex items-center justify-between p-4 sm:p-5 rounded-xl border-2 transition-all duration-300 hover-scale ${
+                        className={`flex items-center justify-between p-3 sm:p-4 md:p-5 rounded-lg sm:rounded-xl border-2 transition-all duration-300 hover-scale ${
                           isUploaded 
                             ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 hover:border-green-300' 
                             : 'bg-card hover:bg-accent/30 border-border hover:border-primary/30'
                         }`}
                       >
-                        <div className="flex items-center space-x-4 flex-1 min-w-0">
-                          <DocumentIcon className={`h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 ${
+                        <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 flex-1 min-w-0">
+                          <DocumentIcon className={`h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 flex-shrink-0 ${
                             isUploaded ? 'text-green-600' : 'text-muted-foreground'
                           }`} />
                           <div className="min-w-0 flex-1">
-                            <span className="text-sm sm:text-base font-medium block truncate">
+                            <span className="text-xs sm:text-sm md:text-base font-medium block truncate">
                               {document.name}
                             </span>
                             {isUploaded && (
-                              <span className="text-xs sm:text-sm text-green-600 truncate block mt-1">
+                              <span className="text-xs text-green-600 truncate block mt-0.5 sm:mt-1">
                                 {uploadedDocuments[document.name].name}
                               </span>
                             )}
                           </div>
                         </div>
                         
-                        <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+                        <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                           {isUploaded ? (
                             <>
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handlePreview(document.name)}
-                                className="h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg hover:bg-primary/10"
+                                className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg hover:bg-primary/10"
                                 title="Preview"
                               >
-                                <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
+                                <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               </Button>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => handleReplace(document.name)}
-                                className="h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg border-2"
+                                className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg border-2"
                                 title="Replace"
                               >
-                                <Upload className="h-4 w-4 sm:h-5 sm:w-5" />
+                                <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               </Button>
                               <Button
                                 variant="default"
                                 size="sm"
                                 onClick={() => handleDownload(document.name)}
-                                className="h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg"
+                                className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg"
                                 title="Download"
                               >
-                                <Download className="h-4 w-4 sm:h-5 sm:w-5" />
+                                <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
                                 onClick={() => handleDelete(document.name)}
-                                className="h-9 w-9 sm:h-10 sm:w-10 p-0 rounded-lg"
+                                className="h-8 w-8 sm:h-9 sm:w-9 p-0 rounded-lg"
                                 title="Delete"
                               >
-                                <X className="h-4 w-4 sm:h-5 sm:w-5" />
+                                <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               </Button>
                             </>
                           ) : (
@@ -661,15 +661,15 @@ function DocumentsContent() {
                               size="sm"
                               onClick={() => handleUpload(document.name)}
                               disabled={isUploading}
-                              className="h-10 px-4 sm:h-11 sm:px-6 rounded-lg border-2 hover:border-primary/50 font-medium"
+                              className="h-8 px-2.5 sm:h-9 sm:px-4 md:h-10 md:px-6 rounded-lg border-2 hover:border-primary/50 font-medium text-xs sm:text-sm"
                               title="Upload"
                             >
                               {isUploading ? (
-                                <div className="h-4 w-4 sm:h-5 sm:w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                                <div className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                               ) : (
                                 <>
-                                  <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                                  <span className="hidden sm:inline">Upload</span>
+                                  <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                                  <span className="hidden xs:inline">Upload</span>
                                 </>
                               )}
                             </Button>
@@ -688,16 +688,16 @@ function DocumentsContent() {
       {/* Enhanced Preview Dialog */}
       <Dialog open={!!previewDocument} onOpenChange={(open) => { if (!open) { if (previewDocument?.url?.startsWith('blob:')) { URL.revokeObjectURL(previewDocument.url) } setPreviewDocument(null) } }}>
         <DialogContent className="sm:max-w-5xl max-h-[90vh] flex flex-col bg-background border-2 animate-scale-in">
-          <DialogHeader className="pb-6">
-            <DialogTitle className="flex items-center gap-3 text-xl font-bold">
-              <Eye className="h-6 w-6 text-primary" />
+          <DialogHeader className="pb-4 sm:pb-6">
+            <DialogTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold">
+              <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               {previewDocument?.name}
             </DialogTitle>
-            <DialogDescription className="text-base text-muted-foreground">
+            <DialogDescription className="text-sm sm:text-base text-muted-foreground">
               Preview of uploaded document: {previewDocument?.name}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-auto min-h-0 bg-muted/20 border-2 rounded-lg p-4">
+          <div className="flex-1 overflow-auto min-h-0 bg-muted/20 border-2 rounded-lg p-2 sm:p-4">
             {previewDocument && (
               <div className="w-full h-full">
                 {previewDocument.type.startsWith('image/') ? (
@@ -716,20 +716,20 @@ function DocumentsContent() {
                   <embed 
                     src={previewDocument.url} 
                     type="application/pdf"
-                    className="w-full h-full min-h-[600px] rounded-lg"
+                    className="w-full h-full min-h-[400px] sm:min-h-[600px] rounded-lg"
                   />
                 ) : (
-                  <div className="text-center py-20">
-                    <FileText className="h-20 w-20 mx-auto mb-6 text-muted-foreground" />
-                    <p className="text-lg text-muted-foreground mb-6">
+                  <div className="text-center py-12 sm:py-20">
+                    <FileText className="h-16 w-16 sm:h-20 sm:w-20 mx-auto mb-4 sm:mb-6 text-muted-foreground" />
+                    <p className="text-base sm:text-lg text-muted-foreground mb-4 sm:mb-6 px-4">
                       Preview not available for this file type. Use the download button to view the file.
                     </p>
                     <Button 
                       onClick={() => handleDownload(previewDocument.name)}
-                      className="px-8 py-3 text-base"
+                      className="px-6 py-2 sm:px-8 sm:py-3 text-sm sm:text-base"
                       size="lg"
                     >
-                      <Download className="h-5 w-5 mr-2" />
+                      <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                       Download File
                     </Button>
                   </div>
