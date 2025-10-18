@@ -10,7 +10,7 @@ export const AnnouncementBanner = () => {
   const [isVisible, setIsVisible] = useState(false)
   
   // Don't show on public pages
-  const publicPages = ['/landing', '/auth', '/privacy-policy', '/terms-of-service', '/cookie-policy', '/contact']
+  const publicPages = ['/', '/auth', '/privacy-policy', '/terms-of-service', '/cookie-policy', '/contact', '/help', '/contact-support']
   const isPublicPage = publicPages.includes(location.pathname)
 
   useEffect(() => {
