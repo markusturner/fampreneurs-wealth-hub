@@ -101,6 +101,25 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
       return
     }
 
+    // Check for duplicate email if email is provided
+    if (formData.email.trim()) {
+      const { data: existingMember } = await supabase
+        .from('family_members')
+        .select('id, full_name')
+        .eq('email', formData.email.trim())
+        .eq('added_by', user?.id)
+        .maybeSingle()
+
+      if (existingMember) {
+        toast({
+          title: "Duplicate Email",
+          description: `This email is already used by ${existingMember.full_name}. Please use a different email address.`,
+          variant: "destructive"
+        })
+        return
+      }
+    }
+
     setLoading(true)
     try {
       // First, insert the family member
@@ -121,7 +140,10 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
         .select()
         .single()
 
-      if (familyMemberError) throw familyMemberError
+      if (familyMemberError) {
+        console.error('Family member insertion error:', familyMemberError)
+        throw familyMemberError
+      }
 
       // If email is provided, create login credentials and send via email
       if (formData.email.trim()) {
