@@ -42,24 +42,29 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
         if (error) throw error;
 
         if (members && members.length > 0) {
-          // Convert database members to natural language format
+          // Convert database members to natural language format based on relationships
           const familyText = members
             .map(member => {
-              let text = member.full_name;
-              if (member.relationship_to_family) {
-                text += ` - ${member.relationship_to_family}`;
+              // Start with the name
+              let parts: string[] = [member.full_name];
+              
+              // Add relationship description if available
+              if (member.relationship_to_family && member.relationship_to_family.trim()) {
+                parts.push(member.relationship_to_family);
               }
-              if (member.family_position) {
-                text += ` (${member.family_position})`;
-              }
-              return text;
+              
+              return parts.join('. ');
             })
             .join('\n');
 
           setTextInput(familyText);
+        } else {
+          // Clear textarea if no members
+          setTextInput('');
         }
       } catch (error) {
         console.error('Error loading family members:', error);
+        setTextInput('');
       }
     };
 
@@ -523,7 +528,7 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
         </div>
         <Textarea
           id="family-text"
-          placeholder="Write about your family naturally... e.g., 'John is married to Mary. They have two children: Sarah and Mike. John's parents are Robert and Helen.' Then click Format to organize it."
+          placeholder={textInput ? "Edit your family information or click Format to organize it..." : "Add family members in the Members tab or type here naturally... e.g., 'John is married to Mary. They have two children: Sarah and Mike.'"}
           value={textInput}
           onChange={(e) => setTextInput(e.target.value)}
           className="min-h-[300px] font-mono text-sm"
