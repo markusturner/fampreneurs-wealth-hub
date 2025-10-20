@@ -42,18 +42,15 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
         if (error) throw error;
 
         if (members && members.length > 0) {
-          // Convert database members to natural language format based on relationships
+          // Convert database members to cleaner natural language format
           const familyText = members
             .map(member => {
-              // Start with the name
-              let parts: string[] = [member.full_name];
-              
-              // Add relationship description if available
+              // If there's a relationship description, format it naturally
               if (member.relationship_to_family && member.relationship_to_family.trim()) {
-                parts.push(member.relationship_to_family);
+                return `${member.full_name} - ${member.relationship_to_family}`;
               }
-              
-              return parts.join('. ');
+              // Otherwise just show the name
+              return member.full_name;
             })
             .join('\n');
 
@@ -370,14 +367,20 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
         else if (member.generation === 2) familyPosition = 'Child';
         else if (member.generation === 3) familyPosition = 'Grandchild';
 
-        // Build relationship description
+        // Build simple relationship description (only the most relevant one)
         let relationship = '';
         if (member.parents && member.parents.length > 0) {
-          relationship = `Child of ${member.parents.join(' and ')}`;
-        }
-        if (member.children && member.children.length > 0) {
-          if (relationship) relationship += '; ';
-          relationship += `Parent of ${member.children.join(', ')}`;
+          relationship = `Child of ${member.parents[0]}`;
+          if (member.parents.length > 1) {
+            relationship += ` and ${member.parents[1]}`;
+          }
+        } else if (member.children && member.children.length > 0) {
+          // Only show parent relationship if no parent info
+          if (member.children.length === 1) {
+            relationship = `Parent of ${member.children[0]}`;
+          } else {
+            relationship = `Parent of ${member.children.length} children`;
+          }
         }
 
         return supabase
