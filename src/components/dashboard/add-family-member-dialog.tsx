@@ -20,6 +20,7 @@ interface AddFamilyMemberDialogProps {
 const familyPositions = [
   'Patriarch/Matriarch',
   'Spouse',
+  'Parent',
   'Adult Child',
   'Minor Child',
   'Grandparent',
