@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { useToast } from '@/hooks/use-toast'
-import { UserPlus, X, Plus } from 'lucide-react'
+import { UserPlus, X, Plus, TreePine, Info } from 'lucide-react'
+import { Card, CardContent, CardDescription } from '@/components/ui/card'
 
 interface AddFamilyMemberDialogProps {
   open: boolean
@@ -321,15 +322,43 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="relationship">Relationship Description</Label>
-                <Input
-                  id="relationship"
-                  value={formData.relationshipToFamily}
-                  onChange={(e) => setFormData(prev => ({ ...prev, relationshipToFamily: e.target.value }))}
-                  placeholder="e.g., Son of John Smith, Daughter-in-law"
-                />
-              </div>
+              <Card className="border-primary/20 bg-primary/5">
+                <CardContent className="pt-4 space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TreePine className="h-4 w-4 text-primary" />
+                    <Label htmlFor="relationship" className="text-sm font-semibold">
+                      Family Tree Connection
+                    </Label>
+                  </div>
+                  <CardDescription className="text-xs flex items-start gap-2">
+                    <Info className="h-3 w-3 mt-0.5 shrink-0" />
+                    <span>
+                      This connects to the visual family tree. Use formats like: "Son of John and Mary", "Married to Sarah", "Parent of David and Lisa"
+                    </span>
+                  </CardDescription>
+                  
+                  <div className="space-y-2">
+                    <Input
+                      id="relationship"
+                      value={formData.relationshipToFamily}
+                      onChange={(e) => setFormData(prev => ({ ...prev, relationshipToFamily: e.target.value }))}
+                      placeholder="e.g., Daughter of Robert, Sister of Michael"
+                      className="bg-background"
+                    />
+                    <div className="flex flex-wrap gap-1 text-xs text-muted-foreground">
+                      <span className="px-2 py-1 rounded bg-background border border-border hover:bg-accent cursor-default">
+                        💡 Example: "Son of John"
+                      </span>
+                      <span className="px-2 py-1 rounded bg-background border border-border hover:bg-accent cursor-default">
+                        💡 "Married to Sarah"
+                      </span>
+                      <span className="px-2 py-1 rounded bg-background border border-border hover:bg-accent cursor-default">
+                        💡 "Parent of David"
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               <div>
                 <Label htmlFor="governanceBranch">Governance Branch</Label>
