@@ -22,17 +22,70 @@ interface FamilyTreeTextInputProps {
 
 export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
   const { user } = useAuth();
-  const [textInput, setTextInput] = useState(`John Smith
-├─ married to Mary Johnson
-├─ children: 
-│  ├─ David Smith
-│  │  ├─ married to Sarah Wilson
-│  │  └─ children: Emma Smith, Lucas Smith
-│  └─ Lisa Smith
-│     └─ children: Michael Brown
-└─ parents: Robert Smith, Helen Smith`)
+  const [textInput, setTextInput] = useState('');
   
-  const [isAiLoading, setIsAiLoading] = useState(false)
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  // Auto-load family members from database on mount and when members change
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const loadFamilyMembers = async () => {
+      try {
+        const { data: members, error } = await supabase
+          .from('family_members')
+          .select('full_name, family_position, relationship_to_family')
+          .eq('added_by', user.id)
+          .eq('status', 'active')
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        if (members && members.length > 0) {
+          // Convert database members to natural language format
+          const familyText = members
+            .map(member => {
+              let text = member.full_name;
+              if (member.relationship_to_family) {
+                text += ` - ${member.relationship_to_family}`;
+              }
+              if (member.family_position) {
+                text += ` (${member.family_position})`;
+              }
+              return text;
+            })
+            .join('\n');
+
+          setTextInput(familyText);
+        }
+      } catch (error) {
+        console.error('Error loading family members:', error);
+      }
+    };
+
+    loadFamilyMembers();
+
+    // Subscribe to real-time changes
+    const channel = supabase
+      .channel('family-members-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'family_members',
+          filter: `added_by=eq.${user.id}`
+        },
+        () => {
+          loadFamilyMembers();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
 
   const parseFamilyText = (text: string): FamilyMember[] => {
     const lines = text.split('\n').filter(line => line.trim())
