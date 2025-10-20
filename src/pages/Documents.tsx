@@ -1483,8 +1483,8 @@ export default function Documents() {
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 h-[70vh] sm:h-[80vh]">
               {/* Left Panel - Input */}
-              <div className="space-y-3 sm:space-y-4 overflow-y-auto pr-1 sm:pr-2">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+              <div className="flex flex-col gap-3">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <p className="text-xs sm:text-sm text-blue-900 font-medium mb-1">How to create your family tree:</p>
                   <ol className="text-xs text-blue-800 space-y-1 ml-4 list-decimal">
                     <li>Go to the "Members" tab to add your family members</li>
@@ -1492,9 +1492,11 @@ export default function Documents() {
                     <li>Click "Update Tree" to see the visual diagram</li>
                   </ol>
                 </div>
-                <FamilyTreeTextInput onGenerate={() => {
-                  toast.success('Family tree updated! Your members are now connected.');
-                }} />
+                <div className="flex-1 min-h-0">
+                  <FamilyTreeTextInput onGenerate={() => {
+                    toast.success('Family tree updated! Your members are now connected.');
+                  }} />
+                </div>
               </div>
               
               {/* Right Panel - Visual Diagram */}
