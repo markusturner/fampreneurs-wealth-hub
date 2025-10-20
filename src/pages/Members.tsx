@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-
+import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
 import { NavHeader } from '@/components/dashboard/nav-header'
 import { AddFamilyMemberDialog } from '@/components/dashboard/add-family-member-dialog'
@@ -48,6 +48,7 @@ export default function Members() {
   const [loading, setLoading] = useState(true)
   const [showAddFamilyDialog, setShowAddFamilyDialog] = useState(false)
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null)
+  const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetchMembers()
@@ -175,6 +176,11 @@ export default function Members() {
       }
 
       setFamilyMembers(prev => prev.filter(member => member.id !== memberId))
+      setSelectedMembers(prev => {
+        const newSet = new Set(prev)
+        newSet.delete(memberId)
+        return newSet
+      })
       toast({
         title: "Success",
         description: "Family member deleted successfully"
@@ -186,6 +192,78 @@ export default function Members() {
         description: "Failed to delete family member",
         variant: "destructive"
       })
+    }
+  }
+
+  const handleDeleteSelected = async () => {
+    if (selectedMembers.size === 0) return
+
+    try {
+      const memberIds = Array.from(selectedMembers)
+      
+      // Delete all selected members
+      const { error } = await supabase
+        .from('family_members')
+        .delete()
+        .in('id', memberIds)
+
+      if (error) throw error
+
+      // Try to delete associated user accounts
+      for (const memberId of memberIds) {
+        const member = familyMembers.find(m => m.id === memberId)
+        if (member?.email) {
+          try {
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('user_id')
+              .eq('email', member.email)
+              .maybeSingle()
+
+            if (profiles?.user_id) {
+              await supabase.functions.invoke('delete-user', {
+                body: { userId: profiles.user_id }
+              })
+            }
+          } catch (error) {
+            console.error('Error deleting user account:', error)
+          }
+        }
+      }
+
+      setFamilyMembers(prev => prev.filter(member => !selectedMembers.has(member.id)))
+      setSelectedMembers(new Set())
+      toast({
+        title: "Success",
+        description: `${memberIds.length} member(s) deleted successfully`
+      })
+    } catch (error) {
+      console.error('Error deleting members:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete selected members",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const toggleSelectMember = (memberId: string) => {
+    setSelectedMembers(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(memberId)) {
+        newSet.delete(memberId)
+      } else {
+        newSet.add(memberId)
+      }
+      return newSet
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedMembers.size === familyMembers.length) {
+      setSelectedMembers(new Set())
+    } else {
+      setSelectedMembers(new Set(familyMembers.map(m => m.id)))
     }
   }
 
@@ -381,6 +459,32 @@ export default function Members() {
               </Button>
             </div>
 
+            {familyMembers.length > 0 && (
+              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="select-all"
+                    checked={selectedMembers.size === familyMembers.length && familyMembers.length > 0}
+                    onCheckedChange={toggleSelectAll}
+                  />
+                  <label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
+                    Select All ({selectedMembers.size}/{familyMembers.length})
+                  </label>
+                </div>
+                {selectedMembers.size > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDeleteSelected}
+                    className="ml-auto"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Selected ({selectedMembers.size})
+                  </Button>
+                )}
+              </div>
+            )}
+
             <div className="grid gap-4">
               {loading ? (
                 <LoadingSkeleton />
@@ -393,6 +497,11 @@ export default function Members() {
                       <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
                         {/* Mobile: Header with Avatar and Name */}
                         <div className="flex items-center gap-3 sm:items-start">
+                          <Checkbox
+                            checked={selectedMembers.has(member.id)}
+                            onCheckedChange={() => toggleSelectMember(member.id)}
+                            className="mt-1"
+                          />
                           <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
                             <AvatarImage src="" />
                             <AvatarFallback className="bg-primary/10 text-xs sm:text-sm">
