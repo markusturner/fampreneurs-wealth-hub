@@ -1474,18 +1474,26 @@ export default function Documents() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <TreePine className="h-4 w-4 sm:h-5 sm:w-5" />
-                Interactive Family Tree
+                Your Family Tree
               </DialogTitle>
               <DialogDescription className="text-xs sm:text-sm">
-                Visualize your family connections and relationships
+                See how everyone in your family is connected
               </DialogDescription>
             </DialogHeader>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 h-[70vh] sm:h-[80vh]">
               {/* Left Panel - Input */}
               <div className="space-y-3 sm:space-y-4 overflow-y-auto pr-1 sm:pr-2">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                  <p className="text-xs sm:text-sm text-blue-900 font-medium mb-1">How to create your family tree:</p>
+                  <ol className="text-xs text-blue-800 space-y-1 ml-4 list-decimal">
+                    <li>Go to the "Members" tab to add your family members</li>
+                    <li>Or type relationships below (e.g., "John is married to Mary")</li>
+                    <li>Click "Update Tree" to see the visual diagram</li>
+                  </ol>
+                </div>
                 <FamilyTreeTextInput onGenerate={() => {
-                  toast.success('Family tree updated! Members synced from database.');
+                  toast.success('Family tree updated! Your members are now connected.');
                 }} />
               </div>
               
@@ -1494,15 +1502,16 @@ export default function Documents() {
                 <div className="p-2 sm:p-3 border-b bg-white/80 backdrop-blur-sm">
                   <h3 className="font-semibold text-xs sm:text-sm flex items-center gap-2">
                     <TreePine className="h-3 w-3 sm:h-4 sm:w-4" />
-                    Family Tree Visualization
+                    Visual Diagram
                   </h3>
+                  <p className="text-xs text-muted-foreground mt-1">Your family connections will appear here</p>
                 </div>
                 <div className="h-[calc(70vh-2.5rem)] sm:h-[calc(80vh-3rem)]">
                   {familyMembers.length > 0 ? <DynamicFamilyTreeVisualization familyMembers={familyMembers} /> : <div className="h-full flex items-center justify-center text-muted-foreground">
                       <div className="text-center px-4">
                         <TreePine className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 opacity-30" />
-                        <p className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Interactive Family Tree</p>
-                        <p className="text-xs opacity-75">{familyTreeLoading ? 'Loading family tree...' : 'Add family members in the Members tab or use the text input to see your visual family tree'}</p>
+                        <p className="text-sm sm:text-base font-medium mb-2">Ready to build your family tree?</p>
+                        <p className="text-xs sm:text-sm opacity-75 max-w-xs mx-auto">{familyTreeLoading ? 'Loading...' : 'Add your first family member to get started. You can do this in the Members tab or by typing on the left.'}</p>
                       </div>
                     </div>}
                 </div>
