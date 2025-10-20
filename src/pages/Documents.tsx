@@ -23,6 +23,7 @@ import { FamilyDocumentsTab } from "@/components/dashboard/family-documents-tab"
 import { GovernanceOnboardingModal } from "@/components/governance/GovernanceOnboardingModal";
 import { useGovernanceOnboarding } from "@/hooks/useGovernanceOnboarding";
 import { useMessageNotifications } from "@/hooks/useMessageNotifications";
+import { useFamilyTree } from "@/hooks/useFamilyTree";
 const familyEducationModules = [{
   title: "Family Business Education",
   description: "Learn the fundamentals of running a successful family business",
@@ -137,6 +138,9 @@ export default function Documents() {
   // Initialize message notifications
   useMessageNotifications();
   
+  // Load family tree from database
+  const { familyMembers, loading: familyTreeLoading } = useFamilyTree();
+  
   const [showCodeDialog, setShowCodeDialog] = useState(false);
   const [accessCode, setAccessCode] = useState('');
   const [showAdminPanel, setShowAdminPanel] = useState(false);
@@ -145,8 +149,6 @@ export default function Documents() {
   const [showCoursesDialog, setShowCoursesDialog] = useState(false);
   const [showFamilyTreeDialog, setShowFamilyTreeDialog] = useState(false);
   const [showConstitutionDialog, setShowConstitutionDialog] = useState(false);
-  const [familyData, setFamilyData] = useState<any[]>([]);
-  const [familyTreeInput, setFamilyTreeInput] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
   const [showCreateCourseDialog, setShowCreateCourseDialog] = useState(false);
   const [showEditCourseDialog, setShowEditCourseDialog] = useState(false);
@@ -476,34 +478,6 @@ export default function Documents() {
       setValidatedCodeResult(null);
     } finally {
       setIsValidatingCode(false);
-    }
-  };
-  const generateFamilyTree = () => {
-    if (!familyTreeInput.trim()) {
-      toast.error('Please enter family information first');
-      return;
-    }
-    try {
-      const lines = familyTreeInput.split('\n').filter(line => line.trim());
-      const members: any[] = [];
-      lines.forEach((line, index) => {
-        const name = line.trim();
-        if (name) {
-          members.push({
-            id: `member-${index}`,
-            name: name,
-            generation: Math.floor(index / 3),
-            // Simple generation assignment
-            parents: index > 0 ? [lines[Math.max(0, index - 1)].trim()] : [],
-            children: index < lines.length - 1 ? [lines[index + 1].trim()] : []
-          });
-        }
-      });
-      setFamilyData(members);
-      toast.success('Family tree generated successfully!');
-    } catch (error) {
-      console.error('Error generating family tree:', error);
-      toast.error('Failed to generate family tree');
     }
   };
   const addVideoUrl = () => {
@@ -1510,10 +1484,9 @@ export default function Documents() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 h-[70vh] sm:h-[80vh]">
               {/* Left Panel - Input */}
               <div className="space-y-3 sm:space-y-4 overflow-y-auto pr-1 sm:pr-2">
-                <FamilyTreeTextInput onGenerate={members => {
-                setFamilyData(members);
-                toast.success('Family tree generated successfully!');
-              }} />
+                <FamilyTreeTextInput onGenerate={() => {
+                  toast.success('Family tree updated! Members synced from database.');
+                }} />
               </div>
               
               {/* Right Panel - Visual Diagram */}
@@ -1525,11 +1498,11 @@ export default function Documents() {
                   </h3>
                 </div>
                 <div className="h-[calc(70vh-2.5rem)] sm:h-[calc(80vh-3rem)]">
-                  {familyData.length > 0 ? <DynamicFamilyTreeVisualization familyMembers={familyData} /> : <div className="h-full flex items-center justify-center text-muted-foreground">
+                  {familyMembers.length > 0 ? <DynamicFamilyTreeVisualization familyMembers={familyMembers} /> : <div className="h-full flex items-center justify-center text-muted-foreground">
                       <div className="text-center px-4">
                         <TreePine className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 opacity-30" />
                         <p className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Interactive Family Tree</p>
-                        <p className="text-xs opacity-75">Enter family information on the left to see your visual family tree</p>
+                        <p className="text-xs opacity-75">{familyTreeLoading ? 'Loading family tree...' : 'Add family members in the Members tab or use the text input to see your visual family tree'}</p>
                       </div>
                     </div>}
                 </div>

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Info, Sparkles, Wand2, Lightbulb } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client'
 import { toast } from 'sonner'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface FamilyMember {
   id: string
@@ -20,6 +21,7 @@ interface FamilyTreeTextInputProps {
 }
 
 export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
+  const { user } = useAuth();
   const [textInput, setTextInput] = useState(`John Smith
 ├─ married to Mary Johnson
 ├─ children: 
@@ -286,16 +288,66 @@ export function FamilyTreeTextInput({ onGenerate }: FamilyTreeTextInputProps) {
     toast.success('Family tree diagram cleared')
   }
 
-  const handleGenerate = () => {
-    const data = parseFamilyText(textInput)
-    console.log('FamilyTree Generate clicked. Members:', data.length, data)
-    if (data.length === 0) {
-      toast.error('No names detected. Try clicking Format first or add full names.')
-    } else {
-      toast.success(`Generated ${data.length} member${data.length > 1 ? 's' : ''}`)
+  const handleGenerate = async () => {
+    if (!user?.id) {
+      toast.error('You must be logged in to save family members');
+      return;
     }
-    onGenerate(data)
-  }
+
+    const data = parseFamilyText(textInput);
+    console.log('FamilyTree Generate clicked. Members:', data.length, data);
+    
+    if (data.length === 0) {
+      toast.error('No names detected. Try clicking Format first or add full names.');
+      return;
+    }
+
+    try {
+      // Save each member to the database
+      const insertPromises = data.map(async (member) => {
+        // Determine family position based on generation
+        let familyPosition = 'Other';
+        if (member.generation === 0) familyPosition = 'Grandparent';
+        else if (member.generation === 1) familyPosition = 'Parent';
+        else if (member.generation === 2) familyPosition = 'Child';
+        else if (member.generation === 3) familyPosition = 'Grandchild';
+
+        // Build relationship description
+        let relationship = '';
+        if (member.parents && member.parents.length > 0) {
+          relationship = `Child of ${member.parents.join(' and ')}`;
+        }
+        if (member.children && member.children.length > 0) {
+          if (relationship) relationship += '; ';
+          relationship += `Parent of ${member.children.join(', ')}`;
+        }
+
+        return supabase
+          .from('family_members')
+          .insert({
+            full_name: member.name,
+            family_position: familyPosition,
+            relationship_to_family: relationship || null,
+            added_by: user.id,
+            status: 'active'
+          });
+      });
+
+      const results = await Promise.all(insertPromises);
+      const errors = results.filter(r => r.error);
+      
+      if (errors.length > 0) {
+        console.error('Some members failed to save:', errors);
+        toast.error(`${errors.length} member(s) failed to save. Check console for details.`);
+      } else {
+        toast.success(`Saved ${data.length} family member${data.length > 1 ? 's' : ''} to database!`);
+        onGenerate(data);
+      }
+    } catch (error) {
+      console.error('Error saving family members:', error);
+      toast.error('Failed to save family members. Please try again.');
+    }
+  };
 
   const callAiAssistant = async (assistanceType: 'expand' | 'format' | 'suggest') => {
     if (!textInput.trim()) {
