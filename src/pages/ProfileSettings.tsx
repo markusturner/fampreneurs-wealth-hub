@@ -13,7 +13,7 @@ import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
 import { AdminTutorialVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Settings, Heart, ArrowLeft, User, Shield, Zap } from 'lucide-react'
+import { Settings, Heart, ArrowLeft, User, Shield, Zap, Video } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
@@ -59,7 +59,7 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="account" className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? (isAdmin ? 'grid-cols-4 h-auto' : isOwner ? 'grid-cols-3 h-auto' : 'grid-cols-2 h-auto') : (isAdmin ? 'grid-cols-4' : isOwner ? 'grid-cols-3' : 'grid-cols-2')}`}>
+        <TabsList className={`grid w-full ${isMobile ? (isAdmin ? 'grid-cols-5 h-auto' : isOwner ? 'grid-cols-4 h-auto' : 'grid-cols-2 h-auto') : (isAdmin ? 'grid-cols-5' : isOwner ? 'grid-cols-4' : 'grid-cols-2')}`}>
           <TabsTrigger 
             value="account" 
             className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
@@ -86,6 +86,17 @@ export function ProfileSettings() {
               <Zap className="h-4 w-4 shrink-0" />
               <span className={isMobile ? "text-center leading-tight" : ""}>
                 {isMobile ? "Zapier" : "Zapier Integration"}
+              </span>
+            </TabsTrigger>
+          )}
+          {(isAdmin || isOwner) && (
+            <TabsTrigger 
+              value="tutorial" 
+              className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
+            >
+              <Video className="h-4 w-4 shrink-0" />
+              <span className={isMobile ? "text-center leading-tight" : ""}>
+                {isMobile ? "Tutorial" : "Tutorial Video"}
               </span>
             </TabsTrigger>
           )}
@@ -117,9 +128,14 @@ export function ProfileSettings() {
           </TabsContent>
         )}
 
+        {(isAdmin || isOwner) && (
+          <TabsContent value="tutorial">
+            <AdminTutorialVideoManager />
+          </TabsContent>
+        )}
+
         {isAdmin && (
           <TabsContent value="admin" className="space-y-6">
-            <AdminTutorialVideoManager />
             <AdminAllUsersManagement />
             <AdminUserManagement />
             <AdminMassNotification />
