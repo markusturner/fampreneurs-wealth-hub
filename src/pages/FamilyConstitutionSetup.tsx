@@ -184,7 +184,7 @@ export default function FamilyConstitutionSetup() {
             key={step.id}
             className={`flex items-center gap-2 sm:gap-3 p-2 rounded cursor-pointer transition-colors ${
               index === currentStep
-                ? 'bg-primary/10 text-primary'
+                ? 'bg-secondary/10 text-secondary'
                 : completedSteps.has(index)
                 ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20'
                 : 'text-muted-foreground hover:bg-muted'
