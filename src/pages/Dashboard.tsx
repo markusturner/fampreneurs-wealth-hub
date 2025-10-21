@@ -16,12 +16,15 @@ import { Loader2 } from 'lucide-react'
 import { useState } from "react"
 import { useUserRole } from "@/hooks/useUserRole"
 import { OverviewSection } from "@/components/dashboard/overview-section"
+import { useTutorialVideo } from "@/hooks/useTutorialVideo"
+import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 
 const Dashboard = () => {
   const { user, profile, loading } = useAuth()
   const { isFamilyOfficeOnly, isLoading: roleLoading } = useUserRole()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { shouldShowTutorial, isLoading: tutorialLoading, markAsWatched } = useTutorialVideo(user?.id || null)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -74,6 +77,16 @@ const Dashboard = () => {
       
       {/* Mobile Bottom Navigation */}
       <div className="pb-16 md:pb-0" />
+
+      {/* Tutorial Video Modal */}
+      {user && (
+        <TutorialVideoModal
+          isOpen={shouldShowTutorial}
+          onClose={() => markAsWatched()}
+          onWatched={markAsWatched}
+          userId={user.id}
+        />
+      )}
     </div>
   );
 };
