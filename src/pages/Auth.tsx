@@ -361,23 +361,31 @@ export default function Auth() {
           </CardDescription>
           
           {/* Sign In / Sign Up Toggle */}
-          <div className="mt-4 flex gap-2 justify-center">
-            <Button
-              type="button"
-              variant={!isSignUpMode ? 'default' : 'outline'}
-              onClick={() => setIsSignUpMode(false)}
-              className="flex-1 max-w-[150px]"
-            >
-              Sign In
-            </Button>
-            <Button
-              type="button"
-              variant={isSignUpMode ? 'default' : 'outline'}
-              onClick={() => setIsSignUpMode(true)}
-              className="flex-1 max-w-[150px]"
-            >
-              Sign Up
-            </Button>
+          <div className="mt-4 flex justify-center">
+            <div className="inline-flex rounded-full bg-muted p-1">
+              <button
+                type="button"
+                onClick={() => setIsSignUpMode(false)}
+                className={`px-8 py-2 rounded-full text-sm font-medium transition-all ${
+                  !isSignUpMode 
+                    ? 'bg-primary text-primary-foreground shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSignUpMode(true)}
+                className={`px-8 py-2 rounded-full text-sm font-medium transition-all ${
+                  isSignUpMode 
+                    ? 'bg-primary text-primary-foreground shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Sign Up
+              </button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
