@@ -155,6 +155,9 @@ export default function Documents() {
   const [showCreateCourseDialog, setShowCreateCourseDialog] = useState(false);
   const [showEditCourseDialog, setShowEditCourseDialog] = useState(false);
   const [editingCourseIndex, setEditingCourseIndex] = useState<number | null>(null);
+  const [showAncestryDialog, setShowAncestryDialog] = useState(false);
+  const [ancestryUrl, setAncestryUrl] = useState('');
+  const [ancestryInstructions, setAncestryInstructions] = useState('');
   
   // Convert businessCourses to state so buttons can modify it
   const [businessCourses, setBusinessCourses] = useState([{
@@ -286,7 +289,27 @@ export default function Documents() {
     if (savedData) {
       const data = JSON.parse(savedData);
       setConstitutionData(data);
+      setAncestryUrl(data?.identity?.ancestryTreeUrl || '');
+      setAncestryInstructions(data?.identity?.ancestryInstructions || '');
     }
+  };
+
+  const saveAncestryUrl = () => {
+    if (!user?.id) return;
+    
+    const updatedData = {
+      ...constitutionData,
+      identity: {
+        ...constitutionData?.identity,
+        ancestryTreeUrl: ancestryUrl,
+        ancestryInstructions: ancestryInstructions
+      }
+    };
+    
+    localStorage.setItem(`constitution_setup_${user.id}`, JSON.stringify(updatedData));
+    setConstitutionData(updatedData);
+    setShowAncestryDialog(false);
+    toast.success('Ancestry.com link saved successfully!');
   };
   
   const loadDbFamilyMembers = async () => {
@@ -1448,20 +1471,37 @@ export default function Documents() {
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-            <Button 
-              variant="outline" 
-              className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-700 hover:border-green-300 dark:hover:border-green-600" 
-              onClick={() => {
-                if (constitutionData?.identity?.ancestryTreeUrl) {
-                  window.open(constitutionData.identity.ancestryTreeUrl, '_blank');
-                } else {
-                  toast.error('Please add your Ancestry.com URL in the Family Constitution setup first');
-                }
-              }}
-            >
-              <TreePine className="h-6 w-6 sm:h-7 sm:w-7 text-green-600" />
-              <span className="text-xs sm:text-sm font-medium text-center text-green-700 dark:text-green-300">Ancestry.com Tree</span>
-            </Button>
+            <div className="relative">
+              <Button 
+                variant="outline" 
+                className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-700 hover:border-green-300 dark:hover:border-green-600 w-full" 
+                onClick={() => {
+                  if (constitutionData?.identity?.ancestryTreeUrl) {
+                    window.open(constitutionData.identity.ancestryTreeUrl, '_blank');
+                  } else {
+                    setShowAncestryDialog(true);
+                  }
+                }}
+              >
+                <TreePine className="h-6 w-6 sm:h-7 sm:w-7 text-green-600" />
+                <span className="text-xs sm:text-sm font-medium text-center text-green-700 dark:text-green-300">
+                  {constitutionData?.identity?.ancestryTreeUrl ? 'Ancestry.com Tree' : 'Add Ancestry Link'}
+                </span>
+              </Button>
+              {constitutionData?.identity?.ancestryTreeUrl && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="absolute top-2 right-2 h-6 w-6 rounded-full bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowAncestryDialog(true);
+                  }}
+                >
+                  <Edit className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
             
             <Button variant="outline" className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3" onClick={() => setShowFamilyDocuments(true)}>
               <FileText className="h-6 w-6 sm:h-7 sm:w-7 text-blue-600" />
@@ -2417,6 +2457,59 @@ export default function Documents() {
                 Update Course
               </Button>
               <Button variant="outline" onClick={() => setShowEditCourseDialog(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Ancestry.com Link Dialog */}
+      <Dialog open={showAncestryDialog} onOpenChange={setShowAncestryDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <TreePine className="h-5 w-5 text-green-600" />
+              Add Ancestry.com Link
+            </DialogTitle>
+            <DialogDescription>
+              Add your public Ancestry.com family tree URL
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="ancestry-url">Ancestry.com Tree URL</Label>
+              <Input
+                id="ancestry-url"
+                placeholder="https://www.ancestry.com/family-tree/..."
+                value={ancestryUrl}
+                onChange={(e) => setAncestryUrl(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Paste your public Ancestry.com family tree link
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="ancestry-instructions">Access Instructions (Optional)</Label>
+              <Textarea
+                id="ancestry-instructions"
+                placeholder="e.g., Contact [name] for login details, or 'This is a public tree'"
+                value={ancestryInstructions}
+                onChange={(e) => setAncestryInstructions(e.target.value)}
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground">
+                Add any access notes for family members (never include passwords)
+              </p>
+            </div>
+            
+            <div className="flex gap-2 pt-2">
+              <Button onClick={saveAncestryUrl} className="flex-1">
+                Save Link
+              </Button>
+              <Button variant="outline" onClick={() => setShowAncestryDialog(false)}>
                 Cancel
               </Button>
             </div>
