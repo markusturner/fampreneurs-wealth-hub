@@ -167,15 +167,6 @@ export function AdminAllUsersManagement() {
         if (adminError) console.error('Admin role error:', adminError)
       }
 
-      // Update moderator role
-      if (editingUser.is_moderator) {
-        const { error: modError } = await supabase.rpc('assign_moderator_role', {
-          target_user_id: editingUser.user_id,
-          assigner_user_id: (await supabase.auth.getUser()).data.user?.id
-        })
-        if (modError) console.error('Moderator role error:', modError)
-      }
-
       toast({
         title: "Success",
         description: "User updated successfully"
@@ -258,10 +249,21 @@ export function AdminAllUsersManagement() {
   const getRoleBadges = (user: UserProfile) => {
     const badges = []
     if (user.is_admin) badges.push(<Badge key="admin" variant="destructive">Admin</Badge>)
-    if (user.is_moderator) badges.push(<Badge key="mod" variant="secondary">Moderator</Badge>)
-    if (user.membership_type === 'trustee') badges.push(<Badge key="trustee" variant="default">Trustee</Badge>)
-    if (user.membership_type === 'family_member') badges.push(<Badge key="family" variant="outline">Family Member</Badge>)
-    if (badges.length === 0) badges.push(<Badge key="user" variant="outline">Trustee</Badge>)
+    if (user.membership_type === 'trustee') badges.push(
+      <Badge key="trustee" style={{ backgroundColor: '#2eb2ff', color: '#290a52', border: 'none' }}>
+        Trustee
+      </Badge>
+    )
+    if (user.membership_type === 'family_member') badges.push(
+      <Badge key="family" style={{ backgroundColor: '#2ffb500', color: '#290a52', border: 'none' }}>
+        Family Member
+      </Badge>
+    )
+    if (badges.length === 0) badges.push(
+      <Badge key="user" style={{ backgroundColor: '#2eb2ff', color: '#290a52', border: 'none' }}>
+        Trustee
+      </Badge>
+    )
     return badges
   }
 
@@ -483,17 +485,6 @@ export function AdminAllUsersManagement() {
                     id="is-admin"
                     checked={editingUser.is_admin}
                     onCheckedChange={(checked) => setEditingUser({...editingUser, is_admin: checked})}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="is-moderator">Moderator Access</Label>
-                    <p className="text-sm text-muted-foreground">Content moderation and community management</p>
-                  </div>
-                  <Switch
-                    id="is-moderator"
-                    checked={editingUser.is_moderator}
-                    onCheckedChange={(checked) => setEditingUser({...editingUser, is_moderator: checked})}
                   />
                 </div>
               </div>
