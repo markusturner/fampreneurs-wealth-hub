@@ -110,12 +110,12 @@ export default function Documents() {
   
   // Convert businessCourses to state so buttons can modify it
   const [businessCourses, setBusinessCourses] = useState([{
-    title: "Family Business Fundamentals",
+    title: "Family Business Education",
     instructor: "Dr. Sarah Johnson",
     duration: "4 weeks",
-    description: "Essential principles for successful family business management",
+    description: "Learn the fundamentals of running a successful family business",
     status: "published",
-    videos: [{ url: "https://youtu.be/example1", type: "youtube" }, { url: "https://youtu.be/example2", type: "youtube" }],
+    videos: [{ url: "https://youtu.be/example1", type: "youtube" }],
     modules: [{
       name: "Introduction to Family Business",
       duration: "45 minutes"
@@ -123,16 +123,16 @@ export default function Documents() {
       name: "Strategic Planning",
       duration: "60 minutes"
     }, {
-      name: "Leadership Transition",
-      duration: "55 minutes"
+      name: "Succession Planning",
+      duration: "75 minutes"
     }]
   }, {
-    title: "Family Constitution Framework",
+    title: "Family Constitution",
     instructor: "Dr. Emily Roberts",
     duration: "5 weeks",
     description: "Understanding and implementing your family's core values and principles",
     status: "published",
-    videos: [{ url: "https://youtu.be/example2a", type: "youtube" }],
+    videos: [{ url: "https://youtu.be/example2", type: "youtube" }],
     modules: [{
       name: "Core Values Development",
       duration: "45 minutes"
@@ -144,10 +144,10 @@ export default function Documents() {
       duration: "60 minutes"
     }]
   }, {
-    title: "Wealth Management Strategies", 
+    title: "Wealth Management",
     instructor: "Michael Chen, CFA",
     duration: "6 weeks",
-    description: "Advanced strategies for preserving and growing family wealth across generations",
+    description: "Strategic approaches to preserving and growing family wealth",
     status: "published",
     videos: [{ url: "https://youtu.be/example3", type: "youtube" }],
     modules: [{
@@ -162,16 +162,16 @@ export default function Documents() {
     }]
   }, {
     title: "Next Generation Leadership",
-    instructor: "Prof. Amanda Rodriguez", 
+    instructor: "Prof. Amanda Rodriguez",
     duration: "8 weeks",
-    description: "Developing leadership skills in family business successors",
+    description: "Preparing future leaders for family business success",
     status: "draft",
     videos: [],
     modules: [{
       name: "Leadership Fundamentals",
       duration: "40 minutes"
     }, {
-      name: "Communication Skills", 
+      name: "Communication Skills",
       duration: "55 minutes"
     }, {
       name: "Decision Making",
