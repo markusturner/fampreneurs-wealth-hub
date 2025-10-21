@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, ArrowLeft } from 'lucide-react'
+import { Loader2, ArrowLeft, AlertTriangle } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { useTheme } from '@/components/theme-provider'
@@ -393,13 +393,18 @@ export default function Auth() {
             // Sign Up Form for Trustees
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
-                <Label>Creating Account For</Label>
-                <div className="px-4 py-2 bg-primary/10 rounded-md text-center">
-                  <span className="font-semibold">Trustee</span>
+                <div className="px-4 py-3 bg-destructive/10 border-2 border-destructive/50 rounded-lg">
+                  <div className="flex items-center justify-center gap-2 mb-1">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                    <span className="text-sm font-medium text-destructive">Creating Account For</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="font-bold text-lg text-destructive">Trustee</span>
+                  </div>
+                  <p className="text-xs text-center mt-2 text-muted-foreground">
+                    Create your trustee account to manage your family office.
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Create your trustee account to manage your family office.
-                </p>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
