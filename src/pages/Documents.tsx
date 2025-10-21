@@ -238,6 +238,7 @@ export default function Documents() {
   const [dbFamilyMembers, setDbFamilyMembers] = useState<any[]>([]);
   const messageInputRef = useRef<HTMLInputElement>(null);
   const [showFamilyDocuments, setShowFamilyDocuments] = useState(false);
+  const [constitutionData, setConstitutionData] = useState<any>(null);
   
   // Voting system states
   const [showCreateVoteDialog, setShowCreateVoteDialog] = useState(false);
@@ -275,7 +276,18 @@ export default function Documents() {
     }
     loadFamilyValues();
     loadDbFamilyMembers();
+    loadConstitutionData();
   }, [user, isAdmin]);
+
+  const loadConstitutionData = () => {
+    if (!user?.id) return;
+    
+    const savedData = localStorage.getItem(`constitution_setup_${user.id}`);
+    if (savedData) {
+      const data = JSON.parse(savedData);
+      setConstitutionData(data);
+    }
+  };
   
   const loadDbFamilyMembers = async () => {
     if (!user?.id) return;
@@ -1633,6 +1645,40 @@ export default function Documents() {
                 </div>
               </div>
             </div>
+
+            {/* External Family Tree Link */}
+            {constitutionData?.identity?.ancestryTreeUrl && (
+              <div className="mt-4 border-t pt-4">
+                <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0">
+                        <TreePine className="h-5 w-5 text-green-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-semibold text-green-900 dark:text-green-100 mb-1">
+                          View Full Family Tree on Ancestry.com
+                        </h3>
+                        {constitutionData?.identity?.ancestryAccessInstructions && (
+                          <p className="text-xs text-green-800 dark:text-green-200 mb-3">
+                            {constitutionData.identity.ancestryAccessInstructions}
+                          </p>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs border-green-600 text-green-700 hover:bg-green-100 dark:text-green-300 dark:hover:bg-green-900/50"
+                          onClick={() => window.open(constitutionData.identity.ancestryTreeUrl, '_blank')}
+                        >
+                          <TreePine className="h-3 w-3 mr-1" />
+                          Open Ancestry.com Tree
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
 
