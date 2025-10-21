@@ -12,7 +12,8 @@ import { useTheme } from '@/components/theme-provider'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
 
 export default function Auth() {
-  const [isSignUpMode, setIsSignUpMode] = useState(false)
+  const [searchParams] = useSearchParams()
+  const [isSignUpMode, setIsSignUpMode] = useState(searchParams.get('signup') === 'trustee')
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -36,6 +37,11 @@ export default function Auth() {
     }
     checkUser()
   }, [navigate])
+
+  useEffect(() => {
+    // Update sign up mode based on URL parameter
+    setIsSignUpMode(searchParams.get('signup') === 'trustee')
+  }, [searchParams])
 
   const cleanupAuthState = () => {
     Object.keys(localStorage).forEach((key) => {
