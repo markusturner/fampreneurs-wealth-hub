@@ -178,6 +178,23 @@ export default function Documents() {
       duration: "55 minutes"
     }]
   }, {
+    title: "Family Constitution Framework",
+    instructor: "Dr. Emily Roberts",
+    duration: "5 weeks",
+    description: "Understanding and implementing your family's core values and principles",
+    status: "published",
+    videos: [{ url: "https://youtu.be/example2a", type: "youtube" }],
+    modules: [{
+      name: "Core Values Development",
+      duration: "45 minutes"
+    }, {
+      name: "Governance Structure",
+      duration: "50 minutes"
+    }, {
+      name: "Implementation Strategies",
+      duration: "60 minutes"
+    }]
+  }, {
     title: "Wealth Management Strategies", 
     instructor: "Michael Chen, CFA",
     duration: "6 weeks",
