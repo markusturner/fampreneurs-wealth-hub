@@ -12,8 +12,7 @@ import { useTheme } from '@/components/theme-provider'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
 
 export default function Auth() {
-  const [searchParams] = useSearchParams()
-  const isSignUpMode = searchParams.get('signup') === 'trustee'
+  const [isSignUpMode, setIsSignUpMode] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -452,7 +451,7 @@ export default function Auth() {
                 <Button
                   type="button"
                   variant="link"
-                  onClick={() => navigate('/auth')}
+                  onClick={() => setIsSignUpMode(false)}
                   className="text-sm"
                 >
                   Already have an account? Sign in
@@ -548,6 +547,17 @@ export default function Auth() {
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In {userType === 'family_member' ? '(Family Member)' : '(Trustees)'}
             </Button>
+
+            <div className="text-center">
+              <Button
+                type="button"
+                variant="link"
+                onClick={() => setIsSignUpMode(true)}
+                className="text-sm"
+              >
+                Need a trustee account? Sign up
+              </Button>
+            </div>
           </form>
           )}
         </CardContent>
