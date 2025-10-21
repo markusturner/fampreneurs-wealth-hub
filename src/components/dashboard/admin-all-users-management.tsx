@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -65,6 +65,7 @@ export function AdminAllUsersManagement() {
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null)
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
+  const [resendingCredentialsId, setResendingCredentialsId] = useState<string | null>(null)
   const { toast } = useToast()
 
   const fetchUsers = async () => {
@@ -223,6 +224,37 @@ export function AdminAllUsersManagement() {
     }
   }
 
+  const handleResendCredentials = async (user: UserProfile) => {
+    setResendingCredentialsId(user.user_id)
+    try {
+      const { data, error } = await supabase.functions.invoke('create-user-with-credentials', {
+        body: {
+          email: user.email,
+          firstName: user.first_name || '',
+          lastName: user.last_name || '',
+          role: user.membership_type || 'trustee'
+        }
+      })
+
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
+
+      toast({
+        title: "Success",
+        description: `Login credentials sent to ${user.email}`
+      })
+    } catch (error: any) {
+      console.error('Error resending credentials:', error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to resend credentials",
+        variant: "destructive"
+      })
+    } finally {
+      setResendingCredentialsId(null)
+    }
+  }
+
   const getRoleBadges = (user: UserProfile) => {
     const badges = []
     if (user.is_admin) badges.push(<Badge key="admin" variant="destructive">Admin</Badge>)
@@ -319,6 +351,19 @@ export function AdminAllUsersManagement() {
                                 title="Preview user view"
                               >
                                 <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleResendCredentials(user)}
+                                title="Resend login credentials"
+                                disabled={resendingCredentialsId === user.user_id}
+                              >
+                                {resendingCredentialsId === user.user_id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Mail className="h-4 w-4" />
+                                )}
                               </Button>
                               <Button
                                 size="sm"
