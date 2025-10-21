@@ -288,6 +288,7 @@ export default function Documents() {
         .eq('status', 'active');
       
       if (error) throw error;
+      console.log('Loaded family members for mentions:', data);
       setDbFamilyMembers(data || []);
     } catch (error) {
       console.error('Error loading family members:', error);
@@ -746,9 +747,11 @@ export default function Documents() {
     }, 0);
   };
 
-  const filteredDbMembers = dbFamilyMembers.filter(member =>
-    member.full_name?.toLowerCase().includes(mentionSearch.toLowerCase())
-  );
+  const filteredDbMembers = mentionSearch 
+    ? dbFamilyMembers.filter(member =>
+        member.full_name?.toLowerCase().includes(mentionSearch.toLowerCase())
+      )
+    : dbFamilyMembers;
 
   const renderMessageContent = (content: string) => {
     const parts = content.split(/(@\w+)/g);
@@ -1646,12 +1649,16 @@ export default function Documents() {
               </DialogDescription>
               
               {/* Family Members with Access */}
-              {dbFamilyMembers.length > 0 && (
-                <div className="flex flex-col gap-2 pt-3 border-t mt-2">
-                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    Members ({dbFamilyMembers.length})
+              <div className="flex flex-col gap-2 pt-3 border-t mt-2">
+                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  Members ({dbFamilyMembers.length})
+                </p>
+                {dbFamilyMembers.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    No family members added yet. Add members in the Members tab.
                   </p>
+                ) : (
                   <div className="flex flex-wrap gap-2">
                     {dbFamilyMembers.slice(0, 6).map((member) => (
                       <div key={member.id} className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-xs">
@@ -1669,8 +1676,8 @@ export default function Documents() {
                       </div>
                     )}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </DialogHeader>
             
             <div className="flex-1 space-y-3 sm:space-y-4 overflow-hidden">
