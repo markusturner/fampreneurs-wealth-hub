@@ -18,14 +18,21 @@ interface CalendarIntegration {
   email: string | null;
 }
 
-export function CalendarIntegrationButton() {
+export function CalendarIntegrationButton({ autoOpen = false }: { autoOpen?: boolean }) {
   const [integrations, setIntegrations] = useState<CalendarIntegration[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchIntegrations();
   }, []);
+
+  useEffect(() => {
+    if (autoOpen && !loading) {
+      setIsOpen(true);
+    }
+  }, [autoOpen, loading]);
 
   const fetchIntegrations = async () => {
     try {
@@ -136,7 +143,7 @@ export function CalendarIntegrationButton() {
   const zoomIntegration = integrations.find(i => i.provider === 'zoom');
 
   return (
-    <DropdownMenu modal={false}>
+    <DropdownMenu modal={false} open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <Settings className="h-4 w-4" />
@@ -154,7 +161,7 @@ export function CalendarIntegrationButton() {
           onSelect={(e) => e.preventDefault()}
         >
           <div className="flex items-center gap-3 flex-1">
-            <Calendar className="h-5 w-5 text-primary" />
+            <Calendar className="h-5 w-5 text-blue-500" />
             <div className="flex-1">
               <p className="font-medium">Google Calendar</p>
               {googleIntegration && (
@@ -203,7 +210,7 @@ export function CalendarIntegrationButton() {
           onSelect={(e) => e.preventDefault()}
         >
           <div className="flex items-center gap-3 flex-1">
-            <Video className="h-5 w-5 text-primary" />
+            <Video className="h-5 w-5 text-purple-500" />
             <div className="flex-1">
               <p className="font-medium">Zoom</p>
               {zoomIntegration && (

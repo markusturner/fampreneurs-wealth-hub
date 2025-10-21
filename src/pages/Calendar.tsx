@@ -532,7 +532,7 @@ export default function Calendar() {
                     />
                     
                     <div className="mt-3">
-                      <CalendarIntegrationButton />
+                      <CalendarIntegrationButton autoOpen={isCreateMeetingOpen} />
                     </div>
                   </div>
                   
