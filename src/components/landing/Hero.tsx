@@ -64,7 +64,7 @@ export const Hero = () => {
           {/* Main Headlines - Enhanced Typography */}
           <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 md:mb-8 leading-tight tracking-tight">
             <span className="text-foreground">How to build</span>{' '}
-            <span style={{ color: '#ffb500' }}>
+            <span style={{ color: '#fce000' }}>
               generational wealth
             </span>{' '}
             <span style={{ color: '#2eb2ff' }}>without</span>{' '}
