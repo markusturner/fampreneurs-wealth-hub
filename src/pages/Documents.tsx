@@ -1444,10 +1444,21 @@ export default function Documents() {
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
-            <Button variant="outline" className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3" onClick={() => setShowFamilyTreeDialog(true)}>
-              <TreePine className="h-6 w-6 sm:h-7 sm:w-7 text-emerald-600" />
-              <span className="text-xs sm:text-sm font-medium text-center">Family Tree</span>
-            </Button>
+            {constitutionData?.identity?.ancestryTreeUrl ? (
+              <Button 
+                variant="outline" 
+                className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-700 hover:border-green-300 dark:hover:border-green-600" 
+                onClick={() => window.open(constitutionData.identity.ancestryTreeUrl, '_blank')}
+              >
+                <TreePine className="h-6 w-6 sm:h-7 sm:w-7 text-green-600" />
+                <span className="text-xs sm:text-sm font-medium text-center text-green-700 dark:text-green-300">Ancestry.com Tree</span>
+              </Button>
+            ) : (
+              <Button variant="outline" className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3" onClick={() => setShowFamilyTreeDialog(true)}>
+                <TreePine className="h-6 w-6 sm:h-7 sm:w-7 text-emerald-600" />
+                <span className="text-xs sm:text-sm font-medium text-center">Family Tree</span>
+              </Button>
+            )}
             
             <Button variant="outline" className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3" onClick={() => setShowFamilyDocuments(true)}>
               <FileText className="h-6 w-6 sm:h-7 sm:w-7 text-blue-600" />
