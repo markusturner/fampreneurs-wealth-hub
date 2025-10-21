@@ -136,7 +136,7 @@ export function CalendarIntegrationButton() {
   const zoomIntegration = integrations.find(i => i.provider === 'zoom');
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <Settings className="h-4 w-4" />
@@ -144,7 +144,7 @@ export function CalendarIntegrationButton() {
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-80 bg-background z-50">
+      <DropdownMenuContent align="start" className="w-80 bg-background z-[200]" sideOffset={5}>
         <DropdownMenuLabel>Manage Integrations</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
