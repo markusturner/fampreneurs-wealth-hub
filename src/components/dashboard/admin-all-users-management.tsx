@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -178,6 +178,29 @@ export function AdminAllUsersManagement() {
         if (adminError) console.error('Admin role error:', adminError)
       }
 
+      // Update owner role
+      if (editingUser.is_moderator) {
+        // Add owner role
+        const { error: ownerError } = await supabase
+          .from('user_roles')
+          .upsert({
+            user_id: editingUser.user_id,
+            role: 'owner',
+            assigned_by: (await supabase.auth.getUser()).data.user?.id
+          }, {
+            onConflict: 'user_id,role'
+          })
+        if (ownerError) console.error('Owner role error:', ownerError)
+      } else {
+        // Remove owner role
+        const { error: removeOwnerError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', editingUser.user_id)
+          .eq('role', 'owner')
+        if (removeOwnerError) console.error('Remove owner role error:', removeOwnerError)
+      }
+
       toast({
         title: "Success",
         description: "User updated successfully"
@@ -298,6 +321,12 @@ export function AdminAllUsersManagement() {
 
   const getRoleBadges = (user: UserProfile) => {
     const badges = []
+    if (user.is_moderator) badges.push(
+      <Badge key="owner" style={{ backgroundColor: '#ffb500', color: '#290a52', border: 'none' }}>
+        <Crown className="h-3 w-3 mr-1" />
+        Owner
+      </Badge>
+    )
     if (user.is_admin) badges.push(<Badge key="admin" variant="destructive">Admin</Badge>)
     if (user.membership_type === 'trustee') badges.push(
       <Badge key="trustee" style={{ backgroundColor: '#2eb2ff', color: '#290a52', border: 'none' }}>
@@ -318,8 +347,11 @@ export function AdminAllUsersManagement() {
   }
 
   const getUserViewDescription = (user: UserProfile) => {
+    if (user.is_moderator) {
+      return "Owner access: Complete control over all platform features including admin management, system settings, and ownership activities. Can manage admins and access Zapier integration."
+    }
     if (user.is_admin) {
-      return "Full admin access: Can see all users, manage settings, send notifications, and access all features."
+      return "Full admin access: Can see all users, manage settings, send notifications, and access all features (excluding ownership activities)."
     }
     if (user.membership_type === 'trustee') {
       return "Trustee view: Access to family governance, documents, calendar, investment management, and family constitution features."
@@ -527,9 +559,23 @@ export function AdminAllUsersManagement() {
               <div className="space-y-4 pt-4 border-t">
                 <Label>User Roles</Label>
                 <div className="flex items-center justify-between">
+                  <div className="space-y-0.5 flex items-center gap-2">
+                    <Crown className="h-4 w-4" style={{ color: '#ffb500' }} />
+                    <div>
+                      <Label htmlFor="is-owner">Owner Access</Label>
+                      <p className="text-sm text-muted-foreground">Complete ownership control including admin management</p>
+                    </div>
+                  </div>
+                  <Switch
+                    id="is-owner"
+                    checked={editingUser.is_moderator}
+                    onCheckedChange={(checked) => setEditingUser({...editingUser, is_moderator: checked})}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="is-admin">Admin Access</Label>
-                    <p className="text-sm text-muted-foreground">Full system access and user management</p>
+                    <p className="text-sm text-muted-foreground">Full system access and user management (excluding ownership activities)</p>
                   </div>
                   <Switch
                     id="is-admin"

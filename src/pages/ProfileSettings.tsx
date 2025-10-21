@@ -9,17 +9,20 @@ import { AccountSettings } from '@/components/dashboard/account-settings'
 import { AdminUserManagement } from '@/components/dashboard/admin-user-management'
 import { AdminMassNotification } from '@/components/dashboard/admin-mass-notification'
 import { AdminAllUsersManagement } from '@/components/dashboard/admin-all-users-management'
+import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Settings, Heart, ArrowLeft, User, Shield } from 'lucide-react'
+import { Settings, Heart, ArrowLeft, User, Shield, Zap } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useOwnerRole } from '@/hooks/useOwnerRole'
 
 export function ProfileSettings() {
   const { profile, user } = useAuth()
   const navigate = useNavigate()
   const isMobile = useIsMobile()
   const isAdmin = profile?.is_admin && user?.email === 'markusturner94@gmail.com'
+  const { isOwner } = useOwnerRole(user?.id || null)
 
   const handleBackToDashboard = () => {
     navigate('/dashboard')
@@ -55,7 +58,7 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="account" className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? (isAdmin ? 'grid-cols-3 h-auto' : 'grid-cols-2 h-auto') : (isAdmin ? 'grid-cols-3' : 'grid-cols-2')}`}>
+        <TabsList className={`grid w-full ${isMobile ? (isAdmin ? 'grid-cols-4 h-auto' : isOwner ? 'grid-cols-3 h-auto' : 'grid-cols-2 h-auto') : (isAdmin ? 'grid-cols-4' : isOwner ? 'grid-cols-3' : 'grid-cols-2')}`}>
           <TabsTrigger 
             value="account" 
             className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
@@ -74,6 +77,17 @@ export function ProfileSettings() {
               {isMobile ? "Affiliate" : "Affiliate Program"}
             </span>
           </TabsTrigger>
+          {isOwner && (
+            <TabsTrigger 
+              value="zapier" 
+              className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
+            >
+              <Zap className="h-4 w-4 shrink-0" />
+              <span className={isMobile ? "text-center leading-tight" : ""}>
+                {isMobile ? "Zapier" : "Zapier Integration"}
+              </span>
+            </TabsTrigger>
+          )}
           {isAdmin && (
             <TabsTrigger 
               value="admin" 
@@ -95,6 +109,12 @@ export function ProfileSettings() {
         <TabsContent value="affiliate">
           <AffiliateProgram />
         </TabsContent>
+
+        {isOwner && user?.id && (
+          <TabsContent value="zapier">
+            <ZapierIntegration userId={user.id} />
+          </TabsContent>
+        )}
 
         {isAdmin && (
           <TabsContent value="admin" className="space-y-6">

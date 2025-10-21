@@ -71,6 +71,7 @@ export const TutorialVideoModal = ({ isOpen, onClose, onWatched, userId }: Tutor
     try {
       // Add notification for skipped tutorial
       await supabase.from("notifications").insert({
+        sender_id: userId,
         user_id: userId,
         notification_type: "tutorial_reminder",
         title: "Tutorial Video Available",

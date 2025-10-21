@@ -3777,6 +3777,36 @@ export type Database = {
         }
         Relationships: []
       }
+      zapier_webhooks: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+          user_id: string
+          webhook_name: string | null
+          webhook_url: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          user_id: string
+          webhook_name?: string | null
+          webhook_url: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+          webhook_name?: string | null
+          webhook_url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -3925,11 +3955,26 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      get_user_roles: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["member_role"][]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["member_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_current_user_accountability_partner: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
       is_current_user_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_current_user_owner: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
