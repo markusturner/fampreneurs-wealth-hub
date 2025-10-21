@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -66,6 +66,17 @@ export function AdminAllUsersManagement() {
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
   const [resendingCredentialsId, setResendingCredentialsId] = useState<string | null>(null)
+  const [programOptions, setProgramOptions] = useState<string[]>([
+    'The Family Business University',
+    'The Family Vault',
+    'The Family Business Accelerator',
+    'The Family Legacy: VIP Weekend',
+    'The Family Fortune Mastermind'
+  ])
+  const [managingPrograms, setManagingPrograms] = useState(false)
+  const [newProgramName, setNewProgramName] = useState('')
+  const [editingProgramIndex, setEditingProgramIndex] = useState<number | null>(null)
+  const [editingProgramValue, setEditingProgramValue] = useState('')
   const { toast } = useToast()
 
   const fetchUsers = async () => {
@@ -244,6 +255,45 @@ export function AdminAllUsersManagement() {
     } finally {
       setResendingCredentialsId(null)
     }
+  }
+
+  const handleAddProgram = () => {
+    if (newProgramName.trim() && !programOptions.includes(newProgramName.trim())) {
+      setProgramOptions([...programOptions, newProgramName.trim()])
+      setNewProgramName('')
+      toast({
+        title: "Success",
+        description: "Program added successfully"
+      })
+    }
+  }
+
+  const handleEditProgram = (index: number) => {
+    setEditingProgramIndex(index)
+    setEditingProgramValue(programOptions[index])
+  }
+
+  const handleSaveEditProgram = () => {
+    if (editingProgramIndex !== null && editingProgramValue.trim()) {
+      const updatedOptions = [...programOptions]
+      updatedOptions[editingProgramIndex] = editingProgramValue.trim()
+      setProgramOptions(updatedOptions)
+      setEditingProgramIndex(null)
+      setEditingProgramValue('')
+      toast({
+        title: "Success",
+        description: "Program updated successfully"
+      })
+    }
+  }
+
+  const handleDeleteProgram = (index: number) => {
+    const updatedOptions = programOptions.filter((_, i) => i !== index)
+    setProgramOptions(updatedOptions)
+    toast({
+      title: "Success",
+      description: "Program deleted successfully"
+    })
   }
 
   const getRoleBadges = (user: UserProfile) => {
@@ -490,13 +540,32 @@ export function AdminAllUsersManagement() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-program">Program Name</Label>
-                <Input
-                  id="edit-program"
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="edit-program">Program Name</Label>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setManagingPrograms(true)}
+                  >
+                    Manage Programs
+                  </Button>
+                </div>
+                <Select
                   value={editingUser.program_name || ''}
-                  onChange={(e) => setEditingUser({...editingUser, program_name: e.target.value})}
-                  placeholder="e.g., The Family Business University"
-                />
+                  onValueChange={(value) => setEditingUser({...editingUser, program_name: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a program" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {programOptions.map((program) => (
+                      <SelectItem key={program} value={program}>
+                        {program}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           )}
@@ -727,6 +796,78 @@ export function AdminAllUsersManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Manage Programs Dialog */}
+      <Dialog open={managingPrograms} onOpenChange={setManagingPrograms}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Manage Program Options</DialogTitle>
+            <DialogDescription>
+              Add, edit, or delete program options for the dropdown menu
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Add New Program */}
+            <div className="flex gap-2">
+              <Input
+                placeholder="Enter new program name"
+                value={newProgramName}
+                onChange={(e) => setNewProgramName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddProgram()}
+              />
+              <Button onClick={handleAddProgram} size="sm">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Program List */}
+            <ScrollArea className="h-[300px] border rounded-lg p-2">
+              <div className="space-y-2">
+                {programOptions.map((program, index) => (
+                  <div key={index} className="flex items-center gap-2 p-2 rounded hover:bg-accent">
+                    {editingProgramIndex === index ? (
+                      <>
+                        <Input
+                          value={editingProgramValue}
+                          onChange={(e) => setEditingProgramValue(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handleSaveEditProgram()}
+                          className="flex-1"
+                        />
+                        <Button onClick={handleSaveEditProgram} size="sm" variant="ghost">
+                          Save
+                        </Button>
+                        <Button onClick={() => setEditingProgramIndex(null)} size="sm" variant="ghost">
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <span className="flex-1 text-sm">{program}</span>
+                        <Button onClick={() => handleEditProgram(index)} size="sm" variant="ghost">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          onClick={() => handleDeleteProgram(index)} 
+                          size="sm" 
+                          variant="ghost"
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setManagingPrograms(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
