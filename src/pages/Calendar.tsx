@@ -359,9 +359,6 @@ export default function Calendar() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       <div className="container mx-auto mobile-container space-y-4 sm:space-y-6 px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
-        {/* Calendar Integrations */}
-        <CalendarIntegrationButton />
-        
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
@@ -533,6 +530,10 @@ export default function Calendar() {
                       onChange={(e) => setNewMeeting(prev => ({ ...prev, location: e.target.value }))}
                       placeholder="Meeting location or video link"
                     />
+                    
+                    <div className="mt-3">
+                      <CalendarIntegrationButton />
+                    </div>
                   </div>
                   
                   <div className="grid gap-2">
