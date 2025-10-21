@@ -189,24 +189,24 @@ const handler = async (req: Request): Promise<Response> => {
               <style>
                 body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background-color: #4F46E5; color: white; padding: 20px; text-align: center; }
-                .content { background-color: #f9fafb; padding: 30px; }
+                .header { background-color: #5b5fd6; color: white; padding: 30px; text-align: center; }
+                .content { background-color: #f5f5f5; padding: 30px; }
                 .credentials { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
                 .credential-item { margin: 15px 0; }
                 .label { font-weight: bold; color: #6B7280; }
-                .value { font-family: monospace; background-color: #F3F4F6; padding: 8px 12px; border-radius: 4px; display: inline-block; margin-top: 5px; }
-                .button { display: inline-block; background-color: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+                .value { font-family: monospace; background-color: #F3F4F6; padding: 10px 15px; border-radius: 4px; display: inline-block; margin-top: 5px; }
+                .button { display: inline-block; background-color: #5b5fd6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: 500; }
                 .footer { text-align: center; color: #6B7280; font-size: 12px; margin-top: 30px; }
               </style>
             </head>
             <body>
               <div class="container">
                 <div class="header">
-                  <h1>Welcome to the Platform!</h1>
+                  <h1 style="margin: 0; font-size: 32px;">Welcome to the Platform!</h1>
                 </div>
                 <div class="content">
-                  <p>Hi ${firstName},</p>
-                  <p>${isExistingUser ? 'Your login credentials have been updated' : 'Your account has been created'}. Below are your login credentials:</p>
+                  <p style="font-size: 16px;">Hi ${firstName},</p>
+                  <p style="font-size: 16px;">${isExistingUser ? 'Your login credentials have been updated' : 'Your account has been created'}. Below are your login credentials:</p>
                   
                   <div class="credentials">
                     <div class="credential-item">
@@ -223,13 +223,13 @@ const handler = async (req: Request): Promise<Response> => {
                     </div>
                   </div>
 
-                  <p><strong>Important:</strong> Please change your password after your first login for security purposes.</p>
+                  <p style="font-size: 16px;"><strong>Important:</strong> Please change your password after your first login for security purposes.</p>
                   
                   <a href="${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || 'https://your-app-url.com'}/auth" class="button">
                     Login to Your Account
                   </a>
 
-                  <p>If you have any questions, please don't hesitate to reach out to our support team.</p>
+                  <p style="font-size: 16px;">If you have any questions, please don't hesitate to reach out to our support team.</p>
                 </div>
                 <div class="footer">
                   <p>This is an automated message. Please do not reply to this email.</p>
