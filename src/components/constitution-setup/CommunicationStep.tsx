@@ -26,25 +26,25 @@ export function CommunicationStep({ data, onDataChange }: CommunicationStepProps
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h2 className="text-3xl font-bold mb-2">Communication & Meetings</h2>
-        <p className="text-lg text-muted-foreground">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Communication & Meetings</h2>
+        <p className="text-base sm:text-lg text-muted-foreground">
           Establish how your family will communicate, meet, and maintain strong relationships.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageCircle className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
               Communication Channels
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="communicationChannels">How will your family stay connected?</Label>
+              <Label htmlFor="communicationChannels" className="text-sm sm:text-base">How will your family stay connected?</Label>
               <Textarea
                 id="communicationChannels"
                 value={data.communicationChannels || ''}
@@ -54,7 +54,7 @@ export function CommunicationStep({ data, onDataChange }: CommunicationStepProps
 • Quarterly video calls for remote members
 • Email updates for major decisions
 • Annual family website updates..."
-                className="mt-2 min-h-[100px]"
+                className="mt-2 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
               />
             </div>
           </CardContent>
@@ -62,14 +62,14 @@ export function CommunicationStep({ data, onDataChange }: CommunicationStepProps
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
               Meeting Structure
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="meetingStructure">How will family meetings be organized?</Label>
+              <Label htmlFor="meetingStructure" className="text-sm sm:text-base">How will family meetings be organized?</Label>
               <Textarea
                 id="meetingStructure"
                 value={data.meetingStructure || ''}
@@ -79,7 +79,7 @@ export function CommunicationStep({ data, onDataChange }: CommunicationStepProps
 • Virtual participation options
 • Meeting minutes and action items
 • Time limits and structured discussions..."
-                className="mt-2 min-h-[100px]"
+                className="mt-2 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
               />
             </div>
           </CardContent>
@@ -88,14 +88,14 @@ export function CommunicationStep({ data, onDataChange }: CommunicationStepProps
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Phone className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
             Information Sharing
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div>
-            <Label htmlFor="informationSharing">Guidelines for sharing family information</Label>
+            <Label htmlFor="informationSharing" className="text-sm sm:text-base">Guidelines for sharing family information</Label>
             <Textarea
               id="informationSharing"
               value={data.informationSharing || ''}
@@ -105,23 +105,23 @@ export function CommunicationStep({ data, onDataChange }: CommunicationStepProps
 • Transparent decision-making processes
 • Clear boundaries on public information
 • Privacy protection for individual family members..."
-              className="mt-2 min-h-[120px]"
+              className="mt-2 min-h-[100px] sm:min-h-[120px] text-sm sm:text-base"
             />
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
               Family Traditions
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="familyTraditions">What traditions will you maintain and create?</Label>
+              <Label htmlFor="familyTraditions" className="text-sm sm:text-base">What traditions will you maintain and create?</Label>
               <Textarea
                 id="familyTraditions"
                 value={data.familyTraditions || ''}
@@ -131,7 +131,7 @@ export function CommunicationStep({ data, onDataChange }: CommunicationStepProps
 • Coming-of-age ceremonies
 • Educational trips and retreats
 • Charitable activities together..."
-                className="mt-2 min-h-[100px]"
+                className="mt-2 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
               />
             </div>
           </CardContent>
@@ -139,11 +139,11 @@ export function CommunicationStep({ data, onDataChange }: CommunicationStepProps
 
         <Card>
           <CardHeader>
-            <CardTitle>Event Planning</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Event Planning</CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="eventPlanning">How will family events be organized?</Label>
+              <Label htmlFor="eventPlanning" className="text-sm sm:text-base">How will family events be organized?</Label>
               <Textarea
                 id="eventPlanning"
                 value={data.eventPlanning || ''}
@@ -153,7 +153,7 @@ export function CommunicationStep({ data, onDataChange }: CommunicationStepProps
 • Budget allocation for family gatherings
 • Coordination committee
 • Virtual and in-person options..."
-                className="mt-2 min-h-[100px]"
+                className="mt-2 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
               />
             </div>
           </CardContent>

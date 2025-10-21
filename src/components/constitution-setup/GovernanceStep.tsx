@@ -29,45 +29,45 @@ export function GovernanceStep({ data, onDataChange }: GovernanceStepProps) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h2 className="text-3xl font-bold mb-2">Governance Structure</h2>
-        <p className="text-lg text-muted-foreground">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Governance Structure</h2>
+        <p className="text-base sm:text-lg text-muted-foreground">
           Establish how your family will make decisions, resolve conflicts, and govern itself.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Gavel className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Gavel className="h-4 w-4 sm:h-5 sm:w-5" />
               Decision Making Process
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label>How will major family decisions be made?</Label>
+              <Label className="text-sm sm:text-base">How will major family decisions be made?</Label>
               <RadioGroup 
                 value={data.decisionMaking || ''} 
                 onValueChange={(value) => handleChange('decisionMaking', value)}
-                className="mt-2"
+                className="mt-2 space-y-2"
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="consensus" id="consensus" />
-                  <Label htmlFor="consensus">Consensus (everyone agrees)</Label>
+                  <Label htmlFor="consensus" className="text-sm sm:text-base font-normal">Consensus (everyone agrees)</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="majority" id="majority" />
-                  <Label htmlFor="majority">Majority vote</Label>
+                  <Label htmlFor="majority" className="text-sm sm:text-base font-normal">Majority vote</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="council" id="council" />
-                  <Label htmlFor="council">Family council decides</Label>
+                  <Label htmlFor="council" className="text-sm sm:text-base font-normal">Family council decides</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="patriarch" id="patriarch" />
-                  <Label htmlFor="patriarch">Family patriarch/matriarch</Label>
+                  <Label htmlFor="patriarch" className="text-sm sm:text-base font-normal">Family patriarch/matriarch</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -75,7 +75,7 @@ export function GovernanceStep({ data, onDataChange }: GovernanceStepProps) {
             <Separator />
 
             <div>
-              <Label>Meeting Frequency</Label>
+              <Label className="text-sm sm:text-base">Meeting Frequency</Label>
               <Select value={data.meetingFrequency || ''} onValueChange={(value) => handleChange('meetingFrequency', value)}>
                 <SelectTrigger className="mt-2">
                   <SelectValue placeholder="Select frequency" />
@@ -94,14 +94,14 @@ export function GovernanceStep({ data, onDataChange }: GovernanceStepProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Scale className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Scale className="h-4 w-4 sm:h-5 sm:w-5" />
               Conflict Resolution
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="conflictResolution">How will family conflicts be resolved?</Label>
+              <Label htmlFor="conflictResolution" className="text-sm sm:text-base">How will family conflicts be resolved?</Label>
               <Textarea
                 id="conflictResolution"
                 value={data.conflictResolution || ''}
@@ -110,7 +110,7 @@ export function GovernanceStep({ data, onDataChange }: GovernanceStepProps) {
 • Family mediator or counselor
 • Cooling-off periods
 • Final arbitration process..."
-                className="mt-2 min-h-[120px]"
+                className="mt-2 min-h-[100px] sm:min-h-[120px] text-sm sm:text-base"
               />
             </div>
           </CardContent>
@@ -119,14 +119,14 @@ export function GovernanceStep({ data, onDataChange }: GovernanceStepProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Users className="h-4 w-4 sm:h-5 sm:w-5" />
             Voting Process
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div>
-            <Label htmlFor="votingProcess">Describe your family's voting procedures</Label>
+            <Label htmlFor="votingProcess" className="text-sm sm:text-base">Describe your family's voting procedures</Label>
             <Textarea
               id="votingProcess"
               value={data.votingProcess || ''}
@@ -135,23 +135,23 @@ export function GovernanceStep({ data, onDataChange }: GovernanceStepProps) {
 • Proxy voting allowed for absent members
 • Secret ballot for sensitive issues
 • 60% majority required for major decisions..."
-              className="mt-2 min-h-[100px]"
+              className="mt-2 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
             />
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileCheck className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <FileCheck className="h-4 w-4 sm:h-5 sm:w-5" />
               Employment Policy
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="employmentPolicy">Family business employment guidelines</Label>
+              <Label htmlFor="employmentPolicy" className="text-sm sm:text-base">Family business employment guidelines</Label>
               <Textarea
                 id="employmentPolicy"
                 value={data.employmentPolicy || ''}
@@ -160,7 +160,7 @@ export function GovernanceStep({ data, onDataChange }: GovernanceStepProps) {
 • Must have relevant education/experience
 • Performance reviews same as non-family employees
 • Clear advancement criteria..."
-                className="mt-2 min-h-[100px]"
+                className="mt-2 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
               />
             </div>
           </CardContent>
@@ -168,11 +168,11 @@ export function GovernanceStep({ data, onDataChange }: GovernanceStepProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Dividend Policy</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Dividend Policy</CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="dividendPolicy">How will profits be distributed?</Label>
+              <Label htmlFor="dividendPolicy" className="text-sm sm:text-base">How will profits be distributed?</Label>
               <Textarea
                 id="dividendPolicy"
                 value={data.dividentPolicy || ''}
@@ -181,7 +181,7 @@ export function GovernanceStep({ data, onDataChange }: GovernanceStepProps) {
 • Reinvestment vs. distribution balance
 • Emergency fund requirements
 • Equal distribution among shareholders..."
-                className="mt-2 min-h-[100px]"
+                className="mt-2 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
               />
             </div>
           </CardContent>

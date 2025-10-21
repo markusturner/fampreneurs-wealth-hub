@@ -39,33 +39,33 @@ export function ValuesStep({ data, onDataChange }: ValuesStepProps) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h2 className="text-3xl font-bold mb-2">Core Values & Principles</h2>
-        <p className="text-lg text-muted-foreground">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Core Values & Principles</h2>
+        <p className="text-base sm:text-lg text-muted-foreground">
           Define the fundamental values and principles that guide your family's decisions and behavior.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Target className="h-4 w-4 sm:h-5 sm:w-5" />
               Mission Statement
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="mission">What is your family's purpose?</Label>
+              <Label htmlFor="mission" className="text-sm sm:text-base">What is your family's purpose?</Label>
               <Textarea
                 id="mission"
                 value={data.missionStatement || ''}
                 onChange={(e) => handleChange('missionStatement', e.target.value)}
                 placeholder="Our mission is to create lasting wealth through ethical business practices while fostering strong family bonds and giving back to our community..."
-                className="mt-1 min-h-[100px]"
+                className="mt-1 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
               />
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                 Your mission statement should describe your family's purpose and primary objectives
               </p>
             </div>
@@ -74,22 +74,22 @@ export function ValuesStep({ data, onDataChange }: ValuesStepProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Compass className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Compass className="h-4 w-4 sm:h-5 sm:w-5" />
               Vision Statement
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="vision">What do you aspire to become?</Label>
+              <Label htmlFor="vision" className="text-sm sm:text-base">What do you aspire to become?</Label>
               <Textarea
                 id="vision"
                 value={data.visionStatement || ''}
                 onChange={(e) => handleChange('visionStatement', e.target.value)}
                 placeholder="To be a multi-generational family that creates positive impact in business and society while maintaining strong family values..."
-                className="mt-1 min-h-[100px]"
+                className="mt-1 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
               />
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-2">
                 Your vision statement should paint a picture of your family's future aspirations
               </p>
             </div>
@@ -99,27 +99,27 @@ export function ValuesStep({ data, onDataChange }: ValuesStepProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Heart className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Heart className="h-4 w-4 sm:h-5 sm:w-5" />
             Core Values
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div>
-            <Label>Select your family's core values (choose 3-7)</Label>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <Label className="text-sm sm:text-base">Select your family's core values (choose 3-7)</Label>
+            <div className="mt-3 flex flex-wrap gap-1.5 sm:gap-2">
               {CORE_VALUES_OPTIONS.map((value) => (
                 <Badge
                   key={value}
                   variant={data.coreValues?.includes(value) ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-primary/20 transition-colors"
+                  className="cursor-pointer hover:bg-primary/20 transition-colors text-xs sm:text-sm"
                   onClick={() => toggleValue(value)}
                 >
                   {value}
                 </Badge>
               ))}
             </div>
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
               Selected values: {data.coreValues?.length || 0}
             </p>
           </div>
@@ -128,11 +128,11 @@ export function ValuesStep({ data, onDataChange }: ValuesStepProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Family Principles</CardTitle>
+          <CardTitle className="text-base sm:text-lg">Family Principles</CardTitle>
         </CardHeader>
         <CardContent>
           <div>
-            <Label htmlFor="principles">Additional principles and beliefs</Label>
+            <Label htmlFor="principles" className="text-sm sm:text-base">Additional principles and beliefs</Label>
             <Textarea
               id="principles"
               value={data.familyPrinciples || ''}
@@ -141,9 +141,9 @@ export function ValuesStep({ data, onDataChange }: ValuesStepProps) {
 • Education is the foundation of success
 • We have a responsibility to give back to society
 • Family comes first, but we support each other's individual growth..."
-              className="mt-1 min-h-[120px]"
+              className="mt-1 min-h-[100px] sm:min-h-[120px] text-sm sm:text-base"
             />
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
               List specific principles, beliefs, or rules that guide your family's behavior
             </p>
           </div>

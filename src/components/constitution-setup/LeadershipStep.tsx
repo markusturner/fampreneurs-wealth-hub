@@ -26,24 +26,24 @@ export function LeadershipStep({ data, onDataChange }: LeadershipStepProps) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h2 className="text-3xl font-bold mb-2">Leadership & Succession</h2>
-        <p className="text-lg text-muted-foreground">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Leadership & Succession</h2>
+        <p className="text-base sm:text-lg text-muted-foreground">
           Define leadership roles, succession planning, and next-generation development strategies.
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Crown className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Crown className="h-4 w-4 sm:h-5 sm:w-5" />
             Leadership Structure
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="leadershipStructure">Describe your family's leadership roles and responsibilities</Label>
+            <Label htmlFor="leadershipStructure" className="text-sm sm:text-base">Describe your family's leadership roles and responsibilities</Label>
             <Textarea
               id="leadershipStructure"
               value={data.leadershipStructure || ''}
@@ -52,12 +52,12 @@ export function LeadershipStep({ data, onDataChange }: LeadershipStepProps) {
 • CEO/President - manages daily operations
 • Board of Directors - strategic oversight
 • Committee chairs - specific focus areas..."
-              className="mt-2 min-h-[120px]"
+              className="mt-2 min-h-[100px] sm:min-h-[120px] text-sm sm:text-base"
             />
           </div>
 
           <div>
-            <Label>Leadership Term Length</Label>
+            <Label className="text-sm sm:text-base">Leadership Term Length</Label>
             <Select value={data.leadershipTerms || ''} onValueChange={(value) => handleChange('leadershipTerms', value)}>
               <SelectTrigger className="mt-2">
                 <SelectValue placeholder="Select term length" />
@@ -76,14 +76,14 @@ export function LeadershipStep({ data, onDataChange }: LeadershipStepProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ArrowRight className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
             Succession Planning
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div>
-            <Label htmlFor="successionPlanning">How will leadership transition to the next generation?</Label>
+            <Label htmlFor="successionPlanning" className="text-sm sm:text-base">How will leadership transition to the next generation?</Label>
             <Textarea
               id="successionPlanning"
               value={data.successionPlanning || ''}
@@ -93,23 +93,23 @@ export function LeadershipStep({ data, onDataChange }: LeadershipStepProps) {
 • External experience requirements
 • Emergency succession procedures
 • Performance evaluations and readiness assessments..."
-              className="mt-2 min-h-[120px]"
+              className="mt-2 min-h-[100px] sm:min-h-[120px] text-sm sm:text-base"
             />
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GraduationCap className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
               Next Generation Development
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="nextGenDevelopment">Programs for developing future leaders</Label>
+              <Label htmlFor="nextGenDevelopment" className="text-sm sm:text-base">Programs for developing future leaders</Label>
               <Textarea
                 id="nextGenDevelopment"
                 value={data.nextGenDevelopment || ''}
@@ -119,7 +119,7 @@ export function LeadershipStep({ data, onDataChange }: LeadershipStepProps) {
 • Internships and work experience
 • Board observer positions
 • External mentorship..."
-                className="mt-2 min-h-[100px]"
+                className="mt-2 min-h-[100px] text-sm sm:text-base"
               />
             </div>
           </CardContent>
@@ -127,14 +127,14 @@ export function LeadershipStep({ data, onDataChange }: LeadershipStepProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
               Mentoring Program
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="mentoringProgram">How will you mentor the next generation?</Label>
+              <Label htmlFor="mentoringProgram" className="text-sm sm:text-base">How will you mentor the next generation?</Label>
               <Textarea
                 id="mentoringProgram"
                 value={data.mentoringProgram || ''}
@@ -144,7 +144,7 @@ export function LeadershipStep({ data, onDataChange }: LeadershipStepProps) {
 • Goal setting and progress tracking
 • Cross-generational projects
 • External advisors and coaches..."
-                className="mt-2 min-h-[100px]"
+                className="mt-2 min-h-[100px] text-sm sm:text-base"
               />
             </div>
           </CardContent>

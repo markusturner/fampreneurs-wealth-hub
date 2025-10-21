@@ -35,65 +35,65 @@ export function IdentityStep({ data, onDataChange }: IdentityStepProps) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h2 className="text-3xl font-bold mb-2">Welcome to Your Family Constitution</h2>
-        <p className="text-lg text-muted-foreground">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Welcome to Your Family Constitution</h2>
+        <p className="text-base sm:text-lg text-muted-foreground">
           Let's start with your family's basic identity and heritage. This information forms the foundation of your constitution.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
               Basic Information
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4">
             <div>
-              <Label htmlFor="familyName">Family Name *</Label>
+              <Label htmlFor="familyName" className="text-sm sm:text-base">Family Name *</Label>
               <Input
                 id="familyName"
                 value={data.familyName || ''}
                 onChange={(e) => handleChange('familyName', e.target.value)}
                 placeholder="The Smith Family"
-                className="mt-1"
+                className="mt-1 text-sm sm:text-base"
               />
             </div>
 
             <div>
-              <Label htmlFor="establishedYear">Established Year</Label>
+              <Label htmlFor="establishedYear" className="text-sm sm:text-base">Established Year</Label>
               <Input
                 id="establishedYear"
                 type="number"
                 value={data.establishedYear || ''}
                 onChange={(e) => handleChange('establishedYear', e.target.value)}
                 placeholder="1985"
-                className="mt-1"
+                className="mt-1 text-sm sm:text-base"
               />
             </div>
 
             <div>
-              <Label htmlFor="location">Primary Location</Label>
+              <Label htmlFor="location" className="text-sm sm:text-base">Primary Location</Label>
               <Input
                 id="location"
                 value={data.location || ''}
                 onChange={(e) => handleChange('location', e.target.value)}
                 placeholder="New York, United States"
-                className="mt-1"
+                className="mt-1 text-sm sm:text-base"
               />
             </div>
 
             <div>
-              <Label htmlFor="familyMotto">Family Motto</Label>
+              <Label htmlFor="familyMotto" className="text-sm sm:text-base">Family Motto</Label>
               <Input
                 id="familyMotto"
                 value={data.familyMotto || ''}
                 onChange={(e) => handleChange('familyMotto', e.target.value)}
                 placeholder="Unity, Integrity, Growth"
-                className="mt-1"
+                className="mt-1 text-sm sm:text-base"
               />
             </div>
           </CardContent>
@@ -101,38 +101,40 @@ export function IdentityStep({ data, onDataChange }: IdentityStepProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Family Symbols</CardTitle>
+            <CardTitle className="text-base sm:text-lg">Family Symbols</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4">
             <div>
-              <Label>Family Crest</Label>
-              <div className="mt-2 border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+              <Label className="text-sm sm:text-base">Family Crest</Label>
+              <div className="mt-2 border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 sm:p-6 text-center">
+                <Upload className="mx-auto h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground mb-2" />
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => handleFileUpload('familyCrest')}
-                  className="mb-2"
+                  className="mb-2 text-xs sm:text-sm"
                 >
                   Upload Family Crest
                 </Button>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Optional: Upload your family crest or coat of arms
                 </p>
               </div>
             </div>
 
             <div>
-              <Label>Corporate Seal</Label>
-              <div className="mt-2 border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                <Upload className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+              <Label className="text-sm sm:text-base">Corporate Seal</Label>
+              <div className="mt-2 border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 sm:p-6 text-center">
+                <Upload className="mx-auto h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground mb-2" />
                 <Button
                   variant="outline"
+                  size="sm"
                   onClick={() => handleFileUpload('corporateSeal')}
-                  className="mb-2"
+                  className="mb-2 text-xs sm:text-sm"
                 >
                   Upload Corporate Seal
                 </Button>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Optional: Upload your family business seal
                 </p>
               </div>
@@ -143,19 +145,19 @@ export function IdentityStep({ data, onDataChange }: IdentityStepProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Family Overview</CardTitle>
+          <CardTitle className="text-base sm:text-lg">Family Overview</CardTitle>
         </CardHeader>
         <CardContent>
           <div>
-            <Label htmlFor="overview">Tell us about your family's story</Label>
+            <Label htmlFor="overview" className="text-sm sm:text-base">Tell us about your family's story</Label>
             <Textarea
               id="overview"
               value={data.overview || ''}
               onChange={(e) => handleChange('overview', e.target.value)}
               placeholder="Share your family's history, achievements, and what makes you unique..."
-              className="mt-1 min-h-[120px]"
+              className="mt-1 min-h-[100px] sm:min-h-[120px] text-sm sm:text-base"
             />
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
               This will appear in the introduction of your family constitution
             </p>
           </div>

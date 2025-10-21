@@ -40,30 +40,30 @@ export function PhilanthropyStep({ data, onDataChange }: PhilanthropyStepProps) 
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h2 className="text-3xl font-bold mb-2">Legacy & Philanthropy</h2>
-        <p className="text-lg text-muted-foreground">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Legacy & Philanthropy</h2>
+        <p className="text-base sm:text-lg text-muted-foreground">
           Define how your family will give back to society and create a lasting positive legacy.
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Heart className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Heart className="h-4 w-4 sm:h-5 sm:w-5" />
             Giving Philosophy
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div>
-            <Label htmlFor="givingPhilosophy">What drives your family's philanthropic efforts?</Label>
+            <Label htmlFor="givingPhilosophy" className="text-sm sm:text-base">What drives your family's philanthropic efforts?</Label>
             <Textarea
               id="givingPhilosophy"
               value={data.givingPhilosophy || ''}
               onChange={(e) => handleChange('givingPhilosophy', e.target.value)}
               placeholder="We believe in giving back to the community that has supported our success. Our philanthropic efforts focus on creating sustainable change through education and economic opportunity..."
-              className="mt-2 min-h-[120px]"
+              className="mt-2 min-h-[100px] sm:min-h-[120px] text-sm sm:text-base"
             />
           </div>
         </CardContent>
@@ -71,44 +71,44 @@ export function PhilanthropyStep({ data, onDataChange }: PhilanthropyStepProps) 
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Globe className="h-4 w-4 sm:h-5 sm:w-5" />
             Focus Areas
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div>
-            <Label>What causes will your family support? (select all that apply)</Label>
-            <div className="mt-3 flex flex-wrap gap-2">
+            <Label className="text-sm sm:text-base">What causes will your family support? (select all that apply)</Label>
+            <div className="mt-3 flex flex-wrap gap-1.5 sm:gap-2">
               {PHILANTHROPY_FOCUS_AREAS.map((area) => (
                 <Badge
                   key={area}
                   variant={data.focusAreas?.includes(area) ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-primary/20 transition-colors"
+                  className="cursor-pointer hover:bg-primary/20 transition-colors text-xs sm:text-sm"
                   onClick={() => toggleFocusArea(area)}
                 >
                   {area}
                 </Badge>
               ))}
             </div>
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
               Selected areas: {data.focusAreas?.length || 0}
             </p>
           </div>
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TreePine className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <TreePine className="h-4 w-4 sm:h-5 sm:w-5" />
               Giving Structure
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="givingStructure">How will your family organize its philanthropic efforts?</Label>
+              <Label htmlFor="givingStructure" className="text-sm sm:text-base">How will your family organize its philanthropic efforts?</Label>
               <Textarea
                 id="givingStructure"
                 value={data.givingStructure || ''}
@@ -118,7 +118,7 @@ export function PhilanthropyStep({ data, onDataChange }: PhilanthropyStepProps) 
 • Due diligence process for recipients
 • Impact measurement and reporting
 • Volunteer time commitments..."
-                className="mt-2 min-h-[100px]"
+                className="mt-2 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
               />
             </div>
           </CardContent>
@@ -126,14 +126,14 @@ export function PhilanthropyStep({ data, onDataChange }: PhilanthropyStepProps) 
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GraduationCap className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
               Next Generation Involvement
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="nextGenInvolvement">How will you engage younger generations in philanthropy?</Label>
+              <Label htmlFor="nextGenInvolvement" className="text-sm sm:text-base">How will you engage younger generations in philanthropy?</Label>
               <Textarea
                 id="nextGenInvolvement"
                 value={data.nextGenInvolvement || ''}
@@ -143,7 +143,7 @@ export function PhilanthropyStep({ data, onDataChange }: PhilanthropyStepProps) 
 • Educational trips to supported organizations
 • Mentoring from experienced board members
 • Personal giving allowances..."
-                className="mt-2 min-h-[100px]"
+                className="mt-2 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
               />
             </div>
           </CardContent>
@@ -152,17 +152,17 @@ export function PhilanthropyStep({ data, onDataChange }: PhilanthropyStepProps) 
 
       <Card>
         <CardHeader>
-          <CardTitle>Family Legacy Vision</CardTitle>
+          <CardTitle className="text-base sm:text-lg">Family Legacy Vision</CardTitle>
         </CardHeader>
         <CardContent>
           <div>
-            <Label htmlFor="familyLegacy">How do you want your family to be remembered?</Label>
+            <Label htmlFor="familyLegacy" className="text-sm sm:text-base">How do you want your family to be remembered?</Label>
             <Textarea
               id="familyLegacy"
               value={data.familyLegacy || ''}
               onChange={(e) => handleChange('familyLegacy', e.target.value)}
               placeholder="We want to be remembered as a family that created positive change in our community and beyond. Our legacy will be measured not just by our financial success, but by the lives we've touched and the opportunities we've created for others..."
-              className="mt-2 min-h-[120px]"
+              className="mt-2 min-h-[100px] sm:min-h-[120px] text-sm sm:text-base"
             />
           </div>
         </CardContent>

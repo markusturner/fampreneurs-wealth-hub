@@ -26,24 +26,24 @@ export function WealthStep({ data, onDataChange }: WealthStepProps) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       <div>
-        <h2 className="text-3xl font-bold mb-2">Wealth Management</h2>
-        <p className="text-lg text-muted-foreground">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Wealth Management</h2>
+        <p className="text-base sm:text-lg text-muted-foreground">
           Define your family's approach to wealth creation, preservation, and financial education.
         </p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
             Investment Philosophy
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="investmentPhilosophy">What is your family's investment philosophy?</Label>
+            <Label htmlFor="investmentPhilosophy" className="text-sm sm:text-base">What is your family's investment philosophy?</Label>
             <Textarea
               id="investmentPhilosophy"
               value={data.investmentPhilosophy || ''}
@@ -53,12 +53,12 @@ export function WealthStep({ data, onDataChange }: WealthStepProps) {
 • Ethical and sustainable investing practices
 • Regular review and rebalancing
 • Professional advisory support..."
-              className="mt-2 min-h-[120px]"
+              className="mt-2 min-h-[100px] sm:min-h-[120px] text-sm sm:text-base"
             />
           </div>
 
           <div>
-            <Label>Risk Tolerance</Label>
+            <Label className="text-sm sm:text-base">Risk Tolerance</Label>
             <Select value={data.riskTolerance || ''} onValueChange={(value) => handleChange('riskTolerance', value)}>
               <SelectTrigger className="mt-2">
                 <SelectValue placeholder="Select risk tolerance" />
@@ -74,17 +74,17 @@ export function WealthStep({ data, onDataChange }: WealthStepProps) {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
               Wealth Preservation
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="wealthPreservation">Strategies for preserving wealth across generations</Label>
+              <Label htmlFor="wealthPreservation" className="text-sm sm:text-base">Strategies for preserving wealth across generations</Label>
               <Textarea
                 id="wealthPreservation"
                 value={data.wealthPreservation || ''}
@@ -94,7 +94,7 @@ export function WealthStep({ data, onDataChange }: WealthStepProps) {
 • Asset protection measures
 • Insurance coverage
 • Emergency fund maintenance..."
-                className="mt-2 min-h-[100px]"
+                className="mt-2 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
               />
             </div>
           </CardContent>
@@ -102,14 +102,14 @@ export function WealthStep({ data, onDataChange }: WealthStepProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
               Emergency Fund Policy
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="emergencyFund">Emergency fund requirements and management</Label>
+              <Label htmlFor="emergencyFund" className="text-sm sm:text-base">Emergency fund requirements and management</Label>
               <Textarea
                 id="emergencyFund"
                 value={data.emergencyFund || ''}
@@ -119,7 +119,7 @@ export function WealthStep({ data, onDataChange }: WealthStepProps) {
 • Access procedures for family members
 • Replenishment requirements
 • Annual review and adjustment..."
-                className="mt-2 min-h-[100px]"
+                className="mt-2 min-h-[80px] sm:min-h-[100px] text-sm sm:text-base"
               />
             </div>
           </CardContent>
@@ -128,14 +128,14 @@ export function WealthStep({ data, onDataChange }: WealthStepProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
             Financial Education
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div>
-            <Label htmlFor="financialEducation">How will you educate family members about wealth?</Label>
+            <Label htmlFor="financialEducation" className="text-sm sm:text-base">How will you educate family members about wealth?</Label>
             <Textarea
               id="financialEducation"
               value={data.financialEducation || ''}
@@ -146,7 +146,7 @@ export function WealthStep({ data, onDataChange }: WealthStepProps) {
 • External courses and certifications
 • Mentoring from financial advisors
 • Practice with smaller investment amounts..."
-              className="mt-2 min-h-[120px]"
+              className="mt-2 min-h-[100px] sm:min-h-[120px] text-sm sm:text-base"
             />
           </div>
         </CardContent>
