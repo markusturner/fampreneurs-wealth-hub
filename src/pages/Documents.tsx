@@ -1387,34 +1387,34 @@ export default function Documents() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {familyEducationModules.filter(module => module.status.toLowerCase() === "published").map((module, index) => (
+            {businessCourses.filter(course => course.status === 'published').map((course, index) => (
               <Card key={index} className="hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                    <module.icon className={`h-5 w-5 ${module.color}`} />
-                    {module.title}
+                    <BookOpen className="h-5 w-5 text-blue-600" />
+                    {course.title}
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm leading-relaxed">
-                    {module.description}
+                    {course.description}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="space-y-3">
                     <div className="flex justify-between text-xs sm:text-sm">
-                      <span className="text-muted-foreground">Lessons</span>
-                      <span className="font-medium">{module.lessons}</span>
+                      <span className="text-muted-foreground">Instructor</span>
+                      <span className="font-medium">{course.instructor}</span>
                     </div>
                     <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-muted-foreground">Duration</span>
-                      <span className="font-medium">{module.duration}</span>
+                      <span className="font-medium">{course.duration}</span>
                     </div>
-                    <Badge variant="secondary" className="text-xs">
-                      {module.status}
+                    <Badge variant="default" className="text-xs">
+                      Published
                     </Badge>
                     <Button 
                       variant="outline" 
                       className="w-full mt-4 min-h-[44px]"
-                      onClick={() => setShowCoursesDialog(true)}
+                      onClick={() => setSelectedCourse(course)}
                     >
                       View Course Details
                     </Button>
