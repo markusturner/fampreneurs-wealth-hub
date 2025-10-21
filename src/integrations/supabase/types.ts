@@ -142,6 +142,24 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          id: number
+          tutorial_video_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: number
+          tutorial_video_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: number
+          tutorial_video_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       bank_statement_transactions: {
         Row: {
           amount: number
