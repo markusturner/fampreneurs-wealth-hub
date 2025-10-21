@@ -6,15 +6,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { useTheme } from '@/components/theme-provider'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
 
 export default function Auth() {
+  const [searchParams] = useSearchParams()
+  const isSignUpMode = searchParams.get('signup') === 'trustee'
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [familySecretCode, setFamilySecretCode] = useState('')
   const [userType, setUserType] = useState<'family_member' | 'mentee'>('family_member')
   
@@ -253,6 +258,74 @@ export default function Auth() {
     }
   }
 
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    try {
+      if (password !== confirmPassword) {
+        toast({
+          title: "Passwords don't match",
+          description: "Please make sure your passwords match.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      if (password.length < 6) {
+        toast({
+          title: "Password too short",
+          description: "Password must be at least 6 characters long.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            user_type: 'trustee'
+          }
+        }
+      })
+
+      if (error) {
+        toast({
+          title: "Sign up failed",
+          description: error.message,
+          variant: "destructive",
+        })
+        return
+      }
+
+      if (data.user) {
+        toast({
+          title: "Account created!",
+          description: "Please check your email to verify your account.",
+        })
+        // Clear form
+        setEmail('')
+        setPassword('')
+        setConfirmPassword('')
+        setFirstName('')
+        setLastName('')
+      }
+    } catch (error) {
+      toast({
+        title: "Something went wrong",
+        description: "Please try again later.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-soft relative">
@@ -283,7 +356,112 @@ export default function Auth() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSignIn} className="space-y-4">
+          {isSignUpMode ? (
+            // Sign Up Form for Trustees
+            <form onSubmit={handleSignUp} className="space-y-4">
+              <div className="space-y-2">
+                <Label>Creating Account For</Label>
+                <div className="px-4 py-2 bg-primary/10 rounded-md text-center">
+                  <span className="font-semibold">Trustee</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Create your trustee account to manage your family office.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="first-name">First Name</Label>
+                  <Input
+                    id="first-name"
+                    type="text"
+                    placeholder="John"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="last-name">Last Name</Label>
+                  <Input
+                    id="last-name"
+                    type="text"
+                    placeholder="Doe"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-email">Email</Label>
+                <Input
+                  id="signup-email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-password">Password</Label>
+                <Input
+                  id="signup-password"
+                  type="password"
+                  placeholder="Create a password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Must be at least 6 characters long
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full"
+                style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                disabled={isLoading}
+              >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Trustee Account
+              </Button>
+
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() => navigate('/auth')}
+                  className="text-sm"
+                >
+                  Already have an account? Sign in
+                </Button>
+              </div>
+            </form>
+          ) : (
+            // Sign In Form
+            <form onSubmit={handleSignIn} className="space-y-4">
             <div className="space-y-2">
               <Label>Login as</Label>
               <div className="grid grid-cols-2 gap-2">
@@ -371,6 +549,7 @@ export default function Auth() {
               Sign In {userType === 'family_member' ? '(Family Member)' : '(Trustees)'}
             </Button>
           </form>
+          )}
         </CardContent>
       </Card>
     </div>

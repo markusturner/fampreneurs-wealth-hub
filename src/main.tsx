@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
+import ThankYou from "./pages/ThankYou";
 import Community from "./pages/Community";
 import Courses from "./pages/Courses";
 import Documents from "./pages/Documents";
@@ -74,6 +75,7 @@ function AppWithNotifications() {
         <Route path="/" element={<Landing />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/auth" element={<Auth />} /> {/* Legacy redirect */}
+        <Route path="/thank-you" element={<ThankYou />} />
         <Route path="/community" element={<Community />} />
         <Route path="/courses" element={<Courses />} />
         <Route path="/documents" element={<Documents />} />

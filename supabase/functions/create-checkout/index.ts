@@ -72,7 +72,7 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/auth?flow=purchase&access_token={CHECKOUT_SESSION_ID}&plan=${encodeURIComponent(productName)}`,
+      success_url: `${req.headers.get("origin")}/thank-you?session_id={CHECKOUT_SESSION_ID}&plan=${encodeURIComponent(productName)}`,
       cancel_url: `${req.headers.get("origin")}/?payment=cancelled`,
       allow_promotion_codes: true,
       billing_address_collection: 'required',
