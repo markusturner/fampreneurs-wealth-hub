@@ -78,58 +78,7 @@ const heritageResources = [{
   category: "Governance",
   color: "text-indigo-600"
 }];
-const businessCourses = [{
-  title: "Family Business Fundamentals",
-  instructor: "Dr. Sarah Johnson",
-  duration: "4 weeks",
-  description: "Essential principles for successful family business management",
-  status: "published",
-  videos: ["https://youtu.be/example1", "https://youtu.be/example2"],
-  modules: [{
-    name: "Introduction to Family Business",
-    duration: "45 minutes"
-  }, {
-    name: "Governance Structures",
-    duration: "60 minutes"
-  }, {
-    name: "Succession Planning",
-    duration: "75 minutes"
-  }]
-}, {
-  title: "Wealth Preservation Strategies",
-  instructor: "Michael Thompson",
-  duration: "6 weeks",
-  description: "Advanced strategies for multi-generational wealth management",
-  status: "published",
-  videos: ["https://youtu.be/example3", "https://youtu.be/example4"],
-  modules: [{
-    name: "Asset Protection",
-    duration: "50 minutes"
-  }, {
-    name: "Tax Optimization",
-    duration: "65 minutes"
-  }, {
-    name: "Estate Planning",
-    duration: "80 minutes"
-  }]
-}, {
-  title: "Next-Gen Leadership Development",
-  instructor: "Jennifer Lee",
-  duration: "8 weeks",
-  description: "Developing the next generation of family business leaders",
-  status: "draft",
-  videos: ["https://youtu.be/example5", "https://youtu.be/example6"],
-  modules: [{
-    name: "Leadership Fundamentals",
-    duration: "40 minutes"
-  }, {
-    name: "Communication Skills",
-    duration: "55 minutes"
-  }, {
-    name: "Decision Making",
-    duration: "70 minutes"
-  }]
-}];
+
 export default function Documents() {
   const navigate = useNavigate();
   const {
