@@ -394,7 +394,11 @@ export default function Documents() {
   const handleHeritageResource = (resourceTitle: string) => {
     const accessLevel = userAccess.find(access => access === 'trust' && resourceTitle.includes('Legacy') || access === 'legacy' && resourceTitle.includes('Family') || access === 'admin');
     if (resourceTitle === "Family Tree Interactive") {
-      setShowFamilyTreeDialog(true);
+      if (constitutionData?.identity?.ancestryTreeUrl) {
+        window.open(constitutionData.identity.ancestryTreeUrl, '_blank');
+      } else {
+        toast.error('Please add your Ancestry.com URL in the Family Constitution setup first');
+      }
     } else if (resourceTitle === "Family Governance") {
       navigate('/family-governance');
     } else if (resourceTitle === "Family History Archive") {
@@ -1447,8 +1451,13 @@ export default function Documents() {
             <Button 
               variant="outline" 
               className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-700 hover:border-green-300 dark:hover:border-green-600" 
-              onClick={() => constitutionData?.identity?.ancestryTreeUrl && window.open(constitutionData.identity.ancestryTreeUrl, '_blank')}
-              disabled={!constitutionData?.identity?.ancestryTreeUrl}
+              onClick={() => {
+                if (constitutionData?.identity?.ancestryTreeUrl) {
+                  window.open(constitutionData.identity.ancestryTreeUrl, '_blank');
+                } else {
+                  toast.error('Please add your Ancestry.com URL in the Family Constitution setup first');
+                }
+              }}
             >
               <TreePine className="h-6 w-6 sm:h-7 sm:w-7 text-green-600" />
               <span className="text-xs sm:text-sm font-medium text-center text-green-700 dark:text-green-300">Ancestry.com Tree</span>
@@ -1599,93 +1608,6 @@ export default function Documents() {
             </DialogContent>
           </Dialog>}
 
-        {/* Family Tree Dialog */}
-        <Dialog open={showFamilyTreeDialog} onOpenChange={setShowFamilyTreeDialog}>
-          <DialogContent className="w-[95vw] max-w-7xl max-h-[90vh] sm:max-h-[95vh] overflow-hidden">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <TreePine className="h-4 w-4 sm:h-5 sm:w-5" />
-                Your Family Tree
-              </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm">
-                See how everyone in your family is connected
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 h-[70vh] sm:h-[80vh]">
-              {/* Left Panel - Input */}
-              <div className="flex flex-col gap-3">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-xs sm:text-sm text-blue-900 font-medium mb-1">How to create your family tree:</p>
-                  <ol className="text-xs text-blue-800 space-y-1 ml-4 list-decimal">
-                    <li>Go to the "Members" tab to add your family members</li>
-                    <li>Or type relationships below (e.g., "John is married to Mary")</li>
-                    <li>Click "Update Tree" to see the visual diagram</li>
-                  </ol>
-                </div>
-                <div className="flex-1 min-h-0">
-                  <FamilyTreeTextInput onGenerate={() => {
-                    toast.success('Family tree updated! Your members are now connected.');
-                  }} />
-                </div>
-              </div>
-              
-              {/* Right Panel - Visual Diagram */}
-              <div className="relative border rounded-lg bg-gradient-to-br from-blue-50 to-purple-50">
-                <div className="p-2 sm:p-3 border-b bg-white/80 backdrop-blur-sm">
-                  <h3 className="font-semibold text-xs sm:text-sm flex items-center gap-2">
-                    <TreePine className="h-3 w-3 sm:h-4 sm:w-4" />
-                    Visual Diagram
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">Your family connections will appear here</p>
-                </div>
-                <div className="h-[calc(70vh-2.5rem)] sm:h-[calc(80vh-3rem)]">
-                  {familyMembers.length > 0 ? <DynamicFamilyTreeVisualization familyMembers={familyMembers} /> : <div className="h-full flex items-center justify-center text-muted-foreground">
-                      <div className="text-center px-4">
-                        <TreePine className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 opacity-30" />
-                        <p className="text-sm sm:text-base font-medium mb-2">Ready to build your family tree?</p>
-                        <p className="text-xs sm:text-sm opacity-75 max-w-xs mx-auto">{familyTreeLoading ? 'Loading...' : 'Add your first family member to get started. You can do this in the Members tab or by typing on the left.'}</p>
-                      </div>
-                    </div>}
-                </div>
-              </div>
-            </div>
-
-            {/* External Family Tree Link */}
-            {constitutionData?.identity?.ancestryTreeUrl && (
-              <div className="mt-4 border-t pt-4">
-                <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0">
-                        <TreePine className="h-5 w-5 text-green-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-green-900 dark:text-green-100 mb-1">
-                          View Full Family Tree on Ancestry.com
-                        </h3>
-                        {constitutionData?.identity?.ancestryAccessInstructions && (
-                          <p className="text-xs text-green-800 dark:text-green-200 mb-3">
-                            {constitutionData.identity.ancestryAccessInstructions}
-                          </p>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-xs border-green-600 text-green-700 hover:bg-green-100 dark:text-green-300 dark:hover:bg-green-900/50"
-                          onClick={() => window.open(constitutionData.identity.ancestryTreeUrl, '_blank')}
-                        >
-                          <TreePine className="h-3 w-3 mr-1" />
-                          Open Ancestry.com Tree
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
 
         {/* Family Messages Dialog */}
         <Dialog open={showMessagesDialog} onOpenChange={setShowMessagesDialog}>
