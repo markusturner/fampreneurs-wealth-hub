@@ -359,6 +359,26 @@ export default function Auth() {
           <CardDescription>
             Where family and wealth unite
           </CardDescription>
+          
+          {/* Sign In / Sign Up Toggle */}
+          <div className="mt-4 flex gap-2 justify-center">
+            <Button
+              type="button"
+              variant={!isSignUpMode ? 'default' : 'outline'}
+              onClick={() => setIsSignUpMode(false)}
+              className="flex-1 max-w-[150px]"
+            >
+              Sign In
+            </Button>
+            <Button
+              type="button"
+              variant={isSignUpMode ? 'default' : 'outline'}
+              onClick={() => setIsSignUpMode(true)}
+              className="flex-1 max-w-[150px]"
+            >
+              Sign Up
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {isSignUpMode ? (
@@ -452,17 +472,6 @@ export default function Auth() {
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Trustee Account
               </Button>
-
-              <div className="text-center">
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={() => setIsSignUpMode(false)}
-                  className="text-sm"
-                >
-                  Already have an account? Sign in
-                </Button>
-              </div>
             </form>
           ) : (
             // Sign In Form
@@ -553,17 +562,6 @@ export default function Auth() {
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In {userType === 'family_member' ? '(Family Member)' : '(Trustees)'}
             </Button>
-
-            <div className="text-center">
-              <Button
-                type="button"
-                variant="link"
-                onClick={() => setIsSignUpMode(true)}
-                className="text-sm"
-              >
-                Need a trustee account? Sign up
-              </Button>
-            </div>
           </form>
           )}
         </CardContent>
