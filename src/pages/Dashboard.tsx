@@ -18,6 +18,7 @@ import { useUserRole } from "@/hooks/useUserRole"
 import { OverviewSection } from "@/components/dashboard/overview-section"
 import { useTutorialVideo } from "@/hooks/useTutorialVideo"
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
+import { supabase } from "@/integrations/supabase/client"
 
 const Dashboard = () => {
   const { user, profile, loading } = useAuth()
@@ -25,6 +26,27 @@ const Dashboard = () => {
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { shouldShowTutorial, isLoading: tutorialLoading, markAsWatched } = useTutorialVideo(user?.id || null)
+
+  const handleTutorialSkipped = async () => {
+    if (!user?.id) return;
+    
+    try {
+      // Add notification for skipped tutorial
+      await supabase.from("notifications").insert({
+        sender_id: user.id,
+        user_id: user.id,
+        notification_type: "tutorial_reminder",
+        title: "Tutorial Video Available",
+        message: "You skipped the tutorial video. Watch it anytime to get started!",
+        is_read: false,
+      });
+    } catch (error) {
+      console.error("Error creating notification:", error);
+    }
+    
+    // Still mark as "handled" so it doesn't show again on this session
+    markAsWatched();
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -84,6 +106,7 @@ const Dashboard = () => {
           isOpen={shouldShowTutorial}
           onClose={() => markAsWatched()}
           onWatched={markAsWatched}
+          onSkipped={handleTutorialSkipped}
           userId={user.id}
         />
       )}

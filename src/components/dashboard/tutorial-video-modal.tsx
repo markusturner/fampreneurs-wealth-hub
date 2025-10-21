@@ -12,10 +12,11 @@ interface TutorialVideoModalProps {
   isOpen: boolean;
   onClose: () => void;
   onWatched: () => void;
+  onSkipped: () => void;
   userId: string;
 }
 
-export const TutorialVideoModal = ({ isOpen, onClose, onWatched, userId }: TutorialVideoModalProps) => {
+export const TutorialVideoModal = ({ isOpen, onClose, onWatched, onSkipped, userId }: TutorialVideoModalProps) => {
   const [videoUrl, setVideoUrl] = useState("");
   const { toast } = useToast();
 
@@ -68,26 +69,18 @@ export const TutorialVideoModal = ({ isOpen, onClose, onWatched, userId }: Tutor
   };
 
   const handleSkip = async () => {
-    try {
-      // Add notification for skipped tutorial
-      await supabase.from("notifications").insert({
-        sender_id: userId,
-        user_id: userId,
-        notification_type: "tutorial_reminder",
-        title: "Tutorial Video Available",
-        message: "You skipped the tutorial video. Watch it anytime to get started!",
-        is_read: false,
-      });
+    onSkipped();
+    onClose();
+    toast({
+      title: "Tutorial skipped",
+      description: "You can watch the tutorial from your notifications anytime.",
+    });
+  };
 
-      onClose();
-      toast({
-        title: "Tutorial skipped",
-        description: "You can watch the tutorial from your notifications anytime.",
-      });
-    } catch (error) {
-      console.error("Error creating notification:", error);
-      onClose();
-    }
+  const handleModalClose = () => {
+    // When they close via X or clicking outside, treat it as skipped
+    onSkipped();
+    onClose();
   };
 
   const handleWatched = () => {
@@ -100,7 +93,7 @@ export const TutorialVideoModal = ({ isOpen, onClose, onWatched, userId }: Tutor
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleModalClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Welcome! Watch This Quick Tutorial</DialogTitle>
