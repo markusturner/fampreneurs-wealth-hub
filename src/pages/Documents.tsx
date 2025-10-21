@@ -1387,7 +1387,7 @@ export default function Documents() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {familyEducationModules.map((module, index) => (
+            {familyEducationModules.filter(module => module.status.toLowerCase() === "published").map((module, index) => (
               <Card key={index} className="hover:shadow-lg transition-shadow">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
@@ -1509,7 +1509,7 @@ export default function Documents() {
             </DialogHeader>
             
             <div className="grid gap-3 sm:gap-4 py-3 sm:py-4">
-              {businessCourses.map((course, index) => <Card key={index} className="hover:shadow-md transition-shadow">
+              {businessCourses.filter(course => course.status === 'published').map((course, index) => <Card key={index} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-3 sm:p-4">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0 sm:mb-3">
                       <div className="flex-1">
