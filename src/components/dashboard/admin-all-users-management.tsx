@@ -255,7 +255,7 @@ export function AdminAllUsersManagement() {
       </Badge>
     )
     if (user.membership_type === 'family_member') badges.push(
-      <Badge key="family" style={{ backgroundColor: '#2ffb500', color: '#290a52', border: 'none' }}>
+      <Badge key="family" style={{ backgroundColor: '#ffb500', color: '#290a52', border: 'none' }}>
         Family Member
       </Badge>
     )
