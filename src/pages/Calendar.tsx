@@ -13,6 +13,7 @@ import { formatInTimeZone } from "date-fns-tz"
 import { cn } from "@/lib/utils"
 import { NavHeader } from "@/components/dashboard/nav-header"
 import { MeetingTypesManager } from "@/components/dashboard/meeting-types-manager"
+import { CalendarIntegrationButton } from "@/components/dashboard/calendar-integration-button"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
@@ -358,6 +359,9 @@ export default function Calendar() {
     <div className="min-h-screen bg-background">
       <NavHeader />
       <div className="container mx-auto mobile-container space-y-4 sm:space-y-6 px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+        {/* Calendar Integrations */}
+        <CalendarIntegrationButton />
+        
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
