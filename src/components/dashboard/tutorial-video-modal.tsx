@@ -96,9 +96,9 @@ export const TutorialVideoModal = ({ isOpen, onClose, onWatched, onSkipped, user
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleModalClose()}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Welcome! Watch This Quick Tutorial</DialogTitle>
+          <DialogTitle>Welcome to TruHeirs!</DialogTitle>
           <DialogDescription>
-            Learn how to get started with our platform in just a few minutes.
+            Watch this quick tutorial to get started with your family wealth management platform.
           </DialogDescription>
         </DialogHeader>
 
