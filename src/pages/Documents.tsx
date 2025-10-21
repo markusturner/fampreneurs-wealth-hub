@@ -1509,7 +1509,7 @@ export default function Documents() {
             </DialogHeader>
             
             <div className="grid gap-3 sm:gap-4 py-3 sm:py-4">
-              {businessCourses.filter(course => course.status === 'published').map((course, index) => <Card key={index} className="hover:shadow-md transition-shadow">
+              {businessCourses.map((course, index) => <Card key={index} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-3 sm:p-4">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0 sm:mb-3">
                       <div className="flex-1">
