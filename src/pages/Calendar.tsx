@@ -498,7 +498,7 @@ export default function Calendar() {
                             {format(newMeeting.meeting_date, "PPP")}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0 z-[100]" align="start">
                           <CalendarComponent
                             mode="single"
                             selected={newMeeting.meeting_date}
