@@ -10,6 +10,7 @@ import { AdminUserManagement } from '@/components/dashboard/admin-user-managemen
 import { AdminMassNotification } from '@/components/dashboard/admin-mass-notification'
 import { AdminAllUsersManagement } from '@/components/dashboard/admin-all-users-management'
 import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
+import { AdminTutorialVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Settings, Heart, ArrowLeft, User, Shield, Zap } from 'lucide-react'
@@ -118,6 +119,7 @@ export function ProfileSettings() {
 
         {isAdmin && (
           <TabsContent value="admin" className="space-y-6">
+            <AdminTutorialVideoManager />
             <AdminAllUsersManagement />
             <AdminUserManagement />
             <AdminMassNotification />
