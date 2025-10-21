@@ -894,8 +894,12 @@ export default function Documents() {
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
               The foundation of your family's values and principles
             </p>
+          </div>
+
+          {/* Constitution Setup/Edit */}
+          <div className="text-center px-2">
             {!governanceLoading && !governanceData ? (
-              <div className="mt-4 p-4 sm:p-6 border-2 border-dashed border-secondary rounded-lg bg-muted/30">
+              <div className="p-4 sm:p-6 border-2 border-dashed border-secondary rounded-lg bg-muted/30">
                 <h3 className="font-semibold mb-2 text-base sm:text-lg">Set Up Your Family Constitution</h3>
                 <p className="text-sm sm:text-base text-muted-foreground mb-4 leading-relaxed">
                   Create a comprehensive family governance framework with our step-by-step wizard
@@ -914,7 +918,7 @@ export default function Documents() {
                 variant="outline" 
                 size="default"
                 onClick={() => navigate('/family-constitution/setup')}
-                className="mt-2 gap-2 min-h-[44px] px-4"
+                className="gap-2 min-h-[44px] px-4"
               >
                 <Settings className="h-4 w-4" />
                 Edit Constitution
