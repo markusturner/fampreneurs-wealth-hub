@@ -807,6 +807,7 @@ export default function Documents() {
   };
   // Load governance onboarding data
   const [governanceData, setGovernanceData] = useState<any>(null);
+  const [governanceLoading, setGovernanceLoading] = useState(true);
   
   useEffect(() => {
     if (user?.id) {
@@ -814,6 +815,7 @@ export default function Documents() {
       if (savedData) {
         setGovernanceData(JSON.parse(savedData));
       }
+      setGovernanceLoading(false);
     }
   }, [user?.id]);
 
@@ -892,7 +894,7 @@ export default function Documents() {
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
               The foundation of your family's values and principles
             </p>
-            {!governanceData ? (
+            {!governanceLoading && !governanceData ? (
               <div className="mt-4 p-4 sm:p-6 border-2 border-dashed border-secondary rounded-lg bg-muted/30">
                 <h3 className="font-semibold mb-2 text-base sm:text-lg">Set Up Your Family Constitution</h3>
                 <p className="text-sm sm:text-base text-muted-foreground mb-4 leading-relaxed">
