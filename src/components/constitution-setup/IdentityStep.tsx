@@ -16,6 +16,8 @@ interface IdentityStepProps {
     overview?: string;
     familyCrestUrl?: string;
     corporateSealUrl?: string;
+    ancestryTreeUrl?: string;
+    ancestryInstructions?: string;
   };
   onDataChange: (data: any) => void;
   allData: Record<string, any>;
@@ -159,6 +161,41 @@ export function IdentityStep({ data, onDataChange }: IdentityStepProps) {
             />
             <p className="text-xs sm:text-sm text-muted-foreground mt-2">
               This will appear in the introduction of your family constitution
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base sm:text-lg">Family Tree Link</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 sm:space-y-4">
+          <div>
+            <Label htmlFor="ancestryTreeUrl" className="text-sm sm:text-base">Ancestry.com Tree URL</Label>
+            <Input
+              id="ancestryTreeUrl"
+              value={data.ancestryTreeUrl || ''}
+              onChange={(e) => handleChange('ancestryTreeUrl', e.target.value)}
+              placeholder="https://www.ancestry.com/family-tree/..."
+              className="mt-1 text-sm sm:text-base"
+            />
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+              Link to your Ancestry.com family tree (optional)
+            </p>
+          </div>
+          
+          <div>
+            <Label htmlFor="ancestryInstructions" className="text-sm sm:text-base">Access Instructions</Label>
+            <Textarea
+              id="ancestryInstructions"
+              value={data.ancestryInstructions || ''}
+              onChange={(e) => handleChange('ancestryInstructions', e.target.value)}
+              placeholder="Add any access instructions or notes for family members..."
+              className="mt-1 min-h-[80px] text-sm sm:text-base"
+            />
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
+              Optional: Provide any login instructions or access details
             </p>
           </div>
         </CardContent>
