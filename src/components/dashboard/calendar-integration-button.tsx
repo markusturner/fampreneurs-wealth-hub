@@ -1,9 +1,16 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Video, CheckCircle2, XCircle } from "lucide-react";
+import { Calendar, Video, CheckCircle2, ChevronDown, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Card } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface CalendarIntegration {
   provider: 'google_calendar' | 'zoom';
@@ -123,24 +130,35 @@ export function CalendarIntegrationButton() {
     }
   };
 
+  if (loading) return null;
+
   const googleIntegration = integrations.find(i => i.provider === 'google_calendar');
   const zoomIntegration = integrations.find(i => i.provider === 'zoom');
 
-  if (loading) return <div>Loading integrations...</div>;
-
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">Calendar Integrations</h3>
-      
-      <div className="space-y-4">
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2">
+          <Settings className="h-4 w-4" />
+          Calendar Integrations
+          <ChevronDown className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-80 bg-background z-50">
+        <DropdownMenuLabel>Manage Integrations</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        
         {/* Google Calendar */}
-        <div className="flex items-center justify-between p-4 border rounded-lg">
-          <div className="flex items-center gap-3">
+        <DropdownMenuItem 
+          className="flex items-center justify-between p-3 cursor-pointer focus:bg-accent"
+          onSelect={(e) => e.preventDefault()}
+        >
+          <div className="flex items-center gap-3 flex-1">
             <Calendar className="h-5 w-5 text-primary" />
-            <div>
+            <div className="flex-1">
               <p className="font-medium">Google Calendar</p>
               {googleIntegration && (
-                <p className="text-sm text-muted-foreground">{googleIntegration.email}</p>
+                <p className="text-xs text-muted-foreground">{googleIntegration.email}</p>
               )}
             </div>
           </div>
@@ -148,11 +166,15 @@ export function CalendarIntegrationButton() {
           <div className="flex items-center gap-2">
             {googleIntegration ? (
               <>
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  onClick={() => disconnectIntegration('google_calendar')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    disconnectIntegration('google_calendar');
+                  }}
+                  className="h-7 px-2 text-xs"
                 >
                   Disconnect
                 </Button>
@@ -161,22 +183,31 @@ export function CalendarIntegrationButton() {
               <Button
                 variant="default"
                 size="sm"
-                onClick={connectGoogleCalendar}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  connectGoogleCalendar();
+                }}
+                className="h-7 px-2 text-xs"
               >
                 Connect
               </Button>
             )}
           </div>
-        </div>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
 
         {/* Zoom */}
-        <div className="flex items-center justify-between p-4 border rounded-lg">
-          <div className="flex items-center gap-3">
+        <DropdownMenuItem 
+          className="flex items-center justify-between p-3 cursor-pointer focus:bg-accent"
+          onSelect={(e) => e.preventDefault()}
+        >
+          <div className="flex items-center gap-3 flex-1">
             <Video className="h-5 w-5 text-primary" />
-            <div>
+            <div className="flex-1">
               <p className="font-medium">Zoom</p>
               {zoomIntegration && (
-                <p className="text-sm text-muted-foreground">{zoomIntegration.email}</p>
+                <p className="text-xs text-muted-foreground">{zoomIntegration.email}</p>
               )}
             </div>
           </div>
@@ -184,11 +215,15 @@ export function CalendarIntegrationButton() {
           <div className="flex items-center gap-2">
             {zoomIntegration ? (
               <>
-                <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  onClick={() => disconnectIntegration('zoom')}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    disconnectIntegration('zoom');
+                  }}
+                  className="h-7 px-2 text-xs"
                 >
                   Disconnect
                 </Button>
@@ -197,14 +232,18 @@ export function CalendarIntegrationButton() {
               <Button
                 variant="default"
                 size="sm"
-                onClick={connectZoom}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  connectZoom();
+                }}
+                className="h-7 px-2 text-xs"
               >
                 Connect
               </Button>
             )}
           </div>
-        </div>
-      </div>
-    </Card>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
