@@ -76,7 +76,7 @@ export const Features = () => {
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
             Meet your 8 AI specialists and Rachel, your AI Family Office Director. Professional guidance 24/7, no $1M minimum required.
           </p>
-          <div className="mt-4 inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-semibold">
+          <div className="mt-4 inline-block px-4 py-2 bg-primary/10 text-white rounded-full text-sm font-semibold">
             🎯 Human advisory team launching Q2 2025 for premium members
           </div>
         </div>
