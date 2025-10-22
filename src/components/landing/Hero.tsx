@@ -81,7 +81,7 @@ export const Hero = () => {
           </p>
 
           {/* Enhanced Value Proposition */}
-          <div className="-mt-12 md:-mt-16 mb-8 md:mb-12 p-4 md:p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 shadow-medium max-w-3xl mx-auto">
+          <div className="-mt-20 md:-mt-28 mb-8 md:mb-12 p-4 md:p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 shadow-medium max-w-3xl mx-auto">
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-foreground font-semibold leading-relaxed">
               The Complete DIY AI Family Office Platform for $75k+ earning professionals and entrepreneurs
             </p>
