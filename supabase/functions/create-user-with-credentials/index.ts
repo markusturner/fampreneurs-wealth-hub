@@ -186,17 +186,35 @@ const handler = async (req: Request): Promise<Response> => {
           <!DOCTYPE html>
           <html>
             <head>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
               <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background-color: #5b5fd6; color: white; padding: 30px; text-align: center; }
-                .content { background-color: #f5f5f5; padding: 30px; }
+                .header { background-color: #5b5fd6; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { background-color: #f5f5f5; padding: 30px; border-radius: 0 0 8px 8px; }
                 .credentials { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
                 .credential-item { margin: 15px 0; }
                 .label { font-weight: bold; color: #6B7280; }
-                .value { font-family: monospace; background-color: #F3F4F6; padding: 10px 15px; border-radius: 4px; display: inline-block; margin-top: 5px; }
-                .button { display: inline-block; background-color: #5b5fd6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; margin: 20px 0; font-weight: 500; }
+                .value { font-family: monospace; background-color: #F3F4F6; padding: 10px 15px; border-radius: 4px; display: block; margin-top: 5px; word-break: break-all; }
+                .button-container { text-align: center; margin: 30px 0; }
+                .button { 
+                  display: inline-block; 
+                  background-color: #ffb500; 
+                  color: #290a52; 
+                  padding: 16px 40px; 
+                  text-decoration: none; 
+                  border-radius: 8px; 
+                  font-weight: bold; 
+                  font-size: 18px;
+                  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                }
                 .footer { text-align: center; color: #6B7280; font-size: 12px; margin-top: 30px; }
+                @media only screen and (max-width: 600px) {
+                  .container { padding: 10px; }
+                  .header { padding: 20px; }
+                  .content { padding: 20px; }
+                  .button { padding: 14px 30px; font-size: 16px; display: block; width: 100%; box-sizing: border-box; }
+                }
               </style>
             </head>
             <body>
@@ -225,9 +243,11 @@ const handler = async (req: Request): Promise<Response> => {
 
                   <p style="font-size: 16px;"><strong>Important:</strong> Please change your password after your first login for security purposes.</p>
                   
-                  <a href="${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '.lovable.app') || 'https://your-app-url.com'}/auth" class="button">
-                    Login to Your Account
-                  </a>
+                  <div class="button-container">
+                    <a href="https://27136ee7-1259-4a9a-9864-1109582fab4d.lovableproject.com/auth" class="button">
+                      Login to Your Account
+                    </a>
+                  </div>
 
                   <p style="font-size: 16px;">If you have any questions, please don't hesitate to reach out to our support team.</p>
                 </div>
