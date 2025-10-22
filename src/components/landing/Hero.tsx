@@ -59,7 +59,7 @@ export const Hero = () => {
       </nav>
 
       {/* Enhanced Hero Content */}
-      <div className="container mx-auto px-4 md:px-6 pt-4 pb-16 md:pt-5 md:pb-20 text-center relative z-10">
+      <div className="container mx-auto px-4 md:px-6 pt-2 pb-16 md:pt-2 md:pb-20 text-center relative z-10">
         <div className="max-w-5xl mx-auto animate-fade-in">
           {/* Main Headlines - Enhanced Typography */}
           <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 md:mb-8 leading-tight tracking-tight">
