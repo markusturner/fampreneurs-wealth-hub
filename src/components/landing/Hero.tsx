@@ -62,7 +62,7 @@ export const Hero = () => {
       <div className="container mx-auto px-4 md:px-6 -mt-8 pb-16 md:-mt-12 md:pb-20 text-center relative z-10">
         <div className="max-w-5xl mx-auto animate-fade-in">
           {/* Main Headlines - Enhanced Typography */}
-          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 md:mb-8 md:mt-20 lg:mt-28 leading-tight tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-6 md:mb-8 md:mt-32 lg:mt-40 leading-tight tracking-tight">
             <span className="text-foreground">How to build</span>{' '}
             <span style={{ color: '#fce000' }}>
               generational wealth
