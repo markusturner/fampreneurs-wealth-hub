@@ -38,7 +38,7 @@ export const Hero = () => {
       </div>
 
       {/* Enhanced Navigation */}
-      <nav className="absolute top-0 left-0 right-0 z-50 p-2 md:p-3 backdrop-blur-sm bg-background/80 safe-area-top">
+      <nav className="absolute top-0 left-0 right-0 z-50 p-1 md:p-2 backdrop-blur-sm bg-background/80 safe-area-top">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2 md:space-x-3">
             <img 
