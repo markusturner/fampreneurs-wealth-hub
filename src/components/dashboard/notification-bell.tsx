@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Bell } from "lucide-react"
+import { Bell, Video } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Badge } from "@/components/ui/badge"
@@ -7,12 +7,16 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useNotifications } from "@/hooks/useNotifications"
 import { FeedbackDialog } from "@/components/dashboard/feedback-dialog"
 import { WeeklyCheckinDialog } from "@/components/dashboard/weekly-checkin-dialog"
+import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
+import { useAuth } from "@/contexts/AuthContext"
 import { cn } from "@/lib/utils"
 export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
   const [weeklyCheckinDialogOpen, setWeeklyCheckinDialogOpen] = useState(false)
+  const [tutorialVideoOpen, setTutorialVideoOpen] = useState(false)
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications()
+  const { user } = useAuth()
 
   const handleNotificationClick = async (notification: any) => {
     // Mark as read if not already read
@@ -28,6 +32,8 @@ export function NotificationBell() {
       setFeedbackDialogOpen(true)
     } else if (notification.notification_type === 'weekly_checkin') {
       setWeeklyCheckinDialogOpen(true)
+    } else if (notification.notification_type === 'tutorial_reminder') {
+      setTutorialVideoOpen(true)
     } else if (notification.notification_type === 'video_call_started') {
       window.location.href = '/community'
     } else if (notification.notification_type === 'family_message') {
@@ -95,10 +101,12 @@ export function NotificationBell() {
                   onClick={() => handleNotificationClick(notification)}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-start gap-2 flex-1">
-                      {!notification.is_read && (
+                     <div className="flex items-start gap-2 flex-1">
+                      {notification.notification_type === 'tutorial_reminder' ? (
+                        <Video className="w-4 h-4 mt-1 text-primary flex-shrink-0" />
+                      ) : !notification.is_read ? (
                         <div className="w-2 h-2 bg-primary rounded-full mt-2 animate-pulse flex-shrink-0" />
-                      )}
+                      ) : null}
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm">{notification.title}</h4>
                         <p className="text-xs text-muted-foreground mt-1 break-words">
@@ -143,6 +151,15 @@ export function NotificationBell() {
         open={weeklyCheckinDialogOpen} 
         onOpenChange={setWeeklyCheckinDialogOpen}
       />
+      {user && (
+        <TutorialVideoModal
+          isOpen={tutorialVideoOpen}
+          onClose={() => setTutorialVideoOpen(false)}
+          onWatched={() => {}}
+          onSkipped={() => {}}
+          userId={user.id}
+        />
+      )}
     </Popover>
   )
 }

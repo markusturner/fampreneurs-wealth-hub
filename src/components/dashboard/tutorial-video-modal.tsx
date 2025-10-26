@@ -69,6 +69,22 @@ export const TutorialVideoModal = ({ isOpen, onClose, onWatched, onSkipped, user
   };
 
   const handleSkip = async () => {
+    // Create a tutorial reminder notification
+    try {
+      await supabase
+        .from("notifications")
+        .insert({
+          user_id: userId,
+          sender_id: userId,
+          notification_type: "tutorial_reminder",
+          title: "📺 Watch Tutorial Video",
+          message: "Click here to watch the platform tutorial anytime you're ready!",
+          is_read: false,
+        });
+    } catch (error) {
+      console.error("Error creating tutorial notification:", error);
+    }
+
     onSkipped();
     onClose();
     toast({
@@ -77,8 +93,24 @@ export const TutorialVideoModal = ({ isOpen, onClose, onWatched, onSkipped, user
     });
   };
 
-  const handleModalClose = () => {
+  const handleModalClose = async () => {
     // When they close via X or clicking outside, treat it as skipped
+    // Create a tutorial reminder notification
+    try {
+      await supabase
+        .from("notifications")
+        .insert({
+          user_id: userId,
+          sender_id: userId,
+          notification_type: "tutorial_reminder",
+          title: "📺 Watch Tutorial Video",
+          message: "Click here to watch the platform tutorial anytime you're ready!",
+          is_read: false,
+        });
+    } catch (error) {
+      console.error("Error creating tutorial notification:", error);
+    }
+    
     onSkipped();
     onClose();
   };
