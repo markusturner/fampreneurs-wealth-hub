@@ -377,27 +377,15 @@ export function AdminAllUsersManagement() {
       'annual': 'Annual'
     }
 
-    const tierPricing: Record<string, Record<string, string>> = {
-      'basic': {
-        'monthly': '$50/mo',
-        'quarterly': '$135/qtr',
-        'annual': '$540/yr'
-      },
-      'premium': {
-        'monthly': '$100/mo',
-        'quarterly': '$270/qtr',
-        'annual': '$1,080/yr'
-      },
-      'enterprise': {
-        'monthly': '$200/mo',
-        'quarterly': '$540/qtr',
-        'annual': '$2,160/yr'
-      }
+    // Pricing matches landing page: $97/mo, $247/qtr, $897/yr
+    const pricing: Record<string, string> = {
+      'monthly': '$97/mo',
+      'quarterly': '$247/qtr',
+      'annual': '$897/yr'
     }
 
     const packageName = periodMap[user.subscription_period] || user.subscription_period
-    const tier = user.subscription_tier || 'basic'
-    const amount = tierPricing[tier]?.[user.subscription_period] || 'N/A'
+    const amount = pricing[user.subscription_period] || 'N/A'
 
     return { package: packageName, amount }
   }
