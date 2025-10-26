@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -65,6 +65,7 @@ export function AdminAllUsersManagement() {
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [syncingStripe, setSyncingStripe] = useState(false)
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null)
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
@@ -339,6 +340,32 @@ export function AdminAllUsersManagement() {
     })
   }
 
+  const syncStripeSubscriptions = async () => {
+    setSyncingStripe(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-sync-stripe')
+      
+      if (error) throw error
+
+      toast({
+        title: "Stripe Sync Complete",
+        description: `Synced ${data.synced} trustees successfully. ${data.errors > 0 ? `${data.errors} errors.` : ''}`,
+      })
+
+      // Refresh user list to show updated subscription data
+      await fetchUsers()
+    } catch (error: any) {
+      console.error('Error syncing Stripe:', error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to sync Stripe subscriptions",
+        variant: "destructive"
+      })
+    } finally {
+      setSyncingStripe(false)
+    }
+  }
+
   const getRoleBadges = (user: UserProfile) => {
     const badges = []
     if (user.is_moderator) badges.push(
@@ -425,14 +452,34 @@ export function AdminAllUsersManagement() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, email, or program..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-md"
-            />
+          <div className="flex items-center gap-2 justify-between">
+            <div className="flex items-center gap-2 flex-1">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, email, or program..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="max-w-md"
+              />
+            </div>
+            <Button
+              onClick={syncStripeSubscriptions}
+              disabled={syncingStripe}
+              variant="outline"
+              size="sm"
+            >
+              {syncingStripe ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Syncing...
+                </>
+              ) : (
+                <>
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Sync Stripe Data
+                </>
+              )}
+            </Button>
           </div>
 
           {isLoading ? (
