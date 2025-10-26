@@ -372,25 +372,26 @@ export function AdminAllUsersManagement() {
       return { package: 'Family Member', amount: 'N/A' }
     }
 
-    if (!user.subscribed || !user.subscription_period) {
+    if (!user.subscribed || !user.subscription_tier || !user.subscription_period) {
       return { package: 'Free', amount: '$0' }
     }
 
-    const periodMap: Record<string, string> = {
-      'monthly': 'Monthly',
-      'quarterly': 'Quarterly',
-      'annual': 'Annual'
+    // Map tier names from Stripe to display names matching landing page
+    const tierMap: Record<string, string> = {
+      'Starter': 'Starter',
+      'Professional': 'Professional', 
+      'Enterprise': 'Enterprise'
     }
 
-    // Pricing matches landing page: $97/mo, $247/qtr, $897/yr
-    const pricing: Record<string, string> = {
-      'monthly': '$97/mo',
-      'quarterly': '$247/qtr',
-      'annual': '$897/yr'
+    // Pricing matches landing page: Starter $97/mo, Professional $247/qtr, Enterprise $897/yr
+    const tierPricing: Record<string, string> = {
+      'Starter': '$97/mo',
+      'Professional': '$247/qtr',
+      'Enterprise': '$897/yr'
     }
 
-    const packageName = periodMap[user.subscription_period] || user.subscription_period
-    const amount = pricing[user.subscription_period] || 'N/A'
+    const packageName = tierMap[user.subscription_tier] || user.subscription_tier
+    const amount = tierPricing[user.subscription_tier] || 'N/A'
 
     return { package: packageName, amount }
   }

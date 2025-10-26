@@ -75,6 +75,7 @@ serve(async (req) => {
     });
     const hasActiveSub = subscriptions.data.length > 0;
     let subscriptionTier = null;
+    let subscriptionPeriod = null;
     let subscriptionEnd = null;
 
     if (hasActiveSub) {
@@ -82,18 +83,37 @@ serve(async (req) => {
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       logStep("Active subscription found", { endDate: subscriptionEnd });
       
-      // Determine subscription tier from price
+      // Determine subscription tier and period from price
       const priceId = subscription.items.data[0].price.id;
       const price = await stripe.prices.retrieve(priceId);
       const amount = price.unit_amount || 0;
-      if (amount <= 999) {
-        subscriptionTier = "Basic";
-      } else if (amount <= 1999) {
-        subscriptionTier = "Premium";
-      } else {
+      const interval = price.recurring?.interval;
+      const intervalCount = price.recurring?.interval_count || 1;
+      
+      // Map amounts to tier names matching landing page: Starter ($97/mo), Professional ($247/qtr), Enterprise ($897/yr)
+      if (amount === 9700) {
+        subscriptionTier = "Starter";
+        subscriptionPeriod = "monthly";
+      } else if (amount === 24700) {
+        subscriptionTier = "Professional";
+        subscriptionPeriod = "quarterly";
+      } else if (amount === 89700) {
         subscriptionTier = "Enterprise";
+        subscriptionPeriod = "annual";
+      } else {
+        // Fallback for legacy or custom pricing
+        subscriptionTier = amount >= 5000 ? "Enterprise" : amount >= 2000 ? "Professional" : "Starter";
+        // Determine period from Stripe recurring interval
+        if (interval === "year") {
+          subscriptionPeriod = "annual";
+        } else if (interval === "month" && intervalCount === 3) {
+          subscriptionPeriod = "quarterly";
+        } else {
+          subscriptionPeriod = "monthly";
+        }
       }
-      logStep("Determined subscription tier", { priceId, amount, subscriptionTier });
+      
+      logStep("Determined subscription tier and period", { priceId, amount, subscriptionTier, subscriptionPeriod });
     } else {
       logStep("No active subscription found");
     }
@@ -104,14 +124,16 @@ serve(async (req) => {
       stripe_customer_id: customerId,
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
+      subscription_period: subscriptionPeriod,
       subscription_end: subscriptionEnd,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'email' });
 
-    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
+    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier, subscriptionPeriod });
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
+      subscription_period: subscriptionPeriod,
       subscription_end: subscriptionEnd
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -54,14 +54,14 @@ export function AdminAnalyticsRevenue() {
 
       if (subsError) throw subsError
 
-      // Calculate stats using landing page pricing: $97/mo, $247/qtr, $897/yr
+      // Calculate stats using actual Stripe tier pricing: Starter $97/mo, Professional $247/qtr, Enterprise $897/yr
       const total = subscribersData?.length || 0
       const monthlyRev = subscribersData?.reduce((sum, sub) => {
-        const period = sub.subscription_period
-        // Convert all to monthly equivalent
-        if (period === 'monthly') return sum + 97
-        if (period === 'quarterly') return sum + (247 / 3) // $247/3 months
-        if (period === 'annual') return sum + (897 / 12) // $897/12 months
+        const tier = sub.subscription_tier
+        // Convert all to monthly equivalent based on tier
+        if (tier === 'Starter') return sum + 97 // $97/month
+        if (tier === 'Professional') return sum + (247 / 3) // $247/3 months
+        if (tier === 'Enterprise') return sum + (897 / 12) // $897/12 months
         return sum
       }, 0) || 0
 
