@@ -12,6 +12,9 @@ import { AdminAllUsersManagement } from '@/components/dashboard/admin-all-users-
 import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
 import { AdminTutorialVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
 import { AdminAnalyticsRevenue } from '@/components/dashboard/admin-analytics-revenue'
+import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-overview'
+import { AdminGrowthCharts } from '@/components/dashboard/admin-growth-charts'
+import { AdminActivityHeatmap } from '@/components/dashboard/admin-activity-heatmap'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Settings, Heart, ArrowLeft, User, Shield, Zap, Video } from 'lucide-react'
@@ -137,6 +140,9 @@ export function ProfileSettings() {
 
         {isAdmin && (
           <TabsContent value="admin" className="space-y-6">
+            <AdminAnalyticsOverview />
+            <AdminGrowthCharts />
+            <AdminActivityHeatmap />
             <AdminAnalyticsRevenue />
             <AdminAllUsersManagement />
             <AdminUserManagement />
