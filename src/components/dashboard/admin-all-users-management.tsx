@@ -56,6 +56,7 @@ interface UserProfile {
   is_moderator: boolean
   created_at: string
   subscription_tier?: string | null
+  subscription_period?: string | null
   subscribed?: boolean
 }
 
@@ -94,7 +95,7 @@ export function AdminAllUsersManagement() {
       // Fetch subscription data for all users
       const { data: subscribersData } = await supabase
         .from('subscribers')
-        .select('user_id, subscription_tier, subscribed')
+        .select('user_id, subscription_tier, subscription_period, subscribed')
 
       // Merge subscription data with profiles
       const usersWithSubscriptions = (profilesData || []).map(profile => {
@@ -102,6 +103,7 @@ export function AdminAllUsersManagement() {
         return {
           ...profile,
           subscription_tier: subscription?.subscription_tier,
+          subscription_period: subscription?.subscription_period,
           subscribed: subscription?.subscribed
         }
       })
@@ -365,17 +367,39 @@ export function AdminAllUsersManagement() {
   }
 
   const getPackageInfo = (user: UserProfile) => {
-    if (!user.subscribed || !user.subscription_tier) {
+    if (!user.subscribed || !user.subscription_period) {
       return { package: 'Free', amount: '$0' }
     }
 
-    const tierMap: Record<string, { package: string; amount: string }> = {
-      'basic': { package: 'Basic', amount: '$50/mo' },
-      'premium': { package: 'Premium', amount: '$100/mo' },
-      'enterprise': { package: 'Enterprise', amount: '$200/mo' }
+    const periodMap: Record<string, string> = {
+      'monthly': 'Monthly',
+      'quarterly': 'Quarterly',
+      'annual': 'Annual'
     }
 
-    return tierMap[user.subscription_tier] || { package: user.subscription_tier, amount: 'N/A' }
+    const tierPricing: Record<string, Record<string, string>> = {
+      'basic': {
+        'monthly': '$50/mo',
+        'quarterly': '$135/qtr',
+        'annual': '$540/yr'
+      },
+      'premium': {
+        'monthly': '$100/mo',
+        'quarterly': '$270/qtr',
+        'annual': '$1,080/yr'
+      },
+      'enterprise': {
+        'monthly': '$200/mo',
+        'quarterly': '$540/qtr',
+        'annual': '$2,160/yr'
+      }
+    }
+
+    const packageName = periodMap[user.subscription_period] || user.subscription_period
+    const tier = user.subscription_tier || 'basic'
+    const amount = tierPricing[tier]?.[user.subscription_period] || 'N/A'
+
+    return { package: packageName, amount }
   }
 
   const getUserViewDescription = (user: UserProfile) => {
