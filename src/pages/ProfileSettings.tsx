@@ -11,6 +11,7 @@ import { AdminMassNotification } from '@/components/dashboard/admin-mass-notific
 import { AdminAllUsersManagement } from '@/components/dashboard/admin-all-users-management'
 import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
 import { AdminTutorialVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
+import { AdminAnalyticsRevenue } from '@/components/dashboard/admin-analytics-revenue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Settings, Heart, ArrowLeft, User, Shield, Zap, Video } from 'lucide-react'
@@ -136,6 +137,7 @@ export function ProfileSettings() {
 
         {isAdmin && (
           <TabsContent value="admin" className="space-y-6">
+            <AdminAnalyticsRevenue />
             <AdminAllUsersManagement />
             <AdminUserManagement />
             <AdminMassNotification />
