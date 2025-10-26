@@ -55,6 +55,8 @@ interface UserProfile {
   is_admin: boolean
   is_moderator: boolean
   created_at: string
+  subscription_tier?: string | null
+  subscribed?: boolean
 }
 
 export function AdminAllUsersManagement() {
@@ -82,14 +84,30 @@ export function AdminAllUsersManagement() {
   const fetchUsers = async () => {
     setIsLoading(true)
     try {
-      const { data, error } = await supabase
+      const { data: profilesData, error } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setUsers(data || [])
-      setFilteredUsers(data || [])
+
+      // Fetch subscription data for all users
+      const { data: subscribersData } = await supabase
+        .from('subscribers')
+        .select('user_id, subscription_tier, subscribed')
+
+      // Merge subscription data with profiles
+      const usersWithSubscriptions = (profilesData || []).map(profile => {
+        const subscription = subscribersData?.find(sub => sub.user_id === profile.user_id)
+        return {
+          ...profile,
+          subscription_tier: subscription?.subscription_tier,
+          subscribed: subscription?.subscribed
+        }
+      })
+
+      setUsers(usersWithSubscriptions)
+      setFilteredUsers(usersWithSubscriptions)
     } catch (error: any) {
       console.error('Error fetching users:', error)
       toast({
@@ -346,6 +364,20 @@ export function AdminAllUsersManagement() {
     return badges
   }
 
+  const getPackageInfo = (user: UserProfile) => {
+    if (!user.subscribed || !user.subscription_tier) {
+      return { package: 'Free', amount: '$0' }
+    }
+
+    const tierMap: Record<string, { package: string; amount: string }> = {
+      'basic': { package: 'Basic', amount: '$50/mo' },
+      'premium': { package: 'Premium', amount: '$100/mo' },
+      'enterprise': { package: 'Enterprise', amount: '$200/mo' }
+    }
+
+    return tierMap[user.subscription_tier] || { package: user.subscription_tier, amount: 'N/A' }
+  }
+
   const getUserViewDescription = (user: UserProfile) => {
     if (user.is_moderator) {
       return "Owner access: Complete control over all platform features including admin management, system settings, and ownership activities. Can manage admins and access Zapier integration."
@@ -398,6 +430,7 @@ export function AdminAllUsersManagement() {
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
+                      <TableHead>Payment</TableHead>
                       <TableHead>Program</TableHead>
                       <TableHead>Joined</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -406,12 +439,14 @@ export function AdminAllUsersManagement() {
                   <TableBody>
                     {filteredUsers.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                        <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                           No users found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredUsers.map((user) => (
+                      filteredUsers.map((user) => {
+                        const packageInfo = getPackageInfo(user)
+                        return (
                         <TableRow key={user.user_id}>
                           <TableCell className="font-medium">
                             {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}
@@ -420,6 +455,12 @@ export function AdminAllUsersManagement() {
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
                               {getRoleBadges(user)}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{packageInfo.package}</span>
+                              <span className="text-xs text-muted-foreground">{packageInfo.amount}</span>
                             </div>
                           </TableCell>
                           <TableCell>{user.program_name || 'None'}</TableCell>
@@ -469,7 +510,8 @@ export function AdminAllUsersManagement() {
                             </div>
                           </TableCell>
                         </TableRow>
-                      ))
+                        )
+                      })
                     )}
                   </TableBody>
                 </Table>
