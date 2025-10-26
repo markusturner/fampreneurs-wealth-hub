@@ -22,7 +22,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Delete payment reminders that are 5 or more days overdue
     const { data, error } = await supabaseClient
-      .from('payment_reminders')
+      .from('payment_reminders' as any)
       .delete()
       .gte('days_overdue', 5)
       .select();

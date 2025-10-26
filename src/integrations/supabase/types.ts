@@ -1510,7 +1510,7 @@ export type Database = {
           action: string
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           metadata: Json | null
           new_values: Json | null
           old_values: Json | null
@@ -1525,7 +1525,7 @@ export type Database = {
           action: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           new_values?: Json | null
           old_values?: Json | null
@@ -1540,7 +1540,7 @@ export type Database = {
           action?: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           metadata?: Json | null
           new_values?: Json | null
           old_values?: Json | null
@@ -2911,6 +2911,39 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_reminders: {
+        Row: {
+          amount: number
+          created_at: string
+          days_overdue: number
+          id: string
+          last_reminder_sent: string | null
+          status: string
+          updated_at: string
+          user_email: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          days_overdue?: number
+          id?: string
+          last_reminder_sent?: string | null
+          status?: string
+          updated_at?: string
+          user_email: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          days_overdue?: number
+          id?: string
+          last_reminder_sent?: string | null
+          status?: string
+          updated_at?: string
+          user_email?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           created_at: string | null
@@ -3891,10 +3924,7 @@ export type Database = {
         Args: { group_id: string; user_id: string }
         Returns: boolean
       }
-      can_view_profile: {
-        Args: { target_user_id: string }
-        Returns: boolean
-      }
+      can_view_profile: { Args: { target_user_id: string }; Returns: boolean }
       check_portfolio_access_rate_limit: {
         Args: { user_id: string }
         Returns: boolean
@@ -3906,34 +3936,16 @@ export type Database = {
           member_data: Json
         }[]
       }
-      cleanup_expired_verification_codes: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_sensitive_audit_logs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      generate_certificate_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_account_summary: {
-        Args: { target_user_id?: string }
-        Returns: Json
-      }
+      cleanup_expired_verification_codes: { Args: never; Returns: undefined }
+      cleanup_sensitive_audit_logs: { Args: never; Returns: undefined }
+      generate_certificate_number: { Args: never; Returns: string }
+      get_account_summary: { Args: { target_user_id?: string }; Returns: Json }
       get_admin_profile_data: {
         Args: { target_user_id: string }
         Returns: Json
       }
-      get_coach_admin_details: {
-        Args: { coach_id: string }
-        Returns: Json
-      }
-      get_coach_for_booking: {
-        Args: { coach_id: string }
-        Returns: Json
-      }
+      get_coach_admin_details: { Args: { coach_id: string }; Returns: Json }
+      get_coach_for_booking: { Args: { coach_id: string }; Returns: Json }
       get_community_profile: {
         Args: { target_user_id: string }
         Returns: {
@@ -3948,7 +3960,7 @@ export type Database = {
         Returns: Json
       }
       get_community_profiles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           avatar_url: string
           display_name: string
@@ -3956,20 +3968,14 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_family_member_count_secure: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+      get_family_member_count_secure: { Args: never; Returns: number }
       get_masked_portfolio_summary: {
         Args: { target_user_id: string }
         Returns: Json
       }
-      get_portfolio_summary: {
-        Args: { target_user_id: string }
-        Returns: Json
-      }
+      get_portfolio_summary: { Args: { target_user_id: string }; Returns: Json }
       get_public_advisor_listing: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           bio: string
           company: string
@@ -3982,18 +3988,12 @@ export type Database = {
           years_experience: number
         }[]
       }
-      get_public_profile: {
-        Args: { target_user_id: string }
-        Returns: Json
-      }
+      get_public_profile: { Args: { target_user_id: string }; Returns: Json }
       get_public_profile_safe: {
         Args: { target_user_id: string }
         Returns: Json
       }
-      get_safe_profile_info: {
-        Args: { target_user_id: string }
-        Returns: Json
-      }
+      get_safe_profile_info: { Args: { target_user_id: string }; Returns: Json }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["member_role"][]
@@ -4005,18 +4005,9 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_current_user_accountability_partner: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_current_user_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      is_current_user_owner: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_current_user_accountability_partner: { Args: never; Returns: boolean }
+      is_current_user_admin: { Args: never; Returns: boolean }
+      is_current_user_owner: { Args: never; Returns: boolean }
       is_family_office_only_user: {
         Args: { p_user_id: string }
         Returns: boolean
@@ -4025,14 +4016,8 @@ export type Database = {
         Args: { group_id: string; user_id: string }
         Returns: boolean
       }
-      is_user_admin: {
-        Args: { user_id?: string }
-        Returns: boolean
-      }
-      is_user_admin_for_groups: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_user_admin: { Args: { user_id?: string }; Returns: boolean }
+      is_user_admin_for_groups: { Args: never; Returns: boolean }
       log_family_office_action: {
         Args: {
           action_name: string

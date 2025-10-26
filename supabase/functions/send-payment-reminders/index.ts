@@ -50,7 +50,7 @@ const handler = async (req: Request): Promise<Response> => {
 
         // Update last reminder sent timestamp
         await supabaseClient
-          .from('payment_reminders')
+          .from('payment_reminders' as any)
           .update({ last_reminder_sent: new Date().toISOString() })
           .eq('id', payment.id);
 

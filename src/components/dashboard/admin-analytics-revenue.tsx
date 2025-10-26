@@ -61,7 +61,7 @@ export function AdminAnalyticsRevenue() {
 
       // Fetch overdue payments
       const { data: overdueData, error: overdueError } = await supabase
-        .from('payment_reminders')
+        .from('payment_reminders' as any)
         .select('*')
         .eq('status', 'overdue')
         .order('days_overdue', { ascending: false })
@@ -70,14 +70,22 @@ export function AdminAnalyticsRevenue() {
         console.error('Error fetching overdue payments:', overdueError)
       }
 
+      const typedOverdueData: OverduePayment[] = (overdueData || []).map((item: any) => ({
+        id: item.id,
+        user_email: item.user_email,
+        amount: item.amount,
+        days_overdue: item.days_overdue,
+        last_reminder_sent: item.last_reminder_sent
+      }))
+
       setStats({
         totalRevenue: monthlyRev * 12, // Annual estimate
         monthlyRevenue: monthlyRev,
         activeSubscribers: total,
-        overduePayments: overdueData?.length || 0
+        overduePayments: typedOverdueData.length
       })
 
-      setOverduePayments(overdueData || [])
+      setOverduePayments(typedOverdueData)
     } catch (error: any) {
       console.error('Error fetching analytics:', error)
       toast({
