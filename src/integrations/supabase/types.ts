@@ -3973,6 +3973,16 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
+      get_overdue_payments: {
+        Args: never
+        Returns: {
+          amount: number
+          days_overdue: number
+          id: string
+          last_reminder_sent: string
+          user_email: string
+        }[]
+      }
       get_portfolio_summary: { Args: { target_user_id: string }; Returns: Json }
       get_public_advisor_listing: {
         Args: never
