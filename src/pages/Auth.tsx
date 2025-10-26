@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, ArrowLeft, AlertTriangle, Mail } from 'lucide-react'
+import { Loader2, ArrowLeft, AlertTriangle, Mail, Video } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { useTheme } from '@/components/theme-provider'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
+import { TutorialVideoModal } from '@/components/dashboard/tutorial-video-modal'
 
 export default function Auth() {
   const [searchParams] = useSearchParams()
@@ -22,6 +23,7 @@ export default function Auth() {
   const [lastName, setLastName] = useState('')
   const [familySecretCode, setFamilySecretCode] = useState('')
   const [userType, setUserType] = useState<'family_member' | 'mentee'>('family_member')
+  const [showTutorialVideo, setShowTutorialVideo] = useState(false)
   
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -369,6 +371,17 @@ export default function Auth() {
             className="hover:bg-accent"
           >
             <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="absolute top-4 right-14 z-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowTutorialVideo(true)}
+            className="hover:bg-accent"
+            title="Watch Tutorial"
+          >
+            <Video className="h-4 w-4" />
           </Button>
         </div>
         <div className="absolute top-4 right-4 z-10">
@@ -742,6 +755,22 @@ export default function Auth() {
           )}
         </CardContent>
       </Card>
+      
+      <TutorialVideoModal
+        isOpen={showTutorialVideo}
+        onClose={() => setShowTutorialVideo(false)}
+        onWatched={() => {
+          setShowTutorialVideo(false)
+          toast({
+            title: "Great!",
+            description: "Sign in to access your dashboard and start managing your family wealth.",
+          })
+        }}
+        onSkipped={() => {
+          setShowTutorialVideo(false)
+        }}
+        userId="" // Empty string for unauthenticated users
+      />
     </div>
   )
 }
