@@ -394,33 +394,30 @@ export function AdminAllUsersManagement() {
   }
 
   const getPackageInfo = (user: UserProfile) => {
-    // Only trustees have paid subscriptions
-    if (user.membership_type !== 'trustee') {
-      return { package: 'Family Member', amount: 'N/A' }
+    // Check for active subscription first
+    if (user.subscribed && user.subscription_tier) {
+      // Map tier names from Stripe to display names
+      const tierMap: Record<string, string> = {
+        'Starter': 'Starter',
+        'Professional': 'Professional', 
+        'Enterprise': 'Enterprise'
+      }
+
+      // Pricing: Starter $97/mo, Professional $247/qtr, Enterprise $897/yr
+      const tierPricing: Record<string, string> = {
+        'Starter': '$97/mo',
+        'Professional': '$247/qtr',
+        'Enterprise': '$897/yr'
+      }
+
+      const packageName = tierMap[user.subscription_tier] || user.subscription_tier
+      const amount = tierPricing[user.subscription_tier] || 'N/A'
+
+      return { package: packageName, amount }
     }
 
-    if (!user.subscribed || !user.subscription_tier || !user.subscription_period) {
-      return { package: 'Free', amount: '$0' }
-    }
-
-    // Map tier names from Stripe to display names matching landing page
-    const tierMap: Record<string, string> = {
-      'Starter': 'Starter',
-      'Professional': 'Professional', 
-      'Enterprise': 'Enterprise'
-    }
-
-    // Pricing matches landing page: Starter $97/mo, Professional $247/qtr, Enterprise $897/yr
-    const tierPricing: Record<string, string> = {
-      'Starter': '$97/mo',
-      'Professional': '$247/qtr',
-      'Enterprise': '$897/yr'
-    }
-
-    const packageName = tierMap[user.subscription_tier] || user.subscription_tier
-    const amount = tierPricing[user.subscription_tier] || 'N/A'
-
-    return { package: packageName, amount }
+    // No active subscription
+    return { package: 'Free', amount: '$0' }
   }
 
   const getUserViewDescription = (user: UserProfile) => {
