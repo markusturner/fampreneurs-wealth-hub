@@ -90,14 +90,17 @@ export function AdminAllUsersManagement() {
       
       if (error) throw error;
       
+      console.log('Stripe sync completed:', data);
+      
+      // Always refresh after sync
+      await fetchUsers();
+      
       if (!silent) {
         toast({
           title: "Sync Complete",
           description: `Successfully synced ${data.synced} subscriptions`,
         });
       }
-      
-      await fetchUsers();
     } catch (error) {
       console.error('Error syncing Stripe:', error);
       if (!silent) {
@@ -127,15 +130,29 @@ export function AdminAllUsersManagement() {
         .from('subscribers')
         .select('user_id, subscription_tier, subscription_period, subscribed')
 
+      console.log('Fetched profiles:', profilesData?.length);
+      console.log('Fetched subscribers:', subscribersData?.length);
+
       // Merge subscription data with profiles
       const usersWithSubscriptions = (profilesData || []).map(profile => {
         const subscription = subscribersData?.find(sub => sub.user_id === profile.user_id)
-        return {
+        const merged = {
           ...profile,
           subscription_tier: subscription?.subscription_tier,
           subscription_period: subscription?.subscription_period,
           subscribed: subscription?.subscribed
         }
+        
+        // Log trustee subscription status
+        if (profile.membership_type === 'trustee') {
+          console.log(`Trustee ${profile.email}:`, {
+            subscribed: merged.subscribed,
+            tier: merged.subscription_tier,
+            period: merged.subscription_period
+          });
+        }
+        
+        return merged;
       })
 
       setUsers(usersWithSubscriptions)
@@ -153,10 +170,14 @@ export function AdminAllUsersManagement() {
   }
 
   useEffect(() => {
-    fetchUsers()
+    // Start with initial data fetch, then sync in background
+    const initializeData = async () => {
+      await fetchUsers();
+      // Sync Stripe data after initial load (silent)
+      await syncStripeData(true);
+    };
     
-    // Automatically sync Stripe data on mount (silent sync)
-    syncStripeData(true)
+    initializeData();
     
     // Set up realtime subscription for both profiles and subscribers changes
     const profilesChannel = supabase
