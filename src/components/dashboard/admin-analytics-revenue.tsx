@@ -59,24 +59,28 @@ export function AdminAnalyticsRevenue() {
         return sum + tierAmount
       }, 0) || 0
 
-      // Fetch overdue payments
-      const { data: overdueData, error: overdueError } = await supabase
-        .from('payment_reminders' as any)
-        .select('*')
-        .eq('status', 'overdue')
-        .order('days_overdue', { ascending: false })
-
-      if (overdueError && overdueError.code !== 'PGRST116') {
-        console.error('Error fetching overdue payments:', overdueError)
+      // Fetch overdue payments using direct SQL query via RPC
+      let typedOverdueData: OverduePayment[] = []
+      
+      try {
+        // Use a raw query approach to avoid type issues
+        const { data: rawData, error: rpcError } = await supabase
+          .rpc('get_overdue_payments' as any)
+        
+        if (!rpcError && rawData) {
+          typedOverdueData = rawData.map((item: any) => ({
+            id: item.id,
+            user_email: item.user_email,
+            amount: parseFloat(item.amount),
+            days_overdue: item.days_overdue,
+            last_reminder_sent: item.last_reminder_sent
+          }))
+        }
+      } catch (error) {
+        console.error('Error fetching overdue payments:', error)
+        // Fallback to empty array
+        typedOverdueData = []
       }
-
-      const typedOverdueData: OverduePayment[] = (overdueData || []).map((item: any) => ({
-        id: item.id,
-        user_email: item.user_email,
-        amount: item.amount,
-        days_overdue: item.days_overdue,
-        last_reminder_sent: item.last_reminder_sent
-      }))
 
       setStats({
         totalRevenue: monthlyRev * 12, // Annual estimate
