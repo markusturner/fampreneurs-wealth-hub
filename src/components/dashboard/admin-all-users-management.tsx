@@ -126,8 +126,8 @@ export function AdminAllUsersManagement() {
   useEffect(() => {
     fetchUsers()
     
-    // Set up realtime subscription for profiles changes
-    const channel = supabase
+    // Set up realtime subscription for both profiles and subscribers changes
+    const profilesChannel = supabase
       .channel('profiles_changes')
       .on(
         'postgres_changes',
@@ -142,8 +142,24 @@ export function AdminAllUsersManagement() {
       )
       .subscribe()
 
+    const subscribersChannel = supabase
+      .channel('subscribers_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'subscribers'
+        },
+        () => {
+          fetchUsers()
+        }
+      )
+      .subscribe()
+
     return () => {
-      supabase.removeChannel(channel)
+      supabase.removeChannel(profilesChannel)
+      supabase.removeChannel(subscribersChannel)
     }
   }, [])
 
