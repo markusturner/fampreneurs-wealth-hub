@@ -1,4 +1,4 @@
-import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar as CalendarIcon, MessageSquare, PanelLeft, FileText, Building2, LayoutDashboard, Command } from "lucide-react"
+import { Bell, Menu, Search, User, LogOut, Settings, Users, Home, X, BookOpen, Calendar as CalendarIcon, MessageSquare, PanelLeft, FileText, Building2, LayoutDashboard, Command, Video } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { FeedbackDialog } from "@/components/dashboard/feedback-dialog"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
+import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { useAuth } from "@/contexts/AuthContext"
 import { useTheme } from "@/components/theme-provider"
 import { useFeedbackNotification } from "@/hooks/useFeedbackNotification"
@@ -23,6 +24,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
+  const [tutorialVideoOpen, setTutorialVideoOpen] = useState(false)
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const { profile, signOut } = useAuth()
@@ -378,6 +380,16 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3 ml-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTutorialVideoOpen(true)}
+            className="relative hover:bg-accent"
+            title="Watch Tutorial"
+          >
+            <Video className="h-4 w-4" />
+          </Button>
+          
           <ThemeToggle />
           
           {/* Single Notification Bell for all notifications */}
@@ -457,6 +469,17 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
         open={feedbackDialogOpen} 
         onOpenChange={setFeedbackDialogOpen}
       />
+      
+      {/* Tutorial Video Modal */}
+      {profile && (
+        <TutorialVideoModal
+          isOpen={tutorialVideoOpen}
+          onClose={() => setTutorialVideoOpen(false)}
+          onWatched={() => setTutorialVideoOpen(false)}
+          onSkipped={() => setTutorialVideoOpen(false)}
+          userId={profile.user_id}
+        />
+      )}
     </header>
   )
 }
