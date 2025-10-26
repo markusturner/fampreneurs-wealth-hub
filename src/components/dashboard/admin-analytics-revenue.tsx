@@ -42,21 +42,27 @@ export function AdminAnalyticsRevenue() {
     try {
       setLoading(true)
 
-      // Fetch revenue stats from subscribers
-      const { data: subscribers, error: subsError } = await supabase
+      // Fetch revenue stats from subscribers (only trustees pay)
+      const { data: subscribersData, error: subsError } = await supabase
         .from('subscribers')
-        .select('*')
+        .select(`
+          *,
+          profiles!inner(membership_type)
+        `)
         .eq('subscribed', true)
+        .eq('profiles.membership_type', 'trustee')
 
       if (subsError) throw subsError
 
-      // Calculate stats
-      const total = subscribers?.length || 0
-      const monthlyRev = subscribers?.reduce((sum, sub) => {
-        // Assuming subscription tiers: basic ($50), premium ($100), enterprise ($200)
-        const tierAmount = sub.subscription_tier === 'enterprise' ? 200 : 
-                          sub.subscription_tier === 'premium' ? 100 : 50
-        return sum + tierAmount
+      // Calculate stats using landing page pricing: $97/mo, $247/qtr, $897/yr
+      const total = subscribersData?.length || 0
+      const monthlyRev = subscribersData?.reduce((sum, sub) => {
+        const period = sub.subscription_period
+        // Convert all to monthly equivalent
+        if (period === 'monthly') return sum + 97
+        if (period === 'quarterly') return sum + (247 / 3) // $247/3 months
+        if (period === 'annual') return sum + (897 / 12) // $897/12 months
+        return sum
       }, 0) || 0
 
       // Fetch overdue payments using direct SQL query via RPC

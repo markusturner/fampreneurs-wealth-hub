@@ -367,6 +367,11 @@ export function AdminAllUsersManagement() {
   }
 
   const getPackageInfo = (user: UserProfile) => {
+    // Only trustees have paid subscriptions
+    if (user.membership_type !== 'trustee') {
+      return { package: 'Family Member', amount: 'N/A' }
+    }
+
     if (!user.subscribed || !user.subscription_period) {
       return { package: 'Free', amount: '$0' }
     }
