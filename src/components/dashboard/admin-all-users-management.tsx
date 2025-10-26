@@ -83,6 +83,35 @@ export function AdminAllUsersManagement() {
   const [editingProgramValue, setEditingProgramValue] = useState('')
   const { toast } = useToast()
 
+  const syncStripeData = async (silent = false) => {
+    if (!silent) setSyncingStripe(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-sync-stripe');
+      
+      if (error) throw error;
+      
+      if (!silent) {
+        toast({
+          title: "Sync Complete",
+          description: `Successfully synced ${data.synced} subscriptions`,
+        });
+      }
+      
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error syncing Stripe:', error);
+      if (!silent) {
+        toast({
+          title: "Sync Failed",
+          description: "Failed to sync Stripe data",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      if (!silent) setSyncingStripe(false);
+    }
+  };
+
   const fetchUsers = async () => {
     setIsLoading(true)
     try {
@@ -125,6 +154,9 @@ export function AdminAllUsersManagement() {
 
   useEffect(() => {
     fetchUsers()
+    
+    // Automatically sync Stripe data on mount (silent sync)
+    syncStripeData(true)
     
     // Set up realtime subscription for both profiles and subscribers changes
     const profilesChannel = supabase
