@@ -42,28 +42,38 @@ export function AdminAnalyticsRevenue() {
     try {
       setLoading(true)
 
-      // Fetch revenue stats from subscribers (only trustees pay)
+      // Fetch all active subscribers
       const { data: subscribersData, error: subsError } = await supabase
         .from('subscribers')
-        .select(`
-          *,
-          profiles!inner(membership_type)
-        `)
+        .select('*')
         .eq('subscribed', true)
-        .eq('profiles.membership_type', 'trustee')
 
       if (subsError) throw subsError
 
+      // Fetch trustee profiles to filter subscribers
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, membership_type')
+        .eq('membership_type', 'trustee')
+
+      if (profilesError) throw profilesError
+
+      // Filter subscribers to only include trustees
+      const trusteeUserIds = new Set(profilesData?.map(p => p.user_id) || [])
+      const trusteeSubscribers = subscribersData?.filter(sub => 
+        sub.user_id && trusteeUserIds.has(sub.user_id)
+      ) || []
+
       // Calculate stats using actual Stripe tier pricing: Starter $97/mo, Professional $247/qtr, Enterprise $897/yr
-      const total = subscribersData?.length || 0
-      const monthlyRev = subscribersData?.reduce((sum, sub) => {
+      const total = trusteeSubscribers.length
+      const monthlyRev = trusteeSubscribers.reduce((sum, sub) => {
         const tier = sub.subscription_tier
         // Convert all to monthly equivalent based on tier
         if (tier === 'Starter') return sum + 97 // $97/month
         if (tier === 'Professional') return sum + (247 / 3) // $247/3 months
         if (tier === 'Enterprise') return sum + (897 / 12) // $897/12 months
         return sum
-      }, 0) || 0
+      }, 0)
 
       // Fetch overdue payments using direct SQL query via RPC
       let typedOverdueData: OverduePayment[] = []
