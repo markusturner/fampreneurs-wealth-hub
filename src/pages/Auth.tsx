@@ -32,7 +32,7 @@ export default function Auth() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        navigate('/dashboard')
+        window.location.href = '/dashboard'
       }
     }
     checkUser()
