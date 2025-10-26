@@ -17,7 +17,7 @@ import { AdminGrowthCharts } from '@/components/dashboard/admin-growth-charts'
 import { AdminActivityHeatmap } from '@/components/dashboard/admin-activity-heatmap'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Settings, Heart, ArrowLeft, User, Shield, Zap, Video } from 'lucide-react'
+import { Settings, Heart, ArrowLeft, User, Shield, Zap, Video, BarChart3 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
@@ -63,7 +63,7 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="account" className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? (isAdmin ? 'grid-cols-5 h-auto' : isOwner ? 'grid-cols-4 h-auto' : 'grid-cols-2 h-auto') : (isAdmin ? 'grid-cols-5' : isOwner ? 'grid-cols-4' : 'grid-cols-2')}`}>
+        <TabsList className={`grid w-full ${isMobile ? (isAdmin ? 'grid-cols-6 h-auto' : isOwner ? 'grid-cols-4 h-auto' : 'grid-cols-2 h-auto') : (isAdmin ? 'grid-cols-6' : isOwner ? 'grid-cols-4' : 'grid-cols-2')}`}>
           <TabsTrigger 
             value="account" 
             className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
@@ -106,6 +106,17 @@ export function ProfileSettings() {
           )}
           {isAdmin && (
             <TabsTrigger 
+              value="metrics" 
+              className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
+            >
+              <BarChart3 className="h-4 w-4 shrink-0" />
+              <span className={isMobile ? "text-center leading-tight" : ""}>
+                Metrics
+              </span>
+            </TabsTrigger>
+          )}
+          {isAdmin && (
+            <TabsTrigger 
               value="admin" 
               className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
             >
@@ -139,11 +150,16 @@ export function ProfileSettings() {
         )}
 
         {isAdmin && (
-          <TabsContent value="admin" className="space-y-6">
+          <TabsContent value="metrics" className="space-y-6">
             <AdminAnalyticsOverview />
             <AdminGrowthCharts />
             <AdminActivityHeatmap />
             <AdminAnalyticsRevenue />
+          </TabsContent>
+        )}
+
+        {isAdmin && (
+          <TabsContent value="admin" className="space-y-6">
             <AdminAllUsersManagement />
             <AdminUserManagement />
             <AdminMassNotification />
