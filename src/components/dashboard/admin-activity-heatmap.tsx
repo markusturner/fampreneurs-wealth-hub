@@ -138,10 +138,10 @@ export function AdminActivityHeatmap() {
   const getLevelColor = (level: number) => {
     switch (level) {
       case 0: return 'bg-muted'
-      case 1: return 'bg-primary/20'
-      case 2: return 'bg-primary/40'
-      case 3: return 'bg-primary/60'
-      case 4: return 'bg-primary/80'
+      case 1: return '#6215c8'
+      case 2: return '#964a86'
+      case 3: return '#ca7f44'
+      case 4: return '#ffb500'
       default: return 'bg-muted'
     }
   }
@@ -186,7 +186,8 @@ export function AdminActivityHeatmap() {
                         <Tooltip key={`${weekIndex}-${dayIndex}`}>
                           <TooltipTrigger asChild>
                             <div 
-                              className={`w-3 h-3 rounded-sm ${day.date ? getLevelColor(day.level) : 'bg-transparent'}`}
+                              className={`w-3 h-3 rounded-sm ${!day.date ? 'bg-transparent' : day.level === 0 ? 'bg-muted' : ''}`}
+                              style={day.date && day.level > 0 ? { backgroundColor: getLevelColor(day.level) } : undefined}
                             />
                           </TooltipTrigger>
                           {day.date && (
@@ -209,7 +210,11 @@ export function AdminActivityHeatmap() {
           <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground">
             <span>Less</span>
             {[0, 1, 2, 3, 4].map(level => (
-              <div key={level} className={`w-3 h-3 rounded-sm ${getLevelColor(level)}`} />
+              <div 
+                key={level} 
+                className={`w-3 h-3 rounded-sm ${level === 0 ? 'bg-muted' : ''}`}
+                style={level > 0 ? { backgroundColor: getLevelColor(level) } : undefined}
+              />
             ))}
             <span>More</span>
           </div>
