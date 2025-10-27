@@ -82,9 +82,6 @@ export function AdminAnalyticsOverview() {
       // Calculate signups in last 30 days
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-      const recentSignups = profiles?.filter(p => 
-        new Date(p.created_at) >= thirtyDaysAgo
-      ).length || 0
 
       // Calculate trials in progress (users who have trial_days_remaining > 0)
       const trialsInProgress = subscribers?.filter(s => 
@@ -103,16 +100,12 @@ export function AdminAnalyticsOverview() {
         ? (cancelledLast30Days / totalSubscribersStart) * 100 
         : 0
 
-      // Calculate conversion rate (paid members / total users who signed up in last 30 days)
-      const paidFromRecentSignups = profiles?.filter(p => {
+      // Calculate paid signups in last 30 days (only users who became paid members)
+      const paidSignups = profiles?.filter(p => {
         const createdAt = new Date(p.created_at)
         if (createdAt < thirtyDaysAgo) return false
         return subscribers?.some(s => s.user_id === p.user_id && s.subscribed)
       }).length || 0
-      
-      const conversionRate = recentSignups > 0 
-        ? (paidFromRecentSignups / recentSignups) * 100 
-        : 0
 
       // Calculate trial conversion rate (users who converted from trial to paid)
       const convertedFromTrial = subscribers?.filter(s => 
@@ -129,8 +122,8 @@ export function AdminAnalyticsOverview() {
         paidMembers,
         mrr: Math.round(mrr),
         churn: Number(churn.toFixed(1)),
-        signups: recentSignups,
-        conversionRate: Number(conversionRate.toFixed(1)),
+        signups: paidSignups,
+        conversionRate: 0, // Removed since signups now only shows paid members
         trialsInProgress,
         trialConversionRate: Number(trialConversionRate.toFixed(1))
       })
@@ -178,14 +171,14 @@ export function AdminAnalyticsOverview() {
         <h3 className="text-lg font-semibold mb-4">Traffic (last 30 days)</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <MetricCard 
-            title="Signups" 
+            title="Paid signups" 
             value={metrics.signups} 
-            subtitle="New user registrations"
+            subtitle="New paid members (last 30d)"
           />
           <MetricCard 
-            title="Conversion rate" 
-            value={`${metrics.conversionRate}%`} 
-            subtitle="Signup to paid conversion"
+            title="Total users" 
+            value={metrics.paidMembers + metrics.trialsInProgress} 
+            subtitle="Paid + trial users"
           />
           <MetricCard 
             title="Trials in progress" 
@@ -208,11 +201,6 @@ export function AdminAnalyticsOverview() {
             title="Avg revenue per user" 
             value={metrics.paidMembers > 0 ? `$${Math.round(metrics.mrr / metrics.paidMembers)}` : '$0'} 
             subtitle="Per paying member"
-          />
-          <MetricCard 
-            title="Total users" 
-            value={metrics.paidMembers + metrics.trialsInProgress} 
-            subtitle="Paid + trial users"
           />
         </div>
       </div>
