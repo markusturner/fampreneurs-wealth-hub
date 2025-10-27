@@ -179,6 +179,7 @@ export function AdminGrowthCharts() {
                   stroke="hsl(var(--muted-foreground))"
                   fontSize={12}
                   tickLine={false}
+                  interval={4}
                 />
                 <YAxis 
                   stroke="hsl(var(--muted-foreground))"
@@ -215,6 +216,7 @@ export function AdminGrowthCharts() {
                   stroke="hsl(var(--muted-foreground))"
                   fontSize={12}
                   tickLine={false}
+                  interval={4}
                 />
                 <YAxis 
                   stroke="hsl(var(--muted-foreground))"
