@@ -155,10 +155,13 @@ export function AdminActivityHeatmap() {
         <div className="overflow-x-auto">
           <div className="inline-flex gap-1">
             <div className="flex flex-col gap-1 text-xs text-muted-foreground pr-2 pt-4">
-              <div className="h-3">Mon</div>
-              <div className="h-3">Wed</div>
-              <div className="h-3">Fri</div>
               <div className="h-3">Sun</div>
+              <div className="h-3">Mon</div>
+              <div className="h-3">Tue</div>
+              <div className="h-3">Wed</div>
+              <div className="h-3">Thu</div>
+              <div className="h-3">Fri</div>
+              <div className="h-3">Sat</div>
             </div>
             <div>
               {/* Month labels */}
