@@ -11,7 +11,6 @@ import { AdminMassNotification } from '@/components/dashboard/admin-mass-notific
 import { AdminAllUsersManagement } from '@/components/dashboard/admin-all-users-management'
 import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
 import { AdminTutorialVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
-import { AdminAnalyticsRevenue } from '@/components/dashboard/admin-analytics-revenue'
 import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-overview'
 import { AdminGrowthCharts } from '@/components/dashboard/admin-growth-charts'
 import { AdminActivityHeatmap } from '@/components/dashboard/admin-activity-heatmap'
@@ -151,7 +150,6 @@ export function ProfileSettings() {
 
         {isAdmin && (
           <TabsContent value="metrics" className="space-y-6">
-            <AdminAnalyticsRevenue />
             <AdminAnalyticsOverview />
             <AdminGrowthCharts />
             <AdminActivityHeatmap />
