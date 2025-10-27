@@ -57,13 +57,13 @@ export function AdminAnalyticsOverview() {
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
       
-      const { data: pageViews, error: pageViewsError } = await supabase
+      const { count: pageViewsCount, error: pageViewsError } = await supabase
         .from('page_views')
-        .select('id', { count: 'exact' })
+        .select('*', { count: 'exact', head: true })
         .gte('created_at', thirtyDaysAgo.toISOString())
         .eq('page_path', '/')
 
-      const visitors = pageViews?.length || 0
+      const visitors = pageViewsCount || 0
       setLandingPageVisitors(visitors)
       
       if (pageViewsError) {
