@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useDebounce } from '@/hooks/useDebounce'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -66,6 +67,8 @@ export function AdminAllUsersManagement() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [syncingStripe, setSyncingStripe] = useState(false)
+  const [fetchTrigger, setFetchTrigger] = useState(0)
+  const debouncedFetchTrigger = useDebounce(fetchTrigger, 800)
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null)
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
@@ -115,7 +118,7 @@ export function AdminAllUsersManagement() {
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setIsLoading(true)
     try {
       const { data: profilesData, error } = await supabase
@@ -130,38 +133,16 @@ export function AdminAllUsersManagement() {
         .from('subscribers')
         .select('user_id, subscription_tier, subscription_period, subscribed')
 
-      console.log('Fetched profiles:', profilesData?.length);
-      console.log('Fetched subscribers:', subscribersData?.length);
-      console.log('Raw subscribers data:', JSON.stringify(subscribersData, null, 2));
-
       // Merge subscription data with profiles
       const usersWithSubscriptions = (profilesData || []).map(profile => {
         const subscription = subscribersData?.find(sub => sub.user_id === profile.user_id)
         
-        console.log(`Processing ${profile.email}:`, {
-          foundSubscription: !!subscription,
-          rawSubscription: subscription
-        });
-        
-        const merged = {
+        return {
           ...profile,
           subscription_tier: subscription?.subscription_tier || null,
           subscription_period: subscription?.subscription_period || null,
           subscribed: subscription?.subscribed === true
         }
-        
-        // Log trustee subscription status
-        if (profile.membership_type === 'trustee') {
-          console.log(`Trustee ${profile.email} MERGED:`, {
-            subscribed: merged.subscribed,
-            subscribedType: typeof merged.subscribed,
-            tier: merged.subscription_tier,
-            period: merged.subscription_period,
-            rawSubData: subscription
-          });
-        }
-        
-        return merged;
       })
 
       setUsers(usersWithSubscriptions)
@@ -176,7 +157,7 @@ export function AdminAllUsersManagement() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [toast])
 
   useEffect(() => {
     // Start with initial data fetch, then sync in background
@@ -199,7 +180,7 @@ export function AdminAllUsersManagement() {
           table: 'profiles'
         },
         () => {
-          fetchUsers()
+          setFetchTrigger(prev => prev + 1)
         }
       )
       .subscribe()
@@ -214,7 +195,7 @@ export function AdminAllUsersManagement() {
           table: 'subscribers'
         },
         () => {
-          fetchUsers()
+          setFetchTrigger(prev => prev + 1)
         }
       )
       .subscribe()
@@ -223,7 +204,14 @@ export function AdminAllUsersManagement() {
       supabase.removeChannel(profilesChannel)
       supabase.removeChannel(subscribersChannel)
     }
-  }, [])
+  }, [fetchUsers])
+
+  // Debounced fetch effect
+  useEffect(() => {
+    if (debouncedFetchTrigger > 0) {
+      fetchUsers()
+    }
+  }, [debouncedFetchTrigger, fetchUsers])
 
   useEffect(() => {
     const filtered = users.filter(user => {
@@ -471,14 +459,7 @@ export function AdminAllUsersManagement() {
     return badges
   }
 
-  const getPackageInfo = (user: UserProfile) => {
-    console.log(`getPackageInfo for ${user.email}:`, {
-      subscribed: user.subscribed,
-      subscribedType: typeof user.subscribed,
-      tier: user.subscription_tier,
-      conditionResult: user.subscribed === true && !!user.subscription_tier
-    });
-    
+  const getPackageInfo = useCallback((user: UserProfile) => {
     // Check for active subscription first - use explicit === true check
     if (user.subscribed === true && user.subscription_tier) {
       // Map tier names from Stripe to display names
@@ -503,7 +484,7 @@ export function AdminAllUsersManagement() {
 
     // No active subscription
     return { package: 'Free', amount: '$0' }
-  }
+  }, [])
 
   const getUserViewDescription = (user: UserProfile) => {
     if (user.is_moderator) {
