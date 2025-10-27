@@ -31,6 +31,30 @@ interface RolePermission {
   is_granted: boolean
 }
 
+// Master list of all possible permissions
+const ALL_PERMISSIONS = [
+  { key: 'view_all_users', name: 'View All Users', description: 'Can view all user accounts and profiles' },
+  { key: 'manage_users', name: 'Manage Users', description: 'Can edit and delete user accounts' },
+  { key: 'send_notifications', name: 'Send Notifications', description: 'Can send mass notifications to users' },
+  { key: 'view_analytics', name: 'View Analytics', description: 'Can view platform analytics and metrics' },
+  { key: 'manage_meetings', name: 'Manage Meetings', description: 'Can manage all meetings and sessions' },
+  { key: 'access_admin_panel', name: 'Access Admin Panel', description: 'Can access the admin panel' },
+  { key: 'view_dashboard', name: 'View Dashboard', description: 'Can access main dashboard' },
+  { key: 'manage_family', name: 'Manage Family', description: 'Can manage family members and governance' },
+  { key: 'view_documents', name: 'View Documents', description: 'Can access family documents' },
+  { key: 'manage_investments', name: 'Manage Investments', description: 'Can manage investment accounts' },
+  { key: 'view_calendar', name: 'View Calendar', description: 'Can access family calendar' },
+  { key: 'create_meetings', name: 'Create Meetings', description: 'Can schedule family meetings' },
+  { key: 'view_announcements', name: 'View Announcements', description: 'Can view family announcements' },
+  { key: 'view_contacts', name: 'View Contacts', description: 'Can view family contact information' },
+  { key: 'request_documents', name: 'Request Documents', description: 'Can request access to documents' },
+  { key: 'manage_roles', name: 'Manage Roles', description: 'Can manage role permissions' },
+  { key: 'zapier_integration', name: 'Zapier Integration', description: 'Can access Zapier integration' },
+  { key: 'full_system_access', name: 'Full System Access', description: 'Complete control over all platform features' },
+]
+
+const ALL_ROLES = ['owner', 'admin', 'trustee', 'family_member']
+
 const roleColors: Record<string, { bg: string; text: string }> = {
   owner: { bg: '#22c55e', text: '#ffffff' },
   admin: { bg: '#ef4444', text: '#ffffff' },
@@ -79,20 +103,44 @@ export function RolePermissionsManager() {
     }
   }
 
-  const handlePermissionToggle = async (permissionId: string, currentValue: boolean) => {
-    setSavingPermissions(prev => new Set(prev).add(permissionId))
+  const handlePermissionToggle = async (role: string, permissionKey: string, currentPermission: RolePermission | undefined) => {
+    const permId = currentPermission?.id || `temp-${role}-${permissionKey}`
+    setSavingPermissions(prev => new Set(prev).add(permId))
     
     try {
-      const { error } = await supabase
-        .from('role_permissions')
-        .update({ is_granted: !currentValue })
-        .eq('id', permissionId)
+      if (currentPermission) {
+        // Update existing permission
+        const { error } = await supabase
+          .from('role_permissions')
+          .update({ is_granted: !currentPermission.is_granted })
+          .eq('id', currentPermission.id)
 
-      if (error) throw error
+        if (error) throw error
 
-      setPermissions(prev => 
-        prev.map(p => p.id === permissionId ? { ...p, is_granted: !currentValue } : p)
-      )
+        setPermissions(prev => 
+          prev.map(p => p.id === currentPermission.id ? { ...p, is_granted: !currentPermission.is_granted } : p)
+        )
+      } else {
+        // Create new permission
+        const masterPerm = ALL_PERMISSIONS.find(p => p.key === permissionKey)
+        if (!masterPerm) return
+
+        const { data, error } = await supabase
+          .from('role_permissions')
+          .insert({
+            role,
+            permission_key: permissionKey,
+            permission_name: masterPerm.name,
+            permission_description: masterPerm.description,
+            is_granted: true
+          })
+          .select()
+          .single()
+
+        if (error) throw error
+
+        setPermissions(prev => [...prev, data])
+      }
 
       toast({
         title: "Success",
@@ -108,7 +156,7 @@ export function RolePermissionsManager() {
     } finally {
       setSavingPermissions(prev => {
         const next = new Set(prev)
-        next.delete(permissionId)
+        next.delete(permId)
         return next
       })
     }
@@ -121,8 +169,6 @@ export function RolePermissionsManager() {
     acc[perm.role].push(perm)
     return acc
   }, {} as Record<string, RolePermission[]>)
-
-  const roles = Object.keys(groupedPermissions).sort()
 
   if (isLoading) {
     return (
@@ -158,10 +204,9 @@ export function RolePermissionsManager() {
         </div>
 
         <Accordion type="single" collapsible className="w-full space-y-4">
-          {roles.map((role) => {
-            const rolePerms = groupedPermissions[role]
+          {ALL_ROLES.map((role) => {
+            const rolePerms = groupedPermissions[role] || []
             const grantedCount = rolePerms.filter(p => p.is_granted).length
-            const totalCount = rolePerms.length
             const colors = roleColors[role] || { bg: '#6b7280', text: '#ffffff' }
 
             return (
@@ -181,7 +226,7 @@ export function RolePermissionsManager() {
                       </Badge>
                       <div className="text-left">
                         <p className="text-sm font-medium">
-                          {grantedCount} of {totalCount} permissions enabled
+                          {grantedCount} of {ALL_PERMISSIONS.length} permissions enabled
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {roleDescriptions[role] || 'Custom role'}
@@ -201,17 +246,20 @@ export function RolePermissionsManager() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {rolePerms.map((perm) => {
-                          const isSaving = savingPermissions.has(perm.id)
+                        {ALL_PERMISSIONS.map((masterPerm) => {
+                          const existingPerm = rolePerms.find(p => p.permission_key === masterPerm.key)
+                          const permId = existingPerm?.id || `temp-${role}-${masterPerm.key}`
+                          const isSaving = savingPermissions.has(permId)
+                          const isGranted = existingPerm?.is_granted || false
                           const isOwnerRole = role === 'owner'
 
                           return (
-                            <TableRow key={perm.id}>
+                            <TableRow key={masterPerm.key}>
                               <TableCell className="font-medium">
-                                {perm.permission_name}
+                                {masterPerm.name}
                               </TableCell>
                               <TableCell className="text-sm text-muted-foreground">
-                                {perm.permission_description || 'No description'}
+                                {masterPerm.description}
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex items-center justify-end gap-2">
@@ -219,8 +267,8 @@ export function RolePermissionsManager() {
                                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                                   )}
                                   <Switch
-                                    checked={perm.is_granted}
-                                    onCheckedChange={() => handlePermissionToggle(perm.id, perm.is_granted)}
+                                    checked={isGranted}
+                                    onCheckedChange={() => handlePermissionToggle(role, masterPerm.key, existingPerm)}
                                     disabled={isSaving || isOwnerRole}
                                   />
                                 </div>
