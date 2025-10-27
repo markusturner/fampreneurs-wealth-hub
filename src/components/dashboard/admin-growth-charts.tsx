@@ -231,10 +231,10 @@ export function AdminGrowthCharts() {
                 <Line 
                   type="monotone" 
                   dataKey="activeMembers" 
-                  stroke="hsl(var(--accent-foreground))" 
+                  stroke="hsl(180 100% 50%)" 
                   strokeWidth={3}
                   dot={false}
-                  style={{ filter: 'drop-shadow(0 0 8px hsl(var(--accent-foreground) / 0.5))' }}
+                  style={{ filter: 'drop-shadow(0 0 12px hsl(180 100% 50% / 0.8))' }}
                 />
               </LineChart>
             </ResponsiveContainer>
