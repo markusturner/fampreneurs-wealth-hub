@@ -14,9 +14,10 @@ import { AdminTutorialVideoManager } from '@/components/dashboard/admin-tutorial
 import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-overview'
 import { AdminGrowthCharts } from '@/components/dashboard/admin-growth-charts'
 import { AdminActivityHeatmap } from '@/components/dashboard/admin-activity-heatmap'
+import { RolePermissionsManager } from '@/components/dashboard/role-permissions-manager'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Settings, Heart, ArrowLeft, User, Shield, Zap, Video, BarChart3 } from 'lucide-react'
+import { Settings, Heart, ArrowLeft, User, Shield, Zap, Video, BarChart3, Lock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
@@ -62,7 +63,7 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="account" className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? (isAdmin ? 'grid-cols-6 h-auto' : isOwner ? 'grid-cols-5 h-auto' : 'grid-cols-2 h-auto') : (isAdmin ? 'grid-cols-6' : isOwner ? 'grid-cols-5' : 'grid-cols-2')}`}>
+        <TabsList className={`grid w-full ${isMobile ? (isAdmin ? 'grid-cols-7 h-auto' : isOwner ? 'grid-cols-6 h-auto' : 'grid-cols-2 h-auto') : (isAdmin ? 'grid-cols-7' : isOwner ? 'grid-cols-6' : 'grid-cols-2')}`}>
           <TabsTrigger 
             value="account" 
             className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
@@ -114,6 +115,17 @@ export function ProfileSettings() {
               </span>
             </TabsTrigger>
           )}
+          {isOwner && (
+            <TabsTrigger 
+              value="permissions" 
+              className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
+            >
+              <Lock className="h-4 w-4 shrink-0" />
+              <span className={isMobile ? "text-center leading-tight" : ""}>
+                {isMobile ? "Roles" : "Role Permissions"}
+              </span>
+            </TabsTrigger>
+          )}
           {isAdmin && (
             <TabsTrigger 
               value="admin" 
@@ -153,6 +165,12 @@ export function ProfileSettings() {
             <AdminAnalyticsOverview />
             <AdminGrowthCharts />
             <AdminActivityHeatmap />
+          </TabsContent>
+        )}
+
+        {isOwner && (
+          <TabsContent value="permissions">
+            <RolePermissionsManager />
           </TabsContent>
         )}
 

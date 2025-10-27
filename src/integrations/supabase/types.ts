@@ -3243,6 +3243,39 @@ export type Database = {
         }
         Relationships: []
       }
+      role_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          is_granted: boolean
+          permission_description: string | null
+          permission_key: string
+          permission_name: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_granted?: boolean
+          permission_description?: string | null
+          permission_key: string
+          permission_name: string
+          role: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_granted?: boolean
+          permission_description?: string | null
+          permission_key?: string
+          permission_name?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       satisfaction_scores: {
         Row: {
           created_at: string
