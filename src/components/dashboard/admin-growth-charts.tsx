@@ -196,8 +196,9 @@ export function AdminGrowthCharts() {
                   type="monotone" 
                   dataKey="totalMembers" 
                   stroke="hsl(var(--primary))" 
-                  strokeWidth={2}
-                  dot={false}
+                  strokeWidth={3}
+                  dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -231,8 +232,9 @@ export function AdminGrowthCharts() {
                   type="monotone" 
                   dataKey="activeMembers" 
                   stroke="hsl(var(--primary))" 
-                  strokeWidth={2}
-                  dot={false}
+                  strokeWidth={3}
+                  dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6 }}
                 />
               </LineChart>
             </ResponsiveContainer>
