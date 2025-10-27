@@ -165,14 +165,21 @@ export function AdminActivityHeatmap() {
             </div>
             <div>
               {/* Month labels */}
-              <div className="flex gap-1 text-xs text-muted-foreground mb-1 h-4">
+              <div className="relative flex text-xs text-muted-foreground mb-1 h-4" style={{ width: `${weeks.length * 16}px` }}>
                 {weeks.map((week, i) => {
-                  if (week[0]?.date && i % 4 === 0) {
-                    return (
-                      <div key={i} className="w-3" style={{ marginLeft: i === 0 ? 0 : '12px' }}>
-                        {format(new Date(week[0].date), 'MMM')}
-                      </div>
-                    )
+                  if (week[0]?.date) {
+                    const currentMonth = format(new Date(week[0].date), 'MMM')
+                    const previousMonth = i > 0 && weeks[i - 1]?.[0]?.date 
+                      ? format(new Date(weeks[i - 1][0].date), 'MMM')
+                      : null
+                    
+                    if (i === 0 || currentMonth !== previousMonth) {
+                      return (
+                        <div key={i} className="absolute text-xs" style={{ left: `${i * 16}px` }}>
+                          {currentMonth}
+                        </div>
+                      )
+                    }
                   }
                   return null
                 })}
