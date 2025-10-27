@@ -44,31 +44,72 @@ export function AdminGrowthCharts() {
       const days = 30
       const chartData: GrowthData[] = []
       const today = new Date()
+      const startDate = subDays(today, days)
 
-      // Get activity data (we'll consider users who created content or logged in)
-      const { data: activities } = await supabase
-        .from('family_messages')
-        .select('sender_id, created_at')
-        .gte('created_at', format(subDays(today, days), 'yyyy-MM-dd'))
+      // Get all activity data from multiple sources
+      const [
+        { data: messages },
+        { data: posts },
+        { data: comments },
+        { data: meetings }
+      ] = await Promise.all([
+        supabase
+          .from('family_messages')
+          .select('sender_id, created_at')
+          .gte('created_at', format(startDate, 'yyyy-MM-dd')),
+        supabase
+          .from('community_posts')
+          .select('user_id, created_at')
+          .gte('created_at', format(startDate, 'yyyy-MM-dd')),
+        supabase
+          .from('community_comments')
+          .select('user_id, created_at')
+          .gte('created_at', format(startDate, 'yyyy-MM-dd')),
+        supabase
+          .from('meetings')
+          .select('created_by, created_at')
+          .gte('created_at', format(startDate, 'yyyy-MM-dd'))
+      ])
 
-      const activeUserIds = new Set(activities?.map(a => a.sender_id) || [])
+      // Build activity map by date and user
+      const activityByDate: Record<string, Set<string>> = {}
+      
+      messages?.forEach(m => {
+        const date = format(new Date(m.created_at), 'yyyy-MM-dd')
+        if (!activityByDate[date]) activityByDate[date] = new Set()
+        activityByDate[date].add(m.sender_id)
+      })
+      
+      posts?.forEach(p => {
+        const date = format(new Date(p.created_at), 'yyyy-MM-dd')
+        if (!activityByDate[date]) activityByDate[date] = new Set()
+        activityByDate[date].add(p.user_id)
+      })
+      
+      comments?.forEach(c => {
+        const date = format(new Date(c.created_at), 'yyyy-MM-dd')
+        if (!activityByDate[date]) activityByDate[date] = new Set()
+        activityByDate[date].add(c.user_id)
+      })
+      
+      meetings?.forEach(m => {
+        const date = format(new Date(m.created_at), 'yyyy-MM-dd')
+        if (!activityByDate[date]) activityByDate[date] = new Set()
+        if (m.created_by) activityByDate[date].add(m.created_by)
+      })
 
       for (let i = days; i >= 0; i--) {
         const date = subDays(today, i)
         const dateStr = format(date, 'MMM dd')
+        const dateKey = format(date, 'yyyy-MM-dd')
         
         // Count total members up to this date
         const totalMembers = profiles.filter(p => 
           new Date(p.created_at) <= date
         ).length
 
-        // For simplicity, we'll estimate active members as those who had activity
-        // in the week before this date
-        const weekBefore = subDays(date, 7)
-        const activeMembers = profiles.filter(p => {
-          const created = new Date(p.created_at)
-          return created <= date && activeUserIds.has(p.user_id)
-        }).length
+        // Count active members for this specific date
+        const activeMembers = activityByDate[dateKey]?.size || 0
 
         chartData.push({
           date: dateStr,
@@ -81,7 +122,16 @@ export function AdminGrowthCharts() {
       const currentTotal = chartData[chartData.length - 1]?.totalMembers || 0
       const startTotal = chartData[0]?.totalMembers || 0
       const growth = currentTotal - startTotal
-      const activeCount = chartData[chartData.length - 1]?.activeMembers || 0
+      
+      // Active users in the last 7 days
+      const last7Days = chartData.slice(-7)
+      const activeUserSet = new Set<string>()
+      last7Days.forEach(day => {
+        const dateKey = format(subDays(today, chartData.length - 1 - chartData.indexOf(day)), 'yyyy-MM-dd')
+        activityByDate[dateKey]?.forEach(userId => activeUserSet.add(userId))
+      })
+      
+      const activeCount = activeUserSet.size
       const activePercent = currentTotal > 0 ? Math.round((activeCount / currentTotal) * 100) : 0
 
       setSummary({

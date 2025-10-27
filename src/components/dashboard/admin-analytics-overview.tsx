@@ -62,6 +62,8 @@ export function AdminAnalyticsOverview() {
         .from('profiles')
         .select('user_id, membership_type, created_at')
 
+      const totalUsers = profiles?.length || 0
+
       // Calculate paid members (subscribed = true)
       const paidMembers = subscribers?.filter(s => s.subscribed === true).length || 0
 
@@ -71,8 +73,8 @@ export function AdminAnalyticsOverview() {
         .reduce((sum, sub) => {
           const tier = sub.subscription_tier
           if (tier === 'Starter') return sum + 97
-          if (tier === 'Professional') return sum + (247 / 3)
-          if (tier === 'Enterprise') return sum + (897 / 12)
+          if (tier === 'Professional') return sum + 247
+          if (tier === 'Enterprise') return sum + 897
           return sum
         }, 0) || 0
 
@@ -83,44 +85,53 @@ export function AdminAnalyticsOverview() {
         new Date(p.created_at) >= thirtyDaysAgo
       ).length || 0
 
-      // Calculate trials in progress
+      // Calculate trials in progress (users who have trial_days_remaining > 0)
       const trialsInProgress = subscribers?.filter(s => 
-        s.trial_days_remaining && s.trial_days_remaining > 0
+        s.trial_days_remaining && s.trial_days_remaining > 0 && !s.subscribed
       ).length || 0
 
-      // Calculate churn (cancelled in last 30 days / total at start of period)
-      const cancelledLast30Days = subscribers?.filter(s => 
-        !s.subscribed && s.subscription_end && 
-        new Date(s.subscription_end) >= thirtyDaysAgo
-      ).length || 0
+      // Calculate churn (cancelled in last 30 days)
+      const cancelledLast30Days = subscribers?.filter(s => {
+        if (!s.subscription_end) return false
+        const endDate = new Date(s.subscription_end)
+        return !s.subscribed && endDate >= thirtyDaysAgo && endDate <= new Date()
+      }).length || 0
+      
       const totalSubscribersStart = paidMembers + cancelledLast30Days
       const churn = totalSubscribersStart > 0 
         ? (cancelledLast30Days / totalSubscribersStart) * 100 
         : 0
 
-      // Calculate conversion rate (paid / total signups in last 30 days)
+      // Calculate conversion rate (paid members / total users who signed up in last 30 days)
+      const paidFromRecentSignups = profiles?.filter(p => {
+        const createdAt = new Date(p.created_at)
+        if (createdAt < thirtyDaysAgo) return false
+        return subscribers?.some(s => s.user_id === p.user_id && s.subscribed)
+      }).length || 0
+      
       const conversionRate = recentSignups > 0 
-        ? ((paidMembers / recentSignups) * 100) 
+        ? (paidFromRecentSignups / recentSignups) * 100 
         : 0
 
-      // Calculate trial conversion rate
-      const convertedTrials = subscribers?.filter(s => 
+      // Calculate trial conversion rate (users who converted from trial to paid)
+      const convertedFromTrial = subscribers?.filter(s => 
         s.subscribed && s.trial_end_date && 
         new Date(s.trial_end_date) >= thirtyDaysAgo
       ).length || 0
-      const totalTrials = trialsInProgress + convertedTrials
-      const trialConversionRate = totalTrials > 0 
-        ? (convertedTrials / totalTrials) * 100 
+      
+      const totalTrialsStarted = trialsInProgress + convertedFromTrial
+      const trialConversionRate = totalTrialsStarted > 0 
+        ? (convertedFromTrial / totalTrialsStarted) * 100 
         : 0
 
       setMetrics({
         paidMembers,
         mrr: Math.round(mrr),
-        churn: Number(churn.toFixed(2)),
+        churn: Number(churn.toFixed(1)),
         signups: recentSignups,
-        conversionRate: Number(conversionRate.toFixed(2)),
+        conversionRate: Number(conversionRate.toFixed(1)),
         trialsInProgress,
-        trialConversionRate: Number(trialConversionRate.toFixed(2))
+        trialConversionRate: Number(trialConversionRate.toFixed(1))
       })
     } catch (error) {
       console.error('Error fetching metrics:', error)

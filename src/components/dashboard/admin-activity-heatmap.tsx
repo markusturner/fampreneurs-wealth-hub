@@ -26,29 +26,57 @@ export function AdminActivityHeatmap() {
       const startDate = startOfYear(new Date())
       const today = new Date()
 
-      // Get all activity (messages, meetings, etc.)
-      const { data: messages } = await supabase
-        .from('family_messages')
-        .select('created_at')
-        .gte('created_at', format(startDate, 'yyyy-MM-dd'))
-
-      const { data: meetings } = await supabase
-        .from('meetings')
-        .select('created_at')
-        .gte('created_at', format(startDate, 'yyyy-MM-dd'))
+      // Get all activity from multiple sources
+      const [
+        { data: messages },
+        { data: meetings },
+        { data: posts },
+        { data: comments },
+        { data: profiles },
+        { data: documents }
+      ] = await Promise.all([
+        supabase
+          .from('family_messages')
+          .select('created_at')
+          .gte('created_at', format(startDate, 'yyyy-MM-dd')),
+        supabase
+          .from('meetings')
+          .select('created_at')
+          .gte('created_at', format(startDate, 'yyyy-MM-dd')),
+        supabase
+          .from('community_posts')
+          .select('created_at')
+          .gte('created_at', format(startDate, 'yyyy-MM-dd')),
+        supabase
+          .from('community_comments')
+          .select('created_at')
+          .gte('created_at', format(startDate, 'yyyy-MM-dd')),
+        supabase
+          .from('profiles')
+          .select('created_at')
+          .gte('created_at', format(startDate, 'yyyy-MM-dd')),
+        supabase
+          .from('family_documents')
+          .select('created_at')
+          .gte('created_at', format(startDate, 'yyyy-MM-dd'))
+      ])
 
       // Count activity per day
       const activityCount: Record<string, number> = {}
       
-      messages?.forEach(m => {
-        const date = format(new Date(m.created_at), 'yyyy-MM-dd')
-        activityCount[date] = (activityCount[date] || 0) + 1
-      })
+      const addActivity = (items: any[] | null) => {
+        items?.forEach(item => {
+          const date = format(new Date(item.created_at), 'yyyy-MM-dd')
+          activityCount[date] = (activityCount[date] || 0) + 1
+        })
+      }
 
-      meetings?.forEach(m => {
-        const date = format(new Date(m.created_at), 'yyyy-MM-dd')
-        activityCount[date] = (activityCount[date] || 0) + 1
-      })
+      addActivity(messages)
+      addActivity(meetings)
+      addActivity(posts)
+      addActivity(comments)
+      addActivity(profiles)
+      addActivity(documents)
 
       // Get max count for normalization
       const maxCount = Math.max(...Object.values(activityCount), 1)
