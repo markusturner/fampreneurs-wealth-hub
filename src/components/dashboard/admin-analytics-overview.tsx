@@ -43,6 +43,7 @@ export function AdminAnalyticsOverview() {
     trialConversionRate: 0
   })
   const [loading, setLoading] = useState(true)
+  const [landingPageVisitors, setLandingPageVisitors] = useState(0)
 
   useEffect(() => {
     fetchMetrics()
@@ -51,6 +52,29 @@ export function AdminAnalyticsOverview() {
   const fetchMetrics = async () => {
     try {
       setLoading(true)
+
+      // Fetch landing page analytics for last 30 days
+      const thirtyDaysAgo = new Date()
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+      const startDate = thirtyDaysAgo.toISOString().split('T')[0]
+      const endDate = new Date().toISOString().split('T')[0]
+      
+      let visitors = 0
+      try {
+        const { data: analyticsData } = await supabase.functions.invoke('analytics--read_project_analytics', {
+          body: { 
+            startdate: startDate, 
+            enddate: endDate, 
+            granularity: 'daily' 
+          }
+        })
+        
+        // Calculate total landing page visitors
+        visitors = analyticsData?.reduce((sum: number, day: any) => sum + (day.visitors || 0), 0) || 0
+        setLandingPageVisitors(visitors)
+      } catch (error) {
+        console.error('Error fetching analytics:', error)
+      }
 
       // Get all subscribers
       const { data: subscribers } = await supabase
@@ -79,9 +103,6 @@ export function AdminAnalyticsOverview() {
           return sum
         }, 0) || 0
 
-      // Calculate signups in last 30 days
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
       // Calculate trials in progress (users who have trial_days_remaining > 0)
       const trialsInProgress = subscribers?.filter(s => 
@@ -107,6 +128,11 @@ export function AdminAnalyticsOverview() {
         return subscribers?.some(s => s.user_id === p.user_id && s.subscribed)
       }).length || 0
 
+      // Calculate conversion rate (paid signups / landing page visitors)
+      const conversionRate = visitors > 0 
+        ? (paidSignups / visitors) * 100 
+        : 0
+
       // Calculate trial conversion rate (users who converted from trial to paid)
       const convertedFromTrial = subscribers?.filter(s => 
         s.subscribed && s.trial_end_date && 
@@ -123,7 +149,7 @@ export function AdminAnalyticsOverview() {
         mrr: Math.round(mrr),
         churn: Number(churn.toFixed(1)),
         signups: paidSignups,
-        conversionRate: 0, // Removed since signups now only shows paid members
+        conversionRate: Number(conversionRate.toFixed(1)),
         trialsInProgress,
         trialConversionRate: Number(trialConversionRate.toFixed(1))
       })
@@ -171,19 +197,19 @@ export function AdminAnalyticsOverview() {
         <h3 className="text-lg font-semibold mb-4">Traffic (last 30 days)</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <MetricCard 
+            title="Landing page visitors" 
+            value={landingPageVisitors} 
+            subtitle="Total page views"
+          />
+          <MetricCard 
             title="Paid signups" 
             value={metrics.signups} 
-            subtitle="New paid members (last 30d)"
+            subtitle="New paid members"
           />
           <MetricCard 
-            title="Total users" 
-            value={metrics.paidMembers + metrics.trialsInProgress} 
-            subtitle="Paid + trial users"
-          />
-          <MetricCard 
-            title="Trials in progress" 
-            value={metrics.trialsInProgress} 
-            subtitle="Active trial users"
+            title="Conversion rate" 
+            value={`${metrics.conversionRate}%`} 
+            subtitle="Visitors to paid members"
           />
         </div>
       </div>
