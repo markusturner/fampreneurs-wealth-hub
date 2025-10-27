@@ -53,27 +53,21 @@ export function AdminAnalyticsOverview() {
     try {
       setLoading(true)
 
-      // Fetch landing page analytics for last 30 days
+      // Fetch landing page views from last 30 days
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-      const startDate = thirtyDaysAgo.toISOString().split('T')[0]
-      const endDate = new Date().toISOString().split('T')[0]
       
-      let visitors = 0
-      try {
-        const { data: analyticsData } = await supabase.functions.invoke('analytics--read_project_analytics', {
-          body: { 
-            startdate: startDate, 
-            enddate: endDate, 
-            granularity: 'daily' 
-          }
-        })
-        
-        // Calculate total landing page visitors
-        visitors = analyticsData?.reduce((sum: number, day: any) => sum + (day.visitors || 0), 0) || 0
-        setLandingPageVisitors(visitors)
-      } catch (error) {
-        console.error('Error fetching analytics:', error)
+      const { data: pageViews, error: pageViewsError } = await supabase
+        .from('page_views')
+        .select('id', { count: 'exact' })
+        .gte('created_at', thirtyDaysAgo.toISOString())
+        .eq('page_path', '/')
+
+      const visitors = pageViews?.length || 0
+      setLandingPageVisitors(visitors)
+      
+      if (pageViewsError) {
+        console.error('Error fetching page views:', pageViewsError)
       }
 
       // Get all subscribers
