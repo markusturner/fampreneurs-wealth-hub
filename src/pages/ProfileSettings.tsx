@@ -62,7 +62,7 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="account" className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? (isAdmin ? 'grid-cols-6 h-auto' : isOwner ? 'grid-cols-4 h-auto' : 'grid-cols-2 h-auto') : (isAdmin ? 'grid-cols-6' : isOwner ? 'grid-cols-4' : 'grid-cols-2')}`}>
+        <TabsList className={`grid w-full ${isMobile ? (isAdmin ? 'grid-cols-6 h-auto' : isOwner ? 'grid-cols-5 h-auto' : 'grid-cols-2 h-auto') : (isAdmin ? 'grid-cols-6' : isOwner ? 'grid-cols-5' : 'grid-cols-2')}`}>
           <TabsTrigger 
             value="account" 
             className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
@@ -103,7 +103,7 @@ export function ProfileSettings() {
               </span>
             </TabsTrigger>
           )}
-          {isAdmin && (
+          {(isAdmin || isOwner) && (
             <TabsTrigger 
               value="metrics" 
               className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}
@@ -148,7 +148,7 @@ export function ProfileSettings() {
           </TabsContent>
         )}
 
-        {isAdmin && (
+        {(isAdmin || isOwner) && (
           <TabsContent value="metrics" className="space-y-6">
             <AdminAnalyticsOverview />
             <AdminGrowthCharts />
