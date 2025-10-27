@@ -68,13 +68,14 @@ export function AdminAnalyticsOverview() {
       const paidMembers = subscribers?.filter(s => s.subscribed === true).length || 0
 
       // Calculate MRR based on subscription tiers
+      // Starter: $97/month, Professional: $247/quarter, Enterprise: $897/annual
       const mrr = subscribers
         ?.filter(s => s.subscribed === true)
         .reduce((sum, sub) => {
           const tier = sub.subscription_tier
-          if (tier === 'Starter') return sum + 97
-          if (tier === 'Professional') return sum + 247
-          if (tier === 'Enterprise') return sum + 897
+          if (tier === 'Starter') return sum + 97 // Monthly
+          if (tier === 'Professional') return sum + (247 / 3) // Quarterly to monthly
+          if (tier === 'Enterprise') return sum + (897 / 12) // Annual to monthly
           return sum
         }, 0) || 0
 
