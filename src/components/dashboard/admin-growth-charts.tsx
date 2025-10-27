@@ -195,10 +195,10 @@ export function AdminGrowthCharts() {
                 <Line 
                   type="monotone" 
                   dataKey="totalMembers" 
-                  stroke="hsl(var(--primary))" 
+                  stroke="hsl(var(--accent-foreground))" 
                   strokeWidth={3}
-                  dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6 }}
+                  dot={false}
+                  style={{ filter: 'drop-shadow(0 0 8px hsl(var(--accent-foreground) / 0.5))' }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -231,10 +231,10 @@ export function AdminGrowthCharts() {
                 <Line 
                   type="monotone" 
                   dataKey="activeMembers" 
-                  stroke="hsl(var(--primary))" 
+                  stroke="hsl(var(--accent-foreground))" 
                   strokeWidth={3}
-                  dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6 }}
+                  dot={false}
+                  style={{ filter: 'drop-shadow(0 0 8px hsl(var(--accent-foreground) / 0.5))' }}
                 />
               </LineChart>
             </ResponsiveContainer>
