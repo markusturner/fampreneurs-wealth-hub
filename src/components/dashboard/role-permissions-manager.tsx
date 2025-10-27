@@ -157,42 +157,6 @@ export function RolePermissionsManager() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {roles.map((role) => {
-            const rolePerms = groupedPermissions[role]
-            const grantedCount = rolePerms.filter(p => p.is_granted).length
-            const totalCount = rolePerms.length
-            const colors = roleColors[role] || { bg: '#6b7280', text: '#ffffff' }
-
-            return (
-              <Card key={role} className="border-2">
-                <CardContent className="pt-6">
-                  <div className="space-y-3">
-                    <Badge 
-                      style={{ 
-                        backgroundColor: colors.bg, 
-                        color: colors.text,
-                        border: 'none'
-                      }}
-                      className="text-sm"
-                    >
-                      {role.replace('_', ' ').toUpperCase()}
-                    </Badge>
-                    <div>
-                      <div className="text-3xl font-bold">{totalCount}</div>
-                      <p className="text-sm text-muted-foreground">Total Permissions</p>
-                    </div>
-                    <div>
-                      <div className="text-xl font-semibold text-primary">{grantedCount}</div>
-                      <p className="text-xs text-muted-foreground">Currently Enabled</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-
         <Accordion type="single" collapsible className="w-full space-y-4">
           {roles.map((role) => {
             const rolePerms = groupedPermissions[role]
