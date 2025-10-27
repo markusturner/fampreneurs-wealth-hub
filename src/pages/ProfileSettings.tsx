@@ -151,10 +151,10 @@ export function ProfileSettings() {
 
         {isAdmin && (
           <TabsContent value="metrics" className="space-y-6">
+            <AdminAnalyticsRevenue />
             <AdminAnalyticsOverview />
             <AdminGrowthCharts />
             <AdminActivityHeatmap />
-            <AdminAnalyticsRevenue />
           </TabsContent>
         )}
 
