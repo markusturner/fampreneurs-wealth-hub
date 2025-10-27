@@ -132,23 +132,32 @@ export function AdminAllUsersManagement() {
 
       console.log('Fetched profiles:', profilesData?.length);
       console.log('Fetched subscribers:', subscribersData?.length);
+      console.log('Raw subscribers data:', JSON.stringify(subscribersData, null, 2));
 
       // Merge subscription data with profiles
       const usersWithSubscriptions = (profilesData || []).map(profile => {
         const subscription = subscribersData?.find(sub => sub.user_id === profile.user_id)
+        
+        console.log(`Processing ${profile.email}:`, {
+          foundSubscription: !!subscription,
+          rawSubscription: subscription
+        });
+        
         const merged = {
           ...profile,
-          subscription_tier: subscription?.subscription_tier,
-          subscription_period: subscription?.subscription_period,
-          subscribed: subscription?.subscribed
+          subscription_tier: subscription?.subscription_tier || null,
+          subscription_period: subscription?.subscription_period || null,
+          subscribed: subscription?.subscribed === true
         }
         
         // Log trustee subscription status
         if (profile.membership_type === 'trustee') {
-          console.log(`Trustee ${profile.email}:`, {
+          console.log(`Trustee ${profile.email} MERGED:`, {
             subscribed: merged.subscribed,
+            subscribedType: typeof merged.subscribed,
             tier: merged.subscription_tier,
-            period: merged.subscription_period
+            period: merged.subscription_period,
+            rawSubData: subscription
           });
         }
         
@@ -463,8 +472,15 @@ export function AdminAllUsersManagement() {
   }
 
   const getPackageInfo = (user: UserProfile) => {
-    // Check for active subscription first
-    if (user.subscribed && user.subscription_tier) {
+    console.log(`getPackageInfo for ${user.email}:`, {
+      subscribed: user.subscribed,
+      subscribedType: typeof user.subscribed,
+      tier: user.subscription_tier,
+      conditionResult: user.subscribed === true && !!user.subscription_tier
+    });
+    
+    // Check for active subscription first - use explicit === true check
+    if (user.subscribed === true && user.subscription_tier) {
       // Map tier names from Stripe to display names
       const tierMap: Record<string, string> = {
         'Starter': 'Starter',
