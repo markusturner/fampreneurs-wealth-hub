@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.send-mass-notification]
 verify_jwt = true
+
+[functions.process-payment-reminders]
+verify_jwt = false

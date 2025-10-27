@@ -2944,6 +2944,36 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_reminders_sent: {
+        Row: {
+          created_at: string | null
+          id: string
+          next_payment_date: string
+          reminder_type: string
+          sent_at: string | null
+          subscription_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          next_payment_date: string
+          reminder_type: string
+          sent_at?: string | null
+          subscription_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          next_payment_date?: string
+          reminder_type?: string
+          sent_at?: string | null
+          subscription_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           created_at: string | null
