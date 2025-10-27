@@ -249,7 +249,6 @@ export function RolePermissionsManager() {
                           const permId = existingPerm?.id || `temp-${role}-${masterPerm.key}`
                           const isSaving = savingPermissions.has(permId)
                           const isGranted = existingPerm?.is_granted || false
-                          const isOwnerRole = role === 'owner'
 
                           return (
                             <TableRow key={masterPerm.key}>
@@ -267,7 +266,7 @@ export function RolePermissionsManager() {
                                   <Switch
                                     checked={isGranted}
                                     onCheckedChange={() => handlePermissionToggle(role, masterPerm.key, existingPerm)}
-                                    disabled={isSaving || isOwnerRole}
+                                    disabled={isSaving}
                                   />
                                 </div>
                               </TableCell>
@@ -277,12 +276,6 @@ export function RolePermissionsManager() {
                       </TableBody>
                     </Table>
                   </div>
-                  {role === 'owner' && (
-                    <div className="mt-3 text-xs text-muted-foreground flex items-center gap-2">
-                      <Lock className="h-3 w-3" />
-                      Owner permissions cannot be modified to maintain system security
-                    </div>
-                  )}
                 </AccordionContent>
               </AccordionItem>
             )
