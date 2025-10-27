@@ -435,7 +435,7 @@ export function AdminAllUsersManagement() {
   const getRoleBadges = (user: UserProfile) => {
     const badges = []
     if (user.is_moderator) badges.push(
-      <Badge key="owner" style={{ backgroundColor: '#ffb500', color: '#290a52', border: 'none' }}>
+      <Badge key="owner" style={{ backgroundColor: '#22c55e', color: '#ffffff', border: 'none' }}>
         <Crown className="h-3 w-3 mr-1" />
         Owner
       </Badge>
