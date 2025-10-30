@@ -110,15 +110,16 @@ export function BusinessGoalsDialog({ onGoalsUpdated }: BusinessGoalsDialogProps
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Target className="h-4 w-4" />
-          Set Business Goals
+        <Button variant="outline" size="sm" className="gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9">
+          <Target className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+          <span className="hidden xs:inline">Set Business Goals</span>
+          <span className="xs:hidden">Set Goals</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[525px]">
+      <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Set Your Business Goals</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-base sm:text-lg">Set Your Business Goals</DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">
             Share your business goals to get personalized AI financial insights aligned with your objectives.
           </DialogDescription>
         </DialogHeader>
@@ -130,36 +131,37 @@ export function BusinessGoalsDialog({ onGoalsUpdated }: BusinessGoalsDialogProps
         ) : (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="goals">Your Business Goals</Label>
+              <Label htmlFor="goals" className="text-sm">Your Business Goals</Label>
               <Textarea
                 id="goals"
                 placeholder="E.g., Scale my service business to $1M revenue, acquire 2 rental properties, launch new product line, hire 5 employees..."
                 value={goals}
                 onChange={(e) => setGoals(e.target.value)}
                 rows={6}
-                className="resize-none"
+                className="resize-none text-sm"
               />
               <p className="text-xs text-muted-foreground">
                 Be specific about what you want to achieve. The AI will provide tailored insights to help you reach these goals.
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="revenue">Target Revenue ($)</Label>
+                <Label htmlFor="revenue" className="text-sm">Target Revenue ($)</Label>
                 <Input
                   id="revenue"
                   type="number"
                   placeholder="1000000"
                   value={targetRevenue}
                   onChange={(e) => setTargetRevenue(e.target.value)}
+                  className="text-sm"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="timeline">Timeline</Label>
+                <Label htmlFor="timeline" className="text-sm">Timeline</Label>
                 <Select value={targetTimeline} onValueChange={setTargetTimeline}>
-                  <SelectTrigger id="timeline">
+                  <SelectTrigger id="timeline" className="text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -173,11 +175,11 @@ export function BusinessGoalsDialog({ onGoalsUpdated }: BusinessGoalsDialogProps
               </div>
             </div>
 
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setOpen(false)}>
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto">
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={loading}>
+              <Button onClick={handleSave} disabled={loading} className="w-full sm:w-auto">
                 {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Save Goals
               </Button>

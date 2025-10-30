@@ -443,21 +443,23 @@ export function OverviewSection() {
 
       {/* AI Insights */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <BrainCircuit className="h-5 w-5" />
-                AI Financial Insights
+        <CardHeader className="pb-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <BrainCircuit className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                <span className="truncate">AI Financial Insights</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="mt-1 text-xs sm:text-sm">
                 {businessGoals ? 
                   'Personalized insights aligned with your business goals' :
                   'Set your business goals to get personalized insights'
                 }
               </CardDescription>
             </div>
-            <BusinessGoalsDialog onGoalsUpdated={() => setGoalsKey(prev => prev + 1)} />
+            <div className="flex-shrink-0">
+              <BusinessGoalsDialog onGoalsUpdated={() => setGoalsKey(prev => prev + 1)} />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
