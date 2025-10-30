@@ -96,7 +96,7 @@ export default function Members() {
       
       const { data: familyData, error: membersError } = await supabase
         .from('family_members')
-        .select('*')
+        .select('*, birthday')
         .eq('added_by', user.id)
         .is('office_role', null)
         .order('created_at', { ascending: false })
