@@ -398,10 +398,14 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
                   value={formData.governancePosition} 
                   onValueChange={(value) => setFormData(prev => ({ ...prev, governancePosition: value }))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="governancePosition">
                     <SelectValue placeholder="Select governance position (optional)" />
                   </SelectTrigger>
-                  <SelectContent className="bg-background border z-50">
+                  <SelectContent 
+                    position="popper" 
+                    sideOffset={5}
+                    className="bg-popover border shadow-md z-[100] max-h-[300px] overflow-y-auto"
+                  >
                     <SelectItem value="none">None</SelectItem>
                     <SelectItem value="family-council-header" disabled className="font-semibold text-blue-600">Family Council</SelectItem>
                     <SelectItem value="Chairman">Chairman</SelectItem>
