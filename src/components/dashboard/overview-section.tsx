@@ -179,7 +179,14 @@ export function OverviewSection() {
       
       insights.push({
         type: 'opportunity',
-        message: `🎯 YOUR GOAL: ${businessGoals.goals}\n${businessGoals.target_revenue ? `Target: ${revenueGoal} in ${timelineLabel}` : ''}`,
+        message: `🎯 YOUR GOAL BREAKDOWN:
+
+□ Main Goal: ${businessGoals.goals}
+${businessGoals.target_revenue ? `□ Revenue Target: ${revenueGoal}` : ''}
+${businessGoals.target_timeline ? `□ Timeline: ${timelineLabel.replace('_', ' ')}` : ''}
+□ Monthly Target: ${businessGoals.target_revenue ? formatCurrency(businessGoals.target_revenue / 12) : 'Not set'}
+
+Check off as you complete each milestone!`,
         priority: 'high'
       })
 
