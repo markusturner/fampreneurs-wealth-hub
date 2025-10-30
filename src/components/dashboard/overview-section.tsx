@@ -179,7 +179,7 @@ export function OverviewSection() {
       
       insights.push({
         type: 'opportunity',
-        message: `🎯 YOUR GOALS: ${businessGoals.goals}${businessGoals.target_revenue ? ` | Revenue Target: ${revenueGoal} in ${timelineLabel}` : ''}`,
+        message: `🎯 YOUR GOAL: ${businessGoals.goals}\n${businessGoals.target_revenue ? `Target: ${revenueGoal} in ${timelineLabel}` : ''}`,
         priority: 'high'
       })
 
@@ -193,13 +193,18 @@ export function OverviewSection() {
         // STEP 1: Foundation Setup
         insights.push({
           type: 'opportunity',
-          message: `📋 STEP 1 - FOUNDATION (Week 1-2): 
-1. TODAY: Open free business checking account at Chase/Bank of America online (15 mins)
-2. DAY 2: Register LLC at your state's business portal ($100-300, same day) or use ZenBusiness ($0+fees)
-3. DAY 3: Get EIN from IRS.gov/EIN (free, instant online)
-4. DAY 4: Open business credit card (Chase Ink, Capital One Spark - 0% APR 12 months)
-5. DAY 5-7: Set up QuickBooks Self-Employed ($15/mo) or Wave (free) for bookkeeping
-STATUS: Foundation complete - Ready for revenue generation`,
+          message: `📋 STEP 1 - BUSINESS SETUP for "${businessGoals.goals}":
+
+TODAY - Banking:
+• Open business checking at Chase/Bank of America (free, online, 15 mins)
+• Get business debit card for expenses
+
+THIS WEEK - Legal Structure:
+• Register LLC for "${businessGoals.goals}" at your state portal ($100-300)
+• Or use ZenBusiness/LegalZoom if you want help ($0 + state fees)
+• Get EIN from IRS.gov/EIN (free, takes 5 minutes)
+
+NEXT STEP: Open business credit card (Chase Ink Business Unlimited - 0% APR for 12 months) to fund operations`,
           priority: 'high'
         })
 
@@ -207,46 +212,47 @@ STATUS: Foundation complete - Ready for revenue generation`,
           // STEP 2: Revenue Generation (when there's a gap)
           insights.push({
             type: 'opportunity',
-            message: `💰 STEP 2 - FIRST REVENUE (Week 3-8):
-GOAL: Land ${clientsNeeded} clients at $5k each = ${formatCurrency(gap)}/month
+            message: `💰 STEP 2 - FIRST REVENUE for "${businessGoals.goals}":
 
-WEEK 3-4 (Offer Creation):
-• Create service package: Define exactly what client gets (deliverables, timeline, price)
-• Build simple portfolio: Use Canva for case studies (3 examples minimum)
-• Set up payment: Stripe account (2% fee) or PayPal Business
+YOUR MATH: Need ${formatCurrency(gap)}/month to hit ${revenueGoal}
+Strategy: Get ${clientsNeeded} clients/customers paying ~$5k each
 
-WEEK 5-6 (Lead Generation):
-• LinkedIn outreach: 20 connection requests/day to target clients (140/week)
-• Join 5 industry Facebook groups, post value 3x/week
-• Cold email 50 prospects/week (use Hunter.io for emails, $49/mo)
+THIS MONTH - Create Your Offer:
+• Package your "${businessGoals.goals}" into a clear service/product
+• Create 1-page sales document explaining what they get + price
+• Set up Stripe or PayPal to accept payments (takes 1 day)
 
-WEEK 7-8 (Conversion):
-• Book 10 discovery calls/week (use Calendly free)
-• Send proposals within 24hrs (use PandaDoc free tier)
-• Close 2-3 clients = ${formatCurrency(clientsNeeded * 5000)} revenue
-TARGET: First payment by Week 8`,
+WEEKS 2-4 - Find Your First Customers:
+• LinkedIn: Connect with 20 ideal customers/day, message your offer
+• Post in 5 relevant Facebook/Reddit groups about your solution
+• Email 50 potential customers/week (find emails with Hunter.io)
+
+WEEKS 5-8 - Close Deals:
+• Book 10 calls/week with interested people (use Calendly)
+• Send simple proposals via email within 24 hours
+• Goal: Close ${clientsNeeded} paying clients = ${formatCurrency(gap)}/month`,
             priority: 'high'
           })
 
           insights.push({
             type: 'tip',
-            message: `⚡ STEP 3 - SCALE TO ${revenueGoal} (Month 3-${timelineLabel}):
+            message: `⚡ STEP 3 - SCALE "${businessGoals.goals}" to ${revenueGoal}:
 
-MONTH 3-4 (Systematize):
-• Hire VA from Upwork ($5-8/hr, 20hrs/week) for admin work
-• Create SOPs for your top 3 tasks (use Loom for video tutorials)
-• Automate invoicing (QuickBooks auto-send)
+MONTH 3-4 - Stop Doing Everything:
+• Hire VA from Upwork ($6/hr, 20hrs/week) to handle admin/emails
+• Document your process in Loom videos (15 mins each)
+• You focus ONLY on getting new customers
 
-MONTH 5-6 (Team Building):
-• Hire specialist contractor for delivery ($30-50/hr, part-time)
-• You focus ONLY on sales & strategy (20 calls/week minimum)
-• Increase prices 30% for new clients
+MONTH 5-6 - Build Team Around Your Goal:
+• Hire contractor to deliver the work ($30-50/hr)
+• You do 20+ sales calls per week (your only job)
+• Raise prices 30% for new clients (you're proven now)
 
-MONTH 7-${timelineLabel.replace('_', ' ')} (Multiplication):
-• Launch 2nd revenue stream (consulting, course, or done-for-you service)
-• Hire full-time closer on commission (10% of deals)
-• Target: ${formatCurrency(targetMonthlyIncome)}/month consistent
-RESULT: Hit ${revenueGoal}/year goal`,
+MONTH 7-${timelineLabel.replace('_', ' ')} - Multiple Income Streams:
+• Add related offering to "${businessGoals.goals}" (upsells, consulting, etc)
+• Hire commission-based salesperson (10% of deals they close)
+• Target: ${formatCurrency(targetMonthlyIncome)}/month steady
+RESULT: ${revenueGoal}/year achieved`,
             priority: 'high'
           })
         } else {
