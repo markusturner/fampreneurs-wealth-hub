@@ -48,6 +48,7 @@ export function OverviewSection() {
   const [businessGoals, setBusinessGoals] = useState<BusinessGoals | null>(null)
   const [goalsKey, setGoalsKey] = useState(0)
   const [completedSteps, setCompletedSteps] = useState<number[]>([])
+  const [currentStepIndex, setCurrentStepIndex] = useState(1) // Start at index 1 (first step after header)
 
   useEffect(() => {
     fetchInvestments()
@@ -628,69 +629,86 @@ WEALTH BUILDING (After $10k+/month steady):
           ) : (
             // Show AI insights when goals are set
             <div className="space-y-3">
-              {aiInsights.slice(0, completedSteps.length + 4).map((insight, index) => {
-                // First item is the goal header - no checkbox
-                if (index === 0) {
-                  return (
-                    <div key={index} className="flex items-start gap-3 p-4 rounded-lg border bg-primary/5">
-                      <div className="p-1 rounded-full bg-primary/10">
-                        <Target className="h-5 w-5" style={{ color: '#ffb500' }} />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold whitespace-pre-line">
-                          {insight.message}
-                        </p>
-                      </div>
-                    </div>
-                  )
-                }
-                
-                // Other items have checkboxes
-                return (
-                  <div key={index} className={`flex items-start gap-3 p-3 rounded-lg border-2 bg-transparent ${
-                    insight.priority === 'high' ? 'border-red-500/50' :
-                    insight.priority === 'medium' ? 'border-yellow-500/50' :
-                    'border-green-500/50'
+              {/* Always show the goal header (index 0) */}
+              {aiInsights[0] && (
+                <div className="flex items-start gap-3 p-4 rounded-lg border bg-primary/5">
+                  <div className="p-1 rounded-full bg-primary/10">
+                    <Target className="h-5 w-5" style={{ color: '#ffb500' }} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold whitespace-pre-line">
+                      {aiInsights[0].message}
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              {/* Show current step only */}
+              {aiInsights[currentStepIndex] && (
+                <div className={`flex items-start gap-3 p-3 rounded-lg border-2 bg-transparent ${
+                  aiInsights[currentStepIndex].priority === 'high' ? 'border-red-500/50' :
+                  aiInsights[currentStepIndex].priority === 'medium' ? 'border-yellow-500/50' :
+                  'border-green-500/50'
+                }`}>
+                  <Checkbox
+                    checked={completedSteps.includes(currentStepIndex)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setCompletedSteps([...completedSteps, currentStepIndex])
+                      } else {
+                        setCompletedSteps(completedSteps.filter(i => i !== currentStepIndex))
+                      }
+                    }}
+                    className="mt-1"
+                  />
+                  <div className={`p-1 rounded-full ${
+                    aiInsights[currentStepIndex].priority === 'high' ? 'bg-red-500/20 text-red-400' :
+                    aiInsights[currentStepIndex].priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                    'bg-green-500/20 text-green-400'
                   }`}>
-                    <Checkbox
-                      checked={completedSteps.includes(index)}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setCompletedSteps([...completedSteps, index])
-                        } else {
-                          setCompletedSteps(completedSteps.filter(i => i !== index))
-                        }
-                      }}
-                      className="mt-1"
-                    />
-                    <div className={`p-1 rounded-full ${
-                      insight.priority === 'high' ? 'bg-red-500/20 text-red-400' :
-                      insight.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                    {aiInsights[currentStepIndex].priority === 'high' ? (
+                      <AlertTriangle className="h-4 w-4" />
+                    ) : aiInsights[currentStepIndex].type === 'opportunity' ? (
+                      <Target className="h-4 w-4" />
+                    ) : (
+                      <BrainCircuit className="h-4 w-4" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className={`text-sm whitespace-pre-line ${completedSteps.includes(currentStepIndex) ? 'line-through opacity-60' : ''}`}>
+                      {aiInsights[currentStepIndex].message}
+                    </p>
+                    <span className={`text-xs px-2 py-1 rounded-full inline-block mt-1 ${
+                      aiInsights[currentStepIndex].priority === 'high' ? 'bg-red-500/20 text-red-400' :
+                      aiInsights[currentStepIndex].priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
                       'bg-green-500/20 text-green-400'
                     }`}>
-                      {insight.priority === 'high' ? (
-                        <AlertTriangle className="h-4 w-4" />
-                      ) : insight.type === 'opportunity' ? (
-                        <Target className="h-4 w-4" />
-                      ) : (
-                        <BrainCircuit className="h-4 w-4" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className={`text-sm whitespace-pre-line ${completedSteps.includes(index) ? 'line-through opacity-60' : ''}`}>
-                        {insight.message}
-                      </p>
-                      <span className={`text-xs px-2 py-1 rounded-full inline-block mt-1 ${
-                        insight.priority === 'high' ? 'bg-red-500/20 text-red-400' :
-                        insight.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
-                        'bg-green-500/20 text-green-400'
-                      }`}>
-                        {insight.priority} priority
-                      </span>
-                    </div>
+                      {aiInsights[currentStepIndex].priority} priority
+                    </span>
                   </div>
-                )
-              })}
+                </div>
+              )}
+              
+              {/* Navigation buttons */}
+              <div className="flex items-center justify-between pt-2">
+                <button
+                  onClick={() => setCurrentStepIndex(Math.max(1, currentStepIndex - 1))}
+                  disabled={currentStepIndex <= 1}
+                  className="px-4 py-2 text-sm font-medium rounded-md border border-border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Previous
+                </button>
+                <span className="text-sm text-muted-foreground">
+                  Step {currentStepIndex} of {aiInsights.length - 1}
+                </span>
+                <button
+                  onClick={() => setCurrentStepIndex(Math.min(aiInsights.length - 1, currentStepIndex + 1))}
+                  disabled={currentStepIndex >= aiInsights.length - 1}
+                  className="px-4 py-2 text-sm font-medium rounded-md border border-border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           )}
         </CardContent>
