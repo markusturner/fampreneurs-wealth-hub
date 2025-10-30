@@ -150,10 +150,10 @@ export default function Calendar() {
   }
 
   const handleCreateMeeting = async () => {
-    if (!user?.id || !newMeeting.title.trim()) {
+    if (!user?.id || !newMeeting.title.trim() || !newMeeting.meeting_time.trim()) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: "Please fill in meeting title and time",
         variant: "destructive"
       })
       return
