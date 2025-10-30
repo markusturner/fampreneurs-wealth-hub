@@ -1342,6 +1342,7 @@ export type Database = {
           added_by: string
           approved_at: string | null
           approved_by: string | null
+          birthday: string | null
           company: string | null
           created_at: string | null
           data_classification: string | null
@@ -1372,6 +1373,7 @@ export type Database = {
           added_by: string
           approved_at?: string | null
           approved_by?: string | null
+          birthday?: string | null
           company?: string | null
           created_at?: string | null
           data_classification?: string | null
@@ -1402,6 +1404,7 @@ export type Database = {
           added_by?: string
           approved_at?: string | null
           approved_by?: string | null
+          birthday?: string | null
           company?: string | null
           created_at?: string | null
           data_classification?: string | null
