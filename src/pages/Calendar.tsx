@@ -58,7 +58,7 @@ export default function Calendar() {
     title: '',
     description: '',
     meeting_date: new Date(),
-    meeting_time: '',
+    meeting_time: '10:00',
     meeting_type: '',
     location: '',
     attendees: ''
@@ -210,7 +210,7 @@ export default function Calendar() {
         title: '',
         description: '',
         meeting_date: new Date(),
-        meeting_time: '',
+        meeting_time: '10:00',
         meeting_type: '',
         location: '',
         attendees: ''
