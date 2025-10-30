@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -46,6 +47,7 @@ export function OverviewSection() {
   const [loading, setLoading] = useState(true)
   const [businessGoals, setBusinessGoals] = useState<BusinessGoals | null>(null)
   const [goalsKey, setGoalsKey] = useState(0)
+  const [completedSteps, setCompletedSteps] = useState<number[]>([])
 
   useEffect(() => {
     fetchInvestments()
@@ -619,30 +621,23 @@ WEALTH BUILDING (After $10k+/month steady):
           ) : (
             // Show AI insights when goals are set
             <div className="space-y-3">
-              {aiInsights.map((insight, index) => (
+              {aiInsights.slice(0, completedSteps.length + 3).map((insight, index) => (
                 <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
-                  <div className={`p-1 rounded-full ${
-                    insight.priority === 'high' ? 'bg-red-100 text-red-600' :
-                    insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                    'bg-blue-100 text-blue-600'
-                  }`}>
-                    {insight.priority === 'high' ? (
-                      <AlertTriangle className="h-4 w-4" />
-                    ) : insight.type === 'opportunity' ? (
-                      <Target className="h-4 w-4" />
-                    ) : (
-                      <BrainCircuit className="h-4 w-4" />
-                    )}
-                  </div>
+                  <Checkbox
+                    checked={completedSteps.includes(index)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setCompletedSteps([...completedSteps, index])
+                      } else {
+                        setCompletedSteps(completedSteps.filter(i => i !== index))
+                      }
+                    }}
+                    className="mt-1"
+                  />
                   <div className="flex-1">
-                    <p className="text-sm">{insight.message}</p>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      insight.priority === 'high' ? 'bg-red-100 text-red-600' :
-                      insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                      'bg-blue-100 text-blue-600'
-                    }`}>
-                      {insight.priority} priority
-                    </span>
+                    <p className={`text-sm whitespace-pre-line ${completedSteps.includes(index) ? 'line-through opacity-60' : ''}`}>
+                      {insight.message}
+                    </p>
                   </div>
                 </div>
               ))}
