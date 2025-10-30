@@ -185,36 +185,113 @@ export function OverviewSection() {
         const currentMonthlyIncome = totalValue * 0.007
         const targetMonthlyIncome = businessGoals.target_revenue / 12
         const gap = targetMonthlyIncome - currentMonthlyIncome
+        const clientsNeeded = Math.ceil(gap / 5000)
+
+        // STEP 1: Foundation Setup
+        insights.push({
+          type: 'opportunity',
+          message: `📋 STEP 1 - FOUNDATION (Week 1-2): 
+1. TODAY: Open free business checking account at Chase/Bank of America online (15 mins)
+2. DAY 2: Register LLC at your state's business portal ($100-300, same day) or use ZenBusiness ($0+fees)
+3. DAY 3: Get EIN from IRS.gov/EIN (free, instant online)
+4. DAY 4: Open business credit card (Chase Ink, Capital One Spark - 0% APR 12 months)
+5. DAY 5-7: Set up QuickBooks Self-Employed ($15/mo) or Wave (free) for bookkeeping
+STATUS: Foundation complete - Ready for revenue generation`,
+          priority: 'high'
+        })
 
         if (gap > 0) {
+          // STEP 2: Revenue Generation (when there's a gap)
           insights.push({
             type: 'opportunity',
-            message: `To hit ${revenueGoal}/year goal: Need ${formatCurrency(gap)}/month more. Action: Increase prices 20%, add ${Math.ceil(gap / 5000)} new clients at $5k each, or launch complementary service line. Start this week.`,
+            message: `💰 STEP 2 - FIRST REVENUE (Week 3-8):
+GOAL: Land ${clientsNeeded} clients at $5k each = ${formatCurrency(gap)}/month
+
+WEEK 3-4 (Offer Creation):
+• Create service package: Define exactly what client gets (deliverables, timeline, price)
+• Build simple portfolio: Use Canva for case studies (3 examples minimum)
+• Set up payment: Stripe account (2% fee) or PayPal Business
+
+WEEK 5-6 (Lead Generation):
+• LinkedIn outreach: 20 connection requests/day to target clients (140/week)
+• Join 5 industry Facebook groups, post value 3x/week
+• Cold email 50 prospects/week (use Hunter.io for emails, $49/mo)
+
+WEEK 7-8 (Conversion):
+• Book 10 discovery calls/week (use Calendly free)
+• Send proposals within 24hrs (use PandaDoc free tier)
+• Close 2-3 clients = ${formatCurrency(clientsNeeded * 5000)} revenue
+TARGET: First payment by Week 8`,
+            priority: 'high'
+          })
+
+          insights.push({
+            type: 'tip',
+            message: `⚡ STEP 3 - SCALE TO ${revenueGoal} (Month 3-${timelineLabel}):
+
+MONTH 3-4 (Systematize):
+• Hire VA from Upwork ($5-8/hr, 20hrs/week) for admin work
+• Create SOPs for your top 3 tasks (use Loom for video tutorials)
+• Automate invoicing (QuickBooks auto-send)
+
+MONTH 5-6 (Team Building):
+• Hire specialist contractor for delivery ($30-50/hr, part-time)
+• You focus ONLY on sales & strategy (20 calls/week minimum)
+• Increase prices 30% for new clients
+
+MONTH 7-${timelineLabel.replace('_', ' ')} (Multiplication):
+• Launch 2nd revenue stream (consulting, course, or done-for-you service)
+• Hire full-time closer on commission (10% of deals)
+• Target: ${formatCurrency(targetMonthlyIncome)}/month consistent
+RESULT: Hit ${revenueGoal}/year goal`,
             priority: 'high'
           })
         } else {
+          // When on track or ahead
           insights.push({
             type: 'opportunity',
-            message: `🎉 You're on track! Current income supports ${revenueGoal}/year goal. Next: Diversify income streams, build emergency fund (6 months expenses), and start investing excess cash for wealth building.`,
+            message: `🎉 STEP 2 - MAINTAIN & GROW (Current: On Track)
+You have enough income for ${revenueGoal}/year. Now secure it:
+
+THIS MONTH:
+• Document your sales process (what works, scripts, follow-ups)
+• Build 3-month cash reserve in business savings (${formatCurrency(targetMonthlyIncome * 3)})
+• Create recurring revenue stream (monthly retainers, subscriptions)
+
+NEXT 3 MONTHS:
+• Diversify clients (don't rely on 1-2 clients for 80%+ of revenue)
+• Raise prices 20% for new clients
+• Launch passive income product (course, template, or toolkit)
+TARGET: ${formatCurrency(targetMonthlyIncome * 1.5)}/month with less effort`,
             priority: 'medium'
           })
         }
       }
 
-      // Add 2-3 more goal-specific action items
+      // STEP 4: Financial Optimization (always show)
       insights.push({
         type: 'tip',
-        message: `Goal Progress Check: Review your goals weekly. Track metrics: revenue, expenses, profit margin, customer acquisition cost. Adjust strategies if not hitting milestones by ${timelineLabel} deadline.`,
+        message: `💡 STEP 4 - KEEP MORE MONEY (Ongoing):
+
+TAX SAVINGS (Do Monthly):
+• Track ALL expenses in QuickBooks/Wave (deduct 20-30% from taxes)
+• Pay yourself via S-Corp if making $60k+ (saves $5-15k/year in taxes)
+• Quarterly estimated taxes to IRS (avoid penalties)
+
+PROFIT FIRST METHOD (Every 2 Weeks):
+• 50% Operating expenses (team, tools, ads)
+• 30% Owner pay (your salary)
+• 15% Taxes (set aside, don't touch)
+• 5% Profit (emergency fund first, then invest)
+
+WEALTH BUILDING (After $10k+/month steady):
+• Max out SEP IRA ($66k/year tax deductible)
+• Invest excess in VTI ETF (simple, 7-10% returns)
+• Build to 6 months expenses saved = Freedom`,
         priority: 'medium'
       })
 
-      insights.push({
-        type: 'tip',
-        message: `Resource Allocation: Based on your goals, allocate 60% of resources to revenue generation, 25% to operations, 15% to marketing. Cut expenses not directly tied to goal achievement.`,
-        priority: 'medium'
-      })
-
-      // Return ONLY goal-aligned insights
+      // Return ONLY goal-aligned practical insights
       return insights
     }
 
