@@ -53,6 +53,7 @@ export default function Calendar() {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
   const [isCreateMeetingOpen, setIsCreateMeetingOpen] = useState(false)
   const [editingNotes, setEditingNotes] = useState(false)
+  const [isEditingMeeting, setIsEditingMeeting] = useState(false)
   const [selectedTimezone, setSelectedTimezone] = useState('America/New_York')
   const [newMeeting, setNewMeeting] = useState({
     title: '',
@@ -231,7 +232,7 @@ export default function Calendar() {
     try {
       const { error } = await supabase
         .from('meetings' as any)
-        .update({
+        .update({ 
           scribe_notes: notes.trim() || null,
           scribe_id: user?.id
         })
@@ -256,6 +257,79 @@ export default function Calendar() {
       toast({
         title: "Error",
         description: "Failed to update meeting notes",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleUpdateMeeting = async () => {
+    if (!selectedMeeting || !user?.id) {
+      toast({
+        title: "Error",
+        description: "Unable to update meeting",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('meetings' as any)
+        .update({
+          title: selectedMeeting.title,
+          description: selectedMeeting.description || null,
+          meeting_date: format(new Date(selectedMeeting.meeting_date), 'yyyy-MM-dd'),
+          meeting_time: selectedMeeting.meeting_time,
+          meeting_type: selectedMeeting.meeting_type || null,
+          location: selectedMeeting.location || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', selectedMeeting.id)
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: "Meeting updated successfully"
+      })
+
+      setIsEditingMeeting(false)
+      fetchMeetings()
+    } catch (error) {
+      console.error('Error updating meeting:', error)
+      toast({
+        title: "Error",
+        description: "Failed to update meeting",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleDeleteMeeting = async () => {
+    if (!selectedMeeting || !user?.id) return
+
+    if (!confirm('Are you sure you want to delete this meeting?')) return
+
+    try {
+      const { error } = await supabase
+        .from('meetings' as any)
+        .delete()
+        .eq('id', selectedMeeting.id)
+
+      if (error) throw error
+
+      toast({
+        title: "Success",
+        description: "Meeting deleted successfully"
+      })
+
+      setSelectedMeeting(null)
+      fetchMeetings()
+    } catch (error) {
+      console.error('Error deleting meeting:', error)
+      toast({
+        title: "Error",
+        description: "Failed to delete meeting",
         variant: "destructive"
       })
     }
@@ -583,89 +657,225 @@ export default function Calendar() {
 
         {/* Meeting Detail Dialog */}
         {selectedMeeting && (
-          <Dialog open={!!selectedMeeting} onOpenChange={() => setSelectedMeeting(null)}>
-            <DialogContent className="sm:max-w-[600px]">
+          <Dialog open={!!selectedMeeting} onOpenChange={() => {
+            setSelectedMeeting(null)
+            setIsEditingMeeting(false)
+          }}>
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <div 
-                    className="w-3 h-3 rounded-full"
-                    style={getMeetingTypeStyle(selectedMeeting.meeting_type)}
-                  />
-                  {selectedMeeting.title}
-                </DialogTitle>
-                <DialogDescription>
-                  {format(new Date(selectedMeeting.meeting_date), 'EEEE, MMMM d, yyyy')} at {selectedMeeting.meeting_time}
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="space-y-4">
-                {selectedMeeting.description && (
-                  <div>
-                    <h4 className="font-medium mb-2">Description</h4>
-                    <p className="text-sm text-muted-foreground">{selectedMeeting.description}</p>
-                  </div>
-                )}
-                
-                {selectedMeeting.location && (
-                  <div>
-                    <h4 className="font-medium mb-2">Location</h4>
-                    <p className="text-sm text-muted-foreground">{selectedMeeting.location}</p>
-                  </div>
-                )}
-                
-                <div className="border-t pt-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      Scribe Notes
-                    </h4>
-                    {!editingNotes && (
+                <div className="flex items-center justify-between">
+                  <DialogTitle className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full"
+                      style={getMeetingTypeStyle(selectedMeeting.meeting_type)}
+                    />
+                    {isEditingMeeting ? 'Edit Meeting' : selectedMeeting.title}
+                  </DialogTitle>
+                  {!isEditingMeeting && (
+                    <div className="flex gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setEditingNotes(true)}
+                        onClick={() => setIsEditingMeeting(true)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
-                    )}
-                  </div>
-                  
-                  {editingNotes ? (
-                    <div className="space-y-2">
-                      <Textarea
-                        defaultValue={selectedMeeting.scribe_notes || ''}
-                        placeholder="Add meeting notes..."
-                        rows={6}
-                        id="meeting-notes"
-                      />
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingNotes(false)}
-                        >
-                          <X className="h-4 w-4" />
-                          Cancel
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            const textarea = document.getElementById('meeting-notes') as HTMLTextAreaElement
-                            handleUpdateNotes(selectedMeeting.id, textarea.value)
-                          }}
-                        >
-                          <Save className="h-4 w-4" />
-                          Save Notes
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-md">
-                      {selectedMeeting.scribe_notes || 'No notes added yet. Click the edit button to add notes.'}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleDeleteMeeting}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
                   )}
                 </div>
-              </div>
+                {!isEditingMeeting && (
+                  <DialogDescription>
+                    {format(new Date(selectedMeeting.meeting_date), 'EEEE, MMMM d, yyyy')} at {selectedMeeting.meeting_time}
+                  </DialogDescription>
+                )}
+              </DialogHeader>
+              
+              {isEditingMeeting ? (
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-title">Meeting Title *</Label>
+                    <Input
+                      id="edit-title"
+                      value={selectedMeeting.title}
+                      onChange={(e) => setSelectedMeeting(prev => prev ? { ...prev, title: e.target.value } : null)}
+                    />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-type">Meeting Type</Label>
+                    <Select 
+                      value={selectedMeeting.meeting_type || ''} 
+                      onValueChange={(value) => setSelectedMeeting(prev => prev ? { ...prev, meeting_type: value } : null)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select meeting type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {meetingTypes.map(type => (
+                          <SelectItem key={type.id} value={type.name}>
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-3 h-3 rounded"
+                                style={{ backgroundColor: type.color }}
+                              />
+                              {type.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label>Meeting Date *</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="justify-start text-left font-normal"
+                          >
+                            {format(new Date(selectedMeeting.meeting_date), "PPP")}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 z-[100]" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={new Date(selectedMeeting.meeting_date)}
+                            onSelect={(date) => setSelectedMeeting(prev => prev && date ? { ...prev, meeting_date: format(date, 'yyyy-MM-dd') } : prev)}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-time">Meeting Time *</Label>
+                      <Input
+                        id="edit-time"
+                        type="time"
+                        value={selectedMeeting.meeting_time}
+                        onChange={(e) => setSelectedMeeting(prev => prev ? { ...prev, meeting_time: e.target.value } : null)}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-location">Location</Label>
+                    <Input
+                      id="edit-location"
+                      value={selectedMeeting.location || ''}
+                      onChange={(e) => setSelectedMeeting(prev => prev ? { ...prev, location: e.target.value } : null)}
+                      placeholder="Meeting location or video link"
+                    />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit-description">Description</Label>
+                    <Textarea
+                      id="edit-description"
+                      value={selectedMeeting.description || ''}
+                      onChange={(e) => setSelectedMeeting(prev => prev ? { ...prev, description: e.target.value } : null)}
+                      placeholder="Meeting description or agenda"
+                      rows={3}
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsEditingMeeting(false)
+                        fetchMeetings()
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button onClick={handleUpdateMeeting}>
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {selectedMeeting.description && (
+                    <div>
+                      <h4 className="font-medium mb-2">Description</h4>
+                      <p className="text-sm text-muted-foreground">{selectedMeeting.description}</p>
+                    </div>
+                  )}
+                  
+                  {selectedMeeting.location && (
+                    <div>
+                      <h4 className="font-medium mb-2">Location</h4>
+                      <p className="text-sm text-muted-foreground">{selectedMeeting.location}</p>
+                    </div>
+                  )}
+                  
+                  <div className="border-t pt-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Scribe Notes
+                      </h4>
+                      {!editingNotes && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditingNotes(true)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    
+                    {editingNotes ? (
+                      <div className="space-y-2">
+                        <Textarea
+                          defaultValue={selectedMeeting.scribe_notes || ''}
+                          placeholder="Add meeting notes..."
+                          rows={6}
+                          id="meeting-notes"
+                        />
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingNotes(false)}
+                          >
+                            <X className="h-4 w-4" />
+                            Cancel
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              const textarea = document.getElementById('meeting-notes') as HTMLTextAreaElement
+                              handleUpdateNotes(selectedMeeting.id, textarea.value)
+                            }}
+                          >
+                            <Save className="h-4 w-4" />
+                            Save Notes
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground bg-muted/30 p-3 rounded-md">
+                        {selectedMeeting.scribe_notes || 'No notes added yet. Click the edit button to add notes.'}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         )}
