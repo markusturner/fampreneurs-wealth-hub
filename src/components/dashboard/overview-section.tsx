@@ -463,35 +463,91 @@ export function OverviewSection() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {aiInsights.map((insight, index) => (
-              <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
-                <div className={`p-1 rounded-full ${
-                  insight.priority === 'high' ? 'bg-red-100 text-red-600' :
-                  insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                  'bg-blue-100 text-blue-600'
-                }`}>
-                  {insight.priority === 'high' ? (
-                    <AlertTriangle className="h-4 w-4" />
-                  ) : insight.type === 'opportunity' ? (
-                    <Target className="h-4 w-4" />
-                  ) : (
-                    <BrainCircuit className="h-4 w-4" />
-                  )}
+          {!businessGoals ? (
+            // Show steps to set goals if not set
+            <div className="space-y-4">
+              <div className="text-center py-4">
+                <Target className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+                <h3 className="text-lg font-semibold mb-2">Set Your Business Goals First</h3>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Get personalized AI financial insights by setting your business goals in 3 easy steps:
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 p-4 rounded-lg border bg-muted/30">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                    1
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-sm mb-1">Click "Set Business Goals"</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Click the button at the top right of this card to open the goals dialog
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm">{insight.message}</p>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
+
+                <div className="flex items-start gap-3 p-4 rounded-lg border bg-muted/30">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                    2
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-sm mb-1">Describe Your Goals</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Write your specific business objectives (e.g., "Reach $1M revenue", "Acquire 2 rental properties")
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-4 rounded-lg border bg-muted/30">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                    3
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-sm mb-1">Set Target & Timeline</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Add your target revenue and timeline, then save to get personalized AI insights
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center pt-4">
+                <BusinessGoalsDialog onGoalsUpdated={() => setGoalsKey(prev => prev + 1)} />
+              </div>
+            </div>
+          ) : (
+            // Show AI insights when goals are set
+            <div className="space-y-3">
+              {aiInsights.map((insight, index) => (
+                <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
+                  <div className={`p-1 rounded-full ${
                     insight.priority === 'high' ? 'bg-red-100 text-red-600' :
                     insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
                     'bg-blue-100 text-blue-600'
                   }`}>
-                    {insight.priority} priority
-                  </span>
+                    {insight.priority === 'high' ? (
+                      <AlertTriangle className="h-4 w-4" />
+                    ) : insight.type === 'opportunity' ? (
+                      <Target className="h-4 w-4" />
+                    ) : (
+                      <BrainCircuit className="h-4 w-4" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm">{insight.message}</p>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      insight.priority === 'high' ? 'bg-red-100 text-red-600' :
+                      insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                      'bg-blue-100 text-blue-600'
+                    }`}>
+                      {insight.priority} priority
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
