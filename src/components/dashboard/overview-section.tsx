@@ -231,7 +231,7 @@ WEEKS 5-8 - Close Deals:
 • Book 10 calls/week with interested people (use Calendly)
 • Send simple proposals via email within 24 hours
 • Goal: Close ${clientsNeeded} paying clients = ${formatCurrency(gap)}/month`,
-            priority: 'high'
+            priority: 'medium'
           })
 
           insights.push({
@@ -253,7 +253,7 @@ MONTH 7-${timelineLabel.replace('_', ' ')} - Multiple Income Streams:
 • Hire commission-based salesperson (10% of deals they close)
 • Target: ${formatCurrency(targetMonthlyIncome)}/month steady
 RESULT: ${revenueGoal}/year achieved`,
-            priority: 'high'
+            priority: 'low'
           })
         } else {
           // When on track or ahead
@@ -677,13 +677,13 @@ WEALTH BUILDING (After $10k+/month steady):
                       )}
                     </div>
                     <div className="flex-1">
-                      <p className={`text-sm whitespace-pre-line ${completedSteps.includes(index) ? 'line-through opacity-60' : ''}`}>
+                      <p className={`text-sm whitespace-pre-line text-gray-900 ${completedSteps.includes(index) ? 'line-through opacity-60' : ''}`}>
                         {insight.message}
                       </p>
                       <span className={`text-xs px-2 py-1 rounded-full inline-block mt-1 ${
-                        insight.priority === 'high' ? 'bg-red-100 text-red-600' :
-                        insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                        'bg-green-100 text-green-600'
+                        insight.priority === 'high' ? 'bg-red-200 text-red-800' :
+                        insight.priority === 'medium' ? 'bg-yellow-200 text-yellow-800' :
+                        'bg-green-200 text-green-800'
                       }`}>
                         {insight.priority} priority
                       </span>
