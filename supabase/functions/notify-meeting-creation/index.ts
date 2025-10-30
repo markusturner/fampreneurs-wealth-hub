@@ -80,7 +80,7 @@ const handler = async (req: Request): Promise<Response> => {
     const notifications = (allUsers || []).map(user => ({
       user_id: user.user_id,
       sender_id: createdBy,
-      notification_type: 'meeting_scheduled',
+      notification_type: 'message',
       title: 'New Meeting Scheduled',
       message: `${creatorName} scheduled "${meetingTitle}" for ${formattedDate} at ${meetingTime}`,
       reference_id: meetingId,
