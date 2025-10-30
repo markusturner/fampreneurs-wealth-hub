@@ -258,6 +258,36 @@ export type Database = {
         }
         Relationships: []
       }
+      business_goals: {
+        Row: {
+          created_at: string
+          goals: string
+          id: string
+          target_revenue: number | null
+          target_timeline: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          goals: string
+          id?: string
+          target_revenue?: number | null
+          target_timeline?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          goals?: string
+          id?: string
+          target_revenue?: number | null
+          target_timeline?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       calendar_integrations: {
         Row: {
           access_token: string

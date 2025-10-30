@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { InvestmentChart } from '@/components/dashboard/investment-chart'
 import { AssetAllocation } from '@/components/dashboard/asset-allocation'
+import { BusinessGoalsDialog } from '@/components/dashboard/business-goals-dialog'
 
 interface Investment {
   id: string
@@ -31,16 +32,25 @@ interface Investment {
   updated_at: string
 }
 
+interface BusinessGoals {
+  goals: string
+  target_revenue: number | null
+  target_timeline: string | null
+}
+
 export function OverviewSection() {
   const { user } = useAuth()
   const [investments, setInvestments] = useState<Investment[]>([])
   const [connectedAccountsBalanceTotal, setConnectedAccountsBalanceTotal] = useState(0)
   const [connectedAccountsData, setConnectedAccountsData] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [businessGoals, setBusinessGoals] = useState<BusinessGoals | null>(null)
+  const [goalsKey, setGoalsKey] = useState(0)
 
   useEffect(() => {
     fetchInvestments()
-  }, [user])
+    fetchBusinessGoals()
+  }, [user, goalsKey])
 
   const fetchInvestments = async () => {
     if (!user?.id) {
@@ -73,6 +83,24 @@ export function OverviewSection() {
       console.error('Error fetching investments:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchBusinessGoals = async () => {
+    if (!user?.id) return
+
+    try {
+      const { data, error } = await supabase
+        .from('business_goals')
+        .select('goals, target_revenue, target_timeline')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (error && error.code !== 'PGRST116') throw error
+
+      setBusinessGoals(data)
+    } catch (error) {
+      console.error('Error fetching business goals:', error)
     }
   }
 
@@ -134,12 +162,39 @@ export function OverviewSection() {
     return savedAccounts.filter((account: any) => !deletedAccounts.includes(account.id) && account.status === 'connected').length
   }
 
-  // Generate AI insights based on portfolio performance
+  // Generate AI insights based on portfolio performance and business goals
   const generateAIInsights = () => {
     const totalValue = getTotalNetWorth()
     const dayChange = getTotalDayChange()
     const accountsBalance = getAccountsBalance()
     const insights = []
+
+    // Add goal-specific insights if user has set business goals
+    if (businessGoals?.goals) {
+      const timelineLabel = businessGoals.target_timeline?.replace('_', ' ') || 'your timeline'
+      const revenueGoal = businessGoals.target_revenue ? formatCurrency(businessGoals.target_revenue) : 'your target'
+      
+      insights.push({
+        type: 'opportunity',
+        message: `🎯 YOUR GOALS: ${businessGoals.goals}${businessGoals.target_revenue ? ` | Revenue Target: ${revenueGoal} in ${timelineLabel}` : ''}`,
+        priority: 'high'
+      })
+
+      // Goal-aligned insights based on current financial position
+      if (businessGoals.target_revenue) {
+        const currentMonthlyIncome = totalValue * 0.007
+        const targetMonthlyIncome = businessGoals.target_revenue / 12
+        const gap = targetMonthlyIncome - currentMonthlyIncome
+
+        if (gap > 0) {
+          insights.push({
+            type: 'opportunity',
+            message: `To hit ${revenueGoal}/year goal: Need ${formatCurrency(gap)}/month more. Action: Increase prices 20%, add ${Math.ceil(gap / 5000)} new clients at $5k each, or launch complementary service line. Start this week.`,
+            priority: 'high'
+          })
+        }
+      }
+    }
 
     // Business and income level recommendations based on portfolio size
     const monthlyIncomeEstimate = totalValue * 0.007 // Rough 7% annual return / 12 months
@@ -389,13 +444,21 @@ export function OverviewSection() {
       {/* AI Insights */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BrainCircuit className="h-5 w-5" />
-            AI Financial Insights
-          </CardTitle>
-          <CardDescription>
-            AI-powered insights to grow, reduce taxes & sustain your wealth
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <BrainCircuit className="h-5 w-5" />
+                AI Financial Insights
+              </CardTitle>
+              <CardDescription>
+                {businessGoals ? 
+                  'Personalized insights aligned with your business goals' :
+                  'Set your business goals to get personalized insights'
+                }
+              </CardDescription>
+            </div>
+            <BusinessGoalsDialog onGoalsUpdated={() => setGoalsKey(prev => prev + 1)} />
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
