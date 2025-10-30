@@ -30,6 +30,7 @@ interface FamilyMember {
   relationship_to_family: string | null
   email: string | null
   phone: string | null
+  birthday: string | null
   trust_positions: string[] | null
   status: string | null
   is_invited: boolean | null

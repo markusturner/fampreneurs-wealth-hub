@@ -17,6 +17,7 @@ interface FamilyMember {
   relationship_to_family: string | null
   email: string | null
   phone: string | null
+  birthday: string | null
   trust_positions: string[] | null
   governance_branch?: string | null
   status: string | null
@@ -75,6 +76,7 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
     full_name: '',
     email: '',
     phone: '',
+    birthday: '',
     family_position: '',
     relationship_to_family: '',
     trust_positions: [] as string[],
@@ -91,6 +93,7 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
         full_name: member.full_name || '',
         email: member.email || '',
         phone: member.phone || '',
+        birthday: member.birthday || '',
         family_position: member.family_position || '',
         relationship_to_family: member.relationship_to_family || '',
         trust_positions: member.trust_positions || [],
@@ -182,6 +185,16 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
                 value={formData.phone}
                 onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                 placeholder="Enter phone number"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="birthday">Birthday</Label>
+              <Input
+                id="birthday"
+                type="date"
+                value={formData.birthday}
+                onChange={(e) => setFormData(prev => ({ ...prev, birthday: e.target.value }))}
               />
             </div>
 

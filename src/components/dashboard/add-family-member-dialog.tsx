@@ -72,6 +72,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
     fullName: '',
     email: '',
     phone: '',
+    birthday: '',
     familyPosition: '',
     relationshipToFamily: '',
     governanceBranch: '',
@@ -83,6 +84,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
       fullName: '',
       email: '',
       phone: '',
+      birthday: '',
       familyPosition: '',
       relationshipToFamily: '',
       governanceBranch: '',
@@ -133,6 +135,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
           full_name: formData.fullName.trim(),
           email: formData.email.trim() || null,
           phone: formData.phone.trim() || null,
+          birthday: formData.birthday || null,
           family_position: formData.familyPosition || null,
           trust_positions: formData.governancePosition && formData.governancePosition !== 'none' ? [formData.governancePosition] : null,
           relationship_to_family: formData.relationshipToFamily.trim() || null,
@@ -298,6 +301,16 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
                     placeholder="(555) 123-4567"
                   />
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="birthday">Birthday</Label>
+                <Input
+                  id="birthday"
+                  type="date"
+                  value={formData.birthday}
+                  onChange={(e) => setFormData(prev => ({ ...prev, birthday: e.target.value }))}
+                />
               </div>
             </div>
           </div>
