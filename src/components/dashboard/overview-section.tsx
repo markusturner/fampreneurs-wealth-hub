@@ -648,9 +648,9 @@ WEALTH BUILDING (After $10k+/month steady):
                 // Other items have checkboxes
                 return (
                   <div key={index} className={`flex items-start gap-3 p-3 rounded-lg border ${
-                    insight.priority === 'high' ? 'bg-red-50 border-red-200' :
-                    insight.priority === 'medium' ? 'bg-yellow-50 border-yellow-200' :
-                    'bg-green-50 border-green-200'
+                    insight.priority === 'high' ? 'bg-red-100 border-red-300' :
+                    insight.priority === 'medium' ? 'bg-yellow-100 border-yellow-300' :
+                    'bg-green-100 border-green-300'
                   }`}>
                     <Checkbox
                       checked={completedSteps.includes(index)}
