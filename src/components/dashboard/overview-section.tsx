@@ -633,8 +633,8 @@ WEALTH BUILDING (After $10k+/month steady):
                 if (index === 0) {
                   return (
                     <div key={index} className="flex items-start gap-3 p-4 rounded-lg border bg-primary/5">
-                      <div className="p-1 rounded-full bg-primary/10 text-primary">
-                        <Target className="h-5 w-5" />
+                      <div className="p-1 rounded-full bg-primary/10">
+                        <Target className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-semibold whitespace-pre-line">
