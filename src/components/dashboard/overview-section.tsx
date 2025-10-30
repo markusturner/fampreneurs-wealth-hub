@@ -647,7 +647,11 @@ WEALTH BUILDING (After $10k+/month steady):
                 
                 // Other items have checkboxes
                 return (
-                  <div key={index} className="flex items-start gap-3 p-3 rounded-lg border">
+                  <div key={index} className={`flex items-start gap-3 p-3 rounded-lg border ${
+                    insight.priority === 'high' ? 'bg-red-50 border-red-200' :
+                    insight.priority === 'medium' ? 'bg-yellow-50 border-yellow-200' :
+                    'bg-green-50 border-green-200'
+                  }`}>
                     <Checkbox
                       checked={completedSteps.includes(index)}
                       onCheckedChange={(checked) => {
@@ -662,7 +666,7 @@ WEALTH BUILDING (After $10k+/month steady):
                     <div className={`p-1 rounded-full ${
                       insight.priority === 'high' ? 'bg-red-100 text-red-600' :
                       insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                      'bg-blue-100 text-blue-600'
+                      'bg-green-100 text-green-600'
                     }`}>
                       {insight.priority === 'high' ? (
                         <AlertTriangle className="h-4 w-4" />
@@ -679,7 +683,7 @@ WEALTH BUILDING (After $10k+/month steady):
                       <span className={`text-xs px-2 py-1 rounded-full inline-block mt-1 ${
                         insight.priority === 'high' ? 'bg-red-100 text-red-600' :
                         insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                        'bg-blue-100 text-blue-600'
+                        'bg-green-100 text-green-600'
                       }`}>
                         {insight.priority} priority
                       </span>
