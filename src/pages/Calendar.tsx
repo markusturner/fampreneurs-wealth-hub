@@ -109,23 +109,23 @@ export default function Calendar() {
   }
 
   const getMeetingTypeColor = (meetingTypeName: string | null) => {
-    if (!meetingTypeName) return 'bg-gray-500 text-white'
+    if (!meetingTypeName) return ''
     
     const meetingType = meetingTypes.find(type => type.name === meetingTypeName)
     if (meetingType) {
-      return `text-white`
+      return ''
     }
-    return 'bg-gray-500 text-white'
+    return ''
   }
 
   const getMeetingTypeStyle = (meetingTypeName: string | null) => {
-    if (!meetingTypeName) return { backgroundColor: '#6b7280' }
+    if (!meetingTypeName) return { backgroundColor: '#ffb500', color: '#290a52' }
     
     const meetingType = meetingTypes.find(type => type.name === meetingTypeName)
     if (meetingType) {
-      return { backgroundColor: meetingType.color }
+      return { backgroundColor: meetingType.color, color: '#290a52' }
     }
-    return { backgroundColor: '#6b7280' }
+    return { backgroundColor: '#ffb500', color: '#290a52' }
   }
 
   const fetchMeetings = async () => {
