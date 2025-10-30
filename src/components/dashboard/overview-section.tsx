@@ -169,7 +169,7 @@ export function OverviewSection() {
     const accountsBalance = getAccountsBalance()
     const insights = []
 
-    // Add goal-specific insights if user has set business goals
+    // If user has set business goals, ONLY show goal-aligned insights
     if (businessGoals?.goals) {
       const timelineLabel = businessGoals.target_timeline?.replace('_', ' ') || 'your timeline'
       const revenueGoal = businessGoals.target_revenue ? formatCurrency(businessGoals.target_revenue) : 'your target'
@@ -192,10 +192,33 @@ export function OverviewSection() {
             message: `To hit ${revenueGoal}/year goal: Need ${formatCurrency(gap)}/month more. Action: Increase prices 20%, add ${Math.ceil(gap / 5000)} new clients at $5k each, or launch complementary service line. Start this week.`,
             priority: 'high'
           })
+        } else {
+          insights.push({
+            type: 'opportunity',
+            message: `🎉 You're on track! Current income supports ${revenueGoal}/year goal. Next: Diversify income streams, build emergency fund (6 months expenses), and start investing excess cash for wealth building.`,
+            priority: 'medium'
+          })
         }
       }
+
+      // Add 2-3 more goal-specific action items
+      insights.push({
+        type: 'tip',
+        message: `Goal Progress Check: Review your goals weekly. Track metrics: revenue, expenses, profit margin, customer acquisition cost. Adjust strategies if not hitting milestones by ${timelineLabel} deadline.`,
+        priority: 'medium'
+      })
+
+      insights.push({
+        type: 'tip',
+        message: `Resource Allocation: Based on your goals, allocate 60% of resources to revenue generation, 25% to operations, 15% to marketing. Cut expenses not directly tied to goal achievement.`,
+        priority: 'medium'
+      })
+
+      // Return ONLY goal-aligned insights
+      return insights
     }
 
+    // Only show generic insights if NO goals are set (this code below won't run if goals exist)
     // Business and income level recommendations based on portfolio size
     const monthlyIncomeEstimate = totalValue * 0.007 // Rough 7% annual return / 12 months
     
