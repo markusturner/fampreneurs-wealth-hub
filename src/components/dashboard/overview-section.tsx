@@ -647,10 +647,10 @@ WEALTH BUILDING (After $10k+/month steady):
                 
                 // Other items have checkboxes
                 return (
-                  <div key={index} className={`flex items-start gap-3 p-3 rounded-lg border ${
-                    insight.priority === 'high' ? 'bg-red-100 border-red-300' :
-                    insight.priority === 'medium' ? 'bg-yellow-100 border-yellow-300' :
-                    'bg-green-100 border-green-300'
+                  <div key={index} className={`flex items-start gap-3 p-3 rounded-lg border-2 bg-transparent ${
+                    insight.priority === 'high' ? 'border-red-500/50' :
+                    insight.priority === 'medium' ? 'border-yellow-500/50' :
+                    'border-green-500/50'
                   }`}>
                     <Checkbox
                       checked={completedSteps.includes(index)}
@@ -664,9 +664,9 @@ WEALTH BUILDING (After $10k+/month steady):
                       className="mt-1"
                     />
                     <div className={`p-1 rounded-full ${
-                      insight.priority === 'high' ? 'bg-red-100 text-red-600' :
-                      insight.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                      'bg-green-100 text-green-600'
+                      insight.priority === 'high' ? 'bg-red-500/20 text-red-400' :
+                      insight.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                      'bg-green-500/20 text-green-400'
                     }`}>
                       {insight.priority === 'high' ? (
                         <AlertTriangle className="h-4 w-4" />
@@ -677,13 +677,13 @@ WEALTH BUILDING (After $10k+/month steady):
                       )}
                     </div>
                     <div className="flex-1">
-                      <p className={`text-sm whitespace-pre-line text-gray-900 ${completedSteps.includes(index) ? 'line-through opacity-60' : ''}`}>
+                      <p className={`text-sm whitespace-pre-line ${completedSteps.includes(index) ? 'line-through opacity-60' : ''}`}>
                         {insight.message}
                       </p>
                       <span className={`text-xs px-2 py-1 rounded-full inline-block mt-1 ${
-                        insight.priority === 'high' ? 'bg-red-200 text-red-800' :
-                        insight.priority === 'medium' ? 'bg-yellow-200 text-yellow-800' :
-                        'bg-green-200 text-green-800'
+                        insight.priority === 'high' ? 'bg-red-500/20 text-red-400' :
+                        insight.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                        'bg-green-500/20 text-green-400'
                       }`}>
                         {insight.priority} priority
                       </span>
