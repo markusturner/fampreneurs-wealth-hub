@@ -1,18 +1,34 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.51.0'
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 }
 
-interface GoHighLevelEmailRequest {
-  email: string
-  firstName: string
-  lastName?: string
-  programName: string
-  membershipType: string
-  templateId?: string
-}
+// Input validation schema
+const emailRequestSchema = z.object({
+  email: z.string()
+    .trim()
+    .email({ message: "Invalid email address" })
+    .max(255, { message: "Email must be less than 255 characters" }),
+  firstName: z.string()
+    .trim()
+    .min(1, { message: "First name cannot be empty" })
+    .max(100, { message: "First name must be less than 100 characters" }),
+  lastName: z.string()
+    .trim()
+    .max(100, { message: "Last name must be less than 100 characters" })
+    .optional(),
+  programName: z.string()
+    .trim()
+    .max(200, { message: "Program name must be less than 200 characters" }),
+  membershipType: z.string()
+    .trim()
+    .max(100, { message: "Membership type must be less than 100 characters" }),
+  templateId: z.string().optional()
+})
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -20,7 +36,48 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, firstName, lastName, programName, membershipType, templateId }: GoHighLevelEmailRequest = await req.json()
+    // Authentication check
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      console.error('Missing authorization header')
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    )
+
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
+
+    if (userError || !user) {
+      console.error('Authentication failed:', userError)
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Parse and validate input
+    const body = await req.json()
+    const validationResult = emailRequestSchema.safeParse(body)
+    
+    if (!validationResult.success) {
+      console.error('Validation failed:', validationResult.error)
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid input', 
+          details: validationResult.error.errors 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const { email, firstName, lastName, programName, membershipType, templateId } = validationResult.data
     
     const apiKey = Deno.env.get("GOHIGHLEVEL_API_KEY")
     const locationId = Deno.env.get("GOHIGHLEVEL_LOCATION_ID")
@@ -48,7 +105,7 @@ const handler = async (req: Request): Promise<Response> => {
       ]
     }
 
-    console.log("Creating/updating contact in GoHighLevel:", contactData)
+    console.log("Creating/updating contact in GoHighLevel for user:", user.id)
 
     const contactResponse = await fetch(`https://services.leadconnectorhq.com/contacts/`, {
       method: "POST",
