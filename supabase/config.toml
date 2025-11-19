@@ -32,3 +32,12 @@ verify_jwt = true
 
 [functions.process-payment-reminders]
 verify_jwt = false
+
+[functions.chatgpt-support]
+verify_jwt = true
+
+[functions.ai-family-tree-assistant]
+verify_jwt = true
+
+[functions.send-gohighlevel-email]
+verify_jwt = true
