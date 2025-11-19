@@ -149,11 +149,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
       
       // Force page reload for clean state
-      window.location.href = '/sign-up'
+      window.location.href = '/auth'
     } catch (error) {
       console.error('Error signing out:', error)
       // Force redirect even if sign out fails
-      window.location.href = '/sign-up'
+      window.location.href = '/auth'
     }
   }
 
