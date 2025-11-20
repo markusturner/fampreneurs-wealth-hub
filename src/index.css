@@ -206,6 +206,11 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     display: none;
   }
 
+  /* Safe area support for mobile devices with notches */
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
   /* Mobile viewport height fix */
   .mobile-vh-fix {
     --vh: 1vh;
