@@ -142,15 +142,15 @@ export function MobileBottomNav() {
               key={item.name}
               to={item.href}
               className={cn(
-                "flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg transition-all duration-200",
-                "min-w-0 flex-1 text-[10px] font-semibold relative min-h-[56px]",
+                "flex flex-col items-center justify-center p-3 rounded-lg transition-all duration-200",
+                "min-w-0 flex-1 relative",
                 isActive 
                   ? "text-[#ffb500] bg-[#ffb500]/10 scale-105" 
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50 active:scale-95"
               )}
             >
               <Icon className={cn("h-6 w-6", isActive && "text-[#ffb500]")} />
-              <span className="text-[10px] font-medium leading-tight">{item.name}</span>
+              <span className="sr-only">{item.name}</span>
               {item.badge && item.badge > 0 && (
                 <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
                   {item.badge > 99 ? '99+' : item.badge}
