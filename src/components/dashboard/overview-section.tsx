@@ -512,39 +512,39 @@ WEALTH BUILDING (After $10k+/month steady):
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Executive Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-2 sm:gap-3 lg:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <PieChart className="h-4 w-4" />
+          <CardHeader className="pb-3 p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-sm font-semibold flex items-center gap-2">
+              <PieChart className="h-5 w-5 sm:h-4 sm:w-4" />
               Investment Value
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(getTotalPortfolioValue())}</div>
-            <div className={`text-sm flex items-center gap-1 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <CardContent className="p-4 sm:p-6 pt-0">
+            <div className="text-3xl sm:text-2xl font-bold mb-2">{formatCurrency(getTotalPortfolioValue())}</div>
+            <div className={`text-base sm:text-sm flex items-center gap-1.5 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {getTotalDayChange() >= 0 ? (
-                <TrendingUp className="h-3 w-3" />
+                <TrendingUp className="h-4 w-4 sm:h-3 sm:w-3" />
               ) : (
-                <TrendingDown className="h-3 w-3" />
+                <TrendingDown className="h-4 w-4 sm:h-3 sm:w-3" />
               )}
-              {formatCurrency(getTotalDayChange())} today
+              <span className="font-medium">{formatCurrency(getTotalDayChange())} today</span>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />
+          <CardHeader className="pb-3 p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-sm font-semibold flex items-center gap-2">
+              <CreditCard className="h-5 w-5 sm:h-4 sm:w-4" />
               Cash & Bank
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(getAccountsBalance())}</div>
-            <div className="text-xs text-muted-foreground">
+          <CardContent className="p-4 sm:p-6 pt-0">
+            <div className="text-3xl sm:text-2xl font-bold mb-2">{formatCurrency(getAccountsBalance())}</div>
+            <div className="text-sm text-muted-foreground">
               Available funds
             </div>
           </CardContent>
@@ -553,10 +553,10 @@ WEALTH BUILDING (After $10k+/month steady):
 
       {/* AI Insights */}
       <Card>
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-4 p-4 sm:p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <div className="flex-1 min-w-0">
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-lg font-bold">
                 <BrainCircuit className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                 <span className="truncate">AI Financial Insights</span>
               </CardTitle>
@@ -572,50 +572,50 @@ WEALTH BUILDING (After $10k+/month steady):
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           {!businessGoals ? (
             // Show steps to set goals if not set
             <div className="space-y-4">
               <div className="text-center py-4">
                 <Target className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
                 <h3 className="text-lg font-semibold mb-2">Set Your Business Goals First</h3>
-                <p className="text-sm text-muted-foreground mb-6">
+                <p className="text-base sm:text-sm text-muted-foreground mb-6 leading-relaxed">
                   Get personalized AI financial insights by setting your business goals in 3 easy steps:
                 </p>
               </div>
 
               <div className="space-y-3">
                 <div className="flex items-start gap-3 p-4 rounded-lg border bg-muted/30">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                  <div className="flex-shrink-0 w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-base sm:text-sm">
                     1
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-sm mb-1">Click "Set Business Goals"</h4>
-                    <p className="text-xs text-muted-foreground">
+                    <h4 className="font-semibold text-base sm:text-sm mb-1.5">Click "Set Business Goals"</h4>
+                    <p className="text-sm sm:text-xs text-muted-foreground leading-relaxed">
                       Click the button at the top right of this card to open the goals dialog
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 p-4 rounded-lg border bg-muted/30">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                  <div className="flex-shrink-0 w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-base sm:text-sm">
                     2
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-sm mb-1">Describe Your Goals</h4>
-                    <p className="text-xs text-muted-foreground">
+                    <h4 className="font-semibold text-base sm:text-sm mb-1.5">Describe Your Goals</h4>
+                    <p className="text-sm sm:text-xs text-muted-foreground leading-relaxed">
                       Write your specific business objectives (e.g., "Reach $1M revenue", "Acquire 2 rental properties")
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3 p-4 rounded-lg border bg-muted/30">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                  <div className="flex-shrink-0 w-9 h-9 sm:w-8 sm:h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-base sm:text-sm">
                     3
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-sm mb-1">Set Target & Timeline</h4>
-                    <p className="text-xs text-muted-foreground">
+                    <h4 className="font-semibold text-base sm:text-sm mb-1.5">Set Target & Timeline</h4>
+                    <p className="text-sm sm:text-xs text-muted-foreground leading-relaxed">
                       Add your target revenue and timeline, then save to get personalized AI insights
                     </p>
                   </div>
@@ -628,15 +628,15 @@ WEALTH BUILDING (After $10k+/month steady):
             </div>
           ) : (
             // Show AI insights when goals are set
-            <div className="space-y-3">
+            <div className="space-y-4">
               {/* Always show the goal header (index 0) */}
               {aiInsights[0] && (
                 <div className="flex items-start gap-3 p-4 rounded-lg border bg-primary/5">
-                  <div className="p-1 rounded-full bg-primary/10">
-                    <Target className="h-5 w-5" style={{ color: '#ffb500' }} />
+                  <div className="p-1.5 sm:p-1 rounded-full bg-primary/10 flex-shrink-0">
+                    <Target className="h-5 w-5 sm:h-5 sm:w-5" style={{ color: '#ffb500' }} />
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold whitespace-pre-line">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base sm:text-sm font-semibold whitespace-pre-line leading-relaxed">
                       {aiInsights[0].message}
                     </p>
                   </div>
@@ -645,7 +645,7 @@ WEALTH BUILDING (After $10k+/month steady):
               
               {/* Show current step only */}
               {aiInsights[currentStepIndex] && (
-                <div className={`flex items-start gap-3 p-3 rounded-lg border-2 bg-transparent ${
+                <div className={`flex items-start gap-3 p-4 rounded-lg border-2 bg-transparent ${
                   aiInsights[currentStepIndex].priority === 'high' ? 'border-red-500/50' :
                   aiInsights[currentStepIndex].priority === 'medium' ? 'border-yellow-500/50' :
                   'border-green-500/50'
@@ -659,26 +659,26 @@ WEALTH BUILDING (After $10k+/month steady):
                         setCompletedSteps(completedSteps.filter(i => i !== currentStepIndex))
                       }
                     }}
-                    className="mt-1"
+                    className="mt-1 flex-shrink-0"
                   />
-                  <div className={`p-1 rounded-full ${
+                  <div className={`p-1.5 sm:p-1 rounded-full flex-shrink-0 ${
                     aiInsights[currentStepIndex].priority === 'high' ? 'bg-red-500/20 text-red-400' :
                     aiInsights[currentStepIndex].priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
                     'bg-green-500/20 text-green-400'
                   }`}>
                     {aiInsights[currentStepIndex].priority === 'high' ? (
-                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTriangle className="h-5 w-5 sm:h-4 sm:w-4" />
                     ) : aiInsights[currentStepIndex].type === 'opportunity' ? (
-                      <Target className="h-4 w-4" />
+                      <Target className="h-5 w-5 sm:h-4 sm:w-4" />
                     ) : (
-                      <BrainCircuit className="h-4 w-4" />
+                      <BrainCircuit className="h-5 w-5 sm:h-4 sm:w-4" />
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className={`text-sm whitespace-pre-line ${completedSteps.includes(currentStepIndex) ? 'line-through opacity-60' : ''}`}>
+                    <p className={`text-base sm:text-sm whitespace-pre-line leading-relaxed ${completedSteps.includes(currentStepIndex) ? 'line-through opacity-60' : ''}`}>
                       {aiInsights[currentStepIndex].message}
                     </p>
-                    <span className={`text-xs px-2 py-1 rounded-full inline-block mt-1 ${
+                    <span className={`text-xs px-2.5 py-1 rounded-full inline-block mt-2 font-medium ${
                       aiInsights[currentStepIndex].priority === 'high' ? 'bg-red-500/20 text-red-400' :
                       aiInsights[currentStepIndex].priority === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
                       'bg-green-500/20 text-green-400'
@@ -690,21 +690,21 @@ WEALTH BUILDING (After $10k+/month steady):
               )}
               
               {/* Navigation buttons */}
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center justify-between pt-3">
                 <button
                   onClick={() => setCurrentStepIndex(Math.max(1, currentStepIndex - 1))}
                   disabled={currentStepIndex <= 1}
-                  className="px-4 py-2 text-sm font-medium rounded-md border border-border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2.5 text-sm font-medium rounded-md border border-border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Previous
                 </button>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm font-medium text-muted-foreground">
                   Step {currentStepIndex} of {aiInsights.length - 1}
                 </span>
                 <button
                   onClick={() => setCurrentStepIndex(Math.min(aiInsights.length - 1, currentStepIndex + 1))}
                   disabled={currentStepIndex >= aiInsights.length - 1}
-                  className="px-4 py-2 text-sm font-medium rounded-md border border-border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2.5 text-sm font-medium rounded-md border border-border hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   Next
                 </button>
@@ -715,13 +715,13 @@ WEALTH BUILDING (After $10k+/month steady):
       </Card>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Portfolio Performance</CardTitle>
-            <CardDescription>12-month account balance growth</CardDescription>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">Portfolio Performance</CardTitle>
+            <CardDescription className="text-sm">12-month account balance growth</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0">
             <InvestmentChart 
               accountsData={connectedAccounts} 
               totalValue={getTotalNetWorth()} 
@@ -730,11 +730,11 @@ WEALTH BUILDING (After $10k+/month steady):
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Account Allocation</CardTitle>
-            <CardDescription>Current account distribution</CardDescription>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg">Account Allocation</CardTitle>
+            <CardDescription className="text-sm">Current account distribution</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6 pt-0">
             <AssetAllocation 
               accountsData={connectedAccounts}
               totalBalance={getAccountsBalance()} 
