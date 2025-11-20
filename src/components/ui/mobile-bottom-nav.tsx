@@ -132,7 +132,7 @@ export function MobileBottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t-2 border-border shadow-lg md:hidden safe-area-bottom">
-      <nav className="flex items-center justify-between px-4 py-2 max-w-xl mx-auto gap-2">
+      <nav className="flex items-center justify-between px-4 py-3 max-w-xl mx-auto gap-2">
         {itemsWithBadges.map((item) => {
           const isActive = location.pathname === item.href
           const Icon = item.icon
