@@ -171,7 +171,7 @@ export function AIChat() {
   ]
 
   return (
-    <div className={`fixed right-4 z-50 ${isMobile ? 'bottom-20' : 'bottom-6'}`}>
+    <div className={`fixed right-4 z-50 ${isMobile ? 'bottom-22' : 'bottom-8'}`}>
       {/* Chat Widget Button */}
       {!isOpen && (
         <Button
