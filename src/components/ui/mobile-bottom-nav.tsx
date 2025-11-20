@@ -132,7 +132,7 @@ export function MobileBottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t-2 border-border shadow-lg md:hidden safe-area-bottom">
-      <nav className="flex items-center justify-between px-4 py-4 max-w-xl mx-auto gap-2">
+      <nav className="flex items-center justify-between px-4 py-2 max-w-xl mx-auto gap-2">
         {itemsWithBadges.map((item) => {
           const isActive = location.pathname === item.href
           const Icon = item.icon
@@ -142,7 +142,7 @@ export function MobileBottomNav() {
               key={item.name}
               to={item.href}
               className={cn(
-                "flex flex-col items-center justify-center p-3 rounded-lg transition-all duration-200",
+                "flex flex-col items-center justify-center pt-2 pb-2 px-3 rounded-lg transition-all duration-200",
                 "min-w-0 flex-1 relative",
                 isActive 
                   ? "text-[#ffb500] bg-[#ffb500]/10 scale-105" 
