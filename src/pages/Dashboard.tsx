@@ -76,14 +76,14 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
       
-      <main className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+      <main className="container mx-auto px-4 sm:px-4 lg:px-6 py-5 sm:py-6 space-y-6 sm:space-y-6 max-w-full overflow-hidden pb-24 sm:pb-6">
         {/* Welcome Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">
+            <h1 className="text-3xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
               Welcome back, {displayName}
             </h1>
-            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+            <p className="text-muted-foreground mt-2 text-base sm:text-base leading-relaxed">
               Here's what's happening with your family wealth today
             </p>
           </div>
