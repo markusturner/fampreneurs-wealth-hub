@@ -596,15 +596,15 @@ export default function Auth() {
             </form>
           ) : (
             // Sign In Form
-            <form onSubmit={handleSignIn} className="space-y-4">
-            <div className="space-y-2">
-              <Label>Login as</Label>
+            <form onSubmit={handleSignIn} className="space-y-3">
+            <div className="space-y-1.5">
+              <Label className="text-sm">Login as</Label>
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   type="button"
                   variant={userType === 'family_member' ? 'default' : 'outline'}
                   onClick={() => setUserType('family_member')}
-                  className="text-xs"
+                  className="text-xs h-8"
                 >
                   Family Member
                 </Button>
@@ -612,20 +612,20 @@ export default function Auth() {
                   type="button"
                   variant={userType === 'mentee' ? 'default' : 'outline'}
                   onClick={() => setUserType('mentee')}
-                  className="text-xs"
+                  className="text-xs h-8"
                 >
                   Trustees
                 </Button>
               </div>
               {userType === 'family_member' && (
-                <p className="text-xs text-muted-foreground">Use the credentials sent to your email by your Family Office.</p>
+                <p className="text-[10px] text-muted-foreground leading-tight pt-0.5">Use credentials sent to your email by your Family Office.</p>
               )}
               {userType === 'mentee' && (
-                <p className="text-xs text-muted-foreground">Use your mentee program credentials.</p>
+                <p className="text-[10px] text-muted-foreground leading-tight pt-0.5">Use your mentee program credentials.</p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="signin-email">Email</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="signin-email" className="text-sm">Email</Label>
               <Input
                 id="signin-email"
                 type="email"
@@ -634,10 +634,11 @@ export default function Auth() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 disabled={isLoading}
+                className="h-9"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="signin-password">Password</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="signin-password" className="text-sm">Password</Label>
               <Input
                 id="signin-password"
                 type="password"
@@ -646,13 +647,14 @@ export default function Auth() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={isLoading}
+                className="h-9"
               />
             </div>
             
             {/* Family Secret Code Field - Only for family members */}
             {userType === 'family_member' && (
-              <div className="space-y-2">
-                <Label htmlFor="family-secret-code">Family Secret Code *</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="family-secret-code" className="text-sm">Family Secret Code *</Label>
                 <Input
                   id="family-secret-code"
                   type="text"
@@ -661,22 +663,22 @@ export default function Auth() {
                   onChange={(e) => setFamilySecretCode(e.target.value.toUpperCase())}
                   required={userType === 'family_member'}
                   disabled={isLoading}
-                  className="font-mono"
+                  className="font-mono h-9"
                   maxLength={12}
                 />
-                <p className="text-xs text-muted-foreground">
-                  This code was provided by your family administrator
+                <p className="text-[10px] text-muted-foreground leading-tight pt-0.5">
+                  Provided by your family administrator
                 </p>
               </div>
             )}
             
-            <div className="flex justify-center">
+            <div className="flex justify-center pt-1">
               <RecoveryDialog />
             </div>
             
             <Button 
               type="submit" 
-              className="w-full"
+              className="w-full h-9"
               style={{ backgroundColor: '#ffb500', color: '#290a52' }}
               disabled={isLoading}
             >
@@ -685,7 +687,7 @@ export default function Auth() {
             </Button>
 
             {/* Social Login Divider */}
-            <div className="relative my-6">
+            <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
@@ -697,15 +699,15 @@ export default function Auth() {
             </div>
 
             {/* Social Login Buttons */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleGoogleAuth}
                 disabled={isLoading}
-                className="w-full"
+                className="w-full h-8 text-xs"
               >
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                <svg className="mr-1.5 h-3.5 w-3.5" viewBox="0 0 24 24">
                   <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                   <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -719,9 +721,9 @@ export default function Auth() {
                 variant="outline"
                 onClick={handleAppleAuth}
                 disabled={isLoading}
-                className="w-full"
+                className="w-full h-8 text-xs"
               >
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="mr-1.5 h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                 </svg>
                 Apple
@@ -732,9 +734,9 @@ export default function Auth() {
                 variant="outline"
                 onClick={handleMicrosoftAuth}
                 disabled={isLoading}
-                className="w-full"
+                className="w-full h-8 text-xs"
               >
-                <Mail className="mr-2 h-4 w-4" />
+                <Mail className="mr-1.5 h-3.5 w-3.5" />
                 Outlook
               </Button>
 
@@ -743,9 +745,9 @@ export default function Auth() {
                 variant="outline"
                 onClick={handleLinkedInAuth}
                 disabled={isLoading}
-                className="w-full"
+                className="w-full h-8 text-xs"
               >
-                <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="mr-1.5 h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                 </svg>
                 LinkedIn
