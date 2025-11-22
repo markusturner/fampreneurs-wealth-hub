@@ -20,34 +20,34 @@ export default function ThankYou() {
   }, [searchParams])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-3 sm:p-4 md:p-6">
       <Card className="w-full max-w-2xl shadow-soft">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-20 h-20 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
-            <CheckCircle className="w-12 h-12 text-green-500" />
+        <CardHeader className="text-center px-4 sm:px-6 pt-6 pb-4 sm:pt-8 sm:pb-6">
+          <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-green-500/10 flex items-center justify-center mb-3 sm:mb-4">
+            <CheckCircle className="w-10 h-10 sm:w-12 sm:h-12 text-green-500" />
           </div>
-          <CardTitle className="text-3xl font-bold">Thank You for Your Purchase!</CardTitle>
-          <CardDescription className="text-lg">
+          <CardTitle className="text-2xl sm:text-3xl font-bold">Thank You for Your Purchase!</CardTitle>
+          <CardDescription className="text-base sm:text-lg mt-2">
             Welcome to the TruHeirs family
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-6 sm:pb-8">
           {/* Purchase Summary */}
-          <div className="border rounded-lg p-6 space-y-4">
-            <h3 className="text-xl font-semibold">Purchase Summary</h3>
+          <div className="border rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
+            <h3 className="text-lg sm:text-xl font-semibold">Purchase Summary</h3>
             <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Plan:</span>
-                <span className="font-semibold">{planName}</span>
+              <div className="flex justify-between gap-2">
+                <span className="text-muted-foreground text-sm sm:text-base">Plan:</span>
+                <span className="font-semibold text-sm sm:text-base text-right">{planName}</span>
               </div>
               {sessionId && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Order ID:</span>
-                  <span className="font-mono text-sm">{sessionId.substring(0, 20)}...</span>
+                <div className="flex justify-between gap-2">
+                  <span className="text-muted-foreground text-sm sm:text-base">Order ID:</span>
+                  <span className="font-mono text-xs sm:text-sm">{sessionId.substring(0, 20)}...</span>
                 </div>
               )}
-              <div className="pt-4 border-t">
-                <p className="text-sm text-muted-foreground">
+              <div className="pt-3 sm:pt-4 border-t">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   A confirmation email has been sent to your inbox with your purchase details and receipt.
                 </p>
               </div>
@@ -55,9 +55,9 @@ export default function ThankYou() {
           </div>
 
           {/* What's Included */}
-          <div className="border rounded-lg p-6 space-y-4">
-            <h3 className="text-xl font-semibold">What's Included</h3>
-            <ul className="space-y-2 text-sm">
+          <div className="border rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
+            <h3 className="text-lg sm:text-xl font-semibold">What's Included</h3>
+            <ul className="space-y-2 text-xs sm:text-sm">
               <li className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                 <span>Complete DIY AI family office platform</span>
@@ -86,9 +86,9 @@ export default function ThankYou() {
           </div>
 
           {/* Next Steps */}
-          <div className="border rounded-lg p-6 space-y-4">
-            <h3 className="text-xl font-semibold">Next Steps</h3>
-            <ol className="space-y-2 text-sm list-decimal list-inside">
+          <div className="border rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
+            <h3 className="text-lg sm:text-xl font-semibold">Next Steps</h3>
+            <ol className="space-y-2 text-xs sm:text-sm list-decimal list-inside">
               <li>Create your trustee account using the button below</li>
               <li>Complete your family profile setup</li>
               <li>Invite family members to join your office</li>
@@ -97,14 +97,14 @@ export default function ThankYou() {
           </div>
 
           {/* CTA Buttons */}
-          <div className="space-y-3">
+          <div className="space-y-2.5 sm:space-y-3">
             <Button 
-              className="w-full text-lg py-6"
+              className="w-full text-base sm:text-lg py-5 sm:py-6"
               style={{ backgroundColor: '#ffb500', color: '#290a52' }}
               onClick={() => navigate('/auth?signup=trustee')}
             >
               Create Your Account
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
 
             <a 
@@ -115,9 +115,9 @@ export default function ThankYou() {
             >
               <Button 
                 variant="outline"
-                className="w-full text-lg py-6"
+                className="w-full text-base sm:text-lg py-5 sm:py-6"
               >
-                <svg className="mr-2 h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                <svg className="mr-2 h-5 w-5 sm:h-6 sm:w-6" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
                 </svg>
                 Download on the App Store
@@ -125,7 +125,7 @@ export default function ThankYou() {
             </a>
           </div>
 
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="text-center text-xs sm:text-sm text-muted-foreground pt-2">
             Questions? Contact our support team at support@truheirs.com
           </p>
         </CardContent>
