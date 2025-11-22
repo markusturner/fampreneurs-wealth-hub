@@ -20,6 +20,7 @@ interface Message {
 export function AIChat() {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const isMobile = useIsMobile()
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -34,6 +35,22 @@ export function AIChat() {
   const [isLoading, setIsLoading] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setIsAuthenticated(!!session)
+    }
+    
+    checkAuth()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -169,6 +186,11 @@ export function AIChat() {
     { label: 'Estate Planning', icon: FileText },
     { label: 'Family Governance', icon: Users }
   ]
+
+  // Don't render if not authenticated
+  if (!isAuthenticated) {
+    return null
+  }
 
   return (
     <div className={`fixed right-4 z-50 ${isMobile ? 'bottom-24' : 'bottom-8'}`}>
