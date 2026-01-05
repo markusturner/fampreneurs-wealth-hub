@@ -41,3 +41,6 @@ verify_jwt = true
 
 [functions.send-gohighlevel-email]
 verify_jwt = true
+
+[functions.send-meeting-reminders]
+verify_jwt = false
