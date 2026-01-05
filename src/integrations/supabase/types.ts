@@ -2545,6 +2545,36 @@ export type Database = {
         }
         Relationships: []
       }
+      meeting_reminders: {
+        Row: {
+          created_at: string
+          id: string
+          meeting_id: string
+          reminder_type: string
+          scheduled_for: string
+          sent: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meeting_id: string
+          reminder_type: string
+          scheduled_for: string
+          sent?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meeting_id?: string
+          reminder_type?: string
+          scheduled_for?: string
+          sent?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       meeting_types: {
         Row: {
           color: string
@@ -2581,6 +2611,7 @@ export type Database = {
       meetings: {
         Row: {
           attendees: string[] | null
+          calendar_link: string | null
           created_at: string
           created_by: string
           description: string | null
@@ -2594,9 +2625,11 @@ export type Database = {
           status: string
           title: string
           updated_at: string
+          zoom_link: string | null
         }
         Insert: {
           attendees?: string[] | null
+          calendar_link?: string | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -2610,9 +2643,11 @@ export type Database = {
           status?: string
           title: string
           updated_at?: string
+          zoom_link?: string | null
         }
         Update: {
           attendees?: string[] | null
+          calendar_link?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
@@ -2626,6 +2661,7 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+          zoom_link?: string | null
         }
         Relationships: []
       }

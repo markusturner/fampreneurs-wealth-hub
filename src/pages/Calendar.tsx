@@ -62,7 +62,8 @@ export default function Calendar() {
     meeting_time: '10:00',
     meeting_type: '',
     location: '',
-    attendees: ''
+    attendees: '',
+    zoom_link: ''
   })
 
   // Common timezones list
@@ -176,14 +177,15 @@ export default function Calendar() {
           location: newMeeting.location.trim() || null,
           attendees: attendeesArray.length > 0 ? attendeesArray : null,
           created_by: user.id,
-          status: 'scheduled'
+          status: 'scheduled',
+          zoom_link: newMeeting.zoom_link.trim() || null
         })
         .select()
         .single()
 
       if (error) throw error
 
-      // Send notifications to all users
+      // Send notifications to all users with reminders
       const meetingData = insertedMeeting as any
       if (meetingData?.id) {
         try {
@@ -193,7 +195,9 @@ export default function Calendar() {
               meetingTitle: newMeeting.title.trim(),
               meetingDate: format(newMeeting.meeting_date, 'yyyy-MM-dd'),
               meetingTime: newMeeting.meeting_time,
-              createdBy: user.id
+              createdBy: user.id,
+              zoomLink: newMeeting.zoom_link.trim() || null,
+              location: newMeeting.location.trim() || null
             }
           });
         } catch (notifyError) {
@@ -204,7 +208,7 @@ export default function Calendar() {
 
       toast({
         title: "Success",
-        description: "Meeting created and notifications sent"
+        description: "Meeting created with scheduled reminders"
       })
 
       setNewMeeting({
@@ -214,7 +218,8 @@ export default function Calendar() {
         meeting_time: '10:00',
         meeting_type: '',
         location: '',
-        attendees: ''
+        attendees: '',
+        zoom_link: ''
       })
       setIsCreateMeetingOpen(false)
       fetchMeetings()
@@ -602,8 +607,21 @@ export default function Calendar() {
                       id="location"
                       value={newMeeting.location}
                       onChange={(e) => setNewMeeting(prev => ({ ...prev, location: e.target.value }))}
-                      placeholder="Meeting location or video link"
+                      placeholder="Physical location or address"
                     />
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="zoom_link">Zoom/Video Link</Label>
+                    <Input
+                      id="zoom_link"
+                      value={newMeeting.zoom_link}
+                      onChange={(e) => setNewMeeting(prev => ({ ...prev, zoom_link: e.target.value }))}
+                      placeholder="https://zoom.us/j/..."
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      This link will be included in all reminder notifications
+                    </p>
                     
                     <div className="mt-3">
                       <CalendarIntegrationButton autoOpen={isCreateMeetingOpen} />

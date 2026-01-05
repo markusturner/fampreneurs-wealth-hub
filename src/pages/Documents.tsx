@@ -246,6 +246,7 @@ export default function Documents() {
     loadFamilyValues();
     loadDbFamilyMembers();
     loadConstitutionData();
+    loadMessages();
   }, [user, isAdmin]);
 
   const loadConstitutionData = () => {
@@ -295,6 +296,96 @@ export default function Documents() {
       console.error('Error loading family members:', error);
     }
   };
+
+  const loadMessages = async () => {
+    if (!user?.id) return;
+    
+    try {
+      // Fetch messages from database
+      const { data: messagesData, error } = await supabase
+        .from('family_messages')
+        .select('id, content, sender_id, created_at')
+        .order('created_at', { ascending: true })
+        .limit(50);
+      
+      if (error) throw error;
+      
+      // Get sender profiles
+      if (messagesData && messagesData.length > 0) {
+        const senderIds = [...new Set(messagesData.map(m => m.sender_id))];
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, first_name, last_name')
+          .in('user_id', senderIds);
+        
+        const profileMap = new Map(
+          (profiles || []).map(p => [
+            p.user_id, 
+            p.display_name || `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown'
+          ])
+        );
+        
+        const formattedMessages = messagesData.map(m => ({
+          id: m.id,
+          content: m.content,
+          sender_id: m.sender_id,
+          sender_name: profileMap.get(m.sender_id) || 'Unknown',
+          created_at: m.created_at
+        }));
+        
+        setMessages(formattedMessages);
+      }
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    }
+  };
+
+  // Real-time subscription for new messages
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('family-messages-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'family_messages'
+        },
+        async (payload) => {
+          console.log('New message received:', payload);
+          const newMsg = payload.new as any;
+          
+          // Don't add if it's our own message (already added locally)
+          if (newMsg.sender_id === user.id) return;
+          
+          // Get sender profile
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('display_name, first_name, last_name')
+            .eq('user_id', newMsg.sender_id)
+            .single();
+          
+          const senderName = profile?.display_name || 
+            `${profile?.first_name || ''} ${profile?.last_name || ''}`.trim() || 
+            'Unknown';
+          
+          setMessages(prev => [...prev, {
+            id: newMsg.id,
+            content: newMsg.content,
+            sender_id: newMsg.sender_id,
+            sender_name: senderName,
+            created_at: newMsg.created_at
+          }]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
   const fetchAvailableCodes = async () => {
     try {
       const {
@@ -638,17 +729,25 @@ export default function Documents() {
     
     try {
       // Extract mentions from message
-      const mentionRegex = /@(\w+)/g;
+      const mentionRegex = /@(\w+(?:\s+\w+)*)/g;
       const mentions = [...newMessage.matchAll(mentionRegex)].map(match => match[1]);
       
-      // Insert message into the database which will trigger notifications
+      // Find mentioned member IDs for targeted notifications
+      const mentionedMemberIds = mentions
+        .map(mentionName => {
+          const member = dbFamilyMembers.find(m => 
+            m.full_name?.toLowerCase().includes(mentionName.toLowerCase())
+          );
+          return member?.id;
+        })
+        .filter(Boolean);
+      
+      // Insert message into the database
       const { data: insertedData, error } = await supabase
         .from('family_messages')
         .insert({
           content: newMessage,
-          sender_id: user.id,
-          message_type: 'text',
-          recipient_id: user.id // For now, sending to self for testing
+          sender_id: user.id
         })
         .select()
         .single();
@@ -659,41 +758,21 @@ export default function Documents() {
         return;
       }
 
-      // Store mentions in database
-      if (insertedData && mentions.length > 0) {
-        const mentionInserts = mentions
-          .map(mentionName => {
-            const mentionedMember = dbFamilyMembers.find(m => 
-              m.full_name?.toLowerCase().includes(mentionName.toLowerCase())
-            );
-            return mentionedMember ? {
-              message_id: insertedData.id,
-              mentioned_user_id: mentionedMember.id,
-              mentioned_by_user_id: user.id
-            } : null;
-          })
-          .filter(Boolean);
-
-        if (mentionInserts.length > 0) {
-          await supabase.from('message_mentions').insert(mentionInserts);
-        }
-      }
-
-      // Send email notifications in background
+      // Send email notifications - if mentions exist, notify only mentioned users, otherwise notify all
       if (insertedData) {
         supabase.functions.invoke('notify-message-email', {
           body: {
             messageId: insertedData.id,
             messageContent: newMessage,
             senderId: user.id,
-            recipientId: null // null = broadcast to all
+            recipientId: mentionedMemberIds.length > 0 ? mentionedMemberIds[0] : null // null = broadcast to all
           }
         }).catch(err => console.error('Error sending message notification:', err));
       }
 
       // Update local state for immediate UI feedback
       const message = {
-        id: Date.now().toString(),
+        id: insertedData?.id || Date.now().toString(),
         content: newMessage,
         sender_id: user?.id,
         sender_name: profile?.display_name || 'You',
@@ -701,7 +780,11 @@ export default function Documents() {
       };
       setMessages([...messages, message]);
       setNewMessage('');
-      toast.success('Message sent and notifications sent!');
+      
+      const notifyText = mentionedMemberIds.length > 0 
+        ? `Message sent to ${mentions.join(', ')}`
+        : 'Message sent to all family members';
+      toast.success(notifyText);
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');
