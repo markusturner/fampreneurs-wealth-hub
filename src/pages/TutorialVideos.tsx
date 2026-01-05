@@ -121,11 +121,7 @@ export default function TutorialVideos() {
   };
 
   const handleBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate("/dashboard");
-    }
+    navigate(-1);
   };
 
   const openAddDialog = () => {
