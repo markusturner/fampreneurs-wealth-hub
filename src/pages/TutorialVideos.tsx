@@ -54,6 +54,7 @@ export default function TutorialVideos() {
 
   // Category management state
   const [customCategories, setCustomCategories] = useState<string[]>([]);
+  const [deletedCategories, setDeletedCategories] = useState<string[]>([]);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [categoryMode, setCategoryMode] = useState<"list" | "edit" | "add">("list");
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
@@ -71,11 +72,20 @@ export default function TutorialVideos() {
     if (saved) {
       setCustomCategories(JSON.parse(saved));
     }
+    const deleted = localStorage.getItem("tutorial_deleted_categories");
+    if (deleted) {
+      setDeletedCategories(JSON.parse(deleted));
+    }
   };
 
   const saveCustomCategories = (cats: string[]) => {
     localStorage.setItem("tutorial_custom_categories", JSON.stringify(cats));
     setCustomCategories(cats);
+  };
+
+  const saveDeletedCategories = (cats: string[]) => {
+    localStorage.setItem("tutorial_deleted_categories", JSON.stringify(cats));
+    setDeletedCategories(cats);
   };
 
   const fetchVideos = async () => {
@@ -370,12 +380,22 @@ export default function TutorialVideos() {
       const updated = customCategories.filter(c => c !== category);
       saveCustomCategories(updated);
     }
+    
+    // Track deleted default categories
+    if (defaultCategories.includes(category) && !deletedCategories.includes(category)) {
+      saveDeletedCategories([...deletedCategories, category]);
+    }
+    
     toast({ title: "Category deleted successfully" });
   };
 
-  const allCategories = [...new Set([...defaultCategories, ...customCategories, ...videos.map(v => v.category)])];
+  // Filter out deleted default categories, but keep them if they have videos
+  const activeDefaultCategories = defaultCategories.filter(cat => 
+    !deletedCategories.includes(cat) || videos.some(v => v.category === cat)
+  );
+  const allCategories = [...new Set([...activeDefaultCategories, ...customCategories, ...videos.map(v => v.category)])];
   const categories = allCategories.filter(cat => 
-    videos.some(v => v.category === cat) || customCategories.includes(cat) || defaultCategories.includes(cat)
+    videos.some(v => v.category === cat) || customCategories.includes(cat) || activeDefaultCategories.includes(cat)
   );
   const groupedVideos = categories.reduce((acc, cat) => {
     const catVideos = videos.filter(v => v.category === cat);
