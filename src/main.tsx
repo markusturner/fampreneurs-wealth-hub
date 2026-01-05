@@ -24,6 +24,7 @@ import FamilyConstitutionSetup from "./pages/FamilyConstitutionSetup";
 import Search from "./pages/Search";
 
 import ProfileSettings from "./pages/ProfileSettings";
+import TutorialVideos from "./pages/TutorialVideos";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
 import ContactSupport from "./pages/ContactSupport";
@@ -86,6 +87,7 @@ function AppWithNotifications() {
         <Route path="/members" element={<Members />} />
         <Route path="/investments" element={<Investments />} />
         <Route path="/profile-settings" element={<ProfileSettings />} />
+        <Route path="/tutorial-videos" element={<TutorialVideos />} />
         <Route path="/help" element={<Help />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/contact-support" element={<ContactSupport />} />

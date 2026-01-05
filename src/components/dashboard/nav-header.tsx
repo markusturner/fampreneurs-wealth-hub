@@ -450,7 +450,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Profile Settings</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTutorialVideoOpen(true)}>
+              <DropdownMenuItem onClick={() => navigate('/tutorial-videos')}>
                 <Video className="mr-2 h-4 w-4" />
                 <span>Tutorial Videos</span>
               </DropdownMenuItem>
