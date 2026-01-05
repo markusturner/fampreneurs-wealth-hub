@@ -121,7 +121,7 @@ export default function TutorialVideos() {
   };
 
   const handleBack = () => {
-    navigate(-1);
+    navigate("/dashboard");
   };
 
   const openAddDialog = () => {
