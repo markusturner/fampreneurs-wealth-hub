@@ -55,6 +55,7 @@ export default function TutorialVideos() {
   // Category management state
   const [customCategories, setCustomCategories] = useState<string[]>([]);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [categoryMode, setCategoryMode] = useState<"list" | "edit" | "add">("list");
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState("");
   const canManage = isAdmin || isOwner;
@@ -252,11 +253,31 @@ export default function TutorialVideos() {
     if (category) {
       setEditingCategory(category);
       setNewCategoryName(category);
+      setCategoryMode("edit");
     } else {
       setEditingCategory(null);
       setNewCategoryName("");
+      setCategoryMode("list");
     }
     setIsCategoryDialogOpen(true);
+  };
+
+  const startAddCategory = () => {
+    setEditingCategory(null);
+    setNewCategoryName("");
+    setCategoryMode("add");
+  };
+
+  const startEditCategory = (category: string) => {
+    setEditingCategory(category);
+    setNewCategoryName(category);
+    setCategoryMode("edit");
+  };
+
+  const backToList = () => {
+    setEditingCategory(null);
+    setNewCategoryName("");
+    setCategoryMode("list");
   };
 
   const handleSaveCategory = async () => {
@@ -292,6 +313,7 @@ export default function TutorialVideos() {
 
         toast({ title: "Category renamed successfully" });
         fetchVideos();
+        backToList();
       } catch (error: any) {
         toast({
           title: "Error",
@@ -305,6 +327,7 @@ export default function TutorialVideos() {
           !defaultCategories.includes(newCategoryName.trim())) {
         saveCustomCategories([...customCategories, newCategoryName.trim()]);
         toast({ title: "Category added successfully" });
+        backToList();
       } else {
         toast({
           title: "Error",
@@ -314,28 +337,40 @@ export default function TutorialVideos() {
         return;
       }
     }
-
-    setIsCategoryDialogOpen(false);
-    setEditingCategory(null);
-    setNewCategoryName("");
   };
 
   const handleDeleteCategory = async (category: string) => {
     const videosInCategory = videos.filter(v => v.category === category);
     if (videosInCategory.length > 0) {
-      toast({
-        title: "Cannot delete category",
-        description: `This category contains ${videosInCategory.length} video(s). Move or delete them first.`,
-        variant: "destructive",
-      });
-      return;
+      if (!confirm(`This category contains ${videosInCategory.length} video(s). Delete all videos in this category?`)) {
+        return;
+      }
+      // Delete all videos in this category
+      try {
+        const { error } = await supabase
+          .from("tutorial_videos")
+          .delete()
+          .eq("category", category);
+        
+        if (error) throw error;
+        toast({ title: "Videos deleted successfully" });
+        fetchVideos();
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to delete videos",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
+    // Remove from custom categories if it exists there
     if (customCategories.includes(category)) {
       const updated = customCategories.filter(c => c !== category);
       saveCustomCategories(updated);
-      toast({ title: "Category deleted successfully" });
     }
+    toast({ title: "Category deleted successfully" });
   };
 
   const allCategories = [...new Set([...defaultCategories, ...customCategories, ...videos.map(v => v.category)])];
@@ -651,53 +686,87 @@ export default function TutorialVideos() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editingCategory ? "Edit Category" : "Add New Category"}
+              {categoryMode === "list" && "Manage Categories"}
+              {categoryMode === "edit" && "Rename Category"}
+              {categoryMode === "add" && "Add New Category"}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="category_name">Category Name</Label>
-              <Input
-                id="category_name"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                placeholder="Enter category name"
-              />
-            </div>
-            {!editingCategory && (
+          
+          {categoryMode === "list" ? (
+            <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label>Existing Categories</Label>
-                <div className="flex flex-wrap gap-2">
-                  {allCategories.map((cat) => (
-                    <Badge 
+                {allCategories.map((cat) => {
+                  const videoCount = videos.filter(v => v.category === cat).length;
+                  return (
+                    <div 
                       key={cat} 
-                      variant="secondary"
-                      className="flex items-center gap-1"
+                      className="flex items-center justify-between p-3 rounded-lg border bg-muted/30"
                     >
-                      {cat}
-                      {customCategories.includes(cat) && !videos.some(v => v.category === cat) && (
-                        <button
-                          onClick={() => handleDeleteCategory(cat)}
-                          className="ml-1 hover:text-destructive"
+                      <div>
+                        <span className="font-medium">{cat}</span>
+                        <span className="text-xs text-muted-foreground ml-2">
+                          ({videoCount} video{videoCount !== 1 ? "s" : ""})
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => startEditCategory(cat)}
                         >
-                          <X className="h-3 w-3" />
-                        </button>
-                      )}
-                    </Badge>
-                  ))}
-                </div>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteCategory(cat)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+                {allCategories.length === 0 && (
+                  <p className="text-center text-muted-foreground py-4">
+                    No categories yet
+                  </p>
+                )}
               </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveCategory}>
-              <Save className="h-4 w-4 mr-2" />
-              {editingCategory ? "Rename" : "Add"} Category
-            </Button>
-          </DialogFooter>
+              <DialogFooter className="flex-row gap-2 sm:justify-between">
+                <Button variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>
+                  Close
+                </Button>
+                <Button onClick={startAddCategory}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Category
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="category_name">Category Name</Label>
+                <Input
+                  id="category_name"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="Enter category name"
+                />
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={backToList}>
+                  Back
+                </Button>
+                <Button onClick={handleSaveCategory}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {categoryMode === "edit" ? "Rename" : "Add"}
+                </Button>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
