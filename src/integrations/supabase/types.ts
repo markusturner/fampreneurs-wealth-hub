@@ -4151,7 +4151,7 @@ export type Database = {
       get_coach_admin_details: { Args: { coach_id: string }; Returns: Json }
       get_coach_for_booking: { Args: { coach_id: string }; Returns: Json }
       get_community_profile: {
-        Args: { target_user_id: string }
+        Args: { p_user_id: string }
         Returns: {
           avatar_url: string
           display_name: string
@@ -4163,15 +4163,25 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: Json
       }
-      get_community_profiles: {
-        Args: never
-        Returns: {
-          avatar_url: string
-          display_name: string
-          first_initial: string
-          user_id: string
-        }[]
-      }
+      get_community_profiles:
+        | {
+            Args: never
+            Returns: {
+              avatar_url: string
+              display_name: string
+              first_initial: string
+              user_id: string
+            }[]
+          }
+        | {
+            Args: { p_user_ids: string[] }
+            Returns: {
+              avatar_url: string
+              display_name: string
+              first_initial: string
+              user_id: string
+            }[]
+          }
       get_family_member_count_secure: { Args: never; Returns: number }
       get_masked_portfolio_summary: {
         Args: { target_user_id: string }
