@@ -1,54 +1,61 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Send, Bot, User, Loader2, MessageCircle, X, Minimize2, Building2, TrendingUp, FileText, Users } from 'lucide-react'
+import { Send, Bot, User, Loader2, MessageCircle, X, Minimize2, Shield, Building2, FileText } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { supabase } from '@/integrations/supabase/client'
+import ReactMarkdown from 'react-markdown'
+
+type Persona = 'rachel' | 'asset_protection' | 'business_structure' | 'trust_writer'
 
 interface Message {
   id: string
   content: string
   role: 'user' | 'assistant'
   timestamp: Date
-  showOptions?: boolean
+}
+
+const PERSONAS: { id: Persona; label: string; icon: React.ElementType; description: string }[] = [
+  { id: 'rachel', label: 'Rachel', icon: Bot, description: 'General Family Office Director' },
+  { id: 'asset_protection', label: 'Asset Protection', icon: Shield, description: 'Trust docs & asset shielding' },
+  { id: 'business_structure', label: 'Biz Structure', icon: Building2, description: 'F.L.I.P. Formula™ guidance' },
+  { id: 'trust_writer', label: 'Trust Writer', icon: FileText, description: 'Draft trust clauses' },
+]
+
+const PERSONA_GREETINGS: Record<Persona, string> = {
+  rachel: "Hello! I'm Rachel, your Family Office AI assistant. How can I help you today?",
+  asset_protection: "Welcome! I specialize in asset protection strategies and trust document guidance. What assets would you like to protect?",
+  business_structure: "Hi! I'm your Business Structure Builder, powered by The F.L.I.P. Formula™. Let's optimize your business entities for maximum tax savings. What's your current setup?",
+  trust_writer: "Hello! I help draft trust clauses and provisions for irrevocable trusts. What type of trust provision would you like to work on?",
 }
 
 export function AIChat() {
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [activePersona, setActivePersona] = useState<Persona>('rachel')
   const isMobile = useIsMobile()
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      content: "Hello! I'm Rachel, your Family Office AI assistant. What would you like help with today?",
-      role: 'assistant',
-      timestamp: new Date(),
-      showOptions: true
-    }
+    { id: '1', content: PERSONA_GREETINGS.rachel, role: 'assistant', timestamp: new Date() }
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
 
-  // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       setIsAuthenticated(!!session)
     }
-    
     checkAuth()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       setIsAuthenticated(!!session)
     })
-
     return () => subscription.unsubscribe()
   }, [])
 
@@ -58,143 +65,69 @@ export function AIChat() {
     }
   }, [messages])
 
-  // Expose programmatic controls and event listeners for opening the chat
   useEffect(() => {
     const open = () => setIsOpen(true)
     const close = () => setIsOpen(false)
     const toggle = () => setIsOpen(prev => !prev)
-
     ;(window as any).openAIChat = open
     ;(window as any).closeAIChat = close
     ;(window as any).toggleAIChat = toggle
-
-    const openHandler = () => open()
-    const closeHandler = () => close()
-    const toggleHandler = () => toggle()
-
-    window.addEventListener('ai-chat:open', openHandler as EventListener)
-    window.addEventListener('ai-chat:close', closeHandler as EventListener)
-    window.addEventListener('ai-chat:toggle', toggleHandler as EventListener)
-
+    window.addEventListener('ai-chat:open', open)
+    window.addEventListener('ai-chat:close', close)
+    window.addEventListener('ai-chat:toggle', toggle)
     return () => {
-      window.removeEventListener('ai-chat:open', openHandler as EventListener)
-      window.removeEventListener('ai-chat:close', closeHandler as EventListener)
-      window.removeEventListener('ai-chat:toggle', toggleHandler as EventListener)
+      window.removeEventListener('ai-chat:open', open)
+      window.removeEventListener('ai-chat:close', close)
+      window.removeEventListener('ai-chat:toggle', toggle)
       delete (window as any).openAIChat
       delete (window as any).closeAIChat
       delete (window as any).toggleAIChat
     }
   }, [])
 
+  const switchPersona = useCallback((persona: Persona) => {
+    setActivePersona(persona)
+    setMessages([
+      { id: Date.now().toString(), content: PERSONA_GREETINGS[persona], role: 'assistant', timestamp: new Date() }
+    ])
+  }, [])
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: input.trim(),
-      role: 'user',
-      timestamp: new Date()
-    }
-
+    const userMessage: Message = { id: Date.now().toString(), content: input.trim(), role: 'user', timestamp: new Date() }
     setMessages(prev => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
 
     try {
       const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { 
-          message: input.trim(),
-          context: 'family_office_business_structure'
-        }
+        body: { message: input.trim(), persona: activePersona }
       })
-
       if (error) throw error
-
-      const assistantMessage: Message = {
+      setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         content: data.response,
         role: 'assistant',
         timestamp: new Date()
-      }
-
-      setMessages(prev => [...prev, assistantMessage])
+      }])
     } catch (error) {
       console.error('Error sending message:', error)
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: "Failed to send message. Please try again.", variant: "destructive" })
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage()
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
   }
 
-  const handleOptionClick = (option: string) => {
-    // Remove options from the initial message
-    setMessages(prev => prev.map(msg => 
-      msg.id === '1' ? { ...msg, showOptions: false } : msg
-    ))
+  if (!isAuthenticated) return null
 
-    // Add user selection
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: option,
-      role: 'user',
-      timestamp: new Date()
-    }
-
-    let assistantResponse = ""
-    
-    switch (option) {
-      case 'Business Structure':
-        assistantResponse = "Great choice! I'll help you optimize your business structure using The F.L.I.P. Formula™. This comprehensive analysis will help you identify tax savings opportunities, optimize family employment, and protect your assets.\n\nTo get started, could you tell me:\n1. How many LLCs do you currently have?\n2. What industries are your businesses in?\n3. Are any family members involved in your businesses?\n\nOr feel free to ask me any specific questions about business structure optimization!"
-        break
-      case 'Investment Strategy':
-        assistantResponse = "I'd be happy to help with your investment strategy! I can assist with asset allocation, portfolio diversification, family office investment approaches, and long-term wealth preservation strategies.\n\nWhat specific area of investment planning would you like to focus on?"
-        break
-      case 'Estate Planning':
-        assistantResponse = "Estate planning is crucial for family wealth preservation. I can help you understand trust structures, succession planning, tax-efficient wealth transfer strategies, and multi-generational planning.\n\nWhat aspect of estate planning are you most interested in discussing?"
-        break
-      case 'Family Governance':
-        assistantResponse = "Family governance helps ensure smooth operations and clear communication across generations. I can help with family employment policies, decision-making structures, conflict resolution, and establishing family values and mission.\n\nWhat family governance topic would you like to explore?"
-        break
-      default:
-        assistantResponse = "I'm here to help with all aspects of family office management. Feel free to ask me anything!"
-    }
-
-    const assistantMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      content: assistantResponse,
-      role: 'assistant',
-      timestamp: new Date()
-    }
-
-    setMessages(prev => [...prev, userMessage, assistantMessage])
-  }
-
-  const chatOptions = [
-    { label: 'Business Structure', icon: Building2 },
-    { label: 'Investment Strategy', icon: TrendingUp },
-    { label: 'Estate Planning', icon: FileText },
-    { label: 'Family Governance', icon: Users }
-  ]
-
-  // Don't render if not authenticated
-  if (!isAuthenticated) {
-    return null
-  }
+  const currentPersona = PERSONAS.find(p => p.id === activePersona)!
 
   return (
     <div className={`fixed right-4 z-50 ${isMobile ? 'bottom-24' : 'bottom-8'}`}>
-      {/* Chat Widget Button */}
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
@@ -206,32 +139,19 @@ export function AIChat() {
         </Button>
       )}
 
-      {/* Chat Widget */}
       {isOpen && (
-        <Card className={`w-80 shadow-2xl transition-all duration-200 ${
-          isMinimized ? 'h-14' : 'h-96'
-        }`}>
+        <Card className={`shadow-2xl transition-all duration-200 ${isMobile ? 'w-[calc(100vw-2rem)]' : 'w-96'} ${isMinimized ? 'h-14' : isMobile ? 'h-[70vh]' : 'h-[480px]'}`}>
           <CardHeader className="pb-2 px-4 py-3 border-b">
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-sm">
-                <Bot className="h-4 w-4" style={{ color: '#ffb500' }} />
-                Rachel AI Assistant
+                <currentPersona.icon className="h-4 w-4" style={{ color: '#ffb500' }} />
+                {currentPersona.label}
               </CardTitle>
               <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsMinimized(!isMinimized)}
-                  className="h-6 w-6 p-0"
-                >
+                <Button variant="ghost" size="sm" onClick={() => setIsMinimized(!isMinimized)} className="h-6 w-6 p-0">
                   <Minimize2 className="h-3 w-3" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsOpen(false)}
-                  className="h-6 w-6 p-0"
-                >
+                <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)} className="h-6 w-6 p-0">
                   <X className="h-3 w-3" />
                 </Button>
               </div>
@@ -239,50 +159,49 @@ export function AIChat() {
           </CardHeader>
           
           {!isMinimized && (
-            <CardContent className="flex flex-col h-80 p-0">
+            <CardContent className="flex flex-col flex-1 p-0" style={{ height: 'calc(100% - 3.5rem)' }}>
+              {/* Persona Tabs */}
+              <div className="flex gap-1 px-3 py-2 border-b overflow-x-auto">
+                {PERSONAS.map((p) => (
+                  <Button
+                    key={p.id}
+                    variant={activePersona === p.id ? 'default' : 'ghost'}
+                    size="sm"
+                    className="h-7 text-[10px] px-2 whitespace-nowrap flex-shrink-0"
+                    onClick={() => switchPersona(p.id)}
+                    title={p.description}
+                  >
+                    <p.icon className="h-3 w-3 mr-1" />
+                    {p.label}
+                  </Button>
+                ))}
+              </div>
+
+              {/* Messages */}
               <ScrollArea className="flex-1 px-4 py-2" ref={scrollAreaRef}>
                 <div className="space-y-3">
                   {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex gap-2 ${
-                        message.role === 'user' ? 'justify-end' : 'justify-start'
-                      }`}
-                    >
+                    <div key={message.id} className={`flex gap-2 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                       {message.role === 'assistant' && (
-                        <Avatar className="h-6 w-6 mt-0.5">
+                        <Avatar className="h-6 w-6 mt-0.5 flex-shrink-0">
                           <AvatarFallback style={{ backgroundColor: '#ffb500' }}>
-                            <Bot className="h-3 w-3 text-primary" />
+                            <currentPersona.icon className="h-3 w-3 text-primary" />
                           </AvatarFallback>
                         </Avatar>
                       )}
-                      <div
-                        className={`max-w-[75%] rounded-lg px-3 py-2 text-xs ${
-                          message.role === 'user'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
-                        }`}
-                      >
-                        {message.content}
-                        {message.showOptions && (
-                          <div className="mt-3 space-y-1.5">
-                            {chatOptions.map((option) => (
-                              <Button
-                                key={option.label}
-                                variant="outline"
-                                size="sm"
-                                className="w-full justify-start text-xs h-7 px-2"
-                                onClick={() => handleOptionClick(option.label)}
-                              >
-                                <option.icon className="h-3 w-3 mr-1.5 flex-shrink-0" />
-                                <span className="truncate">{option.label}</span>
-                              </Button>
-                            ))}
+                      <div className={`max-w-[80%] rounded-lg px-3 py-2 text-xs ${
+                        message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                      }`}>
+                        {message.role === 'assistant' ? (
+                          <div className="prose prose-xs dark:prose-invert max-w-none [&>*]:m-0 [&>*+*]:mt-1.5 [&_li]:text-xs [&_p]:text-xs [&_strong]:text-xs">
+                            <ReactMarkdown>{message.content}</ReactMarkdown>
                           </div>
+                        ) : (
+                          message.content
                         )}
                       </div>
                       {message.role === 'user' && (
-                        <Avatar className="h-6 w-6 mt-0.5">
+                        <Avatar className="h-6 w-6 mt-0.5 flex-shrink-0">
                           <AvatarFallback className="bg-secondary">
                             <User className="h-3 w-3" />
                           </AvatarFallback>
@@ -305,6 +224,7 @@ export function AIChat() {
                 </div>
               </ScrollArea>
               
+              {/* Input */}
               <div className="flex gap-2 p-3 border-t">
                 <Input
                   placeholder="Ask me anything..."
@@ -314,12 +234,7 @@ export function AIChat() {
                   disabled={isLoading}
                   className="flex-1 h-8 text-xs"
                 />
-                <Button
-                  onClick={sendMessage}
-                  disabled={!input.trim() || isLoading}
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                >
+                <Button onClick={sendMessage} disabled={!input.trim() || isLoading} size="sm" className="h-8 w-8 p-0">
                   <Send className="h-3 w-3" />
                 </Button>
               </div>
