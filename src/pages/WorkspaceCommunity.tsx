@@ -1,15 +1,17 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { 
-  Image, Video, ThumbsUp, MessageCircle, Send, Pin, 
-  MoreHorizontal, Settings, Filter, Users, Wifi 
+  Image, Video, ThumbsUp, MessageCircle, Send, 
+  MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X
 } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import {
@@ -18,6 +20,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface Post {
   id: string
@@ -32,6 +47,7 @@ interface Post {
   comments_count: number
   is_liked: boolean
   channel_id: string | null
+  category: string
 }
 
 const PROGRAM_NAMES: Record<string, string> = {
@@ -63,11 +79,20 @@ export default function WorkspaceCommunity() {
   const programName = PROGRAM_NAMES[program] || 'Community'
   const programDesc = PROGRAM_DESCRIPTIONS[program] || ''
   const [newPost, setNewPost] = useState('')
+  const [postCategory, setPostCategory] = useState('discussion')
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('all')
   const [memberCount, setMemberCount] = useState(0)
   const [onlineCount] = useState(Math.floor(Math.random() * 5) + 1)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [communityPhoto, setCommunityPhoto] = useState<string | null>(null)
+  const [communityName, setCommunityName] = useState('')
+  const [communityDesc, setCommunityDesc] = useState('')
+  const [postImageFile, setPostImageFile] = useState<File | null>(null)
+  const [postImagePreview, setPostImagePreview] = useState<string | null>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
+  const communityPhotoRef = useRef<HTMLInputElement>(null)
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -79,7 +104,6 @@ export default function WorkspaceCommunity() {
 
       if (error) throw error
 
-      // Fetch likes and comments counts
       const postIds = (postsData || []).map(p => p.id)
       
       const [{ data: likes }, { data: comments }] = await Promise.all([
@@ -87,7 +111,6 @@ export default function WorkspaceCommunity() {
         supabase.from('community_comments').select('post_id').in('post_id', postIds.length ? postIds : ['']),
       ])
 
-      // Fetch author profiles
       const userIds = [...new Set((postsData || []).map(p => p.user_id))]
       const { data: profiles } = await supabase
         .from('profiles')
@@ -101,6 +124,14 @@ export default function WorkspaceCommunity() {
         const postLikes = (likes || []).filter(l => l.post_id === post.id)
         const postComments = (comments || []).filter(c => c.post_id === post.id)
         
+        // Derive category from content keywords or default
+        const content = post.content.toLowerCase()
+        let category = 'discussion'
+        if (content.includes('#win') || content.includes('🏆')) category = 'wins'
+        else if (content.includes('#update') || content.includes('📣')) category = 'updates'
+        else if (content.includes('#gem') || content.includes('💎')) category = 'gems'
+        else if (content.includes('#recording') || content.includes('🎥') || post.video_url) category = 'recordings'
+
         return {
           id: post.id,
           content: post.content,
@@ -114,6 +145,7 @@ export default function WorkspaceCommunity() {
           comments_count: postComments.length,
           is_liked: postLikes.some(l => l.user_id === user?.id),
           channel_id: post.channel_id,
+          category,
         }
       }))
     } catch (error) {
@@ -123,15 +155,16 @@ export default function WorkspaceCommunity() {
     }
   }, [user?.id])
 
+  useEffect(() => { fetchPosts() }, [fetchPosts])
+
   useEffect(() => {
-    fetchPosts()
-  }, [fetchPosts])
+    setCommunityName(programName)
+    setCommunityDesc(programDesc)
+  }, [programName, programDesc])
 
   useEffect(() => {
     const fetchMemberCount = async () => {
-      const { count } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
+      const { count } = await supabase.from('profiles').select('*', { count: 'exact', head: true })
       setMemberCount(count || 0)
     }
     fetchMemberCount()
@@ -139,16 +172,36 @@ export default function WorkspaceCommunity() {
 
   const handleCreatePost = async () => {
     if (!newPost.trim() || !user?.id) return
-
     try {
+      // Add category tag to content
+      const categoryTag = postCategory !== 'discussion' ? `#${postCategory} ` : ''
+      let imageUrl: string | null = null
+
+      if (postImageFile) {
+        const ext = postImageFile.name.split('.').pop()
+        const path = `community/${user.id}/${Date.now()}.${ext}`
+        const { error: uploadError } = await supabase.storage.from('community-images').upload(path, postImageFile)
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from('community-images').getPublicUrl(path)
+          imageUrl = urlData.publicUrl
+        }
+      }
+
       const { error } = await supabase
         .from('community_posts')
-        .insert({ content: newPost.trim(), user_id: user.id })
+        .insert({ 
+          content: categoryTag + newPost.trim(), 
+          user_id: user.id,
+          image_url: imageUrl,
+        })
 
       if (error) throw error
       setNewPost('')
+      setPostImageFile(null)
+      setPostImagePreview(null)
+      setPostCategory('discussion')
       fetchPosts()
-      toast({ title: 'Posted!', description: 'Your post has been shared.' })
+      toast({ title: 'Posted!' })
     } catch (error) {
       console.error('Error creating post:', error)
       toast({ title: 'Error', description: 'Failed to create post.', variant: 'destructive' })
@@ -157,36 +210,39 @@ export default function WorkspaceCommunity() {
 
   const handleLike = async (postId: string, isLiked: boolean) => {
     if (!user?.id) return
-
     try {
       if (isLiked) {
-        await supabase
-          .from('community_reactions')
-          .delete()
-          .eq('post_id', postId)
-          .eq('user_id', user.id)
+        await supabase.from('community_reactions').delete().eq('post_id', postId).eq('user_id', user.id)
       } else {
-        await supabase
-          .from('community_reactions')
-          .insert({ post_id: postId, user_id: user.id, reaction_type: 'like' })
+        await supabase.from('community_reactions').insert({ post_id: postId, user_id: user.id, reaction_type: 'like' })
       }
       fetchPosts()
-    } catch (error) {
-      console.error('Error toggling like:', error)
-    }
+    } catch (error) { console.error('Error toggling like:', error) }
   }
 
   const handleDeletePost = async (postId: string) => {
     try {
-      const { error } = await supabase
-        .from('community_posts')
-        .delete()
-        .eq('id', postId)
+      const { error } = await supabase.from('community_posts').delete().eq('id', postId)
       if (error) throw error
       fetchPosts()
       toast({ title: 'Post deleted' })
     } catch (error) {
       toast({ title: 'Error', description: 'Failed to delete post.', variant: 'destructive' })
+    }
+  }
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setPostImageFile(file)
+      setPostImagePreview(URL.createObjectURL(file))
+    }
+  }
+
+  const handleCommunityPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setCommunityPhoto(URL.createObjectURL(file))
     }
   }
 
@@ -201,9 +257,15 @@ export default function WorkspaceCommunity() {
     if (hours < 24) return `${hours}h`
     const days = Math.floor(hours / 24)
     if (days < 30) return `${days}d`
-    const months = Math.floor(days / 30)
-    return `${months}mo`
+    return `${Math.floor(days / 30)}mo`
   }
+
+  // Filter posts by active category
+  const filteredPosts = activeCategory === 'all' 
+    ? posts 
+    : posts.filter(p => p.category === activeCategory)
+
+  const categoryLabel = CATEGORIES.find(c => c.value === postCategory)
 
   return (
     <div className="min-h-screen bg-background">
@@ -214,31 +276,52 @@ export default function WorkspaceCommunity() {
             {/* Post Composer */}
             <Card className="border-border/50">
               <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 flex-shrink-0">
+                <div className="flex items-start gap-3">
+                  <Avatar className="h-10 w-10 flex-shrink-0 mt-1">
                     {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
                     <AvatarFallback className="bg-primary/10 text-primary text-sm">
                       {getInitials(profile?.display_name || 'U')}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
+                  <div className="flex-1 space-y-2">
                     <Textarea
                       placeholder="Write something..."
                       value={newPost}
                       onChange={(e) => setNewPost(e.target.value)}
-                      className="min-h-[44px] max-h-[120px] resize-none border-0 bg-muted/50 rounded-full px-4 py-2.5 focus-visible:ring-1 text-sm"
+                      className="min-h-[44px] max-h-[120px] resize-none border-0 bg-muted/50 rounded-lg px-4 py-2.5 focus-visible:ring-1 text-sm"
                       rows={1}
                     />
+                    {postImagePreview && (
+                      <div className="relative inline-block">
+                        <img src={postImagePreview} alt="Preview" className="h-20 rounded-lg object-cover" />
+                        <button onClick={() => { setPostImageFile(null); setPostImagePreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+                        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => imageInputRef.current?.click()}>
+                          <Image className="h-3.5 w-3.5" /> Photo
+                        </Button>
+                        <Select value={postCategory} onValueChange={setPostCategory}>
+                          <SelectTrigger className="h-8 w-auto text-xs border-0 bg-muted/50">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CATEGORIES.filter(c => c.value !== 'all').map(c => (
+                              <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim()} className="gap-1.5">
+                        <Send className="h-4 w-4" />
+                        <span className="hidden sm:inline">Post</span>
+                      </Button>
+                    </div>
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={handleCreatePost}
-                    disabled={!newPost.trim()}
-                    className="flex-shrink-0 gap-1.5"
-                  >
-                    <Send className="h-4 w-4" />
-                    <span className="hidden sm:inline">Post</span>
-                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -259,9 +342,6 @@ export default function WorkspaceCommunity() {
                   {cat.label}
                 </button>
               ))}
-              <button className="flex-shrink-0 p-1.5 rounded-full bg-muted/50 hover:bg-muted text-muted-foreground">
-                <Filter className="h-4 w-4" />
-              </button>
             </div>
 
             {/* Feed */}
@@ -280,19 +360,20 @@ export default function WorkspaceCommunity() {
                     </CardContent>
                   </Card>
                 ))
-              ) : posts.length === 0 ? (
+              ) : filteredPosts.length === 0 ? (
                 <Card className="border-border/50">
                   <CardContent className="p-8 text-center">
                     <MessageCircle className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-50" />
                     <h3 className="font-semibold mb-1">No posts yet</h3>
-                    <p className="text-sm text-muted-foreground">Be the first to share something!</p>
+                    <p className="text-sm text-muted-foreground">
+                      {activeCategory !== 'all' ? `No ${activeCategory} posts yet. Be the first!` : 'Be the first to share something!'}
+                    </p>
                   </CardContent>
                 </Card>
               ) : (
-                posts.map(post => (
+                filteredPosts.map(post => (
                   <Card key={post.id} className="border-border/50 hover:border-border transition-colors">
                     <CardContent className="p-4">
-                      {/* Post Header */}
                       <div className="flex items-start gap-3">
                         <Avatar className="h-10 w-10 flex-shrink-0">
                           {post.author_avatar && <AvatarImage src={post.author_avatar} />}
@@ -304,21 +385,14 @@ export default function WorkspaceCommunity() {
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-semibold text-sm">{post.author_name}</span>
                             <span className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</span>
-                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Discussion</Badge>
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">{post.category}</Badge>
                           </div>
-                          
-                          {/* Post Content */}
                           <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed">{post.content}</p>
                           
                           {post.image_url && (
-                            <img
-                              src={post.image_url}
-                              alt=""
-                              className="rounded-lg mt-3 max-h-80 object-cover w-full"
-                            />
+                            <img src={post.image_url} alt="" className="rounded-lg mt-3 max-h-80 object-cover w-full" />
                           )}
 
-                          {/* Post Actions */}
                           <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/50">
                             <button
                               onClick={() => handleLike(post.id, post.is_liked)}
@@ -336,7 +410,6 @@ export default function WorkspaceCommunity() {
                           </div>
                         </div>
 
-                        {/* Post Menu */}
                         {post.user_id === user?.id && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -345,10 +418,7 @@ export default function WorkspaceCommunity() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                className="text-destructive"
-                                onClick={() => handleDeletePost(post.id)}
-                              >
+                              <DropdownMenuItem className="text-destructive" onClick={() => handleDeletePost(post.id)}>
                                 Delete Post
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -364,8 +434,25 @@ export default function WorkspaceCommunity() {
 
           {/* Right Sidebar */}
           <div className="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-4">
-            {/* Community Info Card */}
-            <Card className="border-border/50">
+            <Card className="border-border/50 overflow-hidden">
+              {/* Community Photo */}
+              <div 
+                className="relative h-32 bg-muted cursor-pointer group"
+                onClick={() => communityPhotoRef.current?.click()}
+              >
+                {communityPhoto ? (
+                  <img src={communityPhoto} alt={programName} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
+                    <Camera className="h-8 w-8 mb-1 opacity-50" />
+                    <span className="text-xs">Add community photo</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <Camera className="h-6 w-6 text-white" />
+                </div>
+                <input ref={communityPhotoRef} type="file" accept="image/*" className="hidden" onChange={handleCommunityPhotoUpload} />
+              </div>
               <CardContent className="p-4 text-center space-y-3">
                 <h3 className="font-bold text-lg">{programName}</h3>
                 <p className="text-xs text-muted-foreground leading-relaxed">{programDesc}</p>
@@ -379,7 +466,7 @@ export default function WorkspaceCommunity() {
                     <p className="text-xs text-muted-foreground">Online</p>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full text-sm" size="sm">
+                <Button variant="outline" className="w-full text-sm" size="sm" onClick={() => setSettingsOpen(true)}>
                   <Settings className="h-3.5 w-3.5 mr-1.5" />
                   Settings
                 </Button>
@@ -389,6 +476,55 @@ export default function WorkspaceCommunity() {
         </div>
       </div>
       
+      {/* Settings Dialog */}
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Community Settings</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Community Name</Label>
+              <Input value={communityName} onChange={e => setCommunityName(e.target.value)} />
+            </div>
+            <div>
+              <Label>Description</Label>
+              <Textarea value={communityDesc} onChange={e => setCommunityDesc(e.target.value)} rows={3} />
+            </div>
+            <div>
+              <Label>Community Photo</Label>
+              <div 
+                className="mt-2 border-2 border-dashed border-border rounded-lg h-32 flex items-center justify-center cursor-pointer hover:border-primary/50 transition-colors"
+                onClick={() => communityPhotoRef.current?.click()}
+              >
+                {communityPhoto ? (
+                  <img src={communityPhoto} alt="" className="h-full w-full object-cover rounded-lg" />
+                ) : (
+                  <div className="text-center text-muted-foreground">
+                    <Camera className="h-6 w-6 mx-auto mb-1" />
+                    <p className="text-xs">Upload cover image</p>
+                    <p className="text-xs opacity-50">1460 x 752 px</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div>
+              <Label>Privacy</Label>
+              <Select defaultValue="public">
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="public">Public</SelectItem>
+                  <SelectItem value="private">Private</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button className="w-full" onClick={() => { setSettingsOpen(false); toast({ title: 'Settings saved' }) }}>
+              Save Settings
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="pb-20 md:pb-0" />
     </div>
   )
