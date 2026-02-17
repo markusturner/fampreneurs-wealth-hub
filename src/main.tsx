@@ -30,6 +30,7 @@ import Search from "./pages/Search";
 
 import Onboarding from "./pages/Onboarding";
 import ProfileSettings from "./pages/ProfileSettings";
+import AdminSettings from "./pages/AdminSettings";
 import TutorialVideos from "./pages/TutorialVideos";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
@@ -108,6 +109,7 @@ function AppWithNotifications() {
         <Route path="/investments" element={<WithLayout><Investments /></WithLayout>} />
         <Route path="/investments" element={<WithLayout><Investments /></WithLayout>} />
         <Route path="/profile-settings" element={<WithLayout><ProfileSettings /></WithLayout>} />
+        <Route path="/admin-settings" element={<WithLayout><AdminSettings /></WithLayout>} />
         <Route path="/tutorial-videos" element={<WithLayout><TutorialVideos /></WithLayout>} />
         <Route path="/help" element={<WithLayout><Help /></WithLayout>} />
         <Route path="/contact" element={<WithLayout><Contact /></WithLayout>} />
