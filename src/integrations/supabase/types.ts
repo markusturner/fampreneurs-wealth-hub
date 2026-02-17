@@ -147,16 +147,19 @@ export type Database = {
           id: number
           tutorial_video_url: string | null
           updated_at: string | null
+          upgrade_video_url: string | null
         }
         Insert: {
           id?: number
           tutorial_video_url?: string | null
           updated_at?: string | null
+          upgrade_video_url?: string | null
         }
         Update: {
           id?: number
           tutorial_video_url?: string | null
           updated_at?: string | null
+          upgrade_video_url?: string | null
         }
         Relationships: []
       }
@@ -630,28 +633,37 @@ export type Database = {
       }
       community_comments: {
         Row: {
+          audio_url: string | null
           content: string
           created_at: string
           id: string
+          image_url: string | null
           post_id: string
           updated_at: string
           user_id: string
+          video_url: string | null
         }
         Insert: {
+          audio_url?: string | null
           content: string
           created_at?: string
           id?: string
+          image_url?: string | null
           post_id: string
           updated_at?: string
           user_id: string
+          video_url?: string | null
         }
         Update: {
+          audio_url?: string | null
           content?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           post_id?: string
           updated_at?: string
           user_id?: string
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -719,6 +731,7 @@ export type Database = {
       community_posts: {
         Row: {
           audio_url: string | null
+          category: string | null
           channel_id: string | null
           content: string
           created_at: string
@@ -731,6 +744,7 @@ export type Database = {
         }
         Insert: {
           audio_url?: string | null
+          category?: string | null
           channel_id?: string | null
           content: string
           created_at?: string
@@ -743,6 +757,7 @@ export type Database = {
         }
         Update: {
           audio_url?: string | null
+          category?: string | null
           channel_id?: string | null
           content?: string
           created_at?: string

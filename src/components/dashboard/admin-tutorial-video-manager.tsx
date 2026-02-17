@@ -8,7 +8,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Video, Upload, Link as LinkIcon } from "lucide-react";
 
-export const AdminTutorialVideoManager = () => {
+interface AdminVideoManagerProps {
+  settingKey: 'tutorial_video_url' | 'upgrade_video_url';
+  title: string;
+  description: string;
+}
+
+export const AdminVideoManager = ({ settingKey, title, description }: AdminVideoManagerProps) => {
   const [videoUrl, setVideoUrl] = useState("");
   const [currentUrl, setCurrentUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -22,17 +28,18 @@ export const AdminTutorialVideoManager = () => {
     try {
       const { data, error } = await supabase
         .from("app_settings")
-        .select("tutorial_video_url")
+        .select(settingKey)
         .single();
 
       if (error && error.code !== "PGRST116") throw error;
       
-      if (data?.tutorial_video_url) {
-        setCurrentUrl(data.tutorial_video_url);
-        setVideoUrl(data.tutorial_video_url);
+      const url = data?.[settingKey];
+      if (url) {
+        setCurrentUrl(url);
+        setVideoUrl(url);
       }
     } catch (error) {
-      console.error("Error fetching tutorial video:", error);
+      console.error("Error fetching video:", error);
     }
   };
 
@@ -42,7 +49,7 @@ export const AdminTutorialVideoManager = () => {
         .from("app_settings")
         .upsert({ 
           id: 1,
-          tutorial_video_url: videoUrl,
+          [settingKey]: videoUrl,
           updated_at: new Date().toISOString()
         });
 
@@ -51,7 +58,7 @@ export const AdminTutorialVideoManager = () => {
       setCurrentUrl(videoUrl);
       toast({
         title: "Success",
-        description: "Tutorial video URL updated successfully.",
+        description: "Video URL updated successfully.",
       });
     } catch (error) {
       console.error("Error saving video URL:", error);
@@ -80,9 +87,9 @@ export const AdminTutorialVideoManager = () => {
 
     try {
       const fileExt = file.name.split(".").pop();
-      const fileName = `tutorial-${Date.now()}.${fileExt}`;
+      const fileName = `${settingKey}-${Date.now()}.${fileExt}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("tutorial-videos")
         .upload(fileName, file);
 
@@ -96,7 +103,7 @@ export const AdminTutorialVideoManager = () => {
         .from("app_settings")
         .upsert({ 
           id: 1,
-          tutorial_video_url: publicUrl,
+          [settingKey]: publicUrl,
           updated_at: new Date().toISOString()
         });
 
@@ -105,7 +112,7 @@ export const AdminTutorialVideoManager = () => {
 
       toast({
         title: "Success",
-        description: "Tutorial video uploaded successfully.",
+        description: "Video uploaded successfully.",
       });
     } catch (error) {
       console.error("Error uploading video:", error);
@@ -147,11 +154,9 @@ export const AdminTutorialVideoManager = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Video className="h-5 w-5" />
-          Tutorial Video Manager
+          {title}
         </CardTitle>
-        <CardDescription>
-          Manage the welcome tutorial video that appears for new users
-        </CardDescription>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <Tabs defaultValue="url" className="w-full">
@@ -168,9 +173,9 @@ export const AdminTutorialVideoManager = () => {
 
           <TabsContent value="url" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="videoUrl">Video URL (YouTube, Loom, Vimeo)</Label>
+              <Label htmlFor={`${settingKey}-url`}>Video URL (YouTube, Loom, Vimeo)</Label>
               <Input
-                id="videoUrl"
+                id={`${settingKey}-url`}
                 placeholder="https://www.youtube.com/watch?v=..."
                 value={videoUrl}
                 onChange={(e) => setVideoUrl(e.target.value)}
@@ -181,9 +186,9 @@ export const AdminTutorialVideoManager = () => {
 
           <TabsContent value="upload" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="videoFile">Upload Video File</Label>
+              <Label htmlFor={`${settingKey}-file`}>Upload Video File</Label>
               <Input
-                id="videoFile"
+                id={`${settingKey}-file`}
                 type="file"
                 accept="video/*"
                 onChange={handleFileUpload}
@@ -196,7 +201,7 @@ export const AdminTutorialVideoManager = () => {
 
         {currentUrl && (
           <div className="space-y-2">
-            <Label>Current Tutorial Video</Label>
+            <Label>Current Video</Label>
             <div className="aspect-video w-full">
               {currentUrl.startsWith("http") && (currentUrl.includes("youtube") || currentUrl.includes("loom") || currentUrl.includes("vimeo")) ? (
                 <iframe
@@ -219,3 +224,20 @@ export const AdminTutorialVideoManager = () => {
     </Card>
   );
 };
+
+// Backward-compatible wrapper
+export const AdminTutorialVideoManager = () => (
+  <AdminVideoManager 
+    settingKey="tutorial_video_url" 
+    title="Tutorial Video Manager" 
+    description="Manage the welcome tutorial video that appears for new users" 
+  />
+);
+
+export const AdminUpgradeVideoManager = () => (
+  <AdminVideoManager 
+    settingKey="upgrade_video_url" 
+    title="Upgrade Video Manager" 
+    description="Manage the video shown when users try to access locked content" 
+  />
+);

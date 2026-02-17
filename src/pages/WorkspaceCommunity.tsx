@@ -9,9 +9,13 @@ import { Label } from '@/components/ui/label'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { useSubscription } from '@/hooks/useSubscription'
+import { useUserRole } from '@/hooks/useUserRole'
+import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { 
   Image, Video, ThumbsUp, MessageCircle, Send, 
-  MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X
+  MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X,
+  Mic, MicOff, Lock, Calendar, CreditCard, Play
 } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import {
@@ -25,6 +29,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog'
 import {
   Select,
@@ -41,6 +46,7 @@ interface Post {
   created_at: string
   image_url: string | null
   video_url: string | null
+  audio_url: string | null
   author_name: string
   author_avatar: string | null
   likes_count: number
@@ -48,6 +54,18 @@ interface Post {
   is_liked: boolean
   channel_id: string | null
   category: string
+}
+
+interface Comment {
+  id: string
+  content: string
+  user_id: string
+  created_at: string
+  image_url: string | null
+  audio_url: string | null
+  video_url: string | null
+  author_name: string
+  author_avatar: string | null
 }
 
 const PROGRAM_NAMES: Record<string, string> = {
@@ -62,6 +80,12 @@ const PROGRAM_DESCRIPTIONS: Record<string, string> = {
   tfba: 'The #1 Guided Generational Wealth Community teaching you how to setup private irrevocable trusts!',
 }
 
+// Program upgrade hierarchy: fbu -> tfv -> tfba
+const PROGRAM_UPGRADE_MAP: Record<string, string> = {
+  fbu: 'tfv',
+  tfv: 'tfba',
+}
+
 const CATEGORIES = [
   { label: 'All', value: 'all', emoji: '' },
   { label: 'Discussion', value: 'discussion', emoji: '💬' },
@@ -74,6 +98,9 @@ const CATEGORIES = [
 export default function WorkspaceCommunity() {
   const { user, profile } = useAuth()
   const { toast } = useToast()
+  const { subscriptionStatus, createCheckout } = useSubscription()
+  const { isAdmin } = useUserRole()
+  const { isOwner } = useOwnerRole(user?.id ?? null)
   const [searchParams] = useSearchParams()
   const program = searchParams.get('program') || 'tfba'
   const programName = PROGRAM_NAMES[program] || 'Community'
@@ -91,8 +118,34 @@ export default function WorkspaceCommunity() {
   const [communityDesc, setCommunityDesc] = useState('')
   const [postImageFile, setPostImageFile] = useState<File | null>(null)
   const [postImagePreview, setPostImagePreview] = useState<string | null>(null)
+  const [postAudioFile, setPostAudioFile] = useState<File | null>(null)
+  const [postVideoFile, setPostVideoFile] = useState<File | null>(null)
+  const [postVideoPreview, setPostVideoPreview] = useState<string | null>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
+  const audioInputRef = useRef<HTMLInputElement>(null)
   const communityPhotoRef = useRef<HTMLInputElement>(null)
+  const [isRecording, setIsRecording] = useState(false)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
+
+  // Comments state
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
+  const [postComments, setPostComments] = useState<Record<string, Comment[]>>({})
+  const [commentText, setCommentText] = useState<Record<string, string>>({})
+  const [commentImageFiles, setCommentImageFiles] = useState<Record<string, File | null>>({})
+  const [commentAudioFiles, setCommentAudioFiles] = useState<Record<string, File | null>>({})
+  const [commentVideoFiles, setCommentVideoFiles] = useState<Record<string, File | null>>({})
+  const commentImageRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  const commentVideoRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  const commentAudioRefs = useRef<Record<string, HTMLInputElement | null>>({})
+
+  // Locked community popup
+  const [lockedPopupOpen, setLockedPopupOpen] = useState(false)
+  const [upgradeVideoUrl, setUpgradeVideoUrl] = useState<string | null>(null)
+
+  // Check if user has access to this specific program
+  const hasProgramAccess = isAdmin || isOwner || subscriptionStatus.programs.includes(program)
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -124,13 +177,15 @@ export default function WorkspaceCommunity() {
         const postLikes = (likes || []).filter(l => l.post_id === post.id)
         const postComments = (comments || []).filter(c => c.post_id === post.id)
         
-        // Derive category from content keywords or default
-        const content = post.content.toLowerCase()
-        let category = 'discussion'
-        if (content.includes('#win') || content.includes('🏆')) category = 'wins'
-        else if (content.includes('#update') || content.includes('📣')) category = 'updates'
-        else if (content.includes('#gem') || content.includes('💎')) category = 'gems'
-        else if (content.includes('#recording') || content.includes('🎥') || post.video_url) category = 'recordings'
+        // Use stored category, fallback to content detection
+        let category = (post as any).category || 'discussion'
+        if (category === 'discussion') {
+          const content = post.content.toLowerCase()
+          if (content.includes('#win') || content.includes('🏆')) category = 'wins'
+          else if (content.includes('#update') || content.includes('📣')) category = 'updates'
+          else if (content.includes('#gem') || content.includes('💎')) category = 'gems'
+          else if (content.includes('#recording') || content.includes('🎥') || post.video_url) category = 'recordings'
+        }
 
         return {
           id: post.id,
@@ -139,6 +194,7 @@ export default function WorkspaceCommunity() {
           created_at: post.created_at,
           image_url: post.image_url,
           video_url: post.video_url,
+          audio_url: post.audio_url,
           author_name: authorProfile?.display_name || 'Member',
           author_avatar: authorProfile?.avatar_url || null,
           likes_count: postLikes.length,
@@ -170,35 +226,73 @@ export default function WorkspaceCommunity() {
     fetchMemberCount()
   }, [])
 
+  // Fetch upgrade video URL
+  useEffect(() => {
+    const fetchUpgradeVideo = async () => {
+      try {
+        const { data } = await supabase
+          .from('app_settings')
+          .select('upgrade_video_url')
+          .single()
+        if (data?.upgrade_video_url) {
+          setUpgradeVideoUrl(data.upgrade_video_url)
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    fetchUpgradeVideo()
+  }, [])
+
+  // Show locked popup if user doesn't have access
+  useEffect(() => {
+    if (!subscriptionStatus.loading && !hasProgramAccess) {
+      setLockedPopupOpen(true)
+    }
+  }, [hasProgramAccess, subscriptionStatus.loading])
+
+  const uploadFile = async (file: File, folder: string): Promise<string | null> => {
+    const ext = file.name.split('.').pop()
+    const path = `${folder}/${user!.id}/${Date.now()}.${ext}`
+    const { error } = await supabase.storage.from('community-images').upload(path, file)
+    if (error) {
+      console.error('Upload error:', error)
+      return null
+    }
+    const { data: urlData } = supabase.storage.from('community-images').getPublicUrl(path)
+    return urlData.publicUrl
+  }
+
   const handleCreatePost = async () => {
     if (!newPost.trim() || !user?.id) return
     try {
-      // Add category tag to content
-      const categoryTag = postCategory !== 'discussion' ? `#${postCategory} ` : ''
       let imageUrl: string | null = null
+      let videoUrl: string | null = null
+      let audioUrl: string | null = null
 
-      if (postImageFile) {
-        const ext = postImageFile.name.split('.').pop()
-        const path = `community/${user.id}/${Date.now()}.${ext}`
-        const { error: uploadError } = await supabase.storage.from('community-images').upload(path, postImageFile)
-        if (!uploadError) {
-          const { data: urlData } = supabase.storage.from('community-images').getPublicUrl(path)
-          imageUrl = urlData.publicUrl
-        }
-      }
+      if (postImageFile) imageUrl = await uploadFile(postImageFile, 'community')
+      if (postVideoFile) videoUrl = await uploadFile(postVideoFile, 'community-videos')
+      if (postAudioFile) audioUrl = await uploadFile(postAudioFile, 'community-audio')
 
+      // Post content WITHOUT hashtag prefix - category stored separately
       const { error } = await supabase
         .from('community_posts')
         .insert({ 
-          content: categoryTag + newPost.trim(), 
+          content: newPost.trim(), 
           user_id: user.id,
           image_url: imageUrl,
-        })
+          video_url: videoUrl,
+          audio_url: audioUrl,
+          category: postCategory,
+        } as any)
 
       if (error) throw error
       setNewPost('')
       setPostImageFile(null)
       setPostImagePreview(null)
+      setPostVideoFile(null)
+      setPostVideoPreview(null)
+      setPostAudioFile(null)
       setPostCategory('discussion')
       fetchPosts()
       toast({ title: 'Posted!' })
@@ -239,10 +333,151 @@ export default function WorkspaceCommunity() {
     }
   }
 
+  const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setPostVideoFile(file)
+      setPostVideoPreview(URL.createObjectURL(file))
+    }
+  }
+
+  const handleAudioSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setPostAudioFile(file)
+    }
+  }
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      audioChunksRef.current = []
+
+      mediaRecorder.ondataavailable = (e) => {
+        audioChunksRef.current.push(e.data)
+      }
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
+        const audioFile = new File([audioBlob], `recording-${Date.now()}.webm`, { type: 'audio/webm' })
+        setPostAudioFile(audioFile)
+        stream.getTracks().forEach(track => track.stop())
+      }
+
+      mediaRecorder.start()
+      setIsRecording(true)
+    } catch (err) {
+      toast({ title: 'Microphone access denied', variant: 'destructive' })
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop()
+      setIsRecording(false)
+    }
+  }
+
   const handleCommunityPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       setCommunityPhoto(URL.createObjectURL(file))
+    }
+  }
+
+  // Comments functions
+  const toggleComments = async (postId: string) => {
+    const newExpanded = new Set(expandedComments)
+    if (newExpanded.has(postId)) {
+      newExpanded.delete(postId)
+    } else {
+      newExpanded.add(postId)
+      if (!postComments[postId]) {
+        await fetchCommentsForPost(postId)
+      }
+    }
+    setExpandedComments(newExpanded)
+  }
+
+  const fetchCommentsForPost = async (postId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('community_comments')
+        .select('*')
+        .eq('post_id', postId)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+
+      const userIds = [...new Set((data || []).map(c => c.user_id))]
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, display_name, avatar_url')
+        .in('id', userIds.length ? userIds : [''])
+
+      const profileMap = new Map((profiles || []).map(p => [p.id, p]))
+
+      setPostComments(prev => ({
+        ...prev,
+        [postId]: (data || []).map(c => ({
+          id: c.id,
+          content: c.content,
+          user_id: c.user_id,
+          created_at: c.created_at,
+          image_url: (c as any).image_url || null,
+          audio_url: (c as any).audio_url || null,
+          video_url: (c as any).video_url || null,
+          author_name: profileMap.get(c.user_id)?.display_name || 'Member',
+          author_avatar: profileMap.get(c.user_id)?.avatar_url || null,
+        }))
+      }))
+    } catch (error) {
+      console.error('Error fetching comments:', error)
+    }
+  }
+
+  const handleSubmitComment = async (postId: string) => {
+    const text = commentText[postId]?.trim()
+    const imgFile = commentImageFiles[postId]
+    const audFile = commentAudioFiles[postId]
+    const vidFile = commentVideoFiles[postId]
+
+    if (!text && !imgFile && !audFile && !vidFile) return
+    if (!user?.id) return
+
+    try {
+      let imageUrl: string | null = null
+      let audioUrl: string | null = null
+      let videoUrl: string | null = null
+
+      if (imgFile) imageUrl = await uploadFile(imgFile, 'comment-images')
+      if (audFile) audioUrl = await uploadFile(audFile, 'comment-audio')
+      if (vidFile) videoUrl = await uploadFile(vidFile, 'comment-videos')
+
+      const { error } = await supabase
+        .from('community_comments')
+        .insert({
+          post_id: postId,
+          user_id: user.id,
+          content: text || '',
+          image_url: imageUrl,
+          audio_url: audioUrl,
+          video_url: videoUrl,
+        } as any)
+
+      if (error) throw error
+
+      setCommentText(prev => ({ ...prev, [postId]: '' }))
+      setCommentImageFiles(prev => ({ ...prev, [postId]: null }))
+      setCommentAudioFiles(prev => ({ ...prev, [postId]: null }))
+      setCommentVideoFiles(prev => ({ ...prev, [postId]: null }))
+      await fetchCommentsForPost(postId)
+      fetchPosts() // refresh comment count
+    } catch (error) {
+      console.error('Error posting comment:', error)
+      toast({ title: 'Error', description: 'Failed to post comment.', variant: 'destructive' })
     }
   }
 
@@ -260,12 +495,129 @@ export default function WorkspaceCommunity() {
     return `${Math.floor(days / 30)}mo`
   }
 
+  const getEmbedUrl = (url: string): string => {
+    if (url.includes("youtube.com") || url.includes("youtu.be")) {
+      const videoId = url.includes("youtu.be")
+        ? url.split("youtu.be/")[1]?.split("?")[0]
+        : new URLSearchParams(url.split("?")[1]).get("v")
+      return `https://www.youtube.com/embed/${videoId}`
+    }
+    if (url.includes("loom.com")) {
+      const loomId = url.split("loom.com/share/")[1]?.split("?")[0]
+      return `https://www.loom.com/embed/${loomId}`
+    }
+    if (url.includes("vimeo.com")) {
+      const vimeoId = url.split("vimeo.com/")[1]?.split("?")[0]
+      return `https://player.vimeo.com/video/${vimeoId}`
+    }
+    return url
+  }
+
+  // Get the next program for upgrade
+  const getUpgradeProgram = () => {
+    const upgradeTo = PROGRAM_UPGRADE_MAP[program]
+    if (!upgradeTo) return null
+    const { PROGRAMS } = require('@/lib/stripe-programs')
+    return PROGRAMS.find((p: any) => p.id === upgradeTo) || null
+  }
+
+  const handleAutoUpgrade = async () => {
+    // Find the lowest price for the next program
+    const { PROGRAMS } = await import('@/lib/stripe-programs')
+    const nextProgramId = PROGRAM_UPGRADE_MAP[program] || program
+    const nextProgram = PROGRAMS.find((p: any) => p.id === nextProgramId)
+    if (nextProgram && nextProgram.pricing.length > 0) {
+      const lowestPrice = nextProgram.pricing.reduce((min: any, p: any) => p.amount < min.amount ? p : min, nextProgram.pricing[0])
+      createCheckout(lowestPrice.price_id, lowestPrice.mode, nextProgram.name)
+    }
+  }
+
   // Filter posts by active category
   const filteredPosts = activeCategory === 'all' 
     ? posts 
     : posts.filter(p => p.category === activeCategory)
 
   const categoryLabel = CATEGORIES.find(c => c.value === postCategory)
+
+  // If community is locked, show locked overlay
+  if (!hasProgramAccess && !subscriptionStatus.loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+          <div className="flex flex-col items-center justify-center py-20 text-center space-y-6">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+              <Lock className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold mb-2">{programName}</h2>
+              <p className="text-muted-foreground max-w-md">
+                This community is locked. Upgrade your subscription to access this program's community.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Locked Community Upgrade Dialog */}
+        <Dialog open={lockedPopupOpen} onOpenChange={setLockedPopupOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="text-center text-xl">
+                <Lock className="h-5 w-5 inline mr-2" />
+                Unlock {programName}
+              </DialogTitle>
+              <DialogDescription className="text-center">
+                Upgrade to access this community and all its content.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Video */}
+              {upgradeVideoUrl && (
+                <div className="aspect-video w-full rounded-lg overflow-hidden">
+                  {(upgradeVideoUrl.includes('youtube') || upgradeVideoUrl.includes('loom') || upgradeVideoUrl.includes('vimeo')) ? (
+                    <iframe
+                      src={getEmbedUrl(upgradeVideoUrl)}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <video src={upgradeVideoUrl} controls className="w-full h-full" />
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <Button 
+                  className="w-full gap-2" 
+                  size="lg"
+                  onClick={handleAutoUpgrade}
+                >
+                  <CreditCard className="h-4 w-4" />
+                  Auto Upgrade Now
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  ⚠️ Clicking "Auto Upgrade Now" will charge the card on file for your account.
+                </p>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full gap-2" 
+                  size="lg"
+                  onClick={() => window.open('https://calendly.com/turnermarkus50/the-family-business-accelerator-clone', '_blank')}
+                >
+                  <Calendar className="h-4 w-4" />
+                  Book a Call to Upgrade
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <div className="pb-20 md:pb-0" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -291,19 +643,53 @@ export default function WorkspaceCommunity() {
                       className="min-h-[44px] max-h-[120px] resize-none border-0 bg-muted/50 rounded-lg px-4 py-2.5 focus-visible:ring-1 text-sm"
                       rows={1}
                     />
-                    {postImagePreview && (
-                      <div className="relative inline-block">
-                        <img src={postImagePreview} alt="Preview" className="h-20 rounded-lg object-cover" />
-                        <button onClick={() => { setPostImageFile(null); setPostImagePreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    )}
+                    {/* Preview attachments */}
+                    <div className="flex flex-wrap gap-2">
+                      {postImagePreview && (
+                        <div className="relative inline-block">
+                          <img src={postImagePreview} alt="Preview" className="h-20 rounded-lg object-cover" />
+                          <button onClick={() => { setPostImageFile(null); setPostImagePreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                      {postVideoPreview && (
+                        <div className="relative inline-block">
+                          <video src={postVideoPreview} className="h-20 rounded-lg object-cover" />
+                          <button onClick={() => { setPostVideoFile(null); setPostVideoPreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                      {postAudioFile && (
+                        <div className="relative inline-flex items-center gap-1 bg-muted/50 rounded-lg px-3 py-1.5">
+                          <Mic className="h-3.5 w-3.5" />
+                          <span className="text-xs">{postAudioFile.name.slice(0, 20)}</span>
+                          <button onClick={() => setPostAudioFile(null)} className="ml-1">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+                        <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
+                        <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
                         <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => imageInputRef.current?.click()}>
                           <Image className="h-3.5 w-3.5" /> Photo
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => videoInputRef.current?.click()}>
+                          <Video className="h-3.5 w-3.5" /> Video
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className={`h-8 gap-1.5 text-xs ${isRecording ? 'text-destructive' : ''}`}
+                          onClick={isRecording ? stopRecording : startRecording}
+                        >
+                          {isRecording ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
+                          {isRecording ? 'Stop' : 'Audio'}
                         </Button>
                         <Select value={postCategory} onValueChange={setPostCategory}>
                           <SelectTrigger className="h-8 w-auto text-xs border-0 bg-muted/50">
@@ -392,6 +778,12 @@ export default function WorkspaceCommunity() {
                           {post.image_url && (
                             <img src={post.image_url} alt="" className="rounded-lg mt-3 max-h-80 object-cover w-full" />
                           )}
+                          {post.video_url && (
+                            <video src={post.video_url} controls className="rounded-lg mt-3 max-h-80 w-full" />
+                          )}
+                          {post.audio_url && (
+                            <audio src={post.audio_url} controls className="mt-3 w-full" />
+                          )}
 
                           <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/50">
                              <button
@@ -403,11 +795,122 @@ export default function WorkspaceCommunity() {
                               <ThumbsUp className={`h-4 w-4 ${post.is_liked ? 'fill-current' : ''}`} />
                               {post.likes_count > 0 && post.likes_count}
                             </button>
-                            <button className="flex items-center gap-1.5 text-sm text-foreground/60 hover:text-foreground transition-colors">
+                            <button 
+                              onClick={() => toggleComments(post.id)}
+                              className="flex items-center gap-1.5 text-sm text-foreground/60 hover:text-foreground transition-colors"
+                            >
                               <MessageCircle className="h-4 w-4" />
                               {post.comments_count > 0 && post.comments_count}
                             </button>
                           </div>
+
+                          {/* Comments Section */}
+                          {expandedComments.has(post.id) && (
+                            <div className="mt-3 pt-3 border-t border-border/30 space-y-3">
+                              {/* Existing comments */}
+                              {(postComments[post.id] || []).map(comment => (
+                                <div key={comment.id} className="flex items-start gap-2">
+                                  <Avatar className="h-7 w-7 flex-shrink-0">
+                                    {comment.author_avatar && <AvatarImage src={comment.author_avatar} />}
+                                    <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+                                      {getInitials(comment.author_name)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="bg-muted/50 rounded-lg px-3 py-2">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs font-semibold">{comment.author_name}</span>
+                                        <span className="text-[10px] text-muted-foreground">{timeAgo(comment.created_at)}</span>
+                                      </div>
+                                      {comment.content && <p className="text-sm mt-0.5">{comment.content}</p>}
+                                      {comment.image_url && (
+                                        <img src={comment.image_url} alt="" className="rounded mt-2 max-h-40 object-cover" />
+                                      )}
+                                      {comment.video_url && (
+                                        <video src={comment.video_url} controls className="rounded mt-2 max-h-40 w-full" />
+                                      )}
+                                      {comment.audio_url && (
+                                        <audio src={comment.audio_url} controls className="mt-2 w-full h-8" />
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+
+                              {/* Comment input */}
+                              <div className="flex items-start gap-2">
+                                <Avatar className="h-7 w-7 flex-shrink-0">
+                                  {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
+                                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                                    {getInitials(profile?.display_name || 'U')}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 space-y-1.5">
+                                  <div className="flex gap-1.5">
+                                    <Input
+                                      placeholder="Write a comment..."
+                                      value={commentText[post.id] || ''}
+                                      onChange={(e) => setCommentText(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                      className="h-8 text-sm flex-1"
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                          e.preventDefault()
+                                          handleSubmitComment(post.id)
+                                        }
+                                      }}
+                                    />
+                                    <Button size="sm" className="h-8 px-2" onClick={() => handleSubmitComment(post.id)}>
+                                      <Send className="h-3.5 w-3.5" />
+                                    </Button>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <input 
+                                      ref={(el) => { commentImageRefs.current[post.id] = el }} 
+                                      type="file" accept="image/*" className="hidden" 
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0]
+                                        if (file) setCommentImageFiles(prev => ({ ...prev, [post.id]: file }))
+                                      }} 
+                                    />
+                                    <input 
+                                      ref={(el) => { commentVideoRefs.current[post.id] = el }} 
+                                      type="file" accept="video/*" className="hidden" 
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0]
+                                        if (file) setCommentVideoFiles(prev => ({ ...prev, [post.id]: file }))
+                                      }} 
+                                    />
+                                    <input 
+                                      ref={(el) => { commentAudioRefs.current[post.id] = el }} 
+                                      type="file" accept="audio/*" className="hidden" 
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0]
+                                        if (file) setCommentAudioFiles(prev => ({ ...prev, [post.id]: file }))
+                                      }} 
+                                    />
+                                    <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px]" onClick={() => commentImageRefs.current[post.id]?.click()}>
+                                      <Image className="h-3 w-3" />
+                                    </Button>
+                                    <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px]" onClick={() => commentVideoRefs.current[post.id]?.click()}>
+                                      <Video className="h-3 w-3" />
+                                    </Button>
+                                    <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px]" onClick={() => commentAudioRefs.current[post.id]?.click()}>
+                                      <Mic className="h-3 w-3" />
+                                    </Button>
+                                    {commentImageFiles[post.id] && (
+                                      <span className="text-[10px] text-muted-foreground">📷 attached</span>
+                                    )}
+                                    {commentVideoFiles[post.id] && (
+                                      <span className="text-[10px] text-muted-foreground">🎥 attached</span>
+                                    )}
+                                    {commentAudioFiles[post.id] && (
+                                      <span className="text-[10px] text-muted-foreground">🎤 attached</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {post.user_id === user?.id && (
