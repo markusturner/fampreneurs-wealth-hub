@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { Plus, BookOpen } from 'lucide-react'
+import { AddCourseDialog } from '@/components/classroom/AddCourseDialog'
 
 interface Course {
   id: string
@@ -16,12 +17,10 @@ interface Course {
 
 export default function Classroom() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchCourses()
-  }, [])
+  const [showAddCourse, setShowAddCourse] = useState(false)
 
   const fetchCourses = async () => {
     try {
@@ -33,7 +32,6 @@ export default function Classroom() {
 
       if (error) throw error
 
-      // Get enrollments for progress
       let enrollments: any[] = []
       if (user?.id) {
         const { data: enrollData } = await supabase
@@ -60,6 +58,8 @@ export default function Classroom() {
     }
   }
 
+  useEffect(() => { fetchCourses() }, [])
+
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
       <div>
@@ -82,14 +82,14 @@ export default function Classroom() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {courses.map((course) => (
-            <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
+            <Card
+              key={course.id}
+              className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+              onClick={() => navigate(`/classroom/${course.id}`)}
+            >
               <div className="h-44 bg-muted overflow-hidden">
                 {course.image_url ? (
-                  <img 
-                    src={course.image_url} 
-                    alt={course.title} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  />
+                  <img src={course.image_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <BookOpen className="h-10 w-10 text-muted-foreground" />
@@ -109,8 +109,10 @@ export default function Classroom() {
             </Card>
           ))}
 
-          {/* New course card (admin only) */}
-          <Card className="overflow-hidden border-dashed cursor-pointer hover:border-primary/50 transition-colors">
+          <Card
+            className="overflow-hidden border-dashed cursor-pointer hover:border-primary/50 transition-colors"
+            onClick={() => setShowAddCourse(true)}
+          >
             <CardContent className="h-full flex flex-col items-center justify-center p-8 min-h-[280px]">
               <Plus className="h-8 w-8 text-muted-foreground mb-2" />
               <span className="text-sm text-muted-foreground">New course</span>
@@ -118,6 +120,8 @@ export default function Classroom() {
           </Card>
         </div>
       )}
+
+      <AddCourseDialog open={showAddCourse} onOpenChange={setShowAddCourse} onCreated={fetchCourses} />
     </div>
   )
 }

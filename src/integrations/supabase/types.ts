@@ -1013,8 +1013,66 @@ export type Database = {
           },
         ]
       }
+      course_resources: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          created_by: string | null
+          file_path: string | null
+          id: string
+          lesson_id: string | null
+          order_index: number | null
+          resource_type: string
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          file_path?: string | null
+          id?: string
+          lesson_id?: string | null
+          order_index?: number | null
+          resource_type?: string
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          file_path?: string | null
+          id?: string
+          lesson_id?: string | null
+          order_index?: number | null
+          resource_type?: string
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_resources_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_resources_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "course_videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_videos: {
         Row: {
+          content: string | null
           course_id: string | null
           created_at: string
           created_by: string | null
@@ -1029,6 +1087,7 @@ export type Database = {
           video_url: string | null
         }
         Insert: {
+          content?: string | null
           course_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -1043,6 +1102,7 @@ export type Database = {
           video_url?: string | null
         }
         Update: {
+          content?: string | null
           course_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -2544,6 +2604,45 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      lesson_completions: {
+        Row: {
+          completed_at: string
+          course_id: string
+          id: string
+          lesson_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          course_id: string
+          id?: string
+          lesson_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          course_id?: string
+          id?: string
+          lesson_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_completions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lesson_completions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "course_videos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       meeting_reminders: {
         Row: {
