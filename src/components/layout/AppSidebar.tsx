@@ -179,7 +179,7 @@ export function AppSidebar({ className }: { className?: string }) {
               <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</p>
             </div>
             <div className="space-y-0.5">
-              <NavItem label="Admin Settings" icon={Shield} href="/profile-settings?tab=admin" active={isActive("/profile-settings") && location.search.includes("tab=admin")} />
+              <NavItem label="Admin Settings" icon={Shield} href="/admin-settings" active={isActive("/admin-settings")} />
             </div>
           </>
         )}
