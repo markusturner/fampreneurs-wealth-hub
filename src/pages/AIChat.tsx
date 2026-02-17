@@ -473,9 +473,8 @@ export default function AIChat() {
               <Tabs value={settingsTab} onValueChange={setSettingsTab}>
                 <TabsList className="w-full flex overflow-x-auto scrollbar-hide h-8">
                   {PERSONAS.map(p => (
-                    <TabsTrigger key={p.id} value={p.id} className="text-[10px] gap-1 px-2 py-1 flex-1 min-w-0">
+                    <TabsTrigger key={p.id} value={p.id} className="text-[10px] gap-1 px-2 py-1 flex-1 min-w-0" title={p.label}>
                       <p.icon className="h-3 w-3 flex-shrink-0" />
-                      <span className="truncate">{p.label}</span>
                     </TabsTrigger>
                   ))}
                 </TabsList>
