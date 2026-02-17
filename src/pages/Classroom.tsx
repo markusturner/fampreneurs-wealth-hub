@@ -4,7 +4,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
-import { Plus, BookOpen } from 'lucide-react'
+import { Plus, BookOpen, Pencil, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useToast } from '@/hooks/use-toast'
 import { AddCourseDialog } from '@/components/classroom/AddCourseDialog'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 
@@ -23,6 +25,7 @@ export default function Classroom() {
   const [loading, setLoading] = useState(true)
   const [showAddCourse, setShowAddCourse] = useState(false)
   const { isAdminOrOwner } = useIsAdminOrOwner()
+  const { toast } = useToast()
 
   const fetchCourses = async () => {
     try {
@@ -86,9 +89,34 @@ export default function Classroom() {
           {courses.map((course) => (
             <Card
               key={course.id}
-              className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+              className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group relative"
               onClick={() => navigate(`/classroom/${course.id}`)}
             >
+              {isAdminOrOwner && (
+                <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background"
+                    onClick={(e) => { e.stopPropagation(); toast({ title: 'Edit course', description: 'Edit dialog coming soon' }) }}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="h-8 w-8 bg-destructive/80 backdrop-blur-sm hover:bg-destructive"
+                    onClick={async (e) => {
+                      e.stopPropagation()
+                      const { error } = await supabase.from('courses').delete().eq('id', course.id)
+                      if (!error) { fetchCourses(); toast({ title: 'Course deleted' }) }
+                      else toast({ title: 'Error', description: 'Failed to delete course', variant: 'destructive' })
+                    }}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              )}
               <div className="h-44 bg-muted overflow-hidden">
                 {course.image_url ? (
                   <img src={course.image_url} alt={course.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
