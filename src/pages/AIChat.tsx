@@ -447,69 +447,70 @@ export default function AIChat() {
 
       {/* Settings Dialog - Per Persona */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Project Settings</DialogTitle></DialogHeader>
-          <div className="space-y-4">
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle className="text-base">Project Settings</DialogTitle></DialogHeader>
+          <div className="space-y-3">
             <div>
-              <Label className="text-sm font-semibold">Model</Label>
-              <div className="space-y-1 mt-1">
+              <Label className="text-xs font-semibold">Model</Label>
+              <div className="mt-1 space-y-0.5">
                 {AI_MODELS.map(model => (
                   <button
                     key={model.id}
                     onClick={() => setSelectedModel(model.id)}
-                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                    className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition-colors ${
                       selectedModel === model.id ? 'bg-primary/10 border border-primary/30' : 'hover:bg-muted/50'
                     }`}
                   >
                     <span className="font-medium">{model.label}</span>
-                    <span className="text-xs text-muted-foreground ml-2">{model.description}</span>
+                    <span className="text-muted-foreground ml-1.5">{model.description}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             <div>
-              <Label className="text-sm font-semibold mb-2 block">Persona Instructions & Files</Label>
+              <Label className="text-xs font-semibold mb-1.5 block">Persona Instructions & Files</Label>
               <Tabs value={settingsTab} onValueChange={setSettingsTab}>
-                <TabsList className="w-full grid grid-cols-4">
+                <TabsList className="w-full grid grid-cols-4 h-8">
                   {PERSONAS.map(p => (
-                    <TabsTrigger key={p.id} value={p.id} className="text-xs gap-1">
+                    <TabsTrigger key={p.id} value={p.id} className="text-[10px] gap-1 px-1.5 py-1">
                       <p.icon className="h-3 w-3" />
-                      <span className="hidden sm:inline">{p.label}</span>
+                      <span className="hidden sm:inline truncate">{p.label}</span>
                     </TabsTrigger>
                   ))}
                 </TabsList>
                 {PERSONAS.map(p => (
-                  <TabsContent key={p.id} value={p.id} className="space-y-3 mt-3">
+                  <TabsContent key={p.id} value={p.id} className="space-y-2 mt-2">
                     <div>
-                      <Label className="text-xs text-muted-foreground">{p.label} Instructions</Label>
-                      <p className="text-xs text-muted-foreground mb-1">Customize how this persona responds.</p>
+                      <Label className="text-[10px] text-muted-foreground">{p.label} Instructions</Label>
+                      <p className="text-[10px] text-muted-foreground mb-1">Customize how this persona responds.</p>
                       <Textarea
                         value={personaSettings[p.id].instructions}
                         onChange={e => updatePersonaInstructions(p.id, e.target.value)}
                         placeholder={`Custom instructions for ${p.label}...`}
-                        rows={3}
+                        rows={2}
+                        className="text-xs"
                       />
                     </div>
                     <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <Label className="text-xs text-muted-foreground">{p.label} Files</Label>
+                      <div className="flex items-center justify-between mb-1">
+                        <Label className="text-[10px] text-muted-foreground">{p.label} Files</Label>
                         <input ref={settingsFileRef} type="file" multiple className="hidden" onChange={handleSettingsFileUpload} />
-                        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => { setSettingsTab(p.id); settingsFileRef.current?.click() }}>Add</Button>
+                        <Button variant="outline" size="sm" className="h-6 text-[10px] px-2" onClick={() => { setSettingsTab(p.id); settingsFileRef.current?.click() }}>Add</Button>
                       </div>
                       {personaSettings[p.id].files.length === 0 ? (
-                        <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
-                          <Upload className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
-                          <p className="text-xs text-muted-foreground">No files uploaded</p>
+                        <div className="border border-dashed border-border rounded-md p-3 text-center">
+                          <Upload className="h-4 w-4 mx-auto mb-0.5 text-muted-foreground" />
+                          <p className="text-[10px] text-muted-foreground">No files uploaded</p>
                         </div>
                       ) : (
-                        <div className="space-y-1.5">
+                        <div className="space-y-1">
                           {personaSettings[p.id].files.map((f, i) => (
-                            <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
-                              <FileText className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-                              <span className="text-xs truncate flex-1">{f.name}</span>
-                              <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => removeSettingsFile(p.id, i)}>
-                                <X className="h-3 w-3" />
+                            <div key={i} className="flex items-center gap-1.5 p-1.5 rounded-md bg-muted/50">
+                              <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                              <span className="text-[10px] truncate flex-1">{f.name}</span>
+                              <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => removeSettingsFile(p.id, i)}>
+                                <X className="h-2.5 w-2.5" />
                               </Button>
                             </div>
                           ))}
@@ -521,7 +522,7 @@ export default function AIChat() {
               </Tabs>
             </div>
 
-            <Button className="w-full" onClick={() => { setSettingsOpen(false); toast({ title: 'Settings saved' }) }}>Save Settings</Button>
+            <Button className="w-full h-8 text-xs" onClick={() => { setSettingsOpen(false); toast({ title: 'Settings saved' }) }}>Save Settings</Button>
           </div>
         </DialogContent>
       </Dialog>
