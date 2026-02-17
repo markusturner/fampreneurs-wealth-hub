@@ -31,11 +31,7 @@ const PERSONA_GREETINGS: Record<Persona, string> = {
   trust_writer: "Hello! I help draft trust clauses and provisions for irrevocable trusts. What type of trust provision would you like to work on?",
 }
 
-const QUICK_PROMPTS = [
-  { emoji: '🎯', label: 'Help me find my niche' },
-  { emoji: '📋', label: 'Review my offer' },
-  { emoji: '📅', label: 'Create a content plan' },
-]
+const QUICK_PROMPTS: { emoji: string; label: string }[] = []
 
 export default function AIChat() {
   const [activePersona, setActivePersona] = useState<Persona>('rachel')
