@@ -24,6 +24,7 @@ import FamilyGovernance from "./pages/FamilyGovernance";
 import FamilyConstitutionSetup from "./pages/FamilyConstitutionSetup";
 import Search from "./pages/Search";
 
+import Onboarding from "./pages/Onboarding";
 import ProfileSettings from "./pages/ProfileSettings";
 import TutorialVideos from "./pages/TutorialVideos";
 import Help from "./pages/Help";
@@ -84,6 +85,7 @@ function AppWithNotifications() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/onboarding" element={<Onboarding />} />
 
         {/* Authenticated routes - with sidebar */}
         <Route path="/dashboard" element={<WithLayout><Dashboard /></WithLayout>} />

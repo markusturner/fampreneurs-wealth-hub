@@ -1,6 +1,7 @@
 import { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
+import { useOnboardingStatus } from "@/hooks/useOnboardingStatus"
 import { AppSidebar } from "./AppSidebar"
 import { Loader2, Menu } from "lucide-react"
 import { useState } from "react"
@@ -14,8 +15,10 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const { user, loading } = useAuth()
+  const { user, loading, profile } = useAuth()
+  const { completed: onboardingCompleted, loading: onboardingLoading } = useOnboardingStatus()
   const navigate = useNavigate()
+  const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -24,7 +27,14 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [user, loading, navigate])
 
-  if (loading) {
+  // Redirect to onboarding if not completed (skip for admins)
+  useEffect(() => {
+    if (!loading && !onboardingLoading && user && onboardingCompleted === false && !profile?.is_admin) {
+      navigate("/onboarding")
+    }
+  }, [user, loading, onboardingLoading, onboardingCompleted, profile, navigate])
+
+  if (loading || onboardingLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
