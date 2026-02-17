@@ -1,9 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0";
+import Stripe from "https://esm.sh/stripe@18.5.0";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -11,82 +12,62 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+  );
+
   try {
-    console.log("Processing checkout request");
-    
-    // Get the amount and billing info from the request body
-    const { amount, billingInterval, tierName } = await req.json();
-    
-    if (!amount || typeof amount !== 'number') {
-      throw new Error("Valid amount is required");
-    }
-    
-    if (!billingInterval || !['month', 'quarter', 'year'].includes(billingInterval)) {
-      throw new Error("Valid billing interval is required");
-    }
-    
-    console.log("Processing payment for amount:", amount, "billing:", billingInterval);
+    const { price_id, mode, email, program_name } = await req.json();
 
-    // Initialize Stripe
+    if (!price_id) throw new Error("price_id is required");
+    if (!mode || !["subscription", "payment"].includes(mode)) throw new Error("Valid mode (subscription/payment) is required");
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2023-10-16",
+      apiVersion: "2025-08-27.basil",
     });
 
-    // Determine product name and recurring interval based on amount and billing
-    let productName = "TruHeirs Subscription";
-    let recurringInterval: "month" | "year" = "month";
-    let intervalCount = 1;
-    
-    if (amount === 9700) {
-      productName = "TruHeirs Starter Plan (Monthly)";
-      recurringInterval = "month";
-      intervalCount = 1;
-    } else if (amount === 24700) {
-      productName = "TruHeirs Professional Plan (Quarterly)";
-      recurringInterval = "month";
-      intervalCount = 3; // 3 months = quarterly
-    } else if (amount === 89700) {
-      productName = "TruHeirs Enterprise Plan (Annual)";
-      recurringInterval = "year";
-      intervalCount = 1;
+    // Try to get authenticated user, but also support admin-created signups with email
+    let customerEmail = email;
+    let customerId: string | undefined;
+
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data } = await supabaseClient.auth.getUser(token);
+      if (data.user?.email) {
+        customerEmail = data.user.email;
+      }
     }
 
-    // Create a subscription checkout session (no authentication required for guest checkout)
+    if (customerEmail) {
+      const customers = await stripe.customers.list({ email: customerEmail, limit: 1 });
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+      }
+    }
+
     const session = await stripe.checkout.sessions.create({
-      customer_email: undefined, // Allow customer to enter email during checkout
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            product_data: { 
-              name: productName,
-              description: "Complete DIY AI family office platform"
-            },
-            unit_amount: amount,
-            recurring: { 
-              interval: recurringInterval,
-              interval_count: intervalCount
-            },
-          },
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      success_url: `${req.headers.get("origin")}/thank-you?session_id={CHECKOUT_SESSION_ID}&plan=${encodeURIComponent(productName)}`,
-      cancel_url: `${req.headers.get("origin")}/?payment=cancelled`,
+      customer: customerId,
+      customer_email: customerId ? undefined : customerEmail,
+      line_items: [{ price: price_id, quantity: 1 }],
+      mode: mode as "subscription" | "payment",
+      success_url: `${req.headers.get("origin")}/dashboard?payment=success&program=${encodeURIComponent(program_name || "")}`,
+      cancel_url: `${req.headers.get("origin")}/auth?payment=cancelled`,
       allow_promotion_codes: true,
-      billing_address_collection: 'required',
+      metadata: {
+        program_name: program_name || "",
+      },
     });
 
-    console.log("Checkout session created:", session.id);
-    
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
-    console.error("Checkout error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("Checkout error:", msg);
+    return new Response(JSON.stringify({ error: msg }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
