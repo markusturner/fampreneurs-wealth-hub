@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { useNavigate, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
@@ -22,11 +22,18 @@ import {
   LogOut,
   Search,
   Video,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { ThemeToggle } from "@/components/theme-toggle"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 interface NavItemProps {
   label: string
@@ -105,6 +112,19 @@ function SubNavItem({ label, href, active, onClick }: { label: string; href?: st
   )
 }
 
+const SEARCH_SUGGESTIONS = [
+  { label: 'Dashboard', path: '/dashboard' },
+  { label: 'Family Office', path: '/digital-family-office' },
+  { label: 'Family Constitution', path: '/documents' },
+  { label: 'Calendar', path: '/calendar' },
+  { label: 'Members', path: '/members' },
+  { label: 'AI Chat', path: '/ai-chat' },
+  { label: 'Community', path: '/workspace-community' },
+  { label: 'Classroom', path: '/classroom' },
+  { label: 'Profile Settings', path: '/profile-settings' },
+  { label: 'Admin Settings', path: '/admin-settings' },
+]
+
 export function AppSidebar({ className }: { className?: string }) {
   const location = useLocation()
   const navigate = useNavigate()
@@ -115,6 +135,19 @@ export function AppSidebar({ className }: { className?: string }) {
   const currentPath = location.pathname
   const [tutorialVideoOpen, setTutorialVideoOpen] = useState(false)
   const [pricingOpen, setPricingOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const searchInputRef = useRef<HTMLInputElement>(null)
+
+  const filteredSuggestions = searchQuery
+    ? SEARCH_SUGGESTIONS.filter(s => s.label.toLowerCase().includes(searchQuery.toLowerCase()))
+    : SEARCH_SUGGESTIONS
+
+  useEffect(() => {
+    if (searchOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 100)
+    }
+  }, [searchOpen])
 
   const isActive = (path: string) => currentPath === path
 
@@ -200,9 +233,46 @@ export function AppSidebar({ className }: { className?: string }) {
       {/* Bottom section */}
       <div className="border-t border-[#290a52] p-3 space-y-2">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[#ffb500]/20" onClick={() => navigate('/search')} title="Search">
-            <Search className="h-4 w-4" />
-          </Button>
+          <Popover open={searchOpen} onOpenChange={setSearchOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[#ffb500]/20" title="Search">
+                <Search className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent side="right" align="end" className="w-64 p-2">
+              <div className="relative mb-2">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  ref={searchInputRef}
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="pl-8 h-8 text-sm"
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && filteredSuggestions.length > 0) {
+                      navigate(filteredSuggestions[0].path)
+                      setSearchOpen(false)
+                      setSearchQuery('')
+                    }
+                  }}
+                />
+              </div>
+              <div className="max-h-48 overflow-y-auto space-y-0.5">
+                {filteredSuggestions.map(s => (
+                  <button
+                    key={s.path}
+                    className="w-full text-left px-2 py-1.5 rounded text-sm hover:bg-muted/50 transition-colors"
+                    onClick={() => { navigate(s.path); setSearchOpen(false); setSearchQuery('') }}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+                {filteredSuggestions.length === 0 && (
+                  <p className="text-xs text-muted-foreground text-center py-2">No results</p>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
           <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[#ffb500]/20" onClick={() => setTutorialVideoOpen(true)} title="Watch Tutorial">
             <Video className="h-4 w-4" />
           </Button>
