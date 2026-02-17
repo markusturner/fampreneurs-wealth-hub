@@ -29,6 +29,7 @@ import { AddModuleDialog } from '@/components/classroom/AddModuleDialog'
 import { AddLessonDialog } from '@/components/classroom/AddLessonDialog'
 import { AddResourceDialog } from '@/components/classroom/AddResourceDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
+import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 
 interface Module {
   id: string
@@ -72,6 +73,7 @@ export default function CourseDetail() {
   const { user } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
+  const { isAdminOrOwner } = useIsAdminOrOwner()
 
   const [course, setCourse] = useState<Course | null>(null)
   const [modules, setModules] = useState<Module[]>([])
@@ -213,9 +215,11 @@ export default function CourseDetail() {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <h2 className="font-semibold text-sm line-clamp-1 flex-1">{course?.title}</h2>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowEditCourse(true)}>
-              <Pencil className="h-3.5 w-3.5" />
-            </Button>
+            {isAdminOrOwner && (
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowEditCourse(true)}>
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
           <div className="space-y-1">
             <Progress value={progressPercent} className="h-2" />
@@ -249,7 +253,7 @@ export default function CourseDetail() {
                       <span className="line-clamp-1">{lesson.title}</span>
                     </button>
                   ))}
-                  {mod.id !== '__uncategorized' && (
+                  {isAdminOrOwner && mod.id !== '__uncategorized' && (
                     <button
                       onClick={() => setShowAddLesson(mod.id)}
                       className="px-6 py-1.5 text-xs text-muted-foreground hover:text-foreground w-full text-left"
@@ -260,12 +264,14 @@ export default function CourseDetail() {
                 </CollapsibleContent>
               </Collapsible>
             ))}
-            <button
-              onClick={() => setShowAddModule(true)}
-              className="px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground w-full text-left"
-            >
-              + Add module
-            </button>
+            {isAdminOrOwner && (
+              <button
+                onClick={() => setShowAddModule(true)}
+                className="px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground w-full text-left"
+              >
+                + Add module
+              </button>
+            )}
           </div>
         </ScrollArea>
       </div>
@@ -290,9 +296,11 @@ export default function CourseDetail() {
                     <Circle className="h-5 w-5 text-muted-foreground" />
                   )}
                 </Button>
-                <Button variant="ghost" size="icon">
-                  <Pencil className="h-4 w-4" />
-                </Button>
+                {isAdminOrOwner && (
+                  <Button variant="ghost" size="icon">
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -359,9 +367,11 @@ export default function CourseDetail() {
               </div>
             )}
 
-            <Button variant="outline" size="sm" onClick={() => setShowAddResource(true)}>
-              + Add Resource
-            </Button>
+            {isAdminOrOwner && (
+              <Button variant="outline" size="sm" onClick={() => setShowAddResource(true)}>
+                + Add Resource
+              </Button>
+            )}
           </div>
         ) : (
           <div className="flex items-center justify-center h-full text-muted-foreground">
