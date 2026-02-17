@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { useNavigate, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
@@ -17,10 +18,11 @@ import {
   Shield,
   Lock,
   LogOut,
+  Search,
+  Video,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { ThemeToggle } from "@/components/theme-toggle"
 
@@ -57,12 +59,12 @@ function NavItem({ label, icon: Icon, href, active, locked, onClick, children, d
         onClick={handleClick}
         className={cn(
           "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200",
-          "hover:bg-sidebar-accent group",
-          active && !hasChildren && "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
+          "hover:bg-[#ffb500]/20 group",
+          active && !hasChildren && "bg-[#ffb500]/20 text-sidebar-foreground font-medium",
           locked && "opacity-50 cursor-not-allowed"
         )}
       >
-        <Icon className={cn("h-4 w-4 flex-shrink-0", active && !hasChildren && "text-[hsl(var(--secondary))]")} />
+        <Icon className={cn("h-4 w-4 flex-shrink-0", active && !hasChildren && "text-[#ffb500]")} />
         <span className="flex-1 text-left truncate">{label}</span>
         {locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
         {hasChildren && !locked && (
@@ -70,7 +72,7 @@ function NavItem({ label, icon: Icon, href, active, locked, onClick, children, d
         )}
       </button>
       {hasChildren && open && !locked && (
-        <div className="ml-4 pl-3 border-l border-sidebar-border space-y-0.5 mt-0.5">
+        <div className="ml-4 pl-3 border-l border-[#290a52] space-y-0.5 mt-0.5">
           {children}
         </div>
       )}
@@ -89,8 +91,8 @@ function SubNavItem({ label, href, active, onClick }: { label: string; href?: st
       }}
       className={cn(
         "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
-        "hover:bg-sidebar-accent",
-        active && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+        "hover:bg-[#ffb500]/20",
+        active && "bg-[#ffb500]/20 text-sidebar-foreground font-medium"
       )}
     >
       {label}
@@ -105,10 +107,10 @@ export function AppSidebar({ className }: { className?: string }) {
   const { isAdmin } = useUserRole()
   const { subscriptionStatus } = useSubscription()
   const currentPath = location.pathname
+  const [tutorialVideoOpen, setTutorialVideoOpen] = useState(false)
 
   const isActive = (path: string) => currentPath === path
 
-  // TruHeirs is locked unless user has an active subscription
   const hasTruHeirsAccess = subscriptionStatus.subscribed || subscriptionStatus.loading
 
   const getInitials = () => {
@@ -123,33 +125,26 @@ export function AppSidebar({ className }: { className?: string }) {
   }
 
   return (
-    <aside className={cn("flex flex-col w-64 border-r border-sidebar-border bg-sidebar-background h-screen sticky top-0", className)}>
+    <aside className={cn("flex flex-col w-64 border-r border-[#290a52] bg-sidebar-background h-screen sticky top-0", className)}>
       {/* Logo & Brand */}
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-sidebar-border">
+      <div className="flex items-center gap-3 px-5 py-4">
         <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs Logo" className="w-10 h-10 object-contain" />
         <span className="font-montserrat font-bold text-lg text-sidebar-foreground">TruHeirs</span>
       </div>
 
       {/* AI Chat Button */}
-      <div className="px-3 pt-4 pb-2">
+      <div className="px-3 pt-2 pb-2">
         <Button
           variant="outline"
-          className="w-full justify-start gap-2 border-dashed border-[hsl(var(--secondary))]/50 hover:bg-[hsl(var(--secondary))]/10 text-sidebar-foreground"
+          className="w-full justify-start gap-2 border-dashed border-[#ffb500]/50 hover:bg-[#ffb500]/10 text-sidebar-foreground"
           onClick={() => window.dispatchEvent(new Event('ai-chat:open'))}
         >
-          <Bot className="h-4 w-4 text-[hsl(var(--secondary))]" />
+          <Bot className="h-4 w-4 text-[#ffb500]" />
           AI Chat
         </Button>
       </div>
 
       <ScrollArea className="flex-1 px-3 py-2">
-        <div className="space-y-1">
-          <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} />
-          <NavItem label="Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} />
-        </div>
-
-        <Separator className="my-4" />
-
         {/* WORKSPACE */}
         <div className="mb-1">
           <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Workspace</p>
@@ -162,15 +157,15 @@ export function AppSidebar({ className }: { className?: string }) {
           </NavItem>
           <NavItem label="Classroom" icon={BookOpen} href="/courses" active={isActive("/courses")} />
           <NavItem label="Members" icon={Users} href="/members" active={isActive("/members")} />
+          <NavItem label="Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} />
         </div>
 
-        <Separator className="my-4" />
-
-        {/* TRUHEIRS - locked for non-paying users */}
-        <div className="mb-1">
+        {/* TRUHEIRS */}
+        <div className="mb-1 mt-4">
           <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">TruHeirs</p>
         </div>
         <div className="space-y-0.5">
+          <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} locked={!hasTruHeirsAccess} />
           <NavItem label="Family Office" icon={Home} href="/community" active={isActive("/community") && !location.search.includes("program=")} locked={!hasTruHeirsAccess} />
           <NavItem label="Family Constitution" icon={FileText} href="/documents" active={isActive("/documents")} locked={!hasTruHeirsAccess} />
           <NavItem label="Family Calendar" icon={Calendar} href="/family-governance" active={isActive("/family-governance")} locked={!hasTruHeirsAccess} />
@@ -180,8 +175,7 @@ export function AppSidebar({ className }: { className?: string }) {
         {/* ADMIN */}
         {isAdmin && (
           <>
-            <Separator className="my-4" />
-            <div className="mb-1">
+            <div className="mb-1 mt-4">
               <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</p>
             </div>
             <div className="space-y-0.5">
@@ -192,13 +186,34 @@ export function AppSidebar({ className }: { className?: string }) {
       </ScrollArea>
 
       {/* Bottom section */}
-      <div className="border-t border-sidebar-border p-3 space-y-2">
+      <div className="border-t border-[#290a52] p-3 space-y-2">
+        {/* Search, Video, Notifications row */}
         <div className="flex items-center gap-2">
-          <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 hover:bg-[#ffb500]/20"
+            onClick={() => navigate('/search')}
+            title="Search"
+          >
+            <Search className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 hover:bg-[#ffb500]/20"
+            onClick={() => setTutorialVideoOpen(true)}
+            title="Watch Tutorial"
+          >
+            <Video className="h-4 w-4" />
+          </Button>
           <NotificationBell />
+          <ThemeToggle />
         </div>
-        <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-sidebar-accent cursor-pointer" onClick={() => navigate("/profile-settings")}>
-          <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-sidebar-border">
+
+        {/* Profile row */}
+        <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-[#ffb500]/20 cursor-pointer" onClick={() => navigate("/profile-settings")}>
+          <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#290a52]">
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
             ) : (
@@ -211,11 +226,29 @@ export function AppSidebar({ className }: { className?: string }) {
             <p className="text-sm font-medium truncate text-sidebar-foreground">{profile?.display_name || "User"}</p>
             <p className="text-xs text-muted-foreground truncate">{profile?.family_role || "Member"}</p>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => { e.stopPropagation(); signOut() }}>
-            <LogOut className="h-4 w-4" />
-          </Button>
         </div>
+
+        {/* Separate logout */}
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+          onClick={signOut}
+        >
+          <LogOut className="h-4 w-4" />
+          Log out
+        </Button>
       </div>
+
+      {/* Tutorial Video Modal */}
+      {profile && tutorialVideoOpen && (
+        <TutorialVideoModal
+          isOpen={tutorialVideoOpen}
+          onClose={() => setTutorialVideoOpen(false)}
+          onWatched={() => setTutorialVideoOpen(false)}
+          onSkipped={() => setTutorialVideoOpen(false)}
+          userId={profile.user_id}
+        />
+      )}
     </aside>
   )
 }

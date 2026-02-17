@@ -56,8 +56,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile top bar */}
-        <header className="md:hidden sticky top-0 z-50 flex items-center justify-between px-4 h-14 border-b border-border bg-background/95 backdrop-blur">
+      {/* Mobile top bar */}
+        <header className="md:hidden sticky top-0 z-50 flex items-center justify-between px-4 h-14 border-b border-[#290a52] bg-background/95 backdrop-blur">
           <div className="flex items-center gap-2">
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
@@ -77,7 +77,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               className="w-8 h-8 object-contain"
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <ThemeToggle />
             <NotificationBell />
           </div>
