@@ -310,21 +310,21 @@ export default function AIChat() {
         className="border-0 shadow-none focus-visible:ring-0 text-sm mb-3"
       />
       <div className="flex items-center justify-between gap-2">
-        <div className="flex gap-1 sm:gap-2 flex-wrap items-center">
+        <div className="flex gap-1 items-center overflow-x-auto scrollbar-hide flex-1 min-w-0">
           <input ref={chatFileRef} type="file" multiple className="hidden" onChange={handleChatFileAttach} />
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => chatFileRef.current?.click()}>
+          <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0" onClick={() => chatFileRef.current?.click()}>
             <Paperclip className="h-3.5 w-3.5" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className={`h-7 w-7 ${isRecording ? 'text-destructive bg-destructive/10' : ''}`}
+            className={`h-7 w-7 flex-shrink-0 ${isRecording ? 'text-destructive bg-destructive/10' : ''}`}
             onClick={toggleVoiceInput}
           >
             {isRecording ? <Square className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
           </Button>
           {PERSONAS.map((p) => (
-            <Button key={p.id} variant={activePersona === p.id ? 'default' : 'outline'} size="sm" className="h-7 text-[10px] sm:text-xs rounded-full gap-1" onClick={() => switchPersona(p.id)} title={p.description}>
+            <Button key={p.id} variant={activePersona === p.id ? 'default' : 'outline'} size="sm" className="h-7 text-[10px] sm:text-xs rounded-full gap-1 flex-shrink-0 px-2 sm:px-3" onClick={() => switchPersona(p.id)} title={p.description}>
               <p.icon className="h-3 w-3" />
               <span className="hidden sm:inline">{p.label}</span>
             </Button>
@@ -471,11 +471,11 @@ export default function AIChat() {
             <div>
               <Label className="text-xs font-semibold mb-1.5 block">Persona Instructions & Files</Label>
               <Tabs value={settingsTab} onValueChange={setSettingsTab}>
-                <TabsList className="w-full grid grid-cols-4 h-8">
+                <TabsList className="w-full flex overflow-x-auto scrollbar-hide h-8">
                   {PERSONAS.map(p => (
-                    <TabsTrigger key={p.id} value={p.id} className="text-[10px] gap-1 px-1.5 py-1">
-                      <p.icon className="h-3 w-3" />
-                      <span className="hidden sm:inline truncate">{p.label}</span>
+                    <TabsTrigger key={p.id} value={p.id} className="text-[10px] gap-1 px-2 py-1 flex-1 min-w-0">
+                      <p.icon className="h-3 w-3 flex-shrink-0" />
+                      <span className="truncate">{p.label}</span>
                     </TabsTrigger>
                   ))}
                 </TabsList>
