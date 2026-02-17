@@ -290,7 +290,7 @@ export default function AIChat() {
   const hasConversation = messages.length > 1
 
   const renderInputBar = () => (
-    <div className="rounded-xl border bg-card p-3">
+    <div className="rounded-xl border border-white/20 dark:border-white/10 bg-white/10 dark:bg-[#2f2f2f] p-3">
       {attachedFiles.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-2">
           {attachedFiles.map((f, i) => (
@@ -338,9 +338,9 @@ export default function AIChat() {
   )
 
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen bg-[#290a52] text-white dark:bg-[#212121] dark:text-gray-100">
       {/* Top bar */}
-      <div className="flex items-center justify-between px-4 py-2 border-b">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-white/10 dark:border-white/10">
         <div className="flex items-center gap-2">
           <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-6 h-6 object-contain" />
           <DropdownMenu>
@@ -382,7 +382,7 @@ export default function AIChat() {
               <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-12 h-12 object-contain" />
             </div>
             <h1 className="text-xl sm:text-2xl font-bold mb-2 text-center">What would you like to create today?</h1>
-            <p className="text-muted-foreground text-center mb-8 max-w-md text-sm">
+            <p className="text-white/60 dark:text-gray-400 text-center mb-8 max-w-md text-sm">
               Your AI-powered assistant for building your family business.
             </p>
             <div className="w-full max-w-2xl">
@@ -402,7 +402,7 @@ export default function AIChat() {
                         </AvatarFallback>
                       </Avatar>
                     )}
-                    <div className={`max-w-[80%] rounded-lg px-4 py-3 text-sm ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                    <div className={`max-w-[80%] rounded-lg px-4 py-3 text-sm ${message.role === 'user' ? 'bg-[#ffb500] text-[#290a52] dark:bg-primary dark:text-primary-foreground' : 'bg-white/10 dark:bg-[#2f2f2f]'}`}>
                       {message.attachments && (
                         <div className="flex flex-wrap gap-1 mb-2">
                           {message.attachments.map((a, i) => (
