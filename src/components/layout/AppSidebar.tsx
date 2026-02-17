@@ -178,10 +178,10 @@ export function AppSidebar({ className }: { className?: string }) {
         </div>
         <div className="space-y-0.5">
           <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
-          <NavItem label="Family Office" icon={Home} href="/community" active={isActive("/community") && !location.search.includes("program=")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
+          <NavItem label="Family Office" icon={Home} href="/digital-family-office" active={isActive("/digital-family-office")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
           <NavItem label="Family Constitution" icon={FileText} href="/documents" active={isActive("/documents")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
-          <NavItem label="Family Calendar" icon={Calendar} href="/family-governance" active={isActive("/family-governance")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
-          <NavItem label="Family Members" icon={Users} href="/investments" active={isActive("/investments")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
+          <NavItem label="Family Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
+          <NavItem label="Family Members" icon={Users} href="/members" active={isActive("/members")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
         </div>
 
         {/* ADMIN */}

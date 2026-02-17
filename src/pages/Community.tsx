@@ -285,8 +285,6 @@ export default function Community() {
 
   return (
     <div className="min-h-screen bg-background">
-      <NavHeader />
-      
       <div className="container mx-auto px-4 py-6 space-y-6 max-w-7xl">
         <div className="animate-fade-in">
           <h1 className="text-3xl font-bold tracking-tight mb-2">Digital Family Office</h1>

@@ -96,6 +96,7 @@ function AppWithNotifications() {
         {/* Authenticated routes - with sidebar */}
         <Route path="/dashboard" element={<WithLayout><Dashboard /></WithLayout>} />
         <Route path="/community" element={<WithLayout><Community /></WithLayout>} />
+        <Route path="/digital-family-office" element={<WithLayout><Community /></WithLayout>} />
         <Route path="/workspace-community" element={<WithLayout><WorkspaceCommunity /></WithLayout>} />
         <Route path="/classroom" element={<WithLayout><Classroom /></WithLayout>} />
         <Route path="/classroom/:courseId" element={<WithLayout><CourseDetail /></WithLayout>} />

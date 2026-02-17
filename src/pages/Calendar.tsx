@@ -423,7 +423,6 @@ export default function Calendar() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <NavHeader />
         <div className="container mx-auto p-4 lg:p-6">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-muted rounded w-1/4"></div>
@@ -436,7 +435,6 @@ export default function Calendar() {
 
   return (
     <div className="min-h-screen bg-background">
-      <NavHeader />
       <div className="container mx-auto mobile-container space-y-4 sm:space-y-6 px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
