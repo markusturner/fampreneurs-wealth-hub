@@ -2944,6 +2944,78 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_responses: {
+        Row: {
+          anything_else: string | null
+          biggest_hesitation: string
+          completed_at: string
+          created_at: string
+          decision_reason: string
+          final_push: string
+          first_touchpoint: string
+          full_name: string
+          id: string
+          improvement_suggestion: string
+          investment_reason: string
+          join_elaboration: string
+          mailing_address: string
+          pre_call_conviction: string
+          specific_content: string
+          time_to_decide: string
+          tshirt_size: string
+          updated_at: string
+          user_id: string
+          why_choose_me: string
+          why_markus: string
+        }
+        Insert: {
+          anything_else?: string | null
+          biggest_hesitation: string
+          completed_at?: string
+          created_at?: string
+          decision_reason: string
+          final_push: string
+          first_touchpoint: string
+          full_name: string
+          id?: string
+          improvement_suggestion: string
+          investment_reason: string
+          join_elaboration: string
+          mailing_address: string
+          pre_call_conviction: string
+          specific_content: string
+          time_to_decide: string
+          tshirt_size: string
+          updated_at?: string
+          user_id: string
+          why_choose_me: string
+          why_markus: string
+        }
+        Update: {
+          anything_else?: string | null
+          biggest_hesitation?: string
+          completed_at?: string
+          created_at?: string
+          decision_reason?: string
+          final_push?: string
+          first_touchpoint?: string
+          full_name?: string
+          id?: string
+          improvement_suggestion?: string
+          investment_reason?: string
+          join_elaboration?: string
+          mailing_address?: string
+          pre_call_conviction?: string
+          specific_content?: string
+          time_to_decide?: string
+          tshirt_size?: string
+          updated_at?: string
+          user_id?: string
+          why_choose_me?: string
+          why_markus?: string
+        }
+        Relationships: []
+      }
       page_views: {
         Row: {
           created_at: string | null
