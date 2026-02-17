@@ -3,15 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { OverviewSection } from "@/components/dashboard/overview-section"
-import { RecentActivities } from "@/components/dashboard/recent-activities"
-import { UpcomingMeetings } from "@/components/dashboard/upcoming-meetings"
-import { QuickActions } from "@/components/dashboard/quick-actions"
 import { Loader2 } from 'lucide-react'
 import { useState } from "react"
 import { useUserRole } from "@/hooks/useUserRole"
 import { useTutorialVideo } from "@/hooks/useTutorialVideo"
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { supabase } from "@/integrations/supabase/client"
+import { DashboardRecentActivity } from "@/components/dashboard/dashboard-recent-activity"
 
 const Dashboard = () => {
   const { user, profile, loading } = useAuth()
@@ -79,14 +77,8 @@ const Dashboard = () => {
       {/* Financial Overview & AI Insights */}
       <OverviewSection />
 
-      {/* Activity Grid: Recent Activities + Upcoming Meetings + Quick Actions */}
-      <div className="grid gap-4 lg:gap-6 grid-cols-1 lg:grid-cols-3">
-        <RecentActivities />
-        <div className="space-y-4 lg:space-y-6">
-          <UpcomingMeetings />
-          <QuickActions />
-        </div>
-      </div>
+      {/* Recent Activity from TruHeirs */}
+      <DashboardRecentActivity />
 
       {/* Tutorial Video Modal */}
       {user && (
