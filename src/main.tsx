@@ -19,6 +19,10 @@ import Documents from "./pages/Documents";
 import Members from "./pages/Members";
 import Calendar from "./pages/Calendar";
 import Investments from "./pages/Investments";
+import WorkspaceCommunity from "./pages/WorkspaceCommunity";
+import Classroom from "./pages/Classroom";
+import WorkspaceMembers from "./pages/WorkspaceMembers";
+import WorkspaceCalendar from "./pages/WorkspaceCalendar";
 
 import FamilyGovernance from "./pages/FamilyGovernance";
 import FamilyConstitutionSetup from "./pages/FamilyConstitutionSetup";
@@ -35,7 +39,7 @@ import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
 
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
-import { AIChat } from "@/components/dashboard/ai-chat";
+import AIChat from "./pages/AIChat";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
 
@@ -90,6 +94,10 @@ function AppWithNotifications() {
         {/* Authenticated routes - with sidebar */}
         <Route path="/dashboard" element={<WithLayout><Dashboard /></WithLayout>} />
         <Route path="/community" element={<WithLayout><Community /></WithLayout>} />
+        <Route path="/workspace-community" element={<WithLayout><WorkspaceCommunity /></WithLayout>} />
+        <Route path="/classroom" element={<WithLayout><Classroom /></WithLayout>} />
+        <Route path="/workspace-members" element={<WithLayout><WorkspaceMembers /></WithLayout>} />
+        <Route path="/workspace-calendar" element={<WithLayout><WorkspaceCalendar /></WithLayout>} />
         <Route path="/courses" element={<WithLayout><Courses /></WithLayout>} />
         <Route path="/documents" element={<WithLayout><Documents /></WithLayout>} />
         <Route path="/family-roundtable" element={<WithLayout><Dashboard /></WithLayout>} />
@@ -98,12 +106,14 @@ function AppWithNotifications() {
         <Route path="/calendar" element={<WithLayout><Calendar /></WithLayout>} />
         <Route path="/members" element={<WithLayout><Members /></WithLayout>} />
         <Route path="/investments" element={<WithLayout><Investments /></WithLayout>} />
+        <Route path="/investments" element={<WithLayout><Investments /></WithLayout>} />
         <Route path="/profile-settings" element={<WithLayout><ProfileSettings /></WithLayout>} />
         <Route path="/tutorial-videos" element={<WithLayout><TutorialVideos /></WithLayout>} />
         <Route path="/help" element={<WithLayout><Help /></WithLayout>} />
         <Route path="/contact" element={<WithLayout><Contact /></WithLayout>} />
         <Route path="/contact-support" element={<WithLayout><ContactSupport /></WithLayout>} />
         <Route path="/search" element={<WithLayout><Search /></WithLayout>} />
+        <Route path="/ai-chat" element={<WithLayout><AIChat /></WithLayout>} />
         <Route path="*" element={<div>Page not found</div>} />
       </Routes>
       <MobileBottomNav />
@@ -119,7 +129,7 @@ createRoot(document.getElementById("root")!).render(
           <AuthProvider>
             <MeetingsProvider>
               <AppWithNotifications />
-              <AIChat />
+              
               <Toaster />
             </MeetingsProvider>
           </AuthProvider>
