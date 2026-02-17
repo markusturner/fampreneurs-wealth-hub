@@ -21,6 +21,7 @@ import Calendar from "./pages/Calendar";
 import Investments from "./pages/Investments";
 import WorkspaceCommunity from "./pages/WorkspaceCommunity";
 import Classroom from "./pages/Classroom";
+import CourseDetail from "./pages/CourseDetail";
 import WorkspaceMembers from "./pages/WorkspaceMembers";
 import WorkspaceCalendar from "./pages/WorkspaceCalendar";
 
@@ -97,6 +98,7 @@ function AppWithNotifications() {
         <Route path="/community" element={<WithLayout><Community /></WithLayout>} />
         <Route path="/workspace-community" element={<WithLayout><WorkspaceCommunity /></WithLayout>} />
         <Route path="/classroom" element={<WithLayout><Classroom /></WithLayout>} />
+        <Route path="/classroom/:courseId" element={<WithLayout><CourseDetail /></WithLayout>} />
         <Route path="/workspace-members" element={<WithLayout><WorkspaceMembers /></WithLayout>} />
         <Route path="/workspace-calendar" element={<WithLayout><WorkspaceCalendar /></WithLayout>} />
         <Route path="/courses" element={<WithLayout><Courses /></WithLayout>} />
