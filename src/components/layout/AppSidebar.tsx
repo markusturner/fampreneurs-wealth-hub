@@ -170,7 +170,7 @@ export function AppSidebar({ className }: { className?: string }) {
   }
 
   return (
-    <aside className={cn("flex flex-col w-64 border-r border-[#290a52] bg-sidebar-background h-screen sticky top-0", className)}>
+    <aside className={cn("flex flex-col w-64 border-r border-[#290a52] h-screen sticky top-0 dark", className)} style={{ backgroundColor: 'hsl(240 5.9% 10%)', color: 'hsl(240 4.8% 95.9%)' }}>
       {/* Logo & Brand */}
       <div className="flex items-center gap-3 px-5 py-4">
         <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs Logo" className="w-10 h-10 object-contain" />
