@@ -137,7 +137,7 @@ export function AppSidebar({ className }: { className?: string }) {
         <Button
           variant="outline"
           className="w-full justify-start gap-2 border-dashed border-[#ffb500]/50 hover:bg-[#ffb500]/10 text-sidebar-foreground"
-          onClick={() => window.dispatchEvent(new Event('ai-chat:open'))}
+          onClick={() => navigate('/ai-chat')}
         >
           <Bot className="h-4 w-4 text-[#ffb500]" />
           AI Chat
@@ -150,14 +150,14 @@ export function AppSidebar({ className }: { className?: string }) {
           <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Workspace</p>
         </div>
         <div className="space-y-0.5">
-          <NavItem label="Community" icon={MessageSquare} defaultOpen={currentPath.includes("/community")}>
-            <SubNavItem label="Family Business University" href="/community?program=fbu" active={currentPath === "/community" && location.search.includes("program=fbu")} />
-            <SubNavItem label="The Family Vault" href="/community?program=tfv" active={currentPath === "/community" && location.search.includes("program=tfv")} />
-            <SubNavItem label="Family Business Accelerator" href="/community?program=tfba" active={currentPath === "/community" && location.search.includes("program=tfba")} />
+          <NavItem label="Community" icon={MessageSquare} defaultOpen={currentPath.includes("/workspace-community")}>
+            <SubNavItem label="Family Business University" href="/workspace-community?program=fbu" active={currentPath === "/workspace-community" && location.search.includes("program=fbu")} />
+            <SubNavItem label="The Family Vault" href="/workspace-community?program=tfv" active={currentPath === "/workspace-community" && location.search.includes("program=tfv")} />
+            <SubNavItem label="Family Business Accelerator" href="/workspace-community?program=tfba" active={currentPath === "/workspace-community" && location.search.includes("program=tfba")} />
           </NavItem>
-          <NavItem label="Classroom" icon={BookOpen} href="/courses" active={isActive("/courses")} />
-          <NavItem label="Members" icon={Users} href="/members" active={isActive("/members")} />
-          <NavItem label="Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} />
+          <NavItem label="Classroom" icon={BookOpen} href="/classroom" active={isActive("/classroom")} />
+          <NavItem label="Members" icon={Users} href="/workspace-members" active={isActive("/workspace-members")} />
+          <NavItem label="Calendar" icon={Calendar} href="/workspace-calendar" active={isActive("/workspace-calendar")} />
         </div>
 
         {/* TRUHEIRS */}
