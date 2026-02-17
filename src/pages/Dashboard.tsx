@@ -1,21 +1,10 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
-import { NavHeader } from "@/components/dashboard/nav-header"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
-import { InvestmentChart } from "@/components/dashboard/investment-chart"
-import { AssetAllocation } from "@/components/dashboard/asset-allocation"
-import { AIChat } from "@/components/dashboard/ai-chat"
-import { FamilyMemberDashboard } from "@/components/dashboard/family-member-dashboard"
-import { DocumentManagement } from "@/components/dashboard/document-management"
-import { EnhancedSearch } from "@/components/dashboard/enhanced-search"
-import { RealTimeNotifications } from "@/components/dashboard/real-time-notifications"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from 'lucide-react'
 import { useState } from "react"
 import { useUserRole } from "@/hooks/useUserRole"
-import { OverviewSection } from "@/components/dashboard/overview-section"
 import { useTutorialVideo } from "@/hooks/useTutorialVideo"
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { supabase } from "@/integrations/supabase/client"
@@ -24,14 +13,12 @@ const Dashboard = () => {
   const { user, profile, loading } = useAuth()
   const { isFamilyOfficeOnly, isLoading: roleLoading } = useUserRole()
   const navigate = useNavigate()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const { shouldShowTutorial, isLoading: tutorialLoading, markAsWatched } = useTutorialVideo(user?.id || null)
 
   const handleTutorialSkipped = async () => {
     if (!user?.id) return;
     
     try {
-      // Add notification for skipped tutorial
       await supabase.from("notifications").insert({
         sender_id: user.id,
         user_id: user.id,
@@ -44,7 +31,6 @@ const Dashboard = () => {
       console.error("Error creating notification:", error);
     }
     
-    // Still mark as "handled" so it doesn't show again on this session
     markAsWatched();
   };
 
@@ -56,7 +42,7 @@ const Dashboard = () => {
 
   if (loading || roleLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
           <p className="text-muted-foreground">Loading your dashboard...</p>
@@ -66,39 +52,25 @@ const Dashboard = () => {
   }
 
   if (!user) {
-    return null // Will redirect to auth
+    return null
   }
 
   const displayName = profile?.display_name || profile?.first_name || 'Family'
 
-  // Always render full comprehensive dashboard with financial overview
   return (
-    <div className="min-h-screen bg-background">
-      <NavHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-      
-      <main className="container mx-auto px-4 sm:px-4 lg:px-6 py-5 sm:py-6 space-y-6 sm:space-y-6 max-w-full overflow-hidden pb-24 sm:pb-6">
-        {/* Welcome Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h1 className="text-3xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight">
-              Welcome back, {displayName}
-            </h1>
-            <p className="text-muted-foreground mt-2 text-base sm:text-base leading-relaxed">
-              Here's what's happening with your family wealth today
-            </p>
-          </div>
-        </div>
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-hidden">
+      {/* Welcome Section */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
+          Welcome back, {displayName}
+        </h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+          Here's what's happening with your family wealth today
+        </p>
+      </div>
 
-        {/* Key Metrics - Portfolio Value, Investments, Family Office Members, Family Members, Documents */}
-        <DashboardStats />
-
-        {/* Financial Overview - Cash, Investments, AI Insights, Charts, Allocations */}
-        <OverviewSection />
-
-      </main>
-      
-      {/* Mobile Bottom Navigation */}
-      <div className="pb-16 md:pb-0" />
+      {/* Key Metrics */}
+      <DashboardStats />
 
       {/* Tutorial Video Modal */}
       {user && (
