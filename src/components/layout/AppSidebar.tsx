@@ -78,9 +78,9 @@ function NavItem({ label, icon: Icon, href, active, locked, onClick, children, d
       >
         <Icon className={cn("h-4 w-4 flex-shrink-0", active && !hasChildren && "text-[#ffb500]")} />
         <span className="flex-1 text-left truncate">{label}</span>
-        {locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
+        {locked && <Lock className="h-3.5 w-3.5 text-white/40" />}
         {hasChildren && !locked && (
-          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
+          <ChevronDown className={cn("h-4 w-4 text-white/40 transition-transform", open && "rotate-180")} />
         )}
       </button>
       {hasChildren && open && !locked && (
@@ -170,7 +170,7 @@ export function AppSidebar({ className }: { className?: string }) {
   }
 
   return (
-    <aside className={cn("flex flex-col w-64 border-r border-[#290a52] h-screen sticky top-0 dark", className)} style={{ backgroundColor: 'hsl(240 5.9% 10%)', color: 'hsl(240 4.8% 95.9%)' }}>
+    <aside className={cn("flex flex-col w-64 border-r border-[#290a52] h-screen sticky top-0 text-white", className)} style={{ backgroundColor: '#290a52' }}>
       {/* Logo & Brand */}
       <div className="flex items-center gap-3 px-5 py-4">
         <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs Logo" className="w-10 h-10 object-contain" />
@@ -192,7 +192,7 @@ export function AppSidebar({ className }: { className?: string }) {
       <ScrollArea className="flex-1 px-3 py-2">
         {/* WORKSPACE */}
         <div className="mb-1">
-          <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Workspace</p>
+          <p className="px-3 py-1.5 text-xs font-semibold text-white/50 uppercase tracking-wider">Workspace</p>
         </div>
         <div className="space-y-0.5">
           <NavItem label="Community" icon={MessageSquare} defaultOpen={currentPath.includes("/workspace-community")}>
@@ -207,7 +207,7 @@ export function AppSidebar({ className }: { className?: string }) {
 
         {/* TRUHEIRS */}
         <div className="mb-1 mt-4">
-          <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">TruHeirs</p>
+          <p className="px-3 py-1.5 text-xs font-semibold text-white/50 uppercase tracking-wider">TruHeirs</p>
         </div>
         <div className="space-y-0.5">
           <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
@@ -221,7 +221,7 @@ export function AppSidebar({ className }: { className?: string }) {
         {isAdmin && (
           <>
             <div className="mb-1 mt-4">
-              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</p>
+              <p className="px-3 py-1.5 text-xs font-semibold text-white/50 uppercase tracking-wider">Admin</p>
             </div>
             <div className="space-y-0.5">
               <NavItem label="Admin Settings" icon={Shield} href="/admin-settings" active={isActive("/admin-settings")} />
@@ -291,8 +291,8 @@ export function AppSidebar({ className }: { className?: string }) {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate text-sidebar-foreground">{profile?.display_name || "User"}</p>
-            <p className="text-xs text-muted-foreground truncate">{profile?.family_role || "Member"}</p>
+            <p className="text-sm font-medium truncate text-white">{profile?.display_name || "User"}</p>
+            <p className="text-xs text-white/50 truncate">{profile?.family_role || "Member"}</p>
           </div>
         </div>
 
