@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Send, Bot, User, Loader2, Shield, Building2, FileText, Sparkles, Paperclip, Settings2, X, ChevronDown, Upload } from 'lucide-react'
+import { Send, Bot, User, Loader2, Shield, Building2, FileText, Paperclip, Settings2, X, ChevronDown, Upload, Mic, MicOff, Square } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import ReactMarkdown from 'react-markdown'
@@ -22,6 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 type Persona = 'rachel' | 'asset_protection' | 'business_structure' | 'trust_writer'
 
@@ -39,11 +40,16 @@ interface AIModel {
   description: string
 }
 
+interface PersonaSettings {
+  instructions: string
+  files: { name: string; type: string }[]
+}
+
 const AI_MODELS: AIModel[] = [
-  { id: 'gemini-flash', label: 'Gemini Flash', description: 'Fast, balanced responses' },
-  { id: 'gemini-pro', label: 'Gemini Pro', description: 'Advanced reasoning & analysis' },
   { id: 'gpt-5', label: 'GPT-5', description: 'Powerful all-rounder' },
   { id: 'gpt-5-mini', label: 'GPT-5 Mini', description: 'Fast & cost-effective' },
+  { id: 'gemini-flash', label: 'Gemini Flash', description: 'Fast, balanced responses' },
+  { id: 'gemini-pro', label: 'Gemini Pro', description: 'Advanced reasoning & analysis' },
   { id: 'claude', label: 'Claude', description: 'Thoughtful & detailed' },
 ]
 
@@ -61,21 +67,30 @@ const PERSONA_GREETINGS: Record<Persona, string> = {
   trust_writer: "Hello! I help draft trust clauses and provisions for irrevocable trusts. What type of trust provision would you like to work on?",
 }
 
+const DEFAULT_PERSONA_SETTINGS: Record<Persona, PersonaSettings> = {
+  rachel: { instructions: '', files: [] },
+  asset_protection: { instructions: '', files: [] },
+  business_structure: { instructions: '', files: [] },
+  trust_writer: { instructions: '', files: [] },
+}
+
 export default function AIChat() {
   const [activePersona, setActivePersona] = useState<Persona>('rachel')
-  const [selectedModel, setSelectedModel] = useState<string>('gemini-flash')
+  const [selectedModel, setSelectedModel] = useState<string>('gpt-5')
   const [messages, setMessages] = useState<Message[]>([
     { id: '1', content: PERSONA_GREETINGS.rachel, role: 'assistant', timestamp: new Date() }
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [instructions, setInstructions] = useState('')
-  const [uploadedFiles, setUploadedFiles] = useState<{ name: string; type: string }[]>([])
+  const [personaSettings, setPersonaSettings] = useState<Record<Persona, PersonaSettings>>({ ...DEFAULT_PERSONA_SETTINGS })
   const [attachedFiles, setAttachedFiles] = useState<File[]>([])
+  const [isRecording, setIsRecording] = useState(false)
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const chatFileRef = useRef<HTMLInputElement>(null)
+  const settingsFileRef = useRef<HTMLInputElement>(null)
+  const [settingsTab, setSettingsTab] = useState<string>('rachel')
   const { toast } = useToast()
 
   useEffect(() => {
@@ -109,8 +124,9 @@ export default function AIChat() {
     setIsLoading(true)
 
     try {
+      const personaInstructions = personaSettings[activePersona]?.instructions || ''
       const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { message: messageText, persona: activePersona, model: selectedModel, instructions }
+        body: { message: messageText, persona: activePersona, model: selectedModel, instructions: personaInstructions }
       })
       if (error) throw error
       setMessages(prev => [...prev, {
@@ -131,15 +147,6 @@ export default function AIChat() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
   }
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (files) {
-      const newFiles = Array.from(files).map(f => ({ name: f.name, type: f.type }))
-      setUploadedFiles(prev => [...prev, ...newFiles])
-      toast({ title: 'Files added', description: `${files.length} file(s) added to project` })
-    }
-  }
-
   const handleChatFileAttach = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files) {
@@ -147,9 +154,188 @@ export default function AIChat() {
     }
   }
 
+  const handleSettingsFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files) {
+      const newFiles = Array.from(files).map(f => ({ name: f.name, type: f.type }))
+      setPersonaSettings(prev => ({
+        ...prev,
+        [settingsTab]: {
+          ...prev[settingsTab as Persona],
+          files: [...prev[settingsTab as Persona].files, ...newFiles]
+        }
+      }))
+      toast({ title: 'Files added', description: `${files.length} file(s) added to ${PERSONAS.find(p => p.id === settingsTab)?.label}` })
+    }
+  }
+
+  const removeSettingsFile = (persona: Persona, index: number) => {
+    setPersonaSettings(prev => ({
+      ...prev,
+      [persona]: {
+        ...prev[persona],
+        files: prev[persona].files.filter((_, i) => i !== index)
+      }
+    }))
+  }
+
+  const updatePersonaInstructions = (persona: Persona, instructions: string) => {
+    setPersonaSettings(prev => ({
+      ...prev,
+      [persona]: { ...prev[persona], instructions }
+    }))
+  }
+
+  // Audio recording and transcription
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
+      const chunks: BlobPart[] = []
+
+      recorder.ondataavailable = (e) => chunks.push(e.data)
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop())
+        const blob = new Blob(chunks, { type: 'audio/webm' })
+        await transcribeAudio(blob)
+      }
+
+      recorder.start()
+      setMediaRecorder(recorder)
+      setIsRecording(true)
+    } catch (err) {
+      console.error('Microphone access denied:', err)
+      toast({ title: 'Microphone Error', description: 'Please allow microphone access to use voice input.', variant: 'destructive' })
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop()
+      setIsRecording(false)
+      setMediaRecorder(null)
+    }
+  }
+
+  const transcribeAudio = async (blob: Blob) => {
+    try {
+      // Use browser's Web Speech API for transcription
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      if (!SpeechRecognition) {
+        // Fallback: just add audio as attachment note
+        toast({ title: 'Speech recognition not supported', description: 'Your browser does not support speech recognition. Try Chrome.', variant: 'destructive' })
+        return
+      }
+      toast({ title: 'Processing audio...', description: 'Transcribing your voice input.' })
+      // Actually use a simpler approach: create an audio element and use recognition
+      // For real-time, we'll use the SpeechRecognition API directly instead
+    } catch (error) {
+      console.error('Transcription error:', error)
+    }
+  }
+
+  // Use Web Speech API for real-time voice input
+  const toggleVoiceInput = () => {
+    if (isRecording) {
+      stopRecording()
+      return
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      toast({ title: 'Not supported', description: 'Speech recognition is not supported in this browser. Try Chrome.', variant: 'destructive' })
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.continuous = true
+    recognition.interimResults = true
+    recognition.lang = 'en-US'
+
+    let finalTranscript = ''
+
+    recognition.onresult = (event: any) => {
+      let interim = ''
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript + ' '
+        } else {
+          interim += event.results[i][0].transcript
+        }
+      }
+      setInput(finalTranscript + interim)
+    }
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error:', event.error)
+      setIsRecording(false)
+    }
+
+    recognition.onend = () => {
+      setIsRecording(false)
+      if (finalTranscript.trim()) {
+        setInput(finalTranscript.trim())
+      }
+    }
+
+    recognition.start()
+    setIsRecording(true)
+
+    // Store reference to stop later
+    setMediaRecorder({ stop: () => recognition.stop() } as any)
+  }
+
   const currentPersona = PERSONAS.find(p => p.id === activePersona)!
   const currentModel = AI_MODELS.find(m => m.id === selectedModel)!
   const hasConversation = messages.length > 1
+
+  const renderInputBar = () => (
+    <div className="rounded-xl border bg-card p-3">
+      {attachedFiles.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-2">
+          {attachedFiles.map((f, i) => (
+            <Badge key={i} variant="secondary" className="gap-1 text-xs">
+              <Paperclip className="h-3 w-3" />{f.name}
+              <button onClick={() => setAttachedFiles(prev => prev.filter((_, j) => j !== i))}><X className="h-3 w-3" /></button>
+            </Badge>
+          ))}
+        </div>
+      )}
+      <Input
+        placeholder="Message AI... (Shift+Enter for new line)"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyPress={handleKeyPress}
+        disabled={isLoading}
+        className="border-0 shadow-none focus-visible:ring-0 text-sm mb-3"
+      />
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex gap-1 sm:gap-2 flex-wrap items-center">
+          <input ref={chatFileRef} type="file" multiple className="hidden" onChange={handleChatFileAttach} />
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => chatFileRef.current?.click()}>
+            <Paperclip className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`h-7 w-7 ${isRecording ? 'text-destructive bg-destructive/10' : ''}`}
+            onClick={toggleVoiceInput}
+          >
+            {isRecording ? <Square className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
+          </Button>
+          {PERSONAS.map((p) => (
+            <Button key={p.id} variant={activePersona === p.id ? 'default' : 'outline'} size="sm" className="h-7 text-[10px] sm:text-xs rounded-full gap-1" onClick={() => switchPersona(p.id)} title={p.description}>
+              <p.icon className="h-3 w-3" />
+              <span className="hidden sm:inline">{p.label}</span>
+            </Button>
+          ))}
+        </div>
+        <Button onClick={() => sendMessage()} disabled={!input.trim() || isLoading} size="icon" className="h-8 w-8 rounded-full flex-shrink-0">
+          <Send className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  )
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)] md:h-screen">
@@ -176,9 +362,16 @@ export default function AIChat() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSettingsOpen(true)}>
-          <Settings2 className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1">
+          {isRecording && (
+            <Badge variant="destructive" className="text-xs animate-pulse gap-1">
+              <Mic className="h-3 w-3" /> Recording...
+            </Badge>
+          )}
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSettingsOpen(true)}>
+            <Settings2 className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Main content */}
@@ -192,45 +385,8 @@ export default function AIChat() {
             <p className="text-muted-foreground text-center mb-8 max-w-md text-sm">
               Your AI-powered assistant for building your family business.
             </p>
-
             <div className="w-full max-w-2xl">
-              <div className="rounded-xl border bg-card p-3">
-                {attachedFiles.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {attachedFiles.map((f, i) => (
-                      <Badge key={i} variant="secondary" className="gap-1 text-xs">
-                        <Paperclip className="h-3 w-3" />{f.name}
-                        <button onClick={() => setAttachedFiles(prev => prev.filter((_, j) => j !== i))}><X className="h-3 w-3" /></button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-                <Input
-                  placeholder="Message AI... (Shift+Enter for new line)"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  disabled={isLoading}
-                  className="border-0 shadow-none focus-visible:ring-0 text-sm mb-3"
-                />
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex gap-1 sm:gap-2 flex-wrap items-center">
-                    <input ref={chatFileRef} type="file" multiple className="hidden" onChange={handleChatFileAttach} />
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => chatFileRef.current?.click()}>
-                      <Paperclip className="h-3.5 w-3.5" />
-                    </Button>
-                    {PERSONAS.map((p) => (
-                      <Button key={p.id} variant={activePersona === p.id ? 'default' : 'outline'} size="sm" className="h-7 text-[10px] sm:text-xs rounded-full gap-1" onClick={() => switchPersona(p.id)} title={p.description}>
-                        <p.icon className="h-3 w-3" />
-                        <span className="hidden sm:inline">{p.label}</span>
-                      </Button>
-                    ))}
-                  </div>
-                  <Button onClick={() => sendMessage()} disabled={!input.trim() || isLoading} size="icon" className="h-8 w-8 rounded-full flex-shrink-0">
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+              {renderInputBar()}
             </div>
           </div>
         ) : (
@@ -283,92 +439,17 @@ export default function AIChat() {
             </ScrollArea>
 
             <div className="w-full max-w-2xl mx-auto px-4 pb-4">
-              <div className="rounded-xl border bg-card p-3">
-                {attachedFiles.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {attachedFiles.map((f, i) => (
-                      <span key={i} className="text-xs bg-muted rounded-full px-2 py-0.5 flex items-center gap-1">
-                        <Paperclip className="h-3 w-3" />{f.name}
-                        <button onClick={() => setAttachedFiles(prev => prev.filter((_, j) => j !== i))}><X className="h-3 w-3" /></button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <Input
-                  placeholder="Message AI..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  disabled={isLoading}
-                  className="border-0 shadow-none focus-visible:ring-0 text-sm mb-3"
-                />
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex gap-1 sm:gap-2 flex-wrap items-center">
-                    <input ref={chatFileRef} type="file" multiple className="hidden" onChange={handleChatFileAttach} />
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => chatFileRef.current?.click()}>
-                      <Paperclip className="h-3.5 w-3.5" />
-                    </Button>
-                    {PERSONAS.map((p) => (
-                      <Button key={p.id} variant={activePersona === p.id ? 'default' : 'outline'} size="sm" className="h-7 text-[10px] sm:text-xs rounded-full gap-1" onClick={() => switchPersona(p.id)} title={p.description}>
-                        <p.icon className="h-3 w-3" />
-                        <span className="hidden sm:inline">{p.label}</span>
-                      </Button>
-                    ))}
-                  </div>
-                  <Button onClick={() => sendMessage()} disabled={!input.trim() || isLoading} size="icon" className="h-8 w-8 rounded-full flex-shrink-0">
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+              {renderInputBar()}
             </div>
           </>
         )}
       </div>
 
-      {/* Settings Dialog */}
+      {/* Settings Dialog - Per Persona */}
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Project settings</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Project Settings</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <div>
-              <Label className="text-sm font-semibold">Project name</Label>
-              <Input defaultValue="TruHeirs AI" className="mt-1" />
-            </div>
-            <div>
-              <Label className="text-sm font-semibold">Instructions</Label>
-              <p className="text-xs text-muted-foreground mb-1">Set context and customize how AI responds.</p>
-              <Textarea value={instructions} onChange={e => setInstructions(e.target.value)} placeholder="You are a helpful assistant..." rows={4} />
-            </div>
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-sm font-semibold">Files</Label>
-                <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileUpload} />
-                <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => fileInputRef.current?.click()}>Add</Button>
-              </div>
-              {uploadedFiles.length === 0 ? (
-                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                  <Upload className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground">No files uploaded yet</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {uploadedFiles.map((f, i) => (
-                    <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-muted/50">
-                      <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm truncate">{f.name}</p>
-                        <p className="text-xs text-muted-foreground">{f.type || 'File'}</p>
-                      </div>
-                      <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setUploadedFiles(prev => prev.filter((_, j) => j !== i))}>
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
             <div>
               <Label className="text-sm font-semibold">Model</Label>
               <div className="space-y-1 mt-1">
@@ -386,6 +467,60 @@ export default function AIChat() {
                 ))}
               </div>
             </div>
+
+            <div>
+              <Label className="text-sm font-semibold mb-2 block">Persona Instructions & Files</Label>
+              <Tabs value={settingsTab} onValueChange={setSettingsTab}>
+                <TabsList className="w-full grid grid-cols-4">
+                  {PERSONAS.map(p => (
+                    <TabsTrigger key={p.id} value={p.id} className="text-xs gap-1">
+                      <p.icon className="h-3 w-3" />
+                      <span className="hidden sm:inline">{p.label}</span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+                {PERSONAS.map(p => (
+                  <TabsContent key={p.id} value={p.id} className="space-y-3 mt-3">
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{p.label} Instructions</Label>
+                      <p className="text-xs text-muted-foreground mb-1">Customize how this persona responds.</p>
+                      <Textarea
+                        value={personaSettings[p.id].instructions}
+                        onChange={e => updatePersonaInstructions(p.id, e.target.value)}
+                        placeholder={`Custom instructions for ${p.label}...`}
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <Label className="text-xs text-muted-foreground">{p.label} Files</Label>
+                        <input ref={settingsFileRef} type="file" multiple className="hidden" onChange={handleSettingsFileUpload} />
+                        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => { setSettingsTab(p.id); settingsFileRef.current?.click() }}>Add</Button>
+                      </div>
+                      {personaSettings[p.id].files.length === 0 ? (
+                        <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
+                          <Upload className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+                          <p className="text-xs text-muted-foreground">No files uploaded</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {personaSettings[p.id].files.map((f, i) => (
+                            <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-muted/50">
+                              <FileText className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                              <span className="text-xs truncate flex-1">{f.name}</span>
+                              <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => removeSettingsFile(p.id, i)}>
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </div>
+
             <Button className="w-full" onClick={() => { setSettingsOpen(false); toast({ title: 'Settings saved' }) }}>Save Settings</Button>
           </div>
         </DialogContent>

@@ -377,7 +377,7 @@ export default function WorkspaceCommunity() {
                       <div className="flex items-start gap-3">
                         <Avatar className="h-10 w-10 flex-shrink-0">
                           {post.author_avatar && <AvatarImage src={post.author_avatar} />}
-                          <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                          <AvatarFallback className="bg-secondary text-secondary-foreground text-sm font-semibold">
                             {getInitials(post.author_name)}
                           </AvatarFallback>
                         </Avatar>
@@ -394,16 +394,16 @@ export default function WorkspaceCommunity() {
                           )}
 
                           <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/50">
-                            <button
+                             <button
                               onClick={() => handleLike(post.id, post.is_liked)}
                               className={`flex items-center gap-1.5 text-sm transition-colors ${
-                                post.is_liked ? 'text-primary font-medium' : 'text-muted-foreground hover:text-foreground'
+                                post.is_liked ? 'text-secondary font-medium' : 'text-foreground/60 hover:text-foreground'
                               }`}
                             >
                               <ThumbsUp className={`h-4 w-4 ${post.is_liked ? 'fill-current' : ''}`} />
                               {post.likes_count > 0 && post.likes_count}
                             </button>
-                            <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                            <button className="flex items-center gap-1.5 text-sm text-foreground/60 hover:text-foreground transition-colors">
                               <MessageCircle className="h-4 w-4" />
                               {post.comments_count > 0 && post.comments_count}
                             </button>
