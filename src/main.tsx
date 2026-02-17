@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { MeetingsProvider } from "@/contexts/MeetingsContext";
 import { useZapierNotifications } from "@/hooks/useZapierNotifications";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AppLayout } from "@/components/layout/AppLayout";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
@@ -34,7 +35,6 @@ import CookiePolicy from "./pages/CookiePolicy";
 
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import { AIChat } from "@/components/dashboard/ai-chat";
-import { AnnouncementBanner } from "@/components/ui/announcement-banner";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
 
@@ -67,34 +67,41 @@ if (!viewportHeightInitialized) {
 // Initialize mobile services
 initializeMobileServices();
 
+/** Wrap a page in the authenticated sidebar layout */
+function WithLayout({ children }: { children: React.ReactNode }) {
+  return <AppLayout>{children}</AppLayout>
+}
+
 function AppWithNotifications() {
   useZapierNotifications()
   return (
     <>
-      <AnnouncementBanner />
       <Routes>
+        {/* Public routes - no sidebar */}
         <Route path="/" element={<Landing />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/auth" element={<Auth />} /> {/* Legacy redirect */}
+        <Route path="/auth" element={<Auth />} />
         <Route path="/thank-you" element={<ThankYou />} />
-        <Route path="/community" element={<Community />} />
-        <Route path="/courses" element={<Courses />} />
-        <Route path="/documents" element={<Documents />} />
-        <Route path="/family-roundtable" element={<Dashboard />} />
-        <Route path="/family-governance" element={<FamilyGovernance />} />
-        <Route path="/family-constitution/setup" element={<FamilyConstitutionSetup />} />
-        <Route path="/calendar" element={<Calendar />} />
-        <Route path="/members" element={<Members />} />
-        <Route path="/investments" element={<Investments />} />
-        <Route path="/profile-settings" element={<ProfileSettings />} />
-        <Route path="/tutorial-videos" element={<TutorialVideos />} />
-        <Route path="/help" element={<Help />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/contact-support" element={<ContactSupport />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
-        <Route path="/search" element={<Search />} />
+
+        {/* Authenticated routes - with sidebar */}
+        <Route path="/dashboard" element={<WithLayout><Dashboard /></WithLayout>} />
+        <Route path="/community" element={<WithLayout><Community /></WithLayout>} />
+        <Route path="/courses" element={<WithLayout><Courses /></WithLayout>} />
+        <Route path="/documents" element={<WithLayout><Documents /></WithLayout>} />
+        <Route path="/family-roundtable" element={<WithLayout><Dashboard /></WithLayout>} />
+        <Route path="/family-governance" element={<WithLayout><FamilyGovernance /></WithLayout>} />
+        <Route path="/family-constitution/setup" element={<WithLayout><FamilyConstitutionSetup /></WithLayout>} />
+        <Route path="/calendar" element={<WithLayout><Calendar /></WithLayout>} />
+        <Route path="/members" element={<WithLayout><Members /></WithLayout>} />
+        <Route path="/investments" element={<WithLayout><Investments /></WithLayout>} />
+        <Route path="/profile-settings" element={<WithLayout><ProfileSettings /></WithLayout>} />
+        <Route path="/tutorial-videos" element={<WithLayout><TutorialVideos /></WithLayout>} />
+        <Route path="/help" element={<WithLayout><Help /></WithLayout>} />
+        <Route path="/contact" element={<WithLayout><Contact /></WithLayout>} />
+        <Route path="/contact-support" element={<WithLayout><ContactSupport /></WithLayout>} />
+        <Route path="/search" element={<WithLayout><Search /></WithLayout>} />
         <Route path="*" element={<div>Page not found</div>} />
       </Routes>
       <MobileBottomNav />

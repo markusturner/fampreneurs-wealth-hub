@@ -1,0 +1,235 @@
+import { useState } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
+import { cn } from "@/lib/utils"
+import { useAuth } from "@/contexts/AuthContext"
+import { useUserRole } from "@/hooks/useUserRole"
+import {
+  Bot,
+  LayoutDashboard,
+  Calendar,
+  MessageSquare,
+  ChevronDown,
+  ChevronRight,
+  BookOpen,
+  Users,
+  Home,
+  FileText,
+  Shield,
+  Lock,
+  Settings,
+  LogOut,
+  Bell,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { NotificationBell } from "@/components/dashboard/notification-bell"
+import { ThemeToggle } from "@/components/theme-toggle"
+
+interface NavItemProps {
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  href?: string
+  active?: boolean
+  locked?: boolean
+  onClick?: () => void
+  children?: React.ReactNode
+  defaultOpen?: boolean
+}
+
+function NavItem({ label, icon: Icon, href, active, locked, onClick, children, defaultOpen = false }: NavItemProps) {
+  const [open, setOpen] = useState(defaultOpen)
+  const navigate = useNavigate()
+  const hasChildren = !!children
+
+  const handleClick = () => {
+    if (locked) return
+    if (hasChildren) {
+      setOpen(!open)
+    } else if (href) {
+      navigate(href)
+    } else if (onClick) {
+      onClick()
+    }
+  }
+
+  return (
+    <div>
+      <button
+        onClick={handleClick}
+        className={cn(
+          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200",
+          "hover:bg-sidebar-accent group",
+          active && !hasChildren && "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
+          locked && "opacity-50 cursor-not-allowed"
+        )}
+      >
+        <Icon className={cn("h-4 w-4 flex-shrink-0", active && !hasChildren && "text-[hsl(var(--secondary))]")} />
+        <span className="flex-1 text-left truncate">{label}</span>
+        {locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
+        {hasChildren && !locked && (
+          <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
+        )}
+      </button>
+      {hasChildren && open && !locked && (
+        <div className="ml-4 pl-3 border-l border-sidebar-border space-y-0.5 mt-0.5">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function SubNavItem({ label, href, active, onClick }: { label: string; href?: string; active?: boolean; onClick?: () => void }) {
+  const navigate = useNavigate()
+
+  return (
+    <button
+      onClick={() => {
+        if (href) navigate(href)
+        else if (onClick) onClick()
+      }}
+      className={cn(
+        "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
+        "hover:bg-sidebar-accent",
+        active && "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+      )}
+    >
+      {label}
+    </button>
+  )
+}
+
+export function AppSidebar({ className }: { className?: string }) {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { profile, signOut } = useAuth()
+  const { isAdmin } = useUserRole()
+  const currentPath = location.pathname
+
+  const isActive = (path: string) => currentPath === path
+
+  // Check if user has TruHeirs access (paid user) - for now check subscription or admin
+  // This will be enhanced when Stripe is integrated
+  const hasTruHeirsAccess = true // TODO: check subscription status
+
+  const getInitials = () => {
+    if (profile?.first_name && profile?.last_name) {
+      return `${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`
+    }
+    if (profile?.display_name) {
+      const names = profile.display_name.split(' ')
+      return names.length > 1 ? `${names[0].charAt(0)}${names[names.length - 1].charAt(0)}` : names[0].charAt(0)
+    }
+    return "U"
+  }
+
+  return (
+    <aside className={cn("flex flex-col w-64 border-r border-sidebar-border bg-sidebar-background h-screen sticky top-0", className)}>
+      {/* Logo & Brand */}
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-sidebar-border">
+        <img
+          src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png"
+          alt="TruHeirs Logo"
+          className="w-10 h-10 object-contain"
+        />
+        <span className="font-montserrat font-bold text-lg text-sidebar-foreground">TruHeirs</span>
+      </div>
+
+      {/* AI Chat Button */}
+      <div className="px-3 pt-4 pb-2">
+        <Button
+          variant="outline"
+          className="w-full justify-start gap-2 border-dashed border-[hsl(var(--secondary))]/50 hover:bg-[hsl(var(--secondary))]/10 text-sidebar-foreground"
+          onClick={() => window.dispatchEvent(new Event('ai-chat:open'))}
+        >
+          <Bot className="h-4 w-4 text-[hsl(var(--secondary))]" />
+          AI Chat
+        </Button>
+      </div>
+
+      <ScrollArea className="flex-1 px-3 py-2">
+        <div className="space-y-1">
+          {/* Top-level items */}
+          <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} />
+          <NavItem label="Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} />
+        </div>
+
+        <Separator className="my-4" />
+
+        {/* WORKSPACE */}
+        <div className="mb-1">
+          <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Workspace
+          </p>
+        </div>
+        <div className="space-y-0.5">
+          <NavItem label="Community" icon={MessageSquare} defaultOpen={currentPath.includes("/community")}>
+            <SubNavItem label="Family Business University" href="/community?program=fbu" active={currentPath === "/community" && location.search.includes("program=fbu")} />
+            <SubNavItem label="The Family Vault" href="/community?program=tfv" active={currentPath === "/community" && location.search.includes("program=tfv")} />
+            <SubNavItem label="Family Business Accelerator" href="/community?program=tfba" active={currentPath === "/community" && location.search.includes("program=tfba")} />
+          </NavItem>
+          <NavItem label="Classroom" icon={BookOpen} href="/courses" active={isActive("/courses")} />
+          <NavItem label="Members" icon={Users} href="/members" active={isActive("/members")} />
+        </div>
+
+        <Separator className="my-4" />
+
+        {/* TRUHEIRS */}
+        <div className="mb-1">
+          <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            TruHeirs
+          </p>
+        </div>
+        <div className="space-y-0.5">
+          <NavItem label="Family Office" icon={Home} href="/community" active={isActive("/community") && !location.search.includes("program=")} locked={!hasTruHeirsAccess} />
+          <NavItem label="Family Constitution" icon={FileText} href="/documents" active={isActive("/documents")} locked={!hasTruHeirsAccess} />
+          <NavItem label="Family Calendar" icon={Calendar} href="/family-governance" active={isActive("/family-governance")} locked={!hasTruHeirsAccess} />
+          <NavItem label="Family Members" icon={Users} href="/investments" active={isActive("/investments")} locked={!hasTruHeirsAccess} />
+        </div>
+
+        {/* ADMIN SETTINGS - only for admins */}
+        {isAdmin && (
+          <>
+            <Separator className="my-4" />
+            <div className="mb-1">
+              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Admin
+              </p>
+            </div>
+            <div className="space-y-0.5">
+              <NavItem label="Admin Settings" icon={Shield} href="/profile-settings?tab=admin" active={isActive("/profile-settings") && location.search.includes("tab=admin")} />
+            </div>
+          </>
+        )}
+      </ScrollArea>
+
+      {/* Bottom section: User profile & actions */}
+      <div className="border-t border-sidebar-border p-3 space-y-2">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <NotificationBell />
+        </div>
+        <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-sidebar-accent cursor-pointer" onClick={() => navigate("/profile-settings")}>
+          <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-sidebar-border">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
+                {getInitials()}
+              </div>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate text-sidebar-foreground">{profile?.display_name || "User"}</p>
+            <p className="text-xs text-muted-foreground truncate">{profile?.family_role || "Member"}</p>
+          </div>
+          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => { e.stopPropagation(); signOut() }}>
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </aside>
+  )
+}
