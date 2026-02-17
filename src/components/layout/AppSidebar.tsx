@@ -3,27 +3,24 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
 import { useUserRole } from "@/hooks/useUserRole"
+import { useSubscription } from "@/hooks/useSubscription"
 import {
   Bot,
   LayoutDashboard,
   Calendar,
   MessageSquare,
   ChevronDown,
-  ChevronRight,
   BookOpen,
   Users,
   Home,
   FileText,
   Shield,
   Lock,
-  Settings,
   LogOut,
-  Bell,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { ThemeToggle } from "@/components/theme-toggle"
 
@@ -106,13 +103,13 @@ export function AppSidebar({ className }: { className?: string }) {
   const navigate = useNavigate()
   const { profile, signOut } = useAuth()
   const { isAdmin } = useUserRole()
+  const { subscriptionStatus } = useSubscription()
   const currentPath = location.pathname
 
   const isActive = (path: string) => currentPath === path
 
-  // Check if user has TruHeirs access (paid user) - for now check subscription or admin
-  // This will be enhanced when Stripe is integrated
-  const hasTruHeirsAccess = true // TODO: check subscription status
+  // TruHeirs is locked unless user has an active subscription
+  const hasTruHeirsAccess = subscriptionStatus.subscribed || subscriptionStatus.loading
 
   const getInitials = () => {
     if (profile?.first_name && profile?.last_name) {
@@ -129,11 +126,7 @@ export function AppSidebar({ className }: { className?: string }) {
     <aside className={cn("flex flex-col w-64 border-r border-sidebar-border bg-sidebar-background h-screen sticky top-0", className)}>
       {/* Logo & Brand */}
       <div className="flex items-center gap-3 px-5 py-4 border-b border-sidebar-border">
-        <img
-          src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png"
-          alt="TruHeirs Logo"
-          className="w-10 h-10 object-contain"
-        />
+        <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs Logo" className="w-10 h-10 object-contain" />
         <span className="font-montserrat font-bold text-lg text-sidebar-foreground">TruHeirs</span>
       </div>
 
@@ -151,7 +144,6 @@ export function AppSidebar({ className }: { className?: string }) {
 
       <ScrollArea className="flex-1 px-3 py-2">
         <div className="space-y-1">
-          {/* Top-level items */}
           <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} />
           <NavItem label="Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} />
         </div>
@@ -160,9 +152,7 @@ export function AppSidebar({ className }: { className?: string }) {
 
         {/* WORKSPACE */}
         <div className="mb-1">
-          <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Workspace
-          </p>
+          <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Workspace</p>
         </div>
         <div className="space-y-0.5">
           <NavItem label="Community" icon={MessageSquare} defaultOpen={currentPath.includes("/community")}>
@@ -176,11 +166,9 @@ export function AppSidebar({ className }: { className?: string }) {
 
         <Separator className="my-4" />
 
-        {/* TRUHEIRS */}
+        {/* TRUHEIRS - locked for non-paying users */}
         <div className="mb-1">
-          <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            TruHeirs
-          </p>
+          <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">TruHeirs</p>
         </div>
         <div className="space-y-0.5">
           <NavItem label="Family Office" icon={Home} href="/community" active={isActive("/community") && !location.search.includes("program=")} locked={!hasTruHeirsAccess} />
@@ -189,14 +177,12 @@ export function AppSidebar({ className }: { className?: string }) {
           <NavItem label="Family Members" icon={Users} href="/investments" active={isActive("/investments")} locked={!hasTruHeirsAccess} />
         </div>
 
-        {/* ADMIN SETTINGS - only for admins */}
+        {/* ADMIN */}
         {isAdmin && (
           <>
             <Separator className="my-4" />
             <div className="mb-1">
-              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                Admin
-              </p>
+              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</p>
             </div>
             <div className="space-y-0.5">
               <NavItem label="Admin Settings" icon={Shield} href="/profile-settings?tab=admin" active={isActive("/profile-settings") && location.search.includes("tab=admin")} />
@@ -205,7 +191,7 @@ export function AppSidebar({ className }: { className?: string }) {
         )}
       </ScrollArea>
 
-      {/* Bottom section: User profile & actions */}
+      {/* Bottom section */}
       <div className="border-t border-sidebar-border p-3 space-y-2">
         <div className="flex items-center gap-2">
           <ThemeToggle />
