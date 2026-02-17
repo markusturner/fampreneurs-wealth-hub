@@ -4,7 +4,7 @@ import { AdminUserManagement } from '@/components/dashboard/admin-user-managemen
 import { AdminMassNotification } from '@/components/dashboard/admin-mass-notification'
 import { AdminAllUsersManagement } from '@/components/dashboard/admin-all-users-management'
 import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
-import { AdminTutorialVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
+import { AdminTutorialVideoManager, AdminUpgradeVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
 import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-overview'
 import { AdminGrowthCharts } from '@/components/dashboard/admin-growth-charts'
 import { AdminActivityHeatmap } from '@/components/dashboard/admin-activity-heatmap'
@@ -106,8 +106,9 @@ export function AdminSettings() {
         )}
 
         {(isAdmin || isOwner) && (
-          <TabsContent value="tutorial">
+          <TabsContent value="tutorial" className="space-y-6">
             <AdminTutorialVideoManager />
+            <AdminUpgradeVideoManager />
           </TabsContent>
         )}
 

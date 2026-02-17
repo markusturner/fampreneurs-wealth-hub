@@ -181,7 +181,7 @@ export function AppSidebar({ className }: { className?: string }) {
       <div className="px-3 pt-2 pb-2">
         <Button
           variant="outline"
-          className="w-full justify-start gap-2 border-dashed border-[#ffb500]/50 hover:bg-[#ffb500]/10 text-sidebar-foreground"
+          className="w-full justify-start gap-2 border-dashed border-[#ffb500]/50 hover:bg-[#ffb500]/10 text-sidebar-foreground hover:text-sidebar-foreground"
           onClick={() => navigate('/ai-chat')}
         >
           <Bot className="h-4 w-4 text-[#ffb500]" />
@@ -218,7 +218,7 @@ export function AppSidebar({ className }: { className?: string }) {
         </div>
 
         {/* ADMIN */}
-        {isAdmin && (
+        {(isAdmin || isOwner) && (
           <>
             <div className="mb-1 mt-4">
               <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</p>
@@ -232,7 +232,7 @@ export function AppSidebar({ className }: { className?: string }) {
 
       {/* Bottom section */}
       <div className="border-t border-[#290a52] p-3 space-y-2">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-evenly">
           <Popover open={searchOpen} onOpenChange={setSearchOpen}>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[#ffb500]/20" title="Search">
