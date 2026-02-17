@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { Plus, BookOpen } from 'lucide-react'
 import { AddCourseDialog } from '@/components/classroom/AddCourseDialog'
+import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 
 interface Course {
   id: string
@@ -21,6 +22,7 @@ export default function Classroom() {
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddCourse, setShowAddCourse] = useState(false)
+  const { isAdminOrOwner } = useIsAdminOrOwner()
 
   const fetchCourses = async () => {
     try {
@@ -109,15 +111,17 @@ export default function Classroom() {
             </Card>
           ))}
 
-          <Card
-            className="overflow-hidden border-dashed cursor-pointer hover:border-primary/50 transition-colors"
-            onClick={() => setShowAddCourse(true)}
-          >
-            <CardContent className="h-full flex flex-col items-center justify-center p-8 min-h-[280px]">
-              <Plus className="h-8 w-8 text-muted-foreground mb-2" />
-              <span className="text-sm text-muted-foreground">New course</span>
-            </CardContent>
-          </Card>
+          {isAdminOrOwner && (
+            <Card
+              className="overflow-hidden border-dashed cursor-pointer hover:border-primary/50 transition-colors"
+              onClick={() => setShowAddCourse(true)}
+            >
+              <CardContent className="h-full flex flex-col items-center justify-center p-8 min-h-[280px]">
+                <Plus className="h-8 w-8 text-muted-foreground mb-2" />
+                <span className="text-sm text-muted-foreground">New course</span>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 

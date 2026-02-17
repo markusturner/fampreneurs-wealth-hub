@@ -4,7 +4,9 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
 import { useUserRole } from "@/hooks/useUserRole"
+import { useOwnerRole } from "@/hooks/useOwnerRole"
 import { useSubscription } from "@/hooks/useSubscription"
+import { PricingPopup } from "@/components/dashboard/PricingPopup"
 import {
   Bot,
   LayoutDashboard,
@@ -43,7 +45,10 @@ function NavItem({ label, icon: Icon, href, active, locked, onClick, children, d
   const hasChildren = !!children
 
   const handleClick = () => {
-    if (locked) return
+    if (locked) {
+      onClick?.()
+      return
+    }
     if (hasChildren) {
       setOpen(!open)
     } else if (href) {
@@ -103,15 +108,22 @@ function SubNavItem({ label, href, active, onClick }: { label: string; href?: st
 export function AppSidebar({ className }: { className?: string }) {
   const location = useLocation()
   const navigate = useNavigate()
-  const { profile, signOut } = useAuth()
+  const { user, profile, signOut } = useAuth()
   const { isAdmin } = useUserRole()
+  const { isOwner } = useOwnerRole(user?.id ?? null)
   const { subscriptionStatus } = useSubscription()
   const currentPath = location.pathname
   const [tutorialVideoOpen, setTutorialVideoOpen] = useState(false)
+  const [pricingOpen, setPricingOpen] = useState(false)
 
   const isActive = (path: string) => currentPath === path
 
-  const hasTruHeirsAccess = subscriptionStatus.subscribed || subscriptionStatus.loading
+  // Owner and admin always have access
+  const hasTruHeirsAccess = isAdmin || isOwner || subscriptionStatus.subscribed || subscriptionStatus.loading
+
+  const handleLockedClick = () => {
+    setPricingOpen(true)
+  }
 
   const getInitials = () => {
     if (profile?.first_name && profile?.last_name) {
@@ -165,11 +177,11 @@ export function AppSidebar({ className }: { className?: string }) {
           <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">TruHeirs</p>
         </div>
         <div className="space-y-0.5">
-          <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} locked={!hasTruHeirsAccess} />
-          <NavItem label="Family Office" icon={Home} href="/community" active={isActive("/community") && !location.search.includes("program=")} locked={!hasTruHeirsAccess} />
-          <NavItem label="Family Constitution" icon={FileText} href="/documents" active={isActive("/documents")} locked={!hasTruHeirsAccess} />
-          <NavItem label="Family Calendar" icon={Calendar} href="/family-governance" active={isActive("/family-governance")} locked={!hasTruHeirsAccess} />
-          <NavItem label="Family Members" icon={Users} href="/investments" active={isActive("/investments")} locked={!hasTruHeirsAccess} />
+          <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
+          <NavItem label="Family Office" icon={Home} href="/community" active={isActive("/community") && !location.search.includes("program=")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
+          <NavItem label="Family Constitution" icon={FileText} href="/documents" active={isActive("/documents")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
+          <NavItem label="Family Calendar" icon={Calendar} href="/family-governance" active={isActive("/family-governance")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
+          <NavItem label="Family Members" icon={Users} href="/investments" active={isActive("/investments")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
         </div>
 
         {/* ADMIN */}
@@ -187,31 +199,17 @@ export function AppSidebar({ className }: { className?: string }) {
 
       {/* Bottom section */}
       <div className="border-t border-[#290a52] p-3 space-y-2">
-        {/* Search, Video, Notifications row */}
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:bg-[#ffb500]/20"
-            onClick={() => navigate('/search')}
-            title="Search"
-          >
+          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[#ffb500]/20" onClick={() => navigate('/search')} title="Search">
             <Search className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:bg-[#ffb500]/20"
-            onClick={() => setTutorialVideoOpen(true)}
-            title="Watch Tutorial"
-          >
+          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[#ffb500]/20" onClick={() => setTutorialVideoOpen(true)} title="Watch Tutorial">
             <Video className="h-4 w-4" />
           </Button>
           <NotificationBell />
           <ThemeToggle />
         </div>
 
-        {/* Profile row */}
         <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-[#ffb500]/20 cursor-pointer" onClick={() => navigate("/profile-settings")}>
           <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#290a52]">
             {profile?.avatar_url ? (
@@ -228,7 +226,6 @@ export function AppSidebar({ className }: { className?: string }) {
           </div>
         </div>
 
-        {/* Separate logout */}
         <Button
           variant="ghost"
           className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -249,6 +246,9 @@ export function AppSidebar({ className }: { className?: string }) {
           userId={profile.user_id}
         />
       )}
+
+      {/* Pricing Popup */}
+      <PricingPopup open={pricingOpen} onOpenChange={setPricingOpen} />
     </aside>
   )
 }
