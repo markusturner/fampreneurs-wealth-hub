@@ -101,7 +101,7 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
       })
       if (error) throw error
       if (data.error) throw new Error(data.error)
-      onGenerated(data.document)
+      onGenerated(data.document_url || data.document)
       toast({ title: "Trust Document Generated", description: "Your family trust document has been created successfully." })
     } catch (err: any) {
       console.error("Error generating trust:", err)
