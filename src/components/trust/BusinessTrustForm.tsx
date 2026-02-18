@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
-import { FileText, Loader2, Home } from "lucide-react"
+import { FileText, Loader2, Building2 } from "lucide-react"
 
 const US_STATES = [
   "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia",
@@ -19,15 +19,12 @@ const US_STATES = [
   "South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"
 ]
 
-const PERCENTAGES = ["10%","20%","30%","40%","50%","60%","70%","80%","90%","100%"]
-
-interface FamilyTrustFormProps {
-  trustType?: string
+interface BusinessTrustFormProps {
   onBack: () => void
   onGenerated: (doc: string) => void
 }
 
-export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustFormProps) {
+export default function BusinessTrustForm({ onBack, onGenerated }: BusinessTrustFormProps) {
   const { toast } = useToast()
   const [generating, setGenerating] = useState(false)
 
@@ -37,7 +34,8 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
     creation_date: "",
     creation_time: "",
     creation_ampm: "AM",
-    trust_name: "",
+    business_trust_name: "",
+    family_trust_name_beneficiary: "",
     ein: "",
     grantor_name: "",
     trustee_name: "",
@@ -46,28 +44,21 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
     trust_suite: "",
     trust_city: "",
     trust_state: "",
-    trust_county: "",
     trust_zip: "",
     max_board_trustees: "",
-    beneficiary_living_expenses_pct: "",
-    beneficiary_investments_pct: "",
-    max_annual_gift: "",
-    educational_requirements: "",
-    educational_requirements_summary: "",
-    beneficiaries_names: "",
-    beneficial_interest_details: "",
+    descendants: "",
     notarizing_date: "",
     notarizing_state: "",
     notarizing_county: "",
     tcu_dollar_amount: "",
     tcu_allocation: "",
     assets_list: "",
-    beneficiaries_dob: "",
+    business_trust_name_and_date: "",
     beneficiary_asset_assignment: "",
     first_successor_trustee: "",
     first_successor_protector: "",
-    more_successor_trustees: "No",
-    more_successor_protectors: "No",
+    more_trustees: "No",
+    more_trust_protectors: "No",
   })
 
   const handleChange = (field: string, value: string) => {
@@ -76,14 +67,13 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
 
   const handleGenerate = async () => {
     const required = [
-      "full_name", "creation_date", "creation_time", "trust_name", "ein",
-      "grantor_name", "trustee_name", "trust_protector_name", "trust_street",
-      "trust_suite", "trust_city", "trust_state", "trust_county", "trust_zip",
-      "max_board_trustees", "beneficiary_living_expenses_pct", "beneficiary_investments_pct",
-      "max_annual_gift", "educational_requirements", "educational_requirements_summary",
-      "beneficiaries_names", "beneficial_interest_details", "notarizing_date",
-      "notarizing_state", "notarizing_county", "tcu_dollar_amount", "tcu_allocation",
-      "assets_list", "beneficiaries_dob", "beneficiary_asset_assignment",
+      "full_name", "creation_date", "creation_time", "business_trust_name",
+      "family_trust_name_beneficiary", "ein", "grantor_name", "trustee_name",
+      "trust_protector_name", "trust_street", "trust_suite", "trust_city",
+      "trust_state", "trust_zip", "max_board_trustees", "descendants",
+      "notarizing_date", "notarizing_state", "notarizing_county",
+      "tcu_dollar_amount", "tcu_allocation", "assets_list",
+      "business_trust_name_and_date", "beneficiary_asset_assignment",
       "first_successor_trustee"
     ]
     const missing = required.filter(f => !form[f as keyof typeof form])
@@ -95,12 +85,12 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
     setGenerating(true)
     try {
       const { data, error } = await supabase.functions.invoke("generate-trust-document", {
-        body: { trust_type: "family", form_data: form },
+        body: { trust_type: "business", form_data: form },
       })
       if (error) throw error
       if (data.error) throw new Error(data.error)
       onGenerated(data.document)
-      toast({ title: "Trust Document Generated", description: "Your family trust document has been created successfully." })
+      toast({ title: "Trust Document Generated", description: "Your business trust document has been created successfully." })
     } catch (err: any) {
       console.error("Error generating trust:", err)
       toast({ title: "Generation Failed", description: err.message || "Something went wrong.", variant: "destructive" })
@@ -113,16 +103,16 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center gap-2">
-          <Home className="h-5 w-5 text-accent" />
-          Family Trust Form
+          <Building2 className="h-5 w-5 text-accent" />
+          Business Trust Form
         </h2>
         <Button variant="ghost" onClick={onBack}>← Back</Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Family Trust Creation Form</CardTitle>
-          <CardDescription>Fill in the details for your Private Family Trust. Fields marked * are required.</CardDescription>
+          <CardTitle className="text-base">Business Trust Creation Form</CardTitle>
+          <CardDescription>Fill in the details for your Private Business Trust. Fields marked * are required.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Contact Info */}
@@ -142,12 +132,12 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
 
           <Separator />
 
-          {/* Trust Creation Date & Time */}
+          {/* Creation Date & Time */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Trust Creation Date & Time</h3>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
-                <Label>Family Trust Creation Date *</Label>
+                <Label>Business Trust Creation Date *</Label>
                 <Input type="date" value={form.creation_date} onChange={e => handleChange("creation_date", e.target.value)} />
               </div>
               <div className="space-y-2">
@@ -173,12 +163,17 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Trust Identity</h3>
             <div className="space-y-2">
-              <Label>Private Family Trust Name *</Label>
-              <p className="text-xs text-muted-foreground">Please do not put your given name or put the word "trust" in your family trust's name.</p>
-              <Input placeholder="e.g. The Legacy Foundation" value={form.trust_name} onChange={e => handleChange("trust_name", e.target.value)} />
+              <Label>Private Business Trust Name *</Label>
+              <p className="text-xs text-muted-foreground">Please do not put your given name or put the word "trust" in your business trust's name.</p>
+              <Input placeholder="e.g. The Prosperity Group" value={form.business_trust_name} onChange={e => handleChange("business_trust_name", e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Family Trust EIN Number *</Label>
+              <Label>Private Family Trust Name (Beneficiary) *</Label>
+              <p className="text-xs text-muted-foreground">Please do not put your given name or put the word "trust" in your family trust's name.</p>
+              <Input placeholder="e.g. The Legacy Foundation" value={form.family_trust_name_beneficiary} onChange={e => handleChange("family_trust_name_beneficiary", e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Business Trust EIN Number *</Label>
               <Input placeholder="XX-XXXXXXX" value={form.ein} onChange={e => handleChange("ein", e.target.value)} />
             </div>
           </div>
@@ -234,10 +229,6 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>County *</Label>
-                <Input placeholder="County name" value={form.trust_county} onChange={e => handleChange("trust_county", e.target.value)} />
-              </div>
-              <div className="space-y-2">
                 <Label>ZIP Code *</Label>
                 <Input placeholder="00000" value={form.trust_zip} onChange={e => handleChange("trust_zip", e.target.value)} />
               </div>
@@ -246,9 +237,9 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
 
           <Separator />
 
-          {/* Board & Allocation */}
+          {/* Board & Descendants */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Board & Allocation</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Board & Descendants</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Max Board of Trustees *</Label>
@@ -264,66 +255,10 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label>Max Annual Gift to Beneficiaries (USD) *</Label>
-                <Input placeholder="e.g. $10,000" value={form.max_annual_gift} onChange={e => handleChange("max_annual_gift", e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Beneficiary Living Expenses % *</Label>
-                <Select value={form.beneficiary_living_expenses_pct} onValueChange={v => handleChange("beneficiary_living_expenses_pct", v)}>
-                  <SelectTrigger><SelectValue placeholder="Choose %" /></SelectTrigger>
-                  <SelectContent>
-                    {PERCENTAGES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Beneficiary Investments % *</Label>
-                <Select value={form.beneficiary_investments_pct} onValueChange={v => handleChange("beneficiary_investments_pct", v)}>
-                  <SelectTrigger><SelectValue placeholder="Choose %" /></SelectTrigger>
-                  <SelectContent>
-                    {PERCENTAGES.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Educational Requirements */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Educational Requirements</h3>
-            <div className="space-y-2">
-              <Label>Educational Requirements for Beneficiaries *</Label>
-              <p className="text-xs text-muted-foreground">Be very descriptive about what is required for beneficiaries to participate in family ventures.</p>
-              <Textarea rows={4} placeholder="Describe educational requirements..." value={form.educational_requirements} onChange={e => handleChange("educational_requirements", e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>One Sentence Summary of Educational Requirements *</Label>
-              <Input placeholder="Brief summary..." value={form.educational_requirements_summary} onChange={e => handleChange("educational_requirements_summary", e.target.value)} />
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Beneficiaries */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Beneficiaries</h3>
-            <div className="space-y-2">
-              <Label>Beneficiaries Full First and Last Name(s) *</Label>
-              <Textarea rows={3} placeholder="List all beneficiary names..." value={form.beneficiaries_names} onChange={e => handleChange("beneficiaries_names", e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Beneficial Interest of Each Beneficiary *</Label>
-              <p className="text-xs text-muted-foreground">
-                For each beneficiary include: Full Name, Full Address, Number of Units Held, Type of Units, Details of Unit Certificate, Unit Issuance Date, Unit Holder Cession Date.
-              </p>
-              <Textarea rows={6} placeholder="Unit Certificate Details for each beneficiary..." value={form.beneficial_interest_details} onChange={e => handleChange("beneficial_interest_details", e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>All Beneficiaries and their Date of Birth *</Label>
-              <Textarea rows={3} placeholder="Name - DOB..." value={form.beneficiaries_dob} onChange={e => handleChange("beneficiaries_dob", e.target.value)} />
+              <Label>Descendants of the Trust (First and Last Name) *</Label>
+              <Textarea rows={3} placeholder="List all descendants..." value={form.descendants} onChange={e => handleChange("descendants", e.target.value)} />
             </div>
           </div>
 
@@ -334,7 +269,7 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Notarization</h3>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
-                <Label>Family Trust Notarizing Date *</Label>
+                <Label>Business Trust Notarizing Date *</Label>
                 <Input type="date" value={form.notarizing_date} onChange={e => handleChange("notarizing_date", e.target.value)} />
               </div>
               <div className="space-y-2">
@@ -363,17 +298,21 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
               <Input placeholder="e.g. $1.00" value={form.tcu_dollar_amount} onChange={e => handleChange("tcu_dollar_amount", e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>How are you allocating Trust Certificate Units? *</Label>
-              <p className="text-xs text-muted-foreground">e.g. 50 TCU to John Smith of the T.D. Family Legacy</p>
-              <Textarea rows={4} placeholder="List TCU allocations..." value={form.tcu_allocation} onChange={e => handleChange("tcu_allocation", e.target.value)} />
+              <Label>How are you allocating Trust Certificate Units to the Business Trust? *</Label>
+              <p className="text-xs text-muted-foreground">e.g. 100 TCU to the J.D Family Legacy</p>
+              <Textarea rows={3} placeholder="List TCU allocations..." value={form.tcu_allocation} onChange={e => handleChange("tcu_allocation", e.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>Assets Passing Down to Beneficiaries *</Label>
+              <Label>Assets Passing Down to Beneficiaries (Business Trust) *</Label>
               <Textarea rows={4} placeholder="List all assets..." value={form.assets_list} onChange={e => handleChange("assets_list", e.target.value)} />
             </div>
             <div className="space-y-2">
+              <Label>Business Trust Name and Date Created *</Label>
+              <Input placeholder="Name and date" value={form.business_trust_name_and_date} onChange={e => handleChange("business_trust_name_and_date", e.target.value)} />
+            </div>
+            <div className="space-y-2">
               <Label>Which Beneficiary Gets Which Asset? *</Label>
-              <p className="text-xs text-muted-foreground">e.g. 1234 Main Street, Atlanta, GA 30331 - John Smith</p>
+              <p className="text-xs text-muted-foreground">e.g. 1234 Main Street, Atlanta, GA 30331 - J.D. Family Legacy</p>
               <Textarea rows={4} placeholder="List asset assignments..." value={form.beneficiary_asset_assignment} onChange={e => handleChange("beneficiary_asset_assignment", e.target.value)} />
             </div>
           </div>
@@ -395,28 +334,28 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label>More than 1 Successor Trustee? *</Label>
-                <RadioGroup value={form.more_successor_trustees} onValueChange={v => handleChange("more_successor_trustees", v)} className="flex gap-4 pt-1">
+                <Label>More than 1 Trustee? *</Label>
+                <RadioGroup value={form.more_trustees} onValueChange={v => handleChange("more_trustees", v)} className="flex gap-4 pt-1">
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Yes" id="mst-yes" />
-                    <Label htmlFor="mst-yes" className="font-normal">Yes</Label>
+                    <RadioGroupItem value="Yes" id="bt-yes" />
+                    <Label htmlFor="bt-yes" className="font-normal">Yes</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="No" id="mst-no" />
-                    <Label htmlFor="mst-no" className="font-normal">No</Label>
+                    <RadioGroupItem value="No" id="bt-no" />
+                    <Label htmlFor="bt-no" className="font-normal">No</Label>
                   </div>
                 </RadioGroup>
               </div>
               <div className="space-y-2">
-                <Label>More than 1 Successor Trust Protector? *</Label>
-                <RadioGroup value={form.more_successor_protectors} onValueChange={v => handleChange("more_successor_protectors", v)} className="flex gap-4 pt-1">
+                <Label>More than 1 Trust Protector? *</Label>
+                <RadioGroup value={form.more_trust_protectors} onValueChange={v => handleChange("more_trust_protectors", v)} className="flex gap-4 pt-1">
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="Yes" id="msp-yes" />
-                    <Label htmlFor="msp-yes" className="font-normal">Yes</Label>
+                    <RadioGroupItem value="Yes" id="btp-yes" />
+                    <Label htmlFor="btp-yes" className="font-normal">Yes</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="No" id="msp-no" />
-                    <Label htmlFor="msp-no" className="font-normal">No</Label>
+                    <RadioGroupItem value="No" id="btp-no" />
+                    <Label htmlFor="btp-no" className="font-normal">No</Label>
                   </div>
                 </RadioGroup>
               </div>
@@ -431,12 +370,12 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
             {generating ? (
               <>
                 <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                Generating Family Trust Document...
+                Generating Business Trust Document...
               </>
             ) : (
               <>
                 <FileText className="h-5 w-5 mr-2" />
-                Generate Family Trust Document
+                Generate Business Trust Document
               </>
             )}
           </Button>
