@@ -6,9 +6,15 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { ArrowLeft, FileText, Loader2, Eye, RefreshCw } from "lucide-react"
+import { ArrowLeft, FileText, Loader2, Eye, RefreshCw, AlertCircle } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
 
@@ -26,36 +32,70 @@ export default function TrustFormSubmissions() {
   const navigate = useNavigate()
   const { toast } = useToast()
   const [submissions, setSubmissions] = useState<Record<string, SheetRow[]>>({})
+  const [dbSubmissions, setDbSubmissions] = useState<Record<string, any[]>>({})
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [selectedRow, setSelectedRow] = useState<{ type: string; row: SheetRow } | null>(null)
   const [activeTab, setActiveTab] = useState("business")
+  const [sheetError, setSheetError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isAdminOrOwner) fetchSheetData()
+    if (isAdminOrOwner) {
+      fetchAllData()
+    }
   }, [isAdminOrOwner])
 
-  const fetchSheetData = async (isRefresh = false) => {
+  const fetchAllData = async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true)
     else setLoading(true)
+    setSheetError(null)
+
+    // Fetch both sheet data and DB submissions in parallel
+    await Promise.all([fetchSheetData(isRefresh), fetchDbSubmissions()])
+
+    setLoading(false)
+    setRefreshing(false)
+  }
+
+  const fetchDbSubmissions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('trust_submissions' as any)
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (!error && data) {
+        const grouped: Record<string, any[]> = { business: [], ministry: [], family: [] }
+        ;(data as any[]).forEach((row: any) => {
+          const type = row.trust_type?.toLowerCase() || 'business'
+          if (grouped[type]) grouped[type].push(row)
+        })
+        setDbSubmissions(grouped)
+      }
+    } catch {
+      // Table may not exist yet - that's ok
+    }
+  }
+
+  const fetchSheetData = async (isRefresh = false) => {
     try {
       const { data, error } = await supabase.functions.invoke("fetch-trust-sheets")
       if (error) throw error
+      if (data?.error) {
+        setSheetError(data.error)
+        return
+      }
       setSubmissions(data?.submissions || {})
       if (isRefresh) {
         toast({ title: "Synced", description: "Trust form submissions refreshed from Google Sheets." })
       }
     } catch (err: any) {
       console.error("Error fetching trust sheets:", err)
-      toast({ title: "Sync Failed", description: err.message || "Could not fetch sheet data.", variant: "destructive" })
-    } finally {
-      setLoading(false)
-      setRefreshing(false)
+      setSheetError(err.message || "Could not fetch sheet data.")
     }
   }
 
   const getTimestamp = (row: SheetRow): string => {
-    // Google Forms typically puts timestamp in the first column
     const tsKey = Object.keys(row).find(k => k.toLowerCase().includes("timestamp")) || Object.keys(row)[0]
     return row[tsKey] || "—"
   }
@@ -67,7 +107,14 @@ export default function TrustFormSubmissions() {
     return nameKey ? row[nameKey] : "—"
   }
 
-  const totalCount = Object.values(submissions).reduce((sum, rows) => sum + rows.length, 0)
+  const getAllRows = (type: string) => {
+    const sheetRows = (submissions[type] || []).map(r => ({ source: 'sheet' as const, data: r }))
+    return sheetRows
+  }
+
+  const totalCount = Object.keys(TRUST_LABELS).reduce(
+    (sum, type) => sum + getAllRows(type).length, 0
+  )
 
   if (roleLoading) {
     return (
@@ -105,7 +152,7 @@ export default function TrustFormSubmissions() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => fetchSheetData(true)}
+          onClick={() => fetchAllData(true)}
           disabled={refreshing}
           className="gap-2"
         >
@@ -113,6 +160,21 @@ export default function TrustFormSubmissions() {
           {refreshing ? "Syncing..." : "Sync from Sheets"}
         </Button>
       </div>
+
+      {sheetError && (
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="py-3 flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="font-medium text-destructive">Google Sheets sync error</p>
+              <p className="text-muted-foreground mt-1">{sheetError}</p>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Make sure the GOOGLE_SERVICE_ACCOUNT_JSON secret contains the full JSON key file content, and that sheets are shared with the service account email.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
@@ -122,51 +184,54 @@ export default function TrustFormSubmissions() {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="business">
-              Business ({submissions.business?.length || 0})
+              Business ({getAllRows("business").length})
             </TabsTrigger>
             <TabsTrigger value="ministry">
-              Ministry ({submissions.ministry?.length || 0})
+              Ministry ({getAllRows("ministry").length})
             </TabsTrigger>
             <TabsTrigger value="family">
-              Family ({submissions.family?.length || 0})
+              Family ({getAllRows("family").length})
             </TabsTrigger>
           </TabsList>
 
-          {(["business", "ministry", "family"] as const).map((type) => (
-            <TabsContent key={type} value={type}>
-              {!submissions[type] || submissions[type].length === 0 ? (
-                <Card>
-                  <CardContent className="py-12 text-center">
-                    <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No {TRUST_LABELS[type]} submissions yet.</p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid gap-3">
-                  {submissions[type].map((row, idx) => (
-                    <Card key={idx} className="hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <CardTitle className="text-base">{getName(row)}</CardTitle>
-                          <Badge variant="outline">{TRUST_LABELS[type]}</Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <p className="text-sm text-muted-foreground">
-                            Submitted: {getTimestamp(row)}
-                          </p>
-                          <Button variant="outline" size="sm" onClick={() => setSelectedRow({ type, row })}>
-                            <Eye className="h-4 w-4 mr-1" /> View Details
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-          ))}
+          {(["business", "ministry", "family"] as const).map((type) => {
+            const rows = getAllRows(type)
+            return (
+              <TabsContent key={type} value={type}>
+                {rows.length === 0 ? (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">No {TRUST_LABELS[type]} submissions yet.</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid gap-3">
+                    {rows.map((item, idx) => (
+                      <Card key={idx} className="hover:shadow-md transition-shadow">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <CardTitle className="text-base">{getName(item.data)}</CardTitle>
+                            <Badge variant="outline">{TRUST_LABELS[type]}</Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <p className="text-sm text-muted-foreground">
+                              Submitted: {getTimestamp(item.data)}
+                            </p>
+                            <Button variant="outline" size="sm" onClick={() => setSelectedRow({ type, row: item.data })}>
+                              <Eye className="h-4 w-4 mr-1" /> View Details
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            )
+          })}
         </Tabs>
       )}
 
@@ -178,6 +243,7 @@ export default function TrustFormSubmissions() {
               <FileText className="h-5 w-5 text-accent" />
               {selectedRow ? TRUST_LABELS[selectedRow.type] : ""} Submission
             </DialogTitle>
+            <DialogDescription>Review the submitted form details below.</DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh]">
             {selectedRow && (

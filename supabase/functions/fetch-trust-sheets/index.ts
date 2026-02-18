@@ -15,7 +15,17 @@ async function getGoogleAccessToken(): Promise<string> {
   const serviceAccountJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
   if (!serviceAccountJson) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON not configured");
 
-  const sa = JSON.parse(serviceAccountJson);
+  let sa: any;
+  try {
+    sa = JSON.parse(serviceAccountJson);
+  } catch {
+    throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON is not valid JSON. Please re-save the secret with the full JSON service account key.");
+  }
+
+  if (!sa.client_email || !sa.private_key) {
+    throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON is missing required fields (client_email, private_key).");
+  }
+
   const now = Math.floor(Date.now() / 1000);
 
   const header = { alg: "RS256", typ: "JWT" };
@@ -36,7 +46,7 @@ async function getGoogleAccessToken(): Promise<string> {
     .replace("-----BEGIN PRIVATE KEY-----", "")
     .replace("-----END PRIVATE KEY-----", "")
     .replace(/\n/g, "");
-  const binaryDer = Uint8Array.from(atob(pemContents), (c) => c.charCodeAt(0));
+  const binaryDer = Uint8Array.from(atob(pemContents), (c: string) => c.charCodeAt(0));
 
   const cryptoKey = await crypto.subtle.importKey(
     "pkcs8",
@@ -75,32 +85,44 @@ async function getGoogleAccessToken(): Promise<string> {
 }
 
 async function fetchSheetData(accessToken: string, sheetId: string): Promise<Record<string, string>[]> {
-  // Fetch all data from the first sheet
-  const res = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1?majorDimension=ROWS`,
-    {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    }
-  );
-
-  if (!res.ok) {
-    // Try "Form Responses 1" as fallback (Google Forms default sheet name)
-    const res2 = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Form%20Responses%201?majorDimension=ROWS`,
-      {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }
+  // Try multiple common sheet names
+  const sheetNames = ["Sheet1", "Form Responses 1", "Form%20Responses%201"];
+  
+  for (const sheetName of sheetNames) {
+    const encodedName = sheetName.includes("%20") ? sheetName : encodeURIComponent(sheetName);
+    const res = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodedName}?majorDimension=ROWS`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
     );
-    if (!res2.ok) {
-      const errText = await res2.text();
-      throw new Error(`Sheets API error for ${sheetId}: ${errText}`);
+
+    if (res.ok) {
+      const data = await res.json();
+      return parseSheetRows(data.values || []);
     }
-    const data2 = await res2.json();
-    return parseSheetRows(data2.values || []);
   }
 
-  const data = await res.json();
-  return parseSheetRows(data.values || []);
+  // Last resort: fetch first sheet by index
+  const metaRes = await fetch(
+    `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=sheets.properties.title`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  );
+
+  if (metaRes.ok) {
+    const meta = await metaRes.json();
+    const firstTitle = meta?.sheets?.[0]?.properties?.title;
+    if (firstTitle) {
+      const res = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(firstTitle)}?majorDimension=ROWS`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        return parseSheetRows(data.values || []);
+      }
+    }
+  }
+
+  return [];
 }
 
 function parseSheetRows(values: string[][]): Record<string, string>[] {
@@ -122,7 +144,7 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const trustType = url.searchParams.get("type"); // optional filter
+    const trustType = url.searchParams.get("type");
 
     const accessToken = await getGoogleAccessToken();
 

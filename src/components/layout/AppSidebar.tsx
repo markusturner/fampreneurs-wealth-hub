@@ -188,15 +188,19 @@ export function AppSidebar({ className }: { className?: string }) {
 
       {/* Trust Creation */}
       <div className="px-3 pb-3">
-        <div className={cn("rounded-xl", currentPath.includes("/trust-creation") && "bg-[hsl(43,100%,50%)]/10")}>
-          <NavItem
-            label="Trust Creation"
-            icon={ScrollText}
-            href="/trust-creation"
-            active={currentPath.includes("/trust-creation")}
-            className="text-[hsl(43,100%,50%)]"
-          />
-        </div>
+        <Button
+          className={cn(
+            "w-full justify-start gap-2 rounded-xl font-semibold border-0",
+            currentPath.includes("/trust-creation")
+              ? "bg-[hsl(43,100%,50%)] text-[hsl(270,80%,15%)] hover:bg-[hsl(43,100%,45%)] shadow-md shadow-[hsl(43,100%,50%)]/30"
+              : "bg-[hsl(43,100%,50%)]/15 text-[hsl(43,100%,50%)] hover:bg-[hsl(43,100%,50%)]/25"
+          )}
+          variant="ghost"
+          onClick={() => navigate('/trust-creation')}
+        >
+          <ScrollText className="h-4 w-4" />
+          Trust Creation
+        </Button>
       </div>
 
       <ScrollArea className="flex-1 px-3 py-1">
