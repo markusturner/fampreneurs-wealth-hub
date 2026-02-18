@@ -53,3 +53,6 @@ verify_jwt = false
 
 [functions.send-trust-email]
 verify_jwt = false
+
+[functions.fetch-trust-sheets]
+verify_jwt = false
