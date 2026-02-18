@@ -66,14 +66,14 @@ export default function Classroom() {
   useEffect(() => { fetchCourses() }, [])
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl space-y-6">
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Classroom</h1>
-        <p className="text-muted-foreground text-sm">Access your courses and track your progress</p>
+        <h1 className="text-xl sm:text-2xl font-bold">Classroom</h1>
+        <p className="text-muted-foreground text-xs sm:text-sm">Access your courses and track your progress</p>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {[1, 2, 3].map(i => (
             <Card key={i} className="animate-pulse overflow-hidden">
               <div className="h-44 bg-muted" />
@@ -85,7 +85,7 @@ export default function Classroom() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {courses.map((course) => (
             <Card
               key={course.id}

@@ -439,8 +439,13 @@ export default function AIChat() {
   )
 
   const renderSidebar = () => (
-    <div className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-200 overflow-hidden border-r bg-muted/30 flex-shrink-0 h-full`}>
-      <div className="w-64 h-full flex flex-col">
+    <>
+      {/* Mobile overlay backdrop */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/40 z-40 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+      <div className={`${sidebarOpen ? 'fixed inset-y-0 left-0 z-50 w-72 md:relative md:z-auto md:w-64' : 'w-0'} transition-all duration-200 overflow-hidden border-r bg-card md:bg-muted/30 flex-shrink-0 h-full`}>
+      <div className="w-72 md:w-64 h-full flex flex-col">
         <div className="p-3 border-b flex items-center justify-between">
           <span className="text-sm font-semibold">Chat History</span>
           <div className="flex gap-1">
@@ -535,6 +540,7 @@ export default function AIChat() {
         </ScrollArea>
       </div>
     </div>
+    </>
   )
 
   return (

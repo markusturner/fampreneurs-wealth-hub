@@ -252,8 +252,8 @@ export default function Messenger() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-220px)]">
-        {/* Conversations List */}
-        <Card className="md:col-span-1 flex flex-col">
+        {/* Conversations List - hidden on mobile when a conversation is selected */}
+        <Card className={`md:col-span-1 flex flex-col ${selectedUserId ? 'hidden md:flex' : 'flex'}`}>
           <div className="p-3 border-b">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -307,11 +307,14 @@ export default function Messenger() {
           </ScrollArea>
         </Card>
 
-        {/* Chat Area */}
-        <Card className="md:col-span-2 flex flex-col">
+        {/* Chat Area - full width on mobile when conversation selected */}
+        <Card className={`md:col-span-2 flex flex-col ${selectedUserId ? 'flex' : 'hidden md:flex'}`}>
           {selectedConvo ? (
             <>
               <div className="flex items-center gap-3 p-4 border-b">
+                <Button variant="ghost" size="icon" className="h-8 w-8 md:hidden flex-shrink-0" onClick={() => setSelectedUserId(null)}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </Button>
                 <Avatar className="h-10 w-10">
                   {selectedConvo.avatar_url && <AvatarImage src={selectedConvo.avatar_url} />}
                   <AvatarFallback>{getInitials(selectedConvo.display_name)}</AvatarFallback>
