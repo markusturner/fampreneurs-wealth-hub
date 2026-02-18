@@ -20,7 +20,7 @@ Irrevocable, Express TRUST
 {{TRUST_SUITE}}
 {{TRUST_CITY}}, {{TRUST_STATE}} [{{TRUST_ZIP}}]`;
 
-const MINISTRY_TRUST_TEMPLATE = `MINISTRY CHARITABLE TRUST
+const MINISTRY_TRUST_TEMPLATE = `YOUR NAMED CHARITABLE TRUST
 
 THIS DECLARATION OF TRUST is made this {{DAY}} day of {{MONTH}} in the Year {{YEAR_WRITTEN}} ({{YEAR}}) at {{TIME}}, by and between {{SETTLOR_NAME}} ("Settlor"), and {{TRUSTEE_NAME}} ("Initial Trustee(s)"). {{TRUST_PROTECTOR_NAME}} is hereby appointed as the Initial Trust Protector and Trust Custodian to act in accordance with Section 1.1 of this Trust Agreement. The Settlor hereby creates this Trust for the benefit of {{BENEFICIARY_NAME}} (individually referred to herein "Beneficiary"). The Trustee(s) and Trust Protector are hereby delegated with the authority to act on behalf of {{TRUST_NAME}} as provided in the Trust Indenture.
 
@@ -34,15 +34,28 @@ Irrevocable, Express TRUST
 {{TRUST_SUITE}}
 {{TRUST_CITY}}, {{TRUST_STATE}} [{{TRUST_ZIP}}]
 
-The Trust is intended to qualify as a tax-exempt organization under Section 508(c)(1)(a) of the Internal Revenue Code as a church or faith-based organization.
+ARTICLE I - CLASSIFICATION OF ORGANIZATION; IRREVOCABILITY (Articles 1.1-1.5: Settlor's Establishment, Declaration of Trust, Irrevocability, Qualifications as Tax-Exempt Organization under Section 508(c)(1)(a), Operation as Non-Profit Organization)
+ARTICLE II - NAME AND PURPOSE (Religious, charitable, and educational purposes)
+ARTICLE III - GIFTS, TRANSFERS & PROPERTY CONTRIBUTIONS TO THE TRUST (Articles 3.1-3.2)
+ARTICLE IV - BOARD OF TRUSTEE(S) (Articles 4.1-4.6: Board of Trustees, Removal/Appointment, Trust Officers, Fiduciary Monitoring, Co-Trustee, Successor Trustees)
+ARTICLE V - TRUSTEES (Articles 5.1-5.27: Preservation, Care, Acquisition, Powers to Sell/Lease/Loan/Invest/Manage Securities/Borrow/Insure/Compromise, Compensation, Corporate Fiduciaries, Termination, Division, Liability, Succession, Consensus/Dispute Resolution)
+ARTICLE VI - COMPLIANCE STEWARD (Articles 6.1-6.2: Designation, Successor)
+ARTICLE VII - DISTRIBUTION OF ASSETS (Articles 7.1-7.4: Mandatory Charitable Contributions, Process, Compliance Protocol, Discretionary Distributions)
+ARTICLE VIII - BENEFICIARIES (Articles 8.1-8.3: Charitable Beneficiary, Non-Charitable Beneficiaries, Spendthrift Provision)
+ARTICLE IX - GOVERNANCE AND SUCCESSION / MEETINGS
+ARTICLE X - AMENDMENT AND TERMINATION (Articles 10.1-10.2)
+ARTICLE XI - MISCELLANEOUS PROVISIONS (Articles 11.1-11.5: Dispute Resolution, Liability Protection, Reporting/Compliance, Trust Accounting, Valuation of Assets)
+ARTICLE XII - SEVERABILITY (Articles 12.1-12.3)
+ARTICLE XIII - INTERPRETATIONS: DEFINITIONS (Articles 13.1: Trust Language, definitions for Adopted/Afterborn Persons, Beneficial Care, Incapacity, Income Beneficiary, Independent/Interested Trustee, IRC, Legal Representative, Per Stirpes, Shall/May, TCU, TCU Holder, Charitable Trust, Compliance Steward)
 
-MINISTRY PURPOSE: {{MINISTRY_PURPOSE}}
+COMPLIANCE STEWARD: {{COMPLIANCE_STEWARD_NAME}}
 
-COMPLIANCE STEWARD: {{COMPLIANCE_STEWARD_NAME}}`;
+SCHEDULES: Schedule A (Trust Certificate Units), Schedule B (Assets), Schedule C (Beneficiary Contact), Schedule D (Memorandum of Personal Property)
+CERTIFICATES: Certificate of Trust, Trustee Acceptance, Trust Protector Acceptance, Compliance Steward Acceptance, Jurat/Acknowledgment`;
 
-const FAMILY_TRUST_TEMPLATE = `PRIVATE FAMILY TRUST
+const FAMILY_TRUST_TEMPLATE = `YOUR NAMED FAMILY TRUST
 
-THIS DECLARATION OF TRUST is made this {{DAY}} day of {{MONTH}} in the Year {{YEAR_WRITTEN}} ({{YEAR}}) at {{TIME}}, by and between {{SETTLOR_NAME}} ("Settlor"), and {{TRUSTEE_NAME}} ("Trustee(s)") and {{TRUST_PROTECTOR_NAME}} ("Trust Protector") in care of {{TRUST_STREET}}, {{TRUST_SUITE}}, {{TRUST_CITY}}, {{TRUST_STATE}} [{{TRUST_ZIP}}]. The Trustee(s) and Trust Protector are hereby delegated with the authority to act on behalf of {{TRUST_NAME}} as provided in the Trust Indenture.
+THIS DECLARATION OF TRUST is made this {{DAY}} day of the {{MONTH}} Month in the Year {{YEAR_WRITTEN}} ({{YEAR}}) at {{TIME}}, by and between {{SETTLOR_NAME}} ("Settlor"), and {{TRUSTEE_NAME}} ("Trustee(s)") and {{TRUST_PROTECTOR_NAME}} ("Trust Protector") in care of {{TRUST_STREET}}, {{TRUST_SUITE}}, {{TRUST_CITY}}, {{TRUST_STATE}} [{{TRUST_ZIP}}]. The Trustee(s) and Trust Protector are hereby delegated with the authority to act on behalf of {{TRUST_NAME}} as provided in the Trust Indenture.
 
 THIS TRUST INDENTURE AUTHORIZES ITS TRUSTEE(S) TO PERFORM UNDER THE NAME OF:
 
@@ -52,7 +65,22 @@ Irrevocable Express TRUST
 
 {{TRUST_STREET}}
 {{TRUST_SUITE}}
-{{TRUST_CITY}}, {{TRUST_STATE}} [{{TRUST_ZIP}}]`;
+{{TRUST_CITY}}, {{TRUST_STATE}} [{{TRUST_ZIP}}]
+
+ARTICLE I - CLASSIFICATION OF ORGANIZATION; IRREVOCABILITY (Articles 1.1-1.2: Declaration of Trust, Irrevocability)
+ARTICLE II - GIFT, TRANSFERS & PROPERTY CONTRIBUTIONS TO THE TRUST (Articles 2.1-2.4: Acceptance, Transfer of Property, Gifts into Trust, Trustee Acceptance with Trust Name/Identification/Commercial Transactions)
+ARTICLE III - PURPOSE(S) (Articles 3.1-3.5: Beneficiary Benefit, Administrative Purposes, Efficient Administration, Furthering Administrative Purposes, Best Organizational Interests)
+ARTICLE IV - TRUSTEE(S) (Articles 4.1-4.34: Board of Trustees, Oversight/Management, Trust Officers, Care/Acquisition of Property, Authority to Act, Powers to Retain/Sell/Lease/Loan/Invest/Manage Securities/Borrow/Insure/Compromise, No Right to Claims, Compensation, No Bond, Delegation, Liability, Resignation, Successor Trustees, Rights/Obligations, Capital/Payments, Disposition/Allocation of Principal and Income, Capital Gains, Trust Certificates, Certificate Transfers, Fiduciary Monitoring, Removal, Appointment)
+ARTICLE V - BENEFICIARY(S) (Articles 5.1-5.12: The Beneficiaries, Distribution, Advisement, Gift Tax, Status, Notice of Events, Administration for Underage/Incapacitated, Beneficiaries List, Registration, Entitlement, Control of Property, Payment of Death Taxes)
+ARTICLE VI - JURISDICTION (Articles 6.1-6.3: Right to Establish Trust, Natural Rights, Situs under Common Law)
+ARTICLE VII - PRIVACY (Articles 7.1-7.5: Trust Privacy, Approval Process, Protection of Trust Instrument, Notices, Private Trust Indenture)
+ARTICLE VIII - POWERS IN GENERAL; LIABILITY (Articles 8.1-8.3: Meetings/Statements, Hold Harmless, Dispute Resolution)
+ARTICLE IX - DURATION OF TRUST (Article 9.1: Trust continues in perpetuity)
+ARTICLE X - SEVERABILITY (Article 10.1)
+ARTICLE XI - INTERPRETATIONS: DEFINITIONS (Article 11.1: Trust Language, definitions for Adopted/Afterborn Persons, Agreement, Beneficial Care, Certificate of Trust Units, Descendants, Default Beneficiary, Education, Incapacity, Income Beneficiary, Independent/Interested Trustee, IRC, Legal Representative, Per Stirpes, Shall/May, TCU, TCU Holder)
+
+SCHEDULES: Schedule A (Trust Certificate Units), Schedule B (Assets), Schedule C (Beneficiary Contact), Schedule D (Memorandum of Personal Property)
+CERTIFICATES: Certificate of Trust, Trustee Acceptance, Trust Protector Acceptance, Jurat/Acknowledgment`;
 
 const TRUST_TEMPLATES: Record<string, string> = {
   business: BUSINESS_TRUST_TEMPLATE,
@@ -101,19 +129,22 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     // Build prompt for AI to generate the complete trust document
-    const systemPrompt = `You are a legal document generator specializing in trust documents. You will be given a trust template and form data. Your job is to generate a COMPLETE, professionally formatted trust document by filling in ALL placeholder fields with the provided form data. 
+    const systemPrompt = `You are a legal document generator specializing in trust documents. You will be given a trust template outline and form data. Your job is to generate a COMPLETE, professionally formatted trust document by filling in ALL placeholder fields with the provided form data. 
 
 IMPORTANT RULES:
 - Replace ALL placeholder fields (marked with {{FIELD}}) with the actual values from the form data
-- Generate ALL articles, schedules, certificates, and acceptance pages
-- Maintain the exact legal language from the template
-- Format dates properly (e.g., "22nd day of March")
-- Include all standard trust articles (Classification, Irrevocability, Gifts & Transfers, Purpose, Trustees, Trust Protector, Beneficiaries, Jurisdiction, Privacy, Powers, Duration, Severability, Definitions)
-- Include Schedule A (Trust Certificate Units), Schedule B (Assets), Schedule C (Beneficiary Contact), Schedule D (Memorandum of Personal Property)
-- Include Certificate of Trust with all sections
-- Include Trustee Acceptance pages
-- Include Trust Protector Acceptance pages
-- Include Jurat/Acknowledgment sections
+- Generate ALL articles listed in the template outline with full legal language
+- Format dates properly (e.g., "22nd day of December")
+- For Ministry Charitable Trust: Include all articles I through XIII, with Article 1.4 (Tax-Exempt under 508(c)(1)(a)), Article 1.5 (Non-Profit Operation), Article VI (Compliance Steward), Article VII (Distribution of Assets with mandatory 5% charitable distributions), Article VIII (Charitable and Non-Charitable Beneficiaries)
+- For Private Family Trust: Include all articles I through XI, with Article II (Gift, Transfers & Property), Article III (Purposes including Beneficiary Benefit, Administrative, Efficient Administration), Article IV (comprehensive Trustee powers 4.1-4.34), Article V (Beneficiary provisions 5.1-5.12 including distribution allocation of 30% living/70% investments), Articles VI-IX (Jurisdiction under Common Law, Privacy, Powers/Liability, Duration in perpetuity)
+- For Business Trust: Include all standard articles for Private Unincorporated Business Trust
+- Include Schedule A (Trust Certificate Units - 100 units total), Schedule B (Assets), Schedule C (Beneficiary Contact Information), Schedule D (Memorandum of Personal Property)
+- Include Certificate of Trust with all required sections
+- Include Trustee Acceptance pages with signature lines
+- Include Trust Protector Acceptance pages with signature lines
+- For Ministry Trust: Include Compliance Steward Acceptance page
+- Include Jurat/Acknowledgment sections with notary blocks
+- Add the confidentiality footer: "This document is Privileged and Confidential. Any unauthorized disclosure of its contents is strictly prohibited."
 - The output should be a complete, ready-to-use trust document in plain text format`;
 
     const userPrompt = `Generate a complete ${trust_type === 'business' ? 'Private Unincorporated Business' : trust_type === 'ministry' ? 'Ministry Charitable' : 'Private Family'} Trust document using this data:
