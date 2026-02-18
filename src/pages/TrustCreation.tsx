@@ -54,6 +54,15 @@ export default function TrustCreation() {
     checkAccess()
   }, [])
 
+  // Sync selectedTrust with URL search params when navigating via sidebar
+  useEffect(() => {
+    const typeParam = searchParams.get("type") as TrustType | null
+    if (typeParam && ['business', 'ministry', 'family'].includes(typeParam)) {
+      setSelectedTrust(typeParam)
+      setGeneratedDoc(null)
+    }
+  }, [searchParams])
+
   const checkAccess = async () => {
     try {
       const { data, error } = await supabase.functions.invoke("check-trust-access")
