@@ -9,7 +9,9 @@ import { Separator } from "@/components/ui/separator"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
-import { FileText, Loader2, Home } from "lucide-react"
+import { FileText, Loader2, Home, Church } from "lucide-react"
+
+type TrustType = 'family' | 'ministry'
 
 const US_STATES = [
   "Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia",
@@ -21,13 +23,21 @@ const US_STATES = [
 
 const PERCENTAGES = ["10%","20%","30%","40%","50%","60%","70%","80%","90%","100%"]
 
+const TRUST_LABELS: Record<TrustType, { title: string; icon: typeof Home }> = {
+  family: { title: "Family Trust Form", icon: Home },
+  ministry: { title: "Ministry Trust Form", icon: Church },
+}
+
 interface FamilyTrustFormProps {
+  trustType: TrustType
   onBack: () => void
   onGenerated: (doc: string) => void
 }
 
-export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustFormProps) {
+export default function FamilyTrustForm({ trustType, onBack, onGenerated }: FamilyTrustFormProps) {
   const { toast } = useToast()
+  const label = TRUST_LABELS[trustType]
+  const Icon = label.icon
   const [generating, setGenerating] = useState(false)
 
   const [form, setForm] = useState({
@@ -94,12 +104,12 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
     setGenerating(true)
     try {
       const { data, error } = await supabase.functions.invoke("generate-trust-document", {
-        body: { trust_type: "family", form_data: form },
+        body: { trust_type: trustType, form_data: form },
       })
       if (error) throw error
       if (data.error) throw new Error(data.error)
       onGenerated(data.document)
-      toast({ title: "Trust Document Generated", description: "Your family trust document has been created successfully." })
+      toast({ title: "Trust Document Generated", description: `Your ${label.title.toLowerCase().replace(' form', '')} document has been created successfully.` })
     } catch (err: any) {
       console.error("Error generating trust:", err)
       toast({ title: "Generation Failed", description: err.message || "Something went wrong.", variant: "destructive" })
@@ -112,16 +122,16 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold flex items-center gap-2">
-          <Home className="h-5 w-5 text-accent" />
-          Family Trust Form
+          <Icon className="h-5 w-5 text-accent" />
+          {label.title}
         </h2>
         <Button variant="ghost" onClick={onBack}>← Back</Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Family Trust Creation Form</CardTitle>
-          <CardDescription>Fill in the details for your Private Family Trust. Fields marked * are required.</CardDescription>
+          <CardTitle className="text-base">{label.title}</CardTitle>
+          <CardDescription>Fill in the details for your trust document. Fields marked * are required.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Contact Info */}
