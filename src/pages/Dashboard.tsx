@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
-import { OverviewSection } from "@/components/dashboard/overview-section"
 import { Loader2 } from 'lucide-react'
 import { useState } from "react"
 import { useUserRole } from "@/hooks/useUserRole"
@@ -10,6 +9,10 @@ import { useTutorialVideo } from "@/hooks/useTutorialVideo"
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { supabase } from "@/integrations/supabase/client"
 import { DashboardRecentActivity } from "@/components/dashboard/dashboard-recent-activity"
+import { TotalInvestmentCard } from "@/components/dashboard/total-investment-card"
+import { PortfolioPositions } from "@/components/dashboard/portfolio-positions"
+import { TopAssetsCards } from "@/components/dashboard/top-assets-cards"
+import { OverviewSection } from "@/components/dashboard/overview-section"
 
 const Dashboard = () => {
   const { user, profile, loading } = useAuth()
@@ -57,8 +60,6 @@ const Dashboard = () => {
     return null
   }
 
-  const displayName = profile?.display_name || profile?.first_name || 'Family'
-
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-hidden">
       {/* Page Header */}
@@ -69,13 +70,28 @@ const Dashboard = () => {
         </p>
       </div>
 
-      {/* Key Metrics */}
-      <DashboardStats />
+      {/* Top Row: 3 Stats + Total Investment Card */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4 sm:gap-6">
+        {/* Left Column: Stats + Chart + Assets */}
+        <div className="space-y-4 sm:space-y-6 min-w-0">
+          {/* 3 Stat Cards */}
+          <DashboardStats />
 
-      {/* Financial Overview & AI Insights */}
-      <OverviewSection />
+          {/* Financial Overview (Chart + Allocation) */}
+          <OverviewSection />
 
-      {/* Recent Activity from TruHeirs */}
+          {/* Top Assets */}
+          <TopAssetsCards />
+        </div>
+
+        {/* Right Column: Investment + Positions */}
+        <div className="space-y-4 sm:space-y-6">
+          <TotalInvestmentCard />
+          <PortfolioPositions />
+        </div>
+      </div>
+
+      {/* Recent Activity */}
       <DashboardRecentActivity />
 
       {/* Tutorial Video Modal */}
