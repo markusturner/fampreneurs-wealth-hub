@@ -135,7 +135,7 @@ export default function BusinessTrustForm({ onBack, onGenerated }: BusinessTrust
           {/* Creation Date & Time */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Trust Creation Date & Time</h3>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Business Trust Creation Date *</Label>
                 <Input type="date" value={form.creation_date} onChange={e => handleChange("creation_date", e.target.value)} />
@@ -143,16 +143,6 @@ export default function BusinessTrustForm({ onBack, onGenerated }: BusinessTrust
               <div className="space-y-2">
                 <Label>Time Created *</Label>
                 <Input type="time" value={form.creation_time} onChange={e => handleChange("creation_time", e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>AM / PM *</Label>
-                <Select value={form.creation_ampm} onValueChange={v => handleChange("creation_ampm", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="AM">AM</SelectItem>
-                    <SelectItem value="PM">PM</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </div>
           </div>
