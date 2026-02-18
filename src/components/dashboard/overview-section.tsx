@@ -514,7 +514,7 @@ WEALTH BUILDING (After $10k+/month steady):
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Market Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="overflow-hidden">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-center justify-between mb-3">
@@ -570,32 +570,6 @@ WEALTH BUILDING (After $10k+/month steady):
             </div>
           </CardContent>
         </Card>
-
-        <Card className="overflow-hidden sm:col-span-2 lg:col-span-1">
-          <CardContent className="p-4 sm:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-full bg-accent/10 flex items-center justify-center">
-                  <Wallet className="h-3.5 w-3.5 text-accent" />
-                </div>
-                <span className="text-sm font-medium text-muted-foreground">Net Worth</span>
-              </div>
-              <span className="text-xs text-muted-foreground">Last 30 days</span>
-            </div>
-            <div className="flex items-end justify-between">
-              <div>
-                <div className="text-2xl sm:text-xl font-bold tracking-tight">{formatCurrency(totalNetWorth)}</div>
-                <div className="text-xs text-muted-foreground mt-1">
-                  vs {formatCurrency(totalNetWorth * 0.93)} Last Period
-                </div>
-              </div>
-              <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full text-green-600 bg-green-500/10">
-                <TrendingUp className="h-3 w-3" />
-                7%
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Charts */}
@@ -603,7 +577,7 @@ WEALTH BUILDING (After $10k+/month steady):
         <Card>
           <CardHeader className="p-4 sm:p-6">
             <CardTitle className="text-base sm:text-lg">Portfolio Performance</CardTitle>
-            <CardDescription className="text-sm">12-month account balance growth</CardDescription>
+            <CardDescription className="text-sm">This year vs last year performance</CardDescription>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 pt-0">
             <InvestmentChart 

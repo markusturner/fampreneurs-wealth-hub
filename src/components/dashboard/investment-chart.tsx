@@ -34,15 +34,17 @@ export function InvestmentChart({ accountsData = [], totalValue = 0 }: Investmen
       const progress = (index + 1) / chartMonths.length
       const baseValue = totalValue * 0.7
       const growth = (totalValue - baseValue) * progress
-      const value = Math.round(baseValue + growth)
+      const thisYear = Math.round(baseValue + growth + Math.sin(index * 0.6) * totalValue * 0.03)
       
-      // Create a secondary line for visual depth
-      const secondaryValue = Math.round(value * (0.6 + Math.sin(index * 0.8) * 0.15))
+      // Last year's performance - lower baseline with different growth curve
+      const lastYearBase = totalValue * 0.55
+      const lastYearGrowth = (totalValue * 0.75 - lastYearBase) * progress
+      const lastYear = Math.round(lastYearBase + lastYearGrowth + Math.cos(index * 0.7) * totalValue * 0.025)
       
       return {
         month,
-        total: value,
-        secondary: secondaryValue,
+        thisYear,
+        lastYear,
       }
     })
   }
@@ -68,14 +70,14 @@ export function InvestmentChart({ accountsData = [], totalValue = 0 }: Investmen
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
           <defs>
-            <linearGradient id="totalGradientNew" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="thisYearGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.4}/>
               <stop offset="50%" stopColor="hsl(var(--accent))" stopOpacity={0.15}/>
               <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0}/>
             </linearGradient>
-            <linearGradient id="secondaryGradientNew" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+            <linearGradient id="lastYearGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.1}/>
+              <stop offset="100%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0}/>
             </linearGradient>
           </defs>
           <CartesianGrid 
@@ -106,24 +108,27 @@ export function InvestmentChart({ accountsData = [], totalValue = 0 }: Investmen
           <Tooltip content={<CustomTooltip />} />
           <Area
             type="monotone"
-            dataKey="secondary"
-            stroke="hsl(var(--primary))"
+            dataKey="lastYear"
+            stroke="hsl(var(--muted-foreground))"
             fillOpacity={1}
-            fill="url(#secondaryGradientNew)"
-            strokeWidth={2}
+            fill="url(#lastYearGradient)"
+            strokeWidth={1.5}
+            strokeDasharray="4 4"
             strokeOpacity={0.5}
             dot={false}
             activeDot={false}
+            name="Last Year"
           />
           <Area
             type="monotone"
-            dataKey="total"
+            dataKey="thisYear"
             stroke="hsl(var(--accent))"
             fillOpacity={1}
-            fill="url(#totalGradientNew)"
+            fill="url(#thisYearGradient)"
             strokeWidth={2.5}
             dot={false}
             activeDot={{ r: 5, fill: 'hsl(var(--accent))', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+            name="This Year"
           />
         </AreaChart>
       </ResponsiveContainer>
