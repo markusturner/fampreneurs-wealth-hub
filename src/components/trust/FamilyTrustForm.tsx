@@ -67,7 +67,9 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
     first_successor_trustee: "",
     first_successor_protector: "",
     more_successor_trustees: "No",
+    additional_successor_trustees: "",
     more_successor_protectors: "No",
+    additional_successor_protectors: "",
   })
 
   const handleChange = (field: string, value: string) => {
@@ -396,6 +398,9 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
                     <Label htmlFor="mst-no" className="font-normal">No</Label>
                   </div>
                 </RadioGroup>
+                {form.more_successor_trustees === "Yes" && (
+                  <Textarea rows={3} placeholder="List additional successor trustees (First & Last Name, one per line)" value={form.additional_successor_trustees} onChange={e => handleChange("additional_successor_trustees", e.target.value)} />
+                )}
               </div>
               <div className="space-y-2">
                 <Label>More than 1 Successor Trust Protector? *</Label>
@@ -409,6 +414,9 @@ export default function FamilyTrustForm({ onBack, onGenerated }: FamilyTrustForm
                     <Label htmlFor="msp-no" className="font-normal">No</Label>
                   </div>
                 </RadioGroup>
+                {form.more_successor_protectors === "Yes" && (
+                  <Textarea rows={3} placeholder="List additional successor trust protectors (First & Last Name, one per line)" value={form.additional_successor_protectors} onChange={e => handleChange("additional_successor_protectors", e.target.value)} />
+                )}
               </div>
             </div>
           </div>

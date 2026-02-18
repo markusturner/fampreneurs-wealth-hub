@@ -58,7 +58,9 @@ export default function BusinessTrustForm({ onBack, onGenerated }: BusinessTrust
     first_successor_trustee: "",
     first_successor_protector: "",
     more_trustees: "No",
+    additional_trustees: "",
     more_trust_protectors: "No",
+    additional_trust_protectors: "",
   })
 
   const handleChange = (field: string, value: string) => {
@@ -335,6 +337,9 @@ export default function BusinessTrustForm({ onBack, onGenerated }: BusinessTrust
                     <Label htmlFor="bt-no" className="font-normal">No</Label>
                   </div>
                 </RadioGroup>
+                {form.more_trustees === "Yes" && (
+                  <Textarea rows={3} placeholder="List additional trustees (First & Last Name, one per line)" value={form.additional_trustees} onChange={e => handleChange("additional_trustees", e.target.value)} />
+                )}
               </div>
               <div className="space-y-2">
                 <Label>More than 1 Trust Protector? *</Label>
@@ -348,6 +353,9 @@ export default function BusinessTrustForm({ onBack, onGenerated }: BusinessTrust
                     <Label htmlFor="btp-no" className="font-normal">No</Label>
                   </div>
                 </RadioGroup>
+                {form.more_trust_protectors === "Yes" && (
+                  <Textarea rows={3} placeholder="List additional trust protectors (First & Last Name, one per line)" value={form.additional_trust_protectors} onChange={e => handleChange("additional_trust_protectors", e.target.value)} />
+                )}
               </div>
             </div>
           </div>
