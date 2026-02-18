@@ -130,7 +130,7 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <ThemeProvider defaultTheme="dark" storageKey="family-dashboard-theme">
+        <ThemeProvider defaultTheme="light" storageKey="family-dashboard-theme">
           <AuthProvider>
             <MeetingsProvider>
               <AppWithNotifications />

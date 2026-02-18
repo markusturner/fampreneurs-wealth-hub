@@ -4,12 +4,12 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { ThemeToggle } from "@/components/theme-toggle"
+
 import { FeedbackDialog } from "@/components/dashboard/feedback-dialog"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { useAuth } from "@/contexts/AuthContext"
-import { useTheme } from "@/components/theme-provider"
+
 import { useFeedbackNotification } from "@/hooks/useFeedbackNotification"
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
@@ -28,7 +28,7 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const { profile, signOut } = useAuth()
-  const { theme } = useTheme()
+  
   const { shouldShowFeedback, markFeedbackShown, temporarilyHideNotification } = useFeedbackNotification()
   const navigate = useNavigate()
   const location = useLocation()
@@ -389,8 +389,6 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
           >
             <Video className="h-4 w-4" />
           </Button>
-          
-          <ThemeToggle />
           
           {/* Single Notification Bell for all notifications */}
           <NotificationBell />

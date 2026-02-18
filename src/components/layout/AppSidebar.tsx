@@ -27,7 +27,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
-import { ThemeToggle } from "@/components/theme-toggle"
 import {
   Popover,
   PopoverContent,
@@ -250,7 +249,6 @@ export function AppSidebar({ className }: { className?: string }) {
             <Video className="h-4 w-4" />
           </Button>
           <NotificationBell />
-          <ThemeToggle />
         </div>
 
         {/* Profile */}

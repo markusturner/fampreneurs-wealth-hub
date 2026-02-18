@@ -8,7 +8,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
-import { ThemeToggle } from "@/components/theme-toggle"
+
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -78,7 +78,6 @@ export function AppLayout({ children }: AppLayoutProps) {
             <span className="font-montserrat font-bold text-sm">TruHeirs</span>
           </div>
           <div className="flex items-center gap-1">
-            <ThemeToggle />
             <NotificationBell />
           </div>
         </header>
