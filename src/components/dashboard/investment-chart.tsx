@@ -8,12 +8,15 @@ interface InvestmentChartProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-card border border-border rounded-lg p-3 shadow-medium min-w-[200px]">
-        <p className="font-medium text-foreground mb-2">{`${label} 2024`}</p>
+      <div className="bg-card/95 backdrop-blur-md border border-border/50 rounded-xl p-3 shadow-lg min-w-[180px]">
+        <p className="font-medium text-foreground text-xs mb-2">{label}</p>
         {payload.map((entry: any, index: number) => (
-          <p key={index} className="text-sm font-medium" style={{ color: entry.color }}>
-            {`${entry.name}: $${entry.value.toLocaleString()}`}
-          </p>
+          <div key={index} className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+            <p className="text-sm font-semibold" style={{ color: entry.color }}>
+              {`$${entry.value.toLocaleString()}`}
+            </p>
+          </div>
         ))}
       </div>
     )
@@ -22,22 +25,24 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 export function InvestmentChart({ accountsData = [], totalValue = 0 }: InvestmentChartProps) {
-  // Generate demo chart data with current total as the end point
   const generateChartData = () => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     const currentMonth = new Date().getMonth()
-    const chartMonths = months.slice(0, currentMonth + 1).slice(-8) // Show last 8 months
+    const chartMonths = months.slice(0, currentMonth + 1).slice(-8)
     
     return chartMonths.map((month, index) => {
-      // Create a growth curve ending at current total
       const progress = (index + 1) / chartMonths.length
-      const baseValue = totalValue * 0.7 // Start at 70% of current value
+      const baseValue = totalValue * 0.7
       const growth = (totalValue - baseValue) * progress
       const value = Math.round(baseValue + growth)
       
+      // Create a secondary line for visual depth
+      const secondaryValue = Math.round(value * (0.6 + Math.sin(index * 0.8) * 0.15))
+      
       return {
         month,
-        total: value
+        total: value,
+        secondary: secondaryValue,
       }
     })
   }
@@ -47,7 +52,7 @@ export function InvestmentChart({ accountsData = [], totalValue = 0 }: Investmen
 
   if (!hasData) {
     return (
-      <div className="h-[250px] sm:h-[350px] flex items-center justify-center">
+      <div className="h-[280px] sm:h-[320px] flex items-center justify-center">
         <div className="text-center">
           <div className="text-muted-foreground mb-2">No account data available</div>
           <div className="text-sm text-muted-foreground">
@@ -59,46 +64,66 @@ export function InvestmentChart({ accountsData = [], totalValue = 0 }: Investmen
   }
 
   return (
-    <div className="h-[250px] sm:h-[350px]">
+    <div className="h-[280px] sm:h-[320px]">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={chartData}>
+        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
           <defs>
-            <linearGradient id="totalGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ffb500" stopOpacity={0.3}/>
-              <stop offset="95%" stopColor="#ffb500" stopOpacity={0}/>
+            <linearGradient id="totalGradientNew" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="hsl(var(--accent))" stopOpacity={0.4}/>
+              <stop offset="50%" stopColor="hsl(var(--accent))" stopOpacity={0.15}/>
+              <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0}/>
             </linearGradient>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-              <feMerge> 
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
+            <linearGradient id="secondaryGradientNew" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.2}/>
+              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+            </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+          <CartesianGrid 
+            strokeDasharray="3 3" 
+            stroke="hsl(var(--border))" 
+            strokeOpacity={0.3}
+            vertical={false}
+          />
           <XAxis 
             dataKey="month" 
             stroke="hsl(var(--muted-foreground))"
-            fontSize={12}
+            fontSize={11}
+            tickLine={false}
+            axisLine={false}
+            dy={8}
           />
           <YAxis 
             stroke="hsl(var(--muted-foreground))"
-            fontSize={12}
+            fontSize={11}
+            tickLine={false}
+            axisLine={false}
             tickFormatter={(value) => {
               if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`
-              if (value >= 1000) return `$${(value / 1000).toFixed(1)}K`
+              if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`
               return `$${value}`
             }}
           />
           <Tooltip content={<CustomTooltip />} />
           <Area
             type="monotone"
-            dataKey="total"
-            stroke="#ffb500"
+            dataKey="secondary"
+            stroke="hsl(var(--primary))"
             fillOpacity={1}
-            fill="url(#totalGradient)"
-            strokeWidth={3}
-            filter="url(#glow)"
+            fill="url(#secondaryGradientNew)"
+            strokeWidth={2}
+            strokeOpacity={0.5}
+            dot={false}
+            activeDot={false}
+          />
+          <Area
+            type="monotone"
+            dataKey="total"
+            stroke="hsl(var(--accent))"
+            fillOpacity={1}
+            fill="url(#totalGradientNew)"
+            strokeWidth={2.5}
+            dot={false}
+            activeDot={{ r: 5, fill: 'hsl(var(--accent))', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>

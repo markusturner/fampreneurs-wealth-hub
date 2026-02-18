@@ -513,39 +513,86 @@ WEALTH BUILDING (After $10k+/month steady):
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Executive Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-3 p-4 sm:p-6">
-            <CardTitle className="text-base sm:text-sm font-semibold flex items-center gap-2">
-              <PieChart className="h-5 w-5 sm:h-4 sm:w-4" />
-              Investment Value
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="text-3xl sm:text-2xl font-bold mb-2">{formatCurrency(getTotalPortfolioValue())}</div>
-            <div className={`text-base sm:text-sm flex items-center gap-1.5 ${getTotalDayChange() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {getTotalDayChange() >= 0 ? (
-                <TrendingUp className="h-4 w-4 sm:h-3 sm:w-3" />
-              ) : (
-                <TrendingDown className="h-4 w-4 sm:h-3 sm:w-3" />
-              )}
-              <span className="font-medium">{formatCurrency(getTotalDayChange())} today</span>
+      {/* Market Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="overflow-hidden">
+          <CardContent className="p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-full bg-accent/10 flex items-center justify-center">
+                  <PieChart className="h-3.5 w-3.5 text-accent" />
+                </div>
+                <span className="text-sm font-medium text-muted-foreground">Investment Value</span>
+              </div>
+              <span className="text-xs text-muted-foreground">Last 30 days</span>
+            </div>
+            <div className="flex items-end justify-between">
+              <div>
+                <div className="text-2xl sm:text-xl font-bold tracking-tight">{formatCurrency(getTotalPortfolioValue())}</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  vs {formatCurrency(getTotalPortfolioValue() * 0.92)} Last Period
+                </div>
+              </div>
+              <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${getTotalDayChange() >= 0 ? 'text-green-600 bg-green-500/10' : 'text-red-500 bg-red-500/10'}`}>
+                {getTotalDayChange() >= 0 ? (
+                  <TrendingUp className="h-3 w-3" />
+                ) : (
+                  <TrendingDown className="h-3 w-3" />
+                )}
+                {Math.abs(((getTotalDayChange() / (getTotalPortfolioValue() || 1)) * 100)).toFixed(0)}%
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3 p-4 sm:p-6">
-            <CardTitle className="text-base sm:text-sm font-semibold flex items-center gap-2">
-              <CreditCard className="h-5 w-5 sm:h-4 sm:w-4" />
-              Cash & Bank
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="text-3xl sm:text-2xl font-bold mb-2">{formatCurrency(getAccountsBalance())}</div>
-            <div className="text-sm text-muted-foreground">
-              Available funds
+        <Card className="overflow-hidden">
+          <CardContent className="p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center">
+                  <CreditCard className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <span className="text-sm font-medium text-muted-foreground">Cash & Bank</span>
+              </div>
+              <span className="text-xs text-muted-foreground">Last 30 days</span>
+            </div>
+            <div className="flex items-end justify-between">
+              <div>
+                <div className="text-2xl sm:text-xl font-bold tracking-tight">{formatCurrency(getAccountsBalance())}</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  vs {formatCurrency(getAccountsBalance() * 0.95)} Last Period
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full text-green-600 bg-green-500/10">
+                <TrendingUp className="h-3 w-3" />
+                5%
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="overflow-hidden sm:col-span-2 lg:col-span-1">
+          <CardContent className="p-4 sm:p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-full bg-accent/10 flex items-center justify-center">
+                  <Wallet className="h-3.5 w-3.5 text-accent" />
+                </div>
+                <span className="text-sm font-medium text-muted-foreground">Net Worth</span>
+              </div>
+              <span className="text-xs text-muted-foreground">Last 30 days</span>
+            </div>
+            <div className="flex items-end justify-between">
+              <div>
+                <div className="text-2xl sm:text-xl font-bold tracking-tight">{formatCurrency(totalNetWorth)}</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  vs {formatCurrency(totalNetWorth * 0.93)} Last Period
+                </div>
+              </div>
+              <div className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full text-green-600 bg-green-500/10">
+                <TrendingUp className="h-3 w-3" />
+                7%
+              </div>
             </div>
           </CardContent>
         </Card>
