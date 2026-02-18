@@ -122,7 +122,7 @@ export function AppSidebar({ className }: { className?: string }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, profile, signOut } = useAuth()
-  const { isAdmin } = useUserRole()
+  const { isAdmin, isFamilyOfficeOnly } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const { subscriptionStatus } = useSubscription()
   const currentPath = location.pathname
@@ -206,11 +206,20 @@ export function AppSidebar({ className }: { className?: string }) {
           <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">TruHeirs</p>
         </div>
         <div className="space-y-0.5">
-          <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
-          <NavItem label="Family Office" icon={Home} href="/digital-family-office" active={isActive("/digital-family-office")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
-          <NavItem label="Family Constitution" icon={FileText} href="/documents" active={isActive("/documents")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
-          <NavItem label="Family Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
-          <NavItem label="Family Members" icon={Users} href="/members" active={isActive("/members")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
+          {isFamilyOfficeOnly ? (
+            <>
+              <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} />
+              <NavItem label="Family Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} />
+            </>
+          ) : (
+            <>
+              <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
+              <NavItem label="Family Office" icon={Home} href="/digital-family-office" active={isActive("/digital-family-office")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
+              <NavItem label="Family Constitution" icon={FileText} href="/documents" active={isActive("/documents")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
+              <NavItem label="Family Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
+              <NavItem label="Family Members" icon={Users} href="/members" active={isActive("/members")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
+            </>
+          )}
         </div>
 
         {/* ADMIN */}

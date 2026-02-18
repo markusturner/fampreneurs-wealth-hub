@@ -13,6 +13,7 @@ import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSa
 import { formatInTimeZone } from "date-fns-tz"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
+import { useOwnerRole } from "@/hooks/useOwnerRole"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -55,8 +56,10 @@ const LOCATIONS = [
 const QUICK_FORMATS = ['coffee hour', 'Q&A', 'co-working session', 'happy hour']
 
 export default function WorkspaceCalendar() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { toast } = useToast()
+  const { isOwner } = useOwnerRole(user?.id ?? null)
+  const canCreateEvent = profile?.is_admin || isOwner
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -180,11 +183,12 @@ export default function WorkspaceCalendar() {
         <div
           key={day.toString()}
           className={cn(
-            "min-h-[80px] sm:min-h-[100px] border-r border-b border-border p-1 sm:p-2 cursor-pointer hover:bg-muted/50 transition-colors",
+            "min-h-[80px] sm:min-h-[100px] border-r border-b border-border p-1 sm:p-2 transition-colors",
+            canCreateEvent && "cursor-pointer hover:bg-muted/50",
             !isSameMonth(day, monthStart) && "bg-muted/20 text-muted-foreground",
             isSameDay(day, new Date()) && "bg-primary/5"
           )}
-          onClick={() => openCreateForDate(cloneDay)}
+          onClick={() => canCreateEvent && openCreateForDate(cloneDay)}
         >
           <div className={cn(
             "text-xs sm:text-sm font-medium mb-1",
@@ -243,11 +247,13 @@ export default function WorkspaceCalendar() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { resetForm(); setIsCreateOpen(true) }}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
+          {canCreateEvent && (
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { resetForm(); setIsCreateOpen(true) }}>
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Day headers */}
