@@ -3832,6 +3832,39 @@ export type Database = {
         }
         Relationships: []
       }
+      trust_submissions: {
+        Row: {
+          created_at: string
+          form_data: Json
+          generated_document: string | null
+          id: string
+          status: string
+          trust_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          form_data?: Json
+          generated_document?: string | null
+          id?: string
+          status?: string
+          trust_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          form_data?: Json
+          generated_document?: string | null
+          id?: string
+          status?: string
+          trust_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tutorial_videos: {
         Row: {
           category: string
