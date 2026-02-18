@@ -15,7 +15,7 @@ export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
+  const [confirmPassword] = useState('') // kept for minimal diff
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [selectedProgram, setSelectedProgram] = useState<ProgramId | ''>('')
@@ -32,11 +32,6 @@ export default function SignUp() {
     setIsLoading(true)
 
     try {
-      if (password !== confirmPassword) {
-        toast({ title: "Passwords don't match", description: "Please make sure your passwords match.", variant: "destructive" })
-        return
-      }
-
       if (password.length < 6) {
         toast({ title: "Password too short", description: "Password must be at least 6 characters long.", variant: "destructive" })
         return
@@ -108,7 +103,7 @@ export default function SignUp() {
           : "Please check your email to verify your account.",
       })
 
-      setEmail(''); setPassword(''); setConfirmPassword(''); setFirstName(''); setLastName('')
+      setEmail(''); setPassword(''); setFirstName(''); setLastName('')
       setSelectedProgram(''); setSelectedPriceIndex(''); setPaymentMethod('')
     } catch (error) {
       toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" })
@@ -195,10 +190,6 @@ export default function SignUp() {
               <p className="text-xs text-muted-foreground">Must be at least 6 characters long</p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
-              <Input id="confirm-password" type="password" placeholder="Confirm your password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required disabled={isLoading} />
-            </div>
 
             <div className="space-y-2">
               <Label>Program</Label>
