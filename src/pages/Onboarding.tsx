@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { useAgreementStatus } from '@/hooks/useAgreementStatus'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -81,6 +82,7 @@ const CONDITIONAL_FIELDS = ['referral_who', 'touchpoint_other', 'improvement_oth
 export default function Onboarding() {
   const { user, loading: authLoading, refreshProfile } = useAuth()
   const { signed: agreementSigned, loading: agreementLoading, needsAgreement } = useAgreementStatus()
+  const { isAdminOrOwner, isLoading: roleLoading } = useIsAdminOrOwner()
   const navigate = useNavigate()
   const { toast } = useToast()
   const [step, setStep] = useState(0)
@@ -107,8 +109,12 @@ export default function Onboarding() {
     anything_else: '',
   })
 
-  // Redirect to agreement page if not signed yet
+  // Owners/admins bypass onboarding
   useEffect(() => {
+    if (!authLoading && !roleLoading && isAdminOrOwner) {
+      navigate('/dashboard')
+      return
+    }
     if (!authLoading && !user) {
       navigate('/auth')
       return
@@ -116,10 +122,9 @@ export default function Onboarding() {
     if (!authLoading && !agreementLoading && user && needsAgreement && agreementSigned === false) {
       navigate('/program-agreement')
     }
-  }, [authLoading, agreementLoading, user, needsAgreement, agreementSigned, navigate])
+  }, [authLoading, agreementLoading, roleLoading, isAdminOrOwner, user, needsAgreement, agreementSigned, navigate])
 
-  // Show loading while checking agreement status
-  if (authLoading || agreementLoading) {
+  if (authLoading || agreementLoading || roleLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
@@ -127,7 +132,7 @@ export default function Onboarding() {
     )
   }
 
-  if (!user) return null
+  if (!user || isAdminOrOwner) return null
   if (needsAgreement && agreementSigned === false) return null
 
   const set = (field: keyof FormData, value: string) =>

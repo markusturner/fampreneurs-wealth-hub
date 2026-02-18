@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -415,7 +416,8 @@ function getAgreementKey(programName: string | null | undefined): string | null 
 }
 
 export default function ProgramAgreement() {
-  const { user, profile } = useAuth()
+  const { user, profile, loading: authLoading } = useAuth()
+  const { isAdminOrOwner, isLoading: roleLoading } = useIsAdminOrOwner()
   const navigate = useNavigate()
   const { toast } = useToast()
   const [submitting, setSubmitting] = useState(false)
@@ -428,6 +430,13 @@ export default function ProgramAgreement() {
   const programName = profile?.program_name
   const agreementKey = getAgreementKey(programName)
   const agreementText = agreementKey ? AGREEMENT_MAP[agreementKey] : null
+
+  // Owners/admins bypass agreement
+  useEffect(() => {
+    if (!authLoading && !roleLoading && isAdminOrOwner) {
+      navigate('/dashboard')
+    }
+  }, [authLoading, roleLoading, isAdminOrOwner, navigate])
 
   const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ')
   const address = [
@@ -448,6 +457,25 @@ export default function ProgramAgreement() {
     ctx.lineWidth = 2
     ctx.lineCap = 'round'
   }, [useTypedSignature])
+
+  // If no agreement needed for this program, redirect to onboarding
+  useEffect(() => {
+    if (!authLoading && !roleLoading && !isAdminOrOwner && !agreementText) {
+      navigate('/onboarding')
+    }
+  }, [agreementText, authLoading, roleLoading, isAdminOrOwner, navigate])
+
+  // Loading state
+  if (authLoading || roleLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      </div>
+    )
+  }
+
+  if (isAdminOrOwner) return null
+  if (!agreementText) return null
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
@@ -515,15 +543,6 @@ export default function ProgramAgreement() {
       setSubmitting(false)
     }
   }
-
-  // If no agreement needed for this program, redirect to onboarding
-  useEffect(() => {
-    if (!agreementText) {
-      navigate('/onboarding')
-    }
-  }, [agreementText, navigate])
-
-  if (!agreementText) return null
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
