@@ -96,7 +96,7 @@ export default function MinistryTrustForm({ onBack, onGenerated }: MinistryTrust
       })
       if (error) throw error
       if (data.error) throw new Error(data.error)
-      onGenerated(data.document)
+      onGenerated(data.document_url || data.document)
       toast({ title: "Trust Document Generated", description: "Your charitable trust document has been created successfully." })
     } catch (err: any) {
       console.error("Error generating trust:", err)

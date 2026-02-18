@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
-import { Lock, FileText, Building2, Church, Home, Download, Loader2, CheckCircle2, Mail, Eye } from "lucide-react"
+import { Lock, FileText, Building2, Church, Home, Download, Loader2, CheckCircle2, Mail, Eye, ExternalLink } from "lucide-react"
 import { jsPDF } from "jspdf"
 import FamilyTrustForm from "@/components/trust/FamilyTrustForm"
 import MinistryTrustForm from "@/components/trust/MinistryTrustForm"
@@ -265,7 +265,9 @@ export default function TrustCreation() {
                 {TRUST_INFO[selectedTrust].label} Generated Successfully!
               </h2>
               <p className="text-muted-foreground">
-                Your trust document is ready. Download it as a PDF below.
+                {generatedDoc.startsWith("https://docs.google.com/")
+                  ? "Your trust document has been created as a Google Doc. Click below to open, edit, and download it."
+                  : "Your trust document is ready. Download it as a PDF below."}
               </p>
               {emailSent && (
                 <div className="flex items-center justify-center gap-2 text-accent text-sm">
@@ -278,12 +280,34 @@ export default function TrustCreation() {
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center justify-center gap-3">
-            <Button onClick={handleDownloadPDF} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-              <Download className="h-4 w-4 mr-2" /> Download PDF
-            </Button>
-            <Button variant="outline" size="lg" onClick={handleDownloadText}>
-              <FileText className="h-4 w-4 mr-2" /> Download Text
-            </Button>
+            {generatedDoc.startsWith("https://docs.google.com/") ? (
+              <>
+                <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                  <a href={generatedDoc} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4 mr-2" /> Open in Google Docs
+                  </a>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <a href={generatedDoc.replace("/edit", "/export?format=pdf")} target="_blank" rel="noopener noreferrer">
+                    <Download className="h-4 w-4 mr-2" /> Download PDF
+                  </a>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <a href={generatedDoc.replace("/edit", "/export?format=docx")} target="_blank" rel="noopener noreferrer">
+                    <FileText className="h-4 w-4 mr-2" /> Download Word
+                  </a>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button onClick={handleDownloadPDF} size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                  <Download className="h-4 w-4 mr-2" /> Download PDF
+                </Button>
+                <Button variant="outline" size="lg" onClick={handleDownloadText}>
+                  <FileText className="h-4 w-4 mr-2" /> Download Text
+                </Button>
+              </>
+            )}
             {!emailSent && (
               <Button variant="outline" size="lg" onClick={handleSendEmail} disabled={sendingEmail}>
                 {sendingEmail ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
@@ -295,19 +319,39 @@ export default function TrustCreation() {
             </Button>
           </div>
 
-          {/* Document Preview */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Eye className="h-4 w-4" /> Document Preview
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[50vh]">
-                <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed">{generatedDoc}</pre>
-              </ScrollArea>
-            </CardContent>
-          </Card>
+          {/* Document Preview - only for text documents */}
+          {!generatedDoc.startsWith("https://docs.google.com/") && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Eye className="h-4 w-4" /> Document Preview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[50vh]">
+                  <pre className="whitespace-pre-wrap text-sm font-mono leading-relaxed">{generatedDoc}</pre>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Google Doc embed preview */}
+          {generatedDoc.startsWith("https://docs.google.com/") && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Eye className="h-4 w-4" /> Document Preview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <iframe
+                  src={generatedDoc.replace("/edit", "/preview")}
+                  className="w-full h-[60vh] rounded-md border"
+                  title="Trust Document Preview"
+                />
+              </CardContent>
+            </Card>
+          )}
         </div>
       ) : selectedTrust === 'family' ? (
         <FamilyTrustForm
