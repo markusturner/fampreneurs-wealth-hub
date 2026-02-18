@@ -188,7 +188,7 @@ export function AppSidebar({ className }: { className?: string }) {
 
       {/* Trust Creation */}
       <div className="px-3 pb-3">
-        <div className="bg-[hsl(43,100%,50%)]/10 rounded-xl">
+        <div className={cn("rounded-xl", currentPath.includes("/trust-creation") && "bg-[hsl(43,100%,50%)]/10")}>
           <NavItem
             label="Trust Creation"
             icon={ScrollText}
