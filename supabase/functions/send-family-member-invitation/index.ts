@@ -174,7 +174,7 @@ const handler = async (req: Request): Promise<Response> => {
             <p><strong>${inviterName}</strong> invited you to join the family office platform as a <strong>${familyPosition}</strong>.</p>
             <p><strong>Email:</strong> ${email}<br/><strong>Temporary Password:</strong> <code style="background:#f2f4f7; padding:2px 6px; border-radius:4px;">${tempPassword}</code>${familyCode ? `<br/><strong>Family Secret Code:</strong> <code style="background:#f2f4f7; padding:2px 6px; border-radius:4px;">${familyCode}</code>` : ''}</p>
             <p>
-              <a href="${frontendUrl}/auth" style="display:inline-block; background:#0a66c2; color:#fff; padding:10px 16px; text-decoration:none; border-radius:6px;">Sign in</a>
+              <a href="${frontendUrl}/auth" style="display:inline-block; background:#ffb500; color:#290a52; padding:10px 16px; text-decoration:none; border-radius:6px; font-weight:bold;">Sign in</a>
             </p>
             <p style="margin-top:12px;">For security, please change your password after your first login.</p>
           </div>

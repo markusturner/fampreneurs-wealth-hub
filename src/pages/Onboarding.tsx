@@ -39,6 +39,7 @@ const IMPROVEMENT_OPTIONS = [
   'More testimonials',
   'Trust driven content',
   'Better marketing/stories/videos',
+  'Other',
 ]
 
 interface FormData {
@@ -46,11 +47,14 @@ interface FormData {
   tshirt_size: string
   mailing_address: string
   first_touchpoint: string
+  referral_who: string
+  touchpoint_other: string
   decision_reason: string
   investment_reason: string
   join_elaboration: string
   time_to_decide: string
   improvement_suggestion: string
+  improvement_other: string
   why_markus: string
   final_push: string
   pre_call_conviction: string
@@ -70,6 +74,9 @@ const STEPS = [
   { title: 'Final Thoughts', fields: ['why_choose_me', 'specific_content', 'anything_else'] },
 ]
 
+// Fields that are conditional and should not block progress
+const CONDITIONAL_FIELDS = ['referral_who', 'touchpoint_other', 'improvement_other']
+
 export default function Onboarding() {
   const { user, refreshProfile } = useAuth()
   const navigate = useNavigate()
@@ -81,11 +88,14 @@ export default function Onboarding() {
     tshirt_size: '',
     mailing_address: '',
     first_touchpoint: '',
+    referral_who: '',
+    touchpoint_other: '',
     decision_reason: '',
     investment_reason: '',
     join_elaboration: '',
     time_to_decide: '',
     improvement_suggestion: '',
+    improvement_other: '',
     why_markus: '',
     final_push: '',
     pre_call_conviction: '',
@@ -99,21 +109,61 @@ export default function Onboarding() {
     setForm(prev => ({ ...prev, [field]: value }))
 
   const currentFields = STEPS[step].fields as (keyof FormData)[]
-  const requiredFields = currentFields.filter(f => f !== 'anything_else')
-  const canProceed = requiredFields.every(f => form[f]?.trim())
+  const optionalFields: (keyof FormData)[] = ['anything_else', ...CONDITIONAL_FIELDS as (keyof FormData)[]]
+
+  const canProceed = (() => {
+    for (const f of currentFields) {
+      if (optionalFields.includes(f)) continue
+      if (!form[f]?.trim()) return false
+      // If Referral is selected, referral_who is required
+      if (f === 'first_touchpoint' && form.first_touchpoint === 'Referral' && !form.referral_who?.trim()) return false
+      // If Other is selected for touchpoint, touchpoint_other is required
+      if (f === 'first_touchpoint' && form.first_touchpoint === 'Other' && !form.touchpoint_other?.trim()) return false
+      // If improvement has Other, improvement_other is required
+      if (f === 'improvement_suggestion' && form.improvement_suggestion.includes('Other') && !form.improvement_other?.trim()) return false
+    }
+    return true
+  })()
 
   const handleSubmit = async () => {
     if (!user) return
     setSubmitting(true)
     try {
+      // Build the submission, merging conditional fields into their parents
+      let firstTouchpoint = form.first_touchpoint
+      if (form.first_touchpoint === 'Referral' && form.referral_who) {
+        firstTouchpoint = `Referral - ${form.referral_who}`
+      }
+      if (form.first_touchpoint === 'Other' && form.touchpoint_other) {
+        firstTouchpoint = `Other: ${form.touchpoint_other}`
+      }
+      let improvementSuggestion = form.improvement_suggestion
+      if (form.improvement_suggestion.includes('Other') && form.improvement_other) {
+        improvementSuggestion = form.improvement_suggestion.replace('Other', `Other: ${form.improvement_other}`)
+      }
+
       const { error } = await supabase.from('onboarding_responses').insert({
         user_id: user.id,
-        ...form,
+        full_name: form.full_name,
+        tshirt_size: form.tshirt_size,
+        mailing_address: form.mailing_address,
+        first_touchpoint: firstTouchpoint,
+        decision_reason: form.decision_reason,
+        investment_reason: form.investment_reason,
+        join_elaboration: form.join_elaboration,
+        time_to_decide: form.time_to_decide,
+        improvement_suggestion: improvementSuggestion,
+        why_markus: form.why_markus,
+        final_push: form.final_push,
+        pre_call_conviction: form.pre_call_conviction,
+        biggest_hesitation: form.biggest_hesitation,
+        why_choose_me: form.why_choose_me,
+        specific_content: form.specific_content,
+        anything_else: form.anything_else,
       })
       if (error) throw error
       await refreshProfile()
       toast({ title: 'Onboarding complete!', description: 'Redirecting to book your onboarding call…' })
-      // Redirect to Calendly
       window.location.href = 'https://calendly.com/apexathletemgnt/fampreneurs-onboarding'
     } catch (err: any) {
       console.error(err)
@@ -157,12 +207,24 @@ export default function Onboarding() {
         return (
           <div className="space-y-2" key={field}>
             <Label>What was the first touchpoint of knowing us? *</Label>
-            <Select value={form.first_touchpoint} onValueChange={v => set('first_touchpoint', v)}>
+            <Select value={form.first_touchpoint} onValueChange={v => { set('first_touchpoint', v); if (v !== 'Referral') set('referral_who', ''); if (v !== 'Other') set('touchpoint_other', '') }}>
               <SelectTrigger><SelectValue placeholder="Select one" /></SelectTrigger>
               <SelectContent>
                 {TOUCHPOINT_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
               </SelectContent>
             </Select>
+            {form.first_touchpoint === 'Referral' && (
+              <div className="mt-2">
+                <Label>Who referred you? *</Label>
+                <Input value={form.referral_who} onChange={e => set('referral_who', e.target.value)} placeholder="Name of the person who referred you" className="mt-1" />
+              </div>
+            )}
+            {form.first_touchpoint === 'Other' && (
+              <div className="mt-2">
+                <Label>Please specify *</Label>
+                <Input value={form.touchpoint_other} onChange={e => set('touchpoint_other', e.target.value)} placeholder="How did you find us?" className="mt-1" />
+              </div>
+            )}
           </div>
         )
       case 'decision_reason':
@@ -186,9 +248,7 @@ export default function Onboarding() {
                   className="text-xs"
                   onClick={() => {
                     const current = form.investment_reason ? form.investment_reason.split(', ') : []
-                    const updated = current.includes(o)
-                      ? current.filter(c => c !== o)
-                      : [...current, o]
+                    const updated = current.includes(o) ? current.filter(c => c !== o) : [...current, o]
                     set('investment_reason', updated.join(', '))
                   }}
                 >
@@ -226,16 +286,21 @@ export default function Onboarding() {
                   className="text-xs"
                   onClick={() => {
                     const current = form.improvement_suggestion ? form.improvement_suggestion.split(', ') : []
-                    const updated = current.includes(o)
-                      ? current.filter(c => c !== o)
-                      : [...current, o]
+                    const updated = current.includes(o) ? current.filter(c => c !== o) : [...current, o]
                     set('improvement_suggestion', updated.join(', '))
+                    if (!updated.includes('Other')) set('improvement_other', '')
                   }}
                 >
                   {o}
                 </Button>
               ))}
             </div>
+            {form.improvement_suggestion.includes('Other') && (
+              <div className="mt-2">
+                <Label>Please specify what could be improved *</Label>
+                <Input value={form.improvement_other} onChange={e => set('improvement_other', e.target.value)} placeholder="Your suggestion..." className="mt-1" />
+              </div>
+            )}
           </div>
         )
       case 'why_markus':
@@ -296,26 +361,16 @@ export default function Onboarding() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
-          <img
-            src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png"
-            alt="TruHeirs"
-            className="w-12 h-12 mx-auto mb-2 object-contain"
-          />
+          <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-12 h-12 mx-auto mb-2 object-contain" />
           <CardTitle className="text-2xl">Welcome to Fampreneurs</CardTitle>
-          <CardDescription>
-            Step {step + 1} of {STEPS.length} — {STEPS[step].title}
-          </CardDescription>
+          <CardDescription>Step {step + 1} of {STEPS.length} — {STEPS[step].title}</CardDescription>
           <Progress value={progress} className="mt-3" />
         </CardHeader>
         <CardContent className="space-y-6">
           {currentFields.map(renderField)}
 
           <div className="flex justify-between pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setStep(s => s - 1)}
-              disabled={step === 0}
-            >
+            <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 0}>
               <ArrowLeft className="h-4 w-4 mr-1" /> Back
             </Button>
 
