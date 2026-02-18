@@ -1,5 +1,3 @@
-// deno-lint-ignore-file
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
@@ -15,10 +13,12 @@ async function getGoogleAccessToken(): Promise<string> {
   const serviceAccountJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
   if (!serviceAccountJson) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON not configured");
 
-  let sa: any;
+  let sa: Record<string, string>;
   try {
     sa = JSON.parse(serviceAccountJson);
-  } catch {
+  } catch (e) {
+    console.error("JSON parse error:", e);
+    console.error("First 50 chars of secret:", serviceAccountJson.substring(0, 50));
     throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON is not valid JSON. Please re-save the secret with the full JSON service account key.");
   }
 
@@ -85,7 +85,6 @@ async function getGoogleAccessToken(): Promise<string> {
 }
 
 async function fetchSheetData(accessToken: string, sheetId: string): Promise<Record<string, string>[]> {
-  // Try multiple common sheet names
   const sheetNames = ["Sheet1", "Form Responses 1", "Form%20Responses%201"];
   
   for (const sheetName of sheetNames) {
@@ -101,7 +100,6 @@ async function fetchSheetData(accessToken: string, sheetId: string): Promise<Rec
     }
   }
 
-  // Last resort: fetch first sheet by index
   const metaRes = await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=sheets.properties.title`,
     { headers: { Authorization: `Bearer ${accessToken}` } }
