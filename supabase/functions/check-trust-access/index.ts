@@ -48,6 +48,34 @@ serve(async (req) => {
     const user = userData.user;
     if (!user?.email) throw new Error("Not authenticated");
 
+    // Check if user is admin or owner — grant full access
+    const { data: roleData } = await supabaseClient
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .in("role", ["admin", "owner"]);
+
+    const { data: profileData } = await supabaseClient
+      .from("profiles")
+      .select("is_admin")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const isAdminOrOwner = (roleData && roleData.length > 0) || profileData?.is_admin === true;
+
+    if (isAdminOrOwner) {
+      return new Response(JSON.stringify({
+        has_access: true,
+        unlocked_trusts: [...TRUST_ORDER],
+        program: 'admin',
+        tfv_total_paid: 0,
+        tfba_total_paid: 0,
+        is_pif: true,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
