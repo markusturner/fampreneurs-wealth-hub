@@ -1,5 +1,5 @@
 // Stripe program & pricing configuration
-export type ProgramId = 'fbu' | 'tfv' | 'tfba';
+export type ProgramId = 'fbu' | 'tfv' | 'tfba' | 'tffm';
 
 export interface PricingOption {
   label: string;
@@ -44,6 +44,15 @@ export const PROGRAMS: Program[] = [
     pricing: [
       { label: '$7,500 (Paid in Full)', price_id: 'price_1T1dl0KKuJwlPZFrnPpruCYU', amount: 750000, interval: 'One-Time', mode: 'payment' },
       { label: '$3,000/mo for 3 months', price_id: 'price_1T1dlOKKuJwlPZFrx1Ppbyz4', amount: 300000, interval: '3-Month Plan', mode: 'subscription' },
+    ],
+  },
+  {
+    id: 'tffm',
+    name: 'The Family Fortune Mastermind',
+    shortName: 'TFFM',
+    pricing: [
+      { label: '$40,000 (Paid in Full)', price_id: 'price_tffm_pif', amount: 4000000, interval: 'One-Time', mode: 'payment' },
+      { label: '$3,500/mo for 12 months', price_id: 'price_tffm_monthly', amount: 350000, interval: '12-Month Plan', mode: 'subscription' },
     ],
   },
 ];
