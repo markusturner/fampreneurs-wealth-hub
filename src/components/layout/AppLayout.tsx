@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus"
 import { useAgreementStatus } from "@/hooks/useAgreementStatus"
+import { useIsAdminOrOwner } from "@/hooks/useIsAdminOrOwner"
 import { AppSidebar } from "./AppSidebar"
 import { Loader2, Menu } from "lucide-react"
 import { useState } from "react"
@@ -19,6 +20,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { user, loading, profile } = useAuth()
   const { completed: onboardingCompleted, loading: onboardingLoading } = useOnboardingStatus()
   const { signed: agreementSigned, loading: agreementLoading, needsAgreement } = useAgreementStatus()
+  const { isAdminOrOwner, isLoading: roleLoading } = useIsAdminOrOwner()
   const navigate = useNavigate()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -31,25 +33,25 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   // Redirect to agreement page if not signed yet — AGREEMENT FIRST, then onboarding
   useEffect(() => {
-    if (!loading && !agreementLoading && user && needsAgreement && agreementSigned === false && !profile?.is_admin) {
+    if (!loading && !agreementLoading && !roleLoading && user && needsAgreement && agreementSigned === false && !isAdminOrOwner) {
       if (location.pathname !== '/program-agreement') {
         navigate("/program-agreement")
       }
     }
-  }, [user, loading, agreementLoading, agreementSigned, needsAgreement, profile, navigate, location.pathname])
+  }, [user, loading, agreementLoading, roleLoading, agreementSigned, needsAgreement, isAdminOrOwner, navigate, location.pathname])
 
   // Only redirect to onboarding AFTER agreement is signed (or not needed)
   useEffect(() => {
-    if (!loading && !onboardingLoading && !agreementLoading && user && !profile?.is_admin) {
+    if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner) {
       // If agreement is needed and not signed, don't redirect to onboarding
       if (needsAgreement && agreementSigned === false) return
       if (onboardingCompleted === false && location.pathname !== '/onboarding') {
         navigate("/onboarding")
       }
     }
-  }, [user, loading, onboardingLoading, agreementLoading, onboardingCompleted, agreementSigned, needsAgreement, profile, navigate, location.pathname])
+  }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementSigned, needsAgreement, isAdminOrOwner, navigate, location.pathname])
 
-  if (loading || onboardingLoading || agreementLoading) {
+  if (loading || onboardingLoading || agreementLoading || roleLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
