@@ -129,23 +129,29 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     // Build prompt for AI to generate the complete trust document
-    const systemPrompt = `You are a legal document generator specializing in trust documents. You will be given a trust template outline and form data. Your job is to generate a COMPLETE, professionally formatted trust document by filling in ALL placeholder fields with the provided form data. 
+    const systemPrompt = `You are a legal document generator specializing in trust documents. You will be given a trust template outline and form data. Your job is to generate a COMPLETE, professionally formatted trust document by filling in ALL placeholder fields with the provided form data.
 
-IMPORTANT RULES:
-- Replace ALL placeholder fields (marked with {{FIELD}}) with the actual values from the form data
-- Generate ALL articles listed in the template outline with full legal language
-- Format dates properly (e.g., "22nd day of December")
-- For Ministry Charitable Trust: Include all articles I through XIII, with Article 1.4 (Tax-Exempt under 508(c)(1)(a)), Article 1.5 (Non-Profit Operation), Article VI (Compliance Steward), Article VII (Distribution of Assets with mandatory 5% charitable distributions), Article VIII (Charitable and Non-Charitable Beneficiaries)
-- For Private Family Trust: Include all articles I through XI, with Article II (Gift, Transfers & Property), Article III (Purposes including Beneficiary Benefit, Administrative, Efficient Administration), Article IV (comprehensive Trustee powers 4.1-4.34), Article V (Beneficiary provisions 5.1-5.12 including distribution allocation of 30% living/70% investments), Articles VI-IX (Jurisdiction under Common Law, Privacy, Powers/Liability, Duration in perpetuity)
-- For Business Trust: Include all standard articles for Private Unincorporated Business Trust
-- Include Schedule A (Trust Certificate Units - 100 units total), Schedule B (Assets), Schedule C (Beneficiary Contact Information), Schedule D (Memorandum of Personal Property)
-- Include Certificate of Trust with all required sections
-- Include Trustee Acceptance pages with signature lines
-- Include Trust Protector Acceptance pages with signature lines
-- For Ministry Trust: Include Compliance Steward Acceptance page
-- Include Jurat/Acknowledgment sections with notary blocks
+CRITICAL RULES:
+- "Settlor" and "Grantor" are the SAME person. Wherever either term appears, use the same name provided in the form data as the Settlor/Grantor. They are interchangeable.
+- Replace ALL placeholder fields (marked with {{FIELD}}) with the actual values from the form data. Do NOT leave any placeholder unfilled.
+- Generate ALL articles listed in the template outline with FULL legal language — do not summarize, abbreviate, or skip any article, section, or subsection.
+- Every single article and sub-article (e.g., 4.1 through 4.34, 5.1 through 5.12) must be written out in full with proper legal prose.
+- Format dates properly (e.g., "22nd day of December in the Year Two Thousand Twenty-Six (2026)")
+- For Ministry Charitable Trust: Include ALL articles I through XIII with full text. Article 1.4 must cover Tax-Exempt status under 508(c)(1)(a). Article 1.5 must cover Non-Profit Operation. Article VI must cover Compliance Steward. Article VII must cover Distribution of Assets with mandatory 5% charitable distributions. Article VIII must cover both Charitable and Non-Charitable Beneficiaries with spendthrift provisions.
+- For Private Family Trust: Include ALL articles I through XI with full text. Article IV must include ALL trustee powers 4.1 through 4.34 written out completely. Article V must include ALL beneficiary provisions 5.1 through 5.12 including distribution allocation of 30% living expenses / 70% investments. Articles VI-IX must cover Jurisdiction under Common Law, Privacy, Powers/Liability, and Duration in perpetuity.
+- For Business Trust: Include ALL standard articles for Private Unincorporated Business Trust with full legal language.
+- Include Schedule A (Trust Certificate Units - 100 units total with allocation table)
+- Include Schedule B (Assets - with space for listing initial trust property)
+- Include Schedule C (Beneficiary Contact Information - with all beneficiary details filled in)
+- Include Schedule D (Memorandum of Personal Property)
+- Include a complete Certificate of Trust with all required sections
+- Include Trustee Acceptance pages with full oath language and signature lines for each trustee
+- Include Trust Protector Acceptance pages with full oath language and signature lines
+- For Ministry Trust: Include Compliance Steward Acceptance page with oath and signature lines
+- Include Jurat/Acknowledgment sections with complete notary blocks (State, County, notary lines)
 - Add the confidentiality footer: "This document is Privileged and Confidential. Any unauthorized disclosure of its contents is strictly prohibited."
-- The output should be a complete, ready-to-use trust document in plain text format`;
+- The output MUST be a complete, ready-to-sign trust document. Do NOT truncate, summarize, or use "..." or "[continued]" or "etc." anywhere.
+- Write out EVERY article, EVERY section, EVERY schedule, and EVERY certificate in full.`;
 
     const userPrompt = `Generate a complete ${trust_type === 'business' ? 'Private Unincorporated Business' : trust_type === 'ministry' ? 'Ministry Charitable' : 'Private Family'} Trust document using this template outline and data:
 
@@ -155,7 +161,7 @@ ${template}
 FORM DATA:
 
 Trust Name: ${form_data.trust_name}
-Settlor/Grantor Name: ${form_data.settlor_name}
+Settlor/Grantor Name (these are the SAME person): ${form_data.settlor_name}
 Trustee Name(s): ${form_data.trustee_names?.join(', ') || form_data.trustee_name}
 Trust Protector Name: ${form_data.trust_protector_name}
 ${trust_type === 'ministry' ? `Compliance Steward: ${form_data.compliance_steward_name || 'N/A'}` : ''}
@@ -171,7 +177,7 @@ ${form_data.successor_trustees ? `Successor Trustees: ${form_data.successor_trus
 ${form_data.successor_protectors ? `Successor Trust Protectors: ${form_data.successor_protectors.join(', ')}` : ''}
 ${form_data.initial_assets ? `Initial Assets: ${form_data.initial_assets}` : ''}
 
-Generate the COMPLETE trust document with all articles, schedules, certificates, and acceptance pages.`;
+IMPORTANT: Generate the COMPLETE trust document with ALL articles written in full, ALL schedules, ALL certificates, and ALL acceptance pages. Do NOT abbreviate or skip any section. The Settlor and Grantor are the SAME person — use "${form_data.settlor_name}" for both.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -180,7 +186,7 @@ Generate the COMPLETE trust document with all articles, schedules, certificates,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-preview",
+        model: "google/gemini-2.5-pro",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
