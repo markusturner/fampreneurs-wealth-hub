@@ -46,9 +46,10 @@ interface NavItemProps {
   onClick?: () => void
   children?: React.ReactNode
   defaultOpen?: boolean
+  className?: string
 }
 
-function NavItem({ label, icon: Icon, href, active, locked, onClick, children, defaultOpen = false }: NavItemProps) {
+function NavItem({ label, icon: Icon, href, active, locked, onClick, children, defaultOpen = false, className: extraClassName }: NavItemProps) {
   const [open, setOpen] = useState(defaultOpen)
   const navigate = useNavigate()
   const hasChildren = !!children
@@ -68,10 +69,11 @@ function NavItem({ label, icon: Icon, href, active, locked, onClick, children, d
           "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200",
           "hover:bg-sidebar-accent/60 group",
           active && !hasChildren && "bg-accent/20 text-accent font-medium",
-          locked && "opacity-40 cursor-not-allowed"
+          locked && "opacity-40 cursor-not-allowed",
+          extraClassName
         )}
       >
-        <Icon className={cn("h-4 w-4 flex-shrink-0", active && !hasChildren && "text-accent")} />
+        <Icon className={cn("h-4 w-4 flex-shrink-0", active && !hasChildren && "text-accent", extraClassName && extraClassName)} />
         <span className="flex-1 text-left truncate">{label}</span>
         {locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
         {hasChildren && !locked && (
@@ -175,8 +177,8 @@ export function AppSidebar({ className }: { className?: string }) {
       {/* AI Chat Button */}
       <div className="px-3 pb-2">
         <Button
-          className="w-full justify-start gap-2 rounded-xl font-semibold"
-          variant="outline"
+          className="w-full justify-start gap-2 rounded-xl font-semibold border-2 border-dashed border-[hsl(210,100%,58%)] text-[hsl(210,100%,58%)] bg-transparent hover:bg-[hsl(210,100%,58%)]/10"
+          variant="ghost"
           onClick={() => navigate('/ai-chat')}
         >
           <Bot className="h-4 w-4" />
@@ -186,16 +188,19 @@ export function AppSidebar({ className }: { className?: string }) {
 
       {/* Trust Creation */}
       <div className="px-3 pb-3">
-        <NavItem
-          label="Trust Creation"
-          icon={ScrollText}
-          defaultOpen={currentPath.includes("/trust-creation")}
-          active={currentPath.includes("/trust-creation")}
-        >
-          <SubNavItem label="Business Trust" href="/trust-creation?type=business" active={currentPath === "/trust-creation" && location.search.includes("type=business")} />
-          <SubNavItem label="Ministry Trust" href="/trust-creation?type=ministry" active={currentPath === "/trust-creation" && location.search.includes("type=ministry")} />
-          <SubNavItem label="Family Trust" href="/trust-creation?type=family" active={currentPath === "/trust-creation" && location.search.includes("type=family")} />
-        </NavItem>
+        <div className="border-2 border-dashed border-[hsl(43,100%,50%)] rounded-xl">
+          <NavItem
+            label="Trust Creation"
+            icon={ScrollText}
+            defaultOpen={currentPath.includes("/trust-creation")}
+            active={currentPath.includes("/trust-creation")}
+            className="text-[hsl(43,100%,50%)]"
+          >
+            <SubNavItem label="Business Trust" href="/trust-creation?type=business" active={currentPath === "/trust-creation" && location.search.includes("type=business")} />
+            <SubNavItem label="Ministry Trust" href="/trust-creation?type=ministry" active={currentPath === "/trust-creation" && location.search.includes("type=ministry")} />
+            <SubNavItem label="Family Trust" href="/trust-creation?type=family" active={currentPath === "/trust-creation" && location.search.includes("type=family")} />
+          </NavItem>
+        </div>
       </div>
 
       <ScrollArea className="flex-1 px-3 py-1">
