@@ -115,7 +115,7 @@ export default function WorkspaceCommunity() {
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('all')
   const [memberCount, setMemberCount] = useState(0)
-  const [onlineCount] = useState(Math.floor(Math.random() * 5) + 1)
+  const [onlineCount, setOnlineCount] = useState(0)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [communityPhoto, setCommunityPhoto] = useState<string | null>(null)
   const [communityName, setCommunityName] = useState('')
@@ -225,11 +225,46 @@ export default function WorkspaceCommunity() {
 
   useEffect(() => {
     const fetchMemberCount = async () => {
-      const { count } = await supabase.from('profiles').select('*', { count: 'exact', head: true })
-      setMemberCount(count || 0)
+      // Map program key to the community_groups name used in group_memberships
+      const programGroupMap: Record<string, string> = {
+        fbu: 'Family Business University',
+        tfv: 'The Family Vault',
+        tfba: 'The Family Business Accelerator',
+        tffm: 'The Family Fortune Mastermind',
+      }
+      const groupName = programGroupMap[program]
+      if (!groupName) { setMemberCount(0); setOnlineCount(0); return }
+
+      // Find the community group for this program
+      const { data: group } = await supabase
+        .from('community_groups')
+        .select('id')
+        .eq('name', groupName)
+        .maybeSingle()
+
+      if (group) {
+        // Count members in this specific group
+        const { count } = await supabase
+          .from('group_memberships')
+          .select('*', { count: 'exact', head: true })
+          .eq('group_id', group.id)
+        const total = count || 0
+        setMemberCount(total)
+        // Estimate online as ~10-20% of members, min 1 if any members
+        setOnlineCount(total > 0 ? Math.max(1, Math.floor(total * 0.15)) : 0)
+      } else {
+        // Fallback: count profiles with matching program_name
+        const { count } = await supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('program_name', PROGRAM_NAMES[program] || '')
+        const total = count || 0
+        setMemberCount(total)
+        setOnlineCount(total > 0 ? Math.max(1, Math.floor(total * 0.15)) : 0)
+      }
     }
     fetchMemberCount()
-  }, [])
+  }, [program])
 
   // Fetch upgrade video URL
   useEffect(() => {
