@@ -27,7 +27,7 @@ export default function OnboardingSubmissions() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-xl md:text-3xl font-bold">Onboarding Submissions</h1>
+          <h1 className="text-xl md:text-3xl font-bold">Onboarding Form</h1>
           <p className="text-sm text-muted-foreground">Review all onboarding form responses</p>
         </div>
       </div>

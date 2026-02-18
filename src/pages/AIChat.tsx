@@ -5,9 +5,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Send, Bot, User, Loader2, Shield, Building2, FileText, Paperclip, Settings2, X, ChevronDown, Upload, Mic, MicOff, Square } from 'lucide-react'
+import { Send, Bot, User, Loader2, Shield, Building2, FileText, Paperclip, Settings2, X, ChevronDown, Upload, Mic, Square } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import ReactMarkdown from 'react-markdown'
 import {
   Dialog,
@@ -53,11 +54,11 @@ const AI_MODELS: AIModel[] = [
   { id: 'claude', label: 'Claude', description: 'Thoughtful & detailed' },
 ]
 
-const PERSONAS: { id: Persona; label: string; icon: React.ElementType; description: string }[] = [
-  { id: 'rachel', label: 'Rachel', icon: Bot, description: 'General Family Office Director' },
-  { id: 'asset_protection', label: 'Asset Protection', icon: Shield, description: 'Trust docs & asset shielding' },
-  { id: 'business_structure', label: 'Biz Structure', icon: Building2, description: 'F.L.I.P. Formula™ guidance' },
-  { id: 'trust_writer', label: 'Trust Writer', icon: FileText, description: 'Draft trust clauses' },
+const PERSONAS: { id: Persona; label: string; icon: React.ElementType; description: string; color: string; activeColor: string }[] = [
+  { id: 'rachel', label: 'Rachel', icon: Bot, description: 'General Family Office Director', color: '#ffb500', activeColor: '#ffb500' },
+  { id: 'asset_protection', label: 'Asset Protection', icon: Shield, description: 'Trust docs & asset shielding', color: '#10b981', activeColor: '#10b981' },
+  { id: 'business_structure', label: 'Biz Structure', icon: Building2, description: 'F.L.I.P. Formula™ guidance', color: '#6366f1', activeColor: '#6366f1' },
+  { id: 'trust_writer', label: 'Trust Writer', icon: FileText, description: 'Draft trust clauses', color: '#ec4899', activeColor: '#ec4899' },
 ]
 
 const PERSONA_GREETINGS: Record<Persona, string> = {
@@ -65,6 +66,33 @@ const PERSONA_GREETINGS: Record<Persona, string> = {
   asset_protection: "Welcome! I specialize in asset protection strategies and trust document guidance. What assets would you like to protect?",
   business_structure: "Hi! I'm your Business Structure Builder, powered by The F.L.I.P. Formula™. Let's optimize your business entities for maximum tax savings. What's your current setup?",
   trust_writer: "Hello! I help draft trust clauses and provisions for irrevocable trusts. What type of trust provision would you like to work on?",
+}
+
+const PRESET_PROMPTS: Record<Persona, { label: string; prompt: string }[]> = {
+  rachel: [
+    { label: '📊 Portfolio Review', prompt: 'Can you help me review my current investment portfolio and suggest improvements?' },
+    { label: '🏠 Family Office Setup', prompt: 'How do I set up a family office from scratch? What are the key components I need?' },
+    { label: '💰 Wealth Building Plan', prompt: 'Create a personalized wealth building plan for my family based on The F.L.I.P. Formula™' },
+    { label: '📋 Monthly Checklist', prompt: 'What should be on my monthly family office management checklist?' },
+  ],
+  asset_protection: [
+    { label: '🛡️ Asset Shield Strategy', prompt: 'What are the best asset protection strategies for someone with rental properties and a business?' },
+    { label: '📜 Trust Comparison', prompt: 'Compare revocable vs irrevocable trusts for asset protection. Which is better for my situation?' },
+    { label: '🏢 LLC Layering', prompt: 'How do I use LLC layering to protect my real estate investments?' },
+    { label: '⚖️ Lawsuit Protection', prompt: 'How can I protect my personal assets from business lawsuits?' },
+  ],
+  business_structure: [
+    { label: '🔄 S-Corp Election', prompt: 'Should I elect S-Corp status for my LLC? What are the tax savings?' },
+    { label: '👨‍👩‍👧‍👦 Hire Family Members', prompt: 'How can I legally hire my spouse and children to save on taxes?' },
+    { label: '🏗️ Multi-Entity Setup', prompt: 'Design a multi-entity business structure with a holding company for my businesses' },
+    { label: '📈 Tax Optimization', prompt: 'What business deductions am I probably missing? Give me a comprehensive list.' },
+  ],
+  trust_writer: [
+    { label: '📝 Distribution Clause', prompt: 'Draft a HEMS distribution clause for my irrevocable trust' },
+    { label: '🎓 Education Incentive', prompt: 'Write an incentive trust clause that rewards beneficiaries for completing higher education' },
+    { label: '🛡️ Spendthrift Provision', prompt: 'Draft a strong spendthrift provision to protect trust assets from creditors' },
+    { label: '👥 Trustee Succession', prompt: 'Write a trustee succession clause with clear criteria for successor trustees' },
+  ],
 }
 
 const DEFAULT_PERSONA_SETTINGS: Record<Persona, PersonaSettings> = {
@@ -92,6 +120,7 @@ export default function AIChat() {
   const settingsFileRef = useRef<HTMLInputElement>(null)
   const [settingsTab, setSettingsTab] = useState<string>('rachel')
   const { toast } = useToast()
+  const { isAdminOrOwner } = useIsAdminOrOwner()
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -126,9 +155,15 @@ export default function AIChat() {
     try {
       const personaInstructions = personaSettings[activePersona]?.instructions || ''
       const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { message: messageText, persona: activePersona, model: selectedModel, instructions: personaInstructions }
+        body: { message: messageText, persona: activePersona, instructions: personaInstructions }
       })
       if (error) throw error
+      
+      if (data?.error) {
+        toast({ title: "Error", description: data.error, variant: "destructive" })
+        return
+      }
+      
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         content: data.response,
@@ -186,58 +221,11 @@ export default function AIChat() {
     }))
   }
 
-  // Audio recording and transcription
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
-      const chunks: BlobPart[] = []
-
-      recorder.ondataavailable = (e) => chunks.push(e.data)
-      recorder.onstop = async () => {
-        stream.getTracks().forEach(t => t.stop())
-        const blob = new Blob(chunks, { type: 'audio/webm' })
-        await transcribeAudio(blob)
-      }
-
-      recorder.start()
-      setMediaRecorder(recorder)
-      setIsRecording(true)
-    } catch (err) {
-      console.error('Microphone access denied:', err)
-      toast({ title: 'Microphone Error', description: 'Please allow microphone access to use voice input.', variant: 'destructive' })
-    }
-  }
-
-  const stopRecording = () => {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-      mediaRecorder.stop()
-      setIsRecording(false)
-      setMediaRecorder(null)
-    }
-  }
-
-  const transcribeAudio = async (blob: Blob) => {
-    try {
-      // Use browser's Web Speech API for transcription
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-      if (!SpeechRecognition) {
-        // Fallback: just add audio as attachment note
-        toast({ title: 'Speech recognition not supported', description: 'Your browser does not support speech recognition. Try Chrome.', variant: 'destructive' })
-        return
-      }
-      toast({ title: 'Processing audio...', description: 'Transcribing your voice input.' })
-      // Actually use a simpler approach: create an audio element and use recognition
-      // For real-time, we'll use the SpeechRecognition API directly instead
-    } catch (error) {
-      console.error('Transcription error:', error)
-    }
-  }
-
-  // Use Web Speech API for real-time voice input
   const toggleVoiceInput = () => {
     if (isRecording) {
-      stopRecording()
+      if (mediaRecorder) (mediaRecorder as any).stop?.()
+      setIsRecording(false)
+      setMediaRecorder(null)
       return
     }
 
@@ -266,28 +254,21 @@ export default function AIChat() {
       setInput(finalTranscript + interim)
     }
 
-    recognition.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error)
-      setIsRecording(false)
-    }
-
+    recognition.onerror = () => setIsRecording(false)
     recognition.onend = () => {
       setIsRecording(false)
-      if (finalTranscript.trim()) {
-        setInput(finalTranscript.trim())
-      }
+      if (finalTranscript.trim()) setInput(finalTranscript.trim())
     }
 
     recognition.start()
     setIsRecording(true)
-
-    // Store reference to stop later
     setMediaRecorder({ stop: () => recognition.stop() } as any)
   }
 
   const currentPersona = PERSONAS.find(p => p.id === activePersona)!
   const currentModel = AI_MODELS.find(m => m.id === selectedModel)!
   const hasConversation = messages.length > 1
+  const presets = PRESET_PROMPTS[activePersona]
 
   const renderInputBar = () => (
     <div className="rounded-xl border bg-card p-3">
@@ -324,7 +305,22 @@ export default function AIChat() {
             {isRecording ? <Square className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
           </Button>
           {PERSONAS.map((p) => (
-            <Button key={p.id} variant={activePersona === p.id ? 'default' : 'outline'} size="sm" className="h-7 text-[10px] sm:text-xs rounded-full gap-1 flex-shrink-0 px-2 sm:px-3" onClick={() => switchPersona(p.id)} title={p.description}>
+            <Button
+              key={p.id}
+              variant="outline"
+              size="sm"
+              className="h-7 text-[10px] sm:text-xs rounded-full gap-1 flex-shrink-0 px-2 sm:px-3 border-2 transition-all duration-200"
+              style={activePersona === p.id ? {
+                backgroundColor: p.activeColor,
+                borderColor: p.activeColor,
+                color: '#fff',
+              } : {
+                borderColor: p.color + '40',
+                color: 'inherit',
+              }}
+              onClick={() => switchPersona(p.id)}
+              title={p.description}
+            >
               <p.icon className="h-3 w-3" />
               <span className="hidden sm:inline">{p.label}</span>
             </Button>
@@ -368,9 +364,12 @@ export default function AIChat() {
               <Mic className="h-3 w-3" /> Recording...
             </Badge>
           )}
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSettingsOpen(true)}>
-            <Settings2 className="h-4 w-4" />
-          </Button>
+          {/* Only show settings for admin/owner */}
+          {isAdminOrOwner && (
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSettingsOpen(true)}>
+              <Settings2 className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       </div>
 
@@ -382,9 +381,24 @@ export default function AIChat() {
               <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-12 h-12 object-contain" />
             </div>
             <h1 className="text-xl sm:text-2xl font-bold mb-2 text-center">What would you like to create today?</h1>
-            <p className="text-muted-foreground text-center mb-8 max-w-md text-sm">
+            <p className="text-muted-foreground text-center mb-6 max-w-md text-sm">
               Your AI-powered assistant for building your family business.
             </p>
+            
+            {/* Preset prompts grid */}
+            <div className="w-full max-w-2xl grid grid-cols-2 gap-2 mb-6">
+              {presets.map((preset, i) => (
+                <button
+                  key={i}
+                  onClick={() => sendMessage(preset.prompt)}
+                  className="text-left p-3 rounded-xl border bg-card hover:bg-muted/50 transition-colors text-sm"
+                  disabled={isLoading}
+                >
+                  <span className="font-medium">{preset.label}</span>
+                </button>
+              ))}
+            </div>
+            
             <div className="w-full max-w-2xl">
               {renderInputBar()}
             </div>
@@ -397,8 +411,8 @@ export default function AIChat() {
                   <div key={message.id} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     {message.role === 'assistant' && (
                       <Avatar className="h-8 w-8 mt-0.5 flex-shrink-0">
-                        <AvatarFallback style={{ backgroundColor: '#ffb500' }}>
-                          <currentPersona.icon className="h-4 w-4" style={{ color: '#290a52' }} />
+                        <AvatarFallback style={{ backgroundColor: currentPersona.color }}>
+                          <currentPersona.icon className="h-4 w-4 text-white" />
                         </AvatarFallback>
                       </Avatar>
                     )}
@@ -428,8 +442,8 @@ export default function AIChat() {
                 {isLoading && (
                   <div className="flex gap-3 justify-start">
                     <Avatar className="h-8 w-8 mt-0.5">
-                      <AvatarFallback style={{ backgroundColor: '#ffb500' }}>
-                        <Bot className="h-4 w-4" style={{ color: '#290a52' }} />
+                      <AvatarFallback style={{ backgroundColor: currentPersona.color }}>
+                        <currentPersona.icon className="h-4 w-4 text-white" />
                       </AvatarFallback>
                     </Avatar>
                     <div className="bg-muted rounded-lg px-4 py-3"><Loader2 className="h-4 w-4 animate-spin" /></div>
@@ -445,86 +459,88 @@ export default function AIChat() {
         )}
       </div>
 
-      {/* Settings Dialog - Per Persona */}
-      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
-          <DialogHeader><DialogTitle className="text-base">Project Settings</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Label className="text-xs font-semibold">Model</Label>
-              <div className="mt-1 space-y-0.5">
-                {AI_MODELS.map(model => (
-                  <button
-                    key={model.id}
-                    onClick={() => setSelectedModel(model.id)}
-                    className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition-colors ${
-                      selectedModel === model.id ? 'bg-primary/10 border border-primary/30' : 'hover:bg-muted/50'
-                    }`}
-                  >
-                    <span className="font-medium">{model.label}</span>
-                    <span className="text-muted-foreground ml-1.5">{model.description}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-xs font-semibold mb-1.5 block">Persona Instructions & Files</Label>
-              <Tabs value={settingsTab} onValueChange={setSettingsTab}>
-                <TabsList className="w-full flex overflow-x-auto scrollbar-hide h-8">
-                  {PERSONAS.map(p => (
-                    <TabsTrigger key={p.id} value={p.id} className="text-[10px] gap-1 px-2 py-1 flex-1 min-w-0" title={p.label}>
-                      <p.icon className="h-3 w-3 flex-shrink-0" />
-                    </TabsTrigger>
+      {/* Settings Dialog - Only for admin/owner */}
+      {isAdminOrOwner && (
+        <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+          <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+            <DialogHeader><DialogTitle className="text-base">Project Settings</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs font-semibold">Model</Label>
+                <div className="mt-1 space-y-0.5">
+                  {AI_MODELS.map(model => (
+                    <button
+                      key={model.id}
+                      onClick={() => setSelectedModel(model.id)}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                        selectedModel === model.id ? 'bg-primary/10 border border-primary/30' : 'hover:bg-muted/50'
+                      }`}
+                    >
+                      <span className="font-medium">{model.label}</span>
+                      <span className="text-muted-foreground ml-1.5">{model.description}</span>
+                    </button>
                   ))}
-                </TabsList>
-                {PERSONAS.map(p => (
-                  <TabsContent key={p.id} value={p.id} className="space-y-2 mt-2">
-                    <div>
-                      <Label className="text-[10px] text-muted-foreground">{p.label} Instructions</Label>
-                      <p className="text-[10px] text-muted-foreground mb-1">Customize how this persona responds.</p>
-                      <Textarea
-                        value={personaSettings[p.id].instructions}
-                        onChange={e => updatePersonaInstructions(p.id, e.target.value)}
-                        placeholder={`Custom instructions for ${p.label}...`}
-                        rows={2}
-                        className="text-xs"
-                      />
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <Label className="text-[10px] text-muted-foreground">{p.label} Files</Label>
-                        <input ref={settingsFileRef} type="file" multiple className="hidden" onChange={handleSettingsFileUpload} />
-                        <Button variant="outline" size="sm" className="h-6 text-[10px] px-2" onClick={() => { setSettingsTab(p.id); settingsFileRef.current?.click() }}>Add</Button>
-                      </div>
-                      {personaSettings[p.id].files.length === 0 ? (
-                        <div className="border border-dashed border-border rounded-md p-3 text-center">
-                          <Upload className="h-4 w-4 mx-auto mb-0.5 text-muted-foreground" />
-                          <p className="text-[10px] text-muted-foreground">No files uploaded</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-1">
-                          {personaSettings[p.id].files.map((f, i) => (
-                            <div key={i} className="flex items-center gap-1.5 p-1.5 rounded-md bg-muted/50">
-                              <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                              <span className="text-[10px] truncate flex-1">{f.name}</span>
-                              <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => removeSettingsFile(p.id, i)}>
-                                <X className="h-2.5 w-2.5" />
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </TabsContent>
-                ))}
-              </Tabs>
-            </div>
+                </div>
+              </div>
 
-            <Button className="w-full h-8 text-xs" onClick={() => { setSettingsOpen(false); toast({ title: 'Settings saved' }) }}>Save Settings</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+              <div>
+                <Label className="text-xs font-semibold mb-1.5 block">Persona Instructions & Files</Label>
+                <Tabs value={settingsTab} onValueChange={setSettingsTab}>
+                  <TabsList className="w-full flex overflow-x-auto scrollbar-hide h-8">
+                    {PERSONAS.map(p => (
+                      <TabsTrigger key={p.id} value={p.id} className="text-[10px] gap-1 px-2 py-1 flex-1 min-w-0" title={p.label}>
+                        <p.icon className="h-3 w-3 flex-shrink-0" />
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  {PERSONAS.map(p => (
+                    <TabsContent key={p.id} value={p.id} className="space-y-2 mt-2">
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">{p.label} Instructions</Label>
+                        <p className="text-[10px] text-muted-foreground mb-1">Customize how this persona responds.</p>
+                        <Textarea
+                          value={personaSettings[p.id].instructions}
+                          onChange={e => updatePersonaInstructions(p.id, e.target.value)}
+                          placeholder={`Custom instructions for ${p.label}...`}
+                          rows={2}
+                          className="text-xs"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <Label className="text-[10px] text-muted-foreground">{p.label} Files</Label>
+                          <input ref={settingsFileRef} type="file" multiple className="hidden" onChange={handleSettingsFileUpload} />
+                          <Button variant="outline" size="sm" className="h-6 text-[10px] px-2" onClick={() => { setSettingsTab(p.id); settingsFileRef.current?.click() }}>Add</Button>
+                        </div>
+                        {personaSettings[p.id].files.length === 0 ? (
+                          <div className="border border-dashed border-border rounded-md p-3 text-center">
+                            <Upload className="h-4 w-4 mx-auto mb-0.5 text-muted-foreground" />
+                            <p className="text-[10px] text-muted-foreground">No files uploaded</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            {personaSettings[p.id].files.map((f, i) => (
+                              <div key={i} className="flex items-center gap-1.5 p-1.5 rounded-md bg-muted/50">
+                                <FileText className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                <span className="text-[10px] truncate flex-1">{f.name}</span>
+                                <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => removeSettingsFile(p.id, i)}>
+                                  <X className="h-2.5 w-2.5" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              </div>
+
+              <Button className="w-full h-8 text-xs" onClick={() => { setSettingsOpen(false); toast({ title: 'Settings saved' }) }}>Save Settings</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 }

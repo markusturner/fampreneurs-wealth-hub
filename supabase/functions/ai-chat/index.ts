@@ -1,15 +1,14 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.51.0';
 import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 const PERSONA_PROMPTS: Record<string, string> = {
@@ -133,8 +132,8 @@ serve(async (req) => {
   }
 
   try {
-    if (!openAIApiKey) {
-      throw new Error('OPENAI_API_KEY is not configured');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
     }
 
     const authHeader = req.headers.get('Authorization');
@@ -159,6 +158,7 @@ serve(async (req) => {
     const RequestSchema = z.object({
       message: z.string().min(1).max(4000),
       persona: z.enum(['rachel', 'asset_protection', 'business_structure', 'trust_writer']).optional().default('rachel'),
+      instructions: z.string().optional().default(''),
     });
     
     const body = await req.json();
@@ -171,8 +171,12 @@ serve(async (req) => {
       );
     }
     
-    const { message, persona } = validation.data;
-    const systemPrompt = PERSONA_PROMPTS[persona] || PERSONA_PROMPTS.rachel;
+    const { message, persona, instructions } = validation.data;
+    let systemPrompt = PERSONA_PROMPTS[persona] || PERSONA_PROMPTS.rachel;
+    
+    if (instructions) {
+      systemPrompt += `\n\n## Additional Custom Instructions:\n${instructions}`;
+    }
 
     // Fetch chat history (last 20 messages)
     const { data: chatHistory } = await supabase
@@ -184,14 +188,14 @@ serve(async (req) => {
 
     const previousMessages = chatHistory?.reverse() || [];
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: systemPrompt },
           ...previousMessages,
@@ -204,10 +208,20 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('OpenAI API Error:', response.status, errorData);
-      if (response.status === 429) throw new Error('Rate limit exceeded. Please wait a moment.');
-      if (response.status === 401) throw new Error('Invalid API key configuration.');
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('AI gateway error:', response.status, errorData);
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please wait a moment and try again.' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: 'AI credits exhausted. Please add funds.' }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      throw new Error(`AI gateway error: ${response.status}`);
     }
 
     const data = await response.json();
