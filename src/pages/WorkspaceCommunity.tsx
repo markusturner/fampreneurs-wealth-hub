@@ -72,18 +72,21 @@ const PROGRAM_NAMES: Record<string, string> = {
   fbu: 'Family Business University',
   tfv: 'The Family Vault',
   tfba: 'Family Business Accelerator',
+  tffm: 'The Family Fortune Mastermind',
 }
 
 const PROGRAM_DESCRIPTIONS: Record<string, string> = {
   fbu: 'The #1 Guided Generational Wealth Community teaching families how to build lasting legacies.',
   tfv: 'Exclusive vault of resources, templates, and tools for family wealth management.',
   tfba: 'The #1 Guided Generational Wealth Community teaching you how to setup private irrevocable trusts!',
+  tffm: 'The ultimate mastermind for families ready to build and protect generational fortune.',
 }
 
-// Program upgrade hierarchy: fbu -> tfv -> tfba
+// Program upgrade hierarchy: fbu -> tfv -> tfba -> tffm
 const PROGRAM_UPGRADE_MAP: Record<string, string> = {
   fbu: 'tfv',
   tfv: 'tfba',
+  tfba: 'tffm',
 }
 
 const CATEGORIES = [
@@ -106,6 +109,7 @@ export default function WorkspaceCommunity() {
   const programName = PROGRAM_NAMES[program] || 'Community'
   const programDesc = PROGRAM_DESCRIPTIONS[program] || ''
   const [newPost, setNewPost] = useState('')
+  const [postToAll, setPostToAll] = useState(false)
   const [postCategory, setPostCategory] = useState('discussion')
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
@@ -152,6 +156,7 @@ export default function WorkspaceCommunity() {
       const { data: postsData, error } = await supabase
         .from('community_posts')
         .select('*')
+        .or(`program.eq.${program},program.is.null`)
         .order('created_at', { ascending: false })
         .limit(30)
 
@@ -209,7 +214,7 @@ export default function WorkspaceCommunity() {
     } finally {
       setLoading(false)
     }
-  }, [user?.id])
+  }, [user?.id, program])
 
   useEffect(() => { fetchPosts() }, [fetchPosts])
 
@@ -275,18 +280,34 @@ export default function WorkspaceCommunity() {
       if (postAudioFile) audioUrl = await uploadFile(postAudioFile, 'community-audio')
 
       // Post content WITHOUT hashtag prefix - category stored separately
-      const { error } = await supabase
-        .from('community_posts')
-        .insert({ 
-          content: newPost.trim(), 
+      if (postToAll && (isAdmin || isOwner)) {
+        // Post to all communities
+        const allPrograms = Object.keys(PROGRAM_NAMES)
+        const inserts = allPrograms.map(prog => ({
+          content: newPost.trim(),
           user_id: user.id,
           image_url: imageUrl,
           video_url: videoUrl,
           audio_url: audioUrl,
           category: postCategory,
-        } as any)
-
-      if (error) throw error
+          program: prog,
+        }))
+        const { error } = await supabase.from('community_posts').insert(inserts as any)
+        if (error) throw error
+      } else {
+        const { error } = await supabase
+          .from('community_posts')
+          .insert({ 
+            content: newPost.trim(), 
+            user_id: user.id,
+            image_url: imageUrl,
+            video_url: videoUrl,
+            audio_url: audioUrl,
+            category: postCategory,
+            program,
+          } as any)
+        if (error) throw error
+      }
       setNewPost('')
       setPostImageFile(null)
       setPostImagePreview(null)
@@ -294,6 +315,7 @@ export default function WorkspaceCommunity() {
       setPostVideoPreview(null)
       setPostAudioFile(null)
       setPostCategory('discussion')
+      setPostToAll(false)
       fetchPosts()
       toast({ title: 'Posted!' })
     } catch (error) {
@@ -701,10 +723,21 @@ export default function WorkspaceCommunity() {
                             ))}
                           </SelectContent>
                         </Select>
+                        {(isAdmin || isOwner) && (
+                          <Button
+                            variant={postToAll ? 'default' : 'ghost'}
+                            size="sm"
+                            className={`h-8 gap-1.5 text-xs ${postToAll ? 'bg-[#ffb500] text-[#290a52] hover:bg-[#ffb500]/90' : ''}`}
+                            onClick={() => setPostToAll(!postToAll)}
+                          >
+                            <Users className="h-3.5 w-3.5" />
+                            All
+                          </Button>
+                        )}
                       </div>
                       <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim()} className="gap-1.5">
                         <Send className="h-4 w-4" />
-                        <span className="hidden sm:inline">Post</span>
+                        <span className="hidden sm:inline">{postToAll ? 'Post to All' : 'Post'}</span>
                       </Button>
                     </div>
                   </div>
