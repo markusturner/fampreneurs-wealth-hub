@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { useAgreementStatus } from '@/hooks/useAgreementStatus'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -78,7 +79,8 @@ const STEPS = [
 const CONDITIONAL_FIELDS = ['referral_who', 'touchpoint_other', 'improvement_other']
 
 export default function Onboarding() {
-  const { user, refreshProfile } = useAuth()
+  const { user, loading: authLoading, refreshProfile } = useAuth()
+  const { signed: agreementSigned, loading: agreementLoading, needsAgreement } = useAgreementStatus()
   const navigate = useNavigate()
   const { toast } = useToast()
   const [step, setStep] = useState(0)
@@ -104,6 +106,29 @@ export default function Onboarding() {
     specific_content: '',
     anything_else: '',
   })
+
+  // Redirect to agreement page if not signed yet
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth')
+      return
+    }
+    if (!authLoading && !agreementLoading && user && needsAgreement && agreementSigned === false) {
+      navigate('/program-agreement')
+    }
+  }, [authLoading, agreementLoading, user, needsAgreement, agreementSigned, navigate])
+
+  // Show loading while checking agreement status
+  if (authLoading || agreementLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      </div>
+    )
+  }
+
+  if (!user) return null
+  if (needsAgreement && agreementSigned === false) return null
 
   const set = (field: keyof FormData, value: string) =>
     setForm(prev => ({ ...prev, [field]: value }))
