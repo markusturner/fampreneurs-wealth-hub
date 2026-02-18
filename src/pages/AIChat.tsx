@@ -9,6 +9,7 @@ import { Send, Bot, User, Loader2, Shield, Building2, FileText, Paperclip, Setti
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
+import { useAuth } from '@/contexts/AuthContext'
 import ReactMarkdown from 'react-markdown'
 import {
   Dialog,
@@ -121,6 +122,8 @@ export default function AIChat() {
   const [settingsTab, setSettingsTab] = useState<string>('rachel')
   const { toast } = useToast()
   const { isAdminOrOwner } = useIsAdminOrOwner()
+  const { profile } = useAuth()
+  const displayName = profile?.display_name || profile?.first_name || ''
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -377,13 +380,18 @@ export default function AIChat() {
       <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
         {!hasConversation ? (
           <div className="flex flex-col items-center justify-center flex-1 w-full max-w-2xl mx-auto px-4">
-            <div className="mb-6">
-              <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-12 h-12 object-contain" />
+            {/* Welcome banner */}
+            <div className="w-full gradient-hero rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden mb-6">
+              <div className="absolute inset-0 bg-white/5 backdrop-blur-sm rounded-2xl" />
+              <div className="relative z-10">
+                <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
+                  Welcome back{displayName ? `, ${displayName}` : ''}
+                </h1>
+                <p className="text-white/70 mt-1 text-sm sm:text-base">
+                  What would you like to create today?
+                </p>
+              </div>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold mb-2 text-center">What would you like to create today?</h1>
-            <p className="text-muted-foreground text-center mb-6 max-w-md text-sm">
-              Your AI-powered assistant for building your family business.
-            </p>
             
             {/* Preset prompts grid */}
             <div className="w-full max-w-2xl grid grid-cols-2 gap-2 mb-6">
