@@ -17,6 +17,7 @@ export const useOwnerRole = (userId: string | null) => {
   const checkOwnerRole = async () => {
     if (!userId) return;
 
+    setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from("user_roles")
@@ -28,9 +29,21 @@ export const useOwnerRole = (userId: string | null) => {
       if (error) throw error;
 
       setIsOwner(!!data);
-      setIsLoading(false);
     } catch (error) {
       console.error("Error checking owner role:", error);
+      // Retry once on network failure
+      try {
+        const { data } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .eq("role", "owner")
+          .maybeSingle();
+        setIsOwner(!!data);
+      } catch {
+        // Keep previous state on repeated failure
+      }
+    } finally {
       setIsLoading(false);
     }
   };

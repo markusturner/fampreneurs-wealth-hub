@@ -11,7 +11,7 @@ import { AdminActivityHeatmap } from '@/components/dashboard/admin-activity-heat
 import { RolePermissionsManager } from '@/components/dashboard/role-permissions-manager'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Shield, Zap, Video, BarChart3, Lock } from 'lucide-react'
+import { ArrowLeft, Shield, Zap, Video, BarChart3, Lock, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
@@ -21,8 +21,20 @@ export function AdminSettings() {
   const { profile, user } = useAuth()
   const navigate = useNavigate()
   const isMobile = useIsMobile()
-  const { isAdmin } = useUserRole()
-  const { isOwner } = useOwnerRole(user?.id || null)
+  const { isAdmin, isLoading: useUserRoleLoading } = useUserRole()
+  const { isOwner, isLoading: useOwnerRoleLoading } = useOwnerRole(user?.id || null)
+
+  // Show loading state while role is being determined
+  if (useOwnerRoleLoading || useUserRoleLoading) {
+    return (
+      <div className="container mx-auto py-6 px-4 text-center">
+        <div className="flex items-center justify-center gap-2">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground">Loading admin settings...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!isAdmin && !isOwner) {
     return (
