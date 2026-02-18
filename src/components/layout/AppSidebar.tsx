@@ -245,6 +245,7 @@ export function AppSidebar({ className }: { className?: string }) {
             <div className="space-y-0.5">
               <NavItem label="Admin Settings" icon={Shield} href="/admin-settings" active={isActive("/admin-settings")} />
               <NavItem label="Onboarding Form" icon={ClipboardList} href="/onboarding-submissions" active={isActive("/onboarding-submissions")} />
+              <NavItem label="Trust Forms" icon={FileText} href="/trust-form-submissions" active={isActive("/trust-form-submissions")} />
             </div>
           </>
         )}
