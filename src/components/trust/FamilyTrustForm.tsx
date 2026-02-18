@@ -25,7 +25,7 @@ const PERCENTAGES = ["10%","20%","30%","40%","50%","60%","70%","80%","90%","100%
 
 const TRUST_LABELS: Record<TrustType, { title: string; icon: typeof Home }> = {
   family: { title: "Family Trust Form", icon: Home },
-  ministry: { title: "Ministry Trust Form", icon: Church },
+  ministry: { title: "Family Trust Form", icon: Church },
 }
 
 interface FamilyTrustFormProps {
