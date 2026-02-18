@@ -22,6 +22,8 @@ import {
   LogOut,
   Search,
   Video,
+  Mail,
+  ClipboardList,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -32,6 +34,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import type { ProgramId } from "@/lib/stripe-programs"
 
 interface NavItemProps {
   label: string
@@ -99,17 +102,20 @@ function SubNavItem({ label, href, active, onClick }: { label: string; href?: st
   )
 }
 
+// Search suggestions with access requirements
 const SEARCH_SUGGESTIONS = [
-  { label: 'Dashboard', path: '/dashboard' },
-  { label: 'Family Office', path: '/digital-family-office' },
-  { label: 'Family Constitution', path: '/documents' },
-  { label: 'Calendar', path: '/calendar' },
-  { label: 'Members', path: '/members' },
-  { label: 'AI Chat', path: '/ai-chat' },
-  { label: 'Community', path: '/workspace-community' },
-  { label: 'Classroom', path: '/classroom' },
-  { label: 'Profile Settings', path: '/profile-settings' },
-  { label: 'Admin Settings', path: '/admin-settings' },
+  { label: 'Dashboard', path: '/dashboard', requiresSubscription: true },
+  { label: 'Family Office', path: '/digital-family-office', requiresSubscription: true },
+  { label: 'Family Constitution', path: '/documents', requiresSubscription: true },
+  { label: 'Calendar', path: '/calendar', requiresSubscription: true },
+  { label: 'Members', path: '/members', requiresSubscription: true },
+  { label: 'AI Chat', path: '/ai-chat', requiresSubscription: false },
+  { label: 'Community', path: '/workspace-community', requiresSubscription: false },
+  { label: 'Classroom', path: '/classroom', requiresSubscription: false },
+  { label: 'Messenger', path: '/messenger', requiresSubscription: false },
+  { label: 'Profile Settings', path: '/profile-settings', requiresSubscription: false },
+  { label: 'Admin Settings', path: '/admin-settings', requiresAdmin: true },
+  { label: 'Onboarding Submissions', path: '/onboarding-submissions', requiresAdmin: true },
 ]
 
 export function AppSidebar({ className }: { className?: string }) {
@@ -122,21 +128,31 @@ export function AppSidebar({ className }: { className?: string }) {
   const currentPath = location.pathname
   const [tutorialVideoOpen, setTutorialVideoOpen] = useState(false)
   const [pricingOpen, setPricingOpen] = useState(false)
+  const [pricingProgram, setPricingProgram] = useState<ProgramId | undefined>(undefined)
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const filteredSuggestions = searchQuery
-    ? SEARCH_SUGGESTIONS.filter(s => s.label.toLowerCase().includes(searchQuery.toLowerCase()))
-    : SEARCH_SUGGESTIONS
+  const hasTruHeirsAccess = isAdmin || isOwner || subscriptionStatus.subscribed || subscriptionStatus.loading
+
+  const filteredSuggestions = SEARCH_SUGGESTIONS.filter(s => {
+    // Filter by access
+    if (s.requiresAdmin && !isAdmin && !isOwner) return false
+    if (s.requiresSubscription && !hasTruHeirsAccess) return false
+    // Filter by query
+    if (searchQuery && !s.label.toLowerCase().includes(searchQuery.toLowerCase())) return false
+    return true
+  })
 
   useEffect(() => {
     if (searchOpen) setTimeout(() => searchInputRef.current?.focus(), 100)
   }, [searchOpen])
 
   const isActive = (path: string) => currentPath === path
-  const hasTruHeirsAccess = isAdmin || isOwner || subscriptionStatus.subscribed || subscriptionStatus.loading
-  const handleLockedClick = () => setPricingOpen(true)
+  const handleLockedClick = (programId?: ProgramId) => {
+    setPricingProgram(programId)
+    setPricingOpen(true)
+  }
 
   const getInitials = () => {
     if (profile?.first_name && profile?.last_name) return `${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`
@@ -177,10 +193,12 @@ export function AppSidebar({ className }: { className?: string }) {
             <SubNavItem label="Family Business University" href="/workspace-community?program=fbu" active={currentPath === "/workspace-community" && location.search.includes("program=fbu")} />
             <SubNavItem label="The Family Vault" href="/workspace-community?program=tfv" active={currentPath === "/workspace-community" && location.search.includes("program=tfv")} />
             <SubNavItem label="Family Business Accelerator" href="/workspace-community?program=tfba" active={currentPath === "/workspace-community" && location.search.includes("program=tfba")} />
+            <SubNavItem label="The Family Fortune Mastermind" href="/workspace-community?program=tffm" active={currentPath === "/workspace-community" && location.search.includes("program=tffm")} />
           </NavItem>
           <NavItem label="Classroom" icon={BookOpen} href="/classroom" active={isActive("/classroom")} />
           <NavItem label="Members" icon={Users} href="/workspace-members" active={isActive("/workspace-members")} />
           <NavItem label="Calendar" icon={Calendar} href="/workspace-calendar" active={isActive("/workspace-calendar")} />
+          <NavItem label="Messenger" icon={Mail} href="/messenger" active={isActive("/messenger")} />
         </div>
 
         {/* TRUHEIRS */}
@@ -188,11 +206,11 @@ export function AppSidebar({ className }: { className?: string }) {
           <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">TruHeirs</p>
         </div>
         <div className="space-y-0.5">
-          <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
-          <NavItem label="Family Office" icon={Home} href="/digital-family-office" active={isActive("/digital-family-office")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
-          <NavItem label="Family Constitution" icon={FileText} href="/documents" active={isActive("/documents")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
-          <NavItem label="Family Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
-          <NavItem label="Family Members" icon={Users} href="/members" active={isActive("/members")} locked={!hasTruHeirsAccess} onClick={handleLockedClick} />
+          <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
+          <NavItem label="Family Office" icon={Home} href="/digital-family-office" active={isActive("/digital-family-office")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
+          <NavItem label="Family Constitution" icon={FileText} href="/documents" active={isActive("/documents")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
+          <NavItem label="Family Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
+          <NavItem label="Family Members" icon={Users} href="/members" active={isActive("/members")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
         </div>
 
         {/* ADMIN */}
@@ -203,6 +221,7 @@ export function AppSidebar({ className }: { className?: string }) {
             </div>
             <div className="space-y-0.5">
               <NavItem label="Admin Settings" icon={Shield} href="/admin-settings" active={isActive("/admin-settings")} />
+              <NavItem label="Onboarding Submissions" icon={ClipboardList} href="/onboarding-submissions" active={isActive("/onboarding-submissions")} />
             </div>
           </>
         )}
@@ -281,7 +300,7 @@ export function AppSidebar({ className }: { className?: string }) {
       {profile && tutorialVideoOpen && (
         <TutorialVideoModal isOpen={tutorialVideoOpen} onClose={() => setTutorialVideoOpen(false)} onWatched={() => setTutorialVideoOpen(false)} onSkipped={() => setTutorialVideoOpen(false)} userId={profile.user_id} />
       )}
-      <PricingPopup open={pricingOpen} onOpenChange={setPricingOpen} />
+      <PricingPopup open={pricingOpen} onOpenChange={setPricingOpen} programFilter={pricingProgram} />
     </aside>
   )
 }

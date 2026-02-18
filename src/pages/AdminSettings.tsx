@@ -9,10 +9,9 @@ import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-o
 import { AdminGrowthCharts } from '@/components/dashboard/admin-growth-charts'
 import { AdminActivityHeatmap } from '@/components/dashboard/admin-activity-heatmap'
 import { RolePermissionsManager } from '@/components/dashboard/role-permissions-manager'
-import { AdminOnboardingSubmissions } from '@/components/dashboard/admin-onboarding-submissions'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Shield, Zap, Video, BarChart3, Lock, ClipboardList } from 'lucide-react'
+import { ArrowLeft, Shield, Zap, Video, BarChart3, Lock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
@@ -51,7 +50,7 @@ export function AdminSettings() {
         </Badge>
       </div>
 
-      <Tabs defaultValue={isOwner ? "zapier" : (isAdmin ? "admin" : "metrics")} className="space-y-4 md:space-y-6">
+  <Tabs defaultValue={isOwner ? "zapier" : (isAdmin ? "admin" : "metrics")} className="space-y-4 md:space-y-6">
         <div className="overflow-x-auto scrollbar-hide -mx-3 px-3">
           <TabsList className="inline-flex w-auto min-w-full md:min-w-0 h-auto">
             {isOwner && (
@@ -70,12 +69,6 @@ export function AdminSettings() {
               <TabsTrigger value="metrics" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
                 <BarChart3 className="h-4 w-4 shrink-0" />
                 Metrics
-              </TabsTrigger>
-            )}
-            {(isAdmin || isOwner) && (
-              <TabsTrigger value="onboarding" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
-                <ClipboardList className="h-4 w-4 shrink-0" />
-                {isMobile ? "Onboarding" : "Onboarding Submissions"}
               </TabsTrigger>
             )}
             {isOwner && (
@@ -107,11 +100,6 @@ export function AdminSettings() {
             <AdminAnalyticsOverview />
             <AdminGrowthCharts />
             <AdminActivityHeatmap />
-          </TabsContent>
-        )}
-        {(isAdmin || isOwner) && (
-          <TabsContent value="onboarding">
-            <AdminOnboardingSubmissions />
           </TabsContent>
         )}
         {isOwner && (

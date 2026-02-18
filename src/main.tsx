@@ -24,6 +24,8 @@ import Classroom from "./pages/Classroom";
 import CourseDetail from "./pages/CourseDetail";
 import WorkspaceMembers from "./pages/WorkspaceMembers";
 import WorkspaceCalendar from "./pages/WorkspaceCalendar";
+import Messenger from "./pages/Messenger";
+import OnboardingSubmissions from "./pages/OnboardingSubmissions";
 
 import FamilyGovernance from "./pages/FamilyGovernance";
 import FamilyConstitutionSetup from "./pages/FamilyConstitutionSetup";
@@ -102,6 +104,8 @@ function AppWithNotifications() {
         <Route path="/classroom/:courseId" element={<WithLayout><CourseDetail /></WithLayout>} />
         <Route path="/workspace-members" element={<WithLayout><WorkspaceMembers /></WithLayout>} />
         <Route path="/workspace-calendar" element={<WithLayout><WorkspaceCalendar /></WithLayout>} />
+        <Route path="/messenger" element={<WithLayout><Messenger /></WithLayout>} />
+        <Route path="/onboarding-submissions" element={<WithLayout><OnboardingSubmissions /></WithLayout>} />
         <Route path="/courses" element={<WithLayout><Courses /></WithLayout>} />
         <Route path="/documents" element={<WithLayout><Documents /></WithLayout>} />
         <Route path="/family-roundtable" element={<WithLayout><Dashboard /></WithLayout>} />
