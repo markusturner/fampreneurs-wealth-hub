@@ -275,6 +275,46 @@ export default function WorkspaceCalendar() {
         )}
       </div>
 
+      {/* Upcoming Events */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Clock className="h-5 w-5 text-muted-foreground" />
+          Upcoming Events
+        </h3>
+        <div className="space-y-3">
+          {meetings
+            .filter(m => new Date(m.meeting_date) >= new Date())
+            .sort((a, b) => new Date(a.meeting_date).getTime() - new Date(b.meeting_date).getTime())
+            .slice(0, 5)
+            .map((meeting) => (
+              <div
+                key={meeting.id}
+                className="flex items-center gap-4 p-3 rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors cursor-pointer"
+                onClick={() => setSelectedMeeting(meeting)}
+              >
+                <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex flex-col items-center justify-center">
+                  <span className="text-[10px] font-semibold text-primary uppercase">
+                    {format(new Date(meeting.meeting_date), 'MMM')}
+                  </span>
+                  <span className="text-sm font-bold text-foreground leading-none">
+                    {format(new Date(meeting.meeting_date), 'd')}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">{meeting.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(meeting.meeting_date), 'EEEE')} at {meeting.meeting_time}
+                    {meeting.meeting_type && ` · ${meeting.meeting_type}`}
+                  </p>
+                </div>
+              </div>
+            ))}
+          {meetings.filter(m => new Date(m.meeting_date) >= new Date()).length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-6">No upcoming events</p>
+          )}
+        </div>
+      </div>
+
       {/* Create Event Dialog - Skool style */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
