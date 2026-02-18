@@ -147,7 +147,12 @@ IMPORTANT RULES:
 - Add the confidentiality footer: "This document is Privileged and Confidential. Any unauthorized disclosure of its contents is strictly prohibited."
 - The output should be a complete, ready-to-use trust document in plain text format`;
 
-    const userPrompt = `Generate a complete ${trust_type === 'business' ? 'Private Unincorporated Business' : trust_type === 'ministry' ? 'Ministry Charitable' : 'Private Family'} Trust document using this data:
+    const userPrompt = `Generate a complete ${trust_type === 'business' ? 'Private Unincorporated Business' : trust_type === 'ministry' ? 'Ministry Charitable' : 'Private Family'} Trust document using this template outline and data:
+
+TEMPLATE OUTLINE:
+${template}
+
+FORM DATA:
 
 Trust Name: ${form_data.trust_name}
 Settlor/Grantor Name: ${form_data.settlor_name}
