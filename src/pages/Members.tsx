@@ -1,26 +1,19 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
-import { NavHeader } from '@/components/dashboard/nav-header'
 import { AddFamilyMemberDialog } from '@/components/dashboard/add-family-member-dialog'
-
 import { EditFamilyMemberDialog } from '@/components/dashboard/edit-family-member-dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { 
-  UserPlus, 
-  Mail, 
-  Phone, 
-  User, 
-  Edit, 
-  Trash2, 
-  Users, 
-  Crown
+  UserPlus, Mail, Phone, Edit, Trash2, Users, Crown, Clock, Activity
 } from 'lucide-react'
+import { formatDistanceToNow } from 'date-fns'
 
 interface FamilyMember {
   id: string
@@ -39,8 +32,90 @@ interface FamilyMember {
   updated_at: string | null
   joined_at: string | null
   invitation_sent_at: string | null
+  last_accessed: string | null
 }
 
+function getRelativeTime(dateStr: string | null): string {
+  if (!dateStr) return 'Never'
+  try {
+    return formatDistanceToNow(new Date(dateStr), { addSuffix: true })
+  } catch {
+    return 'Unknown'
+  }
+}
+
+// Simple daily activity chart for last 7 days
+function DailyActivityChart({ memberId }: { memberId: string }) {
+  const [activity, setActivity] = useState<number[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchActivity = async () => {
+      // Generate activity from audit logs for this member
+      const days: number[] = []
+      const now = new Date()
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now)
+        date.setDate(date.getDate() - i)
+        const dayStart = new Date(date.setHours(0, 0, 0, 0)).toISOString()
+        const dayEnd = new Date(date.setHours(23, 59, 59, 999)).toISOString()
+        
+        const { count } = await supabase
+          .from('family_office_audit_logs')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', dayStart)
+          .lte('created_at', dayEnd)
+          .eq('record_id', memberId)
+
+        days.push(count || 0)
+      }
+      setActivity(days)
+      setLoading(false)
+    }
+
+    fetchActivity()
+  }, [memberId])
+
+  const dayLabels = useMemo(() => {
+    const labels: string[] = []
+    const now = new Date()
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now)
+      d.setDate(d.getDate() - i)
+      labels.push(d.toLocaleDateString('en', { weekday: 'short' }))
+    }
+    return labels
+  }, [])
+
+  const maxVal = Math.max(...activity, 1)
+
+  if (loading) {
+    return <div className="h-24 flex items-center justify-center text-xs text-muted-foreground">Loading activity...</div>
+  }
+
+  return (
+    <div>
+      <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
+        <Activity className="h-3 w-3" /> Daily Activity (Last 7 Days)
+      </p>
+      <div className="flex items-end gap-1 h-16">
+        {activity.map((val, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center gap-1">
+            <div
+              className="w-full rounded-sm bg-accent/70 transition-all min-h-[2px]"
+              style={{ height: `${Math.max((val / maxVal) * 100, 5)}%` }}
+              title={`${val} actions`}
+            />
+            <span className="text-[9px] text-muted-foreground">{dayLabels[i]}</span>
+          </div>
+        ))}
+      </div>
+      <p className="text-[10px] text-muted-foreground mt-1 text-center">
+        {activity.reduce((a, b) => a + b, 0)} total actions this week
+      </p>
+    </div>
+  )
+}
 
 export default function Members() {
   const { user } = useAuth()
@@ -51,50 +126,33 @@ export default function Members() {
   const [showAddFamilyDialog, setShowAddFamilyDialog] = useState(false)
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null)
   const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set())
+  const [viewingMember, setViewingMember] = useState<FamilyMember | null>(null)
+  const [now, setNow] = useState(new Date())
+
+  // Live-update relative timestamps every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     fetchMembers()
-    
-    // Set up realtime subscription for family_members changes
     const channel = supabase
       .channel('family_members_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'family_members'
-        },
-        () => {
-          fetchMembers()
-        }
-      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'family_members' }, () => fetchMembers())
       .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    return () => { supabase.removeChannel(channel) }
   }, [user?.id])
 
   useEffect(() => {
-    // Listen for custom events when family members are added
-    const handleFamilyMemberAdded = () => {
-      fetchMembers()
-    }
-
+    const handleFamilyMemberAdded = () => fetchMembers()
     window.addEventListener('familyMemberAdded', handleFamilyMemberAdded)
     return () => window.removeEventListener('familyMemberAdded', handleFamilyMemberAdded)
   }, [])
 
   const fetchMembers = async () => {
-    if (!user?.id) {
-      setLoading(false)
-      return
-    }
-
+    if (!user?.id) { setLoading(false); return }
     try {
-      console.log('Fetching family members for user:', user.id)
-      
       const { data: familyData, error: membersError } = await supabase
         .from('family_members')
         .select('*')
@@ -102,7 +160,6 @@ export default function Members() {
         .is('office_role', null)
         .order('created_at', { ascending: false })
 
-      // Fetch inviter profiles for the added_by user ids
       const inviterIds = [...new Set((familyData || []).map(m => m.added_by))]
       let inviterMap: Record<string, string> = {}
       if (inviterIds.length > 0) {
@@ -117,173 +174,83 @@ export default function Members() {
           ]))
         }
       }
-
-      console.log('Family members data:', familyData)
-      console.log('Members error:', membersError)
-
       if (membersError) throw membersError
-
       setFamilyMembers(familyData || [])
       setInviterNames(inviterMap)
     } catch (error) {
       console.error('Error fetching members:', error)
-      toast({
-        title: "Error",
-        description: "Failed to fetch members",
-        variant: "destructive"
-      })
+      toast({ title: "Error", description: "Failed to fetch members", variant: "destructive" })
     } finally {
       setLoading(false)
     }
   }
 
   const getStatusBadge = (member: FamilyMember) => {
-    // Accepted once they actually join (joined_at recorded)
-    if (member.joined_at) {
-      return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>
-    }
-    // Consider as Invited if an invitation has been sent OR is_invited flag is true
-    if (member.invitation_sent_at || member.is_invited) {
-      return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Invited</Badge>
-    }
-    // Pending state from DB
-    if (member.status === 'pending') {
-      return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>
-    }
-    // Default fallback
+    if (member.joined_at) return <Badge variant="default" className="bg-green-100 text-green-800">Accepted</Badge>
+    if (member.invitation_sent_at || member.is_invited) return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Invited</Badge>
+    if (member.status === 'pending') return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>
     return <Badge variant="outline" className="bg-gray-100 text-gray-800">Not Invited</Badge>
   }
 
   const handleDeleteFamilyMember = async (memberId: string) => {
     try {
-      // Get the family member's email before deleting
       const memberToDelete = familyMembers.find(m => m.id === memberId)
-      
-      if (!memberToDelete) {
-        throw new Error('Family member not found')
-      }
+      if (!memberToDelete) throw new Error('Family member not found')
 
-      // Delete the family member record
-      const { error } = await supabase
-        .from('family_members')
-        .delete()
-        .eq('id', memberId)
-
+      const { error } = await supabase.from('family_members').delete().eq('id', memberId)
       if (error) throw error
 
-      // If the family member has an email, try to delete their user account
       if (memberToDelete.email) {
         try {
-          // Find the user account with this email
-          const { data: profiles, error: profileError } = await supabase
-            .from('profiles')
-            .select('user_id')
-            .eq('email', memberToDelete.email)
-            .maybeSingle()
-
-          if (!profileError && profiles?.user_id) {
-            // Delete the user account
-            await supabase.functions.invoke('delete-user', {
-              body: { userId: profiles.user_id }
-            })
-            console.log('Associated user account deleted')
-          }
-        } catch (userDeleteError) {
-          console.error('Error deleting associated user account:', userDeleteError)
-          // Don't throw - the family member was already deleted
-        }
+          const { data: profiles } = await supabase.from('profiles').select('user_id').eq('email', memberToDelete.email).maybeSingle()
+          if (profiles?.user_id) await supabase.functions.invoke('delete-user', { body: { userId: profiles.user_id } })
+        } catch {}
       }
 
-      setFamilyMembers(prev => prev.filter(member => member.id !== memberId))
-      setSelectedMembers(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(memberId)
-        return newSet
-      })
-      toast({
-        title: "Success",
-        description: "Family member deleted successfully"
-      })
+      setFamilyMembers(prev => prev.filter(m => m.id !== memberId))
+      setSelectedMembers(prev => { const s = new Set(prev); s.delete(memberId); return s })
+      toast({ title: "Success", description: "Family member deleted successfully" })
     } catch (error) {
-      console.error('Error deleting family member:', error)
-      toast({
-        title: "Error",
-        description: "Failed to delete family member",
-        variant: "destructive"
-      })
+      toast({ title: "Error", description: "Failed to delete family member", variant: "destructive" })
     }
   }
 
   const handleDeleteSelected = async () => {
     if (selectedMembers.size === 0) return
-
     try {
       const memberIds = Array.from(selectedMembers)
-      
-      // Delete all selected members
-      const { error } = await supabase
-        .from('family_members')
-        .delete()
-        .in('id', memberIds)
-
+      const { error } = await supabase.from('family_members').delete().in('id', memberIds)
       if (error) throw error
 
-      // Try to delete associated user accounts
       for (const memberId of memberIds) {
         const member = familyMembers.find(m => m.id === memberId)
         if (member?.email) {
           try {
-            const { data: profiles } = await supabase
-              .from('profiles')
-              .select('user_id')
-              .eq('email', member.email)
-              .maybeSingle()
-
-            if (profiles?.user_id) {
-              await supabase.functions.invoke('delete-user', {
-                body: { userId: profiles.user_id }
-              })
-            }
-          } catch (error) {
-            console.error('Error deleting user account:', error)
-          }
+            const { data: profiles } = await supabase.from('profiles').select('user_id').eq('email', member.email).maybeSingle()
+            if (profiles?.user_id) await supabase.functions.invoke('delete-user', { body: { userId: profiles.user_id } })
+          } catch {}
         }
       }
 
-      setFamilyMembers(prev => prev.filter(member => !selectedMembers.has(member.id)))
+      setFamilyMembers(prev => prev.filter(m => !selectedMembers.has(m.id)))
       setSelectedMembers(new Set())
-      toast({
-        title: "Success",
-        description: `${memberIds.length} member(s) deleted successfully`
-      })
-    } catch (error) {
-      console.error('Error deleting members:', error)
-      toast({
-        title: "Error",
-        description: "Failed to delete selected members",
-        variant: "destructive"
-      })
+      toast({ title: "Success", description: `${memberIds.length} member(s) deleted successfully` })
+    } catch {
+      toast({ title: "Error", description: "Failed to delete selected members", variant: "destructive" })
     }
   }
 
   const toggleSelectMember = (memberId: string) => {
     setSelectedMembers(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(memberId)) {
-        newSet.delete(memberId)
-      } else {
-        newSet.add(memberId)
-      }
-      return newSet
+      const s = new Set(prev)
+      if (s.has(memberId)) s.delete(memberId); else s.add(memberId)
+      return s
     })
   }
 
   const toggleSelectAll = () => {
-    if (selectedMembers.size === familyMembers.length) {
-      setSelectedMembers(new Set())
-    } else {
-      setSelectedMembers(new Set(familyMembers.map(m => m.id)))
-    }
+    if (selectedMembers.size === familyMembers.length) setSelectedMembers(new Set())
+    else setSelectedMembers(new Set(familyMembers.map(m => m.id)))
   }
 
   const handleUpdateFamilyMember = async (updatedMember: Partial<FamilyMember> & { id: string }) => {
@@ -302,47 +269,22 @@ export default function Members() {
           updated_at: new Date().toISOString()
         })
         .eq('id', updatedMember.id)
-
       if (error) throw error
 
-      // Update local state
-      setFamilyMembers(prev => 
-        prev.map(member => 
-          member.id === updatedMember.id 
-            ? { ...member, ...updatedMember, updated_at: new Date().toISOString() }
-            : member
-        )
-      )
-
+      setFamilyMembers(prev => prev.map(m => m.id === updatedMember.id ? { ...m, ...updatedMember, updated_at: new Date().toISOString() } : m))
       setEditingMember(null)
-      toast({
-        title: "Success",
-        description: "Family member updated successfully"
-      })
-    } catch (error) {
-      console.error('Error updating family member:', error)
-      toast({
-        title: "Error",
-        description: "Failed to update family member",
-        variant: "destructive"
-      })
+      toast({ title: "Success", description: "Family member updated successfully" })
+    } catch {
+      toast({ title: "Error", description: "Failed to update family member", variant: "destructive" })
     }
   }
 
   const handleResendInvitation = async (member: FamilyMember) => {
     if (!member.email) {
-      toast({
-        title: "Error",
-        description: "No email address available for this member",
-        variant: "destructive"
-      })
+      toast({ title: "Error", description: "No email address available", variant: "destructive" })
       return
     }
-
     try {
-      console.log('Resending invitation for:', member.full_name)
-      
-      // Send family member invitation email with isResend flag
       const { data, error } = await supabase.functions.invoke('send-family-member-invitation', {
         body: {
           familyMemberId: member.id,
@@ -353,63 +295,22 @@ export default function Members() {
           isResend: true
         }
       })
-
-      // Handle soft-failures returned by the edge function without throwing
       if (data && (data as any).success === false) {
-        console.error('Invitation function responded with failure:', data)
-        toast({
-          title: 'Email not sent',
-          description: (data as any).hint || (data as any).error || 'Email service not configured. Verify Resend domain and RESEND_FROM_EMAIL.',
-          variant: 'destructive'
-        })
+        toast({ title: 'Email not sent', description: (data as any).hint || 'Email service not configured.', variant: 'destructive' })
         return
       }
+      if (error) throw error
 
-      if (error) {
-        console.error('Error resending invitation:', error)
-        throw error
-      }
-
-      // Update the invitation timestamp
-      const { error: updateError } = await supabase
-        .from('family_members')
-        .update({
-          invitation_sent_at: new Date().toISOString(),
-          is_invited: true
-        })
-        .eq('id', member.id)
-
-      if (updateError) {
-        console.error('Error updating invitation status:', updateError)
-      }
-
-      // Update local state
-      setFamilyMembers(prev => 
-        prev.map(m => 
-          m.id === member.id 
-            ? { ...m, invitation_sent_at: new Date().toISOString(), is_invited: true }
-            : m
-        )
-      )
-
-      toast({
-        title: "Invitation Resent",
-        description: `Invitation email has been resent to ${member.full_name}`,
-      })
-
-    } catch (error) {
-      console.error('Error resending invitation:', error)
-      toast({
-        title: "Error",
-        description: "Failed to resend invitation. Please try again.",
-        variant: "destructive"
-      })
+      await supabase.from('family_members').update({ invitation_sent_at: new Date().toISOString(), is_invited: true }).eq('id', member.id)
+      setFamilyMembers(prev => prev.map(m => m.id === member.id ? { ...m, invitation_sent_at: new Date().toISOString(), is_invited: true } : m))
+      toast({ title: "Invitation Resent", description: `Invitation resent to ${member.full_name}` })
+    } catch {
+      toast({ title: "Error", description: "Failed to resend invitation.", variant: "destructive" })
     }
   }
 
-
   const getTrustPositionColor = (position: string) => {
-    const colors = {
+    const colors: Record<string, string> = {
       'Trustee': 'bg-blue-100 text-blue-800',
       'Beneficiary': 'bg-green-100 text-green-800',
       'Protector': 'bg-purple-100 text-purple-800',
@@ -417,221 +318,226 @@ export default function Members() {
       'Distribution Committee Member': 'bg-red-100 text-red-800',
       'Advisory Board Member': 'bg-gray-100 text-gray-800'
     }
-    return colors[position as keyof typeof colors] || 'bg-gray-100 text-gray-800'
+    return colors[position] || 'bg-gray-100 text-gray-800'
   }
 
-
-  const LoadingSkeleton = () => (
-    <div className="space-y-3 sm:space-y-4">
-      {[1, 2, 3].map(i => (
-        <Card key={i} className="animate-pulse">
-          <CardContent className="p-3 sm:p-4 md:p-6">
-            <div className="h-3 sm:h-4 bg-muted rounded w-1/3 mb-3 sm:mb-4"></div>
-            <div className="h-2 sm:h-3 bg-muted rounded w-2/3"></div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  )
-
-  const EmptyState = () => (
-    <Card className="w-full">
-      <CardContent className="p-3 sm:p-6 text-center">
-        <Users className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 sm:mb-3 text-muted-foreground opacity-50" />
-        <h3 className="text-sm sm:text-base font-medium mb-1 sm:mb-2">No family members added</h3>
-        <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
-          Start building your family directory
-        </p>
-      </CardContent>
-    </Card>
-  )
+  const getMostRecentActivity = (member: FamilyMember): string => {
+    const dates = [member.updated_at, member.last_accessed, member.joined_at, member.invitation_sent_at].filter(Boolean) as string[]
+    if (dates.length === 0) return member.created_at
+    return dates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0]
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-5xl">
         <div className="flex flex-col gap-2">
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Members</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your family and professional team members
-          </p>
+          <p className="text-sm text-muted-foreground">Manage your family and professional team members</p>
         </div>
 
         <div className="space-y-4 sm:space-y-6">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-base sm:text-lg font-semibold">Family Members</h2>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
-                  Manage your family directory and relationships
-                </p>
-              </div>
-              
-              <Button 
-                onClick={() => setShowAddFamilyDialog(true)} 
-                className="flex items-center gap-2 text-sm h-9"
-                size="sm"
-              >
-                <UserPlus className="h-4 w-4" />
-                <span className="hidden xs:inline">Add Family Member</span>
-                <span className="xs:hidden">Add Member</span>
-              </Button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-base sm:text-lg font-semibold">Family Members</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Manage your family directory and relationships</p>
             </div>
+            <Button onClick={() => setShowAddFamilyDialog(true)} className="flex items-center gap-2 text-sm h-9" size="sm">
+              <UserPlus className="h-4 w-4" />
+              <span className="hidden xs:inline">Add Family Member</span>
+              <span className="xs:hidden">Add Member</span>
+            </Button>
+          </div>
 
-            {familyMembers.length > 0 && (
-              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="select-all"
-                    checked={selectedMembers.size === familyMembers.length && familyMembers.length > 0}
-                    onCheckedChange={toggleSelectAll}
-                  />
-                  <label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
-                    Select All ({selectedMembers.size}/{familyMembers.length})
-                  </label>
+          {familyMembers.length > 0 && (
+            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Checkbox id="select-all" checked={selectedMembers.size === familyMembers.length && familyMembers.length > 0} onCheckedChange={toggleSelectAll} />
+                <label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
+                  Select All ({selectedMembers.size}/{familyMembers.length})
+                </label>
+              </div>
+              {selectedMembers.size > 0 && (
+                <Button variant="destructive" size="sm" onClick={handleDeleteSelected} className="ml-auto">
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Selected ({selectedMembers.size})
+                </Button>
+              )}
+            </div>
+          )}
+
+          <div className="grid gap-4">
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map(i => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="p-4"><div className="h-4 bg-muted rounded w-1/3 mb-4" /><div className="h-3 bg-muted rounded w-2/3" /></CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : familyMembers.length === 0 ? (
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <Users className="h-8 w-8 mx-auto mb-3 text-muted-foreground opacity-50" />
+                  <h3 className="text-base font-medium mb-2">No family members added</h3>
+                  <p className="text-sm text-muted-foreground">Start building your family directory</p>
+                </CardContent>
+              </Card>
+            ) : (
+              familyMembers.map((member) => (
+                <Card key={member.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setViewingMember(member)}>
+                  <CardContent className="p-2 sm:p-3 md:p-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
+                      <div className="flex items-center gap-3 sm:items-start">
+                        <Checkbox
+                          checked={selectedMembers.has(member.id)}
+                          onCheckedChange={() => toggleSelectMember(member.id)}
+                          className="mt-1"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
+                          <AvatarImage src="" />
+                          <AvatarFallback className="bg-primary/10 text-xs sm:text-sm">
+                            {member.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold text-sm sm:text-base truncate">{member.full_name}</h3>
+                            {member.family_position === 'Head of Family' && <Crown className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 flex-shrink-0" />}
+                            {getStatusBadge(member)}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
+                            {member.family_position && <Badge variant="secondary" className="text-xs">{member.family_position}</Badge>}
+                            {member.relationship_to_family && <span className="text-xs">• {member.relationship_to_family}</span>}
+                            {inviterNames[member.added_by] && (
+                              <span className="text-xs">• Invited by <span className="font-medium">{inviterNames[member.added_by]}</span></span>
+                            )}
+                          </div>
+                          {/* Live relative timestamp */}
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1" key={now.getTime()}>
+                            <Clock className="h-3 w-3" />
+                            <span>Active {getRelativeTime(getMostRecentActivity(member))}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 sm:ml-auto sm:flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                        {member.email && (
+                          <Button variant="outline" size="sm" onClick={() => handleResendInvitation(member)} className="text-xs h-8 px-2" disabled={!!member.joined_at}>
+                            <Mail className="h-3 w-3 sm:mr-1" />
+                            <span className="hidden sm:inline">{member.joined_at ? 'Accepted' : 'Resend'}</span>
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="sm" onClick={() => setEditingMember(member)} className="h-8 w-8 p-0">
+                          <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteFamilyMember(member.id)} className="h-8 w-8 p-0">
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {member.trust_positions && member.trust_positions.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-3">
+                        {member.trust_positions.map(position => (
+                          <Badge key={position} variant="outline" className={`text-xs ${getTrustPositionColor(position)}`}>{position}</Badge>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mt-3">
+                      {member.email && <div className="flex items-center gap-1 min-w-0"><Mail className="h-3 w-3 flex-shrink-0" /><span className="truncate">{member.email}</span></div>}
+                      {member.phone && <div className="flex items-center gap-1"><Phone className="h-3 w-3 flex-shrink-0" /><span>{member.phone}</span></div>}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Member Profile Dialog */}
+        <Dialog open={!!viewingMember} onOpenChange={() => setViewingMember(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-primary/10">
+                    {viewingMember?.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p>{viewingMember?.full_name}</p>
+                  <p className="text-xs font-normal text-muted-foreground">{viewingMember?.family_position}</p>
                 </div>
-                {selectedMembers.size > 0 && (
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleDeleteSelected}
-                    className="ml-auto"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Selected ({selectedMembers.size})
-                  </Button>
+              </DialogTitle>
+              <DialogDescription>Member profile and activity overview</DialogDescription>
+            </DialogHeader>
+
+            {viewingMember && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Status</p>
+                    <div className="mt-1">{getStatusBadge(viewingMember)}</div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Last Active</p>
+                    <p className="font-medium flex items-center gap-1 mt-1">
+                      <Clock className="h-3 w-3" /> {getRelativeTime(getMostRecentActivity(viewingMember))}
+                    </p>
+                  </div>
+                  {viewingMember.email && (
+                    <div className="col-span-2">
+                      <p className="text-xs text-muted-foreground">Email</p>
+                      <p className="font-medium">{viewingMember.email}</p>
+                    </div>
+                  )}
+                  {viewingMember.phone && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Phone</p>
+                      <p className="font-medium">{viewingMember.phone}</p>
+                    </div>
+                  )}
+                  {viewingMember.relationship_to_family && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Relationship</p>
+                      <p className="font-medium">{viewingMember.relationship_to_family}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-xs text-muted-foreground">Added</p>
+                    <p className="font-medium">{getRelativeTime(viewingMember.created_at)}</p>
+                  </div>
+                </div>
+
+                {viewingMember.trust_positions && viewingMember.trust_positions.length > 0 && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Trust Positions</p>
+                    <div className="flex flex-wrap gap-1">
+                      {viewingMember.trust_positions.map(p => (
+                        <Badge key={p} variant="outline" className={`text-xs ${getTrustPositionColor(p)}`}>{p}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Daily Activity Chart */}
+                <DailyActivityChart memberId={viewingMember.id} />
+
+                {viewingMember.notes && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Notes</p>
+                    <p className="text-sm bg-muted/50 rounded-lg p-3">{viewingMember.notes}</p>
+                  </div>
                 )}
               </div>
             )}
+          </DialogContent>
+        </Dialog>
 
-            <div className="grid gap-4">
-              {loading ? (
-                <LoadingSkeleton />
-              ) : familyMembers.length === 0 ? (
-                <EmptyState />
-              ) : (
-                familyMembers.map((member) => (
-                  <Card key={member.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-2 sm:p-3 md:p-4">
-                      <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
-                        {/* Mobile: Header with Avatar and Name */}
-                        <div className="flex items-center gap-3 sm:items-start">
-                          <Checkbox
-                            checked={selectedMembers.has(member.id)}
-                            onCheckedChange={() => toggleSelectMember(member.id)}
-                            className="mt-1"
-                          />
-                          <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
-                            <AvatarImage src="" />
-                            <AvatarFallback className="bg-primary/10 text-xs sm:text-sm">
-                              {member.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h3 className="font-semibold text-sm sm:text-base truncate">{member.full_name}</h3>
-                              {member.family_position === 'Head of Family' && (
-                                <Crown className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 flex-shrink-0" />
-                              )}
-                              {getStatusBadge(member)}
-                            </div>
-                            
-                            <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
-                              {member.family_position && (
-                                <Badge variant="secondary" className="text-xs">{member.family_position}</Badge>
-                              )}
-                              {member.relationship_to_family && (
-                                <span className="text-xs">• {member.relationship_to_family}</span>
-                              )}
-                              {inviterNames[member.added_by] && (
-                                <span className="text-xs">• Invited by <span className="font-medium">{inviterNames[member.added_by]}</span></span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Mobile: Action Buttons - Moved to top right on mobile */}
-                        <div className="flex items-center gap-2 sm:ml-auto sm:flex-shrink-0">
-                          {member.email && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleResendInvitation(member)}
-                              className="text-xs h-8 px-2"
-                              disabled={!!member.joined_at}
-                            >
-                              <Mail className="h-3 w-3 sm:mr-1" />
-                              <span className="hidden sm:inline">
-                                {member.joined_at ? 'Accepted' : 'Resend'}
-                              </span>
-                            </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setEditingMember(member)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteFamilyMember(member.id)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Trust Positions */}
-                      {member.trust_positions && member.trust_positions.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-3">
-                          {member.trust_positions.map(position => (
-                            <Badge
-                              key={position}
-                              variant="outline"
-                              className={`text-xs ${getTrustPositionColor(position)}`}
-                            >
-                              {position}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Contact Info */}
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mt-3">
-                        {member.email && (
-                          <div className="flex items-center gap-1 min-w-0">
-                            <Mail className="h-3 w-3 flex-shrink-0" />
-                            <span className="truncate">{member.email}</span>
-                          </div>
-                        )}
-                        {member.phone && (
-                          <div className="flex items-center gap-1">
-                            <Phone className="h-3 w-3 flex-shrink-0" />
-                            <span>{member.phone}</span>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-        </div>
-
-        {/* Dialogs */}
-        <AddFamilyMemberDialog 
-          open={showAddFamilyDialog} 
-          onOpenChange={setShowAddFamilyDialog}
-        />
-
-        <EditFamilyMemberDialog
-          member={editingMember}
-          onClose={() => setEditingMember(null)}
-          onUpdate={handleUpdateFamilyMember}
-        />
+        <AddFamilyMemberDialog open={showAddFamilyDialog} onOpenChange={setShowAddFamilyDialog} />
+        <EditFamilyMemberDialog member={editingMember} onClose={() => setEditingMember(null)} onUpdate={handleUpdateFamilyMember} />
       </div>
     </div>
   )
