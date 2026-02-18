@@ -29,18 +29,25 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [user, loading, navigate])
 
-  // Redirect to agreement page if not signed yet
+  // Redirect to agreement page if not signed yet — AGREEMENT FIRST, then onboarding
   useEffect(() => {
     if (!loading && !agreementLoading && user && needsAgreement && agreementSigned === false && !profile?.is_admin) {
-      navigate("/program-agreement")
+      if (location.pathname !== '/program-agreement') {
+        navigate("/program-agreement")
+      }
     }
-  }, [user, loading, agreementLoading, agreementSigned, needsAgreement, profile, navigate])
+  }, [user, loading, agreementLoading, agreementSigned, needsAgreement, profile, navigate, location.pathname])
 
+  // Only redirect to onboarding AFTER agreement is signed (or not needed)
   useEffect(() => {
-    if (!loading && !onboardingLoading && !agreementLoading && user && agreementSigned !== false && onboardingCompleted === false && !profile?.is_admin) {
-      navigate("/onboarding")
+    if (!loading && !onboardingLoading && !agreementLoading && user && !profile?.is_admin) {
+      // If agreement is needed and not signed, don't redirect to onboarding
+      if (needsAgreement && agreementSigned === false) return
+      if (onboardingCompleted === false && location.pathname !== '/onboarding') {
+        navigate("/onboarding")
+      }
     }
-  }, [user, loading, onboardingLoading, agreementLoading, onboardingCompleted, agreementSigned, profile, navigate])
+  }, [user, loading, onboardingLoading, agreementLoading, onboardingCompleted, agreementSigned, needsAgreement, profile, navigate, location.pathname])
 
   if (loading || onboardingLoading || agreementLoading) {
     return (

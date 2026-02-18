@@ -16,10 +16,12 @@ export function useAgreementStatus() {
     }
 
     const programName = profile.program_name
-    // Only TFV and TFBA require agreements
+    // TFV, TFBA, and TFFM require agreements
     const requiresAgreement = programName && (
       programName.toLowerCase().includes('vault') ||
-      programName.toLowerCase().includes('accelerator')
+      programName.toLowerCase().includes('accelerator') ||
+      programName.toLowerCase().includes('mastermind') ||
+      programName.toLowerCase().includes('fortune')
     )
 
     if (!requiresAgreement) {
