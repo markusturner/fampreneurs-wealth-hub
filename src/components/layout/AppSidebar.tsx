@@ -177,7 +177,7 @@ export function AppSidebar({ className }: { className?: string }) {
       {/* AI Chat Button */}
       <div className="px-3 pb-2">
         <Button
-          className="w-full justify-start gap-2 rounded-xl font-semibold border-2 border-dashed border-[hsl(210,100%,58%)] text-[hsl(210,100%,58%)] bg-transparent hover:bg-[hsl(210,100%,58%)]/10"
+          className="w-full justify-start gap-2 rounded-xl font-semibold bg-[hsl(210,100%,58%)]/10 text-[hsl(210,100%,58%)] hover:bg-[hsl(210,100%,58%)]/20 border-0"
           variant="ghost"
           onClick={() => navigate('/ai-chat')}
         >
@@ -188,7 +188,7 @@ export function AppSidebar({ className }: { className?: string }) {
 
       {/* Trust Creation */}
       <div className="px-3 pb-3">
-        <div className="border-2 border-dashed border-[hsl(43,100%,50%)] rounded-xl">
+        <div className="bg-[hsl(43,100%,50%)]/10 rounded-xl">
           <NavItem
             label="Trust Creation"
             icon={ScrollText}
