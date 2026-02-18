@@ -103,10 +103,19 @@ export default function WorkspaceMembers() {
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
-  const handleSendChat = () => {
-    if (!chatMessage.trim() || !chatMember) return
-    toast({ title: 'Message sent', description: `Message sent to ${chatMember.display_name}` })
-    setChatMessage('')
+  const handleSendChat = async () => {
+    if (!chatMessage.trim() || !chatMember || !user) return
+    try {
+      const { error } = await supabase
+        .from('direct_messages')
+        .insert({ sender_id: user.id, receiver_id: chatMember.user_id, content: chatMessage.trim() })
+      if (error) throw error
+      toast({ title: 'Message sent', description: `Message sent to ${chatMember.display_name}` })
+      setChatMessage('')
+    } catch (error) {
+      console.error('Error sending message:', error)
+      toast({ title: 'Error', description: 'Failed to send message', variant: 'destructive' })
+    }
   }
 
   const handleInvite = () => {

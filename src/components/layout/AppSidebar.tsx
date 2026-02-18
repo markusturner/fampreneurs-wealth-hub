@@ -115,7 +115,7 @@ const SEARCH_SUGGESTIONS = [
   { label: 'Messenger', path: '/messenger', requiresSubscription: false },
   { label: 'Profile Settings', path: '/profile-settings', requiresSubscription: false },
   { label: 'Admin Settings', path: '/admin-settings', requiresAdmin: true },
-  { label: 'Onboarding Submissions', path: '/onboarding-submissions', requiresAdmin: true },
+  { label: 'Onboarding Form', path: '/onboarding-submissions', requiresAdmin: true },
 ]
 
 export function AppSidebar({ className }: { className?: string }) {
@@ -221,7 +221,7 @@ export function AppSidebar({ className }: { className?: string }) {
             </div>
             <div className="space-y-0.5">
               <NavItem label="Admin Settings" icon={Shield} href="/admin-settings" active={isActive("/admin-settings")} />
-              <NavItem label="Onboarding Submissions" icon={ClipboardList} href="/onboarding-submissions" active={isActive("/onboarding-submissions")} />
+              <NavItem label="Onboarding Form" icon={ClipboardList} href="/onboarding-submissions" active={isActive("/onboarding-submissions")} />
             </div>
           </>
         )}
