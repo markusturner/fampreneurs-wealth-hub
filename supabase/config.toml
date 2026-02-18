@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.generate-trust-document]
 verify_jwt = false
+
+[functions.send-trust-email]
+verify_jwt = false
