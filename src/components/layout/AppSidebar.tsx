@@ -192,14 +192,10 @@ export function AppSidebar({ className }: { className?: string }) {
           <NavItem
             label="Trust Creation"
             icon={ScrollText}
-            defaultOpen={currentPath.includes("/trust-creation")}
+            href="/trust-creation"
             active={currentPath.includes("/trust-creation")}
             className="text-[hsl(43,100%,50%)]"
-          >
-            <SubNavItem label="Business Trust" href="/trust-creation?type=business" active={currentPath === "/trust-creation" && location.search.includes("type=business")} />
-            <SubNavItem label="Ministry Trust" href="/trust-creation?type=ministry" active={currentPath === "/trust-creation" && location.search.includes("type=ministry")} />
-            <SubNavItem label="Family Trust" href="/trust-creation?type=family" active={currentPath === "/trust-creation" && location.search.includes("type=family")} />
-          </NavItem>
+          />
         </div>
       </div>
 
