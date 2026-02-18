@@ -246,12 +246,13 @@ export default function TrustCreation() {
             )
           })}
         </div>
-      ) : selectedTrust === 'family' && !generatedDoc ? (
+      ) : (selectedTrust === 'family' || selectedTrust === 'ministry') && !generatedDoc ? (
         <FamilyTrustForm
+          trustType={selectedTrust}
           onBack={() => setSelectedTrust(null)}
           onGenerated={(doc) => {
             setGeneratedDoc(doc)
-            toast({ title: "Trust Document Generated", description: "Your family trust document has been created successfully." })
+            toast({ title: "Trust Document Generated", description: "Your trust document has been created successfully." })
           }}
         />
       ) : generatedDoc ? (
