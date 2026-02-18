@@ -12,6 +12,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
+import SignUp from "./pages/SignUp";
 import ThankYou from "./pages/ThankYou";
 import Community from "./pages/Community";
 import Courses from "./pages/Courses";
@@ -89,6 +90,7 @@ function AppWithNotifications() {
         {/* Public routes - no sidebar */}
         <Route path="/" element={<Landing />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/signup" element={<SignUp />} />
         <Route path="/thank-you" element={<ThankYou />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />

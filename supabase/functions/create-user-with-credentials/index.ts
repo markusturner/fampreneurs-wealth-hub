@@ -244,8 +244,10 @@ const handler = async (req: Request): Promise<Response> => {
                   <p style="font-size: 16px;"><strong>Important:</strong> Please change your password after your first login for security purposes.</p>
                   
                   <div class="button-container">
-                    <a href="https://27136ee7-1259-4a9a-9864-1109582fab4d.lovableproject.com/auth" class="button">
+                    <a href="https://fampreneurs-wealth-hub.lovable.app/auth" class="button">
                       Login to Your Account
+                    </a>
+                  </div>
                     </a>
                   </div>
 
