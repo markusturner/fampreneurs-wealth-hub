@@ -256,6 +256,37 @@ export function AdminAllUsersManagement() {
 
       console.log('Profile updated successfully:', updatedData)
 
+      // Auto-assign community group membership based on program
+      if (editingUser.program_name) {
+        const programToCommunityMap: Record<string, string> = {
+          'The Family Business University': 'fbu',
+          'The Family Vault': 'tfv',
+          'The Family Business Accelerator': 'tfba',
+          'The Family Fortune Mastermind': 'tffm',
+        }
+        const programId = programToCommunityMap[editingUser.program_name]
+        if (programId) {
+          // Find the community group for this program
+          const { data: groups } = await supabase
+            .from('community_groups')
+            .select('id')
+            .eq('program_id', programId)
+          
+          if (groups && groups.length > 0) {
+            for (const group of groups) {
+              await supabase
+                .from('group_memberships' as any)
+                .upsert({
+                  user_id: editingUser.user_id,
+                  group_id: group.id,
+                  role: 'member',
+                }, { onConflict: 'user_id,group_id' })
+            }
+          }
+          console.log(`Auto-assigned user to ${programId} community`)
+        }
+      }
+
       // Update admin role
       if (editingUser.is_admin) {
         const { error: adminError } = await supabase.rpc('assign_admin_role', {

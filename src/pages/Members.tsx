@@ -46,6 +46,7 @@ export default function Members() {
   const { user } = useAuth()
   const { toast } = useToast()
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([])
+  const [inviterNames, setInviterNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
   const [showAddFamilyDialog, setShowAddFamilyDialog] = useState(false)
   const [editingMember, setEditingMember] = useState<FamilyMember | null>(null)
@@ -101,12 +102,29 @@ export default function Members() {
         .is('office_role', null)
         .order('created_at', { ascending: false })
 
+      // Fetch inviter profiles for the added_by user ids
+      const inviterIds = [...new Set((familyData || []).map(m => m.added_by))]
+      let inviterMap: Record<string, string> = {}
+      if (inviterIds.length > 0) {
+        const { data: inviterProfiles } = await supabase
+          .from('profiles')
+          .select('user_id, first_name, last_name, display_name')
+          .in('user_id', inviterIds)
+        if (inviterProfiles) {
+          inviterMap = Object.fromEntries(inviterProfiles.map(p => [
+            p.user_id,
+            p.display_name || `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'Unknown'
+          ]))
+        }
+      }
+
       console.log('Family members data:', familyData)
       console.log('Members error:', membersError)
 
       if (membersError) throw membersError
 
       setFamilyMembers(familyData || [])
+      setInviterNames(inviterMap)
     } catch (error) {
       console.error('Error fetching members:', error)
       toast({
@@ -523,6 +541,9 @@ export default function Members() {
                               )}
                               {member.relationship_to_family && (
                                 <span className="text-xs">• {member.relationship_to_family}</span>
+                              )}
+                              {inviterNames[member.added_by] && (
+                                <span className="text-xs">• Invited by <span className="font-medium">{inviterNames[member.added_by]}</span></span>
                               )}
                             </div>
                           </div>

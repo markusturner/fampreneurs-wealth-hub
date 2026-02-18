@@ -10,11 +10,20 @@ import { Loader2, UserPlus, Shield } from 'lucide-react'
 
 type UserRole = 'trustee' | 'family_office_member' | 'family_member'
 
+const PROGRAM_OPTIONS = [
+  'The Family Business University',
+  'The Family Vault',
+  'The Family Business Accelerator',
+  'The Family Legacy: VIP Weekend',
+  'The Family Fortune Mastermind',
+]
+
 export function AdminUserManagement() {
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [role, setRole] = useState<UserRole>('family_member')
+  const [programName, setProgramName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
@@ -39,6 +48,7 @@ export function AdminUserManagement() {
           firstName,
           lastName,
           role,
+          programName: programName || undefined,
         },
       })
 
@@ -67,6 +77,7 @@ export function AdminUserManagement() {
       setFirstName('')
       setLastName('')
       setRole('family_member')
+      setProgramName('')
     } catch (error: any) {
       console.error('Error adding user:', error)
       
@@ -145,6 +156,20 @@ export function AdminUserManagement() {
               <SelectItem value="trustee">Trustee</SelectItem>
               <SelectItem value="family_office_member">Family Office Member</SelectItem>
               <SelectItem value="family_member">Family Member</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="program">Program</Label>
+          <Select value={programName} onValueChange={setProgramName} disabled={isLoading}>
+            <SelectTrigger id="program">
+              <SelectValue placeholder="Select a program (optional)" />
+            </SelectTrigger>
+            <SelectContent>
+              {PROGRAM_OPTIONS.map((p) => (
+                <SelectItem key={p} value={p}>{p}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
