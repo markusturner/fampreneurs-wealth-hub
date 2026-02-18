@@ -24,6 +24,7 @@ import {
   Video,
   Mail,
   ClipboardList,
+  ScrollText,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -172,15 +173,28 @@ export function AppSidebar({ className }: { className?: string }) {
       </div>
 
       {/* AI Chat Button */}
-      <div className="px-3 pb-3">
+      <div className="px-3 pb-2">
         <Button
-          variant="outline"
-          className="w-full justify-start gap-2 border border-accent/30 bg-accent/10 hover:bg-accent/20 text-sidebar-foreground hover:text-sidebar-foreground rounded-xl"
+          className="w-full justify-start gap-2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl font-semibold shadow-md shadow-accent/20"
           onClick={() => navigate('/ai-chat')}
         >
-          <Bot className="h-4 w-4 text-accent" />
+          <Bot className="h-4 w-4" />
           AI Chat
         </Button>
+      </div>
+
+      {/* Trust Creation */}
+      <div className="px-3 pb-3">
+        <NavItem
+          label="Trust Creation"
+          icon={ScrollText}
+          defaultOpen={currentPath.includes("/trust-creation")}
+          active={currentPath.includes("/trust-creation")}
+        >
+          <SubNavItem label="Business Trust" href="/trust-creation?type=business" active={currentPath === "/trust-creation" && location.search.includes("type=business")} />
+          <SubNavItem label="Ministry Trust" href="/trust-creation?type=ministry" active={currentPath === "/trust-creation" && location.search.includes("type=ministry")} />
+          <SubNavItem label="Family Trust" href="/trust-creation?type=family" active={currentPath === "/trust-creation" && location.search.includes("type=family")} />
+        </NavItem>
       </div>
 
       <ScrollArea className="flex-1 px-3 py-1">

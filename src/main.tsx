@@ -45,6 +45,7 @@ import CookiePolicy from "./pages/CookiePolicy";
 
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import AIChat from "./pages/AIChat";
+import TrustCreation from "./pages/TrustCreation";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
 
@@ -125,6 +126,7 @@ function AppWithNotifications() {
         <Route path="/contact-support" element={<WithLayout><ContactSupport /></WithLayout>} />
         <Route path="/search" element={<WithLayout><Search /></WithLayout>} />
         <Route path="/ai-chat" element={<WithLayout><AIChat /></WithLayout>} />
+        <Route path="/trust-creation" element={<WithLayout><TrustCreation /></WithLayout>} />
         <Route path="*" element={<div>Page not found</div>} />
       </Routes>
       <MobileBottomNav />

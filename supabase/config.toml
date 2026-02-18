@@ -44,3 +44,9 @@ verify_jwt = true
 
 [functions.send-meeting-reminders]
 verify_jwt = false
+
+[functions.check-trust-access]
+verify_jwt = false
+
+[functions.generate-trust-document]
+verify_jwt = false
