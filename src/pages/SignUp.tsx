@@ -21,6 +21,11 @@ export default function SignUp() {
   const [selectedProgram, setSelectedProgram] = useState<ProgramId | ''>('')
   const [selectedPriceIndex, setSelectedPriceIndex] = useState<string>('')
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'other' | ''>('')
+  const [streetAddress, setStreetAddress] = useState('')
+  const [city, setCity] = useState('')
+  const [state, setState] = useState('')
+  const [zipCode, setZipCode] = useState('')
+  const [dateOfBirth, setDateOfBirth] = useState('')
 
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -65,6 +70,11 @@ export default function SignUp() {
             user_type: 'trustee',
             program_name: program?.name || '',
             program_id: selectedProgram,
+            street_address: streetAddress,
+            city: city,
+            state: state,
+            zip_code: zipCode,
+            date_of_birth: dateOfBirth,
           }
         }
       })
@@ -105,6 +115,7 @@ export default function SignUp() {
 
       setEmail(''); setPassword(''); setFirstName(''); setLastName('')
       setSelectedProgram(''); setSelectedPriceIndex(''); setPaymentMethod('')
+      setStreetAddress(''); setCity(''); setState(''); setZipCode(''); setDateOfBirth('')
     } catch (error) {
       toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" })
     } finally {
@@ -190,6 +201,30 @@ export default function SignUp() {
               <p className="text-xs text-muted-foreground">Must be at least 6 characters long</p>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="street-address">Street Address</Label>
+              <Input id="street-address" type="text" placeholder="123 Main St" value={streetAddress} onChange={(e) => setStreetAddress(e.target.value)} required disabled={isLoading} />
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                <Input id="city" type="text" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} required disabled={isLoading} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">State</Label>
+                <Input id="state" type="text" placeholder="State" value={state} onChange={(e) => setState(e.target.value)} required disabled={isLoading} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="zip-code">Zip Code</Label>
+                <Input id="zip-code" type="text" placeholder="12345" value={zipCode} onChange={(e) => setZipCode(e.target.value)} required disabled={isLoading} />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="date-of-birth">Date of Birth</Label>
+              <Input id="date-of-birth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} required disabled={isLoading} />
+            </div>
 
             <div className="space-y-2">
               <Label>Program</Label>

@@ -3432,6 +3432,7 @@ export type Database = {
           avatar_url: string | null
           backend_cash_collected: number | null
           bio: string | null
+          city: string | null
           cover_photo_url: string | null
           created_at: string
           display_name: string | null
@@ -3453,10 +3454,13 @@ export type Database = {
           phone: string | null
           profile_photo_uploaded: boolean
           program_name: string | null
+          state: string | null
+          street_address: string | null
           updated_at: string
           user_id: string
           website: string | null
           youtube_url: string | null
+          zip_code: string | null
         }
         Insert: {
           accountability_specialties?: string[] | null
@@ -3465,6 +3469,7 @@ export type Database = {
           avatar_url?: string | null
           backend_cash_collected?: number | null
           bio?: string | null
+          city?: string | null
           cover_photo_url?: string | null
           created_at?: string
           display_name?: string | null
@@ -3486,10 +3491,13 @@ export type Database = {
           phone?: string | null
           profile_photo_uploaded?: boolean
           program_name?: string | null
+          state?: string | null
+          street_address?: string | null
           updated_at?: string
           user_id: string
           website?: string | null
           youtube_url?: string | null
+          zip_code?: string | null
         }
         Update: {
           accountability_specialties?: string[] | null
@@ -3498,6 +3506,7 @@ export type Database = {
           avatar_url?: string | null
           backend_cash_collected?: number | null
           bio?: string | null
+          city?: string | null
           cover_photo_url?: string | null
           created_at?: string
           display_name?: string | null
@@ -3519,10 +3528,49 @@ export type Database = {
           phone?: string | null
           profile_photo_uploaded?: boolean
           program_name?: string | null
+          state?: string | null
+          street_address?: string | null
           updated_at?: string
           user_id?: string
           website?: string | null
           youtube_url?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      program_agreements: {
+        Row: {
+          agreement_date: string
+          created_at: string
+          full_name: string
+          id: string
+          mailing_address: string
+          program_name: string
+          signature_data: string
+          signed_at: string
+          user_id: string
+        }
+        Insert: {
+          agreement_date?: string
+          created_at?: string
+          full_name: string
+          id?: string
+          mailing_address: string
+          program_name: string
+          signature_data: string
+          signed_at?: string
+          user_id: string
+        }
+        Update: {
+          agreement_date?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          mailing_address?: string
+          program_name?: string
+          signature_data?: string
+          signed_at?: string
+          user_id?: string
         }
         Relationships: []
       }

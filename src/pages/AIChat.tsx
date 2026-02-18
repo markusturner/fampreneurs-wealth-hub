@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Send, Bot, User, Loader2, Shield, Building2, FileText, Paperclip, Settings2, X, ChevronDown, Upload, Mic, Square, Plus, FolderOpen, MessageSquare, MoreHorizontal, Trash2, FolderPlus } from 'lucide-react'
+import { Send, Bot, User, Loader2, Shield, Building2, FileText, Paperclip, Settings2, X, ChevronDown, Upload, Mic, Square, Plus, FolderOpen, MessageSquare, MoreHorizontal, Trash2, FolderPlus, ArrowLeft, PanelLeftOpen } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
@@ -450,6 +450,9 @@ export default function AIChat() {
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={createNewChat} title="New Chat">
               <Plus className="h-3.5 w-3.5" />
             </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSidebarOpen(false)} title="Collapse sidebar">
+              <ArrowLeft className="h-3.5 w-3.5" />
+            </Button>
           </div>
         </div>
 
@@ -544,9 +547,11 @@ export default function AIChat() {
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-2 border-b">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarOpen(!sidebarOpen)}>
-              <MessageSquare className="h-4 w-4" />
-            </Button>
+            {!sidebarOpen && (
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSidebarOpen(true)} title="Open chat history">
+                <PanelLeftOpen className="h-4 w-4" />
+              </Button>
+            )}
             <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-6 h-6 object-contain" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

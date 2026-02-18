@@ -47,6 +47,7 @@ import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import AIChat from "./pages/AIChat";
 import TrustCreation from "./pages/TrustCreation";
 import TrustFormSubmissions from "./pages/TrustFormSubmissions";
+import ProgramAgreement from "./pages/ProgramAgreement";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
 
@@ -98,6 +99,7 @@ function AppWithNotifications() {
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/program-agreement" element={<ProgramAgreement />} />
 
         {/* Authenticated routes - with sidebar */}
         <Route path="/dashboard" element={<WithLayout><Dashboard /></WithLayout>} />

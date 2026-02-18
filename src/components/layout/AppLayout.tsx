@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus"
+import { useAgreementStatus } from "@/hooks/useAgreementStatus"
 import { AppSidebar } from "./AppSidebar"
 import { Loader2, Menu } from "lucide-react"
 import { useState } from "react"
@@ -17,6 +18,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const { user, loading, profile } = useAuth()
   const { completed: onboardingCompleted, loading: onboardingLoading } = useOnboardingStatus()
+  const { signed: agreementSigned, loading: agreementLoading, needsAgreement } = useAgreementStatus()
   const navigate = useNavigate()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -27,13 +29,20 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [user, loading, navigate])
 
+  // Redirect to agreement page if not signed yet
   useEffect(() => {
-    if (!loading && !onboardingLoading && user && onboardingCompleted === false && !profile?.is_admin) {
+    if (!loading && !agreementLoading && user && needsAgreement && agreementSigned === false && !profile?.is_admin) {
+      navigate("/program-agreement")
+    }
+  }, [user, loading, agreementLoading, agreementSigned, needsAgreement, profile, navigate])
+
+  useEffect(() => {
+    if (!loading && !onboardingLoading && !agreementLoading && user && agreementSigned !== false && onboardingCompleted === false && !profile?.is_admin) {
       navigate("/onboarding")
     }
-  }, [user, loading, onboardingLoading, onboardingCompleted, profile, navigate])
+  }, [user, loading, onboardingLoading, agreementLoading, onboardingCompleted, agreementSigned, profile, navigate])
 
-  if (loading || onboardingLoading) {
+  if (loading || onboardingLoading || agreementLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
