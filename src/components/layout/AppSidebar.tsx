@@ -22,7 +22,6 @@ import {
   LogOut,
   Search,
   Video,
-  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -52,17 +51,10 @@ function NavItem({ label, icon: Icon, href, active, locked, onClick, children, d
   const hasChildren = !!children
 
   const handleClick = () => {
-    if (locked) {
-      onClick?.()
-      return
-    }
-    if (hasChildren) {
-      setOpen(!open)
-    } else if (href) {
-      navigate(href)
-    } else if (onClick) {
-      onClick()
-    }
+    if (locked) { onClick?.(); return }
+    if (hasChildren) { setOpen(!open) }
+    else if (href) { navigate(href) }
+    else if (onClick) { onClick() }
   }
 
   return (
@@ -70,13 +62,13 @@ function NavItem({ label, icon: Icon, href, active, locked, onClick, children, d
       <button
         onClick={handleClick}
         className={cn(
-          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200",
-          "hover:bg-[#ffb500]/20 group",
-          active && !hasChildren && "bg-[#ffb500]/20 text-sidebar-foreground font-medium",
-          locked && "opacity-50 cursor-not-allowed"
+          "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200",
+          "hover:bg-sidebar-accent/60 group",
+          active && !hasChildren && "bg-accent/20 text-accent font-medium",
+          locked && "opacity-40 cursor-not-allowed"
         )}
       >
-        <Icon className={cn("h-4 w-4 flex-shrink-0", active && !hasChildren && "text-[#ffb500]")} />
+        <Icon className={cn("h-4 w-4 flex-shrink-0", active && !hasChildren && "text-accent")} />
         <span className="flex-1 text-left truncate">{label}</span>
         {locked && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
         {hasChildren && !locked && (
@@ -84,7 +76,7 @@ function NavItem({ label, icon: Icon, href, active, locked, onClick, children, d
         )}
       </button>
       {hasChildren && open && !locked && (
-        <div className="ml-4 pl-3 border-l border-[#290a52] space-y-0.5 mt-0.5">
+        <div className="ml-4 pl-3 border-l border-sidebar-border space-y-0.5 mt-0.5">
           {children}
         </div>
       )}
@@ -94,17 +86,13 @@ function NavItem({ label, icon: Icon, href, active, locked, onClick, children, d
 
 function SubNavItem({ label, href, active, onClick }: { label: string; href?: string; active?: boolean; onClick?: () => void }) {
   const navigate = useNavigate()
-
   return (
     <button
-      onClick={() => {
-        if (href) navigate(href)
-        else if (onClick) onClick()
-      }}
+      onClick={() => { if (href) navigate(href); else if (onClick) onClick() }}
       className={cn(
-        "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
-        "hover:bg-[#ffb500]/20",
-        active && "bg-[#ffb500]/20 text-sidebar-foreground font-medium"
+        "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
+        "hover:bg-sidebar-accent/60",
+        active && "bg-accent/20 text-accent font-medium"
       )}
     >
       {label}
@@ -144,24 +132,15 @@ export function AppSidebar({ className }: { className?: string }) {
     : SEARCH_SUGGESTIONS
 
   useEffect(() => {
-    if (searchOpen) {
-      setTimeout(() => searchInputRef.current?.focus(), 100)
-    }
+    if (searchOpen) setTimeout(() => searchInputRef.current?.focus(), 100)
   }, [searchOpen])
 
   const isActive = (path: string) => currentPath === path
-
-  // Owner and admin always have access
   const hasTruHeirsAccess = isAdmin || isOwner || subscriptionStatus.subscribed || subscriptionStatus.loading
-
-  const handleLockedClick = () => {
-    setPricingOpen(true)
-  }
+  const handleLockedClick = () => setPricingOpen(true)
 
   const getInitials = () => {
-    if (profile?.first_name && profile?.last_name) {
-      return `${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`
-    }
+    if (profile?.first_name && profile?.last_name) return `${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}`
     if (profile?.display_name) {
       const names = profile.display_name.split(' ')
       return names.length > 1 ? `${names[0].charAt(0)}${names[names.length - 1].charAt(0)}` : names[0].charAt(0)
@@ -170,26 +149,26 @@ export function AppSidebar({ className }: { className?: string }) {
   }
 
   return (
-    <aside className={cn("flex flex-col w-64 border-r border-[#290a52] h-screen sticky top-0 dark bg-sidebar text-sidebar-foreground", className)}>
+    <aside className={cn("flex flex-col w-64 h-screen sticky top-0 bg-sidebar text-sidebar-foreground", className)}>
       {/* Logo & Brand */}
-      <div className="flex items-center gap-3 px-5 py-4">
+      <div className="flex items-center gap-3 px-5 py-5">
         <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs Logo" className="w-10 h-10 object-contain" />
         <span className="font-montserrat font-bold text-lg text-sidebar-foreground">TruHeirs</span>
       </div>
 
       {/* AI Chat Button */}
-      <div className="px-3 pt-2 pb-2">
+      <div className="px-3 pb-3">
         <Button
           variant="outline"
-          className="w-full justify-start gap-2 border-dashed border-[#ffb500]/50 hover:bg-[#ffb500]/10 text-sidebar-foreground hover:text-sidebar-foreground"
+          className="w-full justify-start gap-2 border border-accent/30 bg-accent/10 hover:bg-accent/20 text-sidebar-foreground hover:text-sidebar-foreground rounded-xl"
           onClick={() => navigate('/ai-chat')}
         >
-          <Bot className="h-4 w-4 text-[#ffb500]" />
+          <Bot className="h-4 w-4 text-accent" />
           AI Chat
         </Button>
       </div>
 
-      <ScrollArea className="flex-1 px-3 py-2">
+      <ScrollArea className="flex-1 px-3 py-1">
         {/* WORKSPACE */}
         <div className="mb-1">
           <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Workspace</p>
@@ -206,7 +185,7 @@ export function AppSidebar({ className }: { className?: string }) {
         </div>
 
         {/* TRUHEIRS */}
-        <div className="mb-1 mt-4">
+        <div className="mb-1 mt-5">
           <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">TruHeirs</p>
         </div>
         <div className="space-y-0.5">
@@ -220,7 +199,7 @@ export function AppSidebar({ className }: { className?: string }) {
         {/* ADMIN */}
         {(isAdmin || isOwner) && (
           <>
-            <div className="mb-1 mt-4">
+            <div className="mb-1 mt-5">
               <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</p>
             </div>
             <div className="space-y-0.5">
@@ -231,11 +210,11 @@ export function AppSidebar({ className }: { className?: string }) {
       </ScrollArea>
 
       {/* Bottom section */}
-      <div className="border-t border-[#290a52] p-3 space-y-2">
+      <div className="p-3 space-y-3">
         <div className="flex items-center justify-evenly">
           <Popover open={searchOpen} onOpenChange={setSearchOpen}>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[#ffb500]/20" title="Search">
+              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-sidebar-accent/60 rounded-lg" title="Search">
                 <Search className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
@@ -259,33 +238,28 @@ export function AppSidebar({ className }: { className?: string }) {
               </div>
               <div className="max-h-48 overflow-y-auto space-y-0.5">
                 {filteredSuggestions.map(s => (
-                  <button
-                    key={s.path}
-                    className="w-full text-left px-2 py-1.5 rounded text-sm hover:bg-muted/50 transition-colors"
-                    onClick={() => { navigate(s.path); setSearchOpen(false); setSearchQuery('') }}
-                  >
+                  <button key={s.path} className="w-full text-left px-2 py-1.5 rounded text-sm hover:bg-muted/50 transition-colors" onClick={() => { navigate(s.path); setSearchOpen(false); setSearchQuery('') }}>
                     {s.label}
                   </button>
                 ))}
-                {filteredSuggestions.length === 0 && (
-                  <p className="text-xs text-muted-foreground text-center py-2">No results</p>
-                )}
+                {filteredSuggestions.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">No results</p>}
               </div>
             </PopoverContent>
           </Popover>
-          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-[#ffb500]/20" onClick={() => setTutorialVideoOpen(true)} title="Watch Tutorial">
+          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-sidebar-accent/60 rounded-lg" onClick={() => setTutorialVideoOpen(true)} title="Watch Tutorial">
             <Video className="h-4 w-4" />
           </Button>
           <NotificationBell />
           <ThemeToggle />
         </div>
 
-        <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-[#ffb500]/20 cursor-pointer" onClick={() => navigate("/profile-settings")}>
-          <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#290a52]">
+        {/* Profile */}
+        <div className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-sidebar-accent/60 cursor-pointer transition-smooth" onClick={() => navigate("/profile-settings")}>
+          <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-accent/30">
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
+              <div className="w-full h-full bg-accent text-accent-foreground flex items-center justify-center text-xs font-bold">
                 {getInitials()}
               </div>
             )}
@@ -298,7 +272,7 @@ export function AppSidebar({ className }: { className?: string }) {
 
         <Button
           variant="ghost"
-          className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+          className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-xl"
           onClick={signOut}
         >
           <LogOut className="h-4 w-4" />
@@ -306,18 +280,9 @@ export function AppSidebar({ className }: { className?: string }) {
         </Button>
       </div>
 
-      {/* Tutorial Video Modal */}
       {profile && tutorialVideoOpen && (
-        <TutorialVideoModal
-          isOpen={tutorialVideoOpen}
-          onClose={() => setTutorialVideoOpen(false)}
-          onWatched={() => setTutorialVideoOpen(false)}
-          onSkipped={() => setTutorialVideoOpen(false)}
-          userId={profile.user_id}
-        />
+        <TutorialVideoModal isOpen={tutorialVideoOpen} onClose={() => setTutorialVideoOpen(false)} onWatched={() => setTutorialVideoOpen(false)} onSkipped={() => setTutorialVideoOpen(false)} userId={profile.user_id} />
       )}
-
-      {/* Pricing Popup */}
       <PricingPopup open={pricingOpen} onOpenChange={setPricingOpen} />
     </aside>
   )

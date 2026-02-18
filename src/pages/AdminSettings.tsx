@@ -9,9 +9,10 @@ import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-o
 import { AdminGrowthCharts } from '@/components/dashboard/admin-growth-charts'
 import { AdminActivityHeatmap } from '@/components/dashboard/admin-activity-heatmap'
 import { RolePermissionsManager } from '@/components/dashboard/role-permissions-manager'
+import { AdminOnboardingSubmissions } from '@/components/dashboard/admin-onboarding-submissions'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Shield, Zap, Video, BarChart3, Lock } from 'lucide-react'
+import { ArrowLeft, Shield, Zap, Video, BarChart3, Lock, ClipboardList } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
@@ -32,31 +33,16 @@ export function AdminSettings() {
     )
   }
 
-  const tabCount = [
-    isOwner,           // zapier
-    isAdmin || isOwner, // tutorial
-    isAdmin || isOwner, // metrics
-    isOwner,           // permissions
-    isAdmin,           // admin panel
-  ].filter(Boolean).length
-
   return (
-    <div className="container mx-auto py-3 md:py-6 px-3 sm:px-4 space-y-4 md:space-y-6 pb-16 md:pb-6">
+    <div className="container mx-auto py-3 md:py-6 px-3 sm:px-4 space-y-4 md:space-y-6 pb-20 md:pb-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
-          <Button 
-            variant="ghost" 
-            size={isMobile ? "sm" : "icon"} 
-            onClick={() => navigate('/dashboard')}
-            className="shrink-0"
-          >
+          <Button variant="ghost" size={isMobile ? "sm" : "icon"} onClick={() => navigate('/dashboard')} className="shrink-0">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="min-w-0 flex-1">
             <h1 className="text-xl md:text-3xl font-bold truncate">Admin Settings</h1>
-            <p className="text-sm md:text-base text-muted-foreground hidden sm:block">
-              Manage admin tools and configurations
-            </p>
+            <p className="text-sm md:text-base text-muted-foreground hidden sm:block">Manage admin tools and configurations</p>
           </div>
         </div>
         <Badge variant="secondary" className="text-xs shrink-0">
@@ -66,52 +52,56 @@ export function AdminSettings() {
       </div>
 
       <Tabs defaultValue={isOwner ? "zapier" : (isAdmin ? "admin" : "metrics")} className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isMobile ? `grid-cols-${tabCount} h-auto` : `grid-cols-${tabCount}`}`}>
-          {isOwner && (
-            <TabsTrigger value="zapier" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}>
-              <Zap className="h-4 w-4 shrink-0" />
-              {isMobile ? "Zapier" : "Zapier Integration"}
-            </TabsTrigger>
-          )}
-          {(isAdmin || isOwner) && (
-            <TabsTrigger value="tutorial" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}>
-              <Video className="h-4 w-4 shrink-0" />
-              {isMobile ? "Tutorial" : "Tutorial Video"}
-            </TabsTrigger>
-          )}
-          {(isAdmin || isOwner) && (
-            <TabsTrigger value="metrics" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}>
-              <BarChart3 className="h-4 w-4 shrink-0" />
-              Metrics
-            </TabsTrigger>
-          )}
-          {isOwner && (
-            <TabsTrigger value="permissions" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}>
-              <Lock className="h-4 w-4 shrink-0" />
-              {isMobile ? "Roles" : "Role Permissions"}
-            </TabsTrigger>
-          )}
-          {isAdmin && (
-            <TabsTrigger value="admin" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-2 text-xs' : 'text-sm'}`}>
-              <Shield className="h-4 w-4 shrink-0" />
-              {isMobile ? "Admin" : "Admin Panel"}
-            </TabsTrigger>
-          )}
-        </TabsList>
+        <div className="overflow-x-auto scrollbar-hide -mx-3 px-3">
+          <TabsList className="inline-flex w-auto min-w-full md:min-w-0 h-auto">
+            {isOwner && (
+              <TabsTrigger value="zapier" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
+                <Zap className="h-4 w-4 shrink-0" />
+                {isMobile ? "Zapier" : "Zapier Integration"}
+              </TabsTrigger>
+            )}
+            {(isAdmin || isOwner) && (
+              <TabsTrigger value="tutorial" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
+                <Video className="h-4 w-4 shrink-0" />
+                {isMobile ? "Tutorial" : "Tutorial Video"}
+              </TabsTrigger>
+            )}
+            {(isAdmin || isOwner) && (
+              <TabsTrigger value="metrics" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
+                <BarChart3 className="h-4 w-4 shrink-0" />
+                Metrics
+              </TabsTrigger>
+            )}
+            {(isAdmin || isOwner) && (
+              <TabsTrigger value="onboarding" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
+                <ClipboardList className="h-4 w-4 shrink-0" />
+                {isMobile ? "Onboarding" : "Onboarding Submissions"}
+              </TabsTrigger>
+            )}
+            {isOwner && (
+              <TabsTrigger value="permissions" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
+                <Lock className="h-4 w-4 shrink-0" />
+                {isMobile ? "Roles" : "Role Permissions"}
+              </TabsTrigger>
+            )}
+            {isAdmin && (
+              <TabsTrigger value="admin" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
+                <Shield className="h-4 w-4 shrink-0" />
+                {isMobile ? "Admin" : "Admin Panel"}
+              </TabsTrigger>
+            )}
+          </TabsList>
+        </div>
 
         {isOwner && user?.id && (
-          <TabsContent value="zapier">
-            <ZapierIntegration userId={user.id} />
-          </TabsContent>
+          <TabsContent value="zapier"><ZapierIntegration userId={user.id} /></TabsContent>
         )}
-
         {(isAdmin || isOwner) && (
           <TabsContent value="tutorial" className="space-y-6">
             <AdminTutorialVideoManager />
             <AdminUpgradeVideoManager />
           </TabsContent>
         )}
-
         {(isAdmin || isOwner) && (
           <TabsContent value="metrics" className="space-y-6">
             <AdminAnalyticsOverview />
@@ -119,13 +109,14 @@ export function AdminSettings() {
             <AdminActivityHeatmap />
           </TabsContent>
         )}
-
-        {isOwner && (
-          <TabsContent value="permissions">
-            <RolePermissionsManager />
+        {(isAdmin || isOwner) && (
+          <TabsContent value="onboarding">
+            <AdminOnboardingSubmissions />
           </TabsContent>
         )}
-
+        {isOwner && (
+          <TabsContent value="permissions"><RolePermissionsManager /></TabsContent>
+        )}
         {isAdmin && (
           <TabsContent value="admin" className="space-y-6">
             <AdminAllUsersManagement />

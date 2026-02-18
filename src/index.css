@@ -2,14 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* The Fampreneurs Design System - Premium Family Office Platform
+/* The Fampreneurs Design System - Glassmorphism Family Office Platform
 All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
+Brand: #290A52, #2EB2FF, #FFB500, #6215C8, #3031CB
 */
 
 @layer base {
   :root {
     /* Brand Colors - Light Mode */
-    --background: 0 0% 98%;
+    --background: 250 30% 96%;
     --foreground: 262 86% 19%;
 
     --card: 0 0% 100%;
@@ -28,8 +29,8 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     --secondary-foreground: 262 86% 19%;
     --secondary-glow: 41 100% 65%;
 
-    /* Accent: Purple (#6215C8) */
-    --accent: 270 86% 43%;
+    /* Accent: Sky Blue (#2EB2FF) */
+    --accent: 202 100% 59%;
     --accent-foreground: 0 0% 100%;
 
     /* Transaction colors */
@@ -41,59 +42,59 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     --edit-button-foreground: 0 0% 100%;
 
     /* Supporting colors */
-    --muted: 220 13% 96%;
+    --muted: 250 20% 93%;
     --muted-foreground: 215 20% 45%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
+    --border: 250 20% 88%;
+    --input: 250 20% 88%;
     --ring: 262 86% 19%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
+
+    /* Glassmorphism tokens */
+    --glass-bg: hsl(0 0% 100% / 0.6);
+    --glass-border: hsl(0 0% 100% / 0.3);
+    --glass-shadow: 0 8px 32px hsl(262 86% 19% / 0.08);
+    --glass-blur: blur(16px);
 
     /* Custom gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(262 86% 19%) 0%, hsl(270 86% 43%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(262 86% 19%) 0%, hsl(270 86% 43%) 50%, hsl(202 100% 59%) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(41 100% 50%) 0%, hsl(41 100% 65%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(262 86% 19%) 0%, hsl(270 86% 43%) 50%, hsl(41 100% 50%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(262 86% 25%) 0%, hsl(270 86% 43%) 40%, hsl(202 100% 59%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(262 86% 19% / 0.05) 0%, hsl(202 100% 59% / 0.05) 100%);
     
     /* Shadows */
-    --shadow-soft: 0 4px 20px -2px hsl(262 86% 19% / 0.1);
-    --shadow-medium: 0 8px 30px -4px hsl(262 86% 19% / 0.15);
-    --shadow-strong: 0 16px 40px -8px hsl(262 86% 19% / 0.2);
-    --shadow-glow: 0 0 40px hsl(262 86% 35% / 0.3);
+    --shadow-soft: 0 4px 20px -2px hsl(262 86% 19% / 0.08);
+    --shadow-medium: 0 8px 30px -4px hsl(262 86% 19% / 0.12);
+    --shadow-strong: 0 16px 40px -8px hsl(262 86% 19% / 0.16);
+    --shadow-glow: 0 0 40px hsl(202 100% 59% / 0.2);
 
     --sidebar-background: 262 86% 18%;
-
     --sidebar-foreground: 240 4.8% 95.9%;
-
-    --sidebar-primary: 224.3 76.3% 48%;
-
+    --sidebar-primary: 202 100% 59%;
     --sidebar-primary-foreground: 0 0% 100%;
-
-    --sidebar-accent: 240 3.7% 15.9%;
-
+    --sidebar-accent: 262 60% 25%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-
-    --sidebar-border: 240 3.7% 15.9%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-border: 262 60% 25%;
+    --sidebar-ring: 202 100% 59%;
   }
 
   .dark {
     /* Dark Mode Colors */
-    --background: 262 86% 8%;
+    --background: 262 60% 6%;
     --foreground: 0 0% 95%;
 
-    --card: 262 86% 12%;
+    --card: 262 40% 12%;
     --card-foreground: 0 0% 95%;
 
-    --popover: 262 86% 12%;
+    --popover: 262 40% 12%;
     --popover-foreground: 0 0% 95%;
 
     /* Primary remains dark purple but adjusted for dark mode */
-    --primary: 262 86% 19%;
+    --primary: 270 86% 55%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 262 86% 35%;
 
@@ -102,9 +103,9 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     --secondary-foreground: 262 86% 8%;
     --secondary-glow: 41 100% 75%;
 
-    /* Accent: Yellow (#ffb500) for dark mode */
-    --accent: 41 100% 50%;
-    --accent-foreground: 262 86% 8%;
+    /* Accent: Sky Blue for dark mode */
+    --accent: 202 100% 59%;
+    --accent-foreground: 0 0% 100%;
 
     /* Transaction colors - dark mode */
     --transaction-blue: 205 100% 59%;
@@ -114,34 +115,41 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     --edit-button: 202 100% 59%;
     --edit-button-foreground: 0 0% 100%;
 
-    --muted: 262 50% 15%;
+    --muted: 262 30% 15%;
     --muted-foreground: 215 20% 65%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 262 50% 20%;
-    --input: 262 50% 20%;
-    --ring: 41 100% 60%;
+    --border: 262 30% 20%;
+    --input: 262 30% 20%;
+    --ring: 202 100% 59%;
+
+    /* Dark glassmorphism */
+    --glass-bg: hsl(262 40% 12% / 0.6);
+    --glass-border: hsl(262 40% 25% / 0.4);
+    --glass-shadow: 0 8px 32px hsl(0 0% 0% / 0.3);
 
     /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(262 86% 19%) 0%, hsl(270 86% 50%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(262 86% 15%) 0%, hsl(270 86% 35%) 50%, hsl(202 100% 40%) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(41 100% 60%) 0%, hsl(41 100% 75%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(262 86% 8%) 0%, hsl(262 86% 19%) 50%, hsl(41 100% 60%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(262 86% 8%) 0%, hsl(262 86% 19%) 50%, hsl(202 100% 40%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(262 86% 19% / 0.15) 0%, hsl(202 100% 59% / 0.08) 100%);
     
     /* Dark mode shadows */
     --shadow-soft: 0 4px 20px -2px hsl(0 0% 0% / 0.3);
     --shadow-medium: 0 8px 30px -4px hsl(0 0% 0% / 0.4);
     --shadow-strong: 0 16px 40px -8px hsl(0 0% 0% / 0.5);
-    --shadow-glow: 0 0 40px hsl(41 100% 60% / 0.2);
-    --sidebar-background: 262 87% 8%;
+    --shadow-glow: 0 0 40px hsl(202 100% 59% / 0.15);
+
+    --sidebar-background: 262 60% 8%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary: 202 100% 59%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent: 262 40% 18%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-border: 262 40% 18%;
+    --sidebar-ring: 202 100% 59%;
   }
 }
 
@@ -154,7 +162,6 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     @apply bg-background text-foreground font-montserrat;
   }
 
-  /* Typography */
   h1, h2, h3, h4, h5, h6 {
     @apply font-montserrat font-semibold;
   }
@@ -163,7 +170,15 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     @apply font-poppins;
   }
 
-  /* Custom utilities */
+  /* Glassmorphism card utility */
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
   .gradient-primary {
     background: var(--gradient-primary);
   }
@@ -174,6 +189,10 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
 
   .gradient-hero {
     background: var(--gradient-hero);
+  }
+
+  .gradient-card {
+    background: var(--gradient-card);
   }
 
   .shadow-glow {
@@ -188,14 +207,12 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     box-shadow: var(--shadow-strong);
   }
 
-
-  /* Smooth transitions */
   .transition-smooth {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
-/* Netflix-Style Mobile Optimizations */
+/* Mobile Optimizations */
 @layer utilities {
   .scrollbar-hide {
     -ms-overflow-style: none;
@@ -206,12 +223,14 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     display: none;
   }
 
-  /* Safe area support for mobile devices with notches */
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* Mobile viewport height fix */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
   .mobile-vh-fix {
     --vh: 1vh;
   }
@@ -222,50 +241,36 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     }
   }
 
-  /* Safe area support for mobile devices */
-  .safe-area-top {
-    padding-top: env(safe-area-inset-top);
+  .touch-optimized {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
-  /* Mobile-first responsive grid optimizations */
-  .course-grid-mobile {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
+  .smooth-transform {
+    transform: translateZ(0);
+    will-change: transform;
   }
 
-  @media (min-width: 640px) {
-    .course-grid-mobile {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-    }
+  .mobile-safe-padding {
+    padding-bottom: max(4rem, env(safe-area-inset-bottom));
   }
 
-  @media (min-width: 768px) {
-    .course-grid-mobile {
-      grid-template-columns: repeat(4, 1fr);
-    }
+  .mobile-container {
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
   }
 
-  @media (min-width: 1024px) {
-    .course-grid-mobile {
-      grid-template-columns: repeat(5, 1fr);
-    }
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
   }
 
-  @media (min-width: 1280px) {
-    .course-grid-mobile {
-      grid-template-columns: repeat(6, 1fr);
-    }
+  .mobile-nav-blur {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
 
-  @media (min-width: 1536px) {
-    .course-grid-mobile {
-      grid-template-columns: repeat(7, 1fr);
-    }
-  }
-
-  /* Text truncation utilities for mobile */
+  /* Text truncation utilities */
   .line-clamp-1 {
     overflow: hidden;
     display: -webkit-box;
@@ -285,60 +290,5 @@ All colors MUST be HSL. Fonts: Montserrat (primary), Poppins (secondary)
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
-  }
-
-  /* Mobile touch optimizations */
-  .touch-optimized {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-
-  /* Smooth animations for mobile */
-  .smooth-transform {
-    transform: translateZ(0);
-    will-change: transform;
-  }
-
-  /* Enhanced mobile spacing and safe areas */
-  .mobile-safe-padding {
-    padding-bottom: max(4rem, env(safe-area-inset-bottom));
-  }
-
-  .mobile-container {
-    padding-left: max(0.75rem, env(safe-area-inset-left));
-    padding-right: max(0.75rem, env(safe-area-inset-right));
-  }
-
-  /* Better mobile touch targets */
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
-  }
-
-  /* Mobile-optimized cards */
-  @media (max-width: 767px) {
-    .mobile-card {
-      border-radius: 0.75rem;
-      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    }
-    
-    .mobile-card-padding {
-      padding: 0.75rem;
-    }
-  }
-
-  /* Responsive typography helpers */
-  @media (max-width: 640px) {
-    .mobile-text-xs { font-size: 0.75rem; line-height: 1rem; }
-    .mobile-text-sm { font-size: 0.875rem; line-height: 1.25rem; }
-    .mobile-text-base { font-size: 1rem; line-height: 1.5rem; }
-    .mobile-text-lg { font-size: 1.125rem; line-height: 1.75rem; }
-    .mobile-text-xl { font-size: 1.25rem; line-height: 1.75rem; }
-  }
-
-  /* Mobile navigation enhancements */
-  .mobile-nav-blur {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
   }
 }

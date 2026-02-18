@@ -27,7 +27,6 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [user, loading, navigate])
 
-  // Redirect to onboarding if not completed (skip for admins)
   useEffect(() => {
     if (!loading && !onboardingLoading && user && onboardingCompleted === false && !profile?.is_admin) {
       navigate("/onboarding")
@@ -38,7 +37,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-accent" />
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -56,8 +55,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
-      {/* Mobile top bar */}
-        <header className="md:hidden sticky top-0 z-50 flex items-center justify-between px-4 h-14 border-b border-[#290a52] bg-background/95 backdrop-blur">
+        {/* Mobile top bar */}
+        <header className="md:hidden sticky top-0 z-50 flex items-center justify-between px-4 h-14 bg-card/80 backdrop-blur-xl border-b border-border/50">
           <div className="flex items-center gap-2">
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
@@ -76,6 +75,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               alt="TruHeirs"
               className="w-8 h-8 object-contain"
             />
+            <span className="font-montserrat font-bold text-sm">TruHeirs</span>
           </div>
           <div className="flex items-center gap-1">
             <ThemeToggle />
@@ -84,7 +84,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto pb-20 md:pb-0">
           {children}
         </main>
       </div>
