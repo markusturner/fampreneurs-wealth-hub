@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { Lock, FileText, Building2, Church, Home, Download, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
+import FamilyTrustForm from "@/components/trust/FamilyTrustForm"
 
 type TrustType = 'business' | 'ministry' | 'family'
 
@@ -245,6 +246,14 @@ export default function TrustCreation() {
             )
           })}
         </div>
+      ) : selectedTrust === 'family' && !generatedDoc ? (
+        <FamilyTrustForm
+          onBack={() => setSelectedTrust(null)}
+          onGenerated={(doc) => {
+            setGeneratedDoc(doc)
+            toast({ title: "Trust Document Generated", description: "Your family trust document has been created successfully." })
+          }}
+        />
       ) : generatedDoc ? (
         /* Generated Document View */
         <div className="space-y-4">
