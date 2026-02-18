@@ -19,10 +19,10 @@ Brand: #290A52, #2EB2FF, #FFB500, #6215C8, #3031CB
     --popover: 0 0% 100%;
     --popover-foreground: 262 86% 19%;
 
-    /* Primary: Dark Purple (#290A52) */
-    --primary: 262 86% 19%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 262 86% 35%;
+    /* Primary: White */
+    --primary: 0 0% 100%;
+    --primary-foreground: 262 86% 19%;
+    --primary-glow: 0 0% 95%;
 
     /* Secondary: Yellow (#FFB500) */
     --secondary: 41 100% 50%;
@@ -82,75 +82,7 @@ Brand: #290A52, #2EB2FF, #FFB500, #6215C8, #3031CB
     --sidebar-ring: 202 100% 59%;
   }
 
-  .dark {
-    /* Dark Mode Colors */
-    --background: 262 60% 6%;
-    --foreground: 0 0% 95%;
-
-    --card: 262 40% 12%;
-    --card-foreground: 0 0% 95%;
-
-    --popover: 262 40% 12%;
-    --popover-foreground: 0 0% 95%;
-
-    /* Primary remains dark purple but adjusted for dark mode */
-    --primary: 270 86% 55%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 262 86% 35%;
-
-    /* Secondary: Yellow adjusted for dark mode */
-    --secondary: 41 100% 60%;
-    --secondary-foreground: 262 86% 8%;
-    --secondary-glow: 41 100% 75%;
-
-    /* Accent: Sky Blue for dark mode */
-    --accent: 202 100% 59%;
-    --accent-foreground: 0 0% 100%;
-
-    /* Transaction colors - dark mode */
-    --transaction-blue: 205 100% 59%;
-    --transaction-blue-foreground: 0 0% 100%;
-    
-    /* Edit button - dark mode */
-    --edit-button: 202 100% 59%;
-    --edit-button-foreground: 0 0% 100%;
-
-    --muted: 262 30% 15%;
-    --muted-foreground: 215 20% 65%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 262 30% 20%;
-    --input: 262 30% 20%;
-    --ring: 202 100% 59%;
-
-    /* Dark glassmorphism */
-    --glass-bg: hsl(262 40% 12% / 0.6);
-    --glass-border: hsl(262 40% 25% / 0.4);
-    --glass-shadow: 0 8px 32px hsl(0 0% 0% / 0.3);
-
-    /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(262 86% 15%) 0%, hsl(270 86% 35%) 50%, hsl(202 100% 40%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(41 100% 60%) 0%, hsl(41 100% 75%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(262 86% 8%) 0%, hsl(262 86% 19%) 50%, hsl(202 100% 40%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(262 86% 19% / 0.15) 0%, hsl(202 100% 59% / 0.08) 100%);
-    
-    /* Dark mode shadows */
-    --shadow-soft: 0 4px 20px -2px hsl(0 0% 0% / 0.3);
-    --shadow-medium: 0 8px 30px -4px hsl(0 0% 0% / 0.4);
-    --shadow-strong: 0 16px 40px -8px hsl(0 0% 0% / 0.5);
-    --shadow-glow: 0 0 40px hsl(202 100% 59% / 0.15);
-
-    --sidebar-background: 262 60% 8%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 202 100% 59%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 262 40% 18%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 262 40% 18%;
-    --sidebar-ring: 202 100% 59%;
-  }
+  /* Dark mode removed - app is light-only */
 }
 
 @layer base {
