@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+// deno-lint-ignore-file
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -115,7 +115,7 @@ function parseSheetRows(values: string[][]): Record<string, string>[] {
   });
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
