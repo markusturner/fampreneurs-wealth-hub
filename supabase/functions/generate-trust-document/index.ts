@@ -180,10 +180,12 @@ Generate the COMPLETE trust document with all articles, schedules, certificates,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        model: "google/gemini-2.5-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
+        max_tokens: 32000,
         stream: false,
       }),
     });
