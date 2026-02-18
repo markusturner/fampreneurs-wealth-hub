@@ -61,19 +61,6 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-hidden">
-      {/* Welcome Section with gradient background */}
-      <div className="gradient-hero rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-white/5 backdrop-blur-sm rounded-2xl" />
-        <div className="relative z-10">
-          <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
-            Welcome back, {displayName}
-          </h1>
-          <p className="text-white/70 mt-1 text-sm sm:text-base">
-            Here's what's happening with your family wealth today
-          </p>
-        </div>
-      </div>
-
       {/* Key Metrics */}
       <DashboardStats />
 

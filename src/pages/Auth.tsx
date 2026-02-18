@@ -26,7 +26,7 @@ export default function Auth() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        window.location.href = '/dashboard'
+        window.location.href = '/ai-chat'
       }
     }
     checkUser()
@@ -108,7 +108,7 @@ export default function Auth() {
           title: "Welcome back!",
           description: "Successfully signed in to your family dashboard.",
         })
-        window.location.href = '/dashboard'
+        window.location.href = '/ai-chat'
       }
     } catch (error) {
       toast({
@@ -205,10 +205,26 @@ export default function Auth() {
             <div className="space-y-1.5">
               <Label className="text-sm">Login as</Label>
               <div className="grid grid-cols-2 gap-2">
-                <Button type="button" variant={userType === 'family_member' ? 'default' : 'outline'} onClick={() => setUserType('family_member')} className="text-xs h-8">
+                <Button
+                  type="button"
+                  variant={userType === 'family_member' ? 'default' : 'outline'}
+                  onClick={() => setUserType('family_member')}
+                  className="text-xs h-8"
+                  style={userType === 'family_member'
+                    ? { backgroundColor: '#ffb500', color: '#290a52', borderColor: '#ffb500' }
+                    : { borderColor: '#290a52', color: 'inherit' }}
+                >
                   Family Member
                 </Button>
-                <Button type="button" variant={userType === 'mentee' ? 'default' : 'outline'} onClick={() => setUserType('mentee')} className="text-xs h-8">
+                <Button
+                  type="button"
+                  variant={userType === 'mentee' ? 'default' : 'outline'}
+                  onClick={() => setUserType('mentee')}
+                  className="text-xs h-8"
+                  style={userType === 'mentee'
+                    ? { backgroundColor: '#ffb500', color: '#290a52', borderColor: '#ffb500' }
+                    : { borderColor: '#290a52', color: 'inherit' }}
+                >
                   Trustees
                 </Button>
               </div>
