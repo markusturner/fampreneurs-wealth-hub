@@ -50,10 +50,10 @@ export function NotificationBell() {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
           className={cn(
-            "relative transition-all duration-200",
+            "relative h-8 w-8 hover:bg-sidebar-accent/60 rounded-lg",
             unreadCount > 0 && "animate-pulse ring-2 ring-primary/20"
           )}
         >
