@@ -175,7 +175,8 @@ export function AppSidebar({ className }: { className?: string }) {
       {/* AI Chat Button */}
       <div className="px-3 pb-2">
         <Button
-          className="w-full justify-start gap-2 bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl font-semibold shadow-md shadow-accent/20"
+          className="w-full justify-start gap-2 rounded-xl font-semibold"
+          variant="outline"
           onClick={() => navigate('/ai-chat')}
         >
           <Bot className="h-4 w-4" />
