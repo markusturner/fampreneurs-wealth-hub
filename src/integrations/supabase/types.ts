@@ -3449,6 +3449,7 @@ export type Database = {
           last_name: string | null
           linkedin_url: string | null
           location: string | null
+          mailing_address: string | null
           membership_type: string | null
           occupation: string | null
           phone: string | null
@@ -3456,6 +3457,7 @@ export type Database = {
           program_name: string | null
           state: string | null
           street_address: string | null
+          truheirs_access: boolean
           updated_at: string
           user_id: string
           website: string | null
@@ -3486,6 +3488,7 @@ export type Database = {
           last_name?: string | null
           linkedin_url?: string | null
           location?: string | null
+          mailing_address?: string | null
           membership_type?: string | null
           occupation?: string | null
           phone?: string | null
@@ -3493,6 +3496,7 @@ export type Database = {
           program_name?: string | null
           state?: string | null
           street_address?: string | null
+          truheirs_access?: boolean
           updated_at?: string
           user_id: string
           website?: string | null
@@ -3523,6 +3527,7 @@ export type Database = {
           last_name?: string | null
           linkedin_url?: string | null
           location?: string | null
+          mailing_address?: string | null
           membership_type?: string | null
           occupation?: string | null
           phone?: string | null
@@ -3530,6 +3535,7 @@ export type Database = {
           program_name?: string | null
           state?: string | null
           street_address?: string | null
+          truheirs_access?: boolean
           updated_at?: string
           user_id?: string
           website?: string | null
