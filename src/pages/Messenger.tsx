@@ -251,7 +251,7 @@ export default function Messenger() {
         <p className="text-muted-foreground text-sm">View and send messages</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 min-h-0 overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 min-h-0 overflow-hidden pb-16 md:pb-0">
         {/* Conversations List - hidden on mobile when a conversation is selected */}
         <Card className={`md:col-span-1 flex flex-col overflow-hidden min-h-0 ${selectedUserId ? 'hidden md:flex' : 'flex'}`}>
           <div className="p-3 border-b">
@@ -324,8 +324,8 @@ export default function Messenger() {
                   <p className="text-xs text-muted-foreground">Active</p>
                 </div>
               </div>
-              <ScrollArea className="flex-1 p-4">
-                <div className="space-y-3">
+              <ScrollArea className="flex-1">
+                <div className="space-y-3 p-4">
                   {messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full py-12 text-center">
                       <MessageCircle className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />

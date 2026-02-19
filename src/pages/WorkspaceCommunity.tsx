@@ -683,6 +683,8 @@ export default function WorkspaceCommunity() {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Main Feed */}
           <div className="flex-1 min-w-0 space-y-4">
+            {/* Community name header on mobile only */}
+            <h2 className="text-lg font-bold lg:hidden">{programName}</h2>
             {/* Post Composer */}
             <Card className="border-border/50">
               <CardContent className="p-3 sm:p-4">
@@ -1004,8 +1006,8 @@ export default function WorkspaceCommunity() {
             </div>
           </div>
 
-          {/* Right Sidebar */}
-          <div className="w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-4">
+          {/* Right Sidebar - hidden on mobile */}
+          <div className="hidden lg:block w-full lg:w-72 xl:w-80 flex-shrink-0 space-y-4">
             <Card className="border-border/50 overflow-hidden">
               {/* Community Photo */}
               <div 

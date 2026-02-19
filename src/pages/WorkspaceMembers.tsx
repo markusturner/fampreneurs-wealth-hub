@@ -233,17 +233,17 @@ export default function WorkspaceMembers() {
 
       {/* Filters + Sort */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2 flex-wrap">
-          {filters.map(filter => (
+        <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+          {isAdminOrOwner && filters.map(filter => (
             <Button
               key={filter.id}
               variant={activeFilter === filter.id ? 'default' : 'outline'}
               size="sm"
               onClick={() => setActiveFilter(filter.id)}
-              className="rounded-full gap-1"
+              className="rounded-full gap-1 h-7 sm:h-8 text-[11px] sm:text-xs px-2 sm:px-3"
             >
               {filter.label}
-              <span className="text-xs opacity-70">{filter.count}</span>
+              <span className="text-[10px] sm:text-xs opacity-70">{filter.count}</span>
             </Button>
           ))}
         </div>

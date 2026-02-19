@@ -76,56 +76,59 @@ export default function ProgramAgreements() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-xl md:text-3xl font-bold flex items-center gap-2">
-            <FileText className="h-6 w-6 text-accent" />
-            Program Agreements
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {agreements.length} total signed agreement{agreements.length !== 1 ? 's' : ''}
-          </p>
+          <h1 className="text-xl md:text-3xl font-bold">Program Agreements</h1>
+          <p className="text-sm text-muted-foreground">Review all signed program agreements</p>
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-accent" />
-        </div>
-      ) : agreements.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">No program agreements signed yet.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-2">
-          {agreements.map((a) => (
-            <div
-              key={a.id}
-              className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/30 transition-colors cursor-pointer border border-border/50"
-              onClick={() => setSelected(a)}
-            >
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{a.full_name}</p>
-                <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <Badge variant="outline" className="text-xs">
-                    {AGREEMENT_LABELS[a.agreement_type] || a.agreement_type}
-                  </Badge>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(a.signed_at), "MMM d, yyyy 'at' h:mm a")}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                <Eye className="h-4 w-4" />
-              </Button>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-accent" />
+              <CardTitle className="text-lg">Agreement Submissions</CardTitle>
             </div>
-          ))}
-        </div>
-      )}
+            <Badge variant="secondary">{agreements.length} total</Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-accent" />
+            </div>
+          ) : agreements.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">No program agreements signed yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {agreements.map((a) => (
+                <div
+                  key={a.id}
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/30 transition-colors cursor-pointer border border-border/50"
+                  onClick={() => setSelected(a)}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{a.full_name}</p>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <Badge variant="outline" className="text-xs">
+                        {AGREEMENT_LABELS[a.agreement_type] || a.agreement_type}
+                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(a.signed_at), "MMM d, yyyy 'at' h:mm a")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
         <DialogContent className="max-w-lg max-h-[85vh]">
