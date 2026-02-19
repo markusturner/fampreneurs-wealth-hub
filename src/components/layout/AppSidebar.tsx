@@ -25,6 +25,7 @@ import {
   Mail,
   ClipboardList,
   ScrollText,
+  FileCheck,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -119,6 +120,8 @@ const SEARCH_SUGGESTIONS = [
   { label: 'Profile Settings', path: '/profile-settings', requiresSubscription: false },
   { label: 'Admin Settings', path: '/admin-settings', requiresAdmin: true },
   { label: 'Onboarding Form', path: '/onboarding-submissions', requiresAdmin: true },
+  { label: 'Program Agreements', path: '/program-agreements', requiresAdmin: true },
+  { label: 'Trust Forms', path: '/trust-form-submissions', requiresAdmin: true },
 ]
 
 export function AppSidebar({ className }: { className?: string }) {
@@ -204,22 +207,26 @@ export function AppSidebar({ className }: { className?: string }) {
       </div>
 
       <ScrollArea className="flex-1 px-3 py-1">
-        {/* WORKSPACE */}
-        <div className="mb-1">
-          <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Workspace</p>
-        </div>
-        <div className="space-y-0.5">
-          <NavItem label="Community" icon={MessageSquare} defaultOpen={currentPath.includes("/workspace-community")}>
-            <SubNavItem label="Family Business University" href="/workspace-community?program=fbu" active={currentPath === "/workspace-community" && location.search.includes("program=fbu")} />
-            <SubNavItem label="The Family Vault" href="/workspace-community?program=tfv" active={currentPath === "/workspace-community" && location.search.includes("program=tfv")} />
-            <SubNavItem label="The Family Business Accelerator" href="/workspace-community?program=tfba" active={currentPath === "/workspace-community" && location.search.includes("program=tfba")} />
-            <SubNavItem label="The Family Fortune Mastermind" href="/workspace-community?program=tffm" active={currentPath === "/workspace-community" && location.search.includes("program=tffm")} />
-          </NavItem>
-          <NavItem label="Classroom" icon={BookOpen} href="/classroom" active={isActive("/classroom")} />
-          <NavItem label="Members" icon={Users} href="/workspace-members" active={isActive("/workspace-members")} />
-          <NavItem label="Calendar" icon={Calendar} href="/workspace-calendar" active={isActive("/workspace-calendar")} />
-          <NavItem label="Messenger" icon={Mail} href="/messenger" active={isActive("/messenger")} />
-        </div>
+        {/* WORKSPACE - hidden for family office only users */}
+        {(!isFamilyOfficeOnly || isAdmin || isOwner) && (
+          <>
+            <div className="mb-1">
+              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Workspace</p>
+            </div>
+            <div className="space-y-0.5">
+              <NavItem label="Community" icon={MessageSquare} defaultOpen={currentPath.includes("/workspace-community")}>
+                <SubNavItem label="Family Business University" href="/workspace-community?program=fbu" active={currentPath === "/workspace-community" && location.search.includes("program=fbu")} />
+                <SubNavItem label="The Family Vault" href="/workspace-community?program=tfv" active={currentPath === "/workspace-community" && location.search.includes("program=tfv")} />
+                <SubNavItem label="The Family Business Accelerator" href="/workspace-community?program=tfba" active={currentPath === "/workspace-community" && location.search.includes("program=tfba")} />
+                <SubNavItem label="The Family Fortune Mastermind" href="/workspace-community?program=tffm" active={currentPath === "/workspace-community" && location.search.includes("program=tffm")} />
+              </NavItem>
+              <NavItem label="Classroom" icon={BookOpen} href="/classroom" active={isActive("/classroom")} />
+              <NavItem label="Members" icon={Users} href="/workspace-members" active={isActive("/workspace-members")} />
+              <NavItem label="Calendar" icon={Calendar} href="/workspace-calendar" active={isActive("/workspace-calendar")} />
+              <NavItem label="Messenger" icon={Mail} href="/messenger" active={isActive("/messenger")} />
+            </div>
+          </>
+        )}
 
         {/* TRUHEIRS */}
         <div className="mb-1 mt-5">
@@ -251,6 +258,7 @@ export function AppSidebar({ className }: { className?: string }) {
             <div className="space-y-0.5">
               <NavItem label="Admin Settings" icon={Shield} href="/admin-settings" active={isActive("/admin-settings")} />
               <NavItem label="Onboarding Form" icon={ClipboardList} href="/onboarding-submissions" active={isActive("/onboarding-submissions")} />
+              <NavItem label="Program Agreements" icon={FileCheck} href="/program-agreements" active={isActive("/program-agreements")} />
               <NavItem label="Trust Forms" icon={FileText} href="/trust-form-submissions" active={isActive("/trust-form-submissions")} />
             </div>
           </>
