@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { CommunityMembersList } from '@/components/community/CommunityMembersList'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -71,7 +72,7 @@ interface Comment {
 const PROGRAM_NAMES: Record<string, string> = {
   fbu: 'Family Business University',
   tfv: 'The Family Vault',
-  tfba: 'Family Business Accelerator',
+  tfba: 'The Family Business Accelerator',
   tffm: 'The Family Fortune Mastermind',
 }
 
@@ -1043,6 +1044,9 @@ export default function WorkspaceCommunity() {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Community Members */}
+            <CommunityMembersList program={program} />
           </div>
         </div>
       </div>
