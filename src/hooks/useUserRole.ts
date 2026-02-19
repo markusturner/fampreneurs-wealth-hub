@@ -5,12 +5,14 @@ import { supabase } from '@/integrations/supabase/client'
 export interface UserRole {
   isFamilyOfficeOnly: boolean
   isAdmin: boolean
+  isFamilyMember: boolean
   isLoading: boolean
 }
 
 export function useUserRole(): UserRole {
   const { user, profile } = useAuth()
   const [isFamilyOfficeOnly, setIsFamilyOfficeOnly] = useState(false)
+  const [isFamilyMember, setIsFamilyMember] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -29,6 +31,11 @@ export function useUserRole(): UserRole {
         if (!error) {
           setIsFamilyOfficeOnly(familyOfficeOnly || false)
         }
+
+        // Check if user is an invited family member via membership_type on profile
+        // These users should not see Trust Creation button
+        const isMember = profile?.membership_type === 'family_member'
+        setIsFamilyMember(isMember)
       } catch (error) {
         console.error('Error checking user role:', error)
       } finally {
@@ -37,11 +44,12 @@ export function useUserRole(): UserRole {
     }
 
     checkUserRole()
-  }, [user?.id])
+  }, [user?.id, profile?.membership_type])
 
   return {
     isFamilyOfficeOnly,
     isAdmin: profile?.is_admin || false,
+    isFamilyMember,
     isLoading
   }
 }
