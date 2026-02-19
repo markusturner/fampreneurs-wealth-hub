@@ -209,8 +209,8 @@ export function AppSidebar({ className }: { className?: string }) {
       )}
 
       <ScrollArea className="flex-1 px-3 py-1">
-        {/* WORKSPACE - hidden for family office only users */}
-        {(!isFamilyOfficeOnly || isAdmin || isOwner) && (
+        {/* WORKSPACE - hidden for family office only users, but visible for admin-invited users */}
+        {(!isFamilyOfficeOnly || isAdmin || isOwner || isFamilyMember) && (
           <>
             <div className="mb-1">
               <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Workspace</p>

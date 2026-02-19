@@ -184,7 +184,7 @@ const handler = async (req: Request): Promise<Response> => {
     if (programName || mailingAddress || truHeirsAccess !== undefined) {
       console.log("Setting additional profile fields:", { programName, mailingAddress, truHeirsAccess });
       // Wait briefly for the profile trigger to create the profile row
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       const updateFields: Record<string, unknown> = {};
       if (programName) updateFields.program_name = programName;
@@ -211,6 +211,44 @@ const handler = async (req: Request): Promise<Response> => {
         
         if (retryError) {
           console.error("Error upserting profile with fields:", retryError);
+        }
+      }
+    }
+
+    // Assign user to the correct community group based on program
+    if (programName) {
+      const PROGRAM_TO_GROUP: Record<string, string> = {
+        "The Family Business University": "Family Business University",
+        "The Family Vault": "The Family Vault",
+        "The Family Business Accelerator": "The Family Business Accelerator",
+        "The Family Legacy: VIP Weekend": "The Family Legacy: VIP Weekend",
+        "The Family Fortune Mastermind": "The Family Fortune Mastermind",
+      };
+
+      const groupName = PROGRAM_TO_GROUP[programName];
+      if (groupName) {
+        const { data: group } = await supabaseAdmin
+          .from("community_groups")
+          .select("id")
+          .eq("name", groupName)
+          .maybeSingle();
+
+        if (group?.id) {
+          const { error: membershipError } = await supabaseAdmin
+            .from("group_memberships")
+            .upsert({
+              group_id: group.id,
+              user_id: authUser.user.id,
+              role: "member",
+            }, { onConflict: "group_id,user_id" });
+
+          if (membershipError) {
+            console.error("Error adding user to community group:", membershipError);
+          } else {
+            console.log(`User added to community group: ${groupName}`);
+          }
+        } else {
+          console.log(`Community group not found for program: ${programName}`);
         }
       }
     }
