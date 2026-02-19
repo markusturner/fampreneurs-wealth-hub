@@ -713,118 +713,132 @@ export default function WorkspaceCommunity() {
               </Card>
             </div>
 
-            {/* Mobile Post Dialog */}
+            {/* Mobile Post Dialog - Skool style */}
             <Dialog open={mobilePostOpen} onOpenChange={setMobilePostOpen}>
-              <DialogContent className="lg:hidden fixed inset-0 max-w-full w-full h-full translate-x-0 translate-y-0 left-0 top-0 rounded-none border-0 p-0 flex flex-col data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom z-[70]">
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMobilePostOpen(false)}>
+              <DialogContent className="lg:hidden fixed inset-0 max-w-full w-full h-full translate-x-0 translate-y-0 left-0 top-0 rounded-none border-0 p-0 flex flex-col z-[70] [&>button]:hidden">
+                {/* Top bar */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-background">
+                  <button
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => setMobilePostOpen(false)}
+                  >
                     <X className="h-5 w-5" />
-                  </Button>
-                  <Button size="sm" onClick={handleMobilePost} disabled={!newPost.trim()} className="font-semibold">
+                  </button>
+                  <span className="text-sm font-semibold">New Post</span>
+                  <Button
+                    size="sm"
+                    onClick={handleMobilePost}
+                    disabled={!newPost.trim()}
+                    className="rounded-full px-5 h-8 text-xs font-bold"
+                  >
                     POST
                   </Button>
                 </div>
 
                 {/* Send to all toggle for admins */}
                 {(isAdmin || isOwner) && (
-                  <div className="flex items-center justify-center gap-2 px-4 py-2 border-b border-border/50">
-                    <span className="text-xs text-muted-foreground">ℹ️ Send email to all members</span>
-                    <Button
-                      variant={postToAll ? 'default' : 'outline'}
-                      size="sm"
-                      className="h-6 px-2 text-xs"
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-border/30 bg-muted/30">
+                    <span className="text-xs text-muted-foreground">📧 Send email to all members</span>
+                    <button
+                      className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors ${postToAll ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'}`}
                       onClick={() => setPostToAll(!postToAll)}
                     >
                       {postToAll ? 'ON' : 'OFF'}
-                    </Button>
+                    </button>
                   </div>
                 )}
 
                 {/* Author info */}
-                <div className="flex items-center gap-3 px-4 py-3">
-                  <Avatar className="h-10 w-10 flex-shrink-0">
+                <div className="flex items-center gap-3 px-4 pt-4 pb-2">
+                  <Avatar className="h-11 w-11 flex-shrink-0">
                     {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
-                    <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
                       {getInitials(profile?.display_name || 'U')}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <span className="font-semibold text-sm">{profile?.display_name || 'You'}</span>
-                    <span className="text-sm text-muted-foreground"> posting in </span>
-                    <span className="font-semibold text-sm">{programName.slice(0, 25)}{programName.length > 25 ? '...' : ''}</span>
+                  <div className="leading-tight">
+                    <p className="font-semibold text-sm">{profile?.display_name || 'You'}</p>
+                    <p className="text-xs text-muted-foreground">
+                      posting in <span className="font-medium text-foreground">{programName.length > 28 ? programName.slice(0, 28) + '…' : programName}</span>
+                    </p>
                   </div>
                 </div>
 
-                {/* Title / content */}
+                {/* Content area */}
                 <div className="flex-1 px-4 overflow-y-auto">
                   <Input
-                    placeholder="Title"
-                    className="border-0 px-0 text-lg font-medium placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto py-1"
+                    placeholder="Title (optional)"
+                    className="border-0 px-0 text-base font-semibold placeholder:text-muted-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto py-2 mb-1"
                   />
                   <Textarea
-                    placeholder="Write something..."
+                    placeholder="Share something with the community..."
                     value={newPost}
                     onChange={(e) => setNewPost(e.target.value)}
-                    className="border-0 px-0 resize-none min-h-[200px] focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground/50"
+                    className="border-0 px-0 resize-none min-h-[180px] focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground/40"
+                    autoFocus
                   />
-                  {/* Preview attachments */}
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {postImagePreview && (
-                      <div className="relative inline-block">
-                        <img src={postImagePreview} alt="Preview" className="h-20 rounded-lg object-cover" />
-                        <button onClick={() => { setPostImageFile(null); setPostImagePreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    )}
-                    {postVideoPreview && (
-                      <div className="relative inline-block">
-                        <video src={postVideoPreview} className="h-20 rounded-lg object-cover" />
-                        <button onClick={() => { setPostVideoFile(null); setPostVideoPreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    )}
-                    {postAudioFile && (
-                      <div className="relative inline-flex items-center gap-1 bg-muted/50 rounded-lg px-3 py-1.5">
-                        <Mic className="h-3.5 w-3.5" />
-                        <span className="text-xs">{postAudioFile.name.slice(0, 20)}</span>
-                        <button onClick={() => setPostAudioFile(null)} className="ml-1"><X className="h-3 w-3" /></button>
-                      </div>
-                    )}
-                  </div>
+
+                  {/* Attachment previews */}
+                  {(postImagePreview || postVideoPreview || postAudioFile) && (
+                    <div className="flex flex-wrap gap-2 mt-3 pb-2">
+                      {postImagePreview && (
+                        <div className="relative inline-block">
+                          <img src={postImagePreview} alt="Preview" className="h-24 rounded-xl object-cover" />
+                          <button onClick={() => { setPostImageFile(null); setPostImagePreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                      {postVideoPreview && (
+                        <div className="relative inline-block">
+                          <video src={postVideoPreview} className="h-24 rounded-xl object-cover" />
+                          <button onClick={() => { setPostVideoFile(null); setPostVideoPreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                      {postAudioFile && (
+                        <div className="relative inline-flex items-center gap-2 bg-muted rounded-xl px-3 py-2">
+                          <Mic className="h-4 w-4 text-primary" />
+                          <span className="text-xs font-medium">{postAudioFile.name.slice(0, 20)}</span>
+                          <button onClick={() => setPostAudioFile(null)}>
+                            <X className="h-3 w-3 text-muted-foreground" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Bottom toolbar */}
-                <div className="border-t border-border/50 px-4 py-3 flex items-center gap-3 safe-area-bottom">
+                <div className="border-t border-border/50 px-4 py-3 flex items-center gap-4 bg-background safe-area-bottom">
                   <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                   <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
                   <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => imageInputRef.current?.click()}>
-                    <Image className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => videoInputRef.current?.click()}>
-                    <Video className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className={`h-8 w-8 ${isRecording ? 'text-destructive' : ''}`}
+                  <button className="text-muted-foreground hover:text-foreground transition-colors" onClick={() => imageInputRef.current?.click()}>
+                    <Image className="h-5 w-5" />
+                  </button>
+                  <button className="text-muted-foreground hover:text-foreground transition-colors" onClick={() => videoInputRef.current?.click()}>
+                    <Video className="h-5 w-5" />
+                  </button>
+                  <button
+                    className={`transition-colors ${isRecording ? 'text-destructive' : 'text-muted-foreground hover:text-foreground'}`}
                     onClick={isRecording ? stopRecording : startRecording}
                   >
-                    {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                  </Button>
-                  <Select value={postCategory} onValueChange={setPostCategory}>
-                    <SelectTrigger className="h-8 w-auto text-xs border-0 bg-muted/50">
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.filter(c => c.value !== 'all').map(c => (
-                        <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                  </button>
+                  <div className="ml-auto">
+                    <Select value={postCategory} onValueChange={setPostCategory}>
+                      <SelectTrigger className="h-8 w-auto text-xs rounded-full border-border/70 bg-muted/50 pr-3">
+                        <SelectValue placeholder="Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES.filter(c => c.value !== 'all').map(c => (
+                          <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>

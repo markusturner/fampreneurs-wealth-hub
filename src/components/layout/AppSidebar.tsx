@@ -240,11 +240,11 @@ export function AppSidebar({ className }: { className?: string }) {
             </>
           ) : (
             <>
-              <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
-              <NavItem label="Family Office" icon={Home} href="/digital-family-office" active={isActive("/digital-family-office")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
-              <NavItem label="Family Constitution" icon={FileText} href="/documents" active={isActive("/documents")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
-              <NavItem label="Family Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
-              <NavItem label="Family Members" icon={Users} href="/members" active={isActive("/members")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick()} />
+              <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
+              <NavItem label="Family Office" icon={Home} href="/digital-family-office" active={isActive("/digital-family-office")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
+              <NavItem label="Family Constitution" icon={FileText} href="/documents" active={isActive("/documents")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
+              <NavItem label="Family Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
+              <NavItem label="Family Members" icon={Users} href="/members" active={isActive("/members")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
             </>
           )}
         </div>
