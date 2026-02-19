@@ -51,6 +51,8 @@ interface UserProfile {
   last_name: string | null
   display_name: string | null
   phone: string | null
+  mailing_address: string | null
+  truheirs_access: boolean
   program_name: string | null
   membership_type: string | null
   is_admin: boolean
@@ -241,6 +243,8 @@ export function AdminAllUsersManagement() {
           last_name: editingUser.last_name,
           display_name: editingUser.display_name,
           phone: editingUser.phone,
+          mailing_address: editingUser.mailing_address,
+          truheirs_access: editingUser.truheirs_access,
           program_name: editingUser.program_name,
           membership_type: editingUser.membership_type,
           is_admin: editingUser.is_admin,
@@ -589,6 +593,7 @@ export function AdminAllUsersManagement() {
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
+                      <TableHead>TruHeirs</TableHead>
                       <TableHead>Payment</TableHead>
                       <TableHead>Program</TableHead>
                       <TableHead>Joined</TableHead>
@@ -598,7 +603,7 @@ export function AdminAllUsersManagement() {
                   <TableBody>
                     {filteredUsers.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                        <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
                           No users found
                         </TableCell>
                       </TableRow>
@@ -615,6 +620,11 @@ export function AdminAllUsersManagement() {
                             <div className="flex gap-1 flex-wrap">
                               {getRoleBadges(user)}
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={user.truheirs_access !== false ? "default" : "secondary"} className={user.truheirs_access !== false ? "bg-green-600 text-white" : ""}>
+                              {user.truheirs_access !== false ? "Yes" : "No"}
+                            </Badge>
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-col">
@@ -813,6 +823,28 @@ export function AdminAllUsersManagement() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-mailing-address">Mailing Address</Label>
+                <Input
+                  id="edit-mailing-address"
+                  value={editingUser.mailing_address || ''}
+                  onChange={(e) => setEditingUser({...editingUser, mailing_address: e.target.value})}
+                  placeholder="123 Main St, City, State ZIP"
+                />
+              </div>
+
+              <div className="flex items-center justify-between py-2">
+                <div className="space-y-0.5">
+                  <Label htmlFor="edit-truheirs-access">TruHeirs Section Access</Label>
+                  <p className="text-sm text-muted-foreground">Allow access to TruHeirs dashboard, family office, and related features</p>
+                </div>
+                <Switch
+                  id="edit-truheirs-access"
+                  checked={editingUser.truheirs_access !== false}
+                  onCheckedChange={(checked) => setEditingUser({...editingUser, truheirs_access: checked})}
+                />
               </div>
             </div>
           )}

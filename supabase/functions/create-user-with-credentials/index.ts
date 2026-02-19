@@ -13,6 +13,8 @@ interface CreateUserRequest {
   lastName: string;
   role: string;
   programName?: string;
+  mailingAddress?: string;
+  truHeirsAccess?: boolean;
 }
 
 const generateSecurePassword = (): string => {
@@ -35,7 +37,7 @@ const handler = async (req: Request): Promise<Response> => {
   console.log("=== Create User Request Started ===");
 
   try {
-    const { email, firstName, lastName, role, programName }: CreateUserRequest = await req.json();
+    const { email, firstName, lastName, role, programName, mailingAddress, truHeirsAccess }: CreateUserRequest = await req.json();
     
     console.log("Request data:", { email, firstName, lastName, role });
 
@@ -178,19 +180,24 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Set program_name on the profile if provided
-    if (programName) {
-      console.log("Setting program_name on profile:", programName);
+    // Set additional profile fields if provided
+    if (programName || mailingAddress || truHeirsAccess !== undefined) {
+      console.log("Setting additional profile fields:", { programName, mailingAddress, truHeirsAccess });
       // Wait briefly for the profile trigger to create the profile row
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const { error: programError } = await supabaseAdmin
+      const updateFields: Record<string, unknown> = {};
+      if (programName) updateFields.program_name = programName;
+      if (mailingAddress) updateFields.mailing_address = mailingAddress;
+      if (truHeirsAccess !== undefined) updateFields.truheirs_access = truHeirsAccess;
+
+      const { error: updateError } = await supabaseAdmin
         .from("profiles")
-        .update({ program_name: programName })
+        .update(updateFields)
         .eq("user_id", authUser.user.id);
 
-      if (programError) {
-        console.error("Error setting program_name:", programError);
+      if (updateError) {
+        console.error("Error setting profile fields:", updateError);
         // Try upsert approach if profile doesn't exist yet
         const { error: retryError } = await supabaseAdmin
           .from("profiles")
@@ -199,11 +206,11 @@ const handler = async (req: Request): Promise<Response> => {
             first_name: firstName,
             last_name: lastName || "",
             email: email,
-            program_name: programName,
+            ...updateFields,
           }, { onConflict: "user_id" });
         
         if (retryError) {
-          console.error("Error upserting profile with program_name:", retryError);
+          console.error("Error upserting profile with fields:", retryError);
         }
       }
     }

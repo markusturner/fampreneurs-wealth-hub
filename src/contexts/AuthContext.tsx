@@ -21,6 +21,8 @@ interface Profile {
   program_name: string | null
   membership_type: string | null
   profile_photo_uploaded: boolean
+  mailing_address: string | null
+  truheirs_access: boolean
   created_at: string
   updated_at: string
 }

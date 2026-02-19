@@ -136,7 +136,7 @@ export function AppSidebar({ className }: { className?: string }) {
   const [searchQuery, setSearchQuery] = useState('')
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const hasTruHeirsAccess = isAdmin || isOwner || subscriptionStatus.subscribed || subscriptionStatus.loading
+  const hasTruHeirsAccess = isAdmin || isOwner || ((profile?.truheirs_access !== false) && (subscriptionStatus.subscribed || subscriptionStatus.loading))
 
   const filteredSuggestions = SEARCH_SUGGESTIONS.filter(s => {
     // Filter by access

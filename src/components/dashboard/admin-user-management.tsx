@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { Loader2, UserPlus, Shield } from 'lucide-react'
@@ -24,6 +25,8 @@ export function AdminUserManagement() {
   const [lastName, setLastName] = useState('')
   const [role, setRole] = useState<UserRole>('family_member')
   const [programName, setProgramName] = useState('')
+  const [mailingAddress, setMailingAddress] = useState('')
+  const [truHeirsAccess, setTruHeirsAccess] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
@@ -49,6 +52,8 @@ export function AdminUserManagement() {
           lastName,
           role,
           programName: programName || undefined,
+          mailingAddress: mailingAddress || undefined,
+          truHeirsAccess,
         },
       })
 
@@ -78,6 +83,8 @@ export function AdminUserManagement() {
       setLastName('')
       setRole('family_member')
       setProgramName('')
+      setMailingAddress('')
+      setTruHeirsAccess(true)
     } catch (error: any) {
       console.error('Error adding user:', error)
       
@@ -172,6 +179,30 @@ export function AdminUserManagement() {
               ))}
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="mailingAddress">Mailing Address</Label>
+          <Input
+            id="mailingAddress"
+            value={mailingAddress}
+            onChange={(e) => setMailingAddress(e.target.value)}
+            placeholder="123 Main St, City, State ZIP"
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="flex items-center justify-between py-2">
+          <div className="space-y-0.5">
+            <Label htmlFor="truheirs-access">TruHeirs Section Access</Label>
+            <p className="text-sm text-muted-foreground">Allow access to TruHeirs dashboard, family office, and related features</p>
+          </div>
+          <Switch
+            id="truheirs-access"
+            checked={truHeirsAccess}
+            onCheckedChange={setTruHeirsAccess}
+            disabled={isLoading}
+          />
         </div>
 
         <Button onClick={handleAddUser} disabled={isLoading} className="w-full">
