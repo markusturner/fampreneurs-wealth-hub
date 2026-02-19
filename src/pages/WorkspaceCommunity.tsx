@@ -173,10 +173,10 @@ export default function WorkspaceCommunity() {
       const userIds = [...new Set((postsData || []).map(p => p.user_id))]
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, display_name, avatar_url')
-        .in('id', userIds.length ? userIds : [''])
+        .select('user_id, display_name, avatar_url')
+        .in('user_id', userIds.length ? userIds : [''])
 
-      const profileMap = new Map((profiles || []).map(p => [p.id, p]))
+      const profileMap = new Map((profiles || []).map(p => [p.user_id, p]))
 
       setPosts((postsData || []).map(post => {
         const authorProfile = profileMap.get(post.user_id)
@@ -472,10 +472,10 @@ export default function WorkspaceCommunity() {
       const userIds = [...new Set((data || []).map(c => c.user_id))]
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, display_name, avatar_url')
-        .in('id', userIds.length ? userIds : [''])
+        .select('user_id, display_name, avatar_url')
+        .in('user_id', userIds.length ? userIds : [''])
 
-      const profileMap = new Map((profiles || []).map(p => [p.id, p]))
+      const profileMap = new Map((profiles || []).map(p => [p.user_id, p]))
 
       setPostComments(prev => ({
         ...prev,
