@@ -251,7 +251,7 @@ export default function Messenger() {
         <p className="text-muted-foreground text-sm">View and send messages</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[500px]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[350px]">
         {/* Conversations List - hidden on mobile when a conversation is selected */}
         <Card className={`md:col-span-1 flex flex-col ${selectedUserId ? 'hidden md:flex' : 'flex'}`}>
           <div className="p-3 border-b">
