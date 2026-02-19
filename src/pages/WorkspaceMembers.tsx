@@ -192,27 +192,25 @@ export default function WorkspaceMembers() {
     const qa: { question: string; answer: string }[] = []
     const fields: Record<string, string> = {
       full_name: 'Full Name',
-      email: 'Email',
-      phone: 'Phone',
-      program_name: 'Program',
-      goals: 'Goals',
-      experience_level: 'Experience Level',
-      referral_source: 'Referral Source',
-      expectations: 'Expectations',
-      challenges: 'Current Challenges',
-      business_type: 'Business Type',
-      annual_revenue: 'Annual Revenue',
-      family_members_count: 'Family Members Count',
+      tshirt_size: 'T-Shirt Size',
+      mailing_address: 'Mailing Address',
+      first_touchpoint: 'How did you first hear about us?',
+      decision_reason: 'What made you decide to join?',
+      investment_reason: 'Why did you invest?',
+      join_elaboration: 'Tell us more about why you joined',
+      time_to_decide: 'How long did it take you to decide?',
+      improvement_suggestion: 'What could we improve?',
+      why_markus: 'Why Markus?',
+      final_push: 'What was the final push?',
+      pre_call_conviction: 'Pre-call conviction level',
+      biggest_hesitation: 'Biggest hesitation',
+      why_choose_me: 'Why did you choose us over others?',
+      specific_content: 'What specific content are you most excited about?',
+      anything_else: 'Anything else you want us to know?',
     }
     for (const [key, label] of Object.entries(fields)) {
       if (memberOnboarding[key]) {
         qa.push({ question: label, answer: String(memberOnboarding[key]) })
-      }
-    }
-    // Check for additional responses stored as JSON
-    if (memberOnboarding.responses && typeof memberOnboarding.responses === 'object') {
-      for (const [key, value] of Object.entries(memberOnboarding.responses as Record<string, any>)) {
-        if (value) qa.push({ question: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), answer: String(value) })
       }
     }
     return qa

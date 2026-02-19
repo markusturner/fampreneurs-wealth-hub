@@ -36,14 +36,20 @@ export function NotificationBell() {
       setTutorialVideoOpen(true)
     } else if (notification.notification_type === 'video_call_started') {
       window.location.href = '/community'
-    } else if (notification.notification_type === 'family_message') {
-      window.location.href = '/community'
-    } else if (notification.notification_type === 'group_message') {
+    } else if (notification.notification_type === 'family_message' || notification.notification_type === 'group_message') {
       window.location.href = '/community'
     } else if (notification.notification_type === 'message') {
-      window.location.href = '/community'
+      window.location.href = '/messenger'
     } else if (notification.notification_type === 'meeting_scheduled') {
-      window.location.href = '/calendar'
+      window.location.href = '/workspace-calendar'
+    } else if (notification.notification_type === 'community_post') {
+      window.location.href = '/workspace-community'
+    } else if (notification.notification_type === 'course_created') {
+      window.location.href = '/classroom'
+    } else if (notification.notification_type === 'new_member') {
+      window.location.href = '/workspace-members'
+    } else if (notification.notification_type === 'trust_created') {
+      window.location.href = '/workspace-community?program=tfv'
     }
   }
   return (
