@@ -12,6 +12,7 @@ interface CreateUserRequest {
   firstName: string;
   lastName: string;
   role: string;
+  programName?: string;
 }
 
 const generateSecurePassword = (): string => {
@@ -34,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
   console.log("=== Create User Request Started ===");
 
   try {
-    const { email, firstName, lastName, role }: CreateUserRequest = await req.json();
+    const { email, firstName, lastName, role, programName }: CreateUserRequest = await req.json();
     
     console.log("Request data:", { email, firstName, lastName, role });
 
@@ -174,6 +175,36 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (roleError) {
         console.error("Error creating user role:", roleError);
+      }
+    }
+
+    // Set program_name on the profile if provided
+    if (programName) {
+      console.log("Setting program_name on profile:", programName);
+      // Wait briefly for the profile trigger to create the profile row
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const { error: programError } = await supabaseAdmin
+        .from("profiles")
+        .update({ program_name: programName })
+        .eq("user_id", authUser.user.id);
+
+      if (programError) {
+        console.error("Error setting program_name:", programError);
+        // Try upsert approach if profile doesn't exist yet
+        const { error: retryError } = await supabaseAdmin
+          .from("profiles")
+          .upsert({
+            user_id: authUser.user.id,
+            first_name: firstName,
+            last_name: lastName || "",
+            email: email,
+            program_name: programName,
+          }, { onConflict: "user_id" });
+        
+        if (retryError) {
+          console.error("Error upserting profile with program_name:", retryError);
+        }
       }
     }
 
