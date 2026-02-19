@@ -251,7 +251,7 @@ export default function Messenger() {
         <p className="text-muted-foreground text-sm">View and send messages</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-220px)]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[500px]">
         {/* Conversations List - hidden on mobile when a conversation is selected */}
         <Card className={`md:col-span-1 flex flex-col ${selectedUserId ? 'hidden md:flex' : 'flex'}`}>
           <div className="p-3 border-b">
@@ -337,11 +337,11 @@ export default function Messenger() {
                       <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${
                           msg.sender_id === user?.id
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
+                            ? 'bg-[hsl(43,100%,50%)] text-[hsl(270,80%,15%)] font-medium'
+                            : 'bg-accent text-accent-foreground'
                         }`}>
                           <p>{msg.content}</p>
-                          <p className={`text-[10px] mt-1 ${msg.sender_id === user?.id ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
+                          <p className={`text-[10px] mt-1 ${msg.sender_id === user?.id ? 'text-[hsl(270,80%,15%)]/60' : 'text-muted-foreground'}`}>
                             {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>

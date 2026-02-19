@@ -212,7 +212,7 @@ export function AppSidebar({ className }: { className?: string }) {
           <NavItem label="Community" icon={MessageSquare} defaultOpen={currentPath.includes("/workspace-community")}>
             <SubNavItem label="Family Business University" href="/workspace-community?program=fbu" active={currentPath === "/workspace-community" && location.search.includes("program=fbu")} />
             <SubNavItem label="The Family Vault" href="/workspace-community?program=tfv" active={currentPath === "/workspace-community" && location.search.includes("program=tfv")} />
-            <SubNavItem label="Family Business Accelerator" href="/workspace-community?program=tfba" active={currentPath === "/workspace-community" && location.search.includes("program=tfba")} />
+            <SubNavItem label="The Family Business Accelerator" href="/workspace-community?program=tfba" active={currentPath === "/workspace-community" && location.search.includes("program=tfba")} />
             <SubNavItem label="The Family Fortune Mastermind" href="/workspace-community?program=tffm" active={currentPath === "/workspace-community" && location.search.includes("program=tffm")} />
           </NavItem>
           <NavItem label="Classroom" icon={BookOpen} href="/classroom" active={isActive("/classroom")} />

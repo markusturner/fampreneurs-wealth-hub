@@ -3,18 +3,18 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Label } from '@/components/ui/label'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { useToast } from '@/hooks/use-toast'
-import { Search, UserPlus, Clock, Calendar, Tag, RefreshCw, MessageCircle, Settings, ArrowUpDown } from 'lucide-react'
+import { Search, Clock, Calendar, Tag, RefreshCw, MessageCircle, Settings, ArrowUpDown, CheckCircle, XCircle } from 'lucide-react'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
 
 interface Member {
   user_id: string
@@ -26,9 +26,15 @@ interface Member {
   status?: string
 }
 
+interface Course {
+  id: string
+  title: string
+  status: string
+}
+
 type StatusFilter = 'active' | 'cancelling' | 'churned' | 'banned'
 type SortOption = 'newest' | 'oldest' | 'name_asc' | 'name_desc'
-type MembershipTab = 'membership' | 'courses' | 'payments' | 'questions'
+type MembershipTab = 'membership' | 'courses' | 'questions'
 
 export default function WorkspaceMembers() {
   const { user, profile } = useAuth()
@@ -51,11 +57,15 @@ export default function WorkspaceMembers() {
   const [membershipMember, setMembershipMember] = useState<Member | null>(null)
   const [membershipTab, setMembershipTab] = useState<MembershipTab>('membership')
 
-  // Invite dialog
-  const [inviteOpen, setInviteOpen] = useState(false)
-  const [inviteEmail, setInviteEmail] = useState('')
+  // Courses from DB
+  const [courses, setCourses] = useState<Course[]>([])
+  const [memberCourseEnrollments, setMemberCourseEnrollments] = useState<{course_id: string; progress: number}[]>([])
 
-  useEffect(() => { fetchMembers() }, [])
+  // Questions data
+  const [memberAgreement, setMemberAgreement] = useState<any>(null)
+  const [memberOnboarding, setMemberOnboarding] = useState<any>(null)
+
+  useEffect(() => { fetchMembers(); fetchCourses() }, [])
 
   const fetchMembers = async () => {
     try {
@@ -70,6 +80,38 @@ export default function WorkspaceMembers() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchCourses = async () => {
+    try {
+      const { data } = await supabase.from('courses').select('id, title, status').order('title')
+      setCourses(data || [])
+    } catch (e) { console.error(e) }
+  }
+
+  const fetchMembershipData = async (memberId: string) => {
+    // Fetch course enrollments
+    const { data: enrollments } = await supabase
+      .from('course_enrollments')
+      .select('course_id, progress')
+      .eq('user_id', memberId)
+    setMemberCourseEnrollments(enrollments || [])
+
+    // Fetch agreement status
+    const { data: agreement } = await supabase
+      .from('program_agreements')
+      .select('*')
+      .eq('user_id', memberId)
+      .maybeSingle()
+    setMemberAgreement(agreement)
+
+    // Fetch onboarding responses
+    const { data: onboarding } = await supabase
+      .from('onboarding_responses')
+      .select('*')
+      .eq('user_id', memberId)
+      .maybeSingle()
+    setMemberOnboarding(onboarding)
   }
 
   const sortedAndFiltered = members
@@ -118,13 +160,6 @@ export default function WorkspaceMembers() {
     }
   }
 
-  const handleInvite = () => {
-    if (!inviteEmail.trim()) return
-    toast({ title: 'Invitation sent', description: `Invite sent to ${inviteEmail}` })
-    setInviteEmail('')
-    setInviteOpen(false)
-  }
-
   const statusCounts = {
     active: members.filter(m => m.status === 'active').length,
     cancelling: members.filter(m => m.status === 'cancelling').length,
@@ -142,9 +177,46 @@ export default function WorkspaceMembers() {
   const membershipTabs: { id: MembershipTab; label: string }[] = [
     { id: 'membership', label: 'Membership' },
     { id: 'courses', label: 'Courses' },
-    { id: 'payments', label: 'Payments' },
     { id: 'questions', label: 'Questions' },
   ]
+
+  const openMembership = (member: Member) => {
+    setMembershipMember(member)
+    setMembershipTab('membership')
+    fetchMembershipData(member.user_id)
+  }
+
+  // Parse onboarding responses for display
+  const getOnboardingQA = () => {
+    if (!memberOnboarding) return []
+    const qa: { question: string; answer: string }[] = []
+    const fields: Record<string, string> = {
+      full_name: 'Full Name',
+      email: 'Email',
+      phone: 'Phone',
+      program_name: 'Program',
+      goals: 'Goals',
+      experience_level: 'Experience Level',
+      referral_source: 'Referral Source',
+      expectations: 'Expectations',
+      challenges: 'Current Challenges',
+      business_type: 'Business Type',
+      annual_revenue: 'Annual Revenue',
+      family_members_count: 'Family Members Count',
+    }
+    for (const [key, label] of Object.entries(fields)) {
+      if (memberOnboarding[key]) {
+        qa.push({ question: label, answer: String(memberOnboarding[key]) })
+      }
+    }
+    // Check for additional responses stored as JSON
+    if (memberOnboarding.responses && typeof memberOnboarding.responses === 'object') {
+      for (const [key, value] of Object.entries(memberOnboarding.responses as Record<string, any>)) {
+        if (value) qa.push({ question: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), answer: String(value) })
+      }
+    }
+    return qa
+  }
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-5xl space-y-4 sm:space-y-6">
@@ -158,12 +230,6 @@ export default function WorkspaceMembers() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search members" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9 w-full sm:w-64" />
           </div>
-          {isAdminOrOwner && (
-            <Button className="gap-2 flex-shrink-0" style={{ backgroundColor: '#ffb500', color: '#290a52' }} onClick={() => setInviteOpen(true)}>
-              <UserPlus className="h-4 w-4" />
-              <span className="hidden sm:inline">Invite</span>
-            </Button>
-          )}
         </div>
       </div>
 
@@ -228,7 +294,7 @@ export default function WorkspaceMembers() {
                           <MessageCircle className="h-3 w-3" />
                           <span className="hidden sm:inline">Chat</span>
                         </Button>
-                        <Button variant="outline" size="sm" className="gap-1 h-7 sm:h-8 text-xs" onClick={() => { setMembershipMember(member); setMembershipTab('membership') }}>
+                        <Button variant="outline" size="sm" className="gap-1 h-7 sm:h-8 text-xs" onClick={() => openMembership(member)}>
                           <Settings className="h-3 w-3" />
                           <span className="hidden sm:inline">Membership</span>
                         </Button>
@@ -249,7 +315,7 @@ export default function WorkspaceMembers() {
         )}
       </div>
 
-      {/* Profile Dialog (Skool-style) */}
+      {/* Profile Dialog */}
       <Dialog open={!!profileMember} onOpenChange={() => setProfileMember(null)}>
         <DialogContent className="max-w-md p-0 gap-0 overflow-hidden">
           {profileMember && (
@@ -264,18 +330,9 @@ export default function WorkspaceMembers() {
               </div>
               <div className="p-5 space-y-4">
                 <div className="grid grid-cols-3 text-center gap-4">
-                  <div>
-                    <p className="text-lg font-bold">0</p>
-                    <p className="text-xs text-muted-foreground">Contributions</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold">0</p>
-                    <p className="text-xs text-muted-foreground">Followers</p>
-                  </div>
-                  <div>
-                    <p className="text-lg font-bold">0</p>
-                    <p className="text-xs text-muted-foreground">Following</p>
-                  </div>
+                  <div><p className="text-lg font-bold">0</p><p className="text-xs text-muted-foreground">Contributions</p></div>
+                  <div><p className="text-lg font-bold">0</p><p className="text-xs text-muted-foreground">Followers</p></div>
+                  <div><p className="text-lg font-bold">0</p><p className="text-xs text-muted-foreground">Following</p></div>
                 </div>
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2"><Clock className="h-4 w-4" />Active {timeAgo(profileMember.created_at)}</div>
@@ -285,7 +342,7 @@ export default function WorkspaceMembers() {
                   <Button className="flex-1" variant="outline" onClick={() => { setProfileMember(null); setChatMember(profileMember) }}>
                     <MessageCircle className="h-4 w-4 mr-2" /> Chat
                   </Button>
-                  <Button className="flex-1" style={{ backgroundColor: '#ffb500', color: '#290a52' }} onClick={() => { setProfileMember(null); setMembershipMember(profileMember); setMembershipTab('membership') }}>
+                  <Button className="flex-1" style={{ backgroundColor: '#ffb500', color: '#290a52' }} onClick={() => { setProfileMember(null); openMembership(profileMember) }}>
                     <Settings className="h-4 w-4 mr-2" /> Membership
                   </Button>
                 </div>
@@ -389,30 +446,73 @@ export default function WorkspaceMembers() {
                       <div>
                         <h4 className="font-semibold text-sm mb-3">Has access to:</h4>
                         <div className="space-y-3">
-                          <div><p className="text-sm">Onboarding Videos <span className="text-green-500">(100% progress)</span></p><p className="text-xs text-muted-foreground">Open: All members have access</p></div>
-                          <div><p className="text-sm">Legacy Launchpad Course <span className="text-green-500">(2% progress)</span></p><p className="text-xs text-muted-foreground">Open: All members have access</p></div>
+                          {courses.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No courses available yet.</p>
+                          ) : (
+                            courses.map(course => {
+                              const enrollment = memberCourseEnrollments.find(e => e.course_id === course.id)
+                              return (
+                                <div key={course.id}>
+                                  <p className="text-sm">{course.title} {enrollment ? <span className="text-green-500">({enrollment.progress || 0}% progress)</span> : <span className="text-muted-foreground">(not enrolled)</span>}</p>
+                                </div>
+                              )
+                            })
+                          )}
                         </div>
                       </div>
                       <div>
                         <h4 className="font-semibold text-sm mb-2">Give access to:</h4>
-                        <Select><SelectTrigger><SelectValue placeholder="Select course" /></SelectTrigger><SelectContent>
-                          <SelectItem value="onboarding">Onboarding Videos</SelectItem>
-                          <SelectItem value="legacy">Legacy Launchpad Course</SelectItem>
-                          <SelectItem value="project">Project-Based Team Course</SelectItem>
-                          <SelectItem value="performance">Performance-Based Team Course</SelectItem>
-                        </SelectContent></Select>
+                        <Select>
+                          <SelectTrigger><SelectValue placeholder="Select course" /></SelectTrigger>
+                          <SelectContent>
+                            {courses.map(course => (
+                              <SelectItem key={course.id} value={course.id}>{course.title}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   )}
-                  {membershipTab === 'payments' && (
-                    <div><h4 className="font-semibold text-sm mb-3">Payment history</h4><p className="text-sm text-muted-foreground">User has no payment history.</p></div>
-                  )}
                   {membershipTab === 'questions' && (
-                    <div><h4 className="font-semibold text-sm mb-3">Membership questions:</h4>
-                      <div className="space-y-4">
-                        <div><p className="text-sm font-medium">Have you signed your Program Services Agreement yet?</p><p className="text-sm text-muted-foreground mt-1">Yes</p></div>
-                        <div><p className="text-sm font-medium">What is the date of your program purchase?</p><p className="text-sm text-muted-foreground mt-1">N/A</p></div>
-                        <div><p className="text-sm font-medium">What email address did you use for your enrollment?</p><p className="text-sm text-muted-foreground mt-1">{membershipMember.email || 'Not provided'}</p></div>
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-sm mb-3">Membership Questions</h4>
+                      
+                      {/* Agreement Status */}
+                      <div className="p-3 rounded-lg border">
+                        <div className="flex items-center gap-2 mb-1">
+                          {memberAgreement ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-destructive" />
+                          )}
+                          <p className="text-sm font-medium">Program Services Agreement</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground ml-6">
+                          {memberAgreement 
+                            ? `Signed on ${new Date(memberAgreement.signed_at || memberAgreement.created_at).toLocaleDateString()}`
+                            : 'Not yet signed'
+                          }
+                        </p>
+                      </div>
+
+                      {/* Onboarding Responses */}
+                      <div>
+                        <h5 className="text-sm font-medium mb-2">Onboarding Form Responses</h5>
+                        {!memberOnboarding ? (
+                          <p className="text-sm text-muted-foreground">No onboarding form submitted yet.</p>
+                        ) : (
+                          <div className="space-y-3">
+                            {getOnboardingQA().map((qa, i) => (
+                              <div key={i}>
+                                <p className="text-sm font-medium">{qa.question}</p>
+                                <p className="text-sm text-muted-foreground mt-0.5">{qa.answer}</p>
+                              </div>
+                            ))}
+                            {getOnboardingQA().length === 0 && (
+                              <p className="text-sm text-muted-foreground">No responses recorded.</p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -420,17 +520,6 @@ export default function WorkspaceMembers() {
               </div>
             </>
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Invite Dialog */}
-      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>Invite Member</DialogTitle></DialogHeader>
-          <div className="space-y-4">
-            <div><Label>Email address</Label><Input placeholder="email@example.com" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} type="email" /></div>
-            <Button className="w-full" onClick={handleInvite} disabled={!inviteEmail.trim()} style={{ backgroundColor: '#ffb500', color: '#290a52' }}>Send Invitation</Button>
-          </div>
         </DialogContent>
       </Dialog>
     </div>
