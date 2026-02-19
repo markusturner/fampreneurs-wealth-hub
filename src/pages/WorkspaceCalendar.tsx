@@ -14,6 +14,7 @@ import { formatInTimeZone } from "date-fns-tz"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
 import { useOwnerRole } from "@/hooks/useOwnerRole"
+import { useUserRole } from "@/hooks/useUserRole"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -59,7 +60,8 @@ export default function WorkspaceCalendar() {
   const { user, profile } = useAuth()
   const { toast } = useToast()
   const { isOwner } = useOwnerRole(user?.id ?? null)
-  const canCreateEvent = !!user  // All authenticated users can create events
+  const { isAdmin } = useUserRole()
+  const canCreateEvent = isAdmin || isOwner
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())

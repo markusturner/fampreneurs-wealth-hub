@@ -128,7 +128,7 @@ export function AppSidebar({ className }: { className?: string }) {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, profile, signOut } = useAuth()
-  const { isAdmin, isFamilyOfficeOnly } = useUserRole()
+  const { isAdmin, isFamilyOfficeOnly, isFamilyMember } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const { subscriptionStatus } = useSubscription()
   const currentPath = location.pathname
@@ -189,22 +189,24 @@ export function AppSidebar({ className }: { className?: string }) {
         </Button>
       </div>
 
-      {/* Trust Creation */}
-      <div className="px-3 pb-3">
-        <Button
-          className={cn(
-            "w-full justify-start gap-2 rounded-xl font-semibold border-0",
-            currentPath.includes("/trust-creation")
-              ? "bg-[hsl(43,100%,50%)] text-[hsl(270,80%,15%)] hover:bg-[hsl(43,100%,45%)] shadow-md shadow-[hsl(43,100%,50%)]/30"
-              : "bg-[hsl(43,100%,50%)]/15 text-[hsl(43,100%,50%)] hover:bg-[hsl(43,100%,50%)]/25"
-          )}
-          variant="ghost"
-          onClick={() => navigate('/trust-creation')}
-        >
-          <ScrollText className="h-4 w-4" />
-          Trust Creation
-        </Button>
-      </div>
+      {/* Trust Creation - hidden for invited family members */}
+      {!isFamilyMember && (
+        <div className="px-3 pb-3">
+          <Button
+            className={cn(
+              "w-full justify-start gap-2 rounded-xl font-semibold border-0",
+              currentPath.includes("/trust-creation")
+                ? "bg-[hsl(43,100%,50%)] text-[hsl(270,80%,15%)] hover:bg-[hsl(43,100%,45%)] shadow-md shadow-[hsl(43,100%,50%)]/30"
+                : "bg-[hsl(43,100%,50%)]/15 text-[hsl(43,100%,50%)] hover:bg-[hsl(43,100%,50%)]/25"
+            )}
+            variant="ghost"
+            onClick={() => navigate('/trust-creation')}
+          >
+            <ScrollText className="h-4 w-4" />
+            Trust Creation
+          </Button>
+        </div>
+      )}
 
       <ScrollArea className="flex-1 px-3 py-1">
         {/* WORKSPACE - hidden for family office only users */}
