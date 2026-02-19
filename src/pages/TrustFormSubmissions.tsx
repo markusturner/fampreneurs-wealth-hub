@@ -169,7 +169,7 @@ export default function TrustFormSubmissions() {
               <p className="font-medium text-destructive">Google Sheets sync error</p>
               <p className="text-muted-foreground mt-1">{sheetError}</p>
               <p className="text-muted-foreground mt-1 text-xs">
-                Make sure the GOOGLE_SERVICE_ACCOUNT_JSON secret contains the full JSON key file content, and that sheets are shared with the service account email.
+                Make sure the Google Sheets are shared as "Anyone with the link can view", or that the GOOGLE_SERVICE_ACCOUNT_JSON secret is configured with access to the sheets.
               </p>
             </div>
           </CardContent>

@@ -48,6 +48,7 @@ import AIChat from "./pages/AIChat";
 import TrustCreation from "./pages/TrustCreation";
 import TrustFormSubmissions from "./pages/TrustFormSubmissions";
 import ProgramAgreement from "./pages/ProgramAgreement";
+import ProgramAgreements from "./pages/ProgramAgreements";
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
 
@@ -131,6 +132,7 @@ function AppWithNotifications() {
         <Route path="/ai-chat" element={<WithLayout><AIChat /></WithLayout>} />
         <Route path="/trust-creation" element={<WithLayout><TrustCreation /></WithLayout>} />
         <Route path="/trust-form-submissions" element={<WithLayout><TrustFormSubmissions /></WithLayout>} />
+        <Route path="/program-agreements" element={<WithLayout><ProgramAgreements /></WithLayout>} />
         <Route path="*" element={<div>Page not found</div>} />
       </Routes>
       <MobileBottomNav />

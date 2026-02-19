@@ -133,7 +133,7 @@ export default function AIChat() {
   const displayName = profile?.display_name || profile?.first_name || ''
 
   // Sidebar state
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [projects, setProjects] = useState<ChatProject[]>([])
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)

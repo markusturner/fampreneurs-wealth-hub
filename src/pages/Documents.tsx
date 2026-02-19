@@ -110,6 +110,23 @@ export default function Documents() {
   
   // Convert businessCourses to state so buttons can modify it
   const [businessCourses, setBusinessCourses] = useState([{
+    title: "Trust Education",
+    instructor: "TruHeirs",
+    duration: "Self-paced",
+    description: "Learn the fundamentals of trusts, asset protection, and legacy planning for your family",
+    status: "published",
+    videos: [],
+    modules: [{
+      name: "Introduction to Trusts",
+      duration: "30 minutes"
+    }, {
+      name: "Types of Trusts",
+      duration: "45 minutes"
+    }, {
+      name: "Asset Protection Strategies",
+      duration: "60 minutes"
+    }]
+  }, {
     title: "Family Business Education",
     instructor: "Dr. Sarah Johnson",
     duration: "4 weeks",
