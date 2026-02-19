@@ -245,13 +245,13 @@ export default function Messenger() {
   }
 
   return (
-    <div className="flex flex-col max-w-5xl mx-auto px-3 sm:px-4 py-3">
-      <div className="mb-3 flex-shrink-0">
+    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto px-3 sm:px-4 py-3 overflow-hidden">
+      <div className="mb-2 flex-shrink-0">
         <h1 className="text-xl sm:text-2xl font-bold">Messenger</h1>
         <p className="text-muted-foreground text-sm">View and send messages</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-16rem)]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 min-h-0">
         {/* Conversations List - hidden on mobile when a conversation is selected */}
         <Card className={`md:col-span-1 flex flex-col ${selectedUserId ? 'hidden md:flex' : 'flex'}`}>
           <div className="p-3 border-b">
