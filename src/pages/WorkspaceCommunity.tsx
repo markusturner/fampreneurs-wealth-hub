@@ -597,6 +597,14 @@ export default function WorkspaceCommunity() {
 
   const categoryLabel = CATEGORIES.find(c => c.value === postCategory)
 
+  // Mobile post composer dialog state
+  const [mobilePostOpen, setMobilePostOpen] = useState(false)
+
+  const handleMobilePost = async () => {
+    await handleCreatePost()
+    setMobilePostOpen(false)
+  }
+
   // If community is locked, show locked overlay
   if (!hasProgramAccess && !subscriptionStatus.loading) {
     return (
@@ -685,8 +693,144 @@ export default function WorkspaceCommunity() {
           <div className="flex-1 min-w-0 space-y-4">
             {/* Community name header on mobile only */}
             <h2 className="text-lg font-bold lg:hidden">{programName}</h2>
-            {/* Post Composer */}
-            <Card className="border-border/50">
+
+            {/* Mobile: Simple "Write something" bar */}
+            <div className="lg:hidden">
+              <Card className="border-border/50 cursor-pointer" onClick={() => setMobilePostOpen(true)}>
+                <CardContent className="p-3 flex items-center gap-3">
+                  <Avatar className="h-10 w-10 flex-shrink-0">
+                    {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
+                    <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                      {getInitials(profile?.display_name || 'U')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="flex-1 text-sm text-muted-foreground">Write something...</span>
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <Camera className="h-4 w-4" />
+                    <span className="text-xs">Go Live</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Mobile Post Dialog */}
+            <Dialog open={mobilePostOpen} onOpenChange={setMobilePostOpen}>
+              <DialogContent className="lg:hidden fixed inset-0 max-w-full w-full h-full translate-x-0 translate-y-0 left-0 top-0 rounded-none border-0 p-0 flex flex-col data-[state=open]:slide-in-from-bottom data-[state=closed]:slide-out-to-bottom z-[70]">
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMobilePostOpen(false)}>
+                    <X className="h-5 w-5" />
+                  </Button>
+                  <Button size="sm" onClick={handleMobilePost} disabled={!newPost.trim()} className="font-semibold">
+                    POST
+                  </Button>
+                </div>
+
+                {/* Send to all toggle for admins */}
+                {(isAdmin || isOwner) && (
+                  <div className="flex items-center justify-center gap-2 px-4 py-2 border-b border-border/50">
+                    <span className="text-xs text-muted-foreground">ℹ️ Send email to all members</span>
+                    <Button
+                      variant={postToAll ? 'default' : 'outline'}
+                      size="sm"
+                      className="h-6 px-2 text-xs"
+                      onClick={() => setPostToAll(!postToAll)}
+                    >
+                      {postToAll ? 'ON' : 'OFF'}
+                    </Button>
+                  </div>
+                )}
+
+                {/* Author info */}
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <Avatar className="h-10 w-10 flex-shrink-0">
+                    {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
+                    <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                      {getInitials(profile?.display_name || 'U')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <span className="font-semibold text-sm">{profile?.display_name || 'You'}</span>
+                    <span className="text-sm text-muted-foreground"> posting in </span>
+                    <span className="font-semibold text-sm">{programName.slice(0, 25)}{programName.length > 25 ? '...' : ''}</span>
+                  </div>
+                </div>
+
+                {/* Title / content */}
+                <div className="flex-1 px-4 overflow-y-auto">
+                  <Input
+                    placeholder="Title"
+                    className="border-0 px-0 text-lg font-medium placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto py-1"
+                  />
+                  <Textarea
+                    placeholder="Write something..."
+                    value={newPost}
+                    onChange={(e) => setNewPost(e.target.value)}
+                    className="border-0 px-0 resize-none min-h-[200px] focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground/50"
+                  />
+                  {/* Preview attachments */}
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {postImagePreview && (
+                      <div className="relative inline-block">
+                        <img src={postImagePreview} alt="Preview" className="h-20 rounded-lg object-cover" />
+                        <button onClick={() => { setPostImageFile(null); setPostImagePreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                    {postVideoPreview && (
+                      <div className="relative inline-block">
+                        <video src={postVideoPreview} className="h-20 rounded-lg object-cover" />
+                        <button onClick={() => { setPostVideoFile(null); setPostVideoPreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                    {postAudioFile && (
+                      <div className="relative inline-flex items-center gap-1 bg-muted/50 rounded-lg px-3 py-1.5">
+                        <Mic className="h-3.5 w-3.5" />
+                        <span className="text-xs">{postAudioFile.name.slice(0, 20)}</span>
+                        <button onClick={() => setPostAudioFile(null)} className="ml-1"><X className="h-3 w-3" /></button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Bottom toolbar */}
+                <div className="border-t border-border/50 px-4 py-3 flex items-center gap-3 safe-area-bottom">
+                  <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+                  <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
+                  <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => imageInputRef.current?.click()}>
+                    <Image className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => videoInputRef.current?.click()}>
+                    <Video className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className={`h-8 w-8 ${isRecording ? 'text-destructive' : ''}`}
+                    onClick={isRecording ? stopRecording : startRecording}
+                  >
+                    {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  </Button>
+                  <Select value={postCategory} onValueChange={setPostCategory}>
+                    <SelectTrigger className="h-8 w-auto text-xs border-0 bg-muted/50">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.filter(c => c.value !== 'all').map(c => (
+                        <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Desktop: Full inline Post Composer */}
+            <Card className="border-border/50 hidden lg:block">
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-start gap-3">
                   <Avatar className="h-10 w-10 flex-shrink-0 mt-1">
