@@ -9,9 +9,15 @@ export function useAgreementStatus() {
   const [needsAgreement, setNeedsAgreement] = useState(false)
 
   useEffect(() => {
-    if (!user || !profile) {
+    if (!user) {
       setSigned(null)
       setLoading(false)
+      return
+    }
+
+    // Keep loading until profile is available so we can check program_name
+    if (!profile) {
+      setLoading(true)
       return
     }
 
