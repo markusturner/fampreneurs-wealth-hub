@@ -21,21 +21,8 @@ export function useAgreementStatus() {
       return
     }
 
-    const programName = profile.program_name
-    // TFV, TFBA, and TFFM require agreements
-    const requiresAgreement = programName && (
-      programName.toLowerCase().includes('vault') ||
-      programName.toLowerCase().includes('accelerator') ||
-      programName.toLowerCase().includes('mastermind') ||
-      programName.toLowerCase().includes('fortune')
-    )
-
-    if (!requiresAgreement) {
-      setSigned(true) // No agreement needed
-      setNeedsAgreement(false)
-      setLoading(false)
-      return
-    }
+    // All users must sign the program agreement before proceeding
+    // Previously only certain programs required it, but now it's mandatory for everyone
 
     setNeedsAgreement(true)
 
