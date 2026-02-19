@@ -59,7 +59,7 @@ export default function WorkspaceCalendar() {
   const { user, profile } = useAuth()
   const { toast } = useToast()
   const { isOwner } = useOwnerRole(user?.id ?? null)
-  const canCreateEvent = profile?.is_admin || isOwner
+  const canCreateEvent = !!user  // All authenticated users can create events
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())

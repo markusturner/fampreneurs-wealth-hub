@@ -61,8 +61,9 @@ export function PricingPopup({ open, onOpenChange, programFilter }: PricingPopup
   // Determine title based on filter
   const getTitle = () => {
     if (!programFilter) return { highlight: 'TruHeirs', rest: 'Access' }
+    if (programFilter === 'fbu') return { highlight: 'Family Business University', rest: '' }
     const program = PROGRAMS.find(p => p.id === programFilter)
-    return { highlight: program?.shortName || 'Program', rest: 'Pricing' }
+    return { highlight: program?.name || 'Program', rest: '' }
   }
 
   const title = getTitle()
