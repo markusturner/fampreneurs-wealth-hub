@@ -139,7 +139,9 @@ export function AppSidebar({ className }: { className?: string }) {
   const [searchQuery, setSearchQuery] = useState('')
   const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const hasTruHeirsAccess = isAdmin || isOwner || ((profile?.truheirs_access !== false) && (subscriptionStatus.subscribed || subscriptionStatus.loading))
+  // Admins/owners always have access. Users explicitly granted truheirs_access by admin (e.g. invited trustees)
+  // also get full access without needing a Stripe subscription.
+  const hasTruHeirsAccess = isAdmin || isOwner || profile?.truheirs_access === true || (subscriptionStatus.subscribed || subscriptionStatus.loading)
 
   const filteredSuggestions = SEARCH_SUGGESTIONS.filter(s => {
     // Filter by access
