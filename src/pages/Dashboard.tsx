@@ -19,7 +19,6 @@ const Dashboard = () => {
 
   const handleTutorialSkipped = async () => {
     if (!user?.id) return;
-    
     try {
       await supabase.from("notifications").insert({
         sender_id: user.id,
@@ -32,7 +31,6 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error creating notification:", error);
     }
-    
     markAsWatched();
   };
 
@@ -53,32 +51,21 @@ const Dashboard = () => {
     )
   }
 
-  if (!user) {
-    return null
-  }
+  if (!user) return null
 
   const displayName = profile?.display_name || profile?.first_name || 'Family'
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-hidden">
-      {/* Page Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
         <p className="text-muted-foreground mt-1 text-sm sm:text-base">
           Your financial overview, key metrics, and recent activity at a glance.
         </p>
       </div>
-
-      {/* Key Metrics */}
       <DashboardStats />
-
-      {/* Financial Overview & AI Insights */}
       <OverviewSection />
-
-      {/* Recent Activity from TruHeirs */}
       <DashboardRecentActivity />
-
-      {/* Tutorial Video Modal */}
       {user && (
         <TutorialVideoModal
           isOpen={shouldShowTutorial}

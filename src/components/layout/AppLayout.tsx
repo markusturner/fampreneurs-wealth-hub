@@ -4,12 +4,18 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus"
 import { useAgreementStatus } from "@/hooks/useAgreementStatus"
 import { useIsAdminOrOwner } from "@/hooks/useIsAdminOrOwner"
+import { useOwnerRole } from "@/hooks/useOwnerRole"
+import { useSubscription } from "@/hooks/useSubscription"
 import { AppSidebar } from "./AppSidebar"
+import { LockedPageOverlay } from "@/components/dashboard/LockedPageOverlay"
 import { Loader2, Menu } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
+
+// Routes that require TruHeirs subscription (not accessible without it)
+const TRUHEIRS_ROUTES = ['/dashboard', '/digital-family-office', '/documents', '/calendar', '/members']
 
 
 interface AppLayoutProps {
@@ -21,9 +27,14 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { completed: onboardingCompleted, loading: onboardingLoading } = useOnboardingStatus()
   const { signed: agreementSigned, loading: agreementLoading, needsAgreement } = useAgreementStatus()
   const { isAdminOrOwner, isLoading: roleLoading } = useIsAdminOrOwner()
+  const { isOwner } = useOwnerRole(user?.id ?? null)
+  const { subscriptionStatus } = useSubscription()
   const navigate = useNavigate()
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const isTruHeirsRoute = TRUHEIRS_ROUTES.includes(location.pathname)
+  const hasTruHeirsAccess = isAdminOrOwner || isOwner || profile?.truheirs_access === true || subscriptionStatus.subscribed || subscriptionStatus.loading
 
   useEffect(() => {
     if (!loading && !user) {
@@ -102,7 +113,13 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Page content */}
         <main className="flex-1 overflow-auto pb-20 md:pb-0">
-          {children}
+          {isTruHeirsRoute && !hasTruHeirsAccess ? (
+            <LockedPageOverlay locked={true} programFilter="fbu" title="Unlock TruHeirs">
+              {children}
+            </LockedPageOverlay>
+          ) : (
+            children
+          )}
         </main>
       </div>
     </div>
