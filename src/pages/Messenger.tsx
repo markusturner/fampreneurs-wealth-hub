@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useAuth } from '@/contexts/AuthContext'
+import { useUserRole } from '@/hooks/useUserRole'
+import { useOwnerRole } from '@/hooks/useOwnerRole'
+import { useSubscription } from '@/hooks/useSubscription'
 import { supabase } from '@/integrations/supabase/client'
 import { Search, Send, MessageCircle } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
@@ -34,8 +37,11 @@ interface ConversationSummary {
 }
 
 export default function Messenger() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { toast } = useToast()
+  const { isAdmin } = useUserRole()
+  const { isOwner } = useOwnerRole(user?.id ?? null)
+  const { subscriptionStatus } = useSubscription()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
@@ -46,19 +52,87 @@ export default function Messenger() {
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Fetch all profiles and messages to build conversation list
+  // Map profile program_name to program key
+  const PROGRAM_NAME_TO_KEY: Record<string, string> = {
+    'Family Business University': 'fbu',
+    'The Family Business University': 'fbu',
+    'The Family Vault': 'tfv',
+    'The Family Business Accelerator': 'tfba',
+    'The Family Fortune Mastermind': 'tffm',
+  }
+  const PROGRAM_KEY_TO_GROUP_NAME: Record<string, string> = {
+    fbu: 'Family Business University',
+    tfv: 'The Family Vault',
+    tfba: 'The Family Business Accelerator',
+    tffm: 'The Family Fortune Mastermind',
+  }
+
+  // Determine which community group name the current user belongs to
+  const getUserCommunityGroupName = (): string | null => {
+    if (isAdmin || isOwner) return null // admins see all
+    const programKey = profile?.program_name ? PROGRAM_NAME_TO_KEY[profile.program_name] : null
+    if (programKey) return PROGRAM_KEY_TO_GROUP_NAME[programKey] || null
+    // Check subscription
+    const subscribedProgram = subscriptionStatus.programs[0]
+    if (subscribedProgram) return PROGRAM_KEY_TO_GROUP_NAME[subscribedProgram] || null
+    return null
+  }
+
+  // Fetch profiles and messages to build conversation list, filtered by community
   useEffect(() => {
-    if (!user) return
+    if (!user || subscriptionStatus.loading) return
     const init = async () => {
       try {
-        // Fetch profiles
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('user_id, display_name, avatar_url')
-          .neq('user_id', user.id)
-          .order('display_name')
-        
-        setProfiles(profileData || [])
+        let profileData: Profile[] = []
+
+        const communityGroupName = getUserCommunityGroupName()
+
+        if (communityGroupName) {
+          // Find the community group
+          const { data: group } = await supabase
+            .from('community_groups')
+            .select('id')
+            .eq('name', communityGroupName)
+            .maybeSingle()
+
+          if (group) {
+            // Get members of that group
+            const { data: memberships } = await supabase
+              .from('group_memberships')
+              .select('user_id')
+              .eq('group_id', group.id)
+              .neq('user_id', user.id)
+
+            if (memberships && memberships.length > 0) {
+              const userIds = memberships.map(m => m.user_id)
+              const { data: profiles } = await supabase
+                .from('profiles')
+                .select('user_id, display_name, avatar_url')
+                .in('user_id', userIds)
+                .order('display_name')
+              profileData = profiles || []
+            }
+          } else {
+            // Fallback: same program_name
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('user_id, display_name, avatar_url')
+              .eq('program_name', profile?.program_name || '')
+              .neq('user_id', user.id)
+              .order('display_name')
+            profileData = profiles || []
+          }
+        } else {
+          // Admin/owner: fetch all profiles
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('user_id, display_name, avatar_url')
+            .neq('user_id', user.id)
+            .order('display_name')
+          profileData = profiles || []
+        }
+
+        setProfiles(profileData)
 
         // Fetch all DMs involving current user
         const { data: dmData } = await supabase
@@ -80,10 +154,12 @@ export default function Messenger() {
           }
         }
 
-        const profileMap = new Map((profileData || []).map(p => [p.user_id, p]))
+        const profileMap = new Map(profileData.map(p => [p.user_id, p]))
         const convList: ConversationSummary[] = []
+        // Only include DM conversations with users in our community
         convMap.forEach((val, otherId) => {
           const p = profileMap.get(otherId)
+          if (!p && communityGroupName) return // skip users not in our community
           convList.push({
             user_id: otherId,
             display_name: p?.display_name || 'Member',
@@ -94,8 +170,8 @@ export default function Messenger() {
           })
         })
 
-        // Add profiles that don't have conversations yet
-        for (const p of profileData || []) {
+        // Add community members that don't have conversations yet
+        for (const p of profileData) {
           if (!convMap.has(p.user_id)) {
             convList.push({
               user_id: p.user_id,
@@ -124,7 +200,7 @@ export default function Messenger() {
       }
     }
     init()
-  }, [user])
+  }, [user, profile?.program_name, subscriptionStatus.loading, isAdmin, isOwner])
 
   // Fetch messages for selected conversation
   useEffect(() => {
