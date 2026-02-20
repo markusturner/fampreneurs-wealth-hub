@@ -10,12 +10,22 @@ import { useTutorialVideo } from "@/hooks/useTutorialVideo"
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { supabase } from "@/integrations/supabase/client"
 import { DashboardRecentActivity } from "@/components/dashboard/dashboard-recent-activity"
+import { useSubscription } from "@/hooks/useSubscription"
+import { useIsAdminOrOwner } from "@/hooks/useIsAdminOrOwner"
+import { useOwnerRole } from "@/hooks/useOwnerRole"
 
 const Dashboard = () => {
   const { user, profile, loading } = useAuth()
   const { isFamilyOfficeOnly, isLoading: roleLoading } = useUserRole()
+  const { isAdminOrOwner } = useIsAdminOrOwner()
+  const { isOwner } = useOwnerRole(user?.id ?? null)
+  const { subscriptionStatus } = useSubscription()
   const navigate = useNavigate()
   const { shouldShowTutorial, isLoading: tutorialLoading, markAsWatched } = useTutorialVideo(user?.id || null)
+
+  // Only show tutorial if user actually has TruHeirs access
+  const hasTruHeirsAccess = isAdminOrOwner || isOwner || profile?.truheirs_access === true || subscriptionStatus.subscribed
+  const showTutorial = shouldShowTutorial && hasTruHeirsAccess
 
   const handleTutorialSkipped = async () => {
     if (!user?.id) return;
@@ -66,9 +76,9 @@ const Dashboard = () => {
       <DashboardStats />
       <OverviewSection />
       <DashboardRecentActivity />
-      {user && (
+      {user && showTutorial && (
         <TutorialVideoModal
-          isOpen={shouldShowTutorial}
+          isOpen={showTutorial}
           onClose={() => markAsWatched()}
           onWatched={markAsWatched}
           onSkipped={handleTutorialSkipped}

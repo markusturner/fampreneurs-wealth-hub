@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { StripePaymentModal } from '@/components/dashboard/StripePaymentModal'
@@ -13,13 +13,6 @@ interface LockedPageOverlayProps {
 
 export function LockedPageOverlay({ locked, programFilter, title, children }: LockedPageOverlayProps) {
   const [paymentOpen, setPaymentOpen] = useState(false)
-
-  // Auto-open the modal whenever the page becomes locked (e.g. navigating to it)
-  useEffect(() => {
-    if (locked) {
-      setPaymentOpen(true)
-    }
-  }, [locked])
 
   if (!locked) return <>{children}</>
 
