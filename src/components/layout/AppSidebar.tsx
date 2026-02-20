@@ -57,9 +57,8 @@ function NavItem({ label, icon: Icon, href, active, locked, onClick, children, d
 
   const handleClick = () => {
     if (locked) {
-      // Navigate to the page (it will show blurred with overlay) AND trigger the pricing popup
+      // Just navigate — the LockedPageOverlay on that page handles the blurred view + unlock prompt
       if (href) navigate(href)
-      onClick?.()
       return
     }
     if (hasChildren) { setOpen(!open) }
