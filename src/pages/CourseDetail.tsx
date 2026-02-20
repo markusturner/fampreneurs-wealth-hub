@@ -301,10 +301,10 @@ export default function CourseDetail() {
                           )}>
                             {lesson.completed ? <CheckCircle2 className="h-3 w-3" /> : <span>{globalIdx}</span>}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium leading-snug line-clamp-2" style={{ color: '#290a52' }}>
+                          <div className="flex-1 min-w-0 overflow-visible">
+                            <span className="text-xs font-medium leading-snug block" style={{ color: '#290a52', wordBreak: 'break-word' }}>
                               {lesson.title}
-                            </p>
+                            </span>
                             {lesson.duration_seconds && (
                               <p className="text-[10px] text-muted-foreground mt-0.5">
                                 {Math.floor(lesson.duration_seconds / 60)} min
