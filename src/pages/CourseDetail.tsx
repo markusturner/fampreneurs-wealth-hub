@@ -272,7 +272,7 @@ export default function CourseDetail() {
               return (
                 <Collapsible key={mod.id} open={openModules.has(mod.id)} onOpenChange={() => toggleModule(mod.id)}>
                   <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 text-xs font-semibold uppercase tracking-wider hover:bg-accent/40 transition-colors text-left">
-                    <span className="text-primary/80">{mod.title}</span>
+                    <span style={{ color: '#290a52' }}>{mod.title}</span>
                     <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform text-muted-foreground', openModules.has(mod.id) && 'rotate-180')} />
                   </CollapsibleTrigger>
                   <CollapsibleContent>
