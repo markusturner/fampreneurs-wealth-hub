@@ -62,9 +62,21 @@ export function AdminSettings() {
         </Badge>
       </div>
 
-  <Tabs defaultValue={isOwner ? "zapier" : (isAdmin ? "admin" : "metrics")} className="space-y-4 md:space-y-6">
+  <Tabs defaultValue={isAdmin ? "admin" : (isOwner ? "metrics" : "metrics")} className="space-y-4 md:space-y-6">
         <div className="overflow-x-auto scrollbar-hide -mx-3 px-3">
           <TabsList className="inline-flex w-auto min-w-full md:min-w-0 h-auto">
+            {isAdmin && (
+              <TabsTrigger value="admin" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
+                <Shield className="h-4 w-4 shrink-0" />
+                {isMobile ? "Admin" : "Admin Panel"}
+              </TabsTrigger>
+            )}
+            {(isAdmin || isOwner) && (
+              <TabsTrigger value="metrics" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
+                <BarChart3 className="h-4 w-4 shrink-0" />
+                Metrics
+              </TabsTrigger>
+            )}
             {isOwner && (
               <TabsTrigger value="zapier" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
                 <Zap className="h-4 w-4 shrink-0" />
@@ -77,22 +89,10 @@ export function AdminSettings() {
                 {isMobile ? "Tutorial" : "Tutorial Video"}
               </TabsTrigger>
             )}
-            {(isAdmin || isOwner) && (
-              <TabsTrigger value="metrics" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
-                <BarChart3 className="h-4 w-4 shrink-0" />
-                Metrics
-              </TabsTrigger>
-            )}
             {isOwner && (
               <TabsTrigger value="permissions" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
                 <Lock className="h-4 w-4 shrink-0" />
                 {isMobile ? "Roles" : "Role Permissions"}
-              </TabsTrigger>
-            )}
-            {isAdmin && (
-              <TabsTrigger value="admin" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
-                <Shield className="h-4 w-4 shrink-0" />
-                {isMobile ? "Admin" : "Admin Panel"}
               </TabsTrigger>
             )}
           </TabsList>

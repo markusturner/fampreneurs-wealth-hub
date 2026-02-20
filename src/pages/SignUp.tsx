@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, ArrowLeft, AlertTriangle, Mail, CreditCard } from 'lucide-react'
+import { Loader2, AlertTriangle, Mail, CreditCard } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { PROGRAMS, type ProgramId } from '@/lib/stripe-programs'
 import { useAuth } from '@/contexts/AuthContext'
@@ -156,11 +156,6 @@ export default function SignUp() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-soft relative">
-        <div className="absolute top-4 left-4 z-10">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="hover:bg-accent">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </div>
         <CardHeader className="text-center">
           <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-4">
             <img src="/lovable-uploads/cb7af8d2-0809-4d9d-8fa4-acfb507144de.png" alt="TruHeirs Logo" className="w-20 h-20 object-contain" />

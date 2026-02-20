@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, ArrowLeft, Mail } from 'lucide-react'
+import { Loader2, Mail } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
 import { TutorialVideoModal } from '@/components/dashboard/tutorial-video-modal'
@@ -184,11 +184,6 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-soft relative">
-        <div className="absolute top-4 left-4 z-10">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="hover:bg-accent">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </div>
         <CardHeader className="text-center">
           <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-4">
             <img

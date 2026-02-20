@@ -4132,6 +4132,66 @@ export type Database = {
           },
         ]
       }
+      user_payment_plans: {
+        Row: {
+          amount_paid: number
+          created_at: string
+          created_by: string | null
+          id: string
+          installment_amount: number | null
+          installment_frequency: string | null
+          last_reminder_sent: string | null
+          missed_payments: number
+          next_payment_due: string | null
+          notes: string | null
+          payment_start_date: string | null
+          plan_type: string
+          status: string
+          total_amount: number
+          updated_at: string
+          user_email: string
+          user_id: string
+        }
+        Insert: {
+          amount_paid?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          installment_amount?: number | null
+          installment_frequency?: string | null
+          last_reminder_sent?: string | null
+          missed_payments?: number
+          next_payment_due?: string | null
+          notes?: string | null
+          payment_start_date?: string | null
+          plan_type?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_email: string
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          installment_amount?: number | null
+          installment_frequency?: string | null
+          last_reminder_sent?: string | null
+          missed_payments?: number
+          next_payment_due?: string | null
+          notes?: string | null
+          payment_start_date?: string | null
+          plan_type?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_email?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           assigned_at: string | null
