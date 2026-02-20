@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, UserPlus, Shield } from 'lucide-react'
+import { Loader2, UserPlus, Shield, DollarSign } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 type UserRole = 'trustee' | 'family_office_member' | 'family_member'
 
@@ -28,13 +29,40 @@ export function AdminUserManagement() {
   const [mailingAddress, setMailingAddress] = useState('')
   const [truHeirsAccess, setTruHeirsAccess] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
+
+  // Payment plan fields
+  const [planType, setPlanType] = useState<'paid_in_full' | 'payment_plan'>('paid_in_full')
+  const [totalAmount, setTotalAmount] = useState('')
+  const [installmentAmount, setInstallmentAmount] = useState('')
+  const [installmentFrequency, setInstallmentFrequency] = useState<'monthly' | 'weekly' | 'biweekly'>('monthly')
+  const [paymentStartDate, setPaymentStartDate] = useState('')
+
   const { toast } = useToast()
+  const { user } = useAuth()
 
   const handleAddUser = async () => {
     if (!email || !firstName || !lastName || !role) {
       toast({
         title: 'Missing Information',
-        description: 'Please fill in all fields',
+        description: 'Please fill in all required fields',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (!totalAmount || isNaN(Number(totalAmount))) {
+      toast({
+        title: 'Missing Payment Info',
+        description: 'Please enter a valid total amount',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    if (planType === 'payment_plan' && (!installmentAmount || !paymentStartDate)) {
+      toast({
+        title: 'Missing Payment Plan Info',
+        description: 'Please fill in installment amount and start date',
         variant: 'destructive',
       })
       return
@@ -64,17 +92,50 @@ export function AdminUserManagement() {
         throw new Error("Failed to create user. Please check the logs for details.");
       }
 
-      // Check if the response indicates failure
       if (data?.success === false || data?.error) {
         console.error("Data error:", data.error);
         throw new Error(data.error || "Failed to create user");
+      }
+
+      // Save payment plan to DB
+      const userId = data?.userId
+      if (userId) {
+        const nextPaymentDue = planType === 'payment_plan' && paymentStartDate
+          ? paymentStartDate
+          : null
+
+        const { error: planError } = await supabase
+          .from('user_payment_plans' as any)
+          .insert({
+            user_id: userId,
+            user_email: email,
+            plan_type: planType,
+            total_amount: Number(totalAmount),
+            amount_paid: planType === 'paid_in_full' ? Number(totalAmount) : 0,
+            installment_amount: planType === 'payment_plan' ? Number(installmentAmount) : null,
+            installment_frequency: planType === 'payment_plan' ? installmentFrequency : null,
+            next_payment_due: nextPaymentDue,
+            payment_start_date: paymentStartDate || null,
+            status: planType === 'paid_in_full' ? 'paid' : 'active',
+            created_by: user?.id,
+          })
+
+        if (planError) {
+          console.error("Payment plan save error:", planError)
+          // Don't throw — user was created, just log the plan error
+          toast({
+            title: 'Note',
+            description: 'User created but payment plan could not be saved. Please update manually.',
+            variant: 'destructive',
+          })
+        }
       }
 
       toast({
         title: data.isExistingUser ? 'Credentials Updated!' : 'User Created Successfully!',
         description: data.isExistingUser
           ? `New credentials have been sent to ${email}`
-          : `${firstName} ${lastName} has been added as ${role.replace(/_/g, ' ')}.`,
+          : `${firstName} ${lastName} has been added as ${role.replace(/_/g, ' ')}${planType === 'payment_plan' ? ' on a payment plan — reminders will be sent automatically.' : ' (Paid in Full).'}`,
       })
 
       // Reset form
@@ -85,6 +146,11 @@ export function AdminUserManagement() {
       setProgramName('')
       setMailingAddress('')
       setTruHeirsAccess(true)
+      setPlanType('paid_in_full')
+      setTotalAmount('')
+      setInstallmentAmount('')
+      setInstallmentFrequency('monthly')
+      setPaymentStartDate('')
     } catch (error: any) {
       console.error('Error adding user:', error)
       
@@ -114,7 +180,7 @@ export function AdminUserManagement() {
           <CardTitle>Admin User Management</CardTitle>
         </div>
         <CardDescription>
-          Add new users or resend credentials to existing users by entering their information
+          Add new users or resend credentials. Payment plans trigger automatic reminders and access revocation on missed payments.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -203,6 +269,87 @@ export function AdminUserManagement() {
             onCheckedChange={setTruHeirsAccess}
             disabled={isLoading}
           />
+        </div>
+
+        {/* Payment Plan Section */}
+        <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
+          <div className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4" style={{ color: '#ffb500' }} />
+            <Label className="text-base font-semibold">Payment Details</Label>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Payment Type</Label>
+            <Select value={planType} onValueChange={(v) => setPlanType(v as 'paid_in_full' | 'payment_plan')} disabled={isLoading}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="paid_in_full">Paid in Full</SelectItem>
+                <SelectItem value="payment_plan">Payment Plan</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="totalAmount">Total Program Amount ($)</Label>
+            <Input
+              id="totalAmount"
+              type="number"
+              min="0"
+              value={totalAmount}
+              onChange={(e) => setTotalAmount(e.target.value)}
+              placeholder="e.g. 5000"
+              disabled={isLoading}
+            />
+          </div>
+
+          {planType === 'payment_plan' && (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="installmentAmount">Installment Amount ($)</Label>
+                  <Input
+                    id="installmentAmount"
+                    type="number"
+                    min="0"
+                    value={installmentAmount}
+                    onChange={(e) => setInstallmentAmount(e.target.value)}
+                    placeholder="e.g. 500"
+                    disabled={isLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Frequency</Label>
+                  <Select value={installmentFrequency} onValueChange={(v) => setInstallmentFrequency(v as any)} disabled={isLoading}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="biweekly">Bi-Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="paymentStartDate">First Payment Due Date</Label>
+                <Input
+                  id="paymentStartDate"
+                  type="date"
+                  value={paymentStartDate}
+                  onChange={(e) => setPaymentStartDate(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                📧 Automatic payment reminders will be sent 7 days, 3 days, and 24 hours before each due date. Access will be revoked after 2 consecutive missed payments.
+              </p>
+            </>
+          )}
         </div>
 
         <Button onClick={handleAddUser} disabled={isLoading} className="w-full">
