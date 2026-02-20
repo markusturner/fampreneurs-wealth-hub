@@ -286,7 +286,7 @@ export default function CourseDetail() {
                           className={cn(
                             'flex items-start gap-3 w-full px-4 py-2.5 text-left transition-colors group',
                             isSelected
-                              ? 'bg-primary/10 border-l-2 border-primary'
+                              ? 'bg-secondary/10 border-l-2 border-secondary'
                               : 'hover:bg-accent/40 border-l-2 border-transparent'
                           )}
                         >
@@ -296,13 +296,13 @@ export default function CourseDetail() {
                             lesson.completed
                               ? 'bg-accent text-accent-foreground'
                               : isSelected
-                                ? 'bg-primary text-primary-foreground'
+                                ? 'bg-secondary text-secondary-foreground'
                                 : 'bg-muted text-muted-foreground'
                           )}>
                             {lesson.completed ? <CheckCircle2 className="h-3 w-3" /> : <span>{globalIdx}</span>}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={cn('text-xs font-medium leading-snug line-clamp-2 text-foreground', isSelected && 'text-primary')}>
+                            <p className={cn('text-xs font-medium leading-snug line-clamp-2', isSelected ? 'text-secondary' : 'text-card-foreground')}>
                               {lesson.title}
                             </p>
                             {lesson.duration_seconds && (
