@@ -283,26 +283,20 @@ export default function CourseDetail() {
                         <button
                           key={lesson.id}
                           onClick={() => setSelectedLesson(lesson)}
+                          style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', width: '100%', padding: '10px 16px', textAlign: 'left' }}
                           className={cn(
-                            'flex items-start gap-3 w-full px-4 py-2.5 text-left transition-colors group',
+                            'transition-colors group',
                             isSelected
                               ? 'bg-secondary/10 border-l-2 border-secondary'
                               : 'hover:bg-accent/40 border-l-2 border-transparent'
                           )}
                         >
                           {/* Number badge or check */}
-                          <div className={cn(
-                            'flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0 mt-0.5',
-                            lesson.completed
-                              ? 'bg-accent text-accent-foreground'
-                              : isSelected
-                                ? 'bg-secondary text-secondary-foreground'
-                                : 'bg-muted text-muted-foreground'
-                          )}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '20px', height: '20px', borderRadius: '50%', fontSize: '10px', fontWeight: 'bold', flexShrink: 0, marginTop: '2px', backgroundColor: lesson.completed ? '#FFB500' : isSelected ? '#290a52' : '#e5e7eb', color: lesson.completed ? '#000' : isSelected ? '#fff' : '#6b7280' }}>
                             {lesson.completed ? <CheckCircle2 className="h-3 w-3" /> : <span>{globalIdx}</span>}
                           </div>
-                          <div className="flex-1 min-w-0 overflow-visible">
-                            <span className="text-xs font-medium leading-snug block" style={{ color: '#290a52', wordBreak: 'break-word' }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <span style={{ display: 'block', color: '#290a52', fontSize: '12px', fontWeight: 500, lineHeight: '1.4', wordBreak: 'break-word' }}>
                               {lesson.title}
                             </span>
                             {lesson.duration_seconds && (
