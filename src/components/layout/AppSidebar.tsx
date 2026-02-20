@@ -237,7 +237,7 @@ export function AppSidebar({ className }: { className?: string }) {
           <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">TruHeirs</p>
         </div>
         <div className="space-y-0.5">
-        {isFamilyOfficeOnly && !isAdmin && !isOwner ? (
+        {isFamilyOfficeOnly && !isAdmin && !isOwner && !hasTruHeirsAccess ? (
             <>
               <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} />
               <NavItem label="Family Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} />
