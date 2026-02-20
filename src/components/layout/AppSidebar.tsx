@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react"
-import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { useNavigate, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/AuthContext"
@@ -21,7 +20,6 @@ import {
   Lock,
   LogOut,
   Search,
-  Video,
   Mail,
   ClipboardList,
   ScrollText,
@@ -136,7 +134,6 @@ export function AppSidebar({ className }: { className?: string }) {
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const { subscriptionStatus } = useSubscription()
   const currentPath = location.pathname
-  const [tutorialVideoOpen, setTutorialVideoOpen] = useState(false)
   const [pricingOpen, setPricingOpen] = useState(false)
   const [pricingProgram, setPricingProgram] = useState<ProgramId | undefined>(undefined)
   const [searchOpen, setSearchOpen] = useState(false)
@@ -303,9 +300,6 @@ export function AppSidebar({ className }: { className?: string }) {
               </div>
             </PopoverContent>
           </Popover>
-          <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-sidebar-accent/60 rounded-lg" onClick={() => setTutorialVideoOpen(true)} title="Watch Tutorial">
-            <Video className="h-4 w-4" />
-          </Button>
           <NotificationBell />
         </div>
 
@@ -336,9 +330,6 @@ export function AppSidebar({ className }: { className?: string }) {
         </Button>
       </div>
 
-      {profile && tutorialVideoOpen && (
-        <TutorialVideoModal isOpen={tutorialVideoOpen} onClose={() => setTutorialVideoOpen(false)} onWatched={() => setTutorialVideoOpen(false)} onSkipped={() => setTutorialVideoOpen(false)} userId={profile.user_id} />
-      )}
       <StripePaymentModal open={pricingOpen} onOpenChange={setPricingOpen} programFilter={pricingProgram} title="Unlock TruHeirs" />
     </aside>
   )

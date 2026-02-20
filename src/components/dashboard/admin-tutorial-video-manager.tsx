@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Video, Upload, Link as LinkIcon } from "lucide-react";
 
 interface AdminVideoManagerProps {
-  settingKey: 'tutorial_video_url' | 'upgrade_video_url';
+  settingKey: 'tutorial_video_url' | 'upgrade_video_url' | 'workspace_video_url';
   title: string;
   description: string;
 }
@@ -26,7 +26,7 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
 
   const fetchCurrentVideo = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("app_settings")
         .select(settingKey)
         .single();
@@ -45,7 +45,7 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
 
   const handleUrlSave = async () => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("app_settings")
         .upsert({ 
           id: 1,
@@ -99,7 +99,7 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
         .from("tutorial-videos")
         .getPublicUrl(fileName);
 
-      await supabase
+      await (supabase as any)
         .from("app_settings")
         .upsert({ 
           id: 1,

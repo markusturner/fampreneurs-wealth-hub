@@ -4,7 +4,7 @@ import { AdminUserManagement } from '@/components/dashboard/admin-user-managemen
 import { AdminMassNotification } from '@/components/dashboard/admin-mass-notification'
 import { AdminAllUsersManagement } from '@/components/dashboard/admin-all-users-management'
 import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
-import { AdminTutorialVideoManager, AdminUpgradeVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
+import { AdminTutorialVideoManager, AdminUpgradeVideoManager, AdminVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
 import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-overview'
 import { AdminGrowthCharts } from '@/components/dashboard/admin-growth-charts'
 import { AdminActivityHeatmap } from '@/components/dashboard/admin-activity-heatmap'
@@ -105,6 +105,11 @@ export function AdminSettings() {
           <TabsContent value="tutorial" className="space-y-6">
             <AdminTutorialVideoManager />
             <AdminUpgradeVideoManager />
+            <AdminVideoManager
+              settingKey="workspace_video_url"
+              title="Workspace Tutorial Video"
+              description="Tutorial video shown on the AI Chat / Workspace page to help users learn the workspace tools"
+            />
           </TabsContent>
         )}
         {(isAdmin || isOwner) && (
