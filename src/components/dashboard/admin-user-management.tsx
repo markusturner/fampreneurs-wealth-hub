@@ -12,11 +12,11 @@ import { useAuth } from '@/contexts/AuthContext'
 
 type UserRole = 'trustee' | 'family_office_member' | 'family_member'
 
+// Only the four workspace community programs (matches the sidebar community list)
 const PROGRAM_OPTIONS = [
-  'The Family Business University',
+  'Family Business University',
   'The Family Vault',
   'The Family Business Accelerator',
-  'The Family Legacy: VIP Weekend',
   'The Family Fortune Mastermind',
 ]
 
