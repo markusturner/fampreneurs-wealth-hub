@@ -146,9 +146,8 @@ export default function WorkspaceCommunity() {
   const commentVideoRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const commentAudioRefs = useRef<Record<string, HTMLInputElement | null>>({})
 
-  // Locked community popup - always open when no access (re-opens each program change)
+  // Locked community popup - only opens when user clicks "Unlock Now"
   const [lockedPopupOpen, setLockedPopupOpen] = useState(false)
-  const [upgradeVideoUrl, setUpgradeVideoUrl] = useState<string | null>(null)
 
   // Check if user has access to this specific program community.
   // Admin-invited users only get access to the exact community matching their assigned program_name.
@@ -278,32 +277,10 @@ export default function WorkspaceCommunity() {
     fetchMemberCount()
   }, [program])
 
-  // Fetch upgrade video URL
+  // Reset popup closed state whenever program changes (so it doesn't stay open from a previous community)
   useEffect(() => {
-    const fetchUpgradeVideo = async () => {
-      try {
-        const { data } = await supabase
-          .from('app_settings')
-          .select('upgrade_video_url')
-          .single()
-        if (data?.upgrade_video_url) {
-          setUpgradeVideoUrl(data.upgrade_video_url)
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-    fetchUpgradeVideo()
-  }, [])
-
-  // Re-open the locked popup every time the user navigates to a locked community
-  useEffect(() => {
-    if (!subscriptionStatus.loading && program && !hasProgramAccess) {
-      setLockedPopupOpen(true)
-    } else {
-      setLockedPopupOpen(false)
-    }
-  }, [program, hasProgramAccess, subscriptionStatus.loading])
+    setLockedPopupOpen(false)
+  }, [program])
 
   const uploadFile = async (file: File, folder: string): Promise<string | null> => {
     const ext = file.name.split('.').pop()
