@@ -23,23 +23,26 @@ export function LockedPageOverlay({ locked, programFilter, title, children }: Lo
         {children}
       </div>
 
-      {/* Dark overlay + lock UI — absolute so it only covers the content area */}
-      <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 rounded-full bg-[#ffb500]/20 flex items-center justify-center mx-auto">
-            <Lock className="h-8 w-8 text-[#ffb500]" />
+      {/* Dark overlay — absolute so it only covers the content area, not the sidebar */}
+      <div className="absolute inset-0 bg-black/60 z-10">
+        {/* Lock UI — sticky so it stays centered in the viewport as you scroll */}
+        <div className="sticky top-0 h-screen flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-[#ffb500]/20 flex items-center justify-center mx-auto">
+              <Lock className="h-8 w-8 text-[#ffb500]" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-white text-xl font-bold">{title || 'This page is locked'}</h3>
+              <p className="text-white/70 text-sm">Upgrade to unlock full access</p>
+            </div>
+            <Button
+              className="rounded-xl px-8 h-11 font-semibold"
+              style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+              onClick={() => setPaymentOpen(true)}
+            >
+              Unlock Now
+            </Button>
           </div>
-          <div className="space-y-1">
-            <h3 className="text-white text-xl font-bold">{title || 'This page is locked'}</h3>
-            <p className="text-white/70 text-sm">Upgrade to unlock full access</p>
-          </div>
-          <Button
-            className="rounded-xl px-8 h-11 font-semibold"
-            style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-            onClick={() => setPaymentOpen(true)}
-          >
-            Unlock Now
-          </Button>
         </div>
       </div>
 
