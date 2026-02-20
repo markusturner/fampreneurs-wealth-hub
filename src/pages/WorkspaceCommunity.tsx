@@ -150,7 +150,16 @@ export default function WorkspaceCommunity() {
   const [upgradeVideoUrl, setUpgradeVideoUrl] = useState<string | null>(null)
 
   // Check if user has access to this specific program
-  const hasProgramAccess = isAdmin || isOwner || subscriptionStatus.programs.includes(program)
+  // Map profile program_name to program key (e.g. "The Family Vault" -> "tfv")
+  const PROGRAM_NAME_TO_KEY: Record<string, string> = {
+    'Family Business University': 'fbu',
+    'The Family Business University': 'fbu',
+    'The Family Vault': 'tfv',
+    'The Family Business Accelerator': 'tfba',
+    'The Family Fortune Mastermind': 'tffm',
+  }
+  const profileProgramKey = profile?.program_name ? PROGRAM_NAME_TO_KEY[profile.program_name] : null
+  const hasProgramAccess = isAdmin || isOwner || profile?.truheirs_access === true || subscriptionStatus.programs.includes(program) || profileProgramKey === program
 
   const fetchPosts = useCallback(async () => {
     try {
