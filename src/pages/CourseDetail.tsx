@@ -302,7 +302,7 @@ export default function CourseDetail() {
                             {lesson.completed ? <CheckCircle2 className="h-3 w-3" /> : <span>{globalIdx}</span>}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={cn('text-xs font-medium leading-snug line-clamp-2', isSelected && 'text-primary')}>
+                            <p className={cn('text-xs font-medium leading-snug line-clamp-2 text-foreground', isSelected && 'text-primary')}>
                               {lesson.title}
                             </p>
                             {lesson.duration_seconds && (
