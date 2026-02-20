@@ -1230,6 +1230,7 @@ export type Database = {
       courses: {
         Row: {
           category: string | null
+          community_id: string | null
           created_at: string
           created_by: string | null
           description: string | null
@@ -1237,6 +1238,7 @@ export type Database = {
           id: string
           image_url: string | null
           instructor: string | null
+          is_private: boolean
           level: string | null
           price: string | null
           status: string
@@ -1245,6 +1247,7 @@ export type Database = {
         }
         Insert: {
           category?: string | null
+          community_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -1252,6 +1255,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           instructor?: string | null
+          is_private?: boolean
           level?: string | null
           price?: string | null
           status?: string
@@ -1260,6 +1264,7 @@ export type Database = {
         }
         Update: {
           category?: string | null
+          community_id?: string | null
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -1267,13 +1272,22 @@ export type Database = {
           id?: string
           image_url?: string | null
           instructor?: string | null
+          is_private?: boolean
           level?: string | null
           price?: string | null
           status?: string
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "courses_community_id_fkey"
+            columns: ["community_id"]
+            isOneToOne: false
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       direct_messages: {
         Row: {
