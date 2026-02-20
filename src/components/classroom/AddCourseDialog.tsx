@@ -34,10 +34,18 @@ export function AddCourseDialog({ open, onOpenChange, onCreated }: Props) {
   const [loading, setLoading] = useState(false)
   const [communities, setCommunities] = useState<CommunityGroup[]>([])
 
+  // Only show the four workspace community programs (matches the sidebar)
+  const WORKSPACE_COMMUNITY_NAMES = [
+    'Family Business University',
+    'The Family Vault',
+    'The Family Business Accelerator',
+    'The Family Fortune Mastermind',
+  ]
+
   useEffect(() => {
     if (open) {
       supabase.from('community_groups').select('id, name').order('name').then(({ data }) => {
-        if (data) setCommunities(data)
+        if (data) setCommunities(data.filter(c => WORKSPACE_COMMUNITY_NAMES.includes(c.name)))
       })
     }
   }, [open])
