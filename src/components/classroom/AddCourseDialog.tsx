@@ -5,11 +5,11 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
-import { Upload, X, ImageIcon } from 'lucide-react'
+import { X, ImageIcon } from 'lucide-react'
 
 interface CommunityGroup {
   id: string
@@ -22,6 +22,14 @@ interface Props {
   onCreated: () => void
 }
 
+// Only the four workspace community programs (matches the sidebar)
+const WORKSPACE_COMMUNITY_NAMES = [
+  'Family Business University',
+  'The Family Vault',
+  'The Family Business Accelerator',
+  'The Family Fortune Mastermind',
+]
+
 export function AddCourseDialog({ open, onOpenChange, onCreated }: Props) {
   const { user } = useAuth()
   const { toast } = useToast()
@@ -29,18 +37,10 @@ export function AddCourseDialog({ open, onOpenChange, onCreated }: Props) {
   const [description, setDescription] = useState('')
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [communityId, setCommunityId] = useState<string>('none')
+  const [selectedCommunityIds, setSelectedCommunityIds] = useState<string[]>([])
   const [isPrivate, setIsPrivate] = useState(false)
   const [loading, setLoading] = useState(false)
   const [communities, setCommunities] = useState<CommunityGroup[]>([])
-
-  // Only show the four workspace community programs (matches the sidebar)
-  const WORKSPACE_COMMUNITY_NAMES = [
-    'Family Business University',
-    'The Family Vault',
-    'The Family Business Accelerator',
-    'The Family Fortune Mastermind',
-  ]
 
   useEffect(() => {
     if (open) {
@@ -49,6 +49,12 @@ export function AddCourseDialog({ open, onOpenChange, onCreated }: Props) {
       })
     }
   }, [open])
+
+  const toggleCommunity = (id: string) => {
+    setSelectedCommunityIds(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    )
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -67,7 +73,7 @@ export function AddCourseDialog({ open, onOpenChange, onCreated }: Props) {
     setDescription('')
     setImageFile(null)
     setImagePreview(null)
-    setCommunityId('none')
+    setSelectedCommunityIds([])
     setIsPrivate(false)
   }
 
@@ -77,7 +83,6 @@ export function AddCourseDialog({ open, onOpenChange, onCreated }: Props) {
 
     let imageUrl: string | null = null
 
-    // Upload image if provided
     if (imageFile) {
       const filePath = `course-covers/${Date.now()}_${imageFile.name}`
       const { error: uploadError } = await supabase.storage
@@ -100,7 +105,7 @@ export function AddCourseDialog({ open, onOpenChange, onCreated }: Props) {
       image_url: imageUrl,
       status: 'published',
       created_by: user?.id,
-      community_id: communityId === 'none' ? null : communityId,
+      community_ids: selectedCommunityIds,
       is_private: isPrivate,
     } as any)
 
@@ -156,20 +161,29 @@ export function AddCourseDialog({ open, onOpenChange, onCreated }: Props) {
             )}
           </div>
 
-          {/* Community Assignment */}
+          {/* Community Assignment - multi-select checkboxes */}
           <div className="space-y-2">
-            <Label>Assign to Community (optional)</Label>
-            <Select value={communityId} onValueChange={setCommunityId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a community..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No community</SelectItem>
-                {communities.map(c => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Label>Assign to Communities</Label>
+            <p className="text-xs text-muted-foreground">Only selected communities will see this course. Leave all unchecked to show to everyone.</p>
+            <div className="rounded-md border border-border divide-y divide-border">
+              {communities.map(c => (
+                <label
+                  key={c.id}
+                  className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/40 transition-colors"
+                >
+                  <Checkbox
+                    checked={selectedCommunityIds.includes(c.id)}
+                    onCheckedChange={() => toggleCommunity(c.id)}
+                  />
+                  <span className="text-sm">{c.name}</span>
+                </label>
+              ))}
+            </div>
+            {selectedCommunityIds.length > 0 && (
+              <p className="text-xs text-primary font-medium">
+                {selectedCommunityIds.length} {selectedCommunityIds.length === 1 ? 'community' : 'communities'} selected
+              </p>
+            )}
           </div>
 
           {/* Privacy Toggle */}
