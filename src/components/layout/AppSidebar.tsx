@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useUserRole } from "@/hooks/useUserRole"
 import { useOwnerRole } from "@/hooks/useOwnerRole"
 import { useSubscription } from "@/hooks/useSubscription"
-import { PricingPopup } from "@/components/dashboard/PricingPopup"
+import { StripePaymentModal } from "@/components/dashboard/StripePaymentModal"
 import {
   Bot,
   LayoutDashboard,
@@ -56,7 +56,12 @@ function NavItem({ label, icon: Icon, href, active, locked, onClick, children, d
   const hasChildren = !!children
 
   const handleClick = () => {
-    if (locked) { onClick?.(); return }
+    if (locked) {
+      // Navigate to the page (it will show blurred with overlay) AND trigger the pricing popup
+      if (href) navigate(href)
+      onClick?.()
+      return
+    }
     if (hasChildren) { setOpen(!open) }
     else if (href) { navigate(href) }
     else if (onClick) { onClick() }
@@ -70,7 +75,7 @@ function NavItem({ label, icon: Icon, href, active, locked, onClick, children, d
           "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200",
           "hover:bg-sidebar-accent/60 group",
           active && !hasChildren && "bg-accent/20 text-accent font-medium",
-          locked && "opacity-40 cursor-not-allowed",
+          locked && "opacity-60",
           extraClassName
         )}
       >
@@ -335,7 +340,7 @@ export function AppSidebar({ className }: { className?: string }) {
       {profile && tutorialVideoOpen && (
         <TutorialVideoModal isOpen={tutorialVideoOpen} onClose={() => setTutorialVideoOpen(false)} onWatched={() => setTutorialVideoOpen(false)} onSkipped={() => setTutorialVideoOpen(false)} userId={profile.user_id} />
       )}
-      <PricingPopup open={pricingOpen} onOpenChange={setPricingOpen} programFilter={pricingProgram} />
+      <StripePaymentModal open={pricingOpen} onOpenChange={setPricingOpen} programFilter={pricingProgram} title="Unlock TruHeirs" />
     </aside>
   )
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { StripePaymentModal } from '@/components/dashboard/StripePaymentModal'
 import { CommunityMembersList } from '@/components/community/CommunityMembersList'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -629,64 +630,82 @@ export default function WorkspaceCommunity() {
     )
   }
 
-  // If community is locked, show ONLY the popup — no content preview
+  // If community is locked, render blurred content with overlay popup
   if (!hasProgramAccess && !subscriptionStatus.loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Dialog open={lockedPopupOpen} onOpenChange={setLockedPopupOpen}>
-          <DialogContent className="max-w-lg" onInteractOutside={(e) => e.preventDefault()}>
-            <DialogHeader>
-              <DialogTitle className="text-center text-xl">
-                <Lock className="h-5 w-5 inline mr-2" />
-                Unlock {programName}
-              </DialogTitle>
-              <DialogDescription className="text-center">
-                Upgrade to access this community and all its content.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              {upgradeVideoUrl && (
-                <div className="aspect-video w-full rounded-lg overflow-hidden">
-                  {(upgradeVideoUrl.includes('youtube') || upgradeVideoUrl.includes('loom') || upgradeVideoUrl.includes('vimeo')) ? (
-                    <iframe
-                      src={getEmbedUrl(upgradeVideoUrl)}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  ) : (
-                    <video src={upgradeVideoUrl} controls className="w-full h-full" />
-                  )}
+      <div className="relative min-h-screen bg-background overflow-hidden">
+        {/* Blurred background content */}
+        <div className="blur-md pointer-events-none select-none opacity-60">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+            <div className="flex flex-col lg:flex-row gap-6">
+              <div className="flex-1 min-w-0 space-y-4">
+                <h2 className="text-lg font-bold">{programName}</h2>
+                {/* Fake post composer */}
+                <div className="rounded-xl border border-border p-4 bg-card space-y-3">
+                  <div className="flex gap-3 items-center">
+                    <div className="w-10 h-10 rounded-full bg-muted" />
+                    <div className="flex-1 h-8 rounded-lg bg-muted" />
+                  </div>
                 </div>
-              )}
-
-              <div className="space-y-3">
-                <Button 
-                  className="w-full gap-2" 
-                  size="lg"
-                  onClick={handleAutoUpgrade}
-                >
-                  <CreditCard className="h-4 w-4" />
-                  Auto Upgrade Now
-                </Button>
-                <p className="text-xs text-center text-muted-foreground">
-                  ⚠️ Clicking "Auto Upgrade Now" will charge the card on file for your account.
-                </p>
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full gap-2" 
-                  size="lg"
-                  onClick={() => window.open('https://calendly.com/turnermarkus50/the-family-business-accelerator-clone', '_blank')}
-                >
-                  <Calendar className="h-4 w-4" />
-                  Book a Call to Upgrade
-                </Button>
+                {/* Fake posts */}
+                {[1,2,3].map(i => (
+                  <div key={i} className="rounded-xl border border-border p-4 bg-card space-y-3">
+                    <div className="flex gap-3 items-center">
+                      <div className="w-10 h-10 rounded-full bg-muted" />
+                      <div className="space-y-1.5 flex-1">
+                        <div className="h-3.5 w-32 bg-muted rounded" />
+                        <div className="h-2.5 w-20 bg-muted/60 rounded" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-3 bg-muted rounded w-full" />
+                      <div className="h-3 bg-muted rounded w-4/5" />
+                      <div className="h-3 bg-muted rounded w-3/5" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="w-full lg:w-72 space-y-4">
+                <div className="rounded-xl border border-border p-4 bg-card space-y-3">
+                  <div className="h-16 w-full rounded-lg bg-muted" />
+                  <div className="h-4 w-36 bg-muted rounded mx-auto" />
+                  <div className="h-3 w-48 bg-muted/60 rounded mx-auto" />
+                </div>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </div>
+
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-black/50" />
+
+        {/* Centered lock icon + trigger popup */}
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-[#ffb500]/20 flex items-center justify-center mx-auto">
+              <Lock className="h-8 w-8 text-[#ffb500]" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-white text-xl font-bold">This community is locked</h3>
+              <p className="text-white/70 text-sm">Upgrade to access {programName}</p>
+            </div>
+            <Button
+              className="rounded-xl px-8 h-11 font-semibold"
+              style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+              onClick={() => setLockedPopupOpen(true)}
+            >
+              Unlock Now
+            </Button>
+          </div>
+        </div>
+
+        {/* Stripe-style payment modal */}
+        <StripePaymentModal
+          open={lockedPopupOpen}
+          onOpenChange={setLockedPopupOpen}
+          programFilter={program as any}
+          title={`Unlock ${programName}`}
+        />
       </div>
     )
   }
