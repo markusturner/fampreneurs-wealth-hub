@@ -16,10 +16,11 @@ interface Course {
   description: string | null
   image_url: string | null
   progress: number
+  community_ids: string[]
 }
 
 export default function Classroom() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const navigate = useNavigate()
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
@@ -46,7 +47,17 @@ export default function Classroom() {
         enrollments = enrollData || []
       }
 
-      setCourses((data || []).map(course => {
+      // Resolve user's community group IDs from their program_name
+      let userCommunityIds: string[] = []
+      if (!isAdminOrOwner && profile?.program_name) {
+        const { data: groupData } = await supabase
+          .from('community_groups')
+          .select('id')
+          .eq('name', profile.program_name)
+        userCommunityIds = (groupData || []).map((g: any) => g.id)
+      }
+
+      const allCourses = (data || []).map((course: any) => {
         const enrollment = enrollments.find(e => e.course_id === course.id)
         return {
           id: course.id,
@@ -54,8 +65,21 @@ export default function Classroom() {
           description: course.description,
           image_url: course.image_url,
           progress: enrollment?.progress || 0,
+          community_ids: course.community_ids || [],
         }
-      }))
+      })
+
+      // Admins/owners see all courses. Others only see:
+      // - courses with no community restriction (community_ids is empty)
+      // - courses that include their community
+      const visibleCourses = isAdminOrOwner
+        ? allCourses
+        : allCourses.filter(course => {
+            if (!course.community_ids || course.community_ids.length === 0) return true
+            return userCommunityIds.some(id => course.community_ids.includes(id))
+          })
+
+      setCourses(visibleCourses)
     } catch (error) {
       console.error('Error fetching courses:', error)
     } finally {
@@ -63,7 +87,7 @@ export default function Classroom() {
     }
   }
 
-  useEffect(() => { fetchCourses() }, [])
+  useEffect(() => { fetchCourses() }, [isAdminOrOwner, profile?.program_name])
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl space-y-4 sm:space-y-6">
