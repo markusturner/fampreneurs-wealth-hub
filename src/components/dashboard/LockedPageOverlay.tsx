@@ -17,17 +17,14 @@ export function LockedPageOverlay({ locked, programFilter, title, children }: Lo
   if (!locked) return <>{children}</>
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative h-full min-h-[calc(100vh-4rem)] overflow-hidden">
       {/* Blurred page content */}
       <div className="blur-md pointer-events-none select-none opacity-50">
         {children}
       </div>
 
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/50" />
-
-      {/* Center lock UI */}
-      <div className="absolute inset-0 flex items-center justify-center z-10">
+      {/* Dark overlay + lock UI — fixed so it's always centered in viewport */}
+      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-40" style={{ top: 0, left: 0 }}>
         <div className="text-center space-y-4">
           <div className="w-16 h-16 rounded-full bg-[#ffb500]/20 flex items-center justify-center mx-auto">
             <Lock className="h-8 w-8 text-[#ffb500]" />
