@@ -106,7 +106,7 @@ export default function WorkspaceCommunity() {
   const { isAdmin } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const [searchParams] = useSearchParams()
-  const program = searchParams.get('program') || 'tfba'
+  const program = searchParams.get('program') || ''
   const programName = PROGRAM_NAMES[program] || 'Community'
   const programDesc = PROGRAM_DESCRIPTIONS[program] || ''
   const [newPost, setNewPost] = useState('')
@@ -145,7 +145,7 @@ export default function WorkspaceCommunity() {
   const commentVideoRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const commentAudioRefs = useRef<Record<string, HTMLInputElement | null>>({})
 
-  // Locked community popup
+  // Locked community popup - always open when no access (re-opens each program change)
   const [lockedPopupOpen, setLockedPopupOpen] = useState(false)
   const [upgradeVideoUrl, setUpgradeVideoUrl] = useState<string | null>(null)
 
@@ -159,7 +159,8 @@ export default function WorkspaceCommunity() {
     'The Family Fortune Mastermind': 'tffm',
   }
   const profileProgramKey = profile?.program_name ? PROGRAM_NAME_TO_KEY[profile.program_name] : null
-  const hasProgramAccess = isAdmin || isOwner || subscriptionStatus.programs.includes(program) || profileProgramKey === program
+  // No program selected yet = loading state, don't block
+  const hasProgramAccess = !program || isAdmin || isOwner || subscriptionStatus.programs.includes(program) || profileProgramKey === program
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -294,12 +295,14 @@ export default function WorkspaceCommunity() {
     fetchUpgradeVideo()
   }, [])
 
-  // Show locked popup if user doesn't have access
+  // Re-open the locked popup every time the user navigates to a locked community
   useEffect(() => {
-    if (!subscriptionStatus.loading && !hasProgramAccess) {
+    if (!subscriptionStatus.loading && program && !hasProgramAccess) {
       setLockedPopupOpen(true)
+    } else {
+      setLockedPopupOpen(false)
     }
-  }, [hasProgramAccess, subscriptionStatus.loading])
+  }, [program, hasProgramAccess, subscriptionStatus.loading])
 
   const uploadFile = async (file: File, folder: string): Promise<string | null> => {
     const ext = file.name.split('.').pop()
@@ -614,27 +617,24 @@ export default function WorkspaceCommunity() {
     setMobilePostOpen(false)
   }
 
-  // If community is locked, show locked overlay
+  // If no program selected, show a prompt to select one
+  if (!program) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <MessageCircle className="h-12 w-12 text-muted-foreground/30 mx-auto" />
+          <p className="text-muted-foreground">Select a community from the sidebar to get started.</p>
+        </div>
+      </div>
+    )
+  }
+
+  // If community is locked, show ONLY the popup — no content preview
   if (!hasProgramAccess && !subscriptionStatus.loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
-          <div className="flex flex-col items-center justify-center py-20 text-center space-y-6">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-              <Lock className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold mb-2">{programName}</h2>
-              <p className="text-muted-foreground max-w-md">
-                This community is locked. Upgrade your subscription to access this program's community.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Locked Community Upgrade Dialog */}
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Dialog open={lockedPopupOpen} onOpenChange={setLockedPopupOpen}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg" onInteractOutside={(e) => e.preventDefault()}>
             <DialogHeader>
               <DialogTitle className="text-center text-xl">
                 <Lock className="h-5 w-5 inline mr-2" />
@@ -646,7 +646,6 @@ export default function WorkspaceCommunity() {
             </DialogHeader>
             
             <div className="space-y-4">
-              {/* Video */}
               {upgradeVideoUrl && (
                 <div className="aspect-video w-full rounded-lg overflow-hidden">
                   {(upgradeVideoUrl.includes('youtube') || upgradeVideoUrl.includes('loom') || upgradeVideoUrl.includes('vimeo')) ? (
@@ -688,8 +687,6 @@ export default function WorkspaceCommunity() {
             </div>
           </DialogContent>
         </Dialog>
-
-        <div className="pb-20 md:pb-0" />
       </div>
     )
   }
