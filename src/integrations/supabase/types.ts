@@ -159,18 +159,21 @@ export type Database = {
           tutorial_video_url: string | null
           updated_at: string | null
           upgrade_video_url: string | null
+          workspace_video_url: string | null
         }
         Insert: {
           id?: number
           tutorial_video_url?: string | null
           updated_at?: string | null
           upgrade_video_url?: string | null
+          workspace_video_url?: string | null
         }
         Update: {
           id?: number
           tutorial_video_url?: string | null
           updated_at?: string | null
           upgrade_video_url?: string | null
+          workspace_video_url?: string | null
         }
         Relationships: []
       }

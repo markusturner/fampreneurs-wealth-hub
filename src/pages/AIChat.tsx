@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Send, Bot, User, Loader2, Shield, Building2, FileText, Paperclip, Settings2, X, ChevronDown, Upload, Mic, Square, Plus, FolderOpen, MessageSquare, MoreHorizontal, Trash2, FolderPlus, ArrowLeft, PanelLeftOpen } from 'lucide-react'
+import { Send, Bot, User, Loader2, Shield, Building2, FileText, Paperclip, Settings2, X, ChevronDown, Upload, Mic, Square, Plus, FolderOpen, MessageSquare, MoreHorizontal, Trash2, FolderPlus, ArrowLeft, PanelLeftOpen, Video } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
@@ -131,6 +131,8 @@ export default function AIChat() {
   const { isAdminOrOwner } = useIsAdminOrOwner()
   const { profile, user } = useAuth()
   const displayName = profile?.display_name || profile?.first_name || ''
+  const [workspaceVideoOpen, setWorkspaceVideoOpen] = useState(false)
+  const [workspaceVideoUrl, setWorkspaceVideoUrl] = useState('')
 
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -147,6 +149,13 @@ export default function AIChat() {
       loadProjects()
     }
   }, [user?.id])
+
+  // Load workspace video URL
+  useEffect(() => {
+    supabase.from('app_settings').select('workspace_video_url').single().then(({ data }) => {
+      if ((data as any)?.workspace_video_url) setWorkspaceVideoUrl((data as any).workspace_video_url)
+    })
+  }, [])
 
   const loadConversations = async () => {
     const { data } = await supabase
@@ -584,6 +593,9 @@ export default function AIChat() {
                 <Mic className="h-3 w-3" /> Recording...
               </Badge>
             )}
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setWorkspaceVideoOpen(true)} title="Workspace Tutorial Video">
+              <Video className="h-4 w-4" />
+            </Button>
             {isAdminOrOwner && (
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSettingsOpen(true)}>
                 <Settings2 className="h-4 w-4" />
@@ -753,6 +765,30 @@ export default function AIChat() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Workspace Tutorial Video Dialog */}
+      <Dialog open={workspaceVideoOpen} onOpenChange={setWorkspaceVideoOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Workspace Tutorial</DialogTitle>
+            <DialogDescription>Learn how to use the AI Chat and Workspace tools.</DialogDescription>
+          </DialogHeader>
+          {workspaceVideoUrl ? (
+            <div className="aspect-video w-full">
+              <iframe
+                src={workspaceVideoUrl}
+                className="w-full h-full rounded-lg"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className="aspect-video w-full bg-muted rounded-lg flex items-center justify-center">
+              <p className="text-muted-foreground text-sm">No workspace tutorial video has been set yet. Admins can add one in Admin Settings → Tutorial Video.</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

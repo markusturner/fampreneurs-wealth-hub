@@ -1,10 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { OverviewSection } from "@/components/dashboard/overview-section"
-import { Loader2 } from 'lucide-react'
-import { useState } from "react"
+import { Loader2, Video } from 'lucide-react'
 import { useUserRole } from "@/hooks/useUserRole"
 import { useTutorialVideo } from "@/hooks/useTutorialVideo"
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
@@ -13,6 +12,7 @@ import { DashboardRecentActivity } from "@/components/dashboard/dashboard-recent
 import { useSubscription } from "@/hooks/useSubscription"
 import { useIsAdminOrOwner } from "@/hooks/useIsAdminOrOwner"
 import { useOwnerRole } from "@/hooks/useOwnerRole"
+import { Button } from "@/components/ui/button"
 
 const Dashboard = () => {
   const { user, profile, loading } = useAuth()
@@ -22,6 +22,7 @@ const Dashboard = () => {
   const { subscriptionStatus } = useSubscription()
   const navigate = useNavigate()
   const { shouldShowTutorial, isLoading: tutorialLoading, markAsWatched } = useTutorialVideo(user?.id || null)
+  const [manualTutorialOpen, setManualTutorialOpen] = useState(false)
 
   // Only show tutorial if user actually has TruHeirs access
   const hasTruHeirsAccess = isAdminOrOwner || isOwner || profile?.truheirs_access === true || subscriptionStatus.subscribed
@@ -67,21 +68,32 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-hidden">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-          Your financial overview, key metrics, and recent activity at a glance.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+            Your financial overview, key metrics, and recent activity at a glance.
+          </p>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 shrink-0 mt-1"
+          onClick={() => setManualTutorialOpen(true)}
+          title="Watch Tutorial Video"
+        >
+          <Video className="h-5 w-5" />
+        </Button>
       </div>
       <DashboardStats />
       <OverviewSection />
       <DashboardRecentActivity />
-      {user && showTutorial && (
+      {user && (showTutorial || manualTutorialOpen) && (
         <TutorialVideoModal
-          isOpen={showTutorial}
-          onClose={() => markAsWatched()}
-          onWatched={markAsWatched}
-          onSkipped={handleTutorialSkipped}
+          isOpen={showTutorial || manualTutorialOpen}
+          onClose={() => { markAsWatched(); setManualTutorialOpen(false); }}
+          onWatched={() => { markAsWatched(); setManualTutorialOpen(false); }}
+          onSkipped={() => { handleTutorialSkipped(); setManualTutorialOpen(false); }}
           userId={user.id}
         />
       )}
