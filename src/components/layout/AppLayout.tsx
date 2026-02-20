@@ -15,7 +15,16 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 
 // Routes that require TruHeirs subscription (not accessible without it)
-const TRUHEIRS_ROUTES = ['/dashboard', '/digital-family-office', '/documents', '/calendar', '/members']
+const TRUHEIRS_ROUTES = [
+  '/dashboard',
+  '/digital-family-office',
+  '/documents',
+  '/calendar',
+  '/members',
+  '/family-governance',
+  '/family-constitution/setup',
+  '/investments',
+]
 
 
 interface AppLayoutProps {
