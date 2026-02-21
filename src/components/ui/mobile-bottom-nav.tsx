@@ -43,7 +43,7 @@ export function MobileBottomNav() {
   const navItems = [
     { name: 'Messages', href: '/messenger', icon: Mail },
     { name: 'Calendar', href: '/workspace-calendar', icon: Calendar },
-    { name: 'Community', href: communityHref, icon: MessageSquare, center: true },
+    { name: 'Community', href: communityHref, icon: MessageSquare },
     { name: 'Classroom', href: classroomHref, icon: BookOpen },
   ]
 
@@ -70,30 +70,11 @@ export function MobileBottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-      <nav className="bg-card/95 backdrop-blur-xl border-t border-border/20 px-4 pb-[env(safe-area-inset-bottom)]">
-        <div className="flex items-center justify-around h-14">
+      <nav className="bg-card/95 backdrop-blur-xl border-t border-border/20 px-3 pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-around h-16">
           {navItems.map((item) => {
             const active = isActive(item.href)
             const Icon = item.icon
-
-            if (item.center) {
-              return (
-                <NavLink
-                  key={item.name}
-                  to={item.href}
-                  className="flex items-center justify-center"
-                >
-                  <div className={cn(
-                    "w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200",
-                    active
-                      ? "bg-accent text-accent-foreground shadow-md shadow-accent/25"
-                      : "bg-primary/10 text-primary hover:bg-primary/20 active:scale-95"
-                  )}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                </NavLink>
-              )
-            }
 
             return (
               <NavLink
@@ -102,13 +83,17 @@ export function MobileBottomNav() {
                 className="flex items-center justify-center"
               >
                 <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200",
+                  "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
                   active
-                    ? "text-accent"
-                    : "text-muted-foreground hover:text-foreground active:scale-95"
+                    ? "bg-[#290a52] text-white shadow-lg shadow-[#290a52]/25"
+                    : "text-[#290a52] hover:bg-[#290a52]/10 active:scale-95"
                 )}>
-                  <Icon className="h-5 w-5" />
-                  {active && <div className="absolute bottom-1.5 w-1 h-1 rounded-full bg-accent" />}
+                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  {active && (
+                    <span className="text-xs font-semibold whitespace-nowrap animate-in slide-in-from-left-2 fade-in duration-300">
+                      {item.name}
+                    </span>
+                  )}
                 </div>
               </NavLink>
             )
@@ -119,13 +104,17 @@ export function MobileBottomNav() {
             <SheetTrigger asChild>
               <button className="flex items-center justify-center">
                 <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200",
+                  "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
                   isMoreActive
-                    ? "text-accent"
-                    : "text-muted-foreground hover:text-foreground active:scale-95"
+                    ? "bg-[#290a52] text-white shadow-lg shadow-[#290a52]/25"
+                    : "text-[#290a52] hover:bg-[#290a52]/10 active:scale-95"
                 )}>
-                  <LayoutGrid className="h-5 w-5" />
-                  {isMoreActive && <div className="absolute bottom-1.5 w-1 h-1 rounded-full bg-accent" />}
+                  <LayoutGrid className="h-5 w-5 flex-shrink-0" />
+                  {isMoreActive && (
+                    <span className="text-xs font-semibold whitespace-nowrap animate-in slide-in-from-left-2 fade-in duration-300">
+                      More
+                    </span>
+                  )}
                 </div>
               </button>
             </SheetTrigger>

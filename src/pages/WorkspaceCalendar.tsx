@@ -111,6 +111,7 @@ export default function WorkspaceCalendar() {
   const [formRemind, setFormRemind] = useState(false)
   const [datePickerOpen, setDatePickerOpen] = useState(false)
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false)
+  const [formCalendarType, setFormCalendarType] = useState('workspace')
 
   useEffect(() => { fetchMeetings() }, [])
 
@@ -146,6 +147,7 @@ export default function WorkspaceCalendar() {
     setFormEndDate(new Date())
     setFormEndAfter('10')
     setFormRemind(false)
+    setFormCalendarType('workspace')
     setIsEditMode(false)
     setEditingMeetingId(null)
   }
@@ -626,6 +628,26 @@ export default function WorkspaceCalendar() {
               <Label htmlFor="remind" className="text-sm cursor-pointer">Remind members by email 1 day before</Label>
             </div>
 
+            {/* Calendar Association */}
+            <div>
+              <Label className="text-sm font-medium">Calendar visibility</Label>
+              <p className="text-xs text-muted-foreground mb-2">Who can see this event?</p>
+              <RadioGroup value={formCalendarType} onValueChange={setFormCalendarType} className="space-y-2">
+                <div className="flex items-center gap-2 p-2 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="workspace" id="cal-workspace" />
+                  <Label htmlFor="cal-workspace" className="text-sm cursor-pointer flex-1">Workspace Calendar <span className="text-xs text-muted-foreground">— All workspace members</span></Label>
+                </div>
+                <div className="flex items-center gap-2 p-2 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="family" id="cal-family" />
+                  <Label htmlFor="cal-family" className="text-sm cursor-pointer flex-1">Family Calendar <span className="text-xs text-muted-foreground">— Family members only</span></Label>
+                </div>
+                <div className="flex items-center gap-2 p-2 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                  <RadioGroupItem value="both" id="cal-both" />
+                  <Label htmlFor="cal-both" className="text-sm cursor-pointer flex-1">Both Calendars <span className="text-xs text-muted-foreground">— Visible everywhere</span></Label>
+                </div>
+              </RadioGroup>
+            </div>
+
             {/* Actions */}
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="ghost" onClick={() => { resetForm(); setIsCreateOpen(false) }}>Cancel</Button>
@@ -683,8 +705,14 @@ export default function WorkspaceCalendar() {
                     <div>
                       <p className="text-sm font-medium">{getLocationLabel(selectedMeeting.location)}</p>
                       {selectedMeeting.location_link && (
-                        <a href={selectedMeeting.location_link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1">
-                          <ExternalLink className="h-3 w-3" />
+                        <a
+                          href={selectedMeeting.location_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-medium break-all flex items-center gap-1 mt-1 px-2 py-1 rounded-md"
+                          style={{ color: '#2EB2FF', backgroundColor: 'rgba(46, 178, 255, 0.1)' }}
+                        >
+                          <ExternalLink className="h-3 w-3 flex-shrink-0" />
                           {selectedMeeting.location_link}
                         </a>
                       )}
