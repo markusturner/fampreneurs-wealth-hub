@@ -485,12 +485,13 @@ export default function WorkspaceCalendar() {
                     {format(formDate, 'MMM d, yyyy')}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 z-[70]" align="start">
                   <CalendarPicker
                     mode="single"
                     selected={formDate}
                     onSelect={d => { if (d) { setFormDate(d); setDatePickerOpen(false) } }}
                     className="p-3 pointer-events-auto"
+                    initialFocus
                   />
                 </PopoverContent>
               </Popover>
@@ -569,12 +570,13 @@ export default function WorkspaceCalendar() {
                             {format(formEndDate, 'MMM d, yyyy')}
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0 z-[70]" align="start">
                           <CalendarPicker
                             mode="single"
                             selected={formEndDate}
                             onSelect={d => { if (d) { setFormEndDate(d); setEndDatePickerOpen(false) } }}
                             className="p-3 pointer-events-auto"
+                            initialFocus
                           />
                         </PopoverContent>
                       </Popover>
