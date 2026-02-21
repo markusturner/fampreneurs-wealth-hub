@@ -37,9 +37,9 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
       toast({ title: 'Invalid file', description: 'Please select a video file', variant: 'destructive' })
       return
     }
-    const maxSize = 500 * 1024 * 1024 // 500MB
+    const maxSize = 50 * 1024 * 1024 // 50MB (Supabase free tier limit)
     if (file.size > maxSize) {
-      toast({ title: 'File too large', description: 'Video must be under 500MB', variant: 'destructive' })
+      toast({ title: 'File too large', description: `Video must be under 50MB. Your file is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Try compressing it first.`, variant: 'destructive' })
       return
     }
     setUploading(true)
