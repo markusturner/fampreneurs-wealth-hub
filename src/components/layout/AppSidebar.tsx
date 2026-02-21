@@ -24,7 +24,6 @@ import {
   ClipboardList,
   ScrollText,
   FileCheck,
-  Video,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -229,7 +228,7 @@ export function AppSidebar({ className }: { className?: string }) {
               <NavItem label="Classroom" icon={BookOpen} href="/classroom" active={isActive("/classroom")} />
               <NavItem label="Members" icon={Users} href="/workspace-members" active={isActive("/workspace-members")} />
               <NavItem label="Calendar" icon={Calendar} href="/workspace-calendar" active={isActive("/workspace-calendar")} />
-              <NavItem label="Video Calls" icon={Video} href="/video-call" active={isActive("/video-call")} />
+              
               <NavItem label="Messenger" icon={Mail} href="/messenger" active={isActive("/messenger")} />
             </div>
           </>
