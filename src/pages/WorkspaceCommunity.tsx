@@ -707,10 +707,6 @@ export default function WorkspaceCommunity() {
                     </AvatarFallback>
                   </Avatar>
                   <span className="flex-1 text-sm text-muted-foreground">Write something...</span>
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <Camera className="h-4 w-4" />
-                    <span className="text-xs">Go Live</span>
-                  </div>
                 </CardContent>
               </Card>
             </div>
