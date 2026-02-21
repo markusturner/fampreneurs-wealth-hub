@@ -112,6 +112,7 @@ export default function WorkspaceCalendar() {
   const [datePickerOpen, setDatePickerOpen] = useState(false)
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false)
   const [formCommunities, setFormCommunities] = useState<string[]>([])
+  const [formCommunityFrequency, setFormCommunityFrequency] = useState<Record<string, string>>({})
 
   useEffect(() => { fetchMeetings() }, [])
 
@@ -148,6 +149,7 @@ export default function WorkspaceCalendar() {
     setFormEndAfter('10')
     setFormRemind(false)
     setFormCommunities([])
+    setFormCommunityFrequency({})
     setIsEditMode(false)
     setEditingMeetingId(null)
   }
@@ -639,21 +641,48 @@ export default function WorkspaceCalendar() {
                   { id: 'tfba', label: 'The Family Business Accelerator', short: 'TFBA' },
                   { id: 'tffm', label: 'The Family Fortune Mastermind', short: 'TFFM' },
                 ].map(community => (
-                  <div key={community.id} className="flex items-center gap-2 p-2 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-                    <Checkbox
-                      id={`community-${community.id}`}
-                      checked={formCommunities.includes(community.id)}
-                      onCheckedChange={(checked) => {
-                        setFormCommunities(prev =>
-                          checked
-                            ? [...prev, community.id]
-                            : prev.filter(c => c !== community.id)
-                        )
-                      }}
-                    />
-                    <Label htmlFor={`community-${community.id}`} className="text-sm cursor-pointer flex-1">
-                      {community.label} <span className="text-xs text-muted-foreground">({community.short})</span>
-                    </Label>
+                  <div key={community.id} className="rounded-lg border border-border hover:bg-muted/50 transition-colors overflow-hidden">
+                    <div className="flex items-center gap-2 p-2">
+                      <Checkbox
+                        id={`community-${community.id}`}
+                        checked={formCommunities.includes(community.id)}
+                        onCheckedChange={(checked) => {
+                          setFormCommunities(prev =>
+                            checked
+                              ? [...prev, community.id]
+                              : prev.filter(c => c !== community.id)
+                          )
+                          if (!checked) {
+                            setFormCommunityFrequency(prev => {
+                              const next = { ...prev }
+                              delete next[community.id]
+                              return next
+                            })
+                          }
+                        }}
+                      />
+                      <Label htmlFor={`community-${community.id}`} className="text-sm cursor-pointer flex-1">
+                        {community.label} <span className="text-xs text-muted-foreground">({community.short})</span>
+                      </Label>
+                    </div>
+                    {formCommunities.includes(community.id) && (
+                      <div className="px-8 pb-2">
+                        <Select
+                          value={formCommunityFrequency[community.id] || ''}
+                          onValueChange={(val) => setFormCommunityFrequency(prev => ({ ...prev, [community.id]: val }))}
+                        >
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue placeholder="Frequency (optional)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="weekly">Weekly</SelectItem>
+                            <SelectItem value="bi-weekly">Bi-weekly</SelectItem>
+                            <SelectItem value="monthly">Once per month</SelectItem>
+                            <SelectItem value="quarterly">Quarterly</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
