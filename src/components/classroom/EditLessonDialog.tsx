@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { Trash2 } from 'lucide-react'
@@ -12,6 +13,18 @@ import {
 } from '@/components/ui/alert-dialog'
 import { LessonRichTextEditor } from './LessonRichTextEditor'
 
+interface CommunityGroup {
+  id: string
+  name: string
+}
+
+const WORKSPACE_COMMUNITY_NAMES = [
+  'Family Business University',
+  'The Family Vault',
+  'The Family Business Accelerator',
+  'The Family Fortune Mastermind',
+]
+
 interface Lesson {
   id: string
   title: string
@@ -20,6 +33,7 @@ interface Lesson {
   video_url: string | null
   video_type: string
   duration_seconds: number | null
+  community_ids: string[]
 }
 
 interface Props {
@@ -36,12 +50,29 @@ export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Prop
   const [videoUrl, setVideoUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [communities, setCommunities] = useState<CommunityGroup[]>([])
+  const [selectedCommunityIds, setSelectedCommunityIds] = useState<string[]>([])
+
+  useEffect(() => {
+    if (open) {
+      supabase.from('community_groups').select('id, name').order('name').then(({ data }) => {
+        if (data) setCommunities(data.filter(c => WORKSPACE_COMMUNITY_NAMES.includes(c.name)))
+      })
+    }
+  }, [open])
+
+  const toggleCommunity = (id: string) => {
+    setSelectedCommunityIds(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    )
+  }
 
   useEffect(() => {
     if (lesson) {
       setTitle(lesson.title)
       setDescription(lesson.content || lesson.description || '')
       setVideoUrl(lesson.video_url || '')
+      setSelectedCommunityIds(lesson.community_ids || [])
     }
   }, [lesson])
 
@@ -53,7 +84,8 @@ export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Prop
       description: description.trim() || null,
       content: description.trim() || null,
       video_url: videoUrl.trim() || null,
-    }).eq('id', lesson.id)
+      community_ids: selectedCommunityIds,
+    } as any).eq('id', lesson.id)
 
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' })
@@ -97,6 +129,30 @@ export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Prop
           <div className="space-y-2">
             <Label>Lesson Description / Content</Label>
             <LessonRichTextEditor content={description} onChange={setDescription} />
+          </div>
+          {/* Community Assignment */}
+          <div className="space-y-2">
+            <Label>Assign to Communities <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <p className="text-xs text-muted-foreground">Only selected communities will see this lesson. Leave all unchecked to show to everyone.</p>
+            <div className="rounded-md border border-border divide-y divide-border">
+              {communities.map(c => (
+                <label
+                  key={c.id}
+                  className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/40 transition-colors"
+                >
+                  <Checkbox
+                    checked={selectedCommunityIds.includes(c.id)}
+                    onCheckedChange={() => toggleCommunity(c.id)}
+                  />
+                  <span className="text-sm">{c.name}</span>
+                </label>
+              ))}
+            </div>
+            {selectedCommunityIds.length > 0 && (
+              <p className="text-xs text-primary font-medium">
+                {selectedCommunityIds.length} {selectedCommunityIds.length === 1 ? 'community' : 'communities'} selected
+              </p>
+            )}
           </div>
           <div className="flex gap-3">
             <Button onClick={handleSave} disabled={loading || !title.trim()} className="flex-1">

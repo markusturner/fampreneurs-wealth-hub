@@ -1,0 +1,1 @@
+ALTER TABLE public.course_videos ADD COLUMN community_ids text[] DEFAULT '{}'::text[];
