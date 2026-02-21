@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -33,6 +34,16 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
       },
     },
   })
+
+  // Sync editor content when the prop changes (e.g. reopening dialog with new lesson)
+  useEffect(() => {
+    if (editor && content !== undefined) {
+      const currentHTML = editor.getHTML()
+      if (currentHTML !== content) {
+        editor.commands.setContent(content || '')
+      }
+    }
+  }, [editor, content])
 
   if (!editor) return null
 
