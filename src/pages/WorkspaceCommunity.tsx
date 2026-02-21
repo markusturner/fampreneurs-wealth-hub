@@ -715,22 +715,26 @@ export default function WorkspaceCommunity() {
             <Dialog open={mobilePostOpen} onOpenChange={setMobilePostOpen}>
               <DialogContent className="lg:hidden fixed inset-0 max-w-full w-full h-full translate-x-0 translate-y-0 left-0 top-0 rounded-none border-0 p-0 flex flex-col z-[70] [&>button]:hidden">
                 {/* Top bar */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-background">
-                  <button
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                    onClick={() => setMobilePostOpen(false)}
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                  <span className="text-sm font-semibold">New Post</span>
-                  <Button
-                    size="sm"
-                    onClick={handleMobilePost}
-                    disabled={!newPost.trim()}
-                    className="rounded-full px-5 h-8 text-xs font-bold hover:bg-[hsl(43,100%,50%)] hover:text-[hsl(270,80%,15%)] transition-colors"
-                  >
-                    POST
-                  </Button>
+                <div className="grid grid-cols-3 items-center px-4 py-3 border-b border-border/50 bg-background">
+                  <div className="flex justify-start">
+                    <button
+                      className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                      onClick={() => setMobilePostOpen(false)}
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                  <span className="text-sm font-semibold text-center">New Post</span>
+                  <div className="flex justify-end">
+                    <Button
+                      size="sm"
+                      onClick={handleMobilePost}
+                      disabled={!newPost.trim()}
+                      className="rounded-full px-5 h-8 text-xs font-bold hover:bg-[hsl(43,100%,50%)] hover:text-[hsl(270,80%,15%)] transition-colors"
+                    >
+                      POST
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Send to all toggle for admins */}
