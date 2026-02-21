@@ -39,7 +39,15 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
     }
     const maxSize = 50 * 1024 * 1024 // 50MB (Supabase free tier limit)
     if (file.size > maxSize) {
-      toast({ title: 'File too large', description: `Video must be under 50MB. Your file is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Try compressing it first.`, variant: 'destructive' })
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1)
+      toast({ 
+        title: 'File too large', 
+        description: `Video must be under 50MB (yours is ${fileSizeMB}MB). Try using "Embed" type with a YouTube or Vimeo link instead, or compress the video before uploading.`, 
+        variant: 'destructive',
+        duration: 8000,
+      })
+      // Reset file input so user can try again
+      if (fileInputRef.current) fileInputRef.current.value = ''
       return
     }
     setUploading(true)
