@@ -73,9 +73,9 @@ export function MobileBottomNav() {
   const isMoreActive = [...moreItems, ...adminItems].some(i => location.pathname === i.href)
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-      <nav className="bg-card/95 backdrop-blur-xl border-t border-border/20 px-3 pb-[env(safe-area-inset-bottom)]">
-        <div className="flex items-center justify-around h-14 mt-2 mb-4">
+    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <nav className="bg-[hsl(262_86%_19%)] backdrop-blur-xl rounded-full px-4 shadow-lg">
+        <div className="flex items-center justify-around h-14">
           {navItems.map((item) => {
             const active = isActive(item.href)
             const Icon = item.icon
@@ -89,8 +89,8 @@ export function MobileBottomNav() {
                 <div className={cn(
                   "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
                   active
-                    ? "bg-[#290a52] text-white shadow-lg shadow-[#290a52]/25"
-                    : "text-[#290a52] hover:bg-[#290a52]/10 active:scale-95"
+                    ? "bg-white text-[hsl(262,86%,19%)] shadow-lg"
+                    : "text-white/70 hover:text-white active:scale-95"
                 )}>
                   <Icon className="h-5 w-5 flex-shrink-0" />
                   {active && (
@@ -110,8 +110,8 @@ export function MobileBottomNav() {
                 <div className={cn(
                   "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
                   isMoreActive
-                    ? "bg-[#290a52] text-white shadow-lg shadow-[#290a52]/25"
-                    : "text-[#290a52] hover:bg-[#290a52]/10 active:scale-95"
+                    ? "bg-white text-[hsl(262,86%,19%)] shadow-lg"
+                    : "text-white/70 hover:text-white active:scale-95"
                 )}>
                   <LayoutGrid className="h-5 w-5 flex-shrink-0" />
                   {isMoreActive && (
