@@ -228,20 +228,92 @@ export default function WorkspaceCalendar() {
     return dates
   }
 
+  // Determine the user's most permissive frequency for a given meeting
+  const getUserFrequencyForMeeting = (meeting: Meeting): string | null => {
+    if (isAdmin || isOwner) return null // no restriction
+    if (!meeting.community_frequency || !meeting.community_ids) return null
+    
+    // Find the most frequent access level among the user's communities
+    const frequencyRank: Record<string, number> = {
+      'weekly': 1,
+      'bi-weekly': 2,
+      'monthly': 3,
+      'quarterly': 4,
+    }
+    
+    let bestFreq: string | null = null
+    let bestRank = Infinity
+    
+    for (const shortId of userCommunityShortIds) {
+      if (meeting.community_ids.includes(shortId)) {
+        const freq = meeting.community_frequency[shortId]
+        if (!freq) return null // no restriction for this community
+        const rank = frequencyRank[freq] ?? Infinity
+        if (rank < bestRank) {
+          bestRank = rank
+          bestFreq = freq
+        }
+      }
+    }
+    return bestFreq
+  }
+
+  // Filter recurring dates based on frequency
+  const filterDatesByFrequency = (dates: string[], startDate: Date, frequency: string): string[] => {
+    if (frequency === 'weekly') return dates
+    if (frequency === 'bi-weekly') {
+      // Keep every other occurrence
+      return dates.filter((_, i) => i % 2 === 0)
+    }
+    if (frequency === 'monthly') {
+      // Keep only ~1 per month (first occurrence in each calendar month)
+      const seen = new Set<string>()
+      seen.add(`${startDate.getFullYear()}-${startDate.getMonth()}`)
+      return dates.filter(d => {
+        const dt = parseDateString(d)
+        const key = `${dt.getFullYear()}-${dt.getMonth()}`
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+    }
+    if (frequency === 'quarterly') {
+      // Keep ~1 per quarter
+      const seen = new Set<string>()
+      const startQ = `${startDate.getFullYear()}-${Math.floor(startDate.getMonth() / 3)}`
+      seen.add(startQ)
+      return dates.filter(d => {
+        const dt = parseDateString(d)
+        const key = `${dt.getFullYear()}-${Math.floor(dt.getMonth() / 3)}`
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+    }
+    return dates
+  }
+
   // Build display meetings including recurring instances
   const displayMeetings = useMemo(() => {
     const all: Meeting[] = [...filteredMeetings]
     filteredMeetings.forEach(m => {
       if (m.is_recurring && m.recurring_pattern && !m.parent_meeting_id) {
         const startDate = parseDateString(m.meeting_date)
-        const recurringDates = generateRecurringDates(startDate, m.recurring_pattern)
+        let recurringDates = generateRecurringDates(startDate, m.recurring_pattern)
+        
+        // Apply frequency restriction for non-admin users
+        const userFreq = getUserFrequencyForMeeting(m)
+        if (userFreq) {
+          recurringDates = filterDatesByFrequency(recurringDates, startDate, userFreq)
+        }
+        
         recurringDates.forEach(date => {
           all.push({ ...m, id: `${m.id}-${date}`, meeting_date: date, parent_meeting_id: m.id })
         })
       }
     })
     return all
-  }, [filteredMeetings])
+  }, [filteredMeetings, userCommunityShortIds, isAdmin, isOwner])
 
   const handleSaveMeeting = async () => {
     if (!user?.id || !formTitle.trim()) return
