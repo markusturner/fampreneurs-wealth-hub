@@ -94,7 +94,7 @@ export default function WorkspaceCalendar() {
   const [editingMeetingId, setEditingMeetingId] = useState<string | null>(null)
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
   const [userGroupIds, setUserGroupIds] = useState<string[]>([])
-
+  const [userCommunityShortIds, setUserCommunityShortIds] = useState<string[]>([])
   // Form state
   const [formTitle, setFormTitle] = useState('')
   const [formDate, setFormDate] = useState<Date>(new Date())
@@ -129,10 +129,26 @@ export default function WorkspaceCalendar() {
     try {
       const { data, error } = await supabase
         .from('group_memberships')
-        .select('group_id')
+        .select('group_id, community_groups(id, name)')
         .eq('user_id', user.id)
       if (error) throw error
-      setUserGroupIds((data || []).map(d => d.group_id))
+      setUserGroupIds((data || []).map((d: any) => d.group_id))
+      
+      // Map group names to short IDs used in meeting community_ids
+      const nameToShortId: Record<string, string> = {
+        'Family Business University': 'fbu',
+        'The Family Vault': 'tfv',
+        'The Family Business Accelerator': 'tfba',
+        'The Family Fortune Mastermind': 'tffm',
+        'The Family Legacy: VIP Weekend': 'tflvip',
+      }
+      const shortIds = (data || [])
+        .map((d: any) => {
+          const name = d.community_groups?.name
+          return name ? nameToShortId[name] : null
+        })
+        .filter(Boolean) as string[]
+      setUserCommunityShortIds(shortIds)
     } catch (error) {
       console.error('Error fetching user groups:', error)
     }
@@ -155,16 +171,16 @@ export default function WorkspaceCalendar() {
 
   // Filter meetings based on user's community memberships
   const filteredMeetings = useMemo(() => {
-    // Admins/owners see everything
     if (isAdmin || isOwner) return meetings
     
     return meetings.filter(m => {
-      // Events with no community_ids are visible to everyone
       if (!m.community_ids || m.community_ids.length === 0) return true
-      // Show events where at least one community_id matches user's groups
-      return m.community_ids.some(id => userGroupIds.includes(id))
+      // community_ids in meetings use short IDs (fbu, tfba, etc.)
+      return m.community_ids.some(id => 
+        userCommunityShortIds.includes(id) || userGroupIds.includes(id)
+      )
     })
-  }, [meetings, userGroupIds, isAdmin, isOwner])
+  }, [meetings, userGroupIds, userCommunityShortIds, isAdmin, isOwner])
 
   const resetForm = () => {
     setFormTitle('')
