@@ -70,11 +70,8 @@ export function MobileBottomNav() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-      {/* Subtle gradient fade above the bar */}
-      <div className="h-6 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-
-      <nav className="bg-card border-t border-border/30 px-2 pb-[env(safe-area-inset-bottom)]">
-        <div className="flex items-end justify-around py-1.5">
+      <nav className="bg-card/95 backdrop-blur-xl border-t border-border/20 px-4 pb-[env(safe-area-inset-bottom)]">
+        <div className="flex items-center justify-around h-14">
           {navItems.map((item) => {
             const active = isActive(item.href)
             const Icon = item.icon
@@ -84,20 +81,16 @@ export function MobileBottomNav() {
                 <NavLink
                   key={item.name}
                   to={item.href}
-                  className="flex flex-col items-center -mt-5"
+                  className="flex items-center justify-center"
                 >
                   <div className={cn(
-                    "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-200 shadow-md",
+                    "w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200",
                     active
-                      ? "bg-accent text-accent-foreground shadow-accent/30"
-                      : "bg-primary text-primary-foreground hover:opacity-90 active:scale-95"
+                      ? "bg-accent text-accent-foreground shadow-md shadow-accent/25"
+                      : "bg-primary/10 text-primary hover:bg-primary/20 active:scale-95"
                   )}>
                     <Icon className="h-5 w-5" />
                   </div>
-                  <span className={cn(
-                    "text-[10px] mt-1 font-medium",
-                    active ? "text-accent" : "text-muted-foreground"
-                  )}>{item.name}</span>
                 </NavLink>
               )
             }
@@ -106,20 +99,17 @@ export function MobileBottomNav() {
               <NavLink
                 key={item.name}
                 to={item.href}
-                className="flex flex-col items-center gap-0.5 min-w-[3.5rem]"
+                className="flex items-center justify-center"
               >
                 <div className={cn(
-                  "w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200",
+                  "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200",
                   active
-                    ? "bg-accent/15 text-accent"
+                    ? "text-accent"
                     : "text-muted-foreground hover:text-foreground active:scale-95"
                 )}>
-                  <Icon className="h-[18px] w-[18px]" />
+                  <Icon className="h-5 w-5" />
+                  {active && <div className="absolute bottom-1.5 w-1 h-1 rounded-full bg-accent" />}
                 </div>
-                <span className={cn(
-                  "text-[10px] font-medium",
-                  active ? "text-accent" : "text-muted-foreground"
-                )}>{item.name}</span>
               </NavLink>
             )
           })}
@@ -127,19 +117,16 @@ export function MobileBottomNav() {
           {/* More button */}
           <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
             <SheetTrigger asChild>
-              <button className="flex flex-col items-center gap-0.5 min-w-[3.5rem]">
+              <button className="flex items-center justify-center">
                 <div className={cn(
-                  "w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200",
+                  "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200",
                   isMoreActive
-                    ? "bg-accent/15 text-accent"
+                    ? "text-accent"
                     : "text-muted-foreground hover:text-foreground active:scale-95"
                 )}>
-                  <LayoutGrid className="h-[18px] w-[18px]" />
+                  <LayoutGrid className="h-5 w-5" />
+                  {isMoreActive && <div className="absolute bottom-1.5 w-1 h-1 rounded-full bg-accent" />}
                 </div>
-                <span className={cn(
-                  "text-[10px] font-medium",
-                  isMoreActive ? "text-accent" : "text-muted-foreground"
-                )}>More</span>
               </button>
             </SheetTrigger>
             <SheetContent side="bottom" className="rounded-t-3xl px-4 pt-3 pb-8 max-h-[75vh] overflow-hidden flex flex-col">
