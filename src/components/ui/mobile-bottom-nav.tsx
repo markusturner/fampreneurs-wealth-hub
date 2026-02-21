@@ -49,7 +49,7 @@ export function MobileBottomNav() {
 
   const workspaceItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Workspace Members', href: '/workspace-members', icon: Users },
+    { name: 'Members', href: '/workspace-members', icon: Users },
     { name: 'Profile Settings', href: '/profile-settings', icon: Settings },
   ]
 
