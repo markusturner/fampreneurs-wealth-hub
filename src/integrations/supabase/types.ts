@@ -1240,6 +1240,7 @@ export type Database = {
           instructor: string | null
           is_private: boolean
           level: string | null
+          order_index: number | null
           price: string | null
           status: string
           title: string
@@ -1257,6 +1258,7 @@ export type Database = {
           instructor?: string | null
           is_private?: boolean
           level?: string | null
+          order_index?: number | null
           price?: string | null
           status?: string
           title: string
@@ -1274,6 +1276,7 @@ export type Database = {
           instructor?: string | null
           is_private?: boolean
           level?: string | null
+          order_index?: number | null
           price?: string | null
           status?: string
           title?: string
