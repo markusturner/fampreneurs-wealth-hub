@@ -228,12 +228,15 @@ export default function WorkspaceCalendar() {
     return dates
   }
 
-  // Determine the user's most permissive frequency for a given meeting
+  // Determine the user's frequency restriction for a given meeting based on their community memberships
   const getUserFrequencyForMeeting = (meeting: Meeting): string | null => {
-    if (isAdmin || isOwner) return null // no restriction
+    if (isOwner) return null // owners see everything unrestricted
     if (!meeting.community_frequency || !meeting.community_ids) return null
     
-    // Find the most frequent access level among the user's communities
+    // If user has no community memberships tracked, no restriction (e.g. admin without group memberships)
+    if (userCommunityShortIds.length === 0) return null
+    
+    // Find the most permissive (most frequent) access level among the user's communities
     const frequencyRank: Record<string, number> = {
       'weekly': 1,
       'bi-weekly': 2,
