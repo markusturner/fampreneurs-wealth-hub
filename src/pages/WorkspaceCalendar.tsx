@@ -261,63 +261,91 @@ export default function WorkspaceCalendar() {
     return bestFreq
   }
 
-  // Filter all dates based on frequency - picks the occurrence closest to the same calendar date each period
-  const filterAllDatesByFrequency = (allDates: string[], frequency: string): string[] => {
-    if (frequency === 'weekly' || allDates.length === 0) return allDates
+  // Convert a frequency string to approximate weeks
+  const frequencyToWeeks = (freq: string): number => {
+    switch (freq) {
+      case 'weekly': return 1
+      case 'bi-weekly': return 2
+      case 'monthly': return 4
+      case 'quarterly': return 13
+      default: return 1
+    }
+  }
 
-    if (frequency === 'bi-weekly') {
-      return allDates.filter((_, i) => i % 2 === 0)
+  // Get the event's own recurrence interval in weeks
+  const getEventRecurrenceWeeks = (pattern: any): number => {
+    if (!pattern) return 1
+    const repeatEvery = parseInt(pattern.repeatEvery || '1')
+    const unit = pattern.repeatUnit || 'week'
+    if (unit === 'day') return repeatEvery / 7
+    if (unit === 'week') return repeatEvery
+    if (unit === 'month') return repeatEvery * 4
+    return 1
+  }
+
+  // Filter dates based on user's access frequency relative to the event's recurrence
+  const filterAllDatesByFrequency = (allDates: string[], frequency: string, eventPattern: any): string[] => {
+    if (allDates.length === 0) return allDates
+
+    const accessWeeks = frequencyToWeeks(frequency)
+    const eventWeeks = getEventRecurrenceWeeks(eventPattern)
+
+    // If user's access frequency is equal or more frequent than the event recurrence, show ALL
+    if (accessWeeks <= eventWeeks) return allDates
+
+    // Calculate how many occurrences to skip (ratio of access interval to event interval)
+    const skipRatio = Math.round(accessWeeks / eventWeeks)
+
+    if (frequency === 'monthly' || frequency === 'quarterly') {
+      // For monthly/quarterly: pick the occurrence closest to the base date's day-of-month
+      const baseDate = parseDateString(allDates[0])
+      const targetDay = baseDate.getDate()
+
+      if (frequency === 'monthly') {
+        const byMonth = new Map<string, string[]>()
+        allDates.forEach(d => {
+          const dt = parseDateString(d)
+          const key = `${dt.getFullYear()}-${dt.getMonth()}`
+          if (!byMonth.has(key)) byMonth.set(key, [])
+          byMonth.get(key)!.push(d)
+        })
+        const result: string[] = []
+        byMonth.forEach(dates => {
+          let best = dates[0]
+          let bestDiff = Math.abs(parseDateString(dates[0]).getDate() - targetDay)
+          for (let i = 1; i < dates.length; i++) {
+            const diff = Math.abs(parseDateString(dates[i]).getDate() - targetDay)
+            if (diff < bestDiff) { bestDiff = diff; best = dates[i] }
+          }
+          result.push(best)
+        })
+        return result
+      }
+
+      if (frequency === 'quarterly') {
+        const byQuarter = new Map<string, string[]>()
+        allDates.forEach(d => {
+          const dt = parseDateString(d)
+          const key = `${dt.getFullYear()}-Q${Math.floor(dt.getMonth() / 3)}`
+          if (!byQuarter.has(key)) byQuarter.set(key, [])
+          byQuarter.get(key)!.push(d)
+        })
+        const result: string[] = []
+        byQuarter.forEach(dates => {
+          let best = dates[0]
+          let bestDiff = Math.abs(parseDateString(dates[0]).getDate() - targetDay)
+          for (let i = 1; i < dates.length; i++) {
+            const diff = Math.abs(parseDateString(dates[i]).getDate() - targetDay)
+            if (diff < bestDiff) { bestDiff = diff; best = dates[i] }
+          }
+          result.push(best)
+        })
+        return result
+      }
     }
 
-    // For monthly/quarterly: pick the occurrence closest to the base date's day-of-month each period
-    const baseDate = parseDateString(allDates[0])
-    const targetDay = baseDate.getDate() // e.g. 25
-
-    if (frequency === 'monthly') {
-      // Group by year-month, pick the date closest to targetDay in each month
-      const byMonth = new Map<string, string[]>()
-      allDates.forEach(d => {
-        const dt = parseDateString(d)
-        const key = `${dt.getFullYear()}-${dt.getMonth()}`
-        if (!byMonth.has(key)) byMonth.set(key, [])
-        byMonth.get(key)!.push(d)
-      })
-      const result: string[] = []
-      byMonth.forEach(dates => {
-        // Find the date closest to targetDay
-        let best = dates[0]
-        let bestDiff = Math.abs(parseDateString(dates[0]).getDate() - targetDay)
-        for (let i = 1; i < dates.length; i++) {
-          const diff = Math.abs(parseDateString(dates[i]).getDate() - targetDay)
-          if (diff < bestDiff) { bestDiff = diff; best = dates[i] }
-        }
-        result.push(best)
-      })
-      return result
-    }
-
-    if (frequency === 'quarterly') {
-      const byQuarter = new Map<string, string[]>()
-      allDates.forEach(d => {
-        const dt = parseDateString(d)
-        const key = `${dt.getFullYear()}-Q${Math.floor(dt.getMonth() / 3)}`
-        if (!byQuarter.has(key)) byQuarter.set(key, [])
-        byQuarter.get(key)!.push(d)
-      })
-      const result: string[] = []
-      byQuarter.forEach(dates => {
-        let best = dates[0]
-        let bestDiff = Math.abs(parseDateString(dates[0]).getDate() - targetDay)
-        for (let i = 1; i < dates.length; i++) {
-          const diff = Math.abs(parseDateString(dates[i]).getDate() - targetDay)
-          if (diff < bestDiff) { bestDiff = diff; best = dates[i] }
-        }
-        result.push(best)
-      })
-      return result
-    }
-
-    return allDates
+    // For bi-weekly on a weekly event: keep every other
+    return allDates.filter((_, i) => i % skipRatio === 0)
   }
 
   // Build display meetings including recurring instances
@@ -333,7 +361,7 @@ export default function WorkspaceCalendar() {
         
         // Apply frequency restriction based on user's community membership
         const userFreq = getUserFrequencyForMeeting(m)
-        const visibleDates = userFreq ? filterAllDatesByFrequency(allDates, userFreq) : allDates
+        const visibleDates = userFreq ? filterAllDatesByFrequency(allDates, userFreq, m.recurring_pattern) : allDates
         
         visibleDates.forEach(date => {
           if (date === m.meeting_date) {
