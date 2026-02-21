@@ -2850,14 +2850,21 @@ export type Database = {
           created_at: string
           created_by: string
           description: string | null
+          duration_minutes: number | null
           id: string
+          is_recurring: boolean | null
           location: string | null
+          location_link: string | null
           meeting_date: string
           meeting_time: string
           meeting_type: string | null
+          parent_meeting_id: string | null
+          recurring_pattern: Json | null
+          remind_email: boolean | null
           scribe_id: string | null
           scribe_notes: string | null
           status: string
+          timezone: string | null
           title: string
           updated_at: string
           zoom_link: string | null
@@ -2868,14 +2875,21 @@ export type Database = {
           created_at?: string
           created_by: string
           description?: string | null
+          duration_minutes?: number | null
           id?: string
+          is_recurring?: boolean | null
           location?: string | null
+          location_link?: string | null
           meeting_date: string
           meeting_time: string
           meeting_type?: string | null
+          parent_meeting_id?: string | null
+          recurring_pattern?: Json | null
+          remind_email?: boolean | null
           scribe_id?: string | null
           scribe_notes?: string | null
           status?: string
+          timezone?: string | null
           title: string
           updated_at?: string
           zoom_link?: string | null
@@ -2886,19 +2900,34 @@ export type Database = {
           created_at?: string
           created_by?: string
           description?: string | null
+          duration_minutes?: number | null
           id?: string
+          is_recurring?: boolean | null
           location?: string | null
+          location_link?: string | null
           meeting_date?: string
           meeting_time?: string
           meeting_type?: string | null
+          parent_meeting_id?: string | null
+          recurring_pattern?: Json | null
+          remind_email?: boolean | null
           scribe_id?: string | null
           scribe_notes?: string | null
           status?: string
+          timezone?: string | null
           title?: string
           updated_at?: string
           zoom_link?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "meetings_parent_meeting_id_fkey"
+            columns: ["parent_meeting_id"]
+            isOneToOne: false
+            referencedRelation: "meetings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       message_mentions: {
         Row: {
