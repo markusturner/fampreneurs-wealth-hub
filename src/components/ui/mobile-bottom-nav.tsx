@@ -142,13 +142,13 @@ export function MobileBottomNav() {
                 )}>More</span>
               </button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="rounded-t-3xl px-4 pt-3 pb-8 max-h-[75vh]">
+            <SheetContent side="bottom" className="rounded-t-3xl px-4 pt-3 pb-8 max-h-[75vh] overflow-hidden flex flex-col">
               {/* Handle */}
-              <div className="flex justify-center mb-4">
+              <div className="flex justify-center mb-4 flex-shrink-0">
                 <div className="w-10 h-1 rounded-full bg-border" />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1 overflow-y-auto flex-1 -mx-1 px-1">
                 {moreItems.map((item) => {
                   const Icon = item.icon
                   const active = location.pathname === item.href
