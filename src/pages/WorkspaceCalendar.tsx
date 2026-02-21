@@ -93,6 +93,7 @@ export default function WorkspaceCalendar() {
   const [isEditMode, setIsEditMode] = useState(false)
   const [editingMeetingId, setEditingMeetingId] = useState<string | null>(null)
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null)
+  const [userGroupIds, setUserGroupIds] = useState<string[]>([])
 
   // Form state
   const [formTitle, setFormTitle] = useState('')
@@ -118,7 +119,24 @@ export default function WorkspaceCalendar() {
   const [editScopeOpen, setEditScopeOpen] = useState(false)
   const [pendingEditMeeting, setPendingEditMeeting] = useState<Meeting | null>(null)
 
-  useEffect(() => { fetchMeetings() }, [])
+  useEffect(() => {
+    fetchMeetings()
+    if (user?.id) fetchUserGroups()
+  }, [user?.id])
+
+  const fetchUserGroups = async () => {
+    if (!user?.id) return
+    try {
+      const { data, error } = await supabase
+        .from('group_memberships')
+        .select('group_id')
+        .eq('user_id', user.id)
+      if (error) throw error
+      setUserGroupIds((data || []).map(d => d.group_id))
+    } catch (error) {
+      console.error('Error fetching user groups:', error)
+    }
+  }
 
   const fetchMeetings = async () => {
     try {
@@ -134,6 +152,19 @@ export default function WorkspaceCalendar() {
       setLoading(false)
     }
   }
+
+  // Filter meetings based on user's community memberships
+  const filteredMeetings = useMemo(() => {
+    // Admins/owners see everything
+    if (isAdmin || isOwner) return meetings
+    
+    return meetings.filter(m => {
+      // Events with no community_ids are visible to everyone
+      if (!m.community_ids || m.community_ids.length === 0) return true
+      // Show events where at least one community_id matches user's groups
+      return m.community_ids.some(id => userGroupIds.includes(id))
+    })
+  }, [meetings, userGroupIds, isAdmin, isOwner])
 
   const resetForm = () => {
     setFormTitle('')
@@ -183,8 +214,8 @@ export default function WorkspaceCalendar() {
 
   // Build display meetings including recurring instances
   const displayMeetings = useMemo(() => {
-    const all: Meeting[] = [...meetings]
-    meetings.forEach(m => {
+    const all: Meeting[] = [...filteredMeetings]
+    filteredMeetings.forEach(m => {
       if (m.is_recurring && m.recurring_pattern && !m.parent_meeting_id) {
         const startDate = parseDateString(m.meeting_date)
         const recurringDates = generateRecurringDates(startDate, m.recurring_pattern)
@@ -194,7 +225,7 @@ export default function WorkspaceCalendar() {
       }
     })
     return all
-  }, [meetings])
+  }, [filteredMeetings])
 
   const handleSaveMeeting = async () => {
     if (!user?.id || !formTitle.trim()) return
