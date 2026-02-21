@@ -809,25 +809,25 @@ export default function WorkspaceCommunity() {
                 </div>
 
                 {/* Bottom toolbar */}
-                <div className="border-t border-border/50 px-4 py-3 flex items-center gap-4 bg-background safe-area-bottom">
+                <div className="border-t border-border/50 px-4 py-3 pb-6 flex items-center gap-2 bg-muted/30 mb-[env(safe-area-inset-bottom)]">
                   <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                   <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
                   <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
-                  <button className="text-muted-foreground hover:text-foreground transition-colors" onClick={() => imageInputRef.current?.click()}>
+                  <button className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => imageInputRef.current?.click()}>
                     <Image className="h-5 w-5" />
                   </button>
-                  <button className="text-muted-foreground hover:text-foreground transition-colors" onClick={() => videoInputRef.current?.click()}>
+                  <button className="w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => videoInputRef.current?.click()}>
                     <Video className="h-5 w-5" />
                   </button>
                   <button
-                    className={`transition-colors ${isRecording ? 'text-destructive' : 'text-muted-foreground hover:text-foreground'}`}
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${isRecording ? 'text-destructive bg-destructive/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
                     onClick={isRecording ? stopRecording : startRecording}
                   >
                     {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                   </button>
                   <div className="ml-auto">
                     <Select value={postCategory} onValueChange={setPostCategory}>
-                      <SelectTrigger className="h-8 w-auto text-xs rounded-full border-border/70 bg-muted/50 pr-3">
+                      <SelectTrigger className="h-9 w-auto text-xs rounded-full border-border/70 bg-background px-3">
                         <SelectValue placeholder="Category" />
                       </SelectTrigger>
                       <SelectContent>
