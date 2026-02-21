@@ -3008,6 +3008,8 @@ export type Database = {
         Row: {
           attendees: string[] | null
           calendar_link: string | null
+          community_frequency: Json | null
+          community_ids: string[] | null
           created_at: string
           created_by: string
           description: string | null
@@ -3033,6 +3035,8 @@ export type Database = {
         Insert: {
           attendees?: string[] | null
           calendar_link?: string | null
+          community_frequency?: Json | null
+          community_ids?: string[] | null
           created_at?: string
           created_by: string
           description?: string | null
@@ -3058,6 +3062,8 @@ export type Database = {
         Update: {
           attendees?: string[] | null
           calendar_link?: string | null
+          community_frequency?: Json | null
+          community_ids?: string[] | null
           created_at?: string
           created_by?: string
           description?: string | null
