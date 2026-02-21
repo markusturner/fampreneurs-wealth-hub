@@ -121,7 +121,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto pb-20 md:pb-0">
+        <main className={`flex-1 ${location.pathname.startsWith('/classroom/') ? 'overflow-hidden' : 'overflow-auto pb-20 md:pb-0'}`}>
           {isTruHeirsRoute && !hasTruHeirsAccess ? (
             <LockedPageOverlay locked={true} programFilter="fbu" title="Unlock TruHeirs">
               {children}
