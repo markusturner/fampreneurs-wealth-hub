@@ -32,6 +32,7 @@ interface Props {
 export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Props) {
   const { toast } = useToast()
   const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
@@ -40,6 +41,7 @@ export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Prop
   useEffect(() => {
     if (lesson) {
       setTitle(lesson.title)
+      setDescription(lesson.description || '')
       setVideoUrl(lesson.video_url || '')
       setContent(lesson.content || '')
     }
@@ -50,6 +52,7 @@ export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Prop
     setLoading(true)
     const { error } = await supabase.from('course_videos').update({
       title: title.trim(),
+      description: description.trim() || null,
       video_url: videoUrl.trim() || null,
       content: content || null,
     }).eq('id', lesson.id)
@@ -88,6 +91,10 @@ export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Prop
           <div className="space-y-2">
             <Label>Lesson Title</Label>
             <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Lesson title" />
+          </div>
+          <div className="space-y-2">
+            <Label>Description</Label>
+            <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Brief lesson description" />
           </div>
           <div className="space-y-2">
             <Label>Video URL (YouTube, Vimeo, Loom, or direct link)</Label>
