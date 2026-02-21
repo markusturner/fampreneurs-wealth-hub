@@ -333,7 +333,9 @@ export default function WorkspaceCalendar() {
         
         // Apply frequency restriction for non-admin users
         const userFreq = getUserFrequencyForMeeting(m)
+        console.log(`[Calendar Debug] Meeting: "${m.title}", userCommunityShortIds:`, userCommunityShortIds, 'community_ids:', m.community_ids, 'community_frequency:', m.community_frequency, 'resolved frequency:', userFreq, 'total dates:', allDates.length)
         const visibleDates = userFreq ? filterAllDatesByFrequency(allDates, userFreq) : allDates
+        console.log(`[Calendar Debug] Visible dates count: ${visibleDates.length}, first 5:`, visibleDates.slice(0, 5))
         
         visibleDates.forEach(date => {
           if (date === m.meeting_date) {
