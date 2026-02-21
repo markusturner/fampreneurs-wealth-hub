@@ -34,16 +34,14 @@ export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Prop
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
-  const [content, setContent] = useState('')
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (lesson) {
       setTitle(lesson.title)
-      setDescription(lesson.description || '')
+      setDescription(lesson.content || lesson.description || '')
       setVideoUrl(lesson.video_url || '')
-      setContent(lesson.content || '')
     }
   }, [lesson])
 
@@ -53,8 +51,8 @@ export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Prop
     const { error } = await supabase.from('course_videos').update({
       title: title.trim(),
       description: description.trim() || null,
+      content: description.trim() || null,
       video_url: videoUrl.trim() || null,
-      content: content || null,
     }).eq('id', lesson.id)
 
     if (error) {
@@ -93,16 +91,12 @@ export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Prop
             <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Lesson title" />
           </div>
           <div className="space-y-2">
-            <Label>Description</Label>
-            <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="Brief lesson description" />
-          </div>
-          <div className="space-y-2">
             <Label>Video URL (YouTube, Vimeo, Loom, or direct link)</Label>
             <Input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." />
           </div>
           <div className="space-y-2">
-            <Label>Lesson Content</Label>
-            <LessonRichTextEditor content={content} onChange={setContent} />
+            <Label>Lesson Description / Content</Label>
+            <LessonRichTextEditor content={description} onChange={setDescription} />
           </div>
           <div className="flex gap-3">
             <Button onClick={handleSave} disabled={loading || !title.trim()} className="flex-1">
