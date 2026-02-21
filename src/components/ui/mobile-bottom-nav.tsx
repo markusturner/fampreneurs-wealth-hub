@@ -50,7 +50,8 @@ export function MobileBottomNav() {
   const workspaceItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Members', href: '/workspace-members', icon: Users },
-    { name: 'Profile Settings', href: '/profile-settings', icon: Settings },
+    { name: 'AI Chat', href: '/ai-chat', icon: Bot },
+    { name: 'Trust Creation', href: '/trust-creation', icon: ScrollText },
   ]
 
   const truHeirsItems = [
@@ -58,8 +59,6 @@ export function MobileBottomNav() {
     { name: 'Family Constitution', href: '/documents', icon: FileText },
     { name: 'Family Calendar', href: '/calendar', icon: Calendar },
     { name: 'Family Members', href: '/members', icon: Users },
-    { name: 'AI Chat', href: '/ai-chat', icon: Bot },
-    { name: 'Trust Creation', href: '/trust-creation', icon: ScrollText },
   ]
 
   const moreItems = [...workspaceItems, ...truHeirsItems]
@@ -208,8 +207,16 @@ export function MobileBottomNav() {
                   </>
                 )}
 
-                {/* Logout */}
-                <div className="pt-3">
+                {/* Profile & Logout */}
+                <div className="pt-3 border-t border-border/30 mt-2">
+                  <button
+                    onClick={() => { navigate('/profile-settings'); setMoreOpen(false) }}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-muted/50 active:bg-muted transition-colors"
+                  >
+                    <Settings className="h-4 w-4 flex-shrink-0" />
+                    <span className="flex-1 text-left">Profile Settings</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
+                  </button>
                   <button
                     onClick={() => { signOut(); setMoreOpen(false) }}
                     className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
