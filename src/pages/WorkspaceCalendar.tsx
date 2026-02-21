@@ -36,6 +36,8 @@ interface Meeting {
   recurring_pattern: any
   remind_email: boolean | null
   parent_meeting_id: string | null
+  community_ids: string[] | null
+  community_frequency: Record<string, string> | null
 }
 
 const TIMEZONES = [
@@ -218,6 +220,8 @@ export default function WorkspaceCalendar() {
       is_recurring: formRecurring,
       recurring_pattern: recurringPattern,
       remind_email: formRemind,
+      community_ids: formCommunities,
+      community_frequency: formCommunityFrequency,
     }
 
     try {
@@ -288,6 +292,8 @@ export default function WorkspaceCalendar() {
       if (p.endAfter) setFormEndAfter(p.endAfter)
     }
     setFormRemind(original.remind_email || false)
+    setFormCommunities(original.community_ids || [])
+    setFormCommunityFrequency(original.community_frequency || {})
     setSelectedMeeting(null)
     setEditScopeOpen(false)
     setPendingEditMeeting(null)
