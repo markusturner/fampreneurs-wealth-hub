@@ -443,7 +443,7 @@ export default function CourseDetail() {
       {/* Lesson content */}
       {(selectedLesson?.content || selectedLesson?.description) && (
         <div
-          className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-a:text-primary prose-blockquote:border-primary prose-blockquote:text-muted-foreground"
+          className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-a:text-primary prose-blockquote:border-primary prose-blockquote:text-muted-foreground pb-6 border-b border-border"
           dangerouslySetInnerHTML={{ __html: selectedLesson.content || selectedLesson.description || '' }}
         />
       )}
