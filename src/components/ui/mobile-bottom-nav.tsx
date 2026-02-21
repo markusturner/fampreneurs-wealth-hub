@@ -1,100 +1,137 @@
-import { NavLink, useLocation } from 'react-router-dom'
-import { Users, Calendar, BookOpen, Home, MessageSquare, TrendingUp, FileText } from 'lucide-react'
+import { NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Mail, Calendar, MessageSquare, BookOpen, MoreHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
-import { useEffect, useState } from 'react'
-import { supabase } from '@/integrations/supabase/client'
+import { useState } from 'react'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 
 interface NavItem {
   name: string
   href: string
   icon: React.ComponentType<{ className?: string }>
-  badge?: number
+  center?: boolean
 }
 
-const familyOfficeItems: NavItem[] = [
-  { name: 'Documents', href: '/documents', icon: FileText },
-  { name: 'Community', href: '/community', icon: TrendingUp },
-  { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Calendar', href: '/calendar', icon: Calendar },
-  { name: 'Members', href: '/members', icon: Users },
+const navItems: NavItem[] = [
+  { name: 'Messenger', href: '/messenger', icon: Mail },
+  { name: 'Calendar', href: '/workspace-calendar', icon: Calendar },
+  { name: 'Community', href: '/workspace-community', icon: MessageSquare, center: true },
+  { name: 'Classroom', href: '/classroom', icon: BookOpen },
+]
+
+// "More" menu items — all other app pages
+const moreItems = [
+  { name: 'Dashboard', href: '/dashboard' },
+  { name: 'Family Office', href: '/digital-family-office' },
+  { name: 'Family Constitution', href: '/documents' },
+  { name: 'Family Calendar', href: '/calendar' },
+  { name: 'Family Members', href: '/members' },
+  { name: 'AI Chat', href: '/ai-chat' },
+  { name: 'Trust Creation', href: '/trust-creation' },
+  { name: 'Workspace Members', href: '/workspace-members' },
+  { name: 'Profile Settings', href: '/profile-settings' },
 ]
 
 export function MobileBottomNav() {
   const location = useLocation()
+  const navigate = useNavigate()
   const { user } = useAuth()
-  const [unreadCount, setUnreadCount] = useState(0)
+  const [moreOpen, setMoreOpen] = useState(false)
 
   const shouldShowNav = user && !location.pathname.includes('/sign-up') && !location.pathname.includes('/auth') && location.pathname !== '/'
 
-  useEffect(() => {
-    let channel: ReturnType<typeof supabase.channel> | null = null
-
-    const fetchUnreadCount = async () => {
-      if (!user?.id || !shouldShowNav) return
-      try {
-        const { data, error } = await supabase.from('messages').select('id').eq('recipient_id', user.id).is('read_at', null)
-        if (!error) setUnreadCount(data?.length || 0)
-      } catch (error) {
-        console.error('Error fetching unread count:', error)
-      }
-    }
-
-    if (shouldShowNav) {
-      fetchUnreadCount()
-      if (user?.id) {
-        channel = supabase.channel(`unread_messages_${user.id}`).on('postgres_changes', { event: '*', schema: 'public', table: 'messages', filter: `recipient_id=eq.${user.id}` }, () => fetchUnreadCount()).subscribe()
-      }
-    }
-
-    return () => {
-      if (channel) {
-        try { supabase.removeChannel(channel) } catch (error) { console.warn('Error removing channel:', error) }
-      }
-    }
-  }, [user?.id, shouldShowNav])
-
   if (!shouldShowNav) return null
 
-  const navigationItems = familyOfficeItems
-  const itemsWithBadges = navigationItems.map(item => ({
-    ...item,
-    badge: item.href === '/members' && unreadCount > 0 ? unreadCount : undefined
-  }))
+  const isActive = (href: string) => location.pathname === href
+  const isMoreActive = moreItems.some(i => location.pathname === i.href)
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden safe-area-bottom">
-      <div className="mx-3 mb-3 rounded-2xl bg-card/80 backdrop-blur-xl border border-border/50 shadow-strong">
-        <nav className="flex items-center justify-between px-2 py-2">
-          {itemsWithBadges.map((item) => {
-            const isActive = location.pathname === item.href
+      <div className="mx-4 mb-4 rounded-2xl bg-card/90 backdrop-blur-2xl border border-border/40 shadow-2xl">
+        <nav className="flex items-center justify-between px-3 py-2.5">
+          {navItems.map((item) => {
+            const active = isActive(item.href)
             const Icon = item.icon
+
+            if (item.center) {
+              return (
+                <NavLink
+                  key={item.name}
+                  to={item.href}
+                  className="flex items-center justify-center relative -mt-7"
+                >
+                  <div className={cn(
+                    "w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg",
+                    active
+                      ? "bg-accent text-accent-foreground shadow-accent/40 scale-110"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80 active:scale-95"
+                  )}>
+                    <Icon className="h-6 w-6" />
+                  </div>
+                </NavLink>
+              )
+            }
 
             return (
               <NavLink
                 key={item.name}
                 to={item.href}
-                className={cn(
-                  "flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-all duration-200",
-                  "min-w-0 flex-1 relative touch-optimized",
-                  isActive
-                    ? "text-accent scale-110"
-                    : "text-muted-foreground hover:text-foreground active:scale-95"
-                )}
+                className="flex items-center justify-center"
               >
-                {isActive && (
-                  <div className="absolute -top-1 w-8 h-1 rounded-full bg-accent shadow-glow" />
-                )}
-                <Icon className={cn("h-6 w-6", isActive && "text-accent drop-shadow-lg")} />
-                <span className={cn("text-[10px] mt-1 font-medium", isActive ? "text-accent" : "text-muted-foreground")}>{item.name}</span>
-                {item.badge && item.badge > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {item.badge > 99 ? '99+' : item.badge}
-                  </span>
-                )}
+                <div className={cn(
+                  "w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200",
+                  active
+                    ? "bg-accent/20 text-accent"
+                    : "bg-muted/60 text-muted-foreground hover:bg-muted/80 active:scale-95"
+                )}>
+                  <Icon className={cn("h-5 w-5", active && "drop-shadow-sm")} />
+                </div>
               </NavLink>
             )
           })}
+
+          {/* More button */}
+          <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
+            <SheetTrigger asChild>
+              <button className="flex items-center justify-center">
+                <div className={cn(
+                  "w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200",
+                  isMoreActive
+                    ? "bg-accent/20 text-accent"
+                    : "bg-muted/60 text-muted-foreground hover:bg-muted/80 active:scale-95"
+                )}>
+                  <MoreHorizontal className="h-5 w-5" />
+                </div>
+              </button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="rounded-t-2xl">
+              <SheetHeader>
+                <SheetTitle className="text-left">All Apps</SheetTitle>
+              </SheetHeader>
+              <div className="grid grid-cols-2 gap-2 py-4">
+                {moreItems.map((item) => (
+                  <button
+                    key={item.href}
+                    onClick={() => { navigate(item.href); setMoreOpen(false) }}
+                    className={cn(
+                      "text-left px-4 py-3 rounded-xl text-sm font-medium transition-colors",
+                      location.pathname === item.href
+                        ? "bg-accent/20 text-accent"
+                        : "bg-muted/40 text-foreground hover:bg-muted/70"
+                    )}
+                  >
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
         </nav>
       </div>
     </div>
