@@ -727,7 +727,7 @@ export default function WorkspaceCommunity() {
                     size="sm"
                     onClick={handleMobilePost}
                     disabled={!newPost.trim()}
-                    className="rounded-full px-5 h-8 text-xs font-bold"
+                    className="rounded-full px-5 h-8 text-xs font-bold hover:bg-[hsl(43,100%,50%)] hover:text-[hsl(270,80%,15%)] transition-colors"
                   >
                     POST
                   </Button>
