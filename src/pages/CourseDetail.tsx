@@ -58,6 +58,7 @@ interface Lesson {
   module_id: string | null
   duration_seconds: number | null
   completed: boolean
+  community_ids: string[]
 }
 
 interface Resource {

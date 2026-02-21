@@ -1,14 +1,27 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { Upload, Loader2 } from 'lucide-react'
+
+interface CommunityGroup {
+  id: string
+  name: string
+}
+
+const WORKSPACE_COMMUNITY_NAMES = [
+  'Family Business University',
+  'The Family Vault',
+  'The Family Business Accelerator',
+  'The Family Fortune Mastermind',
+]
 
 interface Props {
   courseId: string
@@ -28,7 +41,23 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
   const [videoType, setVideoType] = useState('embed')
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [communities, setCommunities] = useState<CommunityGroup[]>([])
+  const [selectedCommunityIds, setSelectedCommunityIds] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (open) {
+      supabase.from('community_groups').select('id, name').order('name').then(({ data }) => {
+        if (data) setCommunities(data.filter(c => WORKSPACE_COMMUNITY_NAMES.includes(c.name)))
+      })
+    }
+  }, [open])
+
+  const toggleCommunity = (id: string) => {
+    setSelectedCommunityIds(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    )
+  }
 
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -99,7 +128,8 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
       video_type: videoType,
       order_index: nextOrder,
       created_by: user?.id,
-    })
+      community_ids: selectedCommunityIds,
+    } as any)
 
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' })
@@ -109,6 +139,7 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
       setDescription('')
       setContent('')
       setVideoUrl('')
+      setSelectedCommunityIds([])
       onOpenChange(false)
       onCreated()
     }
@@ -186,6 +217,31 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
               <Input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." />
             </div>
           )}
+          {/* Community Assignment */}
+          <div className="space-y-2">
+            <Label>Assign to Communities <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <p className="text-xs text-muted-foreground">Only selected communities will see this lesson. Leave all unchecked to show to everyone.</p>
+            <div className="rounded-md border border-border divide-y divide-border">
+              {communities.map(c => (
+                <label
+                  key={c.id}
+                  className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-muted/40 transition-colors"
+                >
+                  <Checkbox
+                    checked={selectedCommunityIds.includes(c.id)}
+                    onCheckedChange={() => toggleCommunity(c.id)}
+                  />
+                  <span className="text-sm">{c.name}</span>
+                </label>
+              ))}
+            </div>
+            {selectedCommunityIds.length > 0 && (
+              <p className="text-xs text-primary font-medium">
+                {selectedCommunityIds.length} {selectedCommunityIds.length === 1 ? 'community' : 'communities'} selected
+              </p>
+            )}
+          </div>
+
           <Button onClick={handleSubmit} disabled={loading || !title.trim()} className="w-full">
             {loading ? 'Adding...' : 'Add Lesson'}
           </Button>
