@@ -436,19 +436,11 @@ export default function CourseDetail() {
         </div>
       </div>
 
-      {/* Description */}
-      {selectedLesson?.description && (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-sm">Description</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">{selectedLesson.description}</p>
-        </div>
-      )}
-
-      {/* Rich content */}
-      {selectedLesson?.content && (
+      {/* Lesson content */}
+      {(selectedLesson?.content || selectedLesson?.description) && (
         <div
           className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-a:text-primary prose-blockquote:border-primary prose-blockquote:text-muted-foreground"
-          dangerouslySetInnerHTML={{ __html: selectedLesson.content }}
+          dangerouslySetInnerHTML={{ __html: selectedLesson.content || selectedLesson.description || '' }}
         />
       )}
 
