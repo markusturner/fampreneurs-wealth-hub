@@ -43,18 +43,27 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
       return
     }
     setUploading(true)
-    const ext = file.name.split('.').pop()
-    const filePath = `${user?.id}/${Date.now()}.${ext}`
-    const { error: uploadError } = await supabase.storage.from('course-videos').upload(filePath, file)
-    if (uploadError) {
-      toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' })
+    try {
+      const ext = file.name.split('.').pop()
+      const filePath = `${user?.id}/${Date.now()}.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from('course-videos')
+        .upload(filePath, file, {
+          contentType: file.type,
+          cacheControl: '3600',
+        })
+      if (uploadError) {
+        toast({ title: 'Upload failed', description: uploadError.message, variant: 'destructive' })
+        return
+      }
+      const { data: urlData } = supabase.storage.from('course-videos').getPublicUrl(filePath)
+      setVideoUrl(urlData.publicUrl)
+      toast({ title: 'Video uploaded successfully' })
+    } catch (err: any) {
+      toast({ title: 'Upload failed', description: err?.message || 'Unknown error', variant: 'destructive' })
+    } finally {
       setUploading(false)
-      return
     }
-    const { data: urlData } = supabase.storage.from('course-videos').getPublicUrl(filePath)
-    setVideoUrl(urlData.publicUrl)
-    setUploading(false)
-    toast({ title: 'Video uploaded successfully' })
   }
 
   const handleSubmit = async () => {
