@@ -56,3 +56,15 @@ verify_jwt = false
 
 [functions.fetch-trust-sheets]
 verify_jwt = false
+
+[functions.daily-create-room]
+verify_jwt = false
+
+[functions.daily-manage-recording]
+verify_jwt = false
+
+[functions.daily-recording-webhook]
+verify_jwt = false
+
+[functions.cleanup-expired-recordings]
+verify_jwt = false
