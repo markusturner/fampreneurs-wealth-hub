@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
@@ -21,10 +22,15 @@ import {
 } from '@/components/ui/alert-dialog'
 
 interface Props {
-  course: { id: string; title: string; description: string | null; image_url: string | null } | null
+  course: { id: string; title: string; description: string | null; image_url: string | null; community_ids?: string[] } | null
   open: boolean
   onOpenChange: (open: boolean) => void
   onUpdated: () => void
+}
+
+interface CommunityGroup {
+  id: string
+  name: string
 }
 
 export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Props) {
@@ -33,6 +39,8 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [imageUrl, setImageUrl] = useState('')
+  const [selectedCommunityIds, setSelectedCommunityIds] = useState<string[]>([])
+  const [communityGroups, setCommunityGroups] = useState<CommunityGroup[]>([])
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -41,8 +49,23 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
       setTitle(course.title)
       setDescription(course.description || '')
       setImageUrl(course.image_url || '')
+      setSelectedCommunityIds(course.community_ids || [])
     }
   }, [course])
+
+  useEffect(() => {
+    if (open) {
+      supabase.from('community_groups').select('id, name').order('name').then(({ data }) => {
+        setCommunityGroups(data || [])
+      })
+    }
+  }, [open])
+
+  const toggleCommunity = (id: string) => {
+    setSelectedCommunityIds(prev =>
+      prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
+    )
+  }
 
   const handleSubmit = async () => {
     if (!course || !title.trim()) return
@@ -52,6 +75,7 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
       title: title.trim(),
       description: description.trim() || null,
       image_url: imageUrl.trim() || null,
+      community_ids: selectedCommunityIds,
     }).eq('id', course.id)
 
     if (error) {
@@ -99,6 +123,30 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
             <Label>Cover Image URL</Label>
             <Input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." />
           </div>
+
+          <div className="space-y-2">
+            <Label>Community Access</Label>
+            <p className="text-xs text-muted-foreground">Select which communities can see this course. Leave empty for all users.</p>
+            <div className="max-h-40 overflow-y-auto space-y-2 border rounded-md p-3">
+              {communityGroups.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No community groups found</p>
+              ) : (
+                communityGroups.map(group => (
+                  <div key={group.id} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`community-${group.id}`}
+                      checked={selectedCommunityIds.includes(group.id)}
+                      onCheckedChange={() => toggleCommunity(group.id)}
+                    />
+                    <label htmlFor={`community-${group.id}`} className="text-sm cursor-pointer">
+                      {group.name}
+                    </label>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
           <Button onClick={handleSubmit} disabled={loading || !title.trim()} className="w-full">
             {loading ? 'Saving...' : 'Save Changes'}
           </Button>
