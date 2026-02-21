@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react"
 import { Plus, ChevronLeft, ChevronRight, Clock, CalendarDays, MapPin, Pencil, Trash2, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -113,6 +113,8 @@ export default function WorkspaceCalendar() {
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false)
   const [formCommunities, setFormCommunities] = useState<string[]>([])
   const [formCommunityFrequency, setFormCommunityFrequency] = useState<Record<string, string>>({})
+  const [editScopeOpen, setEditScopeOpen] = useState(false)
+  const [pendingEditMeeting, setPendingEditMeeting] = useState<Meeting | null>(null)
 
   useEffect(() => { fetchMeetings() }, [])
 
@@ -253,7 +255,16 @@ export default function WorkspaceCalendar() {
     }
   }
 
-  const openEditDialog = (meeting: Meeting) => {
+  const handleEditClick = (meeting: Meeting) => {
+    if (meeting.is_recurring) {
+      setPendingEditMeeting(meeting)
+      setEditScopeOpen(true)
+    } else {
+      proceedToEdit(meeting)
+    }
+  }
+
+  const proceedToEdit = (meeting: Meeting, _scope?: string) => {
     const realId = meeting.parent_meeting_id && meeting.id.includes('-') ? meeting.parent_meeting_id : meeting.id
     const original = meetings.find(m => m.id === realId) || meeting
     setIsEditMode(true)
@@ -278,6 +289,8 @@ export default function WorkspaceCalendar() {
     }
     setFormRemind(original.remind_email || false)
     setSelectedMeeting(null)
+    setEditScopeOpen(false)
+    setPendingEditMeeting(null)
     setIsCreateOpen(true)
   }
 
@@ -712,7 +725,7 @@ export default function WorkspaceCalendar() {
                 <h2 className="text-xl font-bold">{selectedMeeting.title}</h2>
                 {canCreateEvent && (
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(selectedMeeting)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditClick(selectedMeeting)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => {
@@ -798,6 +811,39 @@ export default function WorkspaceCalendar() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Scope Dialog for Recurring Events */}
+      <Dialog open={editScopeOpen} onOpenChange={(open) => { if (!open) { setEditScopeOpen(false); setPendingEditMeeting(null) } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Edit recurring event</DialogTitle>
+            <DialogDescription>How would you like to apply your changes?</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 pt-2">
+            <Button
+              variant="outline"
+              className="w-full justify-start text-sm"
+              onClick={() => pendingEditMeeting && proceedToEdit(pendingEditMeeting, 'this')}
+            >
+              Only this event
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-start text-sm"
+              onClick={() => pendingEditMeeting && proceedToEdit(pendingEditMeeting, 'following')}
+            >
+              This and following events
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-start text-sm"
+              onClick={() => pendingEditMeeting && proceedToEdit(pendingEditMeeting, 'all')}
+            >
+              All events
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
