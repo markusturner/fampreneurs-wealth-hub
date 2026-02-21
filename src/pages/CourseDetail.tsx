@@ -561,12 +561,6 @@ export default function CourseDetail() {
         </div>
       </div>
 
-      {/* Admin edit */}
-      {isAdminOrOwner && (
-        <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs" onClick={() => setShowEditCourse(true)}>
-          <Pencil className="h-3.5 w-3.5" /> Edit Course Details
-        </Button>
-      )}
     </div>
   )
 
