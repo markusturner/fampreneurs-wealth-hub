@@ -8,6 +8,7 @@ import { Plus, BookOpen, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { AddCourseDialog } from '@/components/classroom/AddCourseDialog'
+import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 
 interface Course {
@@ -25,6 +26,7 @@ export default function Classroom() {
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddCourse, setShowAddCourse] = useState(false)
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null)
   const { isAdminOrOwner } = useIsAdminOrOwner()
   const { toast } = useToast()
 
@@ -122,7 +124,7 @@ export default function Classroom() {
                     variant="secondary"
                     size="icon"
                     className="h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background"
-                    onClick={(e) => { e.stopPropagation(); toast({ title: 'Edit course', description: 'Edit dialog coming soon' }) }}
+                    onClick={(e) => { e.stopPropagation(); setEditingCourse(course) }}
                   >
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>
@@ -178,6 +180,7 @@ export default function Classroom() {
       )}
 
       <AddCourseDialog open={showAddCourse} onOpenChange={setShowAddCourse} onCreated={fetchCourses} />
+      <EditCourseDialog course={editingCourse} open={!!editingCourse} onOpenChange={(open) => { if (!open) setEditingCourse(null) }} onUpdated={fetchCourses} />
     </div>
   )
 }
