@@ -382,23 +382,27 @@ export default function CourseDetail() {
             <video src={selectedLesson.video_url} controls className="w-full h-full" />
           )}
         </div>
-      ) : (selectedLesson?.description || selectedLesson?.content) ? (
-        <div className="w-full bg-card border border-border rounded-xl overflow-hidden p-6">
-          <div 
-            className="prose prose-sm max-w-none dark:prose-invert"
-            dangerouslySetInnerHTML={{ __html: selectedLesson?.content || selectedLesson?.description || '' }}
-          />
-        </div>
-      ) : (
-        <div className="relative w-full aspect-video bg-gradient-to-br from-muted/50 to-muted rounded-xl overflow-hidden flex items-center justify-center">
-          <div className="text-center space-y-3">
-            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
-              <Play className="h-7 w-7 text-primary ml-1" />
+      ) : (() => {
+        const html = selectedLesson?.content || selectedLesson?.description || ''
+        const imgMatch = html.match(/<img[^>]+src="([^"]+)"[^>]*>/i)
+        if (imgMatch) {
+          return (
+            <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-lg flex items-center justify-center">
+              <img src={imgMatch[1]} alt={selectedLesson?.title || ''} className="w-full h-full object-contain" />
             </div>
-            <p className="text-sm text-muted-foreground">No video for this lesson</p>
+          )
+        }
+        return (
+          <div className="relative w-full aspect-video bg-gradient-to-br from-muted/50 to-muted rounded-xl overflow-hidden flex items-center justify-center">
+            <div className="text-center space-y-3">
+              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
+                <Play className="h-7 w-7 text-primary ml-1" />
+              </div>
+              <p className="text-sm text-muted-foreground">No video for this lesson</p>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Instructor row — NO share button */}
       <div className="flex items-center justify-between border-b border-border pb-4">
@@ -448,12 +452,21 @@ export default function CourseDetail() {
       </div>
 
       {/* Lesson content */}
-      {(selectedLesson?.content || selectedLesson?.description) && (
-        <div
-          className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-a:text-primary prose-blockquote:border-primary prose-blockquote:text-muted-foreground pb-6 border-b border-border"
-          dangerouslySetInnerHTML={{ __html: selectedLesson.content || selectedLesson.description || '' }}
-        />
-      )}
+      {(selectedLesson?.content || selectedLesson?.description) && (() => {
+        let html = selectedLesson.content || selectedLesson.description || ''
+        // If no video, strip the first image (already shown in the video spot)
+        if (!selectedLesson.video_url) {
+          html = html.replace(/<img[^>]+>/i, '')
+        }
+        // Only render if there's still meaningful content after stripping
+        const hasText = html.replace(/<[^>]*>/g, '').trim().length > 0
+        return hasText ? (
+          <div
+            className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-a:text-primary prose-blockquote:border-primary prose-blockquote:text-muted-foreground pb-6 border-b border-border"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        ) : null
+      })()}
 
       {/* Resources */}
       {resources.length > 0 && (
