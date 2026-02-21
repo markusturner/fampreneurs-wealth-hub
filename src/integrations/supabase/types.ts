@@ -344,6 +344,167 @@ export type Database = {
         }
         Relationships: []
       }
+      call_participants: {
+        Row: {
+          call_room_id: string
+          id: string
+          is_admin_or_owner: boolean | null
+          joined_at: string | null
+          left_at: string | null
+          user_id: string
+        }
+        Insert: {
+          call_room_id: string
+          id?: string
+          is_admin_or_owner?: boolean | null
+          joined_at?: string | null
+          left_at?: string | null
+          user_id: string
+        }
+        Update: {
+          call_room_id?: string
+          id?: string
+          is_admin_or_owner?: boolean | null
+          joined_at?: string | null
+          left_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_participants_call_room_id_fkey"
+            columns: ["call_room_id"]
+            isOneToOne: false
+            referencedRelation: "call_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      call_recordings: {
+        Row: {
+          call_room_id: string
+          community_group_id: string | null
+          community_post_id: string | null
+          created_at: string | null
+          duration_seconds: number | null
+          expires_at: string
+          id: string
+          recorded_by: string
+          recording_url: string | null
+          status: string
+          storage_path: string | null
+          summary: string | null
+          transcription: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          call_room_id: string
+          community_group_id?: string | null
+          community_post_id?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          expires_at?: string
+          id?: string
+          recorded_by: string
+          recording_url?: string | null
+          status?: string
+          storage_path?: string | null
+          summary?: string | null
+          transcription?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          call_room_id?: string
+          community_group_id?: string | null
+          community_post_id?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          expires_at?: string
+          id?: string
+          recorded_by?: string
+          recording_url?: string | null
+          status?: string
+          storage_path?: string | null
+          summary?: string | null
+          transcription?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_recordings_call_room_id_fkey"
+            columns: ["call_room_id"]
+            isOneToOne: false
+            referencedRelation: "call_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_recordings_community_group_id_fkey"
+            columns: ["community_group_id"]
+            isOneToOne: false
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_recordings_community_post_id_fkey"
+            columns: ["community_post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      call_rooms: {
+        Row: {
+          community_group_id: string | null
+          created_at: string | null
+          created_by: string
+          daily_room_url: string | null
+          description: string | null
+          ended_at: string | null
+          id: string
+          room_name: string
+          started_at: string | null
+          status: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          community_group_id?: string | null
+          created_at?: string | null
+          created_by: string
+          daily_room_url?: string | null
+          description?: string | null
+          ended_at?: string | null
+          id?: string
+          room_name: string
+          started_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          community_group_id?: string | null
+          created_at?: string | null
+          created_by?: string
+          daily_room_url?: string | null
+          description?: string | null
+          ended_at?: string | null
+          id?: string
+          room_name?: string
+          started_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_rooms_community_group_id_fkey"
+            columns: ["community_group_id"]
+            isOneToOne: false
+            referencedRelation: "community_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
