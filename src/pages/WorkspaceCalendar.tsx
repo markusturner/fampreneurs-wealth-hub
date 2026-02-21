@@ -258,18 +258,17 @@ export default function WorkspaceCalendar() {
     return bestFreq
   }
 
-  // Filter recurring dates based on frequency
-  const filterDatesByFrequency = (dates: string[], startDate: Date, frequency: string): string[] => {
-    if (frequency === 'weekly') return dates
+  // Filter all dates (including base) based on frequency
+  const filterAllDatesByFrequency = (allDates: string[], frequency: string): string[] => {
+    if (frequency === 'weekly') return allDates
     if (frequency === 'bi-weekly') {
-      // Keep every other occurrence
-      return dates.filter((_, i) => i % 2 === 0)
+      // Keep every other occurrence (base = index 0 kept, skip 1, keep 2, etc.)
+      return allDates.filter((_, i) => i % 2 === 0)
     }
     if (frequency === 'monthly') {
-      // Keep only ~1 per month (first occurrence in each calendar month)
+      // Keep only the first occurrence per calendar month
       const seen = new Set<string>()
-      seen.add(`${startDate.getFullYear()}-${startDate.getMonth()}`)
-      return dates.filter(d => {
+      return allDates.filter(d => {
         const dt = parseDateString(d)
         const key = `${dt.getFullYear()}-${dt.getMonth()}`
         if (seen.has(key)) return false
@@ -278,11 +277,8 @@ export default function WorkspaceCalendar() {
       })
     }
     if (frequency === 'quarterly') {
-      // Keep ~1 per quarter
       const seen = new Set<string>()
-      const startQ = `${startDate.getFullYear()}-${Math.floor(startDate.getMonth() / 3)}`
-      seen.add(startQ)
-      return dates.filter(d => {
+      return allDates.filter(d => {
         const dt = parseDateString(d)
         const key = `${dt.getFullYear()}-${Math.floor(dt.getMonth() / 3)}`
         if (seen.has(key)) return false
@@ -290,26 +286,34 @@ export default function WorkspaceCalendar() {
         return true
       })
     }
-    return dates
+    return allDates
   }
 
   // Build display meetings including recurring instances
   const displayMeetings = useMemo(() => {
-    const all: Meeting[] = [...filteredMeetings]
+    const all: Meeting[] = []
     filteredMeetings.forEach(m => {
       if (m.is_recurring && m.recurring_pattern && !m.parent_meeting_id) {
         const startDate = parseDateString(m.meeting_date)
-        let recurringDates = generateRecurringDates(startDate, m.recurring_pattern)
+        const recurringDates = generateRecurringDates(startDate, m.recurring_pattern)
+        
+        // All dates including the base event
+        const allDates = [m.meeting_date, ...recurringDates]
         
         // Apply frequency restriction for non-admin users
         const userFreq = getUserFrequencyForMeeting(m)
-        if (userFreq) {
-          recurringDates = filterDatesByFrequency(recurringDates, startDate, userFreq)
-        }
+        const visibleDates = userFreq ? filterAllDatesByFrequency(allDates, userFreq) : allDates
         
-        recurringDates.forEach(date => {
-          all.push({ ...m, id: `${m.id}-${date}`, meeting_date: date, parent_meeting_id: m.id })
+        visibleDates.forEach(date => {
+          if (date === m.meeting_date) {
+            all.push(m) // base event
+          } else {
+            all.push({ ...m, id: `${m.id}-${date}`, meeting_date: date, parent_meeting_id: m.id })
+          }
         })
+      } else if (!m.parent_meeting_id) {
+        // Non-recurring events
+        all.push(m)
       }
     })
     return all
