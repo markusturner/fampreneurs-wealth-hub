@@ -152,6 +152,10 @@ export default function CourseDetail() {
     if (!selectedLesson && allLessons.length > 0) {
       setSelectedLesson(allLessons[0])
       if (mods.length > 0) setOpenModules(new Set([mods[0].id]))
+    } else if (selectedLesson) {
+      // Refresh selectedLesson with latest data
+      const updated = allLessons.find(l => l.id === selectedLesson.id)
+      if (updated) setSelectedLesson(updated)
     }
 
     setLoading(false)
