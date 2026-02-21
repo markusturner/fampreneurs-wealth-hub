@@ -224,3 +224,8 @@ Brand: #290A52, #2EB2FF, #FFB500, #6215C8, #3031CB
     -webkit-line-clamp: 3;
   }
 }
+
+/* Preserve empty paragraphs as spacing in rich text content */
+.prose p:empty::before {
+  content: '\00a0';
+}
