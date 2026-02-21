@@ -258,21 +258,62 @@ export default function WorkspaceCalendar() {
     return bestFreq
   }
 
-  // Filter all dates based on frequency using consistent interval spacing
+  // Filter all dates based on frequency - picks the occurrence closest to the same calendar date each period
   const filterAllDatesByFrequency = (allDates: string[], frequency: string): string[] => {
-    if (frequency === 'weekly') return allDates
+    if (frequency === 'weekly' || allDates.length === 0) return allDates
+
     if (frequency === 'bi-weekly') {
-      // Every other occurrence
       return allDates.filter((_, i) => i % 2 === 0)
     }
+
+    // For monthly/quarterly: pick the occurrence closest to the base date's day-of-month each period
+    const baseDate = parseDateString(allDates[0])
+    const targetDay = baseDate.getDate() // e.g. 25
+
     if (frequency === 'monthly') {
-      // Every 4th occurrence (~once per month for weekly events)
-      return allDates.filter((_, i) => i % 4 === 0)
+      // Group by year-month, pick the date closest to targetDay in each month
+      const byMonth = new Map<string, string[]>()
+      allDates.forEach(d => {
+        const dt = parseDateString(d)
+        const key = `${dt.getFullYear()}-${dt.getMonth()}`
+        if (!byMonth.has(key)) byMonth.set(key, [])
+        byMonth.get(key)!.push(d)
+      })
+      const result: string[] = []
+      byMonth.forEach(dates => {
+        // Find the date closest to targetDay
+        let best = dates[0]
+        let bestDiff = Math.abs(parseDateString(dates[0]).getDate() - targetDay)
+        for (let i = 1; i < dates.length; i++) {
+          const diff = Math.abs(parseDateString(dates[i]).getDate() - targetDay)
+          if (diff < bestDiff) { bestDiff = diff; best = dates[i] }
+        }
+        result.push(best)
+      })
+      return result
     }
+
     if (frequency === 'quarterly') {
-      // Every 13th occurrence (~once per quarter for weekly events)
-      return allDates.filter((_, i) => i % 13 === 0)
+      const byQuarter = new Map<string, string[]>()
+      allDates.forEach(d => {
+        const dt = parseDateString(d)
+        const key = `${dt.getFullYear()}-Q${Math.floor(dt.getMonth() / 3)}`
+        if (!byQuarter.has(key)) byQuarter.set(key, [])
+        byQuarter.get(key)!.push(d)
+      })
+      const result: string[] = []
+      byQuarter.forEach(dates => {
+        let best = dates[0]
+        let bestDiff = Math.abs(parseDateString(dates[0]).getDate() - targetDay)
+        for (let i = 1; i < dates.length; i++) {
+          const diff = Math.abs(parseDateString(dates[i]).getDate() - targetDay)
+          if (diff < bestDiff) { bestDiff = diff; best = dates[i] }
+        }
+        result.push(best)
+      })
+      return result
     }
+
     return allDates
   }
 
