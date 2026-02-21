@@ -8,10 +8,8 @@ import { useOwnerRole } from "@/hooks/useOwnerRole"
 import { useSubscription } from "@/hooks/useSubscription"
 import { AppSidebar } from "./AppSidebar"
 import { LockedPageOverlay } from "@/components/dashboard/LockedPageOverlay"
-import { Loader2, Menu } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 
 // Routes that require TruHeirs subscription (not accessible without it)
@@ -40,7 +38,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { subscriptionStatus } = useSubscription()
   const navigate = useNavigate()
   const location = useLocation()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  
 
   const isTruHeirsRoute = TRUHEIRS_ROUTES.includes(location.pathname)
   const hasTruHeirsAccess = isAdminOrOwner || isOwner || profile?.truheirs_access === true || subscriptionStatus.subscribed || subscriptionStatus.loading
@@ -96,18 +94,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         {/* Mobile top bar */}
         <header className="md:hidden sticky top-0 z-50 flex items-center justify-between px-4 h-14 bg-card/80 backdrop-blur-xl border-b border-border/50">
           <div className="flex items-center gap-2">
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-72 overflow-hidden">
-                <div className="h-full">
-                  <AppSidebar className="w-full border-r-0" />
-                </div>
-              </SheetContent>
-            </Sheet>
             <img
               src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png"
               alt="TruHeirs"
