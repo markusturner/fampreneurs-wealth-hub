@@ -37,6 +37,11 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
       toast({ title: 'Invalid file', description: 'Please select a video file', variant: 'destructive' })
       return
     }
+    const maxSize = 500 * 1024 * 1024 // 500MB
+    if (file.size > maxSize) {
+      toast({ title: 'File too large', description: 'Video must be under 500MB', variant: 'destructive' })
+      return
+    }
     setUploading(true)
     const ext = file.name.split('.').pop()
     const filePath = `${user?.id}/${Date.now()}.${ext}`
