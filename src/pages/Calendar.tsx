@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { Plus, ChevronLeft, ChevronRight, FileText, Edit, Save, X, Clock, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -15,8 +15,6 @@ import { NavHeader } from "@/components/dashboard/nav-header"
 import { MeetingTypesManager } from "@/components/dashboard/meeting-types-manager"
 import { CalendarIntegrationButton } from "@/components/dashboard/calendar-integration-button"
 import { useAuth } from "@/contexts/AuthContext"
-import { useOwnerRole } from "@/hooks/useOwnerRole"
-import { useUserRole } from "@/hooks/useUserRole"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 
@@ -49,8 +47,6 @@ interface MeetingType {
 export default function Calendar() {
   const { user } = useAuth()
   const { toast } = useToast()
-  const { isOwner } = useOwnerRole(user?.id ?? null)
-  const { isAdmin } = useUserRole()
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [meetingTypes, setMeetingTypes] = useState<MeetingType[]>([])
   const [loading, setLoading] = useState(true)
@@ -60,7 +56,6 @@ export default function Calendar() {
   const [editingNotes, setEditingNotes] = useState(false)
   const [isEditingMeeting, setIsEditingMeeting] = useState(false)
   const [selectedTimezone, setSelectedTimezone] = useState('America/New_York')
-  const [userGroupIds, setUserGroupIds] = useState<string[]>([])
   const [newMeeting, setNewMeeting] = useState({
     title: '',
     description: '',
@@ -102,32 +97,7 @@ export default function Calendar() {
   useEffect(() => {
     fetchMeetings()
     fetchMeetingTypes()
-    if (user?.id) fetchUserGroups()
-  }, [user?.id])
-
-  const fetchUserGroups = async () => {
-    if (!user?.id) return
-    try {
-      const { data, error } = await supabase
-        .from('group_memberships')
-        .select('group_id')
-        .eq('user_id', user.id)
-      if (error) throw error
-      setUserGroupIds((data || []).map(d => d.group_id))
-    } catch (error) {
-      console.error('Error fetching user groups:', error)
-    }
-  }
-
-  // Filter meetings based on user's community memberships
-  const filteredMeetings = useMemo(() => {
-    if (isAdmin || isOwner) return meetings
-    return meetings.filter(m => {
-      if (!m.community_ids || m.community_ids.length === 0) return true
-      return m.community_ids.some(id => userGroupIds.includes(id))
-    })
-  }, [meetings, userGroupIds, isAdmin, isOwner])
-  
+  }, [])
 
   const fetchMeetingTypes = async () => {
     try {
@@ -385,7 +355,7 @@ export default function Calendar() {
   while (day <= endDate) {
     for (let i = 0; i < 7; i++) {
       const cloneDay = day
-      const dayMeetings = filteredMeetings.filter(meeting => 
+      const dayMeetings = meetings.filter(meeting => 
         isSameDay(new Date(meeting.meeting_date), cloneDay)
       )
 
