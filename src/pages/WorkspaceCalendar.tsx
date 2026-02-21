@@ -111,7 +111,7 @@ export default function WorkspaceCalendar() {
   const [formRemind, setFormRemind] = useState(false)
   const [datePickerOpen, setDatePickerOpen] = useState(false)
   const [endDatePickerOpen, setEndDatePickerOpen] = useState(false)
-  const [formCalendarType, setFormCalendarType] = useState('workspace')
+  const [formCommunities, setFormCommunities] = useState<string[]>([])
 
   useEffect(() => { fetchMeetings() }, [])
 
@@ -147,7 +147,7 @@ export default function WorkspaceCalendar() {
     setFormEndDate(new Date())
     setFormEndAfter('10')
     setFormRemind(false)
-    setFormCalendarType('workspace')
+    setFormCommunities([])
     setIsEditMode(false)
     setEditingMeetingId(null)
   }
@@ -628,24 +628,35 @@ export default function WorkspaceCalendar() {
               <Label htmlFor="remind" className="text-sm cursor-pointer">Remind members by email 1 day before</Label>
             </div>
 
-            {/* Calendar Association */}
+            {/* Community Association */}
             <div>
-              <Label className="text-sm font-medium">Calendar visibility</Label>
-              <p className="text-xs text-muted-foreground mb-2">Who can see this event?</p>
-              <RadioGroup value={formCalendarType} onValueChange={setFormCalendarType} className="space-y-2">
-                <div className="flex items-center gap-2 p-2 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-                  <RadioGroupItem value="workspace" id="cal-workspace" />
-                  <Label htmlFor="cal-workspace" className="text-sm cursor-pointer flex-1">Workspace Calendar <span className="text-xs text-muted-foreground">— All workspace members</span></Label>
-                </div>
-                <div className="flex items-center gap-2 p-2 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-                  <RadioGroupItem value="family" id="cal-family" />
-                  <Label htmlFor="cal-family" className="text-sm cursor-pointer flex-1">Family Calendar <span className="text-xs text-muted-foreground">— Family members only</span></Label>
-                </div>
-                <div className="flex items-center gap-2 p-2 rounded-lg border border-border hover:bg-muted/50 transition-colors">
-                  <RadioGroupItem value="both" id="cal-both" />
-                  <Label htmlFor="cal-both" className="text-sm cursor-pointer flex-1">Both Calendars <span className="text-xs text-muted-foreground">— Visible everywhere</span></Label>
-                </div>
-              </RadioGroup>
+              <Label className="text-sm font-medium">Community association</Label>
+              <p className="text-xs text-muted-foreground mb-2">Which communities should see this event?</p>
+              <div className="space-y-2">
+                {[
+                  { id: 'fbu', label: 'Family Business University', short: 'FBU' },
+                  { id: 'tfv', label: 'The Family Vault', short: 'TFV' },
+                  { id: 'tfba', label: 'The Family Business Accelerator', short: 'TFBA' },
+                  { id: 'tffm', label: 'The Family Fortune Mastermind', short: 'TFFM' },
+                ].map(community => (
+                  <div key={community.id} className="flex items-center gap-2 p-2 rounded-lg border border-border hover:bg-muted/50 transition-colors">
+                    <Checkbox
+                      id={`community-${community.id}`}
+                      checked={formCommunities.includes(community.id)}
+                      onCheckedChange={(checked) => {
+                        setFormCommunities(prev =>
+                          checked
+                            ? [...prev, community.id]
+                            : prev.filter(c => c !== community.id)
+                        )
+                      }}
+                    />
+                    <Label htmlFor={`community-${community.id}`} className="text-sm cursor-pointer flex-1">
+                      {community.label} <span className="text-xs text-muted-foreground">({community.short})</span>
+                    </Label>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Actions */}
