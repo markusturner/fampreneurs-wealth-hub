@@ -382,6 +382,13 @@ export default function CourseDetail() {
             <video src={selectedLesson.video_url} controls className="w-full h-full" />
           )}
         </div>
+      ) : (selectedLesson?.description || selectedLesson?.content) ? (
+        <div className="w-full bg-card border border-border rounded-xl overflow-hidden p-6">
+          <div 
+            className="prose prose-sm max-w-none dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: selectedLesson?.content || selectedLesson?.description || '' }}
+          />
+        </div>
       ) : (
         <div className="relative w-full aspect-video bg-gradient-to-br from-muted/50 to-muted rounded-xl overflow-hidden flex items-center justify-center">
           <div className="text-center space-y-3">
