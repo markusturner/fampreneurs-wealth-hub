@@ -47,17 +47,22 @@ export function MobileBottomNav() {
     { name: 'Classroom', href: classroomHref, icon: BookOpen },
   ]
 
-  const moreItems = [
+  const workspaceItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Workspace Members', href: '/workspace-members', icon: Users },
+    { name: 'Profile Settings', href: '/profile-settings', icon: Settings },
+  ]
+
+  const truHeirsItems = [
     { name: 'Family Office', href: '/digital-family-office', icon: Home },
     { name: 'Family Constitution', href: '/documents', icon: FileText },
     { name: 'Family Calendar', href: '/calendar', icon: Calendar },
     { name: 'Family Members', href: '/members', icon: Users },
     { name: 'AI Chat', href: '/ai-chat', icon: Bot },
     { name: 'Trust Creation', href: '/trust-creation', icon: ScrollText },
-    { name: 'Workspace Members', href: '/workspace-members', icon: Users },
-    { name: 'Profile Settings', href: '/profile-settings', icon: Settings },
   ]
+
+  const moreItems = [...workspaceItems, ...truHeirsItems]
 
   const adminItems = (isAdmin || isOwner) ? [
     { name: 'Admin Settings', href: '/admin-settings', icon: Shield },
@@ -125,7 +130,36 @@ export function MobileBottomNav() {
               </div>
 
               <div className="space-y-1 overflow-y-auto flex-1 -mx-1 px-1">
-                {moreItems.map((item) => {
+                {/* Workspace Section */}
+                <div className="pt-1 pb-1 px-3">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Workspace</p>
+                </div>
+                {workspaceItems.map((item) => {
+                  const Icon = item.icon
+                  const active = location.pathname === item.href
+                  return (
+                    <button
+                      key={item.href}
+                      onClick={() => { navigate(item.href); setMoreOpen(false) }}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors",
+                        active
+                          ? "bg-accent/10 text-accent"
+                          : "text-foreground hover:bg-muted/50 active:bg-muted"
+                      )}
+                    >
+                      <Icon className="h-4 w-4 flex-shrink-0" />
+                      <span className="flex-1 text-left">{item.name}</span>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
+                    </button>
+                  )
+                })}
+
+                {/* TruHeirs Section */}
+                <div className="pt-2 pb-1 px-3">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">TruHeirs</p>
+                </div>
+                {truHeirsItems.map((item) => {
                   const Icon = item.icon
                   const active = location.pathname === item.href
                   return (
