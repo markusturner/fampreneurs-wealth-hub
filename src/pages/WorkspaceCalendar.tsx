@@ -258,33 +258,20 @@ export default function WorkspaceCalendar() {
     return bestFreq
   }
 
-  // Filter all dates (including base) based on frequency
+  // Filter all dates based on frequency using consistent interval spacing
   const filterAllDatesByFrequency = (allDates: string[], frequency: string): string[] => {
     if (frequency === 'weekly') return allDates
     if (frequency === 'bi-weekly') {
-      // Keep every other occurrence (base = index 0 kept, skip 1, keep 2, etc.)
+      // Every other occurrence
       return allDates.filter((_, i) => i % 2 === 0)
     }
     if (frequency === 'monthly') {
-      // Keep only the first occurrence per calendar month
-      const seen = new Set<string>()
-      return allDates.filter(d => {
-        const dt = parseDateString(d)
-        const key = `${dt.getFullYear()}-${dt.getMonth()}`
-        if (seen.has(key)) return false
-        seen.add(key)
-        return true
-      })
+      // Every 4th occurrence (~once per month for weekly events)
+      return allDates.filter((_, i) => i % 4 === 0)
     }
     if (frequency === 'quarterly') {
-      const seen = new Set<string>()
-      return allDates.filter(d => {
-        const dt = parseDateString(d)
-        const key = `${dt.getFullYear()}-${Math.floor(dt.getMonth() / 3)}`
-        if (seen.has(key)) return false
-        seen.add(key)
-        return true
-      })
+      // Every 13th occurrence (~once per quarter for weekly events)
+      return allDates.filter((_, i) => i % 13 === 0)
     }
     return allDates
   }
