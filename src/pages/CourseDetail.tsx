@@ -38,6 +38,7 @@ import { AddResourceDialog } from '@/components/classroom/AddResourceDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
 import { EditLessonDialog } from '@/components/classroom/EditLessonDialog'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
+import { CourseComments } from '@/components/classroom/CourseComments'
 
 interface Module {
   id: string
@@ -522,7 +523,36 @@ export default function CourseDetail() {
         <p className="text-xs text-muted-foreground">{completedCount} of {totalLessons} lessons completed</p>
       </div>
 
-      {/* Rating — clearly visible with interactive stars */}
+      {/* Publisher — moved above comments and rating */}
+      <div className="rounded-xl border border-border p-4 space-y-3" style={{ background: '#f8f4ff' }}>
+        <p className="text-sm font-bold" style={{ color: '#290a52' }}>Publisher</p>
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0" style={{ background: '#290a52' }}>
+            {course?.instructor?.[0]?.toUpperCase() ?? 'T'}
+          </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: '#290a52' }}>{course?.instructor ?? 'TruHeirs'}</p>
+            <p className="text-xs text-muted-foreground">Course Creator</p>
+          </div>
+        </div>
+        <div className="space-y-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5" />
+            <span>{totalLessons} lessons published</span>
+          </div>
+          {course?.level && (
+            <div className="flex items-center gap-1.5">
+              <BookOpen className="h-3.5 w-3.5" />
+              <span>{course.level} level</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Comments section */}
+      {courseId && <CourseComments courseId={courseId} lessonId={selectedLesson?.id} />}
+
+      {/* Rating */}
       <div className="rounded-xl border border-border p-4 space-y-3">
         <p className="text-sm font-bold" style={{ color: '#290a52' }}>Rating</p>
         <p className="text-xs text-muted-foreground">Rate this course:</p>
@@ -550,32 +580,6 @@ export default function CourseDetail() {
         {userRating > 0 && (
           <p className="text-xs text-muted-foreground">You rated: {userRating}/5 ⭐</p>
         )}
-      </div>
-
-      {/* Publisher — with distinct background so it stands out */}
-      <div className="rounded-xl border border-border p-4 space-y-3" style={{ background: '#f8f4ff' }}>
-        <p className="text-sm font-bold" style={{ color: '#290a52' }}>Publisher</p>
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0" style={{ background: '#290a52' }}>
-            {course?.instructor?.[0]?.toUpperCase() ?? 'T'}
-          </div>
-          <div>
-            <p className="text-sm font-semibold" style={{ color: '#290a52' }}>{course?.instructor ?? 'TruHeirs'}</p>
-            <p className="text-xs text-muted-foreground">Course Creator</p>
-          </div>
-        </div>
-        <div className="space-y-1.5 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5">
-            <Users className="h-3.5 w-3.5" />
-            <span>{totalLessons} lessons published</span>
-          </div>
-          {course?.level && (
-            <div className="flex items-center gap-1.5">
-              <BookOpen className="h-3.5 w-3.5" />
-              <span>{course.level} level</span>
-            </div>
-          )}
-        </div>
       </div>
 
     </div>
@@ -634,6 +638,21 @@ export default function CourseDetail() {
                 <Progress value={progressPercent} className="h-2" />
                 <p className="text-xs text-muted-foreground">{completedCount} of {totalLessons} lessons completed</p>
               </div>
+              {/* Publisher */}
+              <div className="rounded-xl border border-border p-4 space-y-3" style={{ background: '#f8f4ff' }}>
+                <p className="text-sm font-bold" style={{ color: '#290a52' }}>Publisher</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0" style={{ background: '#290a52' }}>
+                    {course?.instructor?.[0]?.toUpperCase() ?? 'T'}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: '#290a52' }}>{course?.instructor ?? 'TruHeirs'}</p>
+                    <p className="text-xs text-muted-foreground">Course Creator</p>
+                  </div>
+                </div>
+              </div>
+              {/* Comments */}
+              {courseId && <CourseComments courseId={courseId} lessonId={selectedLesson?.id} />}
               {/* Rating */}
               <div className="rounded-xl border border-border p-4 space-y-2">
                 <p className="text-sm font-bold" style={{ color: '#290a52' }}>Rating</p>
