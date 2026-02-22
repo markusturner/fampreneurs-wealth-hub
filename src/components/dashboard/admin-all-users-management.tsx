@@ -595,53 +595,53 @@ export function AdminAllUsersManagement() {
                     <ArrowLeft className="h-4 w-4" />
                     Back
                   </Button>
-                  <div className="space-y-3 p-3 border rounded-lg">
-                    <h3 className="font-semibold text-lg">
+                  <div className="space-y-3 p-4 border rounded-lg">
+                    <h3 className="font-semibold text-base break-words">
                       {mobileSelectedUser.display_name || `${mobileSelectedUser.first_name || ''} ${mobileSelectedUser.last_name || ''}`.trim() || 'N/A'}
                     </h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Email</span>
-                        <span className="text-right truncate max-w-[60%]">{mobileSelectedUser.email}</span>
+                    <div className="space-y-2.5 text-sm">
+                      <div className="flex justify-between items-start gap-2">
+                        <span className="text-muted-foreground shrink-0">Email</span>
+                        <span className="text-right break-all text-xs">{mobileSelectedUser.email}</span>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Role</span>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Role</span>
                         <div className="flex gap-1 flex-wrap justify-end">{getRoleBadges(mobileSelectedUser)}</div>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">TruHeirs</span>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">TruHeirs</span>
                         <Badge variant={mobileSelectedUser.truheirs_access !== false ? "default" : "secondary"} className={mobileSelectedUser.truheirs_access !== false ? "bg-green-600 text-white" : ""}>
                           {mobileSelectedUser.truheirs_access !== false ? "Yes" : "No"}
                         </Badge>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Payment</span>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Payment</span>
                         <div className="text-right">
-                          <span className="font-medium">{getPackageInfo(mobileSelectedUser).package}</span>
+                          <span className="font-medium text-xs">{getPackageInfo(mobileSelectedUser).package}</span>
                           <span className="text-xs text-muted-foreground ml-1">{getPackageInfo(mobileSelectedUser).amount}</span>
                         </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Program</span>
-                        <span>{mobileSelectedUser.program_name || 'None'}</span>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Program</span>
+                        <span className="text-right text-xs">{mobileSelectedUser.program_name || 'None'}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Joined</span>
-                        <span>{new Date(mobileSelectedUser.created_at).toLocaleDateString()}</span>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Joined</span>
+                        <span className="text-xs">{new Date(mobileSelectedUser.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    <div className="flex gap-2 pt-3 border-t">
-                      <Button size="sm" variant="outline" onClick={() => setPreviewUser(mobileSelectedUser)} className="flex-1">
-                        <Eye className="h-4 w-4 mr-1" /> View
+                    <div className="grid grid-cols-4 gap-1.5 pt-3 border-t">
+                      <Button size="sm" variant="outline" onClick={() => setPreviewUser(mobileSelectedUser)} className="px-2">
+                        <Eye className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleResendCredentials(mobileSelectedUser)} disabled={resendingCredentialsId === mobileSelectedUser.user_id} className="flex-1">
-                        {resendingCredentialsId === mobileSelectedUser.user_id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Mail className="h-4 w-4 mr-1" /> Email</>}
+                      <Button size="sm" variant="outline" onClick={() => handleResendCredentials(mobileSelectedUser)} disabled={resendingCredentialsId === mobileSelectedUser.user_id} className="px-2">
+                        {resendingCredentialsId === mobileSelectedUser.user_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setEditingUser(mobileSelectedUser)} className="flex-1">
-                        <Pencil className="h-4 w-4 mr-1" /> Edit
+                      <Button size="sm" variant="outline" onClick={() => setEditingUser(mobileSelectedUser)} className="px-2">
+                        <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setDeletingUserId(mobileSelectedUser.user_id)} className="text-destructive hover:text-destructive">
-                        <Trash2 className="h-4 w-4" />
+                      <Button size="sm" variant="outline" onClick={() => setDeletingUserId(mobileSelectedUser.user_id)} className="text-destructive hover:text-destructive px-2">
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </div>
