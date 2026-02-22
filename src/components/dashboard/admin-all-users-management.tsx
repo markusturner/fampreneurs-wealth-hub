@@ -669,8 +669,9 @@ export function AdminAllUsersManagement() {
                 </ScrollArea>
               )
             ) : (
-            <div className="border rounded-lg">
+            <div className="border rounded-lg overflow-x-auto">
               <ScrollArea className="h-[500px]">
+                <div className="min-w-[900px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -696,10 +697,10 @@ export function AdminAllUsersManagement() {
                         const packageInfo = getPackageInfo(user)
                         return (
                         <TableRow key={user.user_id}>
-                          <TableCell className="font-medium">
+                          <TableCell className="font-medium whitespace-nowrap">
                             {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}
                           </TableCell>
-                          <TableCell>{user.email}</TableCell>
+                          <TableCell className="whitespace-nowrap">{user.email}</TableCell>
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
                               {getRoleBadges(user)}
@@ -711,13 +712,13 @@ export function AdminAllUsersManagement() {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <div className="flex flex-col">
+                            <div className="flex flex-col whitespace-nowrap">
                               <span className="font-medium">{packageInfo.package}</span>
                               <span className="text-xs text-muted-foreground">{packageInfo.amount}</span>
                             </div>
                           </TableCell>
-                          <TableCell>{user.program_name || 'None'}</TableCell>
-                          <TableCell>
+                          <TableCell className="whitespace-nowrap">{user.program_name || 'None'}</TableCell>
+                          <TableCell className="whitespace-nowrap">
                             {new Date(user.created_at).toLocaleDateString()}
                           </TableCell>
                           <TableCell className="text-right">
@@ -768,6 +769,7 @@ export function AdminAllUsersManagement() {
                     )}
                   </TableBody>
                 </Table>
+                </div>
               </ScrollArea>
             </div>
             )}
