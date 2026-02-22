@@ -549,9 +549,6 @@ export default function CourseDetail() {
         </div>
       </div>
 
-      {/* Comments section */}
-      {courseId && <CourseComments courseId={courseId} lessonId={selectedLesson?.id} />}
-
       {/* Rating */}
       <div className="rounded-xl border border-border p-4 space-y-3">
         <p className="text-sm font-bold" style={{ color: '#290a52' }}>Rating</p>
@@ -581,6 +578,9 @@ export default function CourseDetail() {
           <p className="text-xs text-muted-foreground">You rated: {userRating}/5 ⭐</p>
         )}
       </div>
+
+      {/* Comments section */}
+      {courseId && <CourseComments courseId={courseId} lessonId={selectedLesson?.id} />}
 
     </div>
   )
@@ -651,8 +651,6 @@ export default function CourseDetail() {
                   </div>
                 </div>
               </div>
-              {/* Comments */}
-              {courseId && <CourseComments courseId={courseId} lessonId={selectedLesson?.id} />}
               {/* Rating */}
               <div className="rounded-xl border border-border p-4 space-y-2">
                 <p className="text-sm font-bold" style={{ color: '#290a52' }}>Rating</p>
@@ -664,6 +662,8 @@ export default function CourseDetail() {
                   ))}
                 </div>
               </div>
+              {/* Comments */}
+              {courseId && <CourseComments courseId={courseId} lessonId={selectedLesson?.id} />}
             </div>
           </div>
         )}

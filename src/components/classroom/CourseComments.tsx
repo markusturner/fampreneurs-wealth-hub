@@ -317,13 +317,11 @@ export function CourseComments({ courseId, lessonId }: CourseCommentsProps) {
       ) : comments.length === 0 ? (
         <p className="text-xs text-muted-foreground">No comments yet. Be the first!</p>
       ) : (
-        <ScrollArea className="max-h-[400px]">
-          <div className="space-y-1 pr-2">
-            {comments.map(comment => (
-              <CommentItem key={comment.id} comment={comment} />
-            ))}
-          </div>
-        </ScrollArea>
+        <div className="space-y-1">
+          {comments.map(comment => (
+            <CommentItem key={comment.id} comment={comment} />
+          ))}
+        </div>
       )}
     </div>
   )
