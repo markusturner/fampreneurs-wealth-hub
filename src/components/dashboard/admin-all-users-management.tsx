@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -74,6 +74,7 @@ export function AdminAllUsersManagement() {
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null)
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null)
   const [resendingCredentialsId, setResendingCredentialsId] = useState<string | null>(null)
   const [programOptions, setProgramOptions] = useState<string[]>([
     'The Family Business University',
@@ -584,109 +585,129 @@ export function AdminAllUsersManagement() {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ) : (
-            <div className="border rounded-lg">
-              <ScrollArea className="h-[500px]">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>TruHeirs</TableHead>
-                      <TableHead>Payment</TableHead>
-                      <TableHead>Program</TableHead>
-                      <TableHead>Joined</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+          ) : selectedUser ? (
+              <div className="space-y-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedUser(null)}
+                  className="flex items-center gap-1 -ml-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to list
+                </Button>
+
+                <div className="border rounded-lg p-4 md:p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold">
+                        {selectedUser.display_name || `${selectedUser.first_name || ''} ${selectedUser.last_name || ''}`.trim() || 'N/A'}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                    </div>
+                    <div className="flex gap-1 flex-wrap">
+                      {getRoleBadges(selectedUser)}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Phone:</span>
+                      <span className="ml-2">{selectedUser.phone || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">TruHeirs Access:</span>
+                      <Badge variant={selectedUser.truheirs_access !== false ? "default" : "secondary"} className={`ml-2 ${selectedUser.truheirs_access !== false ? "bg-green-600 text-white" : ""}`}>
+                        {selectedUser.truheirs_access !== false ? "Yes" : "No"}
+                      </Badge>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Payment:</span>
+                      <span className="ml-2 font-medium">{getPackageInfo(selectedUser).package}</span>
+                      <span className="ml-1 text-muted-foreground">{getPackageInfo(selectedUser).amount}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Program:</span>
+                      <span className="ml-2">{selectedUser.program_name || 'None'}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Mailing Address:</span>
+                      <span className="ml-2">{selectedUser.mailing_address || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Joined:</span>
+                      <span className="ml-2">{new Date(selectedUser.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-2 border-t">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setPreviewUser(selectedUser)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Preview View
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleResendCredentials(selectedUser)}
+                      disabled={resendingCredentialsId === selectedUser.user_id}
+                    >
+                      {resendingCredentialsId === selectedUser.user_id ? (
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <Mail className="h-4 w-4 mr-1" />
+                      )}
+                      Resend Credentials
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setEditingUser(selectedUser)}
+                    >
+                      <Pencil className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setDeletingUserId(selectedUser.user_id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="border rounded-lg">
+                <ScrollArea className="h-[500px]">
+                  <div className="divide-y">
                     {filteredUsers.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                          No users found
-                        </TableCell>
-                      </TableRow>
+                      <div className="text-center text-muted-foreground py-8">
+                        No users found
+                      </div>
                     ) : (
-                      filteredUsers.map((user) => {
-                        const packageInfo = getPackageInfo(user)
-                        return (
-                        <TableRow key={user.user_id}>
-                          <TableCell className="font-medium">
-                            {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}
-                          </TableCell>
-                          <TableCell>{user.email}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-1 flex-wrap">
-                              {getRoleBadges(user)}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={user.truheirs_access !== false ? "default" : "secondary"} className={user.truheirs_access !== false ? "bg-green-600 text-white" : ""}>
-                              {user.truheirs_access !== false ? "Yes" : "No"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col">
-                              <span className="font-medium">{packageInfo.package}</span>
-                              <span className="text-xs text-muted-foreground">{packageInfo.amount}</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>{user.program_name || 'None'}</TableCell>
-                          <TableCell>
-                            {new Date(user.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setPreviewUser(user)}
-                                title="Preview user view"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleResendCredentials(user)}
-                                title="Resend login credentials"
-                                disabled={resendingCredentialsId === user.user_id}
-                              >
-                                {resendingCredentialsId === user.user_id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Mail className="h-4 w-4" />
-                                )}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setEditingUser(user)}
-                                title="Edit user"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setDeletingUserId(user.user_id)}
-                                title="Delete user"
-                                className="text-destructive hover:text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                        )
-                      })
+                      filteredUsers.map((user) => (
+                        <button
+                          key={user.user_id}
+                          onClick={() => setSelectedUser(user)}
+                          className="w-full flex items-center justify-between px-4 py-3 hover:bg-accent transition-colors text-left"
+                        >
+                          <span className="font-medium truncate">
+                            {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email}
+                          </span>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
+                        </button>
+                      ))
                     )}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
-            </div>
-          )}
+                  </div>
+                </ScrollArea>
+              </div>
+            )}
 
           <div className="text-sm text-muted-foreground">
             Total users: {filteredUsers.length}
