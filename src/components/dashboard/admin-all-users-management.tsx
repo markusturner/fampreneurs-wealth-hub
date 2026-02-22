@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -64,6 +65,8 @@ interface UserProfile {
 }
 
 export function AdminAllUsersManagement() {
+  const isMobile = useIsMobile()
+  const [mobileSelectedUser, setMobileSelectedUser] = useState<UserProfile | null>(null)
   const [users, setUsers] = useState<UserProfile[]>([])
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -584,7 +587,88 @@ export function AdminAllUsersManagement() {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
-          ) : (
+          ) : isMobile ? (
+              // Mobile: show selected user detail or name list
+              mobileSelectedUser ? (
+                <div className="space-y-4">
+                  <Button variant="ghost" size="sm" onClick={() => setMobileSelectedUser(null)} className="flex items-center gap-1 -ml-2">
+                    <ArrowLeft className="h-4 w-4" />
+                    Back
+                  </Button>
+                  <div className="space-y-3 p-3 border rounded-lg">
+                    <h3 className="font-semibold text-lg">
+                      {mobileSelectedUser.display_name || `${mobileSelectedUser.first_name || ''} ${mobileSelectedUser.last_name || ''}`.trim() || 'N/A'}
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Email</span>
+                        <span className="text-right truncate max-w-[60%]">{mobileSelectedUser.email}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Role</span>
+                        <div className="flex gap-1 flex-wrap justify-end">{getRoleBadges(mobileSelectedUser)}</div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">TruHeirs</span>
+                        <Badge variant={mobileSelectedUser.truheirs_access !== false ? "default" : "secondary"} className={mobileSelectedUser.truheirs_access !== false ? "bg-green-600 text-white" : ""}>
+                          {mobileSelectedUser.truheirs_access !== false ? "Yes" : "No"}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Payment</span>
+                        <div className="text-right">
+                          <span className="font-medium">{getPackageInfo(mobileSelectedUser).package}</span>
+                          <span className="text-xs text-muted-foreground ml-1">{getPackageInfo(mobileSelectedUser).amount}</span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Program</span>
+                        <span>{mobileSelectedUser.program_name || 'None'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Joined</span>
+                        <span>{new Date(mobileSelectedUser.created_at).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 pt-3 border-t">
+                      <Button size="sm" variant="outline" onClick={() => setPreviewUser(mobileSelectedUser)} className="flex-1">
+                        <Eye className="h-4 w-4 mr-1" /> View
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => handleResendCredentials(mobileSelectedUser)} disabled={resendingCredentialsId === mobileSelectedUser.user_id} className="flex-1">
+                        {resendingCredentialsId === mobileSelectedUser.user_id ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Mail className="h-4 w-4 mr-1" /> Email</>}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setEditingUser(mobileSelectedUser)} className="flex-1">
+                        <Pencil className="h-4 w-4 mr-1" /> Edit
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setDeletingUserId(mobileSelectedUser.user_id)} className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <ScrollArea className="h-[500px]">
+                  <div className="divide-y">
+                    {filteredUsers.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-8">No users found</p>
+                    ) : (
+                      filteredUsers.map((user) => (
+                        <button
+                          key={user.user_id}
+                          onClick={() => setMobileSelectedUser(user)}
+                          className="flex items-center justify-between w-full px-3 py-3 text-left hover:bg-muted/50 transition-colors"
+                        >
+                          <span className="font-medium text-sm truncate">
+                            {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}
+                          </span>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
+              )
+            ) : (
             <div className="border rounded-lg">
               <ScrollArea className="h-[500px]">
                 <Table>
@@ -686,7 +770,8 @@ export function AdminAllUsersManagement() {
                 </Table>
               </ScrollArea>
             </div>
-          )}
+            )}
+
 
           <div className="text-sm text-muted-foreground">
             Total users: {filteredUsers.length}
