@@ -433,20 +433,28 @@ export default function AIChat() {
           <Button variant="ghost" size="icon" className={`h-7 w-7 flex-shrink-0 ${isRecording ? 'text-destructive bg-destructive/10' : ''}`} onClick={toggleVoiceInput}>
             {isRecording ? <Square className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
           </Button>
-          {PERSONAS.map((p) => (
-            <Button
-              key={p.id}
-              variant="outline"
-              size="sm"
-              className="h-7 text-[10px] sm:text-xs rounded-full gap-1 flex-shrink-0 px-2 sm:px-3 border-2 transition-all duration-200"
-              style={activePersona === p.id ? { backgroundColor: p.activeColor, borderColor: p.activeColor, color: '#fff' } : { borderColor: p.color + '40', color: 'inherit' }}
-              onClick={() => switchPersona(p.id)}
-              title={p.description}
-            >
-              <p.icon className="h-3 w-3" />
-              <span className="hidden sm:inline">{p.label}</span>
-            </Button>
-          ))}
+          {PERSONAS.map((p) => {
+            const isActive = activePersona === p.id;
+            return (
+              <button
+                key={p.id}
+                className="flex items-center gap-1.5 rounded-full transition-all duration-300 flex-shrink-0 border-2 h-7"
+                style={isActive
+                  ? { backgroundColor: p.activeColor, borderColor: p.activeColor, color: '#fff', padding: '0 10px' }
+                  : { borderColor: (p.color || '#888') + '40', color: 'inherit', padding: '0 6px' }
+                }
+                onClick={() => switchPersona(p.id)}
+                title={p.description}
+              >
+                <p.icon className="h-3.5 w-3.5 flex-shrink-0" />
+                {isActive && (
+                  <span className="text-[10px] sm:text-xs font-semibold whitespace-nowrap animate-in slide-in-from-left-2 fade-in duration-300">
+                    {p.label}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
         <Button onClick={() => sendMessage()} disabled={!input.trim() || isLoading} size="icon" className="h-8 w-8 rounded-full flex-shrink-0">
           <Send className="h-4 w-4" />
