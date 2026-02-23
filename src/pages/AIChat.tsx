@@ -421,7 +421,7 @@ export default function AIChat() {
         onKeyPress={handleKeyPress}
         disabled={isLoading}
         rows={1}
-        className="w-full resize-none border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none text-sm mb-3 bg-transparent overflow-y-auto"
+        className="w-full resize-none border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none text-sm mb-3 bg-muted rounded-lg px-3 py-2 overflow-y-auto"
         style={{ minHeight: '36px', maxHeight: '200px' }}
       />
       <div className="flex items-center justify-between gap-2">
