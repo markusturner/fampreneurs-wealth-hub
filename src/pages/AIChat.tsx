@@ -409,18 +409,20 @@ export default function AIChat() {
         </div>
       )}
       <textarea
+        ref={(el) => {
+          if (el) {
+            el.style.height = '0px';
+            el.style.height = Math.max(36, Math.min(el.scrollHeight, 200)) + 'px';
+          }
+        }}
         placeholder="Message AI... (Shift+Enter for new line)"
         value={input}
-        onChange={(e) => {
-          setInput(e.target.value);
-          e.target.style.height = 'auto';
-          e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
-        }}
+        onChange={(e) => setInput(e.target.value)}
         onKeyPress={handleKeyPress}
         disabled={isLoading}
         rows={1}
         className="w-full resize-none border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none text-sm mb-3 bg-transparent overflow-y-auto"
-        style={{ maxHeight: '200px' }}
+        style={{ minHeight: '36px', maxHeight: '200px' }}
       />
       <div className="flex items-center justify-between gap-2">
         <div className="flex gap-1 items-center overflow-x-auto scrollbar-hide flex-1 min-w-0">
