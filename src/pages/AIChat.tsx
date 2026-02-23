@@ -628,7 +628,7 @@ export default function AIChat() {
                 <div className="absolute inset-0 bg-white/5 backdrop-blur-sm rounded-2xl" />
                 <div className="relative z-10">
                    <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
-                     Welcome back{displayName ? `, ${displayName.split(' ')[0]}` : ''}
+                     Welcome back{displayName ? `, ${displayName.split(' ')[0]}!` : '!'}
                    </h1>
                   <p className="text-white/70 mt-1 text-sm sm:text-base">
                     What would you like to create today?
