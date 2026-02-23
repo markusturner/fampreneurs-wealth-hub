@@ -623,8 +623,8 @@ export default function AIChat() {
         {/* Main content */}
         <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
           {!hasConversation ? (
-            <div className="flex flex-col items-center justify-center flex-1 w-full max-w-2xl mx-auto px-4">
-              <div className="w-full gradient-hero rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden mb-6">
+             <div className="flex flex-col items-center justify-center flex-1 w-full max-w-2xl mx-auto px-4 gap-4">
+               <div className="w-full gradient-hero rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden">
                 <div className="absolute inset-0 bg-white/5 backdrop-blur-sm rounded-2xl" />
                 <div className="relative z-10">
                   <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
@@ -636,7 +636,7 @@ export default function AIChat() {
                 </div>
               </div>
               
-              <div className={`w-full max-w-2xl grid ${presets.length === 1 ? 'grid-cols-1' : presets.length === 2 ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'} gap-2 mb-6`}>
+              <div className={`w-full max-w-2xl grid ${presets.length === 1 ? 'grid-cols-1' : presets.length === 2 ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'} gap-2`}>
                 {presets.map((preset, i) => (
                   <button
                     key={i}
