@@ -865,12 +865,6 @@ export default function CourseDetail() {
             }}
           />
           <EditCourseDialog course={course} open={showEditCourse} onOpenChange={setShowEditCourse} onUpdated={fetchData} />
-          <EditLessonDialog
-            lesson={editingLesson}
-            open={!!editingLesson}
-            onOpenChange={(open) => !open && setEditingLesson(null)}
-            onUpdated={() => { fetchData(); setEditingLesson(null) }}
-          />
           <EditResourceDialog
             resource={editingResource}
             open={!!editingResource}
