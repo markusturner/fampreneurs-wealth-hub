@@ -35,6 +35,7 @@ import { cn } from '@/lib/utils'
 import { AddModuleDialog } from '@/components/classroom/AddModuleDialog'
 import { AddLessonDialog } from '@/components/classroom/AddLessonDialog'
 import { AddResourceDialog } from '@/components/classroom/AddResourceDialog'
+import { EditResourceDialog } from '@/components/classroom/EditResourceDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
 import { EditLessonDialog } from '@/components/classroom/EditLessonDialog'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
@@ -107,6 +108,7 @@ export default function CourseDetail() {
   const [showAddResource, setShowAddResource] = useState(false)
   const [showEditCourse, setShowEditCourse] = useState(false)
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
+  const [editingResource, setEditingResource] = useState<Resource | null>(null)
 
   const fetchData = useCallback(async () => {
     if (!courseId) return
@@ -394,16 +396,8 @@ export default function CourseDetail() {
             </div>
           )
         }
-        return (
-          <div className="relative w-full aspect-video bg-gradient-to-br from-muted/50 to-muted rounded-xl overflow-hidden flex items-center justify-center">
-            <div className="text-center space-y-3">
-              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
-                <Play className="h-7 w-7 text-primary ml-1" />
-              </div>
-              <p className="text-sm text-muted-foreground">No video for this lesson</p>
-            </div>
-          </div>
-        )
+        // No video and no image — don't show the empty video placeholder
+        return null
       })()}
 
       {/* Instructor row — NO share button */}
@@ -476,24 +470,35 @@ export default function CourseDetail() {
           <h3 className="font-semibold text-xs uppercase tracking-widest text-muted-foreground">Resources</h3>
           <div className="space-y-1.5">
             {resources.map(res => (
-              <a
-                key={res.id}
-                href={res.url || res.file_path || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-transparent hover:border-border transition-all duration-200"
-              >
-                <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-background shadow-sm border border-border shrink-0">
-                  {res.resource_type === 'pdf'
-                    ? <FileText className="h-4 w-4 text-destructive" />
-                    : res.resource_type === 'file'
-                    ? <Download className="h-4 w-4 text-muted-foreground" />
-                    : <LinkIcon className="h-4 w-4 text-accent" />
-                  }
-                </div>
-                <span className="text-sm font-medium text-foreground flex-1 truncate">{res.title}</span>
-                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-              </a>
+              <div key={res.id} className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-transparent hover:border-border transition-all duration-200">
+                <a
+                  href={res.url || res.file_path || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 flex-1 min-w-0"
+                >
+                  <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-background shadow-sm border border-border shrink-0">
+                    {res.resource_type === 'pdf'
+                      ? <FileText className="h-4 w-4 text-destructive" />
+                      : res.resource_type === 'file'
+                      ? <Download className="h-4 w-4 text-muted-foreground" />
+                      : <LinkIcon className="h-4 w-4 text-accent" />
+                    }
+                  </div>
+                  <span className="text-sm font-medium text-foreground flex-1 truncate">{res.title}</span>
+                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </a>
+                {isAdminOrOwner && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                    onClick={(e) => { e.stopPropagation(); setEditingResource(res) }}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -701,6 +706,18 @@ export default function CourseDetail() {
             open={!!editingLesson}
             onOpenChange={(open) => !open && setEditingLesson(null)}
             onUpdated={() => { fetchData(); setEditingLesson(null) }}
+          />
+          <EditResourceDialog
+            resource={editingResource}
+            open={!!editingResource}
+            onOpenChange={(open) => !open && setEditingResource(null)}
+            onUpdated={() => {
+              setEditingResource(null)
+              if (selectedLesson) {
+                supabase.from('course_resources').select('*').eq('lesson_id', selectedLesson.id).order('order_index')
+                  .then(({ data }) => setResources(data || []))
+              }
+            }}
           />
         </>
       )}
