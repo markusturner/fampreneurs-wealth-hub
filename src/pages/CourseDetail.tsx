@@ -33,6 +33,7 @@ import {
   Users,
   Heart,
   ArrowLeft,
+  Trash2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AddModuleDialog } from '@/components/classroom/AddModuleDialog'
