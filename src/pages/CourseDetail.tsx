@@ -707,6 +707,18 @@ export default function CourseDetail() {
             onOpenChange={(open) => !open && setEditingLesson(null)}
             onUpdated={() => { fetchData(); setEditingLesson(null) }}
           />
+          <EditResourceDialog
+            resource={editingResource}
+            open={!!editingResource}
+            onOpenChange={(open) => !open && setEditingResource(null)}
+            onUpdated={() => {
+              setEditingResource(null)
+              if (selectedLesson) {
+                supabase.from('course_resources').select('*').eq('lesson_id', selectedLesson.id).order('order_index')
+                  .then(({ data }) => setResources(data || []))
+              }
+            }}
+          />
         </>
       )}
     </>
