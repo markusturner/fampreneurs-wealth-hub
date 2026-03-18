@@ -396,16 +396,8 @@ export default function CourseDetail() {
             </div>
           )
         }
-        return (
-          <div className="relative w-full aspect-video bg-gradient-to-br from-muted/50 to-muted rounded-xl overflow-hidden flex items-center justify-center">
-            <div className="text-center space-y-3">
-              <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
-                <Play className="h-7 w-7 text-primary ml-1" />
-              </div>
-              <p className="text-sm text-muted-foreground">No video for this lesson</p>
-            </div>
-          </div>
-        )
+        // No video and no image — don't show the empty video placeholder
+        return null
       })()}
 
       {/* Instructor row — NO share button */}
