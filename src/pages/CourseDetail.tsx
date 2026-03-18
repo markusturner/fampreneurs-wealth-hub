@@ -108,6 +108,7 @@ export default function CourseDetail() {
   const [showAddResource, setShowAddResource] = useState(false)
   const [showEditCourse, setShowEditCourse] = useState(false)
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
+  const [editingResource, setEditingResource] = useState<Resource | null>(null)
 
   const fetchData = useCallback(async () => {
     if (!courseId) return
