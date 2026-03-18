@@ -773,7 +773,7 @@ export default function CourseDetail() {
         </div>
 
         {/* Center content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className={cn("flex-1", isEditingLesson ? "flex flex-col overflow-hidden" : "overflow-y-auto")}>
           {selectedLesson ? (
             <LessonContent />
           ) : (
