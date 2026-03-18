@@ -210,12 +210,8 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
             <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Lesson title" />
           </div>
           <div className="space-y-2">
-            <Label>Goal / Description</Label>
-            <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What will students learn?" />
-          </div>
-          <div className="space-y-2">
-            <Label>Lesson Content</Label>
-            <Textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Lesson summary, action steps, notes..." className="min-h-[120px]" />
+            <Label>Description / Content</Label>
+            <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Lesson goal, summary, action steps, notes..." className="min-h-[120px]" />
           </div>
           <div className="space-y-2">
             <Label>Video Type</Label>
