@@ -387,7 +387,7 @@ export default function CourseDetail() {
                         </div>
                         {isAdminOrOwner && (
                           <button
-                            onClick={e => { e.stopPropagation(); setEditingLesson(lesson) }}
+                            onClick={e => { e.stopPropagation(); handleSelectLesson(lesson); setTimeout(startEditingLesson, 50) }}
                             className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
                           >
                             <Pencil className="h-3 w-3 text-muted-foreground" />
