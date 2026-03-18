@@ -522,7 +522,7 @@ export default function CourseDetail() {
                 <Button variant="outline" size="sm" className="text-xs" onClick={cancelEditingLesson}>
                   Cancel
                 </Button>
-                <Button size="sm" className="text-xs" onClick={saveLesson} disabled={editSaving || !editTitle.trim()}>
+                <Button size="sm" className="text-xs bg-[#ffb500] hover:bg-[#ffb500]/90 text-primary-foreground" onClick={saveLesson} disabled={editSaving || !editTitle.trim()}>
                   {editSaving ? 'Saving...' : 'Save'}
                 </Button>
               </div>
