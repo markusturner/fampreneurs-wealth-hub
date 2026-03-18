@@ -137,7 +137,7 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
     const nextOrder = (existing?.[0]?.order_index ?? -1) + 1
 
     // Use description for both fields to keep them in sync
-    const lessonContent = content.trim() || description.trim() || null
+    const lessonContent = description.trim() || null
 
     const { data: lessonData, error } = await supabase.from('course_videos').insert({
       course_id: courseId,
