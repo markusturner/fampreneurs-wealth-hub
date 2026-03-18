@@ -9,7 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
-import { Upload, Loader2 } from 'lucide-react'
+import { Upload, Loader2, Plus, X } from 'lucide-react'
 
 interface CommunityGroup {
   id: string
@@ -22,6 +22,13 @@ const WORKSPACE_COMMUNITY_NAMES = [
   'The Family Business Accelerator',
   'The Family Fortune Mastermind',
 ]
+
+interface ResourceEntry {
+  title: string
+  resource_type: string
+  url: string
+  file: File | null
+}
 
 interface Props {
   courseId: string
@@ -43,6 +50,7 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
   const [uploading, setUploading] = useState(false)
   const [communities, setCommunities] = useState<CommunityGroup[]>([])
   const [selectedCommunityIds, setSelectedCommunityIds] = useState<string[]>([])
+  const [resources, setResources] = useState<ResourceEntry[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -59,6 +67,18 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
     )
   }
 
+  const addResource = () => {
+    setResources(prev => [...prev, { title: '', resource_type: 'link', url: '', file: null }])
+  }
+
+  const updateResource = (index: number, field: keyof ResourceEntry, value: any) => {
+    setResources(prev => prev.map((r, i) => i === index ? { ...r, [field]: value } : r))
+  }
+
+  const removeResource = (index: number) => {
+    setResources(prev => prev.filter((_, i) => i !== index))
+  }
+
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -66,7 +86,7 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
       toast({ title: 'Invalid file', description: 'Please select a video file', variant: 'destructive' })
       return
     }
-    const maxSize = 50 * 1024 * 1024 // 50MB (Supabase free tier limit)
+    const maxSize = 50 * 1024 * 1024
     if (file.size > maxSize) {
       const fileSizeMB = (file.size / (1024 * 1024)).toFixed(1)
       toast({ 
@@ -75,7 +95,6 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
         variant: 'destructive',
         duration: 8000,
       })
-      // Reset file input so user can try again
       if (fileInputRef.current) fileInputRef.current.value = ''
       return
     }
@@ -118,31 +137,66 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
     const { data: existing } = await query.order('order_index', { ascending: false }).limit(1)
     const nextOrder = (existing?.[0]?.order_index ?? -1) + 1
 
-    const { error } = await supabase.from('course_videos').insert({
+    // Use description for both fields to keep them in sync
+    const lessonContent = content.trim() || description.trim() || null
+
+    const { data: lessonData, error } = await supabase.from('course_videos').insert({
       course_id: courseId,
       module_id: moduleId,
       title: title.trim(),
-      description: description.trim() || null,
-      content: content.trim() || null,
+      description: lessonContent,
+      content: lessonContent,
       video_url: videoUrl.trim() || null,
       video_type: videoType,
       order_index: nextOrder,
       created_by: user?.id,
       community_ids: selectedCommunityIds,
-    } as any)
+    } as any).select().single()
 
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' })
-    } else {
-      toast({ title: 'Lesson added' })
-      setTitle('')
-      setDescription('')
-      setContent('')
-      setVideoUrl('')
-      setSelectedCommunityIds([])
-      onOpenChange(false)
-      onCreated()
+      setLoading(false)
+      return
     }
+
+    // Create resources if any
+    const validResources = resources.filter(r => r.title.trim())
+    if (validResources.length > 0 && lessonData) {
+      for (const res of validResources) {
+        let fileUrl = res.url.trim() || null
+
+        // Upload file if resource type is file and a file was selected
+        if (res.file && res.resource_type === 'file') {
+          const filePath = `course-resources/${courseId}/${Date.now()}_${res.file.name}`
+          const { error: uploadError } = await supabase.storage
+            .from('documents')
+            .upload(filePath, res.file)
+          if (!uploadError) {
+            const { data: publicUrl } = supabase.storage.from('documents').getPublicUrl(filePath)
+            fileUrl = publicUrl.publicUrl
+          }
+        }
+
+        await supabase.from('course_resources').insert({
+          course_id: courseId,
+          lesson_id: lessonData.id,
+          title: res.title.trim(),
+          resource_type: res.resource_type,
+          url: fileUrl,
+          created_by: user?.id,
+        })
+      }
+    }
+
+    toast({ title: 'Lesson added' })
+    setTitle('')
+    setDescription('')
+    setContent('')
+    setVideoUrl('')
+    setSelectedCommunityIds([])
+    setResources([])
+    onOpenChange(false)
+    onCreated()
     setLoading(false)
   }
 
@@ -217,6 +271,60 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
               <Input value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=..." />
             </div>
           )}
+
+          {/* Resources Section */}
+          <div className="space-y-3 pt-2 border-t border-border">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-semibold">Resources</Label>
+              <Button type="button" variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={addResource}>
+                <Plus className="h-3 w-3" /> Add Resource
+              </Button>
+            </div>
+            {resources.map((res, index) => (
+              <div key={index} className="space-y-2 p-3 rounded-lg border border-border bg-muted/30 relative">
+                <button
+                  type="button"
+                  onClick={() => removeResource(index)}
+                  className="absolute top-2 right-2 text-muted-foreground hover:text-destructive transition-colors"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+                <Input
+                  value={res.title}
+                  onChange={e => updateResource(index, 'title', e.target.value)}
+                  placeholder="Resource title"
+                  className="text-sm"
+                />
+                <div className="flex gap-2">
+                  <Select value={res.resource_type} onValueChange={v => updateResource(index, 'resource_type', v)}>
+                    <SelectTrigger className="w-28 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="link">Link</SelectItem>
+                      <SelectItem value="pdf">PDF</SelectItem>
+                      <SelectItem value="file">File</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {res.resource_type === 'file' ? (
+                    <Input
+                      type="file"
+                      onChange={e => updateResource(index, 'file', e.target.files?.[0] || null)}
+                      className="flex-1 text-xs"
+                    />
+                  ) : (
+                    <Input
+                      value={res.url}
+                      onChange={e => updateResource(index, 'url', e.target.value)}
+                      placeholder="https://..."
+                      className="flex-1 text-xs"
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
           {/* Community Assignment */}
           <div className="space-y-2">
             <Label>Assign to Communities <span className="text-muted-foreground font-normal">(optional)</span></Label>
