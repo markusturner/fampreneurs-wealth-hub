@@ -115,8 +115,61 @@ export default function CourseDetail() {
   const [showAddLesson, setShowAddLesson] = useState<string | null>(null)
   const [showAddResource, setShowAddResource] = useState(false)
   const [showEditCourse, setShowEditCourse] = useState(false)
-  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null)
   const [editingResource, setEditingResource] = useState<Resource | null>(null)
+
+  // Inline editing state
+  const [isEditingLesson, setIsEditingLesson] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editVideoUrl, setEditVideoUrl] = useState('')
+  const [editContent, setEditContent] = useState('')
+  const [editSaving, setEditSaving] = useState(false)
+  const [editDeleting, setEditDeleting] = useState(false)
+
+  const startEditingLesson = () => {
+    if (!selectedLesson) return
+    setEditTitle(selectedLesson.title)
+    setEditVideoUrl(selectedLesson.video_url || '')
+    setEditContent(selectedLesson.content || selectedLesson.description || '')
+    setIsEditingLesson(true)
+  }
+
+  const cancelEditingLesson = () => {
+    setIsEditingLesson(false)
+  }
+
+  const saveLesson = async () => {
+    if (!selectedLesson || !editTitle.trim()) return
+    setEditSaving(true)
+    const { error } = await supabase.from('course_videos').update({
+      title: editTitle.trim(),
+      description: editContent.trim() || null,
+      content: editContent.trim() || null,
+      video_url: editVideoUrl.trim() || null,
+    } as any).eq('id', selectedLesson.id)
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' })
+    } else {
+      toast({ title: 'Lesson updated' })
+      setIsEditingLesson(false)
+      fetchData()
+    }
+    setEditSaving(false)
+  }
+
+  const deleteLesson = async () => {
+    if (!selectedLesson) return
+    setEditDeleting(true)
+    const { error } = await supabase.from('course_videos').delete().eq('id', selectedLesson.id)
+    if (error) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' })
+    } else {
+      toast({ title: 'Lesson deleted' })
+      setIsEditingLesson(false)
+      setSelectedLesson(null)
+      fetchData()
+    }
+    setEditDeleting(false)
+  }
 
   const fetchData = useCallback(async () => {
     if (!courseId) return
