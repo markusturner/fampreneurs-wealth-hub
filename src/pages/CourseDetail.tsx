@@ -41,8 +41,13 @@ import { AddLessonDialog } from '@/components/classroom/AddLessonDialog'
 import { AddResourceDialog } from '@/components/classroom/AddResourceDialog'
 import { EditResourceDialog } from '@/components/classroom/EditResourceDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
-import { EditLessonDialog } from '@/components/classroom/EditLessonDialog'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
+import { CourseComments } from '@/components/classroom/CourseComments'
+import { LessonRichTextEditor } from '@/components/classroom/LessonRichTextEditor'
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { CourseComments } from '@/components/classroom/CourseComments'
 
 interface Module {
