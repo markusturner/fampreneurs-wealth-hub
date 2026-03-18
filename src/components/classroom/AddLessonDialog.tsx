@@ -43,7 +43,6 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
   const { toast } = useToast()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [content, setContent] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
   const [videoType, setVideoType] = useState('embed')
   const [loading, setLoading] = useState(false)
