@@ -190,7 +190,6 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
     toast({ title: 'Lesson added' })
     setTitle('')
     setDescription('')
-    setContent('')
     setVideoUrl('')
     setSelectedCommunityIds([])
     setResources([])
