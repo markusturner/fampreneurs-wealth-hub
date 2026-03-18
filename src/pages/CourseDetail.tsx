@@ -426,100 +426,106 @@ export default function CourseDetail() {
     if (isEditingLesson && selectedLesson && isAdminOrOwner) {
       // ── INLINE EDIT MODE ──
       return (
-        <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 space-y-5">
-          <button
-            onClick={() => { setMobileView('modules'); cancelEditingLesson() }}
-            className="md:hidden flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to modules
-          </button>
+        <div className="flex flex-col h-full">
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 space-y-5 pb-24">
+              <button
+                onClick={() => { setMobileView('modules'); cancelEditingLesson() }}
+                className="md:hidden flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to modules
+              </button>
 
-          {/* Rich text editor with toolbar */}
-          <LessonRichTextEditor content={editContent} onChange={setEditContent} />
+              {/* Rich text editor with toolbar */}
+              <LessonRichTextEditor content={editContent} onChange={setEditContent} />
 
-          {/* Resources (read-only list with edit) */}
-          {resources.length > 0 && (
-            <div className="space-y-3 pt-2">
-              <h3 className="font-semibold text-xs uppercase tracking-widest text-muted-foreground">Resources</h3>
-              <div className="space-y-1.5">
-                {resources.map(res => (
-                  <div key={res.id} className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-transparent hover:border-border transition-all duration-200">
-                    <a
-                      href={res.url || res.file_path || '#'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 flex-1 min-w-0"
-                    >
-                      <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-background shadow-sm border border-border shrink-0">
-                        {res.resource_type === 'pdf'
-                          ? <FileText className="h-4 w-4 text-destructive" />
-                          : res.resource_type === 'file'
-                          ? <Download className="h-4 w-4 text-muted-foreground" />
-                          : <LinkIcon className="h-4 w-4 text-accent" />
-                        }
+              {/* Resources */}
+              {resources.length > 0 && (
+                <div className="space-y-3 pt-2">
+                  <h3 className="font-semibold text-xs uppercase tracking-widest text-muted-foreground">Resources</h3>
+                  <div className="space-y-1.5">
+                    {resources.map(res => (
+                      <div key={res.id} className="group flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-transparent hover:border-border transition-all duration-200">
+                        <a
+                          href={res.url || res.file_path || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 flex-1 min-w-0"
+                        >
+                          <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-background shadow-sm border border-border shrink-0">
+                            {res.resource_type === 'pdf'
+                              ? <FileText className="h-4 w-4 text-destructive" />
+                              : res.resource_type === 'file'
+                              ? <Download className="h-4 w-4 text-muted-foreground" />
+                              : <LinkIcon className="h-4 w-4 text-accent" />
+                            }
+                          </div>
+                          <span className="text-sm font-medium text-foreground flex-1 truncate">{res.title}</span>
+                        </a>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                          onClick={(e) => { e.stopPropagation(); setEditingResource(res) }}
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
                       </div>
-                      <span className="text-sm font-medium text-foreground flex-1 truncate">{res.title}</span>
-                    </a>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-                      onClick={(e) => { e.stopPropagation(); setEditingResource(res) }}
-                    >
-                      <Pencil className="h-3 w-3" />
-                    </Button>
+                    ))}
                   </div>
-                ))}
+                </div>
+              )}
+
+              <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => setShowAddResource(true)}>
+                + Add Resource
+              </Button>
+            </div>
+          </div>
+
+          {/* Sticky bottom action bar */}
+          <div className="shrink-0 border-t border-border bg-background px-4 md:px-6 py-3">
+            <div className="max-w-3xl mx-auto flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Input
+                  value={editTitle}
+                  onChange={e => setEditTitle(e.target.value)}
+                  placeholder="Lesson title"
+                  className="w-48 text-sm"
+                />
+                <Input
+                  value={editVideoUrl}
+                  onChange={e => setEditVideoUrl(e.target.value)}
+                  placeholder="Video URL (optional)"
+                  className="w-56 text-sm"
+                />
               </div>
-            </div>
-          )}
-
-          <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => setShowAddResource(true)}>
-            + Add Resource
-          </Button>
-
-          {/* Bottom action bar */}
-          <div className="flex items-center justify-between gap-3 pt-4 border-t border-border">
-            <div className="flex items-center gap-2">
-              <Input
-                value={editTitle}
-                onChange={e => setEditTitle(e.target.value)}
-                placeholder="Lesson title"
-                className="w-48 text-sm"
-              />
-              <Input
-                value={editVideoUrl}
-                onChange={e => setEditVideoUrl(e.target.value)}
-                placeholder="Video URL (optional)"
-                className="w-56 text-sm"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" disabled={editDeleting} className="gap-1.5 text-xs">
-                    <Trash2 className="h-3.5 w-3.5" />
-                    {editDeleting ? 'Deleting...' : 'Delete'}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete this lesson?</AlertDialogTitle>
-                    <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={deleteLesson} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <Button variant="outline" size="sm" className="text-xs" onClick={cancelEditingLesson}>
-                Cancel
-              </Button>
-              <Button size="sm" className="text-xs" onClick={saveLesson} disabled={editSaving || !editTitle.trim()}>
-                {editSaving ? 'Saving...' : 'Save'}
-              </Button>
+              <div className="flex items-center gap-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" disabled={editDeleting} className="gap-1.5 text-xs">
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {editDeleting ? 'Deleting...' : 'Delete'}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete this lesson?</AlertDialogTitle>
+                      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={deleteLesson} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <Button variant="outline" size="sm" className="text-xs" onClick={cancelEditingLesson}>
+                  Cancel
+                </Button>
+                <Button size="sm" className="text-xs" onClick={saveLesson} disabled={editSaving || !editTitle.trim()}>
+                  {editSaving ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -767,7 +773,7 @@ export default function CourseDetail() {
         </div>
 
         {/* Center content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className={cn("flex-1", isEditingLesson ? "flex flex-col overflow-hidden" : "overflow-y-auto")}>
           {selectedLesson ? (
             <LessonContent />
           ) : (

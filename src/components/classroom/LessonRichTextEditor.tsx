@@ -32,6 +32,15 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
       attributes: {
         class: 'min-h-[200px] px-4 py-3 focus:outline-none prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground',
       },
+      // Preserve formatting on paste by allowing HTML paste through
+      handlePaste: (view, event) => {
+        const html = event.clipboardData?.getData('text/html')
+        if (html) {
+          // Let TipTap handle the HTML paste natively — it will parse and preserve formatting
+          return false
+        }
+        return false
+      },
     },
   })
 
