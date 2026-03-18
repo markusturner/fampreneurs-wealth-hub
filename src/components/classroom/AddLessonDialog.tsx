@@ -43,7 +43,6 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
   const { toast } = useToast()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [content, setContent] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
   const [videoType, setVideoType] = useState('embed')
   const [loading, setLoading] = useState(false)
@@ -138,7 +137,7 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
     const nextOrder = (existing?.[0]?.order_index ?? -1) + 1
 
     // Use description for both fields to keep them in sync
-    const lessonContent = content.trim() || description.trim() || null
+    const lessonContent = description.trim() || null
 
     const { data: lessonData, error } = await supabase.from('course_videos').insert({
       course_id: courseId,
@@ -191,7 +190,6 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
     toast({ title: 'Lesson added' })
     setTitle('')
     setDescription('')
-    setContent('')
     setVideoUrl('')
     setSelectedCommunityIds([])
     setResources([])
@@ -212,12 +210,8 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
             <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Lesson title" />
           </div>
           <div className="space-y-2">
-            <Label>Goal / Description</Label>
-            <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What will students learn?" />
-          </div>
-          <div className="space-y-2">
-            <Label>Lesson Content</Label>
-            <Textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Lesson summary, action steps, notes..." className="min-h-[120px]" />
+            <Label>Description / Content</Label>
+            <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Lesson goal, summary, action steps, notes..." className="min-h-[120px]" />
           </div>
           <div className="space-y-2">
             <Label>Video Type</Label>
