@@ -344,7 +344,7 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
             )}
           </div>
 
-          <Button onClick={handleSubmit} disabled={loading || !title.trim()} className="w-full">
+          <Button onClick={handleSubmit} disabled={loading || !title.trim()} className="w-full bg-[#ffb500] hover:bg-[#ffb500]/90 text-primary-foreground">
             {loading ? 'Adding...' : 'Add Lesson'}
           </Button>
         </div>
