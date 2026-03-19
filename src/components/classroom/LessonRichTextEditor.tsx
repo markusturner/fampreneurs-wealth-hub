@@ -99,7 +99,7 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
   }
 
   return (
-    <div className="border border-border rounded-xl overflow-hidden bg-background">
+    <div className="border border-border rounded-xl overflow-hidden bg-background w-full">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border bg-muted/40">
         {/* Headings */}
