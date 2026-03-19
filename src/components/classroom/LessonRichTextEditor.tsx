@@ -104,28 +104,28 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border bg-muted/40">
         {/* Headings */}
-        <button className={toolbarBtnClass(editor.isActive('heading', { level: 1 }))} onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} title="H1"><span className="text-xs font-bold">H1</span></button>
-        <button className={toolbarBtnClass(editor.isActive('heading', { level: 2 }))} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} title="H2"><span className="text-xs font-bold">H2</span></button>
-        <button className={toolbarBtnClass(editor.isActive('heading', { level: 3 }))} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} title="H3"><span className="text-xs font-bold">H3</span></button>
-        <button className={toolbarBtnClass(editor.isActive('heading', { level: 4 }))} onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()} title="H4"><span className="text-xs font-bold">H4</span></button>
+        <button type="button" className={toolbarBtnClass(editor.isActive('heading', { level: 1 }))} onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 1 }).run() }} title="H1"><span className="text-xs font-bold">H1</span></button>
+        <button type="button" className={toolbarBtnClass(editor.isActive('heading', { level: 2 }))} onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 2 }).run() }} title="H2"><span className="text-xs font-bold">H2</span></button>
+        <button type="button" className={toolbarBtnClass(editor.isActive('heading', { level: 3 }))} onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 3 }).run() }} title="H3"><span className="text-xs font-bold">H3</span></button>
+        <button type="button" className={toolbarBtnClass(editor.isActive('heading', { level: 4 }))} onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 4 }).run() }} title="H4"><span className="text-xs font-bold">H4</span></button>
         <div className="w-px h-5 bg-border mx-1" />
         {/* Text style */}
-        <button className={toolbarBtnClass(editor.isActive('bold'))} onClick={() => editor.chain().focus().toggleBold().run()} title="Bold"><Bold className="h-3.5 w-3.5" /></button>
-        <button className={toolbarBtnClass(editor.isActive('italic'))} onClick={() => editor.chain().focus().toggleItalic().run()} title="Italic"><Italic className="h-3.5 w-3.5" /></button>
-        <button className={toolbarBtnClass(editor.isActive('underline'))} onClick={() => editor.chain().focus().toggleUnderline().run()} title="Underline"><UnderlineIcon className="h-3.5 w-3.5" /></button>
-        <button className={toolbarBtnClass(editor.isActive('strike'))} onClick={() => editor.chain().focus().toggleStrike().run()} title="Strikethrough"><Strikethrough className="h-3.5 w-3.5" /></button>
-        <button className={toolbarBtnClass(editor.isActive('code'))} onClick={() => editor.chain().focus().toggleCode().run()} title="Code"><Code className="h-3.5 w-3.5" /></button>
+        <button type="button" className={toolbarBtnClass(editor.isActive('bold'))} onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBold().run() }} title="Bold"><Bold className="h-3.5 w-3.5" /></button>
+        <button type="button" className={toolbarBtnClass(editor.isActive('italic'))} onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleItalic().run() }} title="Italic"><Italic className="h-3.5 w-3.5" /></button>
+        <button type="button" className={toolbarBtnClass(editor.isActive('underline'))} onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleUnderline().run() }} title="Underline"><UnderlineIcon className="h-3.5 w-3.5" /></button>
+        <button type="button" className={toolbarBtnClass(editor.isActive('strike'))} onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleStrike().run() }} title="Strikethrough"><Strikethrough className="h-3.5 w-3.5" /></button>
+        <button type="button" className={toolbarBtnClass(editor.isActive('code'))} onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleCode().run() }} title="Code"><Code className="h-3.5 w-3.5" /></button>
         <div className="w-px h-5 bg-border mx-1" />
         {/* Lists */}
-        <button className={toolbarBtnClass(editor.isActive('bulletList'))} onClick={() => editor.chain().focus().toggleBulletList().run()} title="Bullet list"><List className="h-3.5 w-3.5" /></button>
-        <button className={toolbarBtnClass(editor.isActive('orderedList'))} onClick={() => editor.chain().focus().toggleOrderedList().run()} title="Numbered list"><ListOrdered className="h-3.5 w-3.5" /></button>
-        <button className={toolbarBtnClass(editor.isActive('blockquote'))} onClick={() => editor.chain().focus().toggleBlockquote().run()} title="Quote"><Quote className="h-3.5 w-3.5" /></button>
-        <button className={toolbarBtnClass(false)} onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Divider"><Minus className="h-3.5 w-3.5" /></button>
+        <button type="button" className={toolbarBtnClass(editor.isActive('bulletList'))} onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBulletList().run() }} title="Bullet list"><List className="h-3.5 w-3.5" /></button>
+        <button type="button" className={toolbarBtnClass(editor.isActive('orderedList'))} onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleOrderedList().run() }} title="Numbered list"><ListOrdered className="h-3.5 w-3.5" /></button>
+        <button type="button" className={toolbarBtnClass(editor.isActive('blockquote'))} onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleBlockquote().run() }} title="Quote"><Quote className="h-3.5 w-3.5" /></button>
+        <button type="button" className={toolbarBtnClass(false)} onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().setHorizontalRule().run() }} title="Divider"><Minus className="h-3.5 w-3.5" /></button>
         <div className="w-px h-5 bg-border mx-1" />
         {/* Media */}
-        <button className={toolbarBtnClass(false)} onClick={addImage} title="Insert image"><ImageIcon className="h-3.5 w-3.5" /></button>
-        <button className={toolbarBtnClass(false)} onClick={addVideo} title="Insert video"><Video className="h-3.5 w-3.5" /></button>
-        <button className={toolbarBtnClass(editor.isActive('link'))} onClick={addLink} title="Insert link"><LinkIcon className="h-3.5 w-3.5" /></button>
+        <button type="button" className={toolbarBtnClass(false)} onClick={addImage} title="Insert image"><ImageIcon className="h-3.5 w-3.5" /></button>
+        <button type="button" className={toolbarBtnClass(false)} onClick={addVideo} title="Insert video"><Video className="h-3.5 w-3.5" /></button>
+        <button type="button" className={toolbarBtnClass(editor.isActive('link'))} onClick={addLink} title="Insert link"><LinkIcon className="h-3.5 w-3.5" /></button>
       </div>
       {/* Editor area */}
       <EditorContent editor={editor} />
