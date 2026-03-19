@@ -1,4 +1,5 @@
 import { useToast } from "@/hooks/use-toast"
+import { useIsMobile } from "@/hooks/use-mobile"
 import {
   Toast,
   ToastClose,
@@ -10,6 +11,7 @@ import {
 
 export function Toaster() {
   const { toasts } = useToast()
+  const isMobile = useIsMobile()
   const visibleToasts = toasts
     .filter(t => t.title || t.description || t.action)
     .filter((t, i, arr) => {
@@ -18,7 +20,7 @@ export function Toaster() {
     })
 
   return (
-    <ToastProvider>
+    <ToastProvider swipeDirection={isMobile ? "up" : "right"}>
       {visibleToasts.map(function ({ id, title, description, action, ...props }) {
         return (
           <Toast key={id} {...props}>
