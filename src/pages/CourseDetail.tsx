@@ -258,8 +258,13 @@ export default function CourseDetail() {
     fetchData()
   }
 
-  const handleSelectLesson = (lesson: Lesson) => {
+  const selectLesson = (lesson: Lesson | null) => {
     setSelectedLesson(lesson)
+    selectedLessonIdRef.current = lesson?.id || null
+  }
+
+  const handleSelectLesson = (lesson: Lesson) => {
+    selectLesson(lesson)
     setMobileView('lesson')
   }
 
