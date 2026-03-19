@@ -104,7 +104,7 @@ export function AddResourceDialog({ courseId, lessonId, open, onOpenChange, onCr
               <Input value={url} onChange={e => setUrl(e.target.value)} placeholder="https://example.com/resource" />
             </div>
           )}
-          <Button onClick={handleSubmit} disabled={loading || !title.trim()} className="w-full">
+          <Button onClick={handleSubmit} disabled={loading || !title.trim()} className="w-full bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
             {loading ? 'Adding...' : 'Add Resource'}
           </Button>
         </div>
