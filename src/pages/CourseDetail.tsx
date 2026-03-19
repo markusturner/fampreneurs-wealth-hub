@@ -125,6 +125,7 @@ export default function CourseDetail() {
   const [editContent, setEditContent] = useState('')
   const [editSaving, setEditSaving] = useState(false)
   const [editDeleting, setEditDeleting] = useState(false)
+  const [videoUploading, setVideoUploading] = useState(false)
 
   const selectLesson = (lesson: Lesson | null) => {
     setSelectedLesson(lesson)
