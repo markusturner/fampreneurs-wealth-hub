@@ -578,11 +578,11 @@ export default function CourseDetail() {
                       input.onchange = async (e) => {
                         const file = (e.target as HTMLInputElement).files?.[0]
                         if (!file) return
-                        const maxVideoSize = 5 * 1024 * 1024 * 1024 // 5GB
+                        const maxVideoSize = 50 * 1024 * 1024 // 50MB for reliable 5-10s uploads
                         if (file.size > maxVideoSize) {
                           toast({
-                            title: 'File too large',
-                            description: 'Maximum video size is 5GB. For larger files, use a hosted video URL.',
+                            title: 'File too large for fast upload',
+                            description: 'To upload in ~5–10 seconds and avoid storage-limit errors, keep videos under 50MB or use a hosted video URL (YouTube, Vimeo, Loom).',
                             variant: 'destructive'
                           })
                           return
@@ -633,7 +633,7 @@ export default function CourseDetail() {
                               normalizedMessage.includes('too large') ||
                               normalizedMessage.includes('entity too large') ||
                               normalizedMessage.includes('payload')
-                                ? 'This file exceeds your Supabase storage upload limit. Use a smaller file or paste a hosted video URL.'
+                                ? 'Upload failed due project storage size limits. Use a video under 50MB for fast upload, or paste a hosted video URL.'
                                 : rawMessage
                             toast({ title: 'Upload failed', description, variant: 'destructive' })
                             setEditVideoUrl('')
