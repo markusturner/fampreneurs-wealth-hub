@@ -633,7 +633,7 @@ export default function CourseDetail() {
                               normalizedMessage.includes('too large') ||
                               normalizedMessage.includes('entity too large') ||
                               normalizedMessage.includes('payload')
-                                ? 'Upload failed due project storage size limits. Use a video under 50MB for fast upload, or paste a hosted video URL.'
+                                ? 'Upload failed due storage size limits. Try a smaller file or use a hosted video URL (YouTube, Vimeo, Loom).'
                                 : rawMessage
                             toast({ title: 'Upload failed', description, variant: 'destructive' })
                             setEditVideoUrl('')
