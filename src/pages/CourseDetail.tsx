@@ -129,6 +129,7 @@ export default function CourseDetail() {
   const [editDeleting, setEditDeleting] = useState(false)
   const [videoUploading, setVideoUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const uploadXhrRef = useRef<XMLHttpRequest | null>(null)
 
   const selectLesson = (lesson: Lesson | null) => {
     setSelectedLesson(lesson)
