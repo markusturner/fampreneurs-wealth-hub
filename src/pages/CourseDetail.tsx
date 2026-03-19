@@ -541,7 +541,7 @@ export default function CourseDetail() {
       return (
         <div className="flex flex-col h-full">
           <div className="flex-1 overflow-y-auto">
-            <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 space-y-5 pb-24">
+            <div className="w-full px-4 md:px-6 py-6 space-y-5 pb-24">
               <button
                 onClick={() => { setMobileView('modules'); cancelEditingLesson() }}
                 className="md:hidden flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
