@@ -25,6 +25,8 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
         heading: { levels: [1, 2, 3, 4] },
       }),
       Image.configure({ inline: false, allowBase64: true }),
+      Link.configure({ openOnClick: false, autolink: true }),
+      Underline,
     ],
     content,
     onUpdate: ({ editor }) => {
