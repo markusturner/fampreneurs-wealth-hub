@@ -124,8 +124,8 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
         <button type="button" className={tb(false)} onMouseDown={(e) => cmd(e, () => editor.chain().focus().setHorizontalRule().run())} title="Divider"><Minus className="h-3.5 w-3.5" /></button>
         <div className="w-px h-5 bg-border mx-1" />
         {/* Media */}
-        <button type="button" className={tb(false)} onMouseDown={(e) => { e.preventDefault(); addImage() }} title="Insert image"><ImageIcon className="h-3.5 w-3.5" /></button>
-        <button type="button" className={tb(editor.isActive('link'))} onMouseDown={(e) => { e.preventDefault(); addLink() }} title="Insert link"><LinkIcon className="h-3.5 w-3.5" /></button>
+        <button type="button" className={tb(false)} onMouseDown={(e) => { cmd(e, () => { addImage(); return true }) }} title="Insert image"><ImageIcon className="h-3.5 w-3.5" /></button>
+        <button type="button" className={tb(editor.isActive('link'))} onMouseDown={(e) => { cmd(e, () => { addLink(); return true }) }} title="Insert link"><LinkIcon className="h-3.5 w-3.5" /></button>
       </div>
       {/* Editor area */}
       <EditorContent editor={editor} />
