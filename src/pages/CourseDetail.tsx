@@ -37,7 +37,6 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AddModuleDialog } from '@/components/classroom/AddModuleDialog'
-import { AddLessonDialog } from '@/components/classroom/AddLessonDialog'
 import { AddResourceDialog } from '@/components/classroom/AddResourceDialog'
 import { EditResourceDialog } from '@/components/classroom/EditResourceDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
@@ -114,7 +113,7 @@ export default function CourseDetail() {
   const [mobileView, setMobileView] = useState<'modules' | 'lesson'>('modules')
 
   const [showAddModule, setShowAddModule] = useState(false)
-  const [showAddLesson, setShowAddLesson] = useState<string | null>(null)
+  const [addingLessonModuleId, setAddingLessonModuleId] = useState<string | null>(null)
   const [showAddResource, setShowAddResource] = useState(false)
   const [showEditCourse, setShowEditCourse] = useState(false)
   const [editingResource, setEditingResource] = useState<Resource | null>(null)
@@ -285,6 +284,82 @@ export default function CourseDetail() {
   }
 
 
+  const handleAddLessonInline = async (moduleId: string | null) => {
+    if (!courseId) return
+
+    const resolvedModuleId = moduleId === '__uncategorized' ? null : moduleId
+    setAddingLessonModuleId(moduleId ?? '__uncategorized')
+
+    try {
+      let orderQuery = supabase
+        .from('course_videos')
+        .select('order_index')
+        .eq('course_id', courseId)
+
+      orderQuery = resolvedModuleId
+        ? orderQuery.eq('module_id', resolvedModuleId)
+        : orderQuery.is('module_id', null)
+
+      const { data: existingOrder, error: orderError } = await orderQuery
+        .order('order_index', { ascending: false })
+        .limit(1)
+
+      if (orderError) throw orderError
+
+      const nextOrder = (existingOrder?.[0]?.order_index ?? -1) + 1
+
+      const { data: createdLesson, error: insertError } = await supabase
+        .from('course_videos')
+        .insert({
+          course_id: courseId,
+          module_id: resolvedModuleId,
+          title: 'New Lesson',
+          description: null,
+          content: null,
+          video_url: null,
+          video_type: 'embed',
+          order_index: nextOrder,
+          created_by: user?.id,
+          community_ids: [],
+        } as any)
+        .select('*')
+        .single()
+
+      if (insertError || !createdLesson) {
+        throw insertError || new Error('Could not create lesson')
+      }
+
+      const lessonForEditing: Lesson = {
+        ...createdLesson,
+        completed: false,
+        community_ids: createdLesson.community_ids || [],
+      }
+
+      selectLesson(lessonForEditing)
+      setEditTitle(lessonForEditing.title)
+      setEditVideoUrl(lessonForEditing.video_url || '')
+      setEditContent(lessonForEditing.content || lessonForEditing.description || '')
+      setResources([])
+      setMobileView('lesson')
+      setIsEditingLesson(true)
+
+      if (moduleId) {
+        setOpenModules(prev => {
+          const next = new Set(prev)
+          next.add(moduleId)
+          return next
+        })
+      }
+
+      toast({ title: 'Lesson created' })
+      await fetchData()
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Could not create lesson', variant: 'destructive' })
+    } finally {
+      setAddingLessonModuleId(null)
+    }
+  }
+
   const handleSelectLesson = (lesson: Lesson) => {
     selectLesson(lesson)
     setMobileView('lesson')
@@ -427,10 +502,12 @@ export default function CourseDetail() {
                   })}
                   {isAdminOrOwner && mod.id !== '__uncategorized' && (
                     <button
-                      onClick={() => setShowAddLesson(mod.id)}
-                      className="px-4 py-2 text-xs text-muted-foreground hover:text-foreground w-full text-left flex items-center gap-1"
+                      onClick={() => handleAddLessonInline(mod.id)}
+                      disabled={addingLessonModuleId === mod.id}
+                      className="px-4 py-2 text-xs text-muted-foreground hover:text-foreground w-full text-left flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <span className="text-base leading-none">+</span> Add lesson
+                      <span className="text-base leading-none">+</span>
+                      {addingLessonModuleId === mod.id ? 'Adding...' : 'Add lesson'}
                     </button>
                   )}
                 </CollapsibleContent>
@@ -879,13 +956,6 @@ export default function CourseDetail() {
       {courseId && (
         <>
           <AddModuleDialog courseId={courseId} open={showAddModule} onOpenChange={setShowAddModule} onCreated={fetchData} />
-          <AddLessonDialog
-            courseId={courseId}
-            moduleId={showAddLesson}
-            open={!!showAddLesson}
-            onOpenChange={(open) => !open && setShowAddLesson(null)}
-            onCreated={fetchData}
-          />
           <AddResourceDialog
             courseId={courseId}
             lessonId={selectedLesson?.id || null}
