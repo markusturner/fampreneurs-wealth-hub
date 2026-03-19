@@ -588,11 +588,40 @@ export default function CourseDetail() {
                           return
                         }
                         setVideoUploading(true)
+                        setUploadProgress(0)
                         try {
                           const ext = file.name.split('.').pop() || 'mp4'
                           const path = `lessons/${courseId}/${Date.now()}.${ext}`
-                          const { error: uploadError } = await supabase.storage.from('documents').upload(path, file, { upsert: true })
-                          if (uploadError) throw uploadError
+                          
+                          // Use XMLHttpRequest for real progress tracking
+                          const { data: { session } } = await supabase.auth.getSession()
+                          const token = session?.access_token
+                          const SUPABASE_URL = 'https://tbofkvyezmpovoezjyyl.supabase.co'
+                          const uploadUrl = `${SUPABASE_URL}/storage/v1/object/documents/${path}`
+
+                          await new Promise<void>((resolve, reject) => {
+                            const xhr = new XMLHttpRequest()
+                            xhr.open('POST', uploadUrl, true)
+                            xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+                            xhr.setRequestHeader('x-upsert', 'true')
+
+                            xhr.upload.onprogress = (e) => {
+                              if (e.lengthComputable) {
+                                setUploadProgress(Math.round((e.loaded / e.total) * 100))
+                              }
+                            }
+                            xhr.onload = () => {
+                              if (xhr.status >= 200 && xhr.status < 300) {
+                                resolve()
+                              } else {
+                                const msg = xhr.responseText || xhr.statusText
+                                reject(new Error(msg))
+                              }
+                            }
+                            xhr.onerror = () => reject(new Error('Network error during upload'))
+                            xhr.send(file)
+                          })
+
                           const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path)
                           setEditVideoUrl(urlData.publicUrl)
                           toast({ title: 'Video uploaded' })
@@ -609,6 +638,7 @@ export default function CourseDetail() {
                           toast({ title: 'Upload failed', description, variant: 'destructive' })
                         } finally {
                           setVideoUploading(false)
+                          setUploadProgress(0)
                         }
                       }
                       input.click()
