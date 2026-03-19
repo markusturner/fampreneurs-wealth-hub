@@ -34,6 +34,8 @@ import {
   Heart,
   ArrowLeft,
   Trash2,
+  X,
+  RefreshCw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AddModuleDialog } from '@/components/classroom/AddModuleDialog'
@@ -127,6 +129,7 @@ export default function CourseDetail() {
   const [editDeleting, setEditDeleting] = useState(false)
   const [videoUploading, setVideoUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const uploadXhrRef = useRef<XMLHttpRequest | null>(null)
 
   const selectLesson = (lesson: Lesson | null) => {
     setSelectedLesson(lesson)
@@ -606,6 +609,7 @@ export default function CourseDetail() {
 
                             await new Promise<void>((resolve, reject) => {
                               const xhr = new XMLHttpRequest()
+                              uploadXhrRef.current = xhr
                               xhr.open('POST', uploadUrl, true)
                               xhr.setRequestHeader('Authorization', `Bearer ${token}`)
                               xhr.setRequestHeader('x-upsert', 'true')
@@ -615,10 +619,12 @@ export default function CourseDetail() {
                                 }
                               }
                               xhr.onload = () => {
+                                uploadXhrRef.current = null
                                 if (xhr.status >= 200 && xhr.status < 300) resolve()
                                 else reject(new Error(xhr.responseText || xhr.statusText))
                               }
-                              xhr.onerror = () => reject(new Error('Network error during upload'))
+                              xhr.onerror = () => { uploadXhrRef.current = null; reject(new Error('Network error during upload')) }
+                              xhr.onabort = () => { uploadXhrRef.current = null; reject(new Error('Upload cancelled')) }
                               xhr.send(file)
                             })
 
@@ -628,16 +634,22 @@ export default function CourseDetail() {
                             toast({ title: 'Video uploaded successfully' })
                           } catch (err: any) {
                             const rawMessage = err?.message || 'Could not upload video'
-                            const normalizedMessage = String(rawMessage).toLowerCase()
-                            const description =
-                              normalizedMessage.includes('too large') ||
-                              normalizedMessage.includes('entity too large') ||
-                              normalizedMessage.includes('payload')
-                                ? 'Upload failed due storage size limits. Try a smaller file or use a hosted video URL (YouTube, Vimeo, Loom).'
-                                : rawMessage
-                            toast({ title: 'Upload failed', description, variant: 'destructive' })
-                            setEditVideoUrl('')
-                            URL.revokeObjectURL(localPreviewUrl)
+                            if (rawMessage === 'Upload cancelled') {
+                              toast({ title: 'Upload cancelled' })
+                              setEditVideoUrl('')
+                              URL.revokeObjectURL(localPreviewUrl)
+                            } else {
+                              const normalizedMessage = String(rawMessage).toLowerCase()
+                              const description =
+                                normalizedMessage.includes('too large') ||
+                                normalizedMessage.includes('entity too large') ||
+                                normalizedMessage.includes('payload')
+                                  ? 'Upload failed due storage size limits. Try a smaller file or use a hosted video URL (YouTube, Vimeo, Loom).'
+                                  : rawMessage
+                              toast({ title: 'Upload failed', description, variant: 'destructive' })
+                              setEditVideoUrl('')
+                              URL.revokeObjectURL(localPreviewUrl)
+                            }
                           } finally {
                             setVideoUploading(false)
                             setUploadProgress(0)
@@ -656,7 +668,22 @@ export default function CourseDetail() {
                 </div>
                 {videoUploading && (
                   <div className="space-y-1">
-                    <Progress value={uploadProgress} className="h-2" />
+                    <div className="flex items-center gap-2">
+                      <Progress value={uploadProgress} className="h-2 flex-1" />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                        onClick={() => {
+                          if (uploadXhrRef.current) {
+                            uploadXhrRef.current.abort()
+                          }
+                        }}
+                      >
+                        <X className="h-3.5 w-3.5 mr-1" /> Cancel
+                      </Button>
+                    </div>
                     <p className="text-xs text-muted-foreground text-right">{uploadProgress}%</p>
                   </div>
                 )}
@@ -664,7 +691,7 @@ export default function CourseDetail() {
 
               {/* Video Preview - shown inline like view mode */}
               {editVideoUrl?.trim() && (
-                <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-lg">
+                <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-lg group">
                   {(() => {
                     const embedUrl = getEmbedUrl(editVideoUrl.trim())
                     if (embedUrl && (embedUrl.includes('embed') || embedUrl.includes('player'))) {
@@ -679,6 +706,85 @@ export default function CourseDetail() {
                     }
                     return <video src={editVideoUrl.trim()} controls className="w-full h-full" />
                   })()}
+                  {/* Delete / Replace overlay buttons */}
+                  {!videoUploading && (
+                    <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="h-8 text-xs gap-1 bg-background/80 backdrop-blur-sm hover:bg-background/95 shadow-md"
+                        onClick={() => {
+                          const input = document.createElement('input')
+                          input.type = 'file'
+                          input.accept = 'video/mp4,video/webm,video/quicktime,video/x-msvideo'
+                          input.onchange = () => {
+                            const file = input.files?.[0]
+                            if (!file) return
+                            // Trigger the same upload flow by simulating
+                            const localPreviewUrl = URL.createObjectURL(file)
+                            setEditVideoUrl(localPreviewUrl)
+                            toast({ title: 'Video replaced — uploading in background…' })
+                            setVideoUploading(true)
+                            setUploadProgress(0)
+                            ;(async () => {
+                              try {
+                                const ext = file.name.split('.').pop() || 'mp4'
+                                const path = `lessons/${courseId}/${Date.now()}.${ext}`
+                                const { data: { session } } = await supabase.auth.getSession()
+                                const token = session?.access_token
+                                const SUPABASE_URL = 'https://tbofkvyezmpovoezjyyl.supabase.co'
+                                const uploadUrl = `${SUPABASE_URL}/storage/v1/object/documents/${path}`
+                                await new Promise<void>((resolve, reject) => {
+                                  const xhr = new XMLHttpRequest()
+                                  uploadXhrRef.current = xhr
+                                  xhr.open('POST', uploadUrl, true)
+                                  xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+                                  xhr.setRequestHeader('x-upsert', 'true')
+                                  xhr.upload.onprogress = (e) => {
+                                    if (e.lengthComputable) setUploadProgress(Math.round((e.loaded / e.total) * 100))
+                                  }
+                                  xhr.onload = () => { uploadXhrRef.current = null; xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(xhr.responseText || xhr.statusText)) }
+                                  xhr.onerror = () => { uploadXhrRef.current = null; reject(new Error('Network error')) }
+                                  xhr.onabort = () => { uploadXhrRef.current = null; reject(new Error('Upload cancelled')) }
+                                  xhr.send(file)
+                                })
+                                const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path)
+                                setEditVideoUrl(urlData.publicUrl)
+                                URL.revokeObjectURL(localPreviewUrl)
+                                toast({ title: 'Video replaced successfully' })
+                              } catch (err: any) {
+                                if (err?.message !== 'Upload cancelled') {
+                                  toast({ title: 'Upload failed', description: err?.message, variant: 'destructive' })
+                                }
+                                setEditVideoUrl('')
+                                URL.revokeObjectURL(localPreviewUrl)
+                              } finally {
+                                setVideoUploading(false)
+                                setUploadProgress(0)
+                              }
+                            })()
+                          }
+                          input.click()
+                        }}
+                      >
+                        <RefreshCw className="h-3.5 w-3.5" /> Replace
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="h-8 text-xs gap-1 shadow-md"
+                        onClick={() => {
+                          if (editVideoUrl.startsWith('blob:')) URL.revokeObjectURL(editVideoUrl)
+                          setEditVideoUrl('')
+                          toast({ title: 'Video removed' })
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" /> Remove
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
 
