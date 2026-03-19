@@ -577,8 +577,9 @@ export default function CourseDetail() {
                       input.onchange = async (e) => {
                         const file = (e.target as HTMLInputElement).files?.[0]
                         if (!file) return
-                        if (file.size > 50 * 1024 * 1024) {
-                          toast({ title: 'File too large', description: 'Maximum video size is 50MB', variant: 'destructive' })
+                        const maxVideoSize = 500 * 1024 * 1024 // 500MB
+                        if (file.size > maxVideoSize) {
+                          toast({ title: 'File too large', description: 'Maximum video size is 500MB. For bigger files, use a video URL instead.', variant: 'destructive' })
                           return
                         }
                         setVideoUploading(true)
