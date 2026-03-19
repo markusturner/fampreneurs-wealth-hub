@@ -229,3 +229,12 @@ Brand: #290A52, #2EB2FF, #FFB500, #6215C8, #3031CB
 .prose p:empty::before {
   content: '\00a0';
 }
+
+/* Classic blue hyperlink styling in rich text content */
+.prose a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+.prose a:hover {
+  color: #1d4ed8;
+}
