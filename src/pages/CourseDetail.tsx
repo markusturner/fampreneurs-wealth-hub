@@ -651,7 +651,12 @@ export default function CourseDetail() {
                     )}
                   </Button>
                 </div>
-                {videoUploading && <Progress value={undefined} className="h-1.5" />}
+                {videoUploading && (
+                  <div className="space-y-1">
+                    <Progress value={uploadProgress} className="h-2" />
+                    <p className="text-xs text-muted-foreground text-right">{uploadProgress}%</p>
+                  </div>
+                )}
               </div>
 
               {/* Video Preview - shown inline like view mode */}
