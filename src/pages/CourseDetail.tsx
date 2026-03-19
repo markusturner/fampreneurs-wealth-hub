@@ -284,6 +284,82 @@ export default function CourseDetail() {
   }
 
 
+  const handleAddLessonInline = async (moduleId: string | null) => {
+    if (!courseId) return
+
+    const resolvedModuleId = moduleId === '__uncategorized' ? null : moduleId
+    setAddingLessonModuleId(moduleId ?? '__uncategorized')
+
+    try {
+      let orderQuery = supabase
+        .from('course_videos')
+        .select('order_index')
+        .eq('course_id', courseId)
+
+      orderQuery = resolvedModuleId
+        ? orderQuery.eq('module_id', resolvedModuleId)
+        : orderQuery.is('module_id', null)
+
+      const { data: existingOrder, error: orderError } = await orderQuery
+        .order('order_index', { ascending: false })
+        .limit(1)
+
+      if (orderError) throw orderError
+
+      const nextOrder = (existingOrder?.[0]?.order_index ?? -1) + 1
+
+      const { data: createdLesson, error: insertError } = await supabase
+        .from('course_videos')
+        .insert({
+          course_id: courseId,
+          module_id: resolvedModuleId,
+          title: 'New Lesson',
+          description: null,
+          content: null,
+          video_url: null,
+          video_type: 'embed',
+          order_index: nextOrder,
+          created_by: user?.id,
+          community_ids: [],
+        } as any)
+        .select('*')
+        .single()
+
+      if (insertError || !createdLesson) {
+        throw insertError || new Error('Could not create lesson')
+      }
+
+      const lessonForEditing: Lesson = {
+        ...createdLesson,
+        completed: false,
+        community_ids: createdLesson.community_ids || [],
+      }
+
+      selectLesson(lessonForEditing)
+      setEditTitle(lessonForEditing.title)
+      setEditVideoUrl(lessonForEditing.video_url || '')
+      setEditContent(lessonForEditing.content || lessonForEditing.description || '')
+      setResources([])
+      setMobileView('lesson')
+      setIsEditingLesson(true)
+
+      if (moduleId) {
+        setOpenModules(prev => {
+          const next = new Set(prev)
+          next.add(moduleId)
+          return next
+        })
+      }
+
+      toast({ title: 'Lesson created' })
+      await fetchData()
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Could not create lesson', variant: 'destructive' })
+    } finally {
+      setAddingLessonModuleId(null)
+    }
+  }
+
   const handleSelectLesson = (lesson: Lesson) => {
     selectLesson(lesson)
     setMobileView('lesson')
