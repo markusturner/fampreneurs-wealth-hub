@@ -1142,7 +1142,7 @@ export default function CourseDetail() {
         ) : (
           /* Lesson detail + right sidebar info stacked */
           <div className="flex-1 overflow-y-auto pb-24">
-            {selectedLesson && <LessonContent />}
+            {selectedLesson && LessonContent()}
             {/* Compact right sidebar info on mobile */}
             <div className="px-4 pb-6 space-y-4">
               {/* Progress */}
