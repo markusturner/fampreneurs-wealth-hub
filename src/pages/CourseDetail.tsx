@@ -565,7 +565,7 @@ export default function CourseDetail() {
                   <Input
                     value={editVideoUrl}
                     onChange={e => setEditVideoUrl(e.target.value)}
-                    placeholder="Video URL (YouTube, Vimeo, Loom, or direct link)"
+                    placeholder="Video URL (YouTube, Vimeo, Loom, Fathom, or direct link)"
                     className="text-sm flex-1"
                     disabled={videoUploading}
                   />
