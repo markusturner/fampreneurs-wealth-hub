@@ -378,6 +378,8 @@ export default function CourseDetail() {
     if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`
     const loomMatch = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/)
     if (loomMatch) return `https://www.loom.com/embed/${loomMatch[1]}`
+    const fathomMatch = url.match(/fathom\.video\/share\/([a-zA-Z0-9_-]+)/)
+    if (fathomMatch) return `https://fathom.video/embed/${fathomMatch[1]}`
     return url
   }
 
@@ -563,7 +565,7 @@ export default function CourseDetail() {
                   <Input
                     value={editVideoUrl}
                     onChange={e => setEditVideoUrl(e.target.value)}
-                    placeholder="Video URL (YouTube, Vimeo, Loom, or direct link)"
+                    placeholder="Video URL (YouTube, Vimeo, Loom, Fathom, or direct link)"
                     className="text-sm flex-1"
                     disabled={videoUploading}
                   />
