@@ -822,8 +822,6 @@ export default function CourseDetail() {
             />
           ) : null
         })()}
-          ) : null
-        })()}
 
         {/* Resources */}
         {resources.length > 0 && (
