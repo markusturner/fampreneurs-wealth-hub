@@ -94,7 +94,7 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
     cn('h-8 w-8 p-0 rounded flex items-center justify-center transition-colors text-sm cursor-pointer select-none',
       active ? 'bg-primary text-primary-foreground' : 'hover:bg-accent text-foreground')
 
-  const cmd = (e: React.MouseEvent, action: () => boolean) => {
+  const cmd = (e: MouseEvent, action: () => boolean) => {
     e.preventDefault()
     e.stopPropagation()
     action()
