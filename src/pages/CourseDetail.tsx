@@ -34,6 +34,8 @@ import {
   Heart,
   ArrowLeft,
   Trash2,
+  X,
+  RefreshCw,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AddModuleDialog } from '@/components/classroom/AddModuleDialog'
