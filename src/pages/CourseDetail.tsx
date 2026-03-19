@@ -956,13 +956,6 @@ export default function CourseDetail() {
       {courseId && (
         <>
           <AddModuleDialog courseId={courseId} open={showAddModule} onOpenChange={setShowAddModule} onCreated={fetchData} />
-          <AddLessonDialog
-            courseId={courseId}
-            moduleId={showAddLesson}
-            open={!!showAddLesson}
-            onOpenChange={(open) => !open && setShowAddLesson(null)}
-            onCreated={fetchData}
-          />
           <AddResourceDialog
             courseId={courseId}
             lessonId={selectedLesson?.id || null}
