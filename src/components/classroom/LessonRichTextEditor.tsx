@@ -1,9 +1,7 @@
 import { useEffect, useRef, type MouseEvent } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import Underline from '@tiptap/extension-underline'
 import Image from '@tiptap/extension-image'
-import Link from '@tiptap/extension-link'
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   List, ListOrdered, Quote, Code, Link as LinkIcon,
@@ -23,12 +21,8 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3, 4] },
-        link: false,
-        underline: false,
       }),
-      Underline,
       Image.configure({ inline: false, allowBase64: true }),
-      Link.configure({ openOnClick: false, autolink: true }),
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -37,7 +31,7 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
     },
     editorProps: {
       attributes: {
-        class: 'min-h-[200px] px-4 py-3 focus:outline-none prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground',
+        class: 'min-h-[200px] px-4 py-3 focus:outline-none prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground [&_ol]:list-decimal [&_ul]:list-disc [&_ol]:pl-6 [&_ul]:pl-6',
       },
       handlePaste: (_view, event) => {
         const html = event.clipboardData?.getData('text/html')
