@@ -78,31 +78,30 @@ export function AddResourceDialog({ courseId, lessonId, open, onOpenChange, onCr
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>Title</Label>
-            <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Resource name" />
+            <Label>Resource Name</Label>
+            <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Worksheet, Slides, Reference Guide" />
           </div>
           <div className="space-y-2">
-            <Label>Type</Label>
+            <Label>How would you like to add this?</Label>
             <Select value={resourceType} onValueChange={setResourceType}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="link">Link</SelectItem>
-                <SelectItem value="pdf">PDF</SelectItem>
-                <SelectItem value="file">File Upload</SelectItem>
+                <SelectItem value="link">Paste a Link</SelectItem>
+                <SelectItem value="file">Upload a File</SelectItem>
               </SelectContent>
             </Select>
           </div>
           {resourceType === 'file' ? (
             <div className="space-y-2">
-              <Label>File</Label>
+              <Label>Choose File</Label>
               <Input type="file" onChange={e => setFile(e.target.files?.[0] || null)} />
             </div>
           ) : (
             <div className="space-y-2">
-              <Label>URL</Label>
-              <Input value={url} onChange={e => setUrl(e.target.value)} placeholder="https://..." />
+              <Label>Link URL</Label>
+              <Input value={url} onChange={e => setUrl(e.target.value)} placeholder="https://example.com/resource" />
             </div>
           )}
           <Button onClick={handleSubmit} disabled={loading || !title.trim()} className="w-full">
