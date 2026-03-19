@@ -35,7 +35,7 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
     },
     editorProps: {
       attributes: {
-        class: 'min-h-[200px] px-4 py-3 focus:outline-none prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-p:text-foreground [&_ol]:list-decimal [&_ul]:list-disc [&_ol]:pl-6 [&_ul]:pl-6',
+        class: 'min-h-[200px] px-4 py-3 focus:outline-none prose max-w-none w-full text-foreground prose-headings:text-foreground prose-p:text-foreground prose-p:my-1 prose-headings:my-2 [&_ol]:list-decimal [&_ul]:list-disc [&_ol]:pl-6 [&_ul]:pl-6 text-sm',
       },
       handlePaste: (_view, event) => {
         const html = event.clipboardData?.getData('text/html')
@@ -99,7 +99,7 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
   }
 
   return (
-    <div className="border border-border rounded-xl overflow-hidden bg-background">
+    <div className="border border-border rounded-xl overflow-hidden bg-background w-full">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border bg-muted/40">
         {/* Headings */}
