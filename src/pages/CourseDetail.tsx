@@ -577,9 +577,13 @@ export default function CourseDetail() {
                       input.onchange = async (e) => {
                         const file = (e.target as HTMLInputElement).files?.[0]
                         if (!file) return
-                        const maxVideoSize = 500 * 1024 * 1024 // 500MB
+                        const maxVideoSize = 5 * 1024 * 1024 * 1024 // 5GB
                         if (file.size > maxVideoSize) {
-                          toast({ title: 'File too large', description: 'Maximum video size is 500MB. For bigger files, use a video URL instead.', variant: 'destructive' })
+                          toast({
+                            title: 'File too large',
+                            description: 'Maximum video size is 5GB. For larger files, use a hosted video URL.',
+                            variant: 'destructive'
+                          })
                           return
                         }
                         setVideoUploading(true)
@@ -592,7 +596,16 @@ export default function CourseDetail() {
                           setEditVideoUrl(urlData.publicUrl)
                           toast({ title: 'Video uploaded' })
                         } catch (err: any) {
-                          toast({ title: 'Upload failed', description: err?.message || 'Could not upload video', variant: 'destructive' })
+                          const rawMessage = err?.message || 'Could not upload video'
+                          const normalizedMessage = String(rawMessage).toLowerCase()
+                          const description =
+                            normalizedMessage.includes('too large') ||
+                            normalizedMessage.includes('entity too large') ||
+                            normalizedMessage.includes('payload')
+                              ? 'This file exceeds your Supabase storage upload limit. Use a smaller file or paste a hosted video URL (YouTube, Vimeo, Loom).'
+                              : rawMessage
+
+                          toast({ title: 'Upload failed', description, variant: 'destructive' })
                         } finally {
                           setVideoUploading(false)
                         }
@@ -804,9 +817,11 @@ export default function CourseDetail() {
           const hasText = html.replace(/<[^>]*>/g, '').trim().length > 0
           return hasText ? (
             <div
-              className="prose prose-sm max-w-none text-foreground prose-headings:text-foreground prose-a:text-primary prose-blockquote:border-primary prose-blockquote:text-muted-foreground pb-6 border-b border-border"
+              className="max-w-none text-foreground pb-6 border-b border-border [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mb-3 [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mb-2 [&_h4]:text-lg [&_h4]:font-semibold [&_p]:mb-3 [&_p]:leading-relaxed [&_strong]:font-semibold [&_em]:italic [&_u]:underline [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:bg-muted [&_blockquote]:border-l-4 [&_blockquote]:pl-4 [&_blockquote]:text-muted-foreground [&_blockquote]:border-primary [&_a]:text-primary [&_a]:underline [&_hr]:my-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6 [&_li]:mb-1"
               dangerouslySetInnerHTML={{ __html: html }}
             />
+          ) : null
+        })()}
           ) : null
         })()}
 
