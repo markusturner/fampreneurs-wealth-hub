@@ -838,7 +838,7 @@ export default function CourseDetail() {
 
           {/* Sticky bottom action bar */}
           <div className="shrink-0 border-t border-border bg-background px-4 md:px-6 py-3">
-            <div className="max-w-3xl mx-auto flex items-center justify-end gap-2">
+            <div className="w-full flex items-center justify-end gap-2">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" size="sm" disabled={editDeleting} className="gap-1.5 text-xs">
