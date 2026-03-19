@@ -127,6 +127,11 @@ export default function CourseDetail() {
   const [editSaving, setEditSaving] = useState(false)
   const [editDeleting, setEditDeleting] = useState(false)
 
+  const selectLesson = (lesson: Lesson | null) => {
+    setSelectedLesson(lesson)
+    selectedLessonIdRef.current = lesson?.id || null
+  }
+
   const startEditingLesson = () => {
     if (!selectedLesson) return
     setEditTitle(selectedLesson.title)
