@@ -175,7 +175,7 @@ export default function CourseDetail() {
 
   const fetchData = useCallback(async () => {
     if (!courseId) return
-    setLoading(true)
+    if (initialLoad) setLoading(true)
 
     const [courseRes, modulesRes, lessonsRes, completionsRes] = await Promise.all([
       supabase.from('courses').select('*').eq('id', courseId).single(),
@@ -216,16 +216,37 @@ export default function CourseDetail() {
     const completedCount = allLessons.filter(l => l.completed).length
     setProgressPercent(allLessons.length > 0 ? Math.round((completedCount / allLessons.length) * 100) : 0)
 
-    if (!selectedLesson && allLessons.length > 0) {
-      setSelectedLesson(allLessons[0])
+    // Preserve selected lesson using ref
+    const currentLessonId = selectedLessonIdRef.current
+    if (currentLessonId) {
+      const updated = allLessons.find(l => l.id === currentLessonId)
+      if (updated) {
+        setSelectedLesson(updated)
+        // Ensure the module containing this lesson is open
+        const parentMod = mods.find(m => m.lessons.some(l => l.id === currentLessonId))
+        if (parentMod) {
+          setOpenModules(prev => {
+            const next = new Set(prev)
+            next.add(parentMod.id)
+            return next
+          })
+        }
+      } else {
+        // Lesson was deleted, select first available
+        if (allLessons.length > 0) {
+          selectLesson(allLessons[0])
+          if (mods.length > 0) setOpenModules(new Set([mods[0].id]))
+        } else {
+          selectLesson(null)
+        }
+      }
+    } else if (allLessons.length > 0) {
+      selectLesson(allLessons[0])
       if (mods.length > 0) setOpenModules(new Set([mods[0].id]))
-    } else if (selectedLesson) {
-      // Refresh selectedLesson with latest data
-      const updated = allLessons.find(l => l.id === selectedLesson.id)
-      if (updated) setSelectedLesson(updated)
     }
 
     setLoading(false)
+    setInitialLoad(false)
   }, [courseId, user?.id])
 
   useEffect(() => { fetchData() }, [fetchData])
