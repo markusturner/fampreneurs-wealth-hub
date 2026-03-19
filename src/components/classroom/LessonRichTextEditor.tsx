@@ -124,7 +124,7 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
         <div className="w-px h-5 bg-border mx-1" />
         {/* Media */}
         <button type="button" className={toolbarBtnClass(false)} onClick={addImage} title="Insert image"><ImageIcon className="h-3.5 w-3.5" /></button>
-        <button type="button" className={toolbarBtnClass(false)} onClick={addVideo} title="Insert video"><Video className="h-3.5 w-3.5" /></button>
+        
         <button type="button" className={toolbarBtnClass(editor.isActive('link'))} onClick={addLink} title="Insert link"><LinkIcon className="h-3.5 w-3.5" /></button>
       </div>
       {/* Editor area */}
