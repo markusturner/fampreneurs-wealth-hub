@@ -541,7 +541,7 @@ export default function CourseDetail() {
       return (
         <div className="flex flex-col h-full">
           <div className="flex-1 overflow-y-auto">
-            <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 space-y-5 pb-24">
+            <div className="w-full px-4 md:px-6 py-6 space-y-5 pb-24">
               <button
                 onClick={() => { setMobileView('modules'); cancelEditingLesson() }}
                 className="md:hidden flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
@@ -838,7 +838,7 @@ export default function CourseDetail() {
 
           {/* Sticky bottom action bar */}
           <div className="shrink-0 border-t border-border bg-background px-4 md:px-6 py-3">
-            <div className="max-w-3xl mx-auto flex items-center justify-end gap-2">
+            <div className="w-full flex items-center justify-end gap-2">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" size="sm" disabled={editDeleting} className="gap-1.5 text-xs">
@@ -871,7 +871,7 @@ export default function CourseDetail() {
 
     // ── VIEW MODE ──
     return (
-      <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 space-y-6">
+      <div className="w-full px-4 md:px-6 py-6 space-y-6">
         {/* Mobile back button */}
         <button
           onClick={() => setMobileView('modules')}
