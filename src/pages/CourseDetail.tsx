@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
@@ -100,8 +100,10 @@ export default function CourseDetail() {
   const [course, setCourse] = useState<Course | null>(null)
   const [modules, setModules] = useState<Module[]>([])
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null)
+  const selectedLessonIdRef = useRef<string | null>(null)
   const [resources, setResources] = useState<Resource[]>([])
   const [loading, setLoading] = useState(true)
+  const [initialLoad, setInitialLoad] = useState(true)
   const [openModules, setOpenModules] = useState<Set<string>>(new Set())
   const [progressPercent, setProgressPercent] = useState(0)
   const [totalLessons, setTotalLessons] = useState(0)
@@ -124,6 +126,11 @@ export default function CourseDetail() {
   const [editContent, setEditContent] = useState('')
   const [editSaving, setEditSaving] = useState(false)
   const [editDeleting, setEditDeleting] = useState(false)
+
+  const selectLesson = (lesson: Lesson | null) => {
+    setSelectedLesson(lesson)
+    selectedLessonIdRef.current = lesson?.id || null
+  }
 
   const startEditingLesson = () => {
     if (!selectedLesson) return
@@ -165,7 +172,7 @@ export default function CourseDetail() {
     } else {
       toast({ title: 'Lesson deleted' })
       setIsEditingLesson(false)
-      setSelectedLesson(null)
+      selectLesson(null)
       fetchData()
     }
     setEditDeleting(false)
@@ -173,7 +180,7 @@ export default function CourseDetail() {
 
   const fetchData = useCallback(async () => {
     if (!courseId) return
-    setLoading(true)
+    if (initialLoad) setLoading(true)
 
     const [courseRes, modulesRes, lessonsRes, completionsRes] = await Promise.all([
       supabase.from('courses').select('*').eq('id', courseId).single(),
@@ -214,16 +221,37 @@ export default function CourseDetail() {
     const completedCount = allLessons.filter(l => l.completed).length
     setProgressPercent(allLessons.length > 0 ? Math.round((completedCount / allLessons.length) * 100) : 0)
 
-    if (!selectedLesson && allLessons.length > 0) {
-      setSelectedLesson(allLessons[0])
+    // Preserve selected lesson using ref
+    const currentLessonId = selectedLessonIdRef.current
+    if (currentLessonId) {
+      const updated = allLessons.find(l => l.id === currentLessonId)
+      if (updated) {
+        setSelectedLesson(updated)
+        // Ensure the module containing this lesson is open
+        const parentMod = mods.find(m => m.lessons.some(l => l.id === currentLessonId))
+        if (parentMod) {
+          setOpenModules(prev => {
+            const next = new Set(prev)
+            next.add(parentMod.id)
+            return next
+          })
+        }
+      } else {
+        // Lesson was deleted, select first available
+        if (allLessons.length > 0) {
+          selectLesson(allLessons[0])
+          if (mods.length > 0) setOpenModules(new Set([mods[0].id]))
+        } else {
+          selectLesson(null)
+        }
+      }
+    } else if (allLessons.length > 0) {
+      selectLesson(allLessons[0])
       if (mods.length > 0) setOpenModules(new Set([mods[0].id]))
-    } else if (selectedLesson) {
-      // Refresh selectedLesson with latest data
-      const updated = allLessons.find(l => l.id === selectedLesson.id)
-      if (updated) setSelectedLesson(updated)
     }
 
     setLoading(false)
+    setInitialLoad(false)
   }, [courseId, user?.id])
 
   useEffect(() => { fetchData() }, [fetchData])
@@ -256,8 +284,9 @@ export default function CourseDetail() {
     fetchData()
   }
 
+
   const handleSelectLesson = (lesson: Lesson) => {
-    setSelectedLesson(lesson)
+    selectLesson(lesson)
     setMobileView('lesson')
   }
 
