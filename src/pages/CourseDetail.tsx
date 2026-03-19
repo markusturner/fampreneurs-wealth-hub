@@ -578,11 +578,11 @@ export default function CourseDetail() {
                       input.onchange = async (e) => {
                         const file = (e.target as HTMLInputElement).files?.[0]
                         if (!file) return
-                        const maxVideoSize = 500 * 1024 * 1024 // 500MB (bucket limit)
+                        const maxVideoSize = 5 * 1024 * 1024 * 1024 // 5GB (bucket limit)
                         if (file.size > maxVideoSize) {
                           toast({
                             title: 'File too large',
-                            description: 'Maximum video size is 500MB. For larger files, use a hosted video URL (YouTube, Vimeo, Loom).',
+                            description: 'Maximum video size is 5GB. For larger files, use a hosted video URL (YouTube, Vimeo, Loom).',
                             variant: 'destructive'
                           })
                           return
