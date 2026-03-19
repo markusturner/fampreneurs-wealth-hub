@@ -23,6 +23,8 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3, 4] },
+        link: false,
+        underline: false,
       }),
       Underline,
       Image.configure({ inline: false, allowBase64: true }),
