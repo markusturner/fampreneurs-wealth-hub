@@ -543,7 +543,44 @@ export default function CourseDetail() {
                 Back to modules
               </button>
 
-              {/* Rich text editor with toolbar */}
+              {/* Editable Title - displayed inline like in view mode */}
+              <input
+                value={editTitle}
+                onChange={e => setEditTitle(e.target.value)}
+                placeholder="Lesson title"
+                className="w-full text-xl md:text-2xl font-bold bg-transparent border-none outline-none focus:outline-none text-foreground placeholder:text-muted-foreground"
+                style={{ color: '#290a52' }}
+              />
+
+              {/* Video URL input */}
+              <Input
+                value={editVideoUrl}
+                onChange={e => setEditVideoUrl(e.target.value)}
+                placeholder="Video URL (YouTube, Vimeo, Loom, or direct link)"
+                className="text-sm"
+              />
+
+              {/* Video Preview - shown inline like view mode */}
+              {editVideoUrl?.trim() && (
+                <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-lg">
+                  {(() => {
+                    const embedUrl = getEmbedUrl(editVideoUrl.trim())
+                    if (embedUrl && (embedUrl.includes('embed') || embedUrl.includes('player'))) {
+                      return (
+                        <iframe
+                          src={embedUrl}
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      )
+                    }
+                    return <video src={editVideoUrl.trim()} controls className="w-full h-full" />
+                  })()}
+                </div>
+              )}
+
+              {/* Rich text editor with toolbar for content/description */}
               <LessonRichTextEditor content={editContent} onChange={setEditContent} />
 
               {/* Resources */}
@@ -591,47 +628,31 @@ export default function CourseDetail() {
 
           {/* Sticky bottom action bar */}
           <div className="shrink-0 border-t border-border bg-background px-4 md:px-6 py-3">
-            <div className="max-w-3xl mx-auto flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-2 flex-wrap">
-                <Input
-                  value={editTitle}
-                  onChange={e => setEditTitle(e.target.value)}
-                  placeholder="Lesson title"
-                  className="w-48 text-sm"
-                />
-                <Input
-                  value={editVideoUrl}
-                  onChange={e => setEditVideoUrl(e.target.value)}
-                  placeholder="Video URL (optional)"
-                  className="w-56 text-sm"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm" disabled={editDeleting} className="gap-1.5 text-xs">
-                      <Trash2 className="h-3.5 w-3.5" />
-                      {editDeleting ? 'Deleting...' : 'Delete'}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete this lesson?</AlertDialogTitle>
-                      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={deleteLesson} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-                <Button variant="outline" size="sm" className="text-xs" onClick={cancelEditingLesson}>
-                  Cancel
-                </Button>
-                <Button size="sm" className="text-xs bg-[#ffb500] hover:bg-[#ffb500]/90 text-primary-foreground" onClick={saveLesson} disabled={editSaving || !editTitle.trim()}>
-                  {editSaving ? 'Saving...' : 'Save'}
-                </Button>
-              </div>
+            <div className="max-w-3xl mx-auto flex items-center justify-end gap-2">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" disabled={editDeleting} className="gap-1.5 text-xs">
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {editDeleting ? 'Deleting...' : 'Delete'}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete this lesson?</AlertDialogTitle>
+                    <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={deleteLesson} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              <Button variant="outline" size="sm" className="text-xs" onClick={cancelEditingLesson}>
+                Cancel
+              </Button>
+              <Button size="sm" className="text-xs bg-[#ffb500] hover:bg-[#ffb500]/90 text-primary-foreground" onClick={saveLesson} disabled={editSaving || !editTitle.trim()}>
+                {editSaving ? 'Saving...' : 'Save'}
+              </Button>
             </div>
           </div>
         </div>
