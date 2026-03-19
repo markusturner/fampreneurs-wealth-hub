@@ -1110,7 +1110,7 @@ export default function CourseDetail() {
         </div>
 
         {/* Center content */}
-        <div className={cn("flex-1", isEditingLesson ? "flex flex-col overflow-hidden" : "overflow-y-auto")}>
+        <div className={cn("flex-1 min-w-0", isEditingLesson ? "flex flex-col overflow-hidden" : "overflow-y-auto")}>
           {selectedLesson ? (
             LessonContent()
           ) : (
@@ -1129,9 +1129,11 @@ export default function CourseDetail() {
         </div>
 
         {/* Right sidebar */}
-        <div className="w-72 border-l border-border bg-card flex flex-col shrink-0 overflow-y-auto">
-          <RightSidebar />
-        </div>
+        {!isEditingLesson && (
+          <div className="w-72 border-l border-border bg-card flex flex-col shrink-0 overflow-y-auto">
+            <RightSidebar />
+          </div>
+        )}
       </div>
 
       {/* ── MOBILE LAYOUT (< md) ── */}
