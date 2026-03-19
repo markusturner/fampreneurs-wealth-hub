@@ -167,7 +167,7 @@ export default function CourseDetail() {
     } else {
       toast({ title: 'Lesson deleted' })
       setIsEditingLesson(false)
-      setSelectedLesson(null)
+      selectLesson(null)
       fetchData()
     }
     setEditDeleting(false)
