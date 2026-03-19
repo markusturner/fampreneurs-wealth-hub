@@ -587,59 +587,62 @@ export default function CourseDetail() {
                           })
                           return
                         }
+                        // Instantly show local preview so user isn't blocked
+                        const localPreviewUrl = URL.createObjectURL(file)
+                        setEditVideoUrl(localPreviewUrl)
+                        toast({ title: 'Video loaded — uploading in background…' })
+
+                        // Upload in background
                         setVideoUploading(true)
                         setUploadProgress(0)
-                        try {
-                          const ext = file.name.split('.').pop() || 'mp4'
-                          const path = `lessons/${courseId}/${Date.now()}.${ext}`
-                          
-                          // Use XMLHttpRequest for real progress tracking
-                          const { data: { session } } = await supabase.auth.getSession()
-                          const token = session?.access_token
-                          const SUPABASE_URL = 'https://tbofkvyezmpovoezjyyl.supabase.co'
-                          const uploadUrl = `${SUPABASE_URL}/storage/v1/object/documents/${path}`
+                        ;(async () => {
+                          try {
+                            const ext = file.name.split('.').pop() || 'mp4'
+                            const path = `lessons/${courseId}/${Date.now()}.${ext}`
+                            const { data: { session } } = await supabase.auth.getSession()
+                            const token = session?.access_token
+                            const SUPABASE_URL = 'https://tbofkvyezmpovoezjyyl.supabase.co'
+                            const uploadUrl = `${SUPABASE_URL}/storage/v1/object/documents/${path}`
 
-                          await new Promise<void>((resolve, reject) => {
-                            const xhr = new XMLHttpRequest()
-                            xhr.open('POST', uploadUrl, true)
-                            xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-                            xhr.setRequestHeader('x-upsert', 'true')
-
-                            xhr.upload.onprogress = (e) => {
-                              if (e.lengthComputable) {
-                                setUploadProgress(Math.round((e.loaded / e.total) * 100))
+                            await new Promise<void>((resolve, reject) => {
+                              const xhr = new XMLHttpRequest()
+                              xhr.open('POST', uploadUrl, true)
+                              xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+                              xhr.setRequestHeader('x-upsert', 'true')
+                              xhr.upload.onprogress = (e) => {
+                                if (e.lengthComputable) {
+                                  setUploadProgress(Math.round((e.loaded / e.total) * 100))
+                                }
                               }
-                            }
-                            xhr.onload = () => {
-                              if (xhr.status >= 200 && xhr.status < 300) {
-                                resolve()
-                              } else {
-                                const msg = xhr.responseText || xhr.statusText
-                                reject(new Error(msg))
+                              xhr.onload = () => {
+                                if (xhr.status >= 200 && xhr.status < 300) resolve()
+                                else reject(new Error(xhr.responseText || xhr.statusText))
                               }
-                            }
-                            xhr.onerror = () => reject(new Error('Network error during upload'))
-                            xhr.send(file)
-                          })
+                              xhr.onerror = () => reject(new Error('Network error during upload'))
+                              xhr.send(file)
+                            })
 
-                          const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path)
-                          setEditVideoUrl(urlData.publicUrl)
-                          toast({ title: 'Video uploaded' })
-                        } catch (err: any) {
-                          const rawMessage = err?.message || 'Could not upload video'
-                          const normalizedMessage = String(rawMessage).toLowerCase()
-                          const description =
-                            normalizedMessage.includes('too large') ||
-                            normalizedMessage.includes('entity too large') ||
-                            normalizedMessage.includes('payload')
-                              ? 'This file exceeds your Supabase storage upload limit. Use a smaller file or paste a hosted video URL (YouTube, Vimeo, Loom).'
-                              : rawMessage
-
-                          toast({ title: 'Upload failed', description, variant: 'destructive' })
-                        } finally {
-                          setVideoUploading(false)
-                          setUploadProgress(0)
-                        }
+                            const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path)
+                            setEditVideoUrl(urlData.publicUrl)
+                            URL.revokeObjectURL(localPreviewUrl)
+                            toast({ title: 'Video uploaded successfully' })
+                          } catch (err: any) {
+                            const rawMessage = err?.message || 'Could not upload video'
+                            const normalizedMessage = String(rawMessage).toLowerCase()
+                            const description =
+                              normalizedMessage.includes('too large') ||
+                              normalizedMessage.includes('entity too large') ||
+                              normalizedMessage.includes('payload')
+                                ? 'This file exceeds your Supabase storage upload limit. Use a smaller file or paste a hosted video URL.'
+                                : rawMessage
+                            toast({ title: 'Upload failed', description, variant: 'destructive' })
+                            setEditVideoUrl('')
+                            URL.revokeObjectURL(localPreviewUrl)
+                          } finally {
+                            setVideoUploading(false)
+                            setUploadProgress(0)
+                          }
+                        })()
                       }
                       input.click()
                     }}
