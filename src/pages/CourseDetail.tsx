@@ -871,7 +871,7 @@ export default function CourseDetail() {
 
     // ── VIEW MODE ──
     return (
-      <div className="max-w-3xl mx-auto px-4 md:px-6 py-6 space-y-6">
+      <div className="w-full px-4 md:px-6 py-6 space-y-6">
         {/* Mobile back button */}
         <button
           onClick={() => setMobileView('modules')}
