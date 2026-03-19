@@ -37,7 +37,6 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AddModuleDialog } from '@/components/classroom/AddModuleDialog'
-import { AddLessonDialog } from '@/components/classroom/AddLessonDialog'
 import { AddResourceDialog } from '@/components/classroom/AddResourceDialog'
 import { EditResourceDialog } from '@/components/classroom/EditResourceDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
@@ -114,7 +113,7 @@ export default function CourseDetail() {
   const [mobileView, setMobileView] = useState<'modules' | 'lesson'>('modules')
 
   const [showAddModule, setShowAddModule] = useState(false)
-  const [showAddLesson, setShowAddLesson] = useState<string | null>(null)
+  const [addingLessonModuleId, setAddingLessonModuleId] = useState<string | null>(null)
   const [showAddResource, setShowAddResource] = useState(false)
   const [showEditCourse, setShowEditCourse] = useState(false)
   const [editingResource, setEditingResource] = useState<Resource | null>(null)
