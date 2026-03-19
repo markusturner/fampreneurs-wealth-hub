@@ -125,6 +125,7 @@ export default function CourseDetail() {
   const [editContent, setEditContent] = useState('')
   const [editSaving, setEditSaving] = useState(false)
   const [editDeleting, setEditDeleting] = useState(false)
+  const [videoUploading, setVideoUploading] = useState(false)
 
   const selectLesson = (lesson: Lesson | null) => {
     setSelectedLesson(lesson)
@@ -552,13 +553,61 @@ export default function CourseDetail() {
                 style={{ color: '#290a52' }}
               />
 
-              {/* Video URL input */}
-              <Input
-                value={editVideoUrl}
-                onChange={e => setEditVideoUrl(e.target.value)}
-                placeholder="Video URL (YouTube, Vimeo, Loom, or direct link)"
-                className="text-sm"
-              />
+              {/* Video: Upload or URL input */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={editVideoUrl}
+                    onChange={e => setEditVideoUrl(e.target.value)}
+                    placeholder="Video URL (YouTube, Vimeo, Loom, or direct link)"
+                    className="text-sm flex-1"
+                    disabled={videoUploading}
+                  />
+                  <span className="text-xs text-muted-foreground shrink-0">or</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs gap-1.5 shrink-0"
+                    disabled={videoUploading}
+                    onClick={() => {
+                      const input = document.createElement('input')
+                      input.type = 'file'
+                      input.accept = 'video/mp4,video/webm,video/quicktime,video/x-msvideo'
+                      input.onchange = async (e) => {
+                        const file = (e.target as HTMLInputElement).files?.[0]
+                        if (!file) return
+                        if (file.size > 50 * 1024 * 1024) {
+                          toast({ title: 'File too large', description: 'Maximum video size is 50MB', variant: 'destructive' })
+                          return
+                        }
+                        setVideoUploading(true)
+                        try {
+                          const ext = file.name.split('.').pop() || 'mp4'
+                          const path = `lessons/${courseId}/${Date.now()}.${ext}`
+                          const { error: uploadError } = await supabase.storage.from('documents').upload(path, file, { upsert: true })
+                          if (uploadError) throw uploadError
+                          const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path)
+                          setEditVideoUrl(urlData.publicUrl)
+                          toast({ title: 'Video uploaded' })
+                        } catch (err: any) {
+                          toast({ title: 'Upload failed', description: err?.message || 'Could not upload video', variant: 'destructive' })
+                        } finally {
+                          setVideoUploading(false)
+                        }
+                      }
+                      input.click()
+                    }}
+                  >
+                    {videoUploading ? (
+                      <>Uploading...</>
+                    ) : (
+                      <><Play className="h-3.5 w-3.5" /> Upload Video</>
+                    )}
+                  </Button>
+                </div>
+                {videoUploading && <Progress value={undefined} className="h-1.5" />}
+              </div>
 
               {/* Video Preview - shown inline like view mode */}
               {editVideoUrl?.trim() && (
