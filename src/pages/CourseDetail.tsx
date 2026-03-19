@@ -609,6 +609,7 @@ export default function CourseDetail() {
 
                             await new Promise<void>((resolve, reject) => {
                               const xhr = new XMLHttpRequest()
+                              uploadXhrRef.current = xhr
                               xhr.open('POST', uploadUrl, true)
                               xhr.setRequestHeader('Authorization', `Bearer ${token}`)
                               xhr.setRequestHeader('x-upsert', 'true')
@@ -618,10 +619,12 @@ export default function CourseDetail() {
                                 }
                               }
                               xhr.onload = () => {
+                                uploadXhrRef.current = null
                                 if (xhr.status >= 200 && xhr.status < 300) resolve()
                                 else reject(new Error(xhr.responseText || xhr.statusText))
                               }
-                              xhr.onerror = () => reject(new Error('Network error during upload'))
+                              xhr.onerror = () => { uploadXhrRef.current = null; reject(new Error('Network error during upload')) }
+                              xhr.onabort = () => { uploadXhrRef.current = null; reject(new Error('Upload cancelled')) }
                               xhr.send(file)
                             })
 
