@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, type MouseEvent } from 'react'
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Underline from '@tiptap/extension-underline'
@@ -23,6 +23,8 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3, 4] },
+        link: false,
+        underline: false,
       }),
       Underline,
       Image.configure({ inline: false, allowBase64: true }),
@@ -92,7 +94,7 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
     cn('h-8 w-8 p-0 rounded flex items-center justify-center transition-colors text-sm cursor-pointer select-none',
       active ? 'bg-primary text-primary-foreground' : 'hover:bg-accent text-foreground')
 
-  const cmd = (e: React.MouseEvent, action: () => boolean) => {
+  const cmd = (e: MouseEvent, action: () => boolean) => {
     e.preventDefault()
     e.stopPropagation()
     action()
@@ -122,8 +124,8 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
         <button type="button" className={tb(false)} onMouseDown={(e) => cmd(e, () => editor.chain().focus().setHorizontalRule().run())} title="Divider"><Minus className="h-3.5 w-3.5" /></button>
         <div className="w-px h-5 bg-border mx-1" />
         {/* Media */}
-        <button type="button" className={tb(false)} onMouseDown={(e) => { e.preventDefault(); addImage() }} title="Insert image"><ImageIcon className="h-3.5 w-3.5" /></button>
-        <button type="button" className={tb(editor.isActive('link'))} onMouseDown={(e) => { e.preventDefault(); addLink() }} title="Insert link"><LinkIcon className="h-3.5 w-3.5" /></button>
+        <button type="button" className={tb(false)} onMouseDown={(e) => { cmd(e, () => { addImage(); return true }) }} title="Insert image"><ImageIcon className="h-3.5 w-3.5" /></button>
+        <button type="button" className={tb(editor.isActive('link'))} onMouseDown={(e) => { cmd(e, () => { addLink(); return true }) }} title="Insert link"><LinkIcon className="h-3.5 w-3.5" /></button>
       </div>
       {/* Editor area */}
       <EditorContent editor={editor} />
