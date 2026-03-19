@@ -578,11 +578,11 @@ export default function CourseDetail() {
                       input.onchange = async (e) => {
                         const file = (e.target as HTMLInputElement).files?.[0]
                         if (!file) return
-                        const maxVideoSize = 500 * 1024 * 1024 // 500MB (bucket limit)
+                        const maxVideoSize = 5 * 1024 * 1024 * 1024 // 5GB (bucket limit)
                         if (file.size > maxVideoSize) {
                           toast({
                             title: 'File too large',
-                            description: 'Maximum video size is 500MB. For larger files, use a hosted video URL (YouTube, Vimeo, Loom).',
+                            description: 'Maximum video size is 5GB. For larger files, use a hosted video URL (YouTube, Vimeo, Loom).',
                             variant: 'destructive'
                           })
                           return
@@ -633,7 +633,7 @@ export default function CourseDetail() {
                               normalizedMessage.includes('too large') ||
                               normalizedMessage.includes('entity too large') ||
                               normalizedMessage.includes('payload')
-                                ? 'Upload failed due project storage size limits. Use a video under 50MB for fast upload, or paste a hosted video URL.'
+                                ? 'Upload failed due storage size limits. Try a smaller file or use a hosted video URL (YouTube, Vimeo, Loom).'
                                 : rawMessage
                             toast({ title: 'Upload failed', description, variant: 'destructive' })
                             setEditVideoUrl('')
