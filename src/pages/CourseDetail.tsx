@@ -502,10 +502,12 @@ export default function CourseDetail() {
                   })}
                   {isAdminOrOwner && mod.id !== '__uncategorized' && (
                     <button
-                      onClick={() => setShowAddLesson(mod.id)}
-                      className="px-4 py-2 text-xs text-muted-foreground hover:text-foreground w-full text-left flex items-center gap-1"
+                      onClick={() => handleAddLessonInline(mod.id)}
+                      disabled={addingLessonModuleId === mod.id}
+                      className="px-4 py-2 text-xs text-muted-foreground hover:text-foreground w-full text-left flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <span className="text-base leading-none">+</span> Add lesson
+                      <span className="text-base leading-none">+</span>
+                      {addingLessonModuleId === mod.id ? 'Adding...' : 'Add lesson'}
                     </button>
                   )}
                 </CollapsibleContent>
