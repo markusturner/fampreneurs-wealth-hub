@@ -48,9 +48,9 @@ export function MobileBottomNav() {
   ]
 
   const workspaceItems = [
-    { name: 'Members', href: '/workspace-members', icon: Users },
     { name: 'AI Chat', href: '/ai-chat', icon: Bot },
     { name: 'Trust Creation', href: '/trust-creation', icon: ScrollText },
+    { name: 'Members', href: '/workspace-members', icon: Users },
   ]
 
   const truHeirsItems = [
