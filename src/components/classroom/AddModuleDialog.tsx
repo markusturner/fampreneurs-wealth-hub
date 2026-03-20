@@ -71,7 +71,7 @@ export function AddModuleDialog({ courseId, open, onOpenChange, onCreated }: Pro
             <Label>Description (optional)</Label>
             <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Module description..." />
           </div>
-          <Button onClick={handleSubmit} disabled={loading || !title.trim()} className="w-full">
+          <Button onClick={handleSubmit} disabled={loading || !title.trim()} className="w-full bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
             {loading ? 'Adding...' : 'Add Module'}
           </Button>
         </div>
