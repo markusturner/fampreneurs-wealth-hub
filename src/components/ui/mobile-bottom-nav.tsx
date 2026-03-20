@@ -48,13 +48,13 @@ export function MobileBottomNav() {
   ]
 
   const workspaceItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Members', href: '/workspace-members', icon: Users },
     { name: 'AI Chat', href: '/ai-chat', icon: Bot },
     { name: 'Trust Creation', href: '/trust-creation', icon: ScrollText },
   ]
 
   const truHeirsItems = [
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Family Office', href: '/digital-family-office', icon: Home },
     { name: 'Family Constitution', href: '/documents', icon: FileText },
     { name: 'Family Calendar', href: '/calendar', icon: Calendar },
