@@ -270,7 +270,7 @@ export default function Classroom() {
 
               {isAdminOrOwner && (
                 <Card
-                  className="overflow-hidden border-dashed cursor-pointer hover:border-primary/50 transition-colors"
+                  className="overflow-hidden border-dashed cursor-pointer hover:border-[#2eb2ff] hover:bg-[#2eb2ff]/10 transition-colors"
                   onClick={() => setShowAddCourse(true)}
                 >
                   <CardContent className="h-full flex flex-col items-center justify-center p-8 min-h-[280px]">
