@@ -167,10 +167,18 @@ export default function Classroom() {
 
       let userCommunityIds: string[] = []
       if (!isAdminOrOwner && profile?.program_name) {
+        // Map profile program_name to the community group name used in the DB
+        const programToGroup: Record<string, string> = {
+          'The Family Business University': 'Family Business University',
+          'The Family Vault': 'The Family Vault',
+          'The Family Business Accelerator': 'The Family Business Accelerator',
+          'The Family Fortune Mastermind': 'The Family Fortune Mastermind',
+        }
+        const groupName = programToGroup[profile.program_name] || profile.program_name
         const { data: groupData } = await supabase
           .from('community_groups')
           .select('id')
-          .eq('name', profile.program_name)
+          .eq('name', groupName)
         userCommunityIds = (groupData || []).map((g: any) => g.id)
       }
 
