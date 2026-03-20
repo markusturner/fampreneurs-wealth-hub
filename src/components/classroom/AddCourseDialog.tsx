@@ -197,7 +197,7 @@ export function AddCourseDialog({ open, onOpenChange, onCreated }: Props) {
             <Switch checked={isPrivate} onCheckedChange={setIsPrivate} />
           </div>
 
-          <Button onClick={handleSubmit} disabled={loading || !title.trim()} className="w-full">
+          <Button onClick={handleSubmit} disabled={loading || !title.trim()} className="w-full bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
             {loading ? 'Creating...' : 'Create Course'}
           </Button>
         </div>
