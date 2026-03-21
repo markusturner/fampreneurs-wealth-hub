@@ -93,6 +93,8 @@ export default function Messenger() {
                 .from('profiles')
                 .select('user_id, display_name, avatar_url')
                 .in('user_id', uniqueUserIds)
+                .not('display_name', 'is', null)
+                .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
                 .order('display_name')
               profileData = profiles || []
             }
