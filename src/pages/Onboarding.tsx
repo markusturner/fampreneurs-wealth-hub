@@ -176,9 +176,9 @@ export default function Onboarding() {
 
       const { error } = await supabase.from('onboarding_responses').insert({
         user_id: user.id,
-        full_name: form.full_name,
-        tshirt_size: form.tshirt_size,
-        mailing_address: form.mailing_address,
+        full_name: `${form.first_name} ${form.last_name}`.trim(),
+        tshirt_size: '',
+        mailing_address: '',
         first_touchpoint: firstTouchpoint,
         decision_reason: form.decision_reason,
         investment_reason: form.investment_reason,
@@ -194,6 +194,25 @@ export default function Onboarding() {
         anything_else: form.anything_else,
       })
       if (error) throw error
+
+      // Update the user's profile with collected info
+      const displayName = `${form.first_name} ${form.last_name}`.trim()
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          first_name: form.first_name,
+          last_name: form.last_name,
+          display_name: displayName,
+          email: form.email_address,
+          phone: form.phone_number,
+          needs_profile_completion: false,
+        })
+        .eq('user_id', user.id)
+
+      if (profileError) {
+        console.error('Error updating profile:', profileError)
+      }
+
       await refreshProfile()
       toast({ title: 'Onboarding complete!', description: 'Redirecting to book your onboarding call…' })
       window.location.href = 'https://calendly.com/apexathletemgnt/fampreneurs-onboarding'
