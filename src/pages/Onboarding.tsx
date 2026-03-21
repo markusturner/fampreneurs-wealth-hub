@@ -228,30 +228,32 @@ export default function Onboarding() {
 
   const renderField = (field: keyof FormData) => {
     switch (field) {
-      case 'full_name':
+      case 'first_name':
         return (
           <div className="space-y-2" key={field}>
-            <Label>First and Last Name *</Label>
-            <Input value={form.full_name} onChange={e => set('full_name', e.target.value)} placeholder="John Doe" />
+            <Label>First Name *</Label>
+            <Input value={form.first_name} onChange={e => set('first_name', e.target.value)} placeholder="John" />
           </div>
         )
-      case 'tshirt_size':
+      case 'last_name':
         return (
           <div className="space-y-2" key={field}>
-            <Label>T-Shirt Size *</Label>
-            <Select value={form.tshirt_size} onValueChange={v => set('tshirt_size', v)}>
-              <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
-              <SelectContent>
-                {TSHIRT_SIZES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <Label>Last Name *</Label>
+            <Input value={form.last_name} onChange={e => set('last_name', e.target.value)} placeholder="Doe" />
           </div>
         )
-      case 'mailing_address':
+      case 'email_address':
         return (
           <div className="space-y-2" key={field}>
-            <Label>Mailing Address *</Label>
-            <Textarea value={form.mailing_address} onChange={e => set('mailing_address', e.target.value)} placeholder="Full mailing address" rows={3} />
+            <Label>Email Address *</Label>
+            <Input type="email" value={form.email_address} onChange={e => set('email_address', e.target.value)} placeholder="john@example.com" />
+          </div>
+        )
+      case 'phone_number':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>Phone Number *</Label>
+            <Input type="tel" value={form.phone_number} onChange={e => set('phone_number', e.target.value)} placeholder="(555) 123-4567" />
           </div>
         )
       case 'first_touchpoint':
