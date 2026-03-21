@@ -61,11 +61,13 @@ export default function Messenger() {
         let profileData: Profile[] = []
 
         if (isAdmin || isOwner) {
-          // Admin/owner: fetch all profiles
+          // Admin/owner: fetch all profiles (exclude invited users who haven't joined)
           const { data: profiles } = await supabase
             .from('profiles')
             .select('user_id, display_name, avatar_url')
             .neq('user_id', user.id)
+            .not('display_name', 'is', null)
+            .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
             .order('display_name')
           profileData = profiles || []
         } else {
