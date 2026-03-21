@@ -292,29 +292,50 @@ export default function WorkspaceCommunity() {
     fetchMemberCount()
   }, [program])
 
-  // Real-time presence tracking for online count — only count admin/owner role users
+  // Real-time presence tracking for online count
   useEffect(() => {
     if (!user?.id || !program) return
 
     let qualifiedUserIds: string[] = []
 
     const setup = async () => {
-      // Fetch users with admin/owner roles
+      const programGroupMap: Record<string, string> = {
+        fbu: 'Family Business University',
+        tfv: 'The Family Vault',
+        tfba: 'The Family Business Accelerator',
+        tffm: 'The Family Fortune Mastermind',
+      }
+      const groupName = programGroupMap[program]
+
+      let programUserIds: string[] = []
+      if (groupName) {
+        const { data: group } = await supabase
+          .from('community_groups')
+          .select('id')
+          .eq('name', groupName)
+          .maybeSingle()
+        if (group) {
+          const { data: memberships } = await supabase
+            .from('group_memberships')
+            .select('user_id')
+            .eq('group_id', group.id)
+          programUserIds = (memberships || []).map(m => m.user_id)
+        }
+      }
+
       const { data: roleUsers } = await supabase
         .from('user_roles')
         .select('user_id')
         .in('role', ['admin', 'owner'])
+      const adminOwnerIds = (roleUsers || []).map(r => r.user_id)
 
-      if (roleUsers) {
-        const ids = roleUsers.map(r => r.user_id)
-        // Filter to those with display names
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('user_id')
-          .in('user_id', ids)
-          .not('display_name', 'is', null)
-        qualifiedUserIds = (profiles || []).map(p => p.user_id)
-      }
+      const allIds = [...new Set([...programUserIds, ...adminOwnerIds])]
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .in('user_id', allIds.length ? allIds : [''])
+        .not('display_name', 'is', null)
+      qualifiedUserIds = (profiles || []).map(p => p.user_id)
 
       const channelName = `community-presence-${program}`
       const channel = supabase.channel(channelName, {
@@ -324,7 +345,6 @@ export default function WorkspaceCommunity() {
       channel
         .on('presence', { event: 'sync' }, () => {
           const state = channel.presenceState()
-          // Only count presence entries from qualified users
           const onlineQualified = Object.keys(state).filter(id => qualifiedUserIds.includes(id))
           setOnlineCount(onlineQualified.length)
         })
