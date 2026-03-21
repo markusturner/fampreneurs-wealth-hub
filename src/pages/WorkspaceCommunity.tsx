@@ -135,6 +135,11 @@ export default function WorkspaceCommunity() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
 
+  // Owner-only custom date/time for posts
+  const [useCustomDateTime, setUseCustomDateTime] = useState(false)
+  const [customDate, setCustomDate] = useState('')
+  const [customTime, setCustomTime] = useState('')
+
   // Comments state
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [postComments, setPostComments] = useState<Record<string, Comment[]>>({})
@@ -305,6 +310,13 @@ export default function WorkspaceCommunity() {
       if (postVideoFile) videoUrl = await uploadFile(postVideoFile, 'community-videos')
       if (postAudioFile) audioUrl = await uploadFile(postAudioFile, 'community-audio')
 
+      // Build custom created_at if owner set one
+      let customCreatedAt: string | undefined = undefined
+      if (isOwner && useCustomDateTime && customDate) {
+        const dateStr = customTime ? `${customDate}T${customTime}:00` : `${customDate}T12:00:00`
+        customCreatedAt = new Date(dateStr).toISOString()
+      }
+
       // Post content WITHOUT hashtag prefix - category stored separately
       if (postToAll && (isAdmin || isOwner)) {
         // Post to all communities
@@ -317,6 +329,7 @@ export default function WorkspaceCommunity() {
           audio_url: audioUrl,
           category: postCategory,
           program: prog,
+          ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
         }))
         const { error } = await supabase.from('community_posts').insert(inserts as any)
         if (error) throw error
@@ -331,6 +344,7 @@ export default function WorkspaceCommunity() {
             audio_url: audioUrl,
             category: postCategory,
             program,
+            ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
           } as any)
         if (error) throw error
       }
@@ -342,6 +356,9 @@ export default function WorkspaceCommunity() {
       setPostAudioFile(null)
       setPostCategory('discussion')
       setPostToAll(false)
+      setUseCustomDateTime(false)
+      setCustomDate('')
+      setCustomTime('')
       fetchPosts()
       toast({ title: 'Posted!' })
     } catch (error) {
@@ -750,7 +767,28 @@ export default function WorkspaceCommunity() {
                   </div>
                 )}
 
-                {/* Author info */}
+                {/* Owner-only custom date/time */}
+                {isOwner && (
+                  <div className="px-4 py-2 border-b border-border/30 bg-muted/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">📅 Custom date & time</span>
+                      <button
+                        className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors ${useCustomDateTime ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'}`}
+                        onClick={() => setUseCustomDateTime(!useCustomDateTime)}
+                      >
+                        {useCustomDateTime ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+                    {useCustomDateTime && (
+                      <div className="flex gap-2">
+                        <Input type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 text-xs flex-1" />
+                        <Input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 text-xs w-28" />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+
                 <div className="flex items-center gap-3 px-4 pt-4 pb-2">
                   <Avatar className="h-11 w-11 flex-shrink-0">
                     {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
@@ -932,7 +970,24 @@ export default function WorkspaceCommunity() {
                             All
                           </Button>
                         )}
+                        {isOwner && (
+                          <Button
+                            variant={useCustomDateTime ? 'default' : 'ghost'}
+                            size="sm"
+                            className={`h-8 gap-1.5 text-xs ${useCustomDateTime ? 'bg-[#ffb500] text-[#290a52] hover:bg-[#ffb500]/90' : ''}`}
+                            onClick={() => setUseCustomDateTime(!useCustomDateTime)}
+                          >
+                            <Calendar className="h-3.5 w-3.5" />
+                            Date
+                          </Button>
+                        )}
                       </div>
+                      {isOwner && useCustomDateTime && (
+                        <div className="flex gap-2 mt-2">
+                          <Input type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 text-xs w-40" />
+                          <Input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 text-xs w-32" />
+                        </div>
+                      )}
                       <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim()} className="gap-1.5">
                         <Send className="h-4 w-4" />
                         <span className="hidden sm:inline">{postToAll ? 'Post to All' : 'Post'}</span>
