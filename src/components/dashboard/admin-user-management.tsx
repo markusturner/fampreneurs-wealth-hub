@@ -55,7 +55,7 @@ export function AdminUserManagement() {
       return
     }
 
-    if (!totalAmount || isNaN(Number(totalAmount))) {
+    if (planType !== 'free' && (!totalAmount || isNaN(Number(totalAmount)))) {
       toast({
         title: 'Missing Payment Info',
         description: 'Please enter a valid total amount.',
