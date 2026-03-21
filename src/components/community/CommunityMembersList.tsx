@@ -38,6 +38,7 @@ export function CommunityMembersList({ program }: { program: string }) {
         .select('user_id, display_name, avatar_url, membership_type, is_admin, is_moderator')
         .eq('program_name', assignedProgramName)
         .not('display_name', 'is', null)
+        .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
         .order('display_name')
 
       setMembers(programProfiles || [])
