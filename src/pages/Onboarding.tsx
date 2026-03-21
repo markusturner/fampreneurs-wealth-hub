@@ -269,6 +269,25 @@ export default function Onboarding() {
             <Input type="tel" value={form.phone_number} onChange={e => set('phone_number', e.target.value)} placeholder="(555) 123-4567" />
           </div>
         )
+      case 'tshirt_size':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>T-Shirt Size *</Label>
+            <Select value={form.tshirt_size} onValueChange={v => set('tshirt_size', v)}>
+              <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
+              <SelectContent>
+                {TSHIRT_SIZES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        )
+      case 'mailing_address':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>Mailing Address *</Label>
+            <Textarea value={form.mailing_address} onChange={e => set('mailing_address', e.target.value)} placeholder="Full mailing address" rows={3} />
+          </div>
+        )
       case 'first_touchpoint':
         return (
           <div className="space-y-2" key={field}>
