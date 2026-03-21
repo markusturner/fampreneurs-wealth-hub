@@ -61,12 +61,13 @@ export default function Messenger() {
         let profileData: Profile[] = []
 
         if (isAdmin || isOwner) {
-          // Admin/owner: fetch all profiles (exclude invited users who haven't joined)
+          // Admin/owner: fetch all profiles except placeholder invited profiles
           const { data: profiles } = await supabase
             .from('profiles')
             .select('user_id, display_name, avatar_url')
             .neq('user_id', user.id)
             .not('display_name', 'is', null)
+            .not('display_name', 'ilike', 'invited user%')
             .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
             .order('display_name')
           profileData = profiles || []
@@ -94,6 +95,7 @@ export default function Messenger() {
                 .select('user_id, display_name, avatar_url')
                 .in('user_id', uniqueUserIds)
                 .not('display_name', 'is', null)
+                .not('display_name', 'ilike', 'invited user%')
                 .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
                 .order('display_name')
               profileData = profiles || []
@@ -106,6 +108,7 @@ export default function Messenger() {
               .eq('program_name', profile?.program_name || '')
               .neq('user_id', user.id)
               .not('display_name', 'is', null)
+              .not('display_name', 'ilike', 'invited user%')
               .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
               .order('display_name')
             profileData = profiles || []
@@ -136,14 +139,14 @@ export default function Messenger() {
 
         const profileMap = new Map(profileData.map(p => [p.user_id, p]))
         const convList: ConversationSummary[] = []
-        // Only include DM conversations with users in our community
+        // Only include DM conversations with users in allowed profiles
         convMap.forEach((val, otherId) => {
           const p = profileMap.get(otherId)
-          if (!p && !(isAdmin || isOwner)) return // skip users not in our communities
+          if (!p) return
           convList.push({
             user_id: otherId,
-            display_name: p?.display_name || 'Member',
-            avatar_url: p?.avatar_url || null,
+            display_name: p.display_name || 'Member',
+            avatar_url: p.avatar_url || null,
             last_message: val.lastMsg.content,
             last_message_at: val.lastMsg.created_at,
             unread_count: val.unread,
