@@ -77,6 +77,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (data && !data.profile_photo_uploaded) {
         setShowPhotoUpload(true)
       }
+
+      // Initialize push notifications on native platforms
+      initPushNotifications(userId)
     } catch (error) {
       console.error('Error fetching profile:', error)
     }

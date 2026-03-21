@@ -1,5 +1,8 @@
 project_id = "tbofkvyezmpovoezjyyl"
 
+[functions.send-push-notification]
+verify_jwt = false
+
 [functions.create-user-with-credentials]
 verify_jwt = true
 
