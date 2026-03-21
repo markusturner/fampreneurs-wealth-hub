@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { ProfilePhotoUpload } from '@/components/dashboard/profile-photo-upload'
+import { initPushNotifications } from '@/lib/push-notifications'
 
 interface Profile {
   id: string
@@ -76,6 +77,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (data && !data.profile_photo_uploaded) {
         setShowPhotoUpload(true)
       }
+
+      // Initialize push notifications on native platforms
+      initPushNotifications(userId)
     } catch (error) {
       console.error('Error fetching profile:', error)
     }
