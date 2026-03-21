@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 
-const TSHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
+// T-shirt sizes removed - no longer collected in onboarding
 
 const TOUCHPOINT_OPTIONS = [
   'Referral',
