@@ -569,34 +569,90 @@ export function AdminAllUsersManagement() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-2 justify-between">
-            <div className="flex items-center gap-2 flex-1">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by name, email, or program..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="max-w-md"
-              />
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2 justify-between">
+              <div className="flex items-center gap-2 flex-1">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name, email, or program..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="max-w-md"
+                />
+              </div>
+              <Button
+                onClick={syncStripeSubscriptions}
+                disabled={syncingStripe}
+                variant="outline"
+                size="sm"
+              >
+                {syncingStripe ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Sync Stripe Data
+                  </>
+                )}
+              </Button>
             </div>
-            <Button
-              onClick={syncStripeSubscriptions}
-              disabled={syncingStripe}
-              variant="outline"
-              size="sm"
-            >
-              {syncingStripe ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Syncing...
-                </>
-              ) : (
-                <>
-                  <DollarSign className="h-4 w-4 mr-2" />
-                  Sync Stripe Data
-                </>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Select value={filterRole} onValueChange={setFilterRole}>
+                <SelectTrigger className="w-[140px] h-8 text-xs">
+                  <SelectValue placeholder="Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="owner">Owner</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="trustee">Trustee</SelectItem>
+                  <SelectItem value="family_member">Family Member</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterProgram} onValueChange={setFilterProgram}>
+                <SelectTrigger className="w-[200px] h-8 text-xs">
+                  <SelectValue placeholder="Program" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Programs</SelectItem>
+                  {programOptions.map(p => (
+                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={filterTruheirs} onValueChange={setFilterTruheirs}>
+                <SelectTrigger className="w-[140px] h-8 text-xs">
+                  <SelectValue placeholder="TruHeirs" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All TruHeirs</SelectItem>
+                  <SelectItem value="yes">Yes</SelectItem>
+                  <SelectItem value="no">No</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {(filterRole !== 'all' || filterProgram !== 'all' || filterTruheirs !== 'all') && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={() => { setFilterRole('all'); setFilterProgram('all'); setFilterTruheirs('all') }}
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Clear Filters
+                </Button>
               )}
-            </Button>
+
+              <span className="text-xs text-muted-foreground ml-auto">
+                {filteredUsers.length} of {users.length} users
+              </span>
+            </div>
           </div>
 
           {isLoading ? (
