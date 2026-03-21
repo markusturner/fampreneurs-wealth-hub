@@ -970,7 +970,24 @@ export default function WorkspaceCommunity() {
                             All
                           </Button>
                         )}
+                        {isOwner && (
+                          <Button
+                            variant={useCustomDateTime ? 'default' : 'ghost'}
+                            size="sm"
+                            className={`h-8 gap-1.5 text-xs ${useCustomDateTime ? 'bg-[#ffb500] text-[#290a52] hover:bg-[#ffb500]/90' : ''}`}
+                            onClick={() => setUseCustomDateTime(!useCustomDateTime)}
+                          >
+                            <Calendar className="h-3.5 w-3.5" />
+                            Date
+                          </Button>
+                        )}
                       </div>
+                      {isOwner && useCustomDateTime && (
+                        <div className="flex gap-2 mt-2">
+                          <Input type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 text-xs w-40" />
+                          <Input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 text-xs w-32" />
+                        </div>
+                      )}
                       <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim()} className="gap-1.5">
                         <Send className="h-4 w-4" />
                         <span className="hidden sm:inline">{postToAll ? 'Post to All' : 'Post'}</span>
