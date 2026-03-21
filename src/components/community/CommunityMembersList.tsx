@@ -33,29 +33,14 @@ export function CommunityMembersList({ program }: { program: string }) {
         return
       }
 
-      const [{ data: roleUsers }, { data: programProfiles }] = await Promise.all([
-        supabase
-          .from('user_roles')
-          .select('user_id')
-          .in('role', ['admin', 'owner']),
-        supabase
-          .from('profiles')
-          .select('user_id, display_name, avatar_url, membership_type, is_admin, is_moderator')
-          .eq('program_name', assignedProgramName)
-          .not('display_name', 'is', null)
-          .order('display_name'),
-      ])
+      const { data: programProfiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name, avatar_url, membership_type, is_admin, is_moderator')
+        .eq('program_name', assignedProgramName)
+        .not('display_name', 'is', null)
+        .order('display_name')
 
-      const roleUserSet = new Set((roleUsers || []).map(r => r.user_id))
-
-      const eligibleMembers = (programProfiles || []).filter(profile =>
-        profile.membership_type === 'trustee' ||
-        profile.is_admin ||
-        profile.is_moderator ||
-        roleUserSet.has(profile.user_id)
-      )
-
-      setMembers(eligibleMembers)
+      setMembers(programProfiles || [])
     }
 
     fetchMembers()
