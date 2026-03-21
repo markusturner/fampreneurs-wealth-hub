@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSearchParams } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
-import { Lock, FileText, Building2, Church, Home, Loader2, CheckCircle2, ArrowLeft } from "lucide-react"
+import { Lock, FileText, Building2, Church, Home, Loader2, CheckCircle2, ArrowLeft, ShieldCheck } from "lucide-react"
 
 type TrustType = 'business' | 'ministry' | 'family'
 
@@ -42,13 +42,17 @@ export default function TrustCreation() {
   const [searchParams] = useSearchParams()
   const initialType = searchParams.get("type") as TrustType | null
   const { user } = useAuth()
+  const { toast } = useToast()
 
   const [trustAccess, setTrustAccess] = useState<TrustAccess | null>(null)
   const [loadingAccess, setLoadingAccess] = useState(true)
   const [selectedTrust, setSelectedTrust] = useState<TrustType | null>(initialType)
+  const [submittedTrusts, setSubmittedTrusts] = useState<Set<string>>(new Set())
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     checkAccess()
+    fetchSubmissions()
   }, [])
 
   useEffect(() => {
@@ -71,7 +75,42 @@ export default function TrustCreation() {
     }
   }
 
+  const fetchSubmissions = async () => {
+    if (!user?.id) return
+    const { data } = await supabase
+      .from('trust_submissions')
+      .select('trust_type')
+      .eq('user_id', user.id)
+    if (data) {
+      setSubmittedTrusts(new Set(data.map(d => d.trust_type)))
+    }
+  }
+
+  const handleMarkSubmitted = async (type: TrustType) => {
+    if (!user?.id) return
+    setSubmitting(true)
+    try {
+      const { error } = await supabase
+        .from('trust_submissions')
+        .insert({ user_id: user.id, trust_type: type } as any)
+      if (error) throw error
+      setSubmittedTrusts(prev => new Set([...prev, type]))
+      toast({ title: 'Trust form submitted', description: 'Your submission has been recorded. You cannot resubmit this trust type.' })
+    } catch (err: any) {
+      if (err?.code === '23505') {
+        toast({ title: 'Already submitted', description: 'You have already submitted this trust type.', variant: 'destructive' })
+        setSubmittedTrusts(prev => new Set([...prev, type]))
+      } else {
+        console.error('Error recording submission:', err)
+        toast({ title: 'Error', description: 'Failed to record submission.', variant: 'destructive' })
+      }
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const isUnlocked = (type: TrustType) => trustAccess?.unlocked_trusts?.includes(type) ?? false
+  const isSubmitted = (type: TrustType) => submittedTrusts.has(type)
 
   if (loadingAccess) {
     return (
@@ -123,27 +162,35 @@ export default function TrustCreation() {
         <div className="grid gap-4 sm:grid-cols-3">
           {(Object.entries(TRUST_INFO) as [TrustType, typeof TRUST_INFO.business][]).map(([type, info]) => {
             const unlocked = isUnlocked(type)
+            const submitted = isSubmitted(type)
             const Icon = info.icon
             return (
               <Card
                 key={type}
                 className={`cursor-pointer transition-all duration-200 ${
-                  unlocked
+                  submitted
+                    ? "border-accent/50 opacity-75"
+                    : unlocked
                     ? "hover:border-accent hover:shadow-lg hover:shadow-accent/10"
                     : "opacity-50 cursor-not-allowed"
                 }`}
-                onClick={() => unlocked && setSelectedTrust(type)}
+                onClick={() => !submitted && unlocked && setSelectedTrust(type)}
               >
                 <CardHeader className="text-center pb-2">
                   <div className="mx-auto mb-2 relative">
-                    <Icon className={`h-10 w-10 ${unlocked ? "text-accent" : "text-muted-foreground"}`} />
-                    {!unlocked && <Lock className="h-4 w-4 absolute -top-1 -right-1 text-destructive" />}
+                    <Icon className={`h-10 w-10 ${submitted ? "text-accent" : unlocked ? "text-accent" : "text-muted-foreground"}`} />
+                    {!unlocked && !submitted && <Lock className="h-4 w-4 absolute -top-1 -right-1 text-destructive" />}
+                    {submitted && <ShieldCheck className="h-4 w-4 absolute -top-1 -right-1 text-accent" />}
                   </div>
                   <CardTitle className="text-base">{info.label}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-xs text-muted-foreground text-center">{info.description}</p>
-                  {unlocked ? (
+                  {submitted ? (
+                    <Badge variant="outline" className="w-full justify-center mt-3 border-accent/50 text-accent">
+                      <ShieldCheck className="h-3 w-3 mr-1" /> Submitted
+                    </Badge>
+                  ) : unlocked ? (
                     <Badge variant="outline" className="w-full justify-center mt-3 border-accent/50 text-accent">
                       <CheckCircle2 className="h-3 w-3 mr-1" /> Unlocked
                     </Badge>
@@ -157,11 +204,36 @@ export default function TrustCreation() {
             )
           })}
         </div>
-      ) : (
+      ) : isSubmitted(selectedTrust) ? (
         <div className="space-y-4">
           <Button variant="ghost" onClick={() => setSelectedTrust(null)} className="gap-2">
             <ArrowLeft className="h-4 w-4" /> Back to Trust Selection
           </Button>
+          <Card className="border-accent/30">
+            <CardHeader className="text-center">
+              <ShieldCheck className="h-12 w-12 mx-auto text-accent mb-4" />
+              <CardTitle>Already Submitted</CardTitle>
+              <CardDescription>
+                You have already submitted your {TRUST_INFO[selectedTrust].label} form. Each trust type can only be submitted once.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" onClick={() => setSelectedTrust(null)} className="gap-2">
+              <ArrowLeft className="h-4 w-4" /> Back to Trust Selection
+            </Button>
+            <Button 
+              onClick={() => handleMarkSubmitted(selectedTrust)}
+              disabled={submitting}
+              className="gap-2"
+            >
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+              Mark as Submitted
+            </Button>
+          </div>
 
           <Card>
             <CardHeader className="pb-3">
