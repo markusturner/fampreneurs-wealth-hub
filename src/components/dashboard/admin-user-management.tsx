@@ -27,7 +27,7 @@ export function AdminUserManagement() {
   const [truHeirsAccess, setTruHeirsAccess] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
 
-  const [planType, setPlanType] = useState<'paid_in_full' | 'payment_plan'>('paid_in_full')
+  const [planType, setPlanType] = useState<'free' | 'paid_in_full' | 'payment_plan'>('paid_in_full')
   const [totalAmount, setTotalAmount] = useState('')
   const [installmentAmount, setInstallmentAmount] = useState('')
   const [installmentFrequency, setInstallmentFrequency] = useState<'monthly' | 'weekly' | 'biweekly'>('monthly')
@@ -55,7 +55,7 @@ export function AdminUserManagement() {
       return
     }
 
-    if (!totalAmount || isNaN(Number(totalAmount))) {
+    if (planType !== 'free' && (!totalAmount || isNaN(Number(totalAmount)))) {
       toast({
         title: 'Missing Payment Info',
         description: 'Please enter a valid total amount.',
@@ -98,7 +98,7 @@ export function AdminUserManagement() {
         }
 
         const userId = data?.userId
-        if (userId) {
+        if (userId && planType !== 'free') {
           const nextPaymentDue = planType === 'payment_plan' && paymentStartDate
             ? paymentStartDate
             : null
@@ -234,29 +234,32 @@ export function AdminUserManagement() {
 
           <div className="space-y-2">
             <Label>Payment Type</Label>
-            <Select value={planType} onValueChange={(v) => setPlanType(v as 'paid_in_full' | 'payment_plan')} disabled={isLoading}>
+            <Select value={planType} onValueChange={(v) => setPlanType(v as 'free' | 'paid_in_full' | 'payment_plan')} disabled={isLoading}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="free">Free</SelectItem>
                 <SelectItem value="paid_in_full">Paid in Full</SelectItem>
                 <SelectItem value="payment_plan">Payment Plan</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="totalAmount">Total Program Amount ($)</Label>
-            <Input
-              id="totalAmount"
-              type="number"
-              min="0"
-              value={totalAmount}
-              onChange={(e) => setTotalAmount(e.target.value)}
-              placeholder="e.g. 5000"
-              disabled={isLoading}
-            />
-          </div>
+          {planType !== 'free' && (
+            <div className="space-y-2">
+              <Label htmlFor="totalAmount">Total Program Amount ($)</Label>
+              <Input
+                id="totalAmount"
+                type="number"
+                min="0"
+                value={totalAmount}
+                onChange={(e) => setTotalAmount(e.target.value)}
+                placeholder="e.g. 5000"
+                disabled={isLoading}
+              />
+            </div>
+          )}
 
           {planType === 'payment_plan' && (
             <>
