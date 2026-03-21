@@ -89,9 +89,10 @@ export default function Onboarding() {
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState<FormData>({
-    full_name: '',
-    tshirt_size: '',
-    mailing_address: '',
+    first_name: '',
+    last_name: '',
+    email_address: '',
+    phone_number: '',
     first_touchpoint: '',
     referral_who: '',
     touchpoint_other: '',
