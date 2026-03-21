@@ -98,7 +98,7 @@ export function AdminUserManagement() {
         }
 
         const userId = data?.userId
-        if (userId) {
+        if (userId && planType !== 'free') {
           const nextPaymentDue = planType === 'payment_plan' && paymentStartDate
             ? paymentStartDate
             : null
