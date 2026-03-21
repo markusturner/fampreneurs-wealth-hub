@@ -111,6 +111,13 @@ export default function Onboarding() {
     anything_else: '',
   })
 
+  // Pre-populate email from the authenticated user
+  useEffect(() => {
+    if (user?.email && !form.email_address) {
+      setForm(prev => ({ ...prev, email_address: user.email || '' }))
+    }
+  }, [user])
+
   // Owners/admins bypass onboarding
   useEffect(() => {
     if (!authLoading && !roleLoading && isAdminOrOwner) {
