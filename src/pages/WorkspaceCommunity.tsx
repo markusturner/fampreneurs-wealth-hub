@@ -310,6 +310,13 @@ export default function WorkspaceCommunity() {
       if (postVideoFile) videoUrl = await uploadFile(postVideoFile, 'community-videos')
       if (postAudioFile) audioUrl = await uploadFile(postAudioFile, 'community-audio')
 
+      // Build custom created_at if owner set one
+      let customCreatedAt: string | undefined = undefined
+      if (isOwner && useCustomDateTime && customDate) {
+        const dateStr = customTime ? `${customDate}T${customTime}:00` : `${customDate}T12:00:00`
+        customCreatedAt = new Date(dateStr).toISOString()
+      }
+
       // Post content WITHOUT hashtag prefix - category stored separately
       if (postToAll && (isAdmin || isOwner)) {
         // Post to all communities
@@ -322,6 +329,7 @@ export default function WorkspaceCommunity() {
           audio_url: audioUrl,
           category: postCategory,
           program: prog,
+          ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
         }))
         const { error } = await supabase.from('community_posts').insert(inserts as any)
         if (error) throw error
@@ -336,6 +344,7 @@ export default function WorkspaceCommunity() {
             audio_url: audioUrl,
             category: postCategory,
             program,
+            ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
           } as any)
         if (error) throw error
       }
@@ -347,6 +356,9 @@ export default function WorkspaceCommunity() {
       setPostAudioFile(null)
       setPostCategory('discussion')
       setPostToAll(false)
+      setUseCustomDateTime(false)
+      setCustomDate('')
+      setCustomTime('')
       fetchPosts()
       toast({ title: 'Posted!' })
     } catch (error) {
