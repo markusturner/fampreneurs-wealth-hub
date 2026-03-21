@@ -224,17 +224,30 @@ export function AdminAllUsersManagement() {
   useEffect(() => {
     const filtered = users.filter(user => {
       const searchLower = searchQuery.toLowerCase()
-      return (
+      const matchesSearch = !searchQuery || (
         user.email?.toLowerCase().includes(searchLower) ||
         user.first_name?.toLowerCase().includes(searchLower) ||
         user.last_name?.toLowerCase().includes(searchLower) ||
         user.display_name?.toLowerCase().includes(searchLower) ||
         user.program_name?.toLowerCase().includes(searchLower)
       )
+
+      const matchesRole = filterRole === 'all' ||
+        (filterRole === 'owner' && user.is_moderator) ||
+        (filterRole === 'admin' && user.is_admin) ||
+        (filterRole === 'trustee' && (user.membership_type === 'trustee' || (!user.is_admin && !user.is_moderator && user.membership_type !== 'family_member'))) ||
+        (filterRole === 'family_member' && user.membership_type === 'family_member')
+
+      const matchesProgram = filterProgram === 'all' || user.program_name === filterProgram
+
+      const matchesTruheirs = filterTruheirs === 'all' ||
+        (filterTruheirs === 'yes' && user.truheirs_access !== false) ||
+        (filterTruheirs === 'no' && user.truheirs_access === false)
+
+      return matchesSearch && matchesRole && matchesProgram && matchesTruheirs
     })
     setFilteredUsers(filtered)
-  }, [searchQuery, users])
-
+  }, [searchQuery, users, filterRole, filterProgram, filterTruheirs])
   const handleUpdateUser = async () => {
     if (!editingUser) return
 
