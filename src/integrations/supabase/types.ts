@@ -3746,6 +3746,7 @@ export type Database = {
           location: string | null
           mailing_address: string | null
           membership_type: string | null
+          needs_profile_completion: boolean | null
           occupation: string | null
           phone: string | null
           profile_photo_uploaded: boolean
@@ -3785,6 +3786,7 @@ export type Database = {
           location?: string | null
           mailing_address?: string | null
           membership_type?: string | null
+          needs_profile_completion?: boolean | null
           occupation?: string | null
           phone?: string | null
           profile_photo_uploaded?: boolean
@@ -3824,6 +3826,7 @@ export type Database = {
           location?: string | null
           mailing_address?: string | null
           membership_type?: string | null
+          needs_profile_completion?: boolean | null
           occupation?: string | null
           phone?: string | null
           profile_photo_uploaded?: boolean
