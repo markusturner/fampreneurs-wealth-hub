@@ -97,6 +97,8 @@ export default function Onboarding() {
     last_name: '',
     email_address: '',
     phone_number: '',
+    tshirt_size: '',
+    mailing_address: '',
     first_touchpoint: '',
     referral_who: '',
     touchpoint_other: '',
