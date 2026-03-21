@@ -27,7 +27,7 @@ export function AdminUserManagement() {
   const [truHeirsAccess, setTruHeirsAccess] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
 
-  const [planType, setPlanType] = useState<'paid_in_full' | 'payment_plan'>('paid_in_full')
+  const [planType, setPlanType] = useState<'free' | 'paid_in_full' | 'payment_plan'>('paid_in_full')
   const [totalAmount, setTotalAmount] = useState('')
   const [installmentAmount, setInstallmentAmount] = useState('')
   const [installmentFrequency, setInstallmentFrequency] = useState<'monthly' | 'weekly' | 'biweekly'>('monthly')
