@@ -67,48 +67,44 @@ export default function Messenger() {
     tffm: 'The Family Fortune Mastermind',
   }
 
-  // Determine which community group name the current user belongs to
-  const getUserCommunityGroupName = (): string | null => {
-    if (isAdmin || isOwner) return null // admins see all
-    const programKey = profile?.program_name ? PROGRAM_NAME_TO_KEY[profile.program_name] : null
-    if (programKey) return PROGRAM_KEY_TO_GROUP_NAME[programKey] || null
-    // Check subscription
-    const subscribedProgram = subscriptionStatus.programs[0]
-    if (subscribedProgram) return PROGRAM_KEY_TO_GROUP_NAME[subscribedProgram] || null
-    return null
-  }
-
-  // Fetch profiles and messages to build conversation list, filtered by community
+  // Fetch profiles: get all members from all community groups the user belongs to
   useEffect(() => {
     if (!user || subscriptionStatus.loading) return
     const init = async () => {
       try {
         let profileData: Profile[] = []
 
-        const communityGroupName = getUserCommunityGroupName()
+        if (isAdmin || isOwner) {
+          // Admin/owner: fetch all profiles
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('user_id, display_name, avatar_url')
+            .neq('user_id', user.id)
+            .order('display_name')
+          profileData = profiles || []
+        } else {
+          // Get all community groups the current user belongs to
+          const { data: myMemberships } = await supabase
+            .from('group_memberships')
+            .select('group_id')
+            .eq('user_id', user.id)
 
-        if (communityGroupName) {
-          // Find the community group
-          const { data: group } = await supabase
-            .from('community_groups')
-            .select('id')
-            .eq('name', communityGroupName)
-            .maybeSingle()
-
-          if (group) {
-            // Get members of that group
-            const { data: memberships } = await supabase
+          if (myMemberships && myMemberships.length > 0) {
+            const groupIds = myMemberships.map(m => m.group_id)
+            // Get all members from those groups
+            const { data: groupMembers } = await supabase
               .from('group_memberships')
               .select('user_id')
-              .eq('group_id', group.id)
+              .in('group_id', groupIds)
               .neq('user_id', user.id)
 
-            if (memberships && memberships.length > 0) {
-              const userIds = memberships.map(m => m.user_id)
+            if (groupMembers && groupMembers.length > 0) {
+              // Deduplicate user IDs
+              const uniqueUserIds = [...new Set(groupMembers.map(m => m.user_id))]
               const { data: profiles } = await supabase
                 .from('profiles')
                 .select('user_id, display_name, avatar_url')
-                .in('user_id', userIds)
+                .in('user_id', uniqueUserIds)
                 .order('display_name')
               profileData = profiles || []
             }
@@ -122,14 +118,6 @@ export default function Messenger() {
               .order('display_name')
             profileData = profiles || []
           }
-        } else {
-          // Admin/owner: fetch all profiles
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('user_id, display_name, avatar_url')
-            .neq('user_id', user.id)
-            .order('display_name')
-          profileData = profiles || []
         }
 
         setProfiles(profileData)

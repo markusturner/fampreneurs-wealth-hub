@@ -241,7 +241,6 @@ export default function WorkspaceCommunity() {
 
   useEffect(() => {
     const fetchMemberCount = async () => {
-      // Map program key to the community_groups name used in group_memberships
       const programGroupMap: Record<string, string> = {
         fbu: 'Family Business University',
         tfv: 'The Family Vault',
@@ -251,7 +250,6 @@ export default function WorkspaceCommunity() {
       const groupName = programGroupMap[program]
       if (!groupName) { setMemberCount(0); setOnlineCount(0); return }
 
-      // Find the community group for this program
       const { data: group } = await supabase
         .from('community_groups')
         .select('id')
@@ -259,28 +257,46 @@ export default function WorkspaceCommunity() {
         .maybeSingle()
 
       if (group) {
-        // Count members in this specific group
         const { count } = await supabase
           .from('group_memberships')
           .select('*', { count: 'exact', head: true })
           .eq('group_id', group.id)
-        const total = count || 0
-        setMemberCount(total)
-        // Estimate online as ~10-20% of members, min 1 if any members
-        setOnlineCount(total > 0 ? Math.max(1, Math.floor(total * 0.15)) : 0)
+        setMemberCount(count || 0)
       } else {
-        // Fallback: count profiles with matching program_name
         const { count } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true })
           .eq('program_name', PROGRAM_NAMES[program] || '')
-        const total = count || 0
-        setMemberCount(total)
-        setOnlineCount(total > 0 ? Math.max(1, Math.floor(total * 0.15)) : 0)
+        setMemberCount(count || 0)
       }
     }
     fetchMemberCount()
   }, [program])
+
+  // Real-time presence tracking for online count
+  useEffect(() => {
+    if (!user?.id || !program) return
+
+    const channelName = `community-presence-${program}`
+    const channel = supabase.channel(channelName, {
+      config: { presence: { key: user.id } },
+    })
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState()
+        setOnlineCount(Object.keys(state).length)
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ user_id: user.id, online_at: new Date().toISOString() })
+        }
+      })
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [user?.id, program])
 
   // Reset popup closed state whenever program changes (so it doesn't stay open from a previous community)
   useEffect(() => {
