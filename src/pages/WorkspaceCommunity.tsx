@@ -245,12 +245,13 @@ export default function WorkspaceCommunity() {
     const assignedProgramName = PROGRAM_NAMES[program]
     if (!assignedProgramName) return []
 
-    // Get all users assigned to this program with a display name
+    // Get users assigned to this program who have completed their profile (not just invited)
     const { data: programProfiles } = await supabase
       .from('profiles')
       .select('user_id')
       .eq('program_name', assignedProgramName)
       .not('display_name', 'is', null)
+      .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
 
     return (programProfiles || []).map(profile => profile.user_id)
   }, [program])
