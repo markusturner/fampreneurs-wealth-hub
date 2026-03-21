@@ -147,7 +147,7 @@ export default function Messenger() {
         // Only include DM conversations with users in our community
         convMap.forEach((val, otherId) => {
           const p = profileMap.get(otherId)
-          if (!p && communityGroupName) return // skip users not in our community
+          if (!p && !(isAdmin || isOwner)) return // skip users not in our communities
           convList.push({
             user_id: otherId,
             display_name: p?.display_name || 'Member',
