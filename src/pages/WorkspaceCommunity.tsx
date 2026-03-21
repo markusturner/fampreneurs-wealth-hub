@@ -135,6 +135,11 @@ export default function WorkspaceCommunity() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
 
+  // Owner-only custom date/time for posts
+  const [useCustomDateTime, setUseCustomDateTime] = useState(false)
+  const [customDate, setCustomDate] = useState('')
+  const [customTime, setCustomTime] = useState('')
+
   // Comments state
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [postComments, setPostComments] = useState<Record<string, Comment[]>>({})
