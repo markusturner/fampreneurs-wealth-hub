@@ -190,8 +190,8 @@ export default function Onboarding() {
       const { error } = await supabase.from('onboarding_responses').insert({
         user_id: user.id,
         full_name: `${form.first_name} ${form.last_name}`.trim(),
-        tshirt_size: '',
-        mailing_address: '',
+        tshirt_size: form.tshirt_size,
+        mailing_address: form.mailing_address,
         first_touchpoint: firstTouchpoint,
         decision_reason: form.decision_reason,
         investment_reason: form.investment_reason,
