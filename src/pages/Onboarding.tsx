@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 
-const TSHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
+// T-shirt sizes removed - no longer collected in onboarding
 
 const TOUCHPOINT_OPTIONS = [
   'Referral',
@@ -45,9 +45,10 @@ const IMPROVEMENT_OPTIONS = [
 ]
 
 interface FormData {
-  full_name: string
-  tshirt_size: string
-  mailing_address: string
+  first_name: string
+  last_name: string
+  email_address: string
+  phone_number: string
   first_touchpoint: string
   referral_who: string
   touchpoint_other: string
@@ -67,7 +68,7 @@ interface FormData {
 }
 
 const STEPS = [
-  { title: 'About You', fields: ['full_name', 'tshirt_size', 'mailing_address'] },
+  { title: 'About You', fields: ['first_name', 'last_name', 'email_address', 'phone_number'] },
   { title: 'How You Found Us', fields: ['first_touchpoint', 'decision_reason'] },
   { title: 'Your Investment', fields: ['investment_reason', 'join_elaboration'] },
   { title: 'Your Journey', fields: ['time_to_decide', 'improvement_suggestion'] },
@@ -88,9 +89,10 @@ export default function Onboarding() {
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [form, setForm] = useState<FormData>({
-    full_name: '',
-    tshirt_size: '',
-    mailing_address: '',
+    first_name: '',
+    last_name: '',
+    email_address: '',
+    phone_number: '',
     first_touchpoint: '',
     referral_who: '',
     touchpoint_other: '',
@@ -108,6 +110,13 @@ export default function Onboarding() {
     specific_content: '',
     anything_else: '',
   })
+
+  // Pre-populate email from the authenticated user
+  useEffect(() => {
+    if (user?.email && !form.email_address) {
+      setForm(prev => ({ ...prev, email_address: user.email || '' }))
+    }
+  }, [user])
 
   // Owners/admins bypass onboarding
   useEffect(() => {
@@ -174,9 +183,9 @@ export default function Onboarding() {
 
       const { error } = await supabase.from('onboarding_responses').insert({
         user_id: user.id,
-        full_name: form.full_name,
-        tshirt_size: form.tshirt_size,
-        mailing_address: form.mailing_address,
+        full_name: `${form.first_name} ${form.last_name}`.trim(),
+        tshirt_size: '',
+        mailing_address: '',
         first_touchpoint: firstTouchpoint,
         decision_reason: form.decision_reason,
         investment_reason: form.investment_reason,
@@ -192,6 +201,25 @@ export default function Onboarding() {
         anything_else: form.anything_else,
       })
       if (error) throw error
+
+      // Update the user's profile with collected info
+      const displayName = `${form.first_name} ${form.last_name}`.trim()
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          first_name: form.first_name,
+          last_name: form.last_name,
+          display_name: displayName,
+          email: form.email_address,
+          phone: form.phone_number,
+          needs_profile_completion: false,
+        })
+        .eq('user_id', user.id)
+
+      if (profileError) {
+        console.error('Error updating profile:', profileError)
+      }
+
       await refreshProfile()
       toast({ title: 'Onboarding complete!', description: 'Redirecting to book your onboarding call…' })
       window.location.href = 'https://calendly.com/apexathletemgnt/fampreneurs-onboarding'
@@ -207,30 +235,32 @@ export default function Onboarding() {
 
   const renderField = (field: keyof FormData) => {
     switch (field) {
-      case 'full_name':
+      case 'first_name':
         return (
           <div className="space-y-2" key={field}>
-            <Label>First and Last Name *</Label>
-            <Input value={form.full_name} onChange={e => set('full_name', e.target.value)} placeholder="John Doe" />
+            <Label>First Name *</Label>
+            <Input value={form.first_name} onChange={e => set('first_name', e.target.value)} placeholder="John" />
           </div>
         )
-      case 'tshirt_size':
+      case 'last_name':
         return (
           <div className="space-y-2" key={field}>
-            <Label>T-Shirt Size *</Label>
-            <Select value={form.tshirt_size} onValueChange={v => set('tshirt_size', v)}>
-              <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
-              <SelectContent>
-                {TSHIRT_SIZES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <Label>Last Name *</Label>
+            <Input value={form.last_name} onChange={e => set('last_name', e.target.value)} placeholder="Doe" />
           </div>
         )
-      case 'mailing_address':
+      case 'email_address':
         return (
           <div className="space-y-2" key={field}>
-            <Label>Mailing Address *</Label>
-            <Textarea value={form.mailing_address} onChange={e => set('mailing_address', e.target.value)} placeholder="Full mailing address" rows={3} />
+            <Label>Email Address *</Label>
+            <Input type="email" value={form.email_address} onChange={e => set('email_address', e.target.value)} placeholder="john@example.com" />
+          </div>
+        )
+      case 'phone_number':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>Phone Number *</Label>
+            <Input type="tel" value={form.phone_number} onChange={e => set('phone_number', e.target.value)} placeholder="(555) 123-4567" />
           </div>
         )
       case 'first_touchpoint':

@@ -282,18 +282,26 @@ const handler = async (req: Request): Promise<Response> => {
 
                   <div class="steps">
                     <p style="font-weight: bold; margin-top: 0;">To get started:</p>
-                    <div class="step">
-                      <div class="step-number">1</div>
-                      <div>Log in with the credentials above</div>
-                    </div>
-                    <div class="step">
-                      <div class="step-number">2</div>
-                      <div>Complete your profile by entering your <strong>first name</strong>, <strong>last name</strong>, and <strong>mailing address</strong></div>
-                    </div>
-                    <div class="step">
-                      <div class="step-number">3</div>
-                      <div>Change your password for security</div>
-                    </div>
+                     <div class="step">
+                       <div class="step-number">1</div>
+                       <div>Log in with the credentials above</div>
+                     </div>
+                     <div class="step">
+                       <div class="step-number">2</div>
+                       <div>Sign your <strong>Program Agreement</strong></div>
+                     </div>
+                     <div class="step">
+                       <div class="step-number">3</div>
+                       <div>Complete your profile by entering your <strong>first name</strong>, <strong>last name</strong>, <strong>email</strong>, and <strong>phone number</strong></div>
+                     </div>
+                     <div class="step">
+                       <div class="step-number">4</div>
+                       <div>Upload your <strong>profile photo</strong></div>
+                     </div>
+                     <div class="step">
+                       <div class="step-number">5</div>
+                       <div><strong style="color: #e53e3e;">⚠️ Change your password immediately</strong> for security — go to Profile Settings after logging in</div>
+                     </div>
                   </div>
                   
                   <div class="button-container">
