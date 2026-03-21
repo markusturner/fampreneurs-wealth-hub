@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast'
 import { Loader2, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 
-// T-shirt sizes removed - no longer collected in onboarding
+
 
 const TOUCHPOINT_OPTIONS = [
   'Referral',
@@ -49,6 +49,8 @@ interface FormData {
   last_name: string
   email_address: string
   phone_number: string
+  tshirt_size: string
+  mailing_address: string
   first_touchpoint: string
   referral_who: string
   touchpoint_other: string
@@ -67,8 +69,10 @@ interface FormData {
   anything_else: string
 }
 
+const TSHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
+
 const STEPS = [
-  { title: 'About You', fields: ['first_name', 'last_name', 'email_address', 'phone_number'] },
+  { title: 'About You', fields: ['first_name', 'last_name', 'email_address', 'phone_number', 'tshirt_size', 'mailing_address'] },
   { title: 'How You Found Us', fields: ['first_touchpoint', 'decision_reason'] },
   { title: 'Your Investment', fields: ['investment_reason', 'join_elaboration'] },
   { title: 'Your Journey', fields: ['time_to_decide', 'improvement_suggestion'] },
@@ -93,6 +97,8 @@ export default function Onboarding() {
     last_name: '',
     email_address: '',
     phone_number: '',
+    tshirt_size: '',
+    mailing_address: '',
     first_touchpoint: '',
     referral_who: '',
     touchpoint_other: '',
@@ -184,8 +190,8 @@ export default function Onboarding() {
       const { error } = await supabase.from('onboarding_responses').insert({
         user_id: user.id,
         full_name: `${form.first_name} ${form.last_name}`.trim(),
-        tshirt_size: '',
-        mailing_address: '',
+        tshirt_size: form.tshirt_size,
+        mailing_address: form.mailing_address,
         first_touchpoint: firstTouchpoint,
         decision_reason: form.decision_reason,
         investment_reason: form.investment_reason,
@@ -261,6 +267,25 @@ export default function Onboarding() {
           <div className="space-y-2" key={field}>
             <Label>Phone Number *</Label>
             <Input type="tel" value={form.phone_number} onChange={e => set('phone_number', e.target.value)} placeholder="(555) 123-4567" />
+          </div>
+        )
+      case 'tshirt_size':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>T-Shirt Size *</Label>
+            <Select value={form.tshirt_size} onValueChange={v => set('tshirt_size', v)}>
+              <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
+              <SelectContent>
+                {TSHIRT_SIZES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        )
+      case 'mailing_address':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>Mailing Address *</Label>
+            <Textarea value={form.mailing_address} onChange={e => set('mailing_address', e.target.value)} placeholder="Full mailing address" rows={3} />
           </div>
         )
       case 'first_touchpoint':
