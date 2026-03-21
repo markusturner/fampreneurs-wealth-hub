@@ -10,6 +10,13 @@ interface MemberProfile {
   avatar_url: string | null
 }
 
+const PROGRAM_GROUP_MAP: Record<string, string> = {
+  fbu: 'Family Business University',
+  tfv: 'The Family Vault',
+  tfba: 'The Family Business Accelerator',
+  tffm: 'The Family Fortune Mastermind',
+}
+
 export function CommunityMembersList({ program }: { program: string }) {
   const [members, setMembers] = useState<MemberProfile[]>([])
 
@@ -17,24 +24,44 @@ export function CommunityMembersList({ program }: { program: string }) {
     const fetchMembers = async () => {
       if (!program) return
 
-      // Get users with admin or owner roles
+      const groupName = PROGRAM_GROUP_MAP[program]
+      if (!groupName) return
+
+      // Get group members assigned to this program
+      let programUserIds: string[] = []
+      const { data: group } = await supabase
+        .from('community_groups')
+        .select('id')
+        .eq('name', groupName)
+        .maybeSingle()
+
+      if (group) {
+        const { data: memberships } = await supabase
+          .from('group_memberships')
+          .select('user_id')
+          .eq('group_id', group.id)
+        programUserIds = (memberships || []).map(m => m.user_id)
+      }
+
+      // Also include admin/owner role users
       const { data: roleUsers } = await supabase
         .from('user_roles')
         .select('user_id')
         .in('role', ['admin', 'owner'])
+      const adminOwnerIds = (roleUsers || []).map(r => r.user_id)
 
-      if (!roleUsers || roleUsers.length === 0) {
+      // Combine and deduplicate
+      const allUserIds = [...new Set([...programUserIds, ...adminOwnerIds])]
+      if (allUserIds.length === 0) {
         setMembers([])
         return
       }
-
-      const roleUserIds = roleUsers.map(r => r.user_id)
 
       // Get profiles for those users who have display names
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, display_name, avatar_url')
-        .in('user_id', roleUserIds)
+        .in('user_id', allUserIds)
         .not('display_name', 'is', null)
         .order('display_name')
 
