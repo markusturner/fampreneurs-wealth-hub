@@ -234,11 +234,12 @@ export function AdminUserManagement() {
 
           <div className="space-y-2">
             <Label>Payment Type</Label>
-            <Select value={planType} onValueChange={(v) => setPlanType(v as 'paid_in_full' | 'payment_plan')} disabled={isLoading}>
+            <Select value={planType} onValueChange={(v) => setPlanType(v as 'free' | 'paid_in_full' | 'payment_plan')} disabled={isLoading}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="free">Free</SelectItem>
                 <SelectItem value="paid_in_full">Paid in Full</SelectItem>
                 <SelectItem value="payment_plan">Payment Plan</SelectItem>
               </SelectContent>
