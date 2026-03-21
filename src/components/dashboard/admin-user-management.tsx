@@ -246,18 +246,20 @@ export function AdminUserManagement() {
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="totalAmount">Total Program Amount ($)</Label>
-            <Input
-              id="totalAmount"
-              type="number"
-              min="0"
-              value={totalAmount}
-              onChange={(e) => setTotalAmount(e.target.value)}
-              placeholder="e.g. 5000"
-              disabled={isLoading}
-            />
-          </div>
+          {planType !== 'free' && (
+            <div className="space-y-2">
+              <Label htmlFor="totalAmount">Total Program Amount ($)</Label>
+              <Input
+                id="totalAmount"
+                type="number"
+                min="0"
+                value={totalAmount}
+                onChange={(e) => setTotalAmount(e.target.value)}
+                placeholder="e.g. 5000"
+                disabled={isLoading}
+              />
+            </div>
+          )}
 
           {planType === 'payment_plan' && (
             <>
