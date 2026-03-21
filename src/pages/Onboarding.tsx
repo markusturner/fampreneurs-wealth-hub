@@ -45,9 +45,10 @@ const IMPROVEMENT_OPTIONS = [
 ]
 
 interface FormData {
-  full_name: string
-  tshirt_size: string
-  mailing_address: string
+  first_name: string
+  last_name: string
+  email_address: string
+  phone_number: string
   first_touchpoint: string
   referral_who: string
   touchpoint_other: string
@@ -67,7 +68,7 @@ interface FormData {
 }
 
 const STEPS = [
-  { title: 'About You', fields: ['full_name', 'tshirt_size', 'mailing_address'] },
+  { title: 'About You', fields: ['first_name', 'last_name', 'email_address', 'phone_number'] },
   { title: 'How You Found Us', fields: ['first_touchpoint', 'decision_reason'] },
   { title: 'Your Investment', fields: ['investment_reason', 'join_elaboration'] },
   { title: 'Your Journey', fields: ['time_to_decide', 'improvement_suggestion'] },
