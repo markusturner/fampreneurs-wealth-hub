@@ -241,60 +241,83 @@ export default function WorkspaceCommunity() {
 
   useEffect(() => {
     const fetchMemberCount = async () => {
-      const programGroupMap: Record<string, string> = {
-        fbu: 'Family Business University',
-        tfv: 'The Family Vault',
-        tfba: 'The Family Business Accelerator',
-        tffm: 'The Family Fortune Mastermind',
-      }
-      const groupName = programGroupMap[program]
-      if (!groupName) { setMemberCount(0); setOnlineCount(0); return }
+      if (!program) { setMemberCount(0); setOnlineCount(0); return }
 
-      const { data: group } = await supabase
-        .from('community_groups')
-        .select('id')
-        .eq('name', groupName)
-        .maybeSingle()
+      // Get users with admin or owner roles who have display names
+      const { data: roleUsers } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .in('role', ['admin', 'owner'])
 
-      if (group) {
-        const { count } = await supabase
-          .from('group_memberships')
-          .select('*', { count: 'exact', head: true })
-          .eq('group_id', group.id)
-        setMemberCount(count || 0)
-      } else {
-        const { count } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true })
-          .eq('program_name', PROGRAM_NAMES[program] || '')
-        setMemberCount(count || 0)
+      if (!roleUsers || roleUsers.length === 0) {
+        setMemberCount(0)
+        return
       }
+
+      const roleUserIds = roleUsers.map(r => r.user_id)
+
+      // Count only those with display_name set
+      const { count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .in('user_id', roleUserIds)
+        .not('display_name', 'is', null)
+
+      setMemberCount(count || 0)
     }
     fetchMemberCount()
   }, [program])
 
-  // Real-time presence tracking for online count
+  // Real-time presence tracking for online count — only count admin/owner role users
   useEffect(() => {
     if (!user?.id || !program) return
 
-    const channelName = `community-presence-${program}`
-    const channel = supabase.channel(channelName, {
-      config: { presence: { key: user.id } },
-    })
+    let qualifiedUserIds: string[] = []
 
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState()
-        setOnlineCount(Object.keys(state).length)
+    const setup = async () => {
+      // Fetch users with admin/owner roles
+      const { data: roleUsers } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .in('role', ['admin', 'owner'])
+
+      if (roleUsers) {
+        const ids = roleUsers.map(r => r.user_id)
+        // Filter to those with display names
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .in('user_id', ids)
+          .not('display_name', 'is', null)
+        qualifiedUserIds = (profiles || []).map(p => p.user_id)
+      }
+
+      const channelName = `community-presence-${program}`
+      const channel = supabase.channel(channelName, {
+        config: { presence: { key: user.id } },
       })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          await channel.track({ user_id: user.id, online_at: new Date().toISOString() })
-        }
-      })
+
+      channel
+        .on('presence', { event: 'sync' }, () => {
+          const state = channel.presenceState()
+          // Only count presence entries from qualified users
+          const onlineQualified = Object.keys(state).filter(id => qualifiedUserIds.includes(id))
+          setOnlineCount(onlineQualified.length)
+        })
+        .subscribe(async (status) => {
+          if (status === 'SUBSCRIBED') {
+            await channel.track({ user_id: user.id, online_at: new Date().toISOString() })
+          }
+        })
+
+      return channel
+    }
+
+    let channelRef: ReturnType<typeof supabase.channel> | null = null
+    setup().then(ch => { channelRef = ch })
 
     return () => {
-      supabase.removeChannel(channel)
+      if (channelRef) supabase.removeChannel(channelRef)
     }
   }, [user?.id, program])
 
