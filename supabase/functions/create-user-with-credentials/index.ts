@@ -15,6 +15,7 @@ interface CreateUserRequest {
   programName?: string;
   mailingAddress?: string;
   truHeirsAccess?: boolean;
+  isBulkInvite?: boolean;
 }
 
 const generateSecurePassword = (): string => {
@@ -37,32 +38,24 @@ const handler = async (req: Request): Promise<Response> => {
   console.log("=== Create User Request Started ===");
 
   try {
-    const { email, firstName, lastName, role, programName, mailingAddress, truHeirsAccess }: CreateUserRequest = await req.json();
+    const { email, firstName, lastName, role, programName, mailingAddress, truHeirsAccess, isBulkInvite }: CreateUserRequest = await req.json();
     
-    console.log("Request data:", { email, firstName, lastName, role });
+    console.log("Request data:", { email, firstName, lastName, role, isBulkInvite });
 
-    // Validate input
-    if (!email || !firstName || !role) {
+    if (!email || !role) {
       console.error("Missing required fields");
       return new Response(
-        JSON.stringify({ error: "Missing required fields: email, firstName, and role are required" }),
+        JSON.stringify({ error: "Missing required fields: email and role are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Initialize Supabase Admin Client
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
+      { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Verify the requesting user is an admin
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(
@@ -81,7 +74,6 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Check if requesting user is admin
     const { data: profile, error: profileError } = await supabaseAdmin
       .from("profiles")
       .select("is_admin")
@@ -95,11 +87,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Check if user already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
     const existingUser = existingUsers?.users?.find(u => u.email === email);
     
-    // Generate temporary password
     const tempPassword = generateSecurePassword();
     
     let authUser;
@@ -109,15 +99,15 @@ const handler = async (req: Request): Promise<Response> => {
       console.log("User already exists, updating password:", email);
       isExistingUser = true;
       
-      // Update existing user's password and metadata
       const { data: updatedUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
         existingUser.id,
         {
           password: tempPassword,
           user_metadata: {
-            first_name: firstName,
-            last_name: lastName || "",
+            first_name: firstName || "Invited",
+            last_name: lastName || "User",
             role: role,
+            needs_profile_completion: isBulkInvite ? true : false,
           },
         }
       );
@@ -125,10 +115,7 @@ const handler = async (req: Request): Promise<Response> => {
       if (updateError) {
         console.error("Error updating user:", updateError);
         return new Response(
-          JSON.stringify({ 
-            success: false,
-            error: updateError.message || "Failed to update user credentials" 
-          }),
+          JSON.stringify({ success: false, error: updateError.message || "Failed to update user credentials" }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -137,25 +124,22 @@ const handler = async (req: Request): Promise<Response> => {
     } else {
       console.log("Creating new user with email:", email);
 
-      // Create user in Auth
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email,
         password: tempPassword,
         email_confirm: true,
         user_metadata: {
-          first_name: firstName,
-          last_name: lastName || "",
+          first_name: firstName || "Invited",
+          last_name: lastName || "User",
           role: role,
+          needs_profile_completion: isBulkInvite ? true : false,
         },
       });
 
       if (createError) {
         console.error("Error creating auth user:", createError);
         return new Response(
-          JSON.stringify({ 
-            success: false,
-            error: createError.message || "Failed to create user" 
-          }),
+          JSON.stringify({ success: false, error: createError.message || "Failed to create user" }),
           { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
@@ -165,31 +149,25 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(isExistingUser ? "User credentials updated:" : "User created successfully:", authUser.user.id);
 
-    // Insert or update role into user_roles table (only for new users)
     if (!isExistingUser) {
       const { error: roleError } = await supabaseAdmin
         .from("user_roles")
-        .insert({
-          user_id: authUser.user.id,
-          role: role,
-          assigned_by: requestingUser.id,
-        });
+        .insert({ user_id: authUser.user.id, role: role, assigned_by: requestingUser.id });
 
       if (roleError) {
         console.error("Error creating user role:", roleError);
       }
     }
 
-    // Set additional profile fields if provided
     if (programName || mailingAddress || truHeirsAccess !== undefined) {
       console.log("Setting additional profile fields:", { programName, mailingAddress, truHeirsAccess });
-      // Wait briefly for the profile trigger to create the profile row
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       const updateFields: Record<string, unknown> = {};
       if (programName) updateFields.program_name = programName;
       if (mailingAddress) updateFields.mailing_address = mailingAddress;
       if (truHeirsAccess !== undefined) updateFields.truheirs_access = truHeirsAccess;
+      if (isBulkInvite) updateFields.needs_profile_completion = true;
 
       const { error: updateError } = await supabaseAdmin
         .from("profiles")
@@ -197,14 +175,12 @@ const handler = async (req: Request): Promise<Response> => {
         .eq("user_id", authUser.user.id);
 
       if (updateError) {
-        console.error("Error setting profile fields:", updateError);
-        // Try upsert approach if profile doesn't exist yet
         const { error: retryError } = await supabaseAdmin
           .from("profiles")
           .upsert({
             user_id: authUser.user.id,
-            first_name: firstName,
-            last_name: lastName || "",
+            first_name: firstName || "Invited",
+            last_name: lastName || "User",
             email: email,
             ...updateFields,
           }, { onConflict: "user_id" });
@@ -215,7 +191,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Assign user to the correct community group based on program
+    // Assign user to community group based on program
     if (programName) {
       const PROGRAM_TO_GROUP: Record<string, string> = {
         "The Family Business University": "Family Business University",
@@ -236,29 +212,106 @@ const handler = async (req: Request): Promise<Response> => {
         if (group?.id) {
           const { error: membershipError } = await supabaseAdmin
             .from("group_memberships")
-            .upsert({
-              group_id: group.id,
-              user_id: authUser.user.id,
-              role: "member",
-            }, { onConflict: "group_id,user_id" });
+            .upsert({ group_id: group.id, user_id: authUser.user.id, role: "member" }, { onConflict: "group_id,user_id" });
 
           if (membershipError) {
             console.error("Error adding user to community group:", membershipError);
           } else {
             console.log(`User added to community group: ${groupName}`);
           }
-        } else {
-          console.log(`Community group not found for program: ${programName}`);
         }
       }
     }
 
-    // Send email in background (non-blocking)
+    // Send email in background
     const sendEmailInBackground = async () => {
       try {
         const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
         
-        const emailHtml = `
+        const loginUrl = "https://fampreneurs-wealth-hub.lovable.app/auth";
+        
+        const emailHtml = isBulkInvite
+          ? `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background-color: #290a52; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { background-color: #f5f5f5; padding: 30px; border-radius: 0 0 8px 8px; }
+                .credentials { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+                .credential-item { margin: 15px 0; }
+                .label { font-weight: bold; color: #6B7280; }
+                .value { font-family: monospace; background-color: #F3F4F6; padding: 10px 15px; border-radius: 4px; display: block; margin-top: 5px; word-break: break-all; }
+                .button-container { text-align: center; margin: 30px 0; }
+                .button { display: inline-block; background-color: #ffb500; color: #290a52; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                .steps { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+                .step { display: flex; align-items: flex-start; margin: 12px 0; }
+                .step-number { background-color: #ffb500; color: #290a52; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; flex-shrink: 0; }
+                .footer { text-align: center; color: #6B7280; font-size: 12px; margin-top: 30px; }
+                @media only screen and (max-width: 600px) {
+                  .container { padding: 10px; }
+                  .header { padding: 20px; }
+                  .content { padding: 20px; }
+                  .button { padding: 14px 30px; font-size: 16px; display: block; width: 100%; box-sizing: border-box; }
+                }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1 style="margin: 0; font-size: 28px;">You're Invited to TruHeirs!</h1>
+                  <p style="margin: 10px 0 0; opacity: 0.9;">Complete your profile to get started</p>
+                </div>
+                <div class="content">
+                  <p style="font-size: 16px;">Hi there! 👋</p>
+                  <p style="font-size: 16px;">You've been invited to join the TruHeirs platform${programName ? ` as part of the <strong>${programName}</strong> program` : ''}. Your temporary login credentials are below.</p>
+                  
+                  <div class="credentials">
+                    <div class="credential-item">
+                      <div class="label">Email:</div>
+                      <div class="value">${email}</div>
+                    </div>
+                    <div class="credential-item">
+                      <div class="label">Temporary Password:</div>
+                      <div class="value">${tempPassword}</div>
+                    </div>
+                  </div>
+
+                  <div class="steps">
+                    <p style="font-weight: bold; margin-top: 0;">To get started:</p>
+                    <div class="step">
+                      <div class="step-number">1</div>
+                      <div>Log in with the credentials above</div>
+                    </div>
+                    <div class="step">
+                      <div class="step-number">2</div>
+                      <div>Complete your profile by entering your <strong>first name</strong>, <strong>last name</strong>, and <strong>mailing address</strong></div>
+                    </div>
+                    <div class="step">
+                      <div class="step-number">3</div>
+                      <div>Change your password for security</div>
+                    </div>
+                  </div>
+                  
+                  <div class="button-container">
+                    <a href="${loginUrl}" class="button">
+                      Accept Invitation & Log In
+                    </a>
+                  </div>
+
+                  <p style="font-size: 16px;">If you have any questions, please don't hesitate to reach out to our support team.</p>
+                </div>
+                <div class="footer">
+                  <p>This is an automated message. Please do not reply to this email.</p>
+                </div>
+              </div>
+            </body>
+          </html>
+          `
+          : `
           <!DOCTYPE html>
           <html>
             <head>
@@ -273,17 +326,7 @@ const handler = async (req: Request): Promise<Response> => {
                 .label { font-weight: bold; color: #6B7280; }
                 .value { font-family: monospace; background-color: #F3F4F6; padding: 10px 15px; border-radius: 4px; display: block; margin-top: 5px; word-break: break-all; }
                 .button-container { text-align: center; margin: 30px 0; }
-                .button { 
-                  display: inline-block; 
-                  background-color: #ffb500; 
-                  color: #290a52; 
-                  padding: 16px 40px; 
-                  text-decoration: none; 
-                  border-radius: 8px; 
-                  font-weight: bold; 
-                  font-size: 18px;
-                  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                }
+                .button { display: inline-block; background-color: #ffb500; color: #290a52; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
                 .footer { text-align: center; color: #6B7280; font-size: 12px; margin-top: 30px; }
                 @media only screen and (max-width: 600px) {
                   .container { padding: 10px; }
@@ -320,10 +363,8 @@ const handler = async (req: Request): Promise<Response> => {
                   <p style="font-size: 16px;"><strong>Important:</strong> Please change your password after your first login for security purposes.</p>
                   
                   <div class="button-container">
-                    <a href="https://fampreneurs-wealth-hub.lovable.app/auth" class="button">
+                    <a href="${loginUrl}" class="button">
                       Login to Your Account
-                    </a>
-                  </div>
                     </a>
                   </div>
 
@@ -335,18 +376,17 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
             </body>
           </html>
-        `;
+          `;
 
         const { error: emailError } = await resend.emails.send({
           from: "TruHeirs <noreply@truheirs.app>",
           to: [email],
-          subject: "Your Account Credentials - TruHeirs",
+          subject: isBulkInvite ? "You're Invited to TruHeirs — Complete Your Profile" : "Your Account Credentials - TruHeirs",
           html: emailHtml,
         });
 
         if (emailError) {
           console.error("Background email error:", emailError);
-          // Log but don't fail - email issues shouldn't block user creation
           console.log("⚠️ Email failed to send. Please verify your domain at resend.com/domains");
         } else {
           console.log("Background email sent successfully to:", email);
@@ -356,14 +396,12 @@ const handler = async (req: Request): Promise<Response> => {
       }
     };
 
-    // Start background email task (non-blocking)
     // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
     if (typeof EdgeRuntime !== 'undefined') {
       // @ts-ignore
       EdgeRuntime.waitUntil(sendEmailInBackground());
       console.log("Email scheduled for background delivery");
     } else {
-      // Fallback for local development
       sendEmailInBackground().catch(console.error);
     }
 
@@ -374,29 +412,18 @@ const handler = async (req: Request): Promise<Response> => {
         email: email,
         message: isExistingUser 
           ? "User credentials updated and email sent successfully."
-          : "User created successfully. Email will be sent if domain is verified in Resend.",
+          : "User created successfully. Invitation email will be sent.",
         isExistingUser: isExistingUser
       }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
     console.error("=== ERROR in create-user-with-credentials ===");
     console.error("Error details:", error);
-    console.error("Error message:", error.message);
-    console.error("Error stack:", error.stack);
     
     return new Response(
-      JSON.stringify({ 
-        error: error.message || "An unexpected error occurred",
-        details: error.toString()
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ error: error.message || "An unexpected error occurred", details: error.toString() }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 };
