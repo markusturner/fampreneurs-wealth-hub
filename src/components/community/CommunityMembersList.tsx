@@ -10,52 +10,32 @@ interface MemberProfile {
   avatar_url: string | null
 }
 
-const PROGRAM_GROUP_MAP: Record<string, string> = {
-  fbu: 'Family Business University',
-  tfv: 'The Family Vault',
-  tfba: 'The Family Business Accelerator',
-  tffm: 'The Family Fortune Mastermind',
-}
-
 export function CommunityMembersList({ program }: { program: string }) {
   const [members, setMembers] = useState<MemberProfile[]>([])
 
   useEffect(() => {
     const fetchMembers = async () => {
-      const groupName = PROGRAM_GROUP_MAP[program]
-      if (!groupName) return
+      if (!program) return
 
-      const { data: group } = await supabase
-        .from('community_groups')
-        .select('id')
-        .eq('name', groupName)
-        .maybeSingle()
+      // Get users with admin or owner roles
+      const { data: roleUsers } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .in('role', ['admin', 'owner'])
 
-      if (group) {
-        const { data: memberships } = await supabase
-          .from('group_memberships')
-          .select('user_id')
-          .eq('group_id', group.id)
-          .limit(50)
-
-        if (memberships && memberships.length > 0) {
-          const userIds = memberships.map(m => m.user_id)
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('user_id, display_name, avatar_url')
-            .in('user_id', userIds)
-
-          setMembers(profiles || [])
-          return
-        }
+      if (!roleUsers || roleUsers.length === 0) {
+        setMembers([])
+        return
       }
 
-      // Fallback: show all profiles
+      const roleUserIds = roleUsers.map(r => r.user_id)
+
+      // Get profiles for those users who have display names
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, display_name, avatar_url')
+        .in('user_id', roleUserIds)
         .not('display_name', 'is', null)
-        .limit(50)
         .order('display_name')
 
       setMembers(profiles || [])
