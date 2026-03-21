@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { useToast } from '@/hooks/use-toast'
@@ -12,7 +13,6 @@ import { useAuth } from '@/contexts/AuthContext'
 
 type UserRole = 'trustee' | 'family_office_member' | 'family_member'
 
-// Only the four workspace community programs (matches the sidebar community list)
 const PROGRAM_OPTIONS = [
   'Family Business University',
   'The Family Vault',
@@ -21,16 +21,12 @@ const PROGRAM_OPTIONS = [
 ]
 
 export function AdminUserManagement() {
-  const [email, setEmail] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
+  const [bulkEmails, setBulkEmails] = useState('')
   const [role, setRole] = useState<UserRole>('family_member')
   const [programName, setProgramName] = useState('')
-  const [mailingAddress, setMailingAddress] = useState('')
   const [truHeirsAccess, setTruHeirsAccess] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Payment plan fields
   const [planType, setPlanType] = useState<'paid_in_full' | 'payment_plan'>('paid_in_full')
   const [totalAmount, setTotalAmount] = useState('')
   const [installmentAmount, setInstallmentAmount] = useState('')
@@ -40,11 +36,20 @@ export function AdminUserManagement() {
   const { toast } = useToast()
   const { user } = useAuth()
 
-  const handleAddUser = async () => {
-    if (!email || !firstName || !lastName || !role) {
+  const parseEmails = (input: string): string[] => {
+    return input
+      .split(/[\n,;]+/)
+      .map((e) => e.trim().toLowerCase())
+      .filter((e) => e.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))
+  }
+
+  const handleBulkInvite = async () => {
+    const emails = parseEmails(bulkEmails)
+
+    if (emails.length === 0) {
       toast({
-        title: 'Missing Information',
-        description: 'Please fill in all required fields',
+        title: 'No Valid Emails',
+        description: 'Please enter at least one valid email address.',
         variant: 'destructive',
       })
       return
@@ -53,7 +58,7 @@ export function AdminUserManagement() {
     if (!totalAmount || isNaN(Number(totalAmount))) {
       toast({
         title: 'Missing Payment Info',
-        description: 'Please enter a valid total amount',
+        description: 'Please enter a valid total amount.',
         variant: 'destructive',
       })
       return
@@ -62,7 +67,7 @@ export function AdminUserManagement() {
     if (planType === 'payment_plan' && (!installmentAmount || !paymentStartDate)) {
       toast({
         title: 'Missing Payment Plan Info',
-        description: 'Please fill in installment amount and start date',
+        description: 'Please fill in installment amount and start date.',
         variant: 'destructive',
       })
       return
@@ -70,153 +75,113 @@ export function AdminUserManagement() {
 
     setIsLoading(true)
 
-    try {
-      console.log("Attempting to create user:", { email, firstName, lastName, role });
-      
-      const { data, error } = await supabase.functions.invoke('create-user-with-credentials', {
-        body: {
-          email,
-          firstName,
-          lastName,
-          role,
-          programName: programName || undefined,
-          mailingAddress: mailingAddress || undefined,
-          truHeirsAccess,
-        },
-      })
+    let successCount = 0
+    let failCount = 0
+    const errors: string[] = []
 
-      console.log("Function response:", { data, error });
+    for (const email of emails) {
+      try {
+        const { data, error } = await supabase.functions.invoke('create-user-with-credentials', {
+          body: {
+            email,
+            firstName: 'Invited',
+            lastName: 'User',
+            role,
+            programName: programName || undefined,
+            truHeirsAccess,
+            isBulkInvite: true,
+          },
+        })
 
-      if (error) {
-        console.error("Function error:", error);
-        throw new Error("Failed to create user. Please check the logs for details.");
-      }
-
-      if (data?.success === false || data?.error) {
-        console.error("Data error:", data.error);
-        throw new Error(data.error || "Failed to create user");
-      }
-
-      // Save payment plan to DB
-      const userId = data?.userId
-      if (userId) {
-        const nextPaymentDue = planType === 'payment_plan' && paymentStartDate
-          ? paymentStartDate
-          : null
-
-        const { error: planError } = await supabase
-          .from('user_payment_plans' as any)
-          .insert({
-            user_id: userId,
-            user_email: email,
-            plan_type: planType,
-            total_amount: Number(totalAmount),
-            amount_paid: planType === 'paid_in_full' ? Number(totalAmount) : 0,
-            installment_amount: planType === 'payment_plan' ? Number(installmentAmount) : null,
-            installment_frequency: planType === 'payment_plan' ? installmentFrequency : null,
-            next_payment_due: nextPaymentDue,
-            payment_start_date: paymentStartDate || null,
-            status: planType === 'paid_in_full' ? 'paid' : 'active',
-            created_by: user?.id,
-          })
-
-        if (planError) {
-          console.error("Payment plan save error:", planError)
-          // Don't throw — user was created, just log the plan error
-          toast({
-            title: 'Note',
-            description: 'User created but payment plan could not be saved. Please update manually.',
-            variant: 'destructive',
-          })
+        if (error || data?.success === false || data?.error) {
+          throw new Error(data?.error || error?.message || 'Failed')
         }
-      }
 
+        const userId = data?.userId
+        if (userId) {
+          const nextPaymentDue = planType === 'payment_plan' && paymentStartDate
+            ? paymentStartDate
+            : null
+
+          await supabase
+            .from('user_payment_plans' as any)
+            .insert({
+              user_id: userId,
+              user_email: email,
+              plan_type: planType,
+              total_amount: Number(totalAmount),
+              amount_paid: planType === 'paid_in_full' ? Number(totalAmount) : 0,
+              installment_amount: planType === 'payment_plan' ? Number(installmentAmount) : null,
+              installment_frequency: planType === 'payment_plan' ? installmentFrequency : null,
+              next_payment_due: nextPaymentDue,
+              payment_start_date: paymentStartDate || null,
+              status: planType === 'paid_in_full' ? 'paid' : 'active',
+              created_by: user?.id,
+            })
+        }
+
+        successCount++
+      } catch (err: any) {
+        failCount++
+        errors.push(`${email}: ${err.message}`)
+      }
+    }
+
+    if (successCount > 0) {
       toast({
-        title: data.isExistingUser ? 'Credentials Updated!' : 'User Created Successfully!',
-        description: data.isExistingUser
-          ? `New credentials have been sent to ${email}`
-          : `${firstName} ${lastName} has been added as ${role.replace(/_/g, ' ')}${planType === 'payment_plan' ? ' on a payment plan — reminders will be sent automatically.' : ' (Paid in Full).'}`,
+        title: `${successCount} Invitation${successCount > 1 ? 's' : ''} Sent!`,
+        description: `Users will receive an email to complete their profile.${failCount > 0 ? ` ${failCount} failed.` : ''}`,
       })
+    }
 
-      // Reset form
-      setEmail('')
-      setFirstName('')
-      setLastName('')
-      setRole('family_member')
-      setProgramName('')
-      setMailingAddress('')
-      setTruHeirsAccess(true)
-      setPlanType('paid_in_full')
-      setTotalAmount('')
-      setInstallmentAmount('')
-      setInstallmentFrequency('monthly')
-      setPaymentStartDate('')
-    } catch (error: any) {
-      console.error('Error adding user:', error)
-      
-      let errorMessage = 'Failed to add user. Please try again.'
-      
-      if (error.message?.includes('Failed to fetch')) {
-        errorMessage = 'The user creation service is still deploying. Please wait 2-3 minutes and try again.'
-      } else if (error.message) {
-        errorMessage = error.message
-      }
-      
+    if (failCount > 0 && successCount === 0) {
       toast({
-        title: 'Error Adding User',
-        description: errorMessage,
+        title: 'All Invitations Failed',
+        description: errors.slice(0, 3).join('; '),
         variant: 'destructive',
       })
-    } finally {
-      setIsLoading(false)
     }
+
+    // Reset
+    setBulkEmails('')
+    setRole('family_member')
+    setProgramName('')
+    setTruHeirsAccess(true)
+    setPlanType('paid_in_full')
+    setTotalAmount('')
+    setInstallmentAmount('')
+    setInstallmentFrequency('monthly')
+    setPaymentStartDate('')
+    setIsLoading(false)
   }
+
+  const emailCount = parseEmails(bulkEmails).length
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5" style={{ color: '#ffb500' }} />
-          <CardTitle>Admin User Management</CardTitle>
+          <CardTitle>Bulk Invite Users</CardTitle>
         </div>
         <CardDescription>
-          Add new users or resend credentials. Payment plans trigger automatic reminders and access revocation on missed payments.
+          Invite users via email in bulk. They'll receive an invitation to complete their profile (name, address, etc.). Payment plans trigger automatic reminders.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="firstName">First Name</Label>
-            <Input
-              id="firstName"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="John"
-              disabled={isLoading}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name</Label>
-            <Input
-              id="lastName"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              placeholder="Doe"
-              disabled={isLoading}
-            />
-          </div>
-        </div>
-
         <div className="space-y-2">
-          <Label htmlFor="email">Email Address</Label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="user@example.com"
+          <Label htmlFor="bulkEmails">Email Addresses</Label>
+          <Textarea
+            id="bulkEmails"
+            value={bulkEmails}
+            onChange={(e) => setBulkEmails(e.target.value)}
+            placeholder={"Enter emails separated by commas or new lines:\njohn@example.com\njane@example.com, bob@example.com"}
+            rows={5}
             disabled={isLoading}
           />
+          <p className="text-xs text-muted-foreground">
+            {emailCount > 0 ? `${emailCount} valid email${emailCount > 1 ? 's' : ''} detected` : 'Separate emails with commas, semicolons, or new lines'}
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -245,17 +210,6 @@ export function AdminUserManagement() {
               ))}
             </SelectContent>
           </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="mailingAddress">Mailing Address</Label>
-          <Input
-            id="mailingAddress"
-            value={mailingAddress}
-            onChange={(e) => setMailingAddress(e.target.value)}
-            placeholder="123 Main St, City, State ZIP"
-            disabled={isLoading}
-          />
         </div>
 
         <div className="flex items-center justify-between py-2">
@@ -352,16 +306,16 @@ export function AdminUserManagement() {
           )}
         </div>
 
-        <Button onClick={handleAddUser} disabled={isLoading} className="w-full" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
+        <Button onClick={handleBulkInvite} disabled={isLoading || emailCount === 0} className="w-full" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
+              Sending {emailCount} Invitation{emailCount > 1 ? 's' : ''}...
             </>
           ) : (
             <>
               <UserPlus className="mr-2 h-4 w-4" />
-              Add / Resend Credentials
+              Send {emailCount > 0 ? `${emailCount} ` : ''}Invitation{emailCount !== 1 ? 's' : ''}
             </>
           )}
         </Button>
