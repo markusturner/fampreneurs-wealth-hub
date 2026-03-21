@@ -245,28 +245,14 @@ export default function WorkspaceCommunity() {
     const assignedProgramName = PROGRAM_NAMES[program]
     if (!assignedProgramName) return []
 
-    const [{ data: roleUsers }, { data: programProfiles }] = await Promise.all([
-      supabase
-        .from('user_roles')
-        .select('user_id')
-        .in('role', ['admin', 'owner']),
-      supabase
-        .from('profiles')
-        .select('user_id, membership_type, is_admin, is_moderator')
-        .eq('program_name', assignedProgramName)
-        .not('display_name', 'is', null),
-    ])
+    // Get all users assigned to this program with a display name
+    const { data: programProfiles } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('program_name', assignedProgramName)
+      .not('display_name', 'is', null)
 
-    const roleUserSet = new Set((roleUsers || []).map(r => r.user_id))
-
-    return (programProfiles || [])
-      .filter(profile =>
-        profile.membership_type === 'trustee' ||
-        profile.is_admin ||
-        profile.is_moderator ||
-        roleUserSet.has(profile.user_id)
-      )
-      .map(profile => profile.user_id)
+    return (programProfiles || []).map(profile => profile.user_id)
   }, [program])
 
   useEffect(() => {
