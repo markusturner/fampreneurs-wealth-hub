@@ -8,6 +8,9 @@ interface MemberProfile {
   user_id: string
   display_name: string | null
   avatar_url: string | null
+  membership_type: string | null
+  is_admin: boolean
+  is_moderator: boolean
 }
 
 const PROGRAM_GROUP_MAP: Record<string, string> = {
@@ -24,49 +27,37 @@ export function CommunityMembersList({ program }: { program: string }) {
     const fetchMembers = async () => {
       if (!program) return
 
-      const groupName = PROGRAM_GROUP_MAP[program]
-      if (!groupName) return
-
-      // Get group members assigned to this program
-      let programUserIds: string[] = []
-      const { data: group } = await supabase
-        .from('community_groups')
-        .select('id')
-        .eq('name', groupName)
-        .maybeSingle()
-
-      if (group) {
-        const { data: memberships } = await supabase
-          .from('group_memberships')
-          .select('user_id')
-          .eq('group_id', group.id)
-        programUserIds = (memberships || []).map(m => m.user_id)
-      }
-
-      // Also include admin/owner role users
-      const { data: roleUsers } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .in('role', ['admin', 'owner'])
-      const adminOwnerIds = (roleUsers || []).map(r => r.user_id)
-
-      // Combine and deduplicate
-      const allUserIds = [...new Set([...programUserIds, ...adminOwnerIds])]
-      if (allUserIds.length === 0) {
+      const assignedProgramName = PROGRAM_GROUP_MAP[program]
+      if (!assignedProgramName) {
         setMembers([])
         return
       }
 
-      // Get profiles for those users who have display names
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, avatar_url')
-        .in('user_id', allUserIds)
-        .not('display_name', 'is', null)
-        .order('display_name')
+      const [{ data: roleUsers }, { data: programProfiles }] = await Promise.all([
+        supabase
+          .from('user_roles')
+          .select('user_id')
+          .in('role', ['admin', 'owner']),
+        supabase
+          .from('profiles')
+          .select('user_id, display_name, avatar_url, membership_type, is_admin, is_moderator')
+          .eq('program_name', assignedProgramName)
+          .not('display_name', 'is', null)
+          .order('display_name'),
+      ])
 
-      setMembers(profiles || [])
+      const roleUserSet = new Set((roleUsers || []).map(r => r.user_id))
+
+      const eligibleMembers = (programProfiles || []).filter(profile =>
+        profile.membership_type === 'trustee' ||
+        profile.is_admin ||
+        profile.is_moderator ||
+        roleUserSet.has(profile.user_id)
+      )
+
+      setMembers(eligibleMembers)
     }
+
     fetchMembers()
   }, [program])
 

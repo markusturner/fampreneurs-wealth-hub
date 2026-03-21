@@ -239,103 +239,54 @@ export default function WorkspaceCommunity() {
     setCommunityDesc(programDesc)
   }, [programName, programDesc])
 
-  useEffect(() => {
-    const fetchMemberCount = async () => {
-      if (!program) { setMemberCount(0); setOnlineCount(0); return }
+  const getEligibleCommunityUserIds = useCallback(async (): Promise<string[]> => {
+    if (!program) return []
 
-      const programGroupMap: Record<string, string> = {
-        fbu: 'Family Business University',
-        tfv: 'The Family Vault',
-        tfba: 'The Family Business Accelerator',
-        tffm: 'The Family Fortune Mastermind',
-      }
-      const groupName = programGroupMap[program]
-      if (!groupName) { setMemberCount(0); return }
+    const assignedProgramName = PROGRAM_NAMES[program]
+    if (!assignedProgramName) return []
 
-      // Get group members assigned to this program
-      const { data: group } = await supabase
-        .from('community_groups')
-        .select('id')
-        .eq('name', groupName)
-        .maybeSingle()
-
-      let programUserIds: string[] = []
-      if (group) {
-        const { data: memberships } = await supabase
-          .from('group_memberships')
-          .select('user_id')
-          .eq('group_id', group.id)
-        programUserIds = (memberships || []).map(m => m.user_id)
-      }
-
-      // Also include admin/owner role users
-      const { data: roleUsers } = await supabase
+    const [{ data: roleUsers }, { data: programProfiles }] = await Promise.all([
+      supabase
         .from('user_roles')
         .select('user_id')
-        .in('role', ['admin', 'owner'])
-
-      const adminOwnerIds = (roleUsers || []).map(r => r.user_id)
-
-      // Combine and deduplicate
-      const allUserIds = [...new Set([...programUserIds, ...adminOwnerIds])]
-      if (allUserIds.length === 0) { setMemberCount(0); return }
-
-      // Count only those with display_name set
-      const { count } = await supabase
+        .in('role', ['admin', 'owner']),
+      supabase
         .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .in('user_id', allUserIds)
-        .not('display_name', 'is', null)
+        .select('user_id, membership_type, is_admin, is_moderator')
+        .eq('program_name', assignedProgramName)
+        .not('display_name', 'is', null),
+    ])
 
-      setMemberCount(count || 0)
-    }
-    fetchMemberCount()
+    const roleUserSet = new Set((roleUsers || []).map(r => r.user_id))
+
+    return (programProfiles || [])
+      .filter(profile =>
+        profile.membership_type === 'trustee' ||
+        profile.is_admin ||
+        profile.is_moderator ||
+        roleUserSet.has(profile.user_id)
+      )
+      .map(profile => profile.user_id)
   }, [program])
+
+  useEffect(() => {
+    const fetchMemberCount = async () => {
+      const eligibleUserIds = await getEligibleCommunityUserIds()
+      setMemberCount(eligibleUserIds.length)
+    }
+
+    fetchMemberCount()
+  }, [getEligibleCommunityUserIds])
 
   // Real-time presence tracking for online count
   useEffect(() => {
     if (!user?.id || !program) return
 
     let qualifiedUserIds: string[] = []
+    let channelRef: ReturnType<typeof supabase.channel> | null = null
 
     const setup = async () => {
-      const programGroupMap: Record<string, string> = {
-        fbu: 'Family Business University',
-        tfv: 'The Family Vault',
-        tfba: 'The Family Business Accelerator',
-        tffm: 'The Family Fortune Mastermind',
-      }
-      const groupName = programGroupMap[program]
-
-      let programUserIds: string[] = []
-      if (groupName) {
-        const { data: group } = await supabase
-          .from('community_groups')
-          .select('id')
-          .eq('name', groupName)
-          .maybeSingle()
-        if (group) {
-          const { data: memberships } = await supabase
-            .from('group_memberships')
-            .select('user_id')
-            .eq('group_id', group.id)
-          programUserIds = (memberships || []).map(m => m.user_id)
-        }
-      }
-
-      const { data: roleUsers } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .in('role', ['admin', 'owner'])
-      const adminOwnerIds = (roleUsers || []).map(r => r.user_id)
-
-      const allIds = [...new Set([...programUserIds, ...adminOwnerIds])]
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id')
-        .in('user_id', allIds.length ? allIds : [''])
-        .not('display_name', 'is', null)
-      qualifiedUserIds = (profiles || []).map(p => p.user_id)
+      qualifiedUserIds = await getEligibleCommunityUserIds()
 
       const channelName = `community-presence-${program}`
       const channel = supabase.channel(channelName, {
@@ -354,16 +305,15 @@ export default function WorkspaceCommunity() {
           }
         })
 
-      return channel
+      channelRef = channel
     }
 
-    let channelRef: ReturnType<typeof supabase.channel> | null = null
-    setup().then(ch => { channelRef = ch })
+    setup()
 
     return () => {
       if (channelRef) supabase.removeChannel(channelRef)
     }
-  }, [user?.id, program])
+  }, [getEligibleCommunityUserIds, user?.id, program])
 
   // Reset popup closed state whenever program changes (so it doesn't stay open from a previous community)
   useEffect(() => {
