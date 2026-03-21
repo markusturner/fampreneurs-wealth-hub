@@ -767,7 +767,28 @@ export default function WorkspaceCommunity() {
                   </div>
                 )}
 
-                {/* Author info */}
+                {/* Owner-only custom date/time */}
+                {isOwner && (
+                  <div className="px-4 py-2 border-b border-border/30 bg-muted/30 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">📅 Custom date & time</span>
+                      <button
+                        className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors ${useCustomDateTime ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground'}`}
+                        onClick={() => setUseCustomDateTime(!useCustomDateTime)}
+                      >
+                        {useCustomDateTime ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+                    {useCustomDateTime && (
+                      <div className="flex gap-2">
+                        <Input type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 text-xs flex-1" />
+                        <Input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 text-xs w-28" />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+
                 <div className="flex items-center gap-3 px-4 pt-4 pb-2">
                   <Avatar className="h-11 w-11 flex-shrink-0">
                     {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
