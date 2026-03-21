@@ -52,20 +52,6 @@ export default function Messenger() {
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Map profile program_name to program key
-  const PROGRAM_NAME_TO_KEY: Record<string, string> = {
-    'Family Business University': 'fbu',
-    'The Family Business University': 'fbu',
-    'The Family Vault': 'tfv',
-    'The Family Business Accelerator': 'tfba',
-    'The Family Fortune Mastermind': 'tffm',
-  }
-  const PROGRAM_KEY_TO_GROUP_NAME: Record<string, string> = {
-    fbu: 'Family Business University',
-    tfv: 'The Family Vault',
-    tfba: 'The Family Business Accelerator',
-    tffm: 'The Family Fortune Mastermind',
-  }
 
   // Fetch profiles: get all members from all community groups the user belongs to
   useEffect(() => {
