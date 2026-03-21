@@ -49,6 +49,8 @@ interface FormData {
   last_name: string
   email_address: string
   phone_number: string
+  tshirt_size: string
+  mailing_address: string
   first_touchpoint: string
   referral_who: string
   touchpoint_other: string
@@ -67,8 +69,10 @@ interface FormData {
   anything_else: string
 }
 
+const TSHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
+
 const STEPS = [
-  { title: 'About You', fields: ['first_name', 'last_name', 'email_address', 'phone_number'] },
+  { title: 'About You', fields: ['first_name', 'last_name', 'email_address', 'phone_number', 'tshirt_size', 'mailing_address'] },
   { title: 'How You Found Us', fields: ['first_touchpoint', 'decision_reason'] },
   { title: 'Your Investment', fields: ['investment_reason', 'join_elaboration'] },
   { title: 'Your Journey', fields: ['time_to_decide', 'improvement_suggestion'] },
