@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
-import { useAgreementStatus } from '@/hooks/useAgreementStatus'
+
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -86,7 +86,7 @@ const CONDITIONAL_FIELDS = ['referral_who', 'touchpoint_other', 'improvement_oth
 
 export default function Onboarding() {
   const { user, loading: authLoading, refreshProfile } = useAuth()
-  const { signed: agreementSigned, loading: agreementLoading, needsAgreement } = useAgreementStatus()
+  
   const { isAdminOrOwner, isLoading: roleLoading } = useIsAdminOrOwner()
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -134,12 +134,9 @@ export default function Onboarding() {
       navigate('/auth')
       return
     }
-    if (!authLoading && !agreementLoading && user && needsAgreement && agreementSigned === false) {
-      navigate('/program-agreement')
-    }
-  }, [authLoading, agreementLoading, roleLoading, isAdminOrOwner, user, needsAgreement, agreementSigned, navigate])
+  }, [authLoading, roleLoading, isAdminOrOwner, user, navigate])
 
-  if (authLoading || agreementLoading || roleLoading) {
+  if (authLoading || roleLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
@@ -148,7 +145,6 @@ export default function Onboarding() {
   }
 
   if (!user || isAdminOrOwner) return null
-  if (needsAgreement && agreementSigned === false) return null
 
   const set = (field: keyof FormData, value: string) =>
     setForm(prev => ({ ...prev, [field]: value }))
@@ -218,6 +214,7 @@ export default function Onboarding() {
           display_name: displayName,
           email: form.email_address,
           phone: form.phone_number,
+          mailing_address: form.mailing_address,
           needs_profile_completion: false,
         })
         .eq('user_id', user.id)
@@ -227,9 +224,9 @@ export default function Onboarding() {
       }
 
       await refreshProfile()
-      toast({ title: 'Onboarding complete!', description: 'Welcome! Please upload your profile photo.' })
-      // Redirect to community — profile photo dialog will auto-show from AuthContext
-      navigate('/community')
+      toast({ title: 'Onboarding complete!', description: 'Proceeding to your program agreement...' })
+      // Redirect to agreement page (or community if no agreement needed)
+      window.location.href = '/program-agreement'
     } catch (err: any) {
       console.error(err)
       toast({ title: 'Error', description: err.message || 'Failed to save. Please try again.', variant: 'destructive' })
@@ -469,7 +466,7 @@ export default function Onboarding() {
                 {submitting ? (
                   <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Submitting…</>
                 ) : (
-                  <><CheckCircle2 className="h-4 w-4 mr-1" /> Complete & Book Call</>
+                  <><CheckCircle2 className="h-4 w-4 mr-1" /> Complete & Continue</>
                 )}
               </Button>
             )}

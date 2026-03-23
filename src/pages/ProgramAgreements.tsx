@@ -5,10 +5,14 @@ import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ArrowLeft, FileText, Loader2, Eye, Users, Calendar } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { ArrowLeft, FileText, Loader2, Eye, Calendar, Pencil, Trash2 } from 'lucide-react'
 import { format } from 'date-fns'
+import { useToast } from '@/hooks/use-toast'
 
 interface ProgramAgreement {
   id: string
@@ -33,6 +37,12 @@ export default function ProgramAgreements() {
   const [agreements, setAgreements] = useState<ProgramAgreement[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<ProgramAgreement | null>(null)
+  const [editing, setEditing] = useState<ProgramAgreement | null>(null)
+  const [editForm, setEditForm] = useState({ full_name: '', mailing_address: '', agreement_type: '' })
+  const [saving, setSaving] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<ProgramAgreement | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const { toast } = useToast()
 
   useEffect(() => {
     if (isAdminOrOwner) fetchAgreements()
@@ -50,6 +60,61 @@ export default function ProgramAgreements() {
       console.error('Error fetching agreements:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const openEdit = (a: ProgramAgreement) => {
+    setEditForm({
+      full_name: a.full_name || '',
+      mailing_address: a.mailing_address || '',
+      agreement_type: a.agreement_type || '',
+    })
+    setEditing(a)
+  }
+
+  const handleSave = async () => {
+    if (!editing) return
+    setSaving(true)
+    try {
+      const { error } = await supabase
+        .from('program_agreements')
+        .update({
+          full_name: editForm.full_name,
+          mailing_address: editForm.mailing_address || null,
+          agreement_type: editForm.agreement_type,
+        })
+        .eq('id', editing.id)
+
+      if (error) throw error
+      toast({ title: 'Updated', description: 'Agreement updated successfully.' })
+      setEditing(null)
+      setSelected(null)
+      fetchAgreements()
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      const { error } = await supabase
+        .from('program_agreements')
+        .delete()
+        .eq('id', deleteTarget.id)
+
+      if (error) throw error
+      toast({ title: 'Deleted', description: 'Agreement deleted.' })
+      setDeleteTarget(null)
+      setSelected(null)
+      fetchAgreements()
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' })
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -120,9 +185,17 @@ export default function ProgramAgreements() {
                       </div>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                    <Eye className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); openEdit(a) }}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => { e.stopPropagation(); setDeleteTarget(a) }}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -130,7 +203,8 @@ export default function ProgramAgreements() {
         </CardContent>
       </Card>
 
-      <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
+      {/* View Dialog */}
+      <Dialog open={!!selected && !editing && !deleteTarget} onOpenChange={() => setSelected(null)}>
         <DialogContent className="max-w-lg max-h-[85vh]">
           <DialogHeader>
             <DialogTitle>{selected?.full_name} — Agreement Details</DialogTitle>
@@ -173,6 +247,61 @@ export default function ProgramAgreements() {
               </div>
             )}
           </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { if (selected) openEdit(selected) }}>
+              <Pencil className="h-4 w-4 mr-1" /> Edit
+            </Button>
+            <Button variant="destructive" onClick={() => { if (selected) setDeleteTarget(selected) }}>
+              <Trash2 className="h-4 w-4 mr-1" /> Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editing} onOpenChange={() => setEditing(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Agreement</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <Label>Full Name</Label>
+              <Input value={editForm.full_name} onChange={e => setEditForm(prev => ({ ...prev, full_name: e.target.value }))} />
+            </div>
+            <div className="space-y-1">
+              <Label>Mailing Address</Label>
+              <Textarea value={editForm.mailing_address} onChange={e => setEditForm(prev => ({ ...prev, mailing_address: e.target.value }))} rows={3} />
+            </div>
+            <div className="space-y-1">
+              <Label>Agreement Type</Label>
+              <Input value={editForm.agreement_type} onChange={e => setEditForm(prev => ({ ...prev, agreement_type: e.target.value }))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Saving...</> : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete Agreement</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Are you sure you want to delete the agreement from <strong>{deleteTarget?.full_name}</strong>? This cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+              {deleting ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Deleting...</> : 'Delete'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

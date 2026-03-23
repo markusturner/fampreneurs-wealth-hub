@@ -2,11 +2,15 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import { supabase } from "@/integrations/supabase/client"
-import { Loader2, Eye, Users, Calendar } from "lucide-react"
+import { Loader2, Eye, Users, Calendar, Pencil, Trash2 } from "lucide-react"
 import { format } from "date-fns"
+import { useToast } from "@/hooks/use-toast"
 
 interface OnboardingResponse {
   id: string
@@ -50,10 +54,18 @@ const FIELD_LABELS: Record<string, string> = {
   anything_else: "Anything else?",
 }
 
+const EDITABLE_FIELDS = Object.keys(FIELD_LABELS)
+
 export function AdminOnboardingSubmissions() {
   const [submissions, setSubmissions] = useState<OnboardingResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSubmission, setSelectedSubmission] = useState<OnboardingResponse | null>(null)
+  const [editingSubmission, setEditingSubmission] = useState<OnboardingResponse | null>(null)
+  const [editForm, setEditForm] = useState<Record<string, string>>({})
+  const [saving, setSaving] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<OnboardingResponse | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchSubmissions()
@@ -72,6 +84,61 @@ export function AdminOnboardingSubmissions() {
       console.error("Error fetching onboarding submissions:", err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const openEdit = (sub: OnboardingResponse) => {
+    const formData: Record<string, string> = {}
+    EDITABLE_FIELDS.forEach(key => {
+      formData[key] = (sub as any)[key] || ''
+    })
+    setEditForm(formData)
+    setEditingSubmission(sub)
+  }
+
+  const handleSave = async () => {
+    if (!editingSubmission) return
+    setSaving(true)
+    try {
+      const updateData: Record<string, string | null> = {}
+      EDITABLE_FIELDS.forEach(key => {
+        updateData[key] = editForm[key]?.trim() || null
+      })
+
+      const { error } = await supabase
+        .from('onboarding_responses')
+        .update(updateData)
+        .eq('id', editingSubmission.id)
+
+      if (error) throw error
+      toast({ title: 'Updated', description: 'Onboarding submission updated successfully.' })
+      setEditingSubmission(null)
+      fetchSubmissions()
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      const { error } = await supabase
+        .from('onboarding_responses')
+        .delete()
+        .eq('id', deleteTarget.id)
+
+      if (error) throw error
+      toast({ title: 'Deleted', description: 'Onboarding submission deleted.' })
+      setDeleteTarget(null)
+      setSelectedSubmission(null)
+      fetchSubmissions()
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' })
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -117,12 +184,18 @@ export function AdminOnboardingSubmissions() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     {sub.completed_at ? (
                       <Badge className="bg-emerald-500/10 text-emerald-600 border-0 text-xs">Completed</Badge>
                     ) : (
                       <Badge variant="secondary" className="text-xs">Partial</Badge>
                     )}
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); openEdit(sub) }}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={(e) => { e.stopPropagation(); setDeleteTarget(sub) }}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -134,8 +207,8 @@ export function AdminOnboardingSubmissions() {
         </CardContent>
       </Card>
 
-      {/* Detail Dialog */}
-      <Dialog open={!!selectedSubmission} onOpenChange={() => setSelectedSubmission(null)}>
+      {/* View Dialog */}
+      <Dialog open={!!selectedSubmission && !editingSubmission && !deleteTarget} onOpenChange={() => setSelectedSubmission(null)}>
         <DialogContent className="max-w-lg max-h-[85vh]">
           <DialogHeader>
             <DialogTitle>{selectedSubmission?.full_name || "Submission Details"}</DialogTitle>
@@ -162,6 +235,71 @@ export function AdminOnboardingSubmissions() {
               )}
             </div>
           </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setSelectedSubmission(null); if (selectedSubmission) openEdit(selectedSubmission) }}>
+              <Pencil className="h-4 w-4 mr-1" /> Edit
+            </Button>
+            <Button variant="destructive" onClick={() => { if (selectedSubmission) setDeleteTarget(selectedSubmission) }}>
+              <Trash2 className="h-4 w-4 mr-1" /> Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editingSubmission} onOpenChange={() => setEditingSubmission(null)}>
+        <DialogContent className="max-w-lg max-h-[85vh]">
+          <DialogHeader>
+            <DialogTitle>Edit Submission — {editingSubmission?.full_name}</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh] pr-4">
+            <div className="space-y-4">
+              {EDITABLE_FIELDS.map(key => {
+                const isLong = ['decision_reason', 'investment_reason', 'join_elaboration', 'improvement_suggestion', 'why_markus', 'final_push', 'pre_call_conviction', 'biggest_hesitation', 'why_choose_me', 'specific_content', 'anything_else'].includes(key)
+                return (
+                  <div key={key} className="space-y-1">
+                    <Label className="text-xs">{FIELD_LABELS[key]}</Label>
+                    {isLong ? (
+                      <Textarea
+                        value={editForm[key] || ''}
+                        onChange={e => setEditForm(prev => ({ ...prev, [key]: e.target.value }))}
+                        rows={3}
+                      />
+                    ) : (
+                      <Input
+                        value={editForm[key] || ''}
+                        onChange={e => setEditForm(prev => ({ ...prev, [key]: e.target.value }))}
+                      />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingSubmission(null)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Saving...</> : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete Submission</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Are you sure you want to delete the onboarding submission from <strong>{deleteTarget?.full_name || 'this user'}</strong>? This cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+              {deleting ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Deleting...</> : 'Delete'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

@@ -439,7 +439,7 @@ export default function ProgramAgreement() {
   }, [authLoading, roleLoading, isAdminOrOwner, navigate])
 
   const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ')
-  const address = [
+  const address = profile?.mailing_address || [
     (profile as any)?.street_address,
     (profile as any)?.city,
     (profile as any)?.state,
@@ -458,10 +458,10 @@ export default function ProgramAgreement() {
     ctx.lineCap = 'round'
   }, [useTypedSignature])
 
-  // If no agreement needed for this program, redirect to onboarding
+  // If no agreement needed for this program, redirect to community
   useEffect(() => {
     if (!authLoading && !roleLoading && !isAdminOrOwner && !agreementText) {
-      navigate('/onboarding')
+      navigate('/community')
     }
   }, [agreementText, authLoading, roleLoading, isAdminOrOwner, navigate])
 
@@ -535,9 +535,9 @@ export default function ProgramAgreement() {
       })
       if (error) throw error
 
-      toast({ title: 'Agreement signed!', description: 'Redirecting to onboarding...' })
-      // Use window.location to force full reload so agreement status is re-fetched
-      window.location.href = '/onboarding'
+      toast({ title: 'Agreement signed!', description: 'Welcome! Please upload your profile photo.' })
+      // Redirect to community — profile photo dialog will auto-show
+      window.location.href = '/community'
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to save agreement.', variant: 'destructive' })
     } finally {
