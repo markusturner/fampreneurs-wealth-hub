@@ -145,7 +145,6 @@ export default function Onboarding() {
   }
 
   if (!user || isAdminOrOwner) return null
-  if (needsAgreement && agreementSigned === false) return null
 
   const set = (field: keyof FormData, value: string) =>
     setForm(prev => ({ ...prev, [field]: value }))
