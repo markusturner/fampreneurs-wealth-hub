@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react' // auth-context
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react' // auth-context-v2
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
-import { ProfilePhotoUpload } from '@/components/dashboard/profile-photo-upload'
 import { initPushNotifications } from '@/lib/push-notifications'
 
 interface Profile {
