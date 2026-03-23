@@ -288,11 +288,11 @@ const handler = async (req: Request): Promise<Response> => {
                      </div>
                      <div class="step">
                        <div class="step-number">2</div>
-                       <div>Sign your <strong>Program Agreement</strong></div>
+                       <div>Complete your onboarding by entering your <strong>first name</strong>, <strong>last name</strong>, <strong>email</strong>, <strong>phone number</strong>, <strong>t-shirt size</strong>, and <strong>mailing address</strong></div>
                      </div>
                      <div class="step">
                        <div class="step-number">3</div>
-                       <div>Complete your profile by entering your <strong>first name</strong>, <strong>last name</strong>, <strong>email</strong>, and <strong>phone number</strong></div>
+                       <div>Sign your <strong>Program Agreement</strong></div>
                      </div>
                      <div class="step">
                        <div class="step-number">4</div>
