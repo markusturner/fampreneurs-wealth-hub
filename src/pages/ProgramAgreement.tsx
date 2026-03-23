@@ -535,9 +535,8 @@ export default function ProgramAgreement() {
       })
       if (error) throw error
 
-      toast({ title: 'Agreement signed!', description: 'Welcome! Please upload your profile photo.' })
-      // Redirect to community — profile photo dialog will auto-show
-      window.location.href = '/community'
+      toast({ title: 'Agreement signed!', description: 'Please upload your profile photo to continue.' })
+      window.location.href = '/profile-photo'
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to save agreement.', variant: 'destructive' })
     } finally {
