@@ -134,12 +134,9 @@ export default function Onboarding() {
       navigate('/auth')
       return
     }
-    if (!authLoading && !agreementLoading && user && needsAgreement && agreementSigned === false) {
-      navigate('/program-agreement')
-    }
-  }, [authLoading, agreementLoading, roleLoading, isAdminOrOwner, user, needsAgreement, agreementSigned, navigate])
+  }, [authLoading, roleLoading, isAdminOrOwner, user, navigate])
 
-  if (authLoading || agreementLoading || roleLoading) {
+  if (authLoading || roleLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
