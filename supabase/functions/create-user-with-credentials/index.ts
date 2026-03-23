@@ -248,8 +248,9 @@ const handler = async (req: Request): Promise<Response> => {
                 .button-container { text-align: center; margin: 30px 0; }
                 .button { display: inline-block; background-color: #ffb500; color: #290a52; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
                 .steps { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
-                .step { display: flex; align-items: flex-start; margin: 12px 0; }
-                .step-number { background-color: #ffb500; color: #290a52; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; flex-shrink: 0; }
+                .step { display: table; width: 100%; margin: 15px 0; }
+                .step-number { display: table-cell; background-color: #ffb500; color: #290a52; width: 28px; height: 28px; border-radius: 50%; text-align: center; font-weight: bold; vertical-align: top; font-size: 14px; line-height: 28px; }
+                .step-text { display: table-cell; padding-left: 12px; vertical-align: top; font-size: 15px; line-height: 1.5; }
                 .footer { text-align: center; color: #6B7280; font-size: 12px; margin-top: 30px; }
                 @media only screen and (max-width: 600px) {
                   .container { padding: 10px; }
@@ -284,23 +285,23 @@ const handler = async (req: Request): Promise<Response> => {
                     <p style="font-weight: bold; margin-top: 0;">To get started:</p>
                      <div class="step">
                        <div class="step-number">1</div>
-                       <div>Log in with the credentials above</div>
+                       <div class="step-text">Log in with the credentials above</div>
                      </div>
                      <div class="step">
                        <div class="step-number">2</div>
-                       <div>Complete your onboarding by entering your <strong>first name</strong>, <strong>last name</strong>, <strong>email</strong>, <strong>phone number</strong>, <strong>t-shirt size</strong>, and <strong>mailing address</strong></div>
+                       <div class="step-text">Complete your onboarding by entering your <strong>first name</strong>, <strong>last name</strong>, <strong>email</strong>, <strong>phone number</strong>, <strong>t-shirt size</strong>, and <strong>mailing address</strong></div>
                      </div>
                      <div class="step">
                        <div class="step-number">3</div>
-                       <div>Sign your <strong>Program Agreement</strong></div>
+                       <div class="step-text">Sign your <strong>Program Agreement</strong></div>
                      </div>
                      <div class="step">
                        <div class="step-number">4</div>
-                       <div>Upload your <strong>profile photo</strong></div>
+                       <div class="step-text">Upload your <strong>profile photo</strong></div>
                      </div>
                      <div class="step">
                        <div class="step-number">5</div>
-                       <div><strong style="color: #e53e3e;">⚠️ Change your password immediately</strong> for security — go to Profile Settings after logging in</div>
+                       <div class="step-text"><strong style="color: #e53e3e;">⚠️ Change your password immediately</strong> for security — go to Profile Settings after logging in</div>
                      </div>
                   </div>
                   

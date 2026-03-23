@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react' // auth-context
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react' // auth-context-v2
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
-import { ProfilePhotoUpload } from '@/components/dashboard/profile-photo-upload'
 import { initPushNotifications } from '@/lib/push-notifications'
 
 interface Profile {
@@ -56,7 +55,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [showPhotoUpload, setShowPhotoUpload] = useState(false)
+  
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -73,10 +72,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       setProfile(data)
       
-      // Check if profile photo is required (only after onboarding is done)
-      if (data && !data.profile_photo_uploaded && !data.needs_profile_completion) {
-        setShowPhotoUpload(true)
-      }
 
       // Initialize push notifications on native platforms
       initPushNotifications(userId)
@@ -92,12 +87,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   useEffect(() => {
-    // Listen for profile photo upload events
-    const handleOpenProfilePhotoUpload = () => {
-      setShowPhotoUpload(true)
-    }
-    
-    window.addEventListener('openProfilePhotoUpload', handleOpenProfilePhotoUpload)
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -134,7 +123,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     return () => {
       subscription.unsubscribe()
-      window.removeEventListener('openProfilePhotoUpload', handleOpenProfilePhotoUpload)
     }
   }, [])
 
@@ -175,10 +163,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   return (
     <AuthContext.Provider value={value}>
       {children}
-      <ProfilePhotoUpload 
-        isOpen={showPhotoUpload} 
-        onClose={() => setShowPhotoUpload(false)} 
-      />
     </AuthContext.Provider>
   )
 }
