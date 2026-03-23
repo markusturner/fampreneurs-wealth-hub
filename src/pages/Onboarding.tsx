@@ -227,8 +227,9 @@ export default function Onboarding() {
       }
 
       await refreshProfile()
-      toast({ title: 'Onboarding complete!', description: 'Redirecting to book your onboarding call…' })
-      window.location.href = 'https://calendly.com/apexathletemgnt/fampreneurs-onboarding'
+      toast({ title: 'Onboarding complete!', description: 'Welcome! Please upload your profile photo.' })
+      // Redirect to community — profile photo dialog will auto-show from AuthContext
+      navigate('/community')
     } catch (err: any) {
       console.error(err)
       toast({ title: 'Error', description: err.message || 'Failed to save. Please try again.', variant: 'destructive' })
