@@ -21,14 +21,16 @@ export function useAgreementStatus() {
       return
     }
 
-    const programName = profile.program_name
-    // TFV, TFBA, and TFFM require agreements
-    const requiresAgreement = programName && (
-      programName.toLowerCase().includes('vault') ||
-      programName.toLowerCase().includes('accelerator') ||
-      programName.toLowerCase().includes('mastermind') ||
-      programName.toLowerCase().includes('fortune')
-    )
+    const programName = profile.program_name?.trim().toLowerCase() ?? ''
+    // TFV, TFBA, and TFFM require agreements (support both short IDs and full names)
+    const requiresAgreement =
+      programName === 'tfv' ||
+      programName === 'tfba' ||
+      programName === 'tffm' ||
+      programName.includes('vault') ||
+      programName.includes('accelerator') ||
+      programName.includes('mastermind') ||
+      programName.includes('fortune')
 
     if (!requiresAgreement) {
       setSigned(true) // No agreement needed
