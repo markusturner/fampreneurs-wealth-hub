@@ -409,9 +409,30 @@ const AGREEMENT_MAP: Record<string, string> = {
 // Map profile program_name values to agreement keys
 function getAgreementKey(programName: string | null | undefined): string | null {
   if (!programName) return null
-  if (programName.toLowerCase().includes('vault')) return 'The Family Vault'
-  if (programName.toLowerCase().includes('accelerator')) return 'The Family Business Accelerator'
-  if (programName.toLowerCase().includes('mastermind') || programName.toLowerCase().includes('fortune')) return 'The Family Fortune Mastermind'
+  const normalizedProgramName = programName.trim().toLowerCase()
+
+  if (
+    normalizedProgramName === 'tfv' ||
+    normalizedProgramName.includes('vault')
+  ) {
+    return 'The Family Vault'
+  }
+
+  if (
+    normalizedProgramName === 'tfba' ||
+    normalizedProgramName.includes('accelerator')
+  ) {
+    return 'The Family Business Accelerator'
+  }
+
+  if (
+    normalizedProgramName === 'tffm' ||
+    normalizedProgramName.includes('mastermind') ||
+    normalizedProgramName.includes('fortune')
+  ) {
+    return 'The Family Fortune Mastermind'
+  }
+
   return null
 }
 
@@ -460,13 +481,13 @@ export default function ProgramAgreement() {
 
   // If no agreement needed for this program, redirect to community
   useEffect(() => {
-    if (!authLoading && !roleLoading && !isAdminOrOwner && !agreementText) {
+    if (!authLoading && !roleLoading && !isAdminOrOwner && profile && !agreementText) {
       navigate('/community')
     }
-  }, [agreementText, authLoading, roleLoading, isAdminOrOwner, navigate])
+  }, [agreementText, authLoading, roleLoading, isAdminOrOwner, profile, navigate])
 
   // Loading state
-  if (authLoading || roleLoading) {
+  if (authLoading || roleLoading || (!!user && !isAdminOrOwner && !profile)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
