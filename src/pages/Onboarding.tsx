@@ -223,9 +223,9 @@ export default function Onboarding() {
       }
 
       await refreshProfile()
-      toast({ title: 'Onboarding complete!', description: 'Welcome! Please upload your profile photo.' })
-      // Redirect to community — profile photo dialog will auto-show from AuthContext
-      navigate('/community')
+      toast({ title: 'Onboarding complete!', description: 'Proceeding to your program agreement...' })
+      // Redirect to agreement page (or community if no agreement needed)
+      window.location.href = '/program-agreement'
     } catch (err: any) {
       console.error(err)
       toast({ title: 'Error', description: err.message || 'Failed to save. Please try again.', variant: 'destructive' })
