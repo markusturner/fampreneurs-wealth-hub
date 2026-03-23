@@ -285,23 +285,23 @@ const handler = async (req: Request): Promise<Response> => {
                     <p style="font-weight: bold; margin-top: 0;">To get started:</p>
                      <div class="step">
                        <div class="step-number">1</div>
-                       <div>Log in with the credentials above</div>
+                       <div class="step-text">Log in with the credentials above</div>
                      </div>
                      <div class="step">
                        <div class="step-number">2</div>
-                       <div>Complete your onboarding by entering your <strong>first name</strong>, <strong>last name</strong>, <strong>email</strong>, <strong>phone number</strong>, <strong>t-shirt size</strong>, and <strong>mailing address</strong></div>
+                       <div class="step-text">Complete your onboarding by entering your <strong>first name</strong>, <strong>last name</strong>, <strong>email</strong>, <strong>phone number</strong>, <strong>t-shirt size</strong>, and <strong>mailing address</strong></div>
                      </div>
                      <div class="step">
                        <div class="step-number">3</div>
-                       <div>Sign your <strong>Program Agreement</strong></div>
+                       <div class="step-text">Sign your <strong>Program Agreement</strong></div>
                      </div>
                      <div class="step">
                        <div class="step-number">4</div>
-                       <div>Upload your <strong>profile photo</strong></div>
+                       <div class="step-text">Upload your <strong>profile photo</strong></div>
                      </div>
                      <div class="step">
                        <div class="step-number">5</div>
-                       <div><strong style="color: #e53e3e;">⚠️ Change your password immediately</strong> for security — go to Profile Settings after logging in</div>
+                       <div class="step-text"><strong style="color: #e53e3e;">⚠️ Change your password immediately</strong> for security — go to Profile Settings after logging in</div>
                      </div>
                   </div>
                   
