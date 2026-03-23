@@ -123,7 +123,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     return () => {
       subscription.unsubscribe()
-      window.removeEventListener('openProfilePhotoUpload', handleOpenProfilePhotoUpload)
     }
   }, [])
 
