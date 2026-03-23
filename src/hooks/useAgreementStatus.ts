@@ -15,9 +15,11 @@ export function useAgreementStatus() {
       return
     }
 
-    // Keep loading until profile is available so we can check program_name
+    // If profile isn't available yet, don't block — assume no agreement needed
     if (!profile) {
-      setLoading(true)
+      setSigned(true)
+      setNeedsAgreement(false)
+      setLoading(false)
       return
     }
 
