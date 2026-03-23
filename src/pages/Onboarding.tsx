@@ -86,7 +86,7 @@ const CONDITIONAL_FIELDS = ['referral_who', 'touchpoint_other', 'improvement_oth
 
 export default function Onboarding() {
   const { user, loading: authLoading, refreshProfile } = useAuth()
-  const { signed: agreementSigned, loading: agreementLoading, needsAgreement } = useAgreementStatus()
+  
   const { isAdminOrOwner, isLoading: roleLoading } = useIsAdminOrOwner()
   const navigate = useNavigate()
   const { toast } = useToast()
