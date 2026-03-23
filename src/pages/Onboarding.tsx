@@ -214,6 +214,7 @@ export default function Onboarding() {
           display_name: displayName,
           email: form.email_address,
           phone: form.phone_number,
+          mailing_address: form.mailing_address,
           needs_profile_completion: false,
         })
         .eq('user_id', user.id)
