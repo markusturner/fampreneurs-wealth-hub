@@ -108,25 +108,9 @@ export const ProfilePhotoUpload = ({ isOpen, onClose }: ProfilePhotoUploadProps)
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent 
         className="sm:max-w-md"
-        style={{
-          pointerEvents: 'auto'
-        }}
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <div 
-          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm"
-          style={{ 
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.1)',
-            backdropFilter: 'blur(2px)',
-            zIndex: -1
-          }}
-        />
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
