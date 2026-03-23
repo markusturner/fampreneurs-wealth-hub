@@ -15,11 +15,9 @@ export function useAgreementStatus() {
       return
     }
 
-    // If profile isn't available yet, don't block — assume no agreement needed
+    // If profile isn't available yet, keep loading — don't skip ahead
     if (!profile) {
-      setSigned(true)
-      setNeedsAgreement(false)
-      setLoading(false)
+      setLoading(true)
       return
     }
 
