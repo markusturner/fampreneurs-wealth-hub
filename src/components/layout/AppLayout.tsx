@@ -61,13 +61,23 @@ export function AppLayout({ children }: AppLayoutProps) {
   // THEN agreement — only redirect to agreement AFTER onboarding is done
   useEffect(() => {
     if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner) {
-      // If onboarding not done, don't redirect to agreement
       if (onboardingCompleted === false) return
       if (needsAgreement && agreementSigned === false && location.pathname !== '/program-agreement') {
         navigate("/program-agreement")
       }
     }
   }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementSigned, needsAgreement, isAdminOrOwner, navigate, location.pathname])
+
+  // THEN profile photo — only after onboarding AND agreement are done
+  useEffect(() => {
+    if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner && profile) {
+      if (onboardingCompleted === false) return
+      if (needsAgreement && agreementSigned === false) return
+      if (!profile.profile_photo_uploaded && location.pathname !== '/profile-photo') {
+        navigate("/profile-photo")
+      }
+    }
+  }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementSigned, needsAgreement, isAdminOrOwner, profile, navigate, location.pathname])
 
   if (loading || onboardingLoading || agreementLoading || roleLoading) {
     return (
