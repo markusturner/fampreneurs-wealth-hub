@@ -55,7 +55,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
-  const [showPhotoUpload, setShowPhotoUpload] = useState(false)
+  
 
   const fetchProfile = async (userId: string) => {
     try {
