@@ -103,6 +103,7 @@ function AppWithNotifications() {
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/program-agreement" element={<ProgramAgreement />} />
+        <Route path="/profile-photo" element={<ProfilePhotoUpload />} />
 
         {/* Authenticated routes - with sidebar */}
         <Route path="/dashboard" element={<WithLayout><Dashboard /></WithLayout>} />
