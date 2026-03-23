@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react' // auth-context-v2
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react' // auth-context-v3
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { initPushNotifications } from '@/lib/push-notifications'
