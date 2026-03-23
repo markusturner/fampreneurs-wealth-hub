@@ -458,10 +458,10 @@ export default function ProgramAgreement() {
     ctx.lineCap = 'round'
   }, [useTypedSignature])
 
-  // If no agreement needed for this program, redirect to onboarding
+  // If no agreement needed for this program, redirect to community
   useEffect(() => {
     if (!authLoading && !roleLoading && !isAdminOrOwner && !agreementText) {
-      navigate('/onboarding')
+      navigate('/community')
     }
   }, [agreementText, authLoading, roleLoading, isAdminOrOwner, navigate])
 
