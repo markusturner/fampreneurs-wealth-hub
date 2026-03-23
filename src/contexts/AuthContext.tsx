@@ -73,8 +73,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       setProfile(data)
       
-      // Check if profile photo is required
-      if (data && !data.profile_photo_uploaded) {
+      // Check if profile photo is required (only after onboarding is done)
+      if (data && !data.profile_photo_uploaded && !data.needs_profile_completion) {
         setShowPhotoUpload(true)
       }
 

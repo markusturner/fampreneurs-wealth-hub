@@ -536,7 +536,8 @@ export default function ProgramAgreement() {
       if (error) throw error
 
       toast({ title: 'Agreement signed!', description: 'Redirecting to onboarding...' })
-      navigate('/onboarding')
+      // Use window.location to force full reload so agreement status is re-fetched
+      window.location.href = '/onboarding'
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to save agreement.', variant: 'destructive' })
     } finally {
