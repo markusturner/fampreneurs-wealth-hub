@@ -49,22 +49,22 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [user, loading, navigate])
 
-  // Redirect to agreement page if not signed yet — AGREEMENT FIRST, then onboarding
+  // ONBOARDING FIRST — redirect to onboarding if not completed
   useEffect(() => {
-    if (!loading && !agreementLoading && !roleLoading && user && needsAgreement && agreementSigned === false && !isAdminOrOwner) {
-      if (location.pathname !== '/program-agreement') {
-        navigate("/program-agreement")
-      }
-    }
-  }, [user, loading, agreementLoading, roleLoading, agreementSigned, needsAgreement, isAdminOrOwner, navigate, location.pathname])
-
-  // Only redirect to onboarding AFTER agreement is signed (or not needed)
-  useEffect(() => {
-    if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner) {
-      // If agreement is needed and not signed, don't redirect to onboarding
-      if (needsAgreement && agreementSigned === false) return
+    if (!loading && !onboardingLoading && !roleLoading && user && !isAdminOrOwner) {
       if (onboardingCompleted === false && location.pathname !== '/onboarding') {
         navigate("/onboarding")
+      }
+    }
+  }, [user, loading, onboardingLoading, roleLoading, onboardingCompleted, isAdminOrOwner, navigate, location.pathname])
+
+  // THEN agreement — only redirect to agreement AFTER onboarding is done
+  useEffect(() => {
+    if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner) {
+      // If onboarding not done, don't redirect to agreement
+      if (onboardingCompleted === false) return
+      if (needsAgreement && agreementSigned === false && location.pathname !== '/program-agreement') {
+        navigate("/program-agreement")
       }
     }
   }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementSigned, needsAgreement, isAdminOrOwner, navigate, location.pathname])

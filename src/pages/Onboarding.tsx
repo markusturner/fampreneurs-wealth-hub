@@ -465,7 +465,7 @@ export default function Onboarding() {
                 {submitting ? (
                   <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Submitting…</>
                 ) : (
-                  <><CheckCircle2 className="h-4 w-4 mr-1" /> Complete & Book Call</>
+                  <><CheckCircle2 className="h-4 w-4 mr-1" /> Complete & Continue</>
                 )}
               </Button>
             )}
