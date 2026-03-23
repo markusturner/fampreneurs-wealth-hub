@@ -439,7 +439,7 @@ export default function ProgramAgreement() {
   }, [authLoading, roleLoading, isAdminOrOwner, navigate])
 
   const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ')
-  const address = [
+  const address = profile?.mailing_address || [
     (profile as any)?.street_address,
     (profile as any)?.city,
     (profile as any)?.state,
