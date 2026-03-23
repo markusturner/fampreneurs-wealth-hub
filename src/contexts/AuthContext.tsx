@@ -163,10 +163,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   return (
     <AuthContext.Provider value={value}>
       {children}
-      <ProfilePhotoUpload 
-        isOpen={showPhotoUpload} 
-        onClose={() => setShowPhotoUpload(false)} 
-      />
     </AuthContext.Provider>
   )
 }
