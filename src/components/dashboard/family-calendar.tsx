@@ -46,30 +46,23 @@ export function FamilyCalendar() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 lg:py-4 flex justify-center">
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={setSelectedDate}
-            className="rounded-md border pointer-events-auto w-full [&_.rdp-day]:h-12 [&_.rdp-day]:w-12 [&_.rdp-day]:text-base [&_.rdp-button]:h-12 [&_.rdp-button]:w-12"
-            modifiers={{
-              groupCoaching: groupCoachingDates,
-              otherMeeting: otherMeetingDates
-            }}
-            modifiersStyles={{
-              groupCoaching: {
-                backgroundColor: 'hsl(var(--primary))',
-                color: 'hsl(var(--primary-foreground))',
-                borderRadius: '4px',
-                fontWeight: 'bold'
-              },
-              otherMeeting: {
-                backgroundColor: 'hsl(var(--secondary))',
-                color: 'hsl(var(--secondary-foreground))',
-                borderRadius: '4px',
-                fontWeight: 'bold'
-              }
-            }}
-          />
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              className="rounded-md border pointer-events-auto w-full [&_.rdp-day]:h-12 [&_.rdp-day]:w-12 [&_.rdp-day]:text-base [&_.rdp-button]:h-12 [&_.rdp-button]:w-12"
+              modifiers={{
+                hasEvent: eventDates,
+              }}
+              modifiersStyles={{
+                hasEvent: {
+                  backgroundColor: 'hsl(var(--primary))',
+                  color: 'hsl(var(--primary-foreground))',
+                  borderRadius: '4px',
+                  fontWeight: 'bold'
+                },
+              }}
+            />
         </CardContent>
       </Card>
 
