@@ -339,7 +339,7 @@ export default function WorkspaceMembers() {
                   <div className="flex items-center gap-2"><Calendar className="h-4 w-4" />Joined {formatDate(profileMember.created_at)}</div>
                 </div>
                 <div className="flex gap-2">
-                  <Button className="flex-1" variant="outline" onClick={() => { setProfileMember(null); setChatMember(profileMember) }}>
+                  <Button className="flex-1" variant="outline" onClick={() => { setProfileMember(null); navigate(`/messenger?user=${profileMember.user_id}`) }}>
                     <MessageCircle className="h-4 w-4 mr-2" /> Chat
                   </Button>
                   <Button className="flex-1" style={{ backgroundColor: '#ffb500', color: '#290a52' }} onClick={() => { setProfileMember(null); openMembership(profileMember) }}>
