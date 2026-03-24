@@ -19,15 +19,28 @@ interface CreateUserRequest {
 }
 
 const generateSecurePassword = (): string => {
-  const length = 12;
-  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-  let password = "";
+  // Use only alphanumeric chars to avoid copy-paste issues from emails
+  const length = 14;
+  const lower = "abcdefghjkmnpqrstuvwxyz";
+  const upper = "ABCDEFGHJKMNPQRSTUVWXYZ";
+  const digits = "23456789";
+  const charset = lower + upper + digits;
   const array = new Uint8Array(length);
   crypto.getRandomValues(array);
-  for (let i = 0; i < length; i++) {
+  // Guarantee at least one of each type
+  let password = lower[array[0] % lower.length] +
+                 upper[array[1] % upper.length] +
+                 digits[array[2] % digits.length];
+  for (let i = 3; i < length; i++) {
     password += charset[array[i] % charset.length];
   }
-  return password;
+  // Shuffle the password
+  const shuffled = password.split('');
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = array[i] % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.join('');
 };
 
 const handler = async (req: Request): Promise<Response> => {
