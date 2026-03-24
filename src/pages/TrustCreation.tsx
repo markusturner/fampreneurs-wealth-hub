@@ -258,6 +258,8 @@ export default function TrustCreation() {
           </Card>
         </div>
       )}
+      {/* Trust Documents Section */}
+      <TrustDocumentsSection />
     </div>
   )
 }
