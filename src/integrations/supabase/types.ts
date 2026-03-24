@@ -4284,6 +4284,45 @@ export type Database = {
         }
         Relationships: []
       }
+      trust_documents: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          trust_type: string | null
+          updated_at: string | null
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          trust_type?: string | null
+          updated_at?: string | null
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          trust_type?: string | null
+          updated_at?: string | null
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
       trust_submissions: {
         Row: {
           created_at: string
