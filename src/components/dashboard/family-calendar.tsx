@@ -78,37 +78,29 @@ export function FamilyCalendar() {
         </CardHeader>
         <CardContent className="p-4">
           <div className="space-y-3">
-            {meetings
-              .filter(meeting => new Date(meeting.date) >= new Date())
-              .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-              .map((meeting) => (
-                <div key={meeting.id} className="p-3 sm:p-4 border border-primary/20 bg-primary/5 rounded-lg">
-                  <div className="flex items-start justify-between mb-2">
-                    <p className="font-medium text-sm sm:text-base leading-tight pr-2">{meeting.title}</p>
-                    <Badge variant="secondary" className="text-xs px-2 py-1 flex-shrink-0">
-                      {meeting.type}
-                    </Badge>
+            {upcomingEvents.length > 0 ? upcomingEvents.map((event) => (
+              <div key={event.id} className="p-3 sm:p-4 border border-primary/20 bg-primary/5 rounded-lg">
+                <div className="flex items-start justify-between mb-2">
+                  <p className="font-medium text-sm sm:text-base leading-tight pr-2">{event.title}</p>
+                  <Badge variant="secondary" className="text-xs px-2 py-1 flex-shrink-0">
+                    {event.type}
+                  </Badge>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <CalendarIcon className="h-4 w-4" />
+                    <span>{new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <CalendarIcon className="h-4 w-4" />
-                      <span>{new Date(meeting.date).toLocaleDateString('en-US', { 
-                        month: 'short', 
-                        day: 'numeric',
-                        year: 'numeric'
-                      })}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      <span>{meeting.time}</span>
-                    </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    <span>{event.time}</span>
                   </div>
                 </div>
-              ))}
-            {meetings.filter(meeting => new Date(meeting.date) >= new Date()).length === 0 && (
+              </div>
+            )) : (
               <div className="text-center py-8 text-muted-foreground">
                 <CalendarIcon className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm">No upcoming meetings scheduled</p>
+                <p className="text-sm">No upcoming family events scheduled</p>
               </div>
             )}
           </div>
