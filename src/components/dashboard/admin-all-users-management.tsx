@@ -484,6 +484,7 @@ export function AdminAllUsersManagement() {
     toast({ title: "Bulk Delete Complete", description: `Deleted ${successCount} user(s)` })
   }
 
+  const handleAddProgram = () => {
     if (newProgramName.trim() && !programOptions.includes(newProgramName.trim())) {
       setProgramOptions([...programOptions, newProgramName.trim()])
       setNewProgramName('')
