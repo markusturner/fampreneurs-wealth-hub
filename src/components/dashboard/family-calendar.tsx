@@ -2,26 +2,36 @@ import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CalendarIcon, Clock } from "lucide-react"
-import { useState } from "react"
-import { useMeetings } from "@/contexts/MeetingsContext"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/contexts/AuthContext"
+import { supabase } from "@/integrations/supabase/client"
+
+interface FamilyEvent {
+  id: string
+  title: string
+  date: string
+  time: string
+  type: string
+}
 
 export function FamilyCalendar() {
-  const { meetings } = useMeetings()
+  const { user } = useAuth()
+  const [events, setEvents] = useState<FamilyEvent[]>([])
   const [selectedDate, setSelectedDate] = useState<Date>()
-  
-  // Get dates that have meetings
-  const meetingDates = meetings.map(meeting => new Date(meeting.date))
-  const groupCoachingDates = meetings
-    .filter(meeting => meeting.type.toLowerCase().includes('group coaching') || meeting.type.toLowerCase().includes('coaching'))
-    .map(meeting => new Date(meeting.date))
-  const otherMeetingDates = meetings
-    .filter(meeting => !meeting.type.toLowerCase().includes('group coaching') && !meeting.type.toLowerCase().includes('coaching'))
-    .map(meeting => new Date(meeting.date))
-  
-  // Get the next upcoming meeting
-  const nextMeeting = meetings
-    .filter(meeting => new Date(meeting.date) >= new Date())
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0]
+
+  // Load family-specific events from localStorage (separate from workspace calendar)
+  useEffect(() => {
+    if (!user) return
+    const stored = localStorage.getItem(`family_calendar_${user.id}`)
+    if (stored) {
+      setEvents(JSON.parse(stored))
+    }
+  }, [user])
+
+  const eventDates = events.map(e => new Date(e.date))
+  const upcomingEvents = events
+    .filter(e => new Date(e.date) >= new Date())
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
