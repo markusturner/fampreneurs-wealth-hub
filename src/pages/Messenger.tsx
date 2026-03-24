@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -42,15 +43,24 @@ export default function Messenger() {
   const { isAdmin } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const { subscriptionStatus } = useSubscription()
+  const [searchParams] = useSearchParams()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(searchParams.get('user'))
   const [messages, setMessages] = useState<DirectMessage[]>([])
   const [message, setMessage] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Handle URL param changes
+  useEffect(() => {
+    const userParam = searchParams.get('user')
+    if (userParam && userParam !== selectedUserId) {
+      setSelectedUserId(userParam)
+    }
+  }, [searchParams])
 
 
   // Fetch profiles: get all members from all community groups the user belongs to

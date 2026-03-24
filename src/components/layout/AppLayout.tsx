@@ -62,7 +62,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   useEffect(() => {
     if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner) {
       if (onboardingCompleted === false) return
-      if (needsAgreement && agreementSigned === false && location.pathname !== '/program-agreement') {
+      if (needsAgreement && agreementSigned === false && location.pathname !== '/program-agreement' && location.pathname !== '/profile-photo') {
         navigate("/program-agreement")
       }
     }
@@ -73,7 +73,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner && profile) {
       if (onboardingCompleted === false) return
       if (needsAgreement && agreementSigned === false) return
-      if (!profile.profile_photo_uploaded && location.pathname !== '/profile-photo') {
+      if (!profile.profile_photo_uploaded && location.pathname !== '/profile-photo' && location.pathname !== '/program-agreement') {
         navigate("/profile-photo")
       }
     }

@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
@@ -81,6 +82,9 @@ export function AdminAllUsersManagement() {
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
   const [resendingCredentialsId, setResendingCredentialsId] = useState<string | null>(null)
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
+  const [bulkResending, setBulkResending] = useState(false)
+  const [bulkDeleting, setBulkDeleting] = useState(false)
   const [programOptions, setProgramOptions] = useState<string[]>([
     'The Family Business University',
     'The Family Vault',
@@ -421,6 +425,65 @@ export function AdminAllUsersManagement() {
     }
   }
 
+  // Multi-select helpers
+  const toggleSelectUser = (userId: string) => {
+    setSelectedUserIds(prev => {
+      const s = new Set(prev)
+      if (s.has(userId)) s.delete(userId); else s.add(userId)
+      return s
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedUserIds.size === filteredUsers.length) {
+      setSelectedUserIds(new Set())
+    } else {
+      setSelectedUserIds(new Set(filteredUsers.map(u => u.user_id)))
+    }
+  }
+
+  const handleBulkResendCredentials = async () => {
+    if (selectedUserIds.size === 0) return
+    setBulkResending(true)
+    let successCount = 0
+    let failCount = 0
+    for (const userId of selectedUserIds) {
+      const u = users.find(usr => usr.user_id === userId)
+      if (!u) continue
+      try {
+        const { error } = await supabase.functions.invoke('create-user-with-credentials', {
+          body: { email: u.email, firstName: u.first_name || '', lastName: u.last_name || '', role: u.membership_type || 'trustee' }
+        })
+        if (error) throw error
+        successCount++
+      } catch {
+        failCount++
+      }
+    }
+    setBulkResending(false)
+    setSelectedUserIds(new Set())
+    toast({
+      title: "Bulk Resend Complete",
+      description: `Sent to ${successCount} user(s)${failCount > 0 ? `, ${failCount} failed` : ''}`
+    })
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedUserIds.size === 0) return
+    setBulkDeleting(true)
+    let successCount = 0
+    for (const userId of selectedUserIds) {
+      try {
+        const { error } = await supabase.functions.invoke('delete-user', { body: { userId } })
+        if (!error) successCount++
+      } catch {}
+    }
+    setBulkDeleting(false)
+    setSelectedUserIds(new Set())
+    fetchUsers()
+    toast({ title: "Bulk Delete Complete", description: `Deleted ${successCount} user(s)` })
+  }
+
   const handleAddProgram = () => {
     if (newProgramName.trim() && !programOptions.includes(newProgramName.trim())) {
       setProgramOptions([...programOptions, newProgramName.trim()])
@@ -653,6 +716,27 @@ export function AdminAllUsersManagement() {
                 {filteredUsers.length} of {users.length} users
               </span>
             </div>
+
+            {/* Bulk action bar */}
+            {selectedUserIds.size > 0 && (
+              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
+                <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
+                <span className="text-sm font-medium">{selectedUserIds.size} selected</span>
+                <div className="ml-auto flex gap-2">
+                  <Button size="sm" variant="outline" onClick={handleBulkResendCredentials} disabled={bulkResending}>
+                    {bulkResending ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Mail className="h-3 w-3 mr-1" />}
+                    Resend Logins
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={handleBulkDelete} disabled={bulkDeleting}>
+                    {bulkDeleting ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Trash2 className="h-3 w-3 mr-1" />}
+                    Delete
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {isLoading ? (
@@ -747,6 +831,9 @@ export function AdminAllUsersManagement() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">
+                        <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
+                      </TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
@@ -769,6 +856,9 @@ export function AdminAllUsersManagement() {
                         const packageInfo = getPackageInfo(user)
                         return (
                         <TableRow key={user.user_id}>
+                          <TableCell className="w-10">
+                            <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
+                          </TableCell>
                           <TableCell className="font-medium whitespace-nowrap">
                             {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}
                           </TableCell>

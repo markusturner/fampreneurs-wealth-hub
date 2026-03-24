@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -39,6 +40,7 @@ type MembershipTab = 'membership' | 'courses' | 'questions'
 export default function WorkspaceMembers() {
   const { user, profile } = useAuth()
   const { isAdminOrOwner } = useIsAdminOrOwner()
+  const navigate = useNavigate()
   const { toast } = useToast()
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
@@ -288,7 +290,7 @@ export default function WorkspaceMembers() {
                     <div className="flex items-center justify-between mb-1">
                       <h3 className="font-semibold text-sm sm:text-base">{member.display_name || 'Member'}</h3>
                       <div className="flex gap-1 sm:gap-2" onClick={e => e.stopPropagation()}>
-                        <Button variant="outline" size="sm" className="gap-1 h-7 sm:h-8 text-xs" onClick={() => setChatMember(member)}>
+                        <Button variant="outline" size="sm" className="gap-1 h-7 sm:h-8 text-xs" onClick={() => navigate(`/messenger?user=${member.user_id}`)}>
                           <MessageCircle className="h-3 w-3" />
                           <span className="hidden sm:inline">Chat</span>
                         </Button>
@@ -337,7 +339,7 @@ export default function WorkspaceMembers() {
                   <div className="flex items-center gap-2"><Calendar className="h-4 w-4" />Joined {formatDate(profileMember.created_at)}</div>
                 </div>
                 <div className="flex gap-2">
-                  <Button className="flex-1" variant="outline" onClick={() => { setProfileMember(null); setChatMember(profileMember) }}>
+                  <Button className="flex-1" variant="outline" onClick={() => { setProfileMember(null); navigate(`/messenger?user=${profileMember.user_id}`) }}>
                     <MessageCircle className="h-4 w-4 mr-2" /> Chat
                   </Button>
                   <Button className="flex-1" style={{ backgroundColor: '#ffb500', color: '#290a52' }} onClick={() => { setProfileMember(null); openMembership(profileMember) }}>

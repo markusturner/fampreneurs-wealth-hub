@@ -339,37 +339,40 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
               <Card className="border-primary/20 bg-primary/5">
                 <CardContent className="pt-4 space-y-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <TreePine className="h-4 w-4 text-primary" />
-                    <Label htmlFor="relationship" className="text-sm font-semibold">
-                      Family Tree Connection
+                    <Info className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-semibold">
+                      TruHeirs Page Access Permissions
                     </Label>
                   </div>
-                  <CardDescription className="text-xs flex items-start gap-2">
-                    <Info className="h-3 w-3 mt-0.5 shrink-0" />
-                    <span>
-                      This connects to the visual family tree. Use formats like: "Son of John and Mary", "Married to Sarah", "Parent of David and Lisa"
-                    </span>
+                  <CardDescription className="text-xs">
+                    Select which TruHeirs pages this family member can access.
                   </CardDescription>
-                  
                   <div className="space-y-2">
-                    <Input
-                      id="relationship"
-                      value={formData.relationshipToFamily}
-                      onChange={(e) => setFormData(prev => ({ ...prev, relationshipToFamily: e.target.value }))}
-                      placeholder="e.g., Daughter of Robert, Sister of Michael"
-                      className="bg-background"
-                    />
-                    <div className="flex flex-wrap gap-1 text-xs text-muted-foreground">
-                      <span className="px-2 py-1 rounded bg-background border border-border hover:bg-accent cursor-default">
-                        💡 Example: "Son of John"
-                      </span>
-                      <span className="px-2 py-1 rounded bg-background border border-border hover:bg-accent cursor-default">
-                        💡 "Married to Sarah"
-                      </span>
-                      <span className="px-2 py-1 rounded bg-background border border-border hover:bg-accent cursor-default">
-                        💡 "Parent of David"
-                      </span>
-                    </div>
+                    {[
+                      { key: 'dashboard', label: 'Dashboard' },
+                      { key: 'documents', label: 'Documents' },
+                      { key: 'calendar', label: 'Family Calendar' },
+                      { key: 'members', label: 'Family Members' },
+                      { key: 'governance', label: 'Family Governance' },
+                      { key: 'constitution', label: 'Family Constitution' },
+                      { key: 'investments', label: 'Investments' },
+                    ].map(page => (
+                      <label key={page.key} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="rounded border-border"
+                          checked={(formData as any).permissions?.includes(page.key) || false}
+                          onChange={(e) => {
+                            const current = (formData as any).permissions || []
+                            const updated = e.target.checked
+                              ? [...current, page.key]
+                              : current.filter((p: string) => p !== page.key)
+                            setFormData(prev => ({ ...prev, permissions: updated } as any))
+                          }}
+                        />
+                        <span className="text-sm">{page.label}</span>
+                      </label>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
