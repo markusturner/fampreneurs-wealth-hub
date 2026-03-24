@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
 import { Lock, FileText, Building2, Church, Home, Loader2, CheckCircle2, ArrowLeft, ShieldCheck } from "lucide-react"
+import { TrustDocumentsSection } from "@/components/trust/TrustDocumentsSection"
 
 type TrustType = 'business' | 'ministry' | 'family'
 
@@ -257,6 +258,8 @@ export default function TrustCreation() {
           </Card>
         </div>
       )}
+      {/* Trust Documents Section */}
+      <TrustDocumentsSection />
     </div>
   )
 }
