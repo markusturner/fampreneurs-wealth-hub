@@ -716,6 +716,27 @@ export function AdminAllUsersManagement() {
                 {filteredUsers.length} of {users.length} users
               </span>
             </div>
+
+            {/* Bulk action bar */}
+            {selectedUserIds.size > 0 && (
+              <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg border">
+                <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
+                <span className="text-sm font-medium">{selectedUserIds.size} selected</span>
+                <div className="ml-auto flex gap-2">
+                  <Button size="sm" variant="outline" onClick={handleBulkResendCredentials} disabled={bulkResending}>
+                    {bulkResending ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Mail className="h-3 w-3 mr-1" />}
+                    Resend Logins
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={handleBulkDelete} disabled={bulkDeleting}>
+                    {bulkDeleting ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Trash2 className="h-3 w-3 mr-1" />}
+                    Delete
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setSelectedUserIds(new Set())}>
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {isLoading ? (
