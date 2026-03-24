@@ -40,6 +40,7 @@ type MembershipTab = 'membership' | 'courses' | 'questions'
 export default function WorkspaceMembers() {
   const { user, profile } = useAuth()
   const { isAdminOrOwner } = useIsAdminOrOwner()
+  const navigate = useNavigate()
   const { toast } = useToast()
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
