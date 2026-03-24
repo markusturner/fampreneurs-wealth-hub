@@ -856,6 +856,9 @@ export function AdminAllUsersManagement() {
                         const packageInfo = getPackageInfo(user)
                         return (
                         <TableRow key={user.user_id}>
+                          <TableCell className="w-10">
+                            <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
+                          </TableCell>
                           <TableCell className="font-medium whitespace-nowrap">
                             {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}
                           </TableCell>
