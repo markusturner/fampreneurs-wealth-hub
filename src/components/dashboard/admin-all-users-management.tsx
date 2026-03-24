@@ -425,7 +425,65 @@ export function AdminAllUsersManagement() {
     }
   }
 
-  const handleAddProgram = () => {
+  // Multi-select helpers
+  const toggleSelectUser = (userId: string) => {
+    setSelectedUserIds(prev => {
+      const s = new Set(prev)
+      if (s.has(userId)) s.delete(userId); else s.add(userId)
+      return s
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedUserIds.size === filteredUsers.length) {
+      setSelectedUserIds(new Set())
+    } else {
+      setSelectedUserIds(new Set(filteredUsers.map(u => u.user_id)))
+    }
+  }
+
+  const handleBulkResendCredentials = async () => {
+    if (selectedUserIds.size === 0) return
+    setBulkResending(true)
+    let successCount = 0
+    let failCount = 0
+    for (const userId of selectedUserIds) {
+      const u = users.find(usr => usr.user_id === userId)
+      if (!u) continue
+      try {
+        const { error } = await supabase.functions.invoke('create-user-with-credentials', {
+          body: { email: u.email, firstName: u.first_name || '', lastName: u.last_name || '', role: u.membership_type || 'trustee' }
+        })
+        if (error) throw error
+        successCount++
+      } catch {
+        failCount++
+      }
+    }
+    setBulkResending(false)
+    setSelectedUserIds(new Set())
+    toast({
+      title: "Bulk Resend Complete",
+      description: `Sent to ${successCount} user(s)${failCount > 0 ? `, ${failCount} failed` : ''}`
+    })
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedUserIds.size === 0) return
+    setBulkDeleting(true)
+    let successCount = 0
+    for (const userId of selectedUserIds) {
+      try {
+        const { error } = await supabase.functions.invoke('delete-user', { body: { userId } })
+        if (!error) successCount++
+      } catch {}
+    }
+    setBulkDeleting(false)
+    setSelectedUserIds(new Set())
+    fetchUsers()
+    toast({ title: "Bulk Delete Complete", description: `Deleted ${successCount} user(s)` })
+  }
+
     if (newProgramName.trim() && !programOptions.includes(newProgramName.trim())) {
       setProgramOptions([...programOptions, newProgramName.trim()])
       setNewProgramName('')
