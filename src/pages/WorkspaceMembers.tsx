@@ -288,7 +288,7 @@ export default function WorkspaceMembers() {
                     <div className="flex items-center justify-between mb-1">
                       <h3 className="font-semibold text-sm sm:text-base">{member.display_name || 'Member'}</h3>
                       <div className="flex gap-1 sm:gap-2" onClick={e => e.stopPropagation()}>
-                        <Button variant="outline" size="sm" className="gap-1 h-7 sm:h-8 text-xs" onClick={() => setChatMember(member)}>
+                        <Button variant="outline" size="sm" className="gap-1 h-7 sm:h-8 text-xs" onClick={() => navigate(`/messenger?user=${member.user_id}`)}>
                           <MessageCircle className="h-3 w-3" />
                           <span className="hidden sm:inline">Chat</span>
                         </Button>
