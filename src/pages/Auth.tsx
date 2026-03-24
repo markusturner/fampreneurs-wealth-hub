@@ -95,9 +95,12 @@ export default function Auth() {
       })
 
       if (error) {
+        const friendlyMessage = error.message === "Invalid login credentials"
+          ? "Incorrect email or password. If your credentials were recently resent, please check your latest email for the updated password."
+          : error.message;
         toast({
           title: "Sign in failed",
-          description: error.message,
+          description: friendlyMessage,
           variant: "destructive",
         })
         return
