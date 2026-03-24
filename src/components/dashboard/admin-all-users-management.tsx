@@ -81,6 +81,9 @@ export function AdminAllUsersManagement() {
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
   const [resendingCredentialsId, setResendingCredentialsId] = useState<string | null>(null)
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
+  const [bulkResending, setBulkResending] = useState(false)
+  const [bulkDeleting, setBulkDeleting] = useState(false)
   const [programOptions, setProgramOptions] = useState<string[]>([
     'The Family Business University',
     'The Family Vault',
