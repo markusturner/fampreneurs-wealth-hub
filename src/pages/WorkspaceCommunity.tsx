@@ -106,10 +106,27 @@ export default function WorkspaceCommunity() {
   const { subscriptionStatus, createCheckout } = useSubscription()
   const { isAdmin } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const program = searchParams.get('program') || ''
+  const postParam = searchParams.get('post') || ''
   const programName = PROGRAM_NAMES[program] || 'Community'
   const programDesc = PROGRAM_DESCRIPTIONS[program] || ''
+
+  // If we have a post param but no program, look up the post's program and redirect
+  useEffect(() => {
+    if (postParam && !program) {
+      supabase
+        .from('community_posts')
+        .select('program')
+        .eq('id', postParam)
+        .single()
+        .then(({ data }) => {
+          if (data?.program) {
+            setSearchParams({ program: data.program }, { replace: true })
+          }
+        })
+    }
+  }, [postParam, program])
   const [newPost, setNewPost] = useState('')
   const [postToAll, setPostToAll] = useState(false)
   const [postCategory, setPostCategory] = useState('discussion')
@@ -632,8 +649,18 @@ export default function WorkspaceCommunity() {
     setMobilePostOpen(false)
   }
 
-  // If no program selected, show a prompt to select one
+  // If no program selected, show loading if resolving from post param, otherwise prompt
   if (!program) {
+    if (postParam) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-muted-foreground text-sm">Loading community...</p>
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-3">
