@@ -108,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
         type: 'recovery',
         email: email,
         options: {
-          redirectTo: `${frontendUrl}/auth`
+          redirectTo: `${frontendUrl}/auth/family`
         }
       });
 
