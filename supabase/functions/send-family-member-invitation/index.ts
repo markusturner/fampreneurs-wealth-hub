@@ -167,7 +167,7 @@ const handler = async (req: Request): Promise<Response> => {
         to: email,
         subject: `You're invited to join Fampreneurs Family Office, ${firstName}`,
         
-        text: `Dear ${fullName},\n\n${inviterName} invited you to join as ${familyPosition}.\n\nEmail: ${email}\nTemporary password: ${tempPassword}${familyCode ? `\nFamily Secret Code: ${familyCode}` : ''}\n\nSign in: ${frontendUrl}/auth\n\nFor security, change your password after first login.`,
+        text: `Dear ${fullName},\n\n${inviterName} invited you to join as ${familyPosition}.\n\nEmail: ${email}\nTemporary password: ${tempPassword}${familyCode ? `\nFamily Secret Code: ${familyCode}` : ''}\n\nSign in: ${frontendUrl}/auth/family\n\nFor security, change your password after first login.`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 16px; color:#222;">
             <p>Dear ${fullName},</p>
