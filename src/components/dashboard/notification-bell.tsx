@@ -63,7 +63,8 @@ export function NotificationBell() {
     } else if (notification.notification_type === 'meeting_scheduled') {
       window.location.href = '/workspace-calendar'
     } else if (notification.notification_type === 'community_post') {
-      window.location.href = `/workspace-community?post=${notification.reference_id || ''}`
+      const program = notification.reference_id ? postProgramCache.current[notification.reference_id] : ''
+      window.location.href = `/workspace-community${program ? `?program=${program}` : ''}`
     } else if (notification.notification_type === 'course_created') {
       window.location.href = '/classroom'
     } else if (notification.notification_type === 'new_member') {
