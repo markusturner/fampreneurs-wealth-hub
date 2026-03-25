@@ -12,6 +12,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 // Landing page removed - auth is the default
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
+import AuthFamily from "./pages/AuthFamily";
+import AuthTrustee from "./pages/AuthTrustee";
 import SignUp from "./pages/SignUp";
 import ThankYou from "./pages/ThankYou";
 import Community from "./pages/Community";
