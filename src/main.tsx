@@ -99,7 +99,6 @@ function AppWithNotifications() {
         <Route path="/" element={<Auth />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/family" element={<AuthFamily />} />
-        <Route path="/auth/trustee" element={<AuthTrustee />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/thank-you" element={<ThankYou />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
