@@ -106,10 +106,27 @@ export default function WorkspaceCommunity() {
   const { subscriptionStatus, createCheckout } = useSubscription()
   const { isAdmin } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const program = searchParams.get('program') || ''
+  const postParam = searchParams.get('post') || ''
   const programName = PROGRAM_NAMES[program] || 'Community'
   const programDesc = PROGRAM_DESCRIPTIONS[program] || ''
+
+  // If we have a post param but no program, look up the post's program and redirect
+  useEffect(() => {
+    if (postParam && !program) {
+      supabase
+        .from('community_posts')
+        .select('program')
+        .eq('id', postParam)
+        .single()
+        .then(({ data }) => {
+          if (data?.program) {
+            setSearchParams({ program: data.program }, { replace: true })
+          }
+        })
+    }
+  }, [postParam, program])
   const [newPost, setNewPost] = useState('')
   const [postToAll, setPostToAll] = useState(false)
   const [postCategory, setPostCategory] = useState('discussion')
