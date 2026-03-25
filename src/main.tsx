@@ -13,7 +13,6 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import AuthFamily from "./pages/AuthFamily";
-import AuthTrustee from "./pages/AuthTrustee";
 import SignUp from "./pages/SignUp";
 import ThankYou from "./pages/ThankYou";
 import Community from "./pages/Community";
@@ -99,7 +98,6 @@ function AppWithNotifications() {
         <Route path="/" element={<Auth />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/family" element={<AuthFamily />} />
-        <Route path="/auth/trustee" element={<AuthTrustee />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/thank-you" element={<ThankYou />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />

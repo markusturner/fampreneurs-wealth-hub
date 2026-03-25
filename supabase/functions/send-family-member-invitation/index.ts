@@ -108,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
         type: 'recovery',
         email: email,
         options: {
-          redirectTo: `${frontendUrl}/auth`
+          redirectTo: `${frontendUrl}/auth/family`
         }
       });
 
@@ -167,14 +167,14 @@ const handler = async (req: Request): Promise<Response> => {
         to: email,
         subject: `You're invited to join Fampreneurs Family Office, ${firstName}`,
         
-        text: `Dear ${fullName},\n\n${inviterName} invited you to join as ${familyPosition}.\n\nEmail: ${email}\nTemporary password: ${tempPassword}${familyCode ? `\nFamily Secret Code: ${familyCode}` : ''}\n\nSign in: ${frontendUrl}/auth\n\nFor security, change your password after first login.`,
+        text: `Dear ${fullName},\n\n${inviterName} invited you to join as ${familyPosition}.\n\nEmail: ${email}\nTemporary password: ${tempPassword}${familyCode ? `\nFamily Secret Code: ${familyCode}` : ''}\n\nSign in: ${frontendUrl}/auth/family\n\nFor security, change your password after first login.`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 560px; margin: 0 auto; padding: 16px; color:#222;">
             <p>Dear ${fullName},</p>
             <p><strong>${inviterName}</strong> invited you to join the family office platform as a <strong>${familyPosition}</strong>.</p>
             <p><strong>Email:</strong> ${email}<br/><strong>Temporary Password:</strong> <code style="background:#f2f4f7; padding:2px 6px; border-radius:4px;">${tempPassword}</code>${familyCode ? `<br/><strong>Family Secret Code:</strong> <code style="background:#f2f4f7; padding:2px 6px; border-radius:4px;">${familyCode}</code>` : ''}</p>
             <p>
-              <a href="${frontendUrl}/auth" style="display:inline-block; background:#ffb500; color:#290a52; padding:10px 16px; text-decoration:none; border-radius:6px; font-weight:bold;">Sign in</a>
+              <a href="${frontendUrl}/auth/family" style="display:inline-block; background:#ffb500; color:#290a52; padding:10px 16px; text-decoration:none; border-radius:6px; font-weight:bold;">Sign in</a>
             </p>
             <p style="margin-top:12px;">For security, please change your password after your first login.</p>
           </div>
