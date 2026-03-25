@@ -14,7 +14,6 @@ import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import AuthFamily from "./pages/AuthFamily";
 import SignUp from "./pages/SignUp";
-import SignUp from "./pages/SignUp";
 import ThankYou from "./pages/ThankYou";
 import Community from "./pages/Community";
 import Courses from "./pages/Courses";
