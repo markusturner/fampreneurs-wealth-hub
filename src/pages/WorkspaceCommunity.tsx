@@ -649,8 +649,18 @@ export default function WorkspaceCommunity() {
     setMobilePostOpen(false)
   }
 
-  // If no program selected, show a prompt to select one
+  // If no program selected, show loading if resolving from post param, otherwise prompt
   if (!program) {
+    if (postParam) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center space-y-3">
+            <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-muted-foreground text-sm">Loading community...</p>
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-3">
