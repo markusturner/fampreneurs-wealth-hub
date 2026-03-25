@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
 import { Bell, Video } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -43,7 +44,18 @@ export function NotificationBell() {
     } else if (notification.notification_type === 'meeting_scheduled') {
       window.location.href = '/workspace-calendar'
     } else if (notification.notification_type === 'community_post') {
-      window.location.href = '/workspace-community'
+      // Look up the post's program to route correctly
+      if (notification.reference_id) {
+        const { data: post } = await supabase
+          .from('community_posts')
+          .select('program')
+          .eq('id', notification.reference_id)
+          .single()
+        const programKey = post?.program || ''
+        window.location.href = `/workspace-community${programKey ? `?program=${programKey}` : ''}`
+      } else {
+        window.location.href = '/workspace-community'
+      }
     } else if (notification.notification_type === 'course_created') {
       window.location.href = '/classroom'
     } else if (notification.notification_type === 'new_member') {
