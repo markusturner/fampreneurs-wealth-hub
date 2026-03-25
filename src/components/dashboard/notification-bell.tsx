@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { Bell, Video } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,25 @@ export function NotificationBell() {
   const [tutorialVideoOpen, setTutorialVideoOpen] = useState(false)
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications()
   const { user } = useAuth()
+  const postProgramCache = useRef<Record<string, string>>({})
+
+  // Pre-fetch programs for all community_post notifications so clicks are instant
+  useEffect(() => {
+    const communityNotifs = notifications.filter(
+      n => n.notification_type === 'community_post' && n.reference_id && !postProgramCache.current[n.reference_id]
+    )
+    if (communityNotifs.length === 0) return
+    const postIds = communityNotifs.map(n => n.reference_id!).filter(Boolean)
+    supabase
+      .from('community_posts')
+      .select('id, program')
+      .in('id', postIds)
+      .then(({ data }) => {
+        data?.forEach(p => {
+          if (p.program) postProgramCache.current[p.id] = p.program
+        })
+      })
+  }, [notifications])
 
   const handleNotificationClick = async (notification: any) => {
     // Mark as read if not already read
