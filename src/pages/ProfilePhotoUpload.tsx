@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
@@ -9,12 +9,19 @@ import { Input } from '@/components/ui/input'
 import { Upload, User } from 'lucide-react'
 
 export default function ProfilePhotoUploadPage() {
-  const { user, profile, refreshProfile } = useAuth()
+  const { user, profile, loading: authLoading, refreshProfile } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
   const [uploading, setUploading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+
+  // If profile photo already uploaded, skip to community
+  useEffect(() => {
+    if (!authLoading && user && profile?.profile_photo_uploaded) {
+      window.location.href = '/community'
+    }
+  }, [authLoading, user, profile])
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
