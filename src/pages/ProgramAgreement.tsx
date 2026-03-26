@@ -503,7 +503,7 @@ export default function ProgramAgreement() {
   }, [agreementText, authLoading, roleLoading, isAdminOrOwner, profile, navigate])
 
   // Loading state
-  if (authLoading || roleLoading || (!!user && !isAdminOrOwner && !profile)) {
+  if (authLoading || roleLoading || agreementLoading || (!!user && !isAdminOrOwner && !profile)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
@@ -512,6 +512,7 @@ export default function ProgramAgreement() {
   }
 
   if (isAdminOrOwner) return null
+  if (!needsAgreement || agreementSigned) return null
   if (!agreementText) return null
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
