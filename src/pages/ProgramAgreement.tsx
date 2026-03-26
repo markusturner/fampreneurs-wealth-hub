@@ -440,6 +440,7 @@ function getAgreementKey(programName: string | null | undefined): string | null 
 export default function ProgramAgreement() {
   const { user, profile, loading: authLoading } = useAuth()
   const { isAdminOrOwner, isLoading: roleLoading } = useIsAdminOrOwner()
+  const { signed: agreementSigned, loading: agreementLoading, needsAgreement } = useAgreementStatus()
   const navigate = useNavigate()
   const { toast } = useToast()
   const [submitting, setSubmitting] = useState(false)
@@ -459,6 +460,20 @@ export default function ProgramAgreement() {
       navigate('/dashboard')
     }
   }, [authLoading, roleLoading, isAdminOrOwner, navigate])
+
+  // If agreement already signed, skip to profile photo (or community)
+  useEffect(() => {
+    if (!authLoading && !roleLoading && !agreementLoading && user && !isAdminOrOwner && profile) {
+      if (!needsAgreement || agreementSigned) {
+        // Agreement done or not needed — go to profile photo if needed, else community
+        if (!profile.profile_photo_uploaded) {
+          navigate('/profile-photo')
+        } else {
+          window.location.href = '/community'
+        }
+      }
+    }
+  }, [authLoading, roleLoading, agreementLoading, user, isAdminOrOwner, profile, needsAgreement, agreementSigned, navigate])
 
   const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ')
   const address = profile?.mailing_address || [
