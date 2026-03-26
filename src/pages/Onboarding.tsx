@@ -88,6 +88,7 @@ export default function Onboarding() {
   const { user, loading: authLoading, refreshProfile } = useAuth()
   
   const { isAdminOrOwner, isLoading: roleLoading } = useIsAdminOrOwner()
+  const { completed: onboardingCompleted, loading: onboardingLoading } = useOnboardingStatus()
   const navigate = useNavigate()
   const { toast } = useToast()
   const [step, setStep] = useState(0)
