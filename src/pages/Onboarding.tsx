@@ -146,7 +146,7 @@ export default function Onboarding() {
     }
   }, [authLoading, onboardingLoading, roleLoading, user, isAdminOrOwner, onboardingCompleted, navigate])
 
-  if (authLoading || roleLoading) {
+  if (authLoading || roleLoading || onboardingLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
@@ -154,7 +154,7 @@ export default function Onboarding() {
     )
   }
 
-  if (!user || isAdminOrOwner) return null
+  if (!user || isAdminOrOwner || onboardingCompleted) return null
 
   const set = (field: keyof FormData, value: string) =>
     setForm(prev => ({ ...prev, [field]: value }))
