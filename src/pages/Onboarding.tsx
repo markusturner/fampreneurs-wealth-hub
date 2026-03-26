@@ -138,6 +138,14 @@ export default function Onboarding() {
     }
   }, [authLoading, roleLoading, isAdminOrOwner, user, navigate])
 
+  // If onboarding is already completed, skip to the next step in the funnel
+  useEffect(() => {
+    if (!authLoading && !onboardingLoading && !roleLoading && user && !isAdminOrOwner && onboardingCompleted) {
+      // Onboarding already done — redirect to agreement (AppLayout will handle further routing)
+      navigate('/program-agreement')
+    }
+  }, [authLoading, onboardingLoading, roleLoading, user, isAdminOrOwner, onboardingCompleted, navigate])
+
   if (authLoading || roleLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
