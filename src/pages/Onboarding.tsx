@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
+import { useOnboardingStatus } from '@/hooks/useOnboardingStatus'
 
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -88,6 +89,7 @@ export default function Onboarding() {
   const { user, loading: authLoading, refreshProfile } = useAuth()
   
   const { isAdminOrOwner, isLoading: roleLoading } = useIsAdminOrOwner()
+  const { completed: onboardingCompleted, loading: onboardingLoading } = useOnboardingStatus()
   const navigate = useNavigate()
   const { toast } = useToast()
   const [step, setStep] = useState(0)
@@ -136,7 +138,15 @@ export default function Onboarding() {
     }
   }, [authLoading, roleLoading, isAdminOrOwner, user, navigate])
 
-  if (authLoading || roleLoading) {
+  // If onboarding is already completed, skip to the next step in the funnel
+  useEffect(() => {
+    if (!authLoading && !onboardingLoading && !roleLoading && user && !isAdminOrOwner && onboardingCompleted) {
+      // Onboarding already done — redirect to agreement (AppLayout will handle further routing)
+      navigate('/program-agreement')
+    }
+  }, [authLoading, onboardingLoading, roleLoading, user, isAdminOrOwner, onboardingCompleted, navigate])
+
+  if (authLoading || roleLoading || onboardingLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
@@ -144,7 +154,7 @@ export default function Onboarding() {
     )
   }
 
-  if (!user || isAdminOrOwner) return null
+  if (!user || isAdminOrOwner || onboardingCompleted) return null
 
   const set = (field: keyof FormData, value: string) =>
     setForm(prev => ({ ...prev, [field]: value }))
