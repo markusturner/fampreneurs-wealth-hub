@@ -885,6 +885,37 @@ export function AdminAllUsersManagement() {
                           <TableCell className="font-medium whitespace-nowrap">
                             {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}
                           </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {editingPhoneUserId === user.user_id ? (
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  value={editingPhoneValue}
+                                  onChange={(e) => setEditingPhoneValue(e.target.value)}
+                                  placeholder="Enter phone"
+                                  className="h-7 w-32 text-xs"
+                                  onKeyDown={(e) => e.key === 'Enter' && handleSaveInlinePhone(user.user_id)}
+                                />
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlinePhone(user.user_id)} disabled={savingPhone}>
+                                  {savingPhone ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingPhoneUserId(null)}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : user.phone ? (
+                              <span className="text-sm">{user.phone}</span>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 text-xs text-muted-foreground"
+                                onClick={() => { setEditingPhoneUserId(user.user_id); setEditingPhoneValue('') }}
+                              >
+                                <Phone className="h-3 w-3 mr-1" />
+                                Add
+                              </Button>
+                            )}
+                          </TableCell>
                           <TableCell className="whitespace-nowrap">{user.email}</TableCell>
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
