@@ -783,6 +783,37 @@ export function AdminAllUsersManagement() {
                         <span className="text-right break-all text-xs">{mobileSelectedUser.email}</span>
                       </div>
                       <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Phone</span>
+                        {editingPhoneUserId === mobileSelectedUser.user_id ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              value={editingPhoneValue}
+                              onChange={(e) => setEditingPhoneValue(e.target.value)}
+                              placeholder="Enter phone"
+                              className="h-7 w-32 text-xs"
+                              onKeyDown={(e) => e.key === 'Enter' && handleSaveInlinePhone(mobileSelectedUser.user_id)}
+                            />
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlinePhone(mobileSelectedUser.user_id)} disabled={savingPhone}>
+                              {savingPhone ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingPhoneUserId(null)}>
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ) : mobileSelectedUser.phone ? (
+                          <span className="text-right text-xs">{mobileSelectedUser.phone}</span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-muted-foreground"
+                            onClick={() => { setEditingPhoneUserId(mobileSelectedUser.user_id); setEditingPhoneValue('') }}
+                          >
+                            <Phone className="h-3 w-3 mr-1" />
+                            Add
+                          </Button>
+                        )}
+                      <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Role</span>
                         <div className="flex gap-1 flex-wrap justify-end">{getRoleBadges(mobileSelectedUser)}</div>
                       </div>
