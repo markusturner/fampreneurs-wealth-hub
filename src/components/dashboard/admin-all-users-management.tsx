@@ -526,7 +526,26 @@ export function AdminAllUsersManagement() {
     })
   }
 
-  const syncStripeSubscriptions = async () => {
+  const handleSaveInlinePhone = async (userId: string) => {
+    setSavingPhone(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ phone: editingPhoneValue })
+        .eq('user_id', userId)
+      if (error) throw error
+      toast({ title: 'Phone Updated', description: 'Phone number saved successfully' })
+      setEditingPhoneUserId(null)
+      setEditingPhoneValue('')
+      await fetchUsers()
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to save phone', variant: 'destructive' })
+    } finally {
+      setSavingPhone(false)
+    }
+  }
+
+
     setSyncingStripe(true)
     try {
       const { data, error } = await supabase.functions.invoke('admin-sync-stripe')
