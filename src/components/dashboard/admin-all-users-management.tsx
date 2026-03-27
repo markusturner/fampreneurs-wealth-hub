@@ -812,6 +812,7 @@ export function AdminAllUsersManagement() {
                             <Phone className="h-3 w-3 mr-1" />
                             Add
                           </Button>
+                        )}
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Role</span>
