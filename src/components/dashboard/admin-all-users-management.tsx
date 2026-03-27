@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Badge } from '@/components/ui/badge'
@@ -96,6 +96,9 @@ export function AdminAllUsersManagement() {
   const [newProgramName, setNewProgramName] = useState('')
   const [editingProgramIndex, setEditingProgramIndex] = useState<number | null>(null)
   const [editingProgramValue, setEditingProgramValue] = useState('')
+  const [editingPhoneUserId, setEditingPhoneUserId] = useState<string | null>(null)
+  const [editingPhoneValue, setEditingPhoneValue] = useState('')
+  const [savingPhone, setSavingPhone] = useState(false)
   const { toast } = useToast()
 
   const syncStripeData = async (silent = false) => {
@@ -523,6 +526,26 @@ export function AdminAllUsersManagement() {
     })
   }
 
+  const handleSaveInlinePhone = async (userId: string) => {
+    setSavingPhone(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ phone: editingPhoneValue })
+        .eq('user_id', userId)
+      if (error) throw error
+      toast({ title: 'Phone Updated', description: 'Phone number saved successfully' })
+      setEditingPhoneUserId(null)
+      setEditingPhoneValue('')
+      await fetchUsers()
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to save phone', variant: 'destructive' })
+    } finally {
+      setSavingPhone(false)
+    }
+  }
+
+
   const syncStripeSubscriptions = async () => {
     setSyncingStripe(true)
     try {
@@ -761,6 +784,38 @@ export function AdminAllUsersManagement() {
                         <span className="text-right break-all text-xs">{mobileSelectedUser.email}</span>
                       </div>
                       <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Phone</span>
+                        {editingPhoneUserId === mobileSelectedUser.user_id ? (
+                          <div className="flex items-center gap-1">
+                            <Input
+                              value={editingPhoneValue}
+                              onChange={(e) => setEditingPhoneValue(e.target.value)}
+                              placeholder="Enter phone"
+                              className="h-7 w-32 text-xs"
+                              onKeyDown={(e) => e.key === 'Enter' && handleSaveInlinePhone(mobileSelectedUser.user_id)}
+                            />
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlinePhone(mobileSelectedUser.user_id)} disabled={savingPhone}>
+                              {savingPhone ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingPhoneUserId(null)}>
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ) : mobileSelectedUser.phone ? (
+                          <span className="text-right text-xs">{mobileSelectedUser.phone}</span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-muted-foreground"
+                            onClick={() => { setEditingPhoneUserId(mobileSelectedUser.user_id); setEditingPhoneValue('') }}
+                          >
+                            <Phone className="h-3 w-3 mr-1" />
+                            Add
+                          </Button>
+                        )}
+                      </div>
+                      <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Role</span>
                         <div className="flex gap-1 flex-wrap justify-end">{getRoleBadges(mobileSelectedUser)}</div>
                       </div>
@@ -827,7 +882,7 @@ export function AdminAllUsersManagement() {
             ) : (
             <div className="border rounded-lg overflow-x-auto">
               <ScrollArea className="h-[500px]">
-                <div className="min-w-[900px]">
+                <div className="min-w-[1050px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -835,6 +890,7 @@ export function AdminAllUsersManagement() {
                         <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
                       </TableHead>
                       <TableHead>Name</TableHead>
+                      <TableHead>Phone</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>TruHeirs</TableHead>
@@ -847,7 +903,7 @@ export function AdminAllUsersManagement() {
                   <TableBody>
                     {filteredUsers.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                        <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                           No users found
                         </TableCell>
                       </TableRow>
@@ -861,6 +917,37 @@ export function AdminAllUsersManagement() {
                           </TableCell>
                           <TableCell className="font-medium whitespace-nowrap">
                             {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            {editingPhoneUserId === user.user_id ? (
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  value={editingPhoneValue}
+                                  onChange={(e) => setEditingPhoneValue(e.target.value)}
+                                  placeholder="Enter phone"
+                                  className="h-7 w-32 text-xs"
+                                  onKeyDown={(e) => e.key === 'Enter' && handleSaveInlinePhone(user.user_id)}
+                                />
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlinePhone(user.user_id)} disabled={savingPhone}>
+                                  {savingPhone ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingPhoneUserId(null)}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : user.phone ? (
+                              <span className="text-sm">{user.phone}</span>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 text-xs text-muted-foreground"
+                                onClick={() => { setEditingPhoneUserId(user.user_id); setEditingPhoneValue('') }}
+                              >
+                                <Phone className="h-3 w-3 mr-1" />
+                                Add
+                              </Button>
+                            )}
                           </TableCell>
                           <TableCell className="whitespace-nowrap">{user.email}</TableCell>
                           <TableCell>
