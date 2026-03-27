@@ -881,7 +881,7 @@ export function AdminAllUsersManagement() {
             ) : (
             <div className="border rounded-lg overflow-x-auto">
               <ScrollArea className="h-[500px]">
-                <div className="min-w-[900px]">
+                <div className="min-w-[1050px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
