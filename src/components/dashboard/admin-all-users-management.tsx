@@ -546,6 +546,7 @@ export function AdminAllUsersManagement() {
   }
 
 
+  const syncStripeSubscriptions = async () => {
     setSyncingStripe(true)
     try {
       const { data, error } = await supabase.functions.invoke('admin-sync-stripe')
