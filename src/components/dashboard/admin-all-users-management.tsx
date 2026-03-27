@@ -96,6 +96,9 @@ export function AdminAllUsersManagement() {
   const [newProgramName, setNewProgramName] = useState('')
   const [editingProgramIndex, setEditingProgramIndex] = useState<number | null>(null)
   const [editingProgramValue, setEditingProgramValue] = useState('')
+  const [editingPhoneUserId, setEditingPhoneUserId] = useState<string | null>(null)
+  const [editingPhoneValue, setEditingPhoneValue] = useState('')
+  const [savingPhone, setSavingPhone] = useState(false)
   const { toast } = useToast()
 
   const syncStripeData = async (silent = false) => {
