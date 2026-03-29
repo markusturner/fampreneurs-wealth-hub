@@ -121,9 +121,6 @@ const SEARCH_SUGGESTIONS = [
   { label: 'Messenger', path: '/messenger', requiresSubscription: false },
   { label: 'Profile Settings', path: '/profile-settings', requiresSubscription: false },
   { label: 'Admin Settings', path: '/admin-settings', requiresAdmin: true },
-  { label: 'Onboarding Form', path: '/onboarding-submissions', requiresAdmin: true },
-  { label: 'Program Agreements', path: '/program-agreements', requiresAdmin: true },
-  { label: 'Trust Forms', path: '/trust-form-submissions', requiresAdmin: true },
 ]
 
 export function AppSidebar({ className }: { className?: string }) {
