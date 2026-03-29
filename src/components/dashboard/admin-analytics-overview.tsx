@@ -1,21 +1,28 @@
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { Loader2, TrendingUp, DollarSign, Users, BarChart3 } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface MetricCardProps {
   title: string
   value: string | number
   subtitle: string
+  icon?: React.ReactNode
+  highlight?: boolean
 }
 
-function MetricCard({ title, value, subtitle }: MetricCardProps) {
+function MetricCard({ title, value, subtitle, icon, highlight }: MetricCardProps) {
   return (
-    <Card className="bg-card/50 backdrop-blur">
+    <Card className={highlight ? 'border-[#ffb500]/40 bg-[#ffb500]/5' : 'bg-card/50 backdrop-blur'}>
       <CardContent className="pt-6">
-        <div className="text-center space-y-2">
-          <div className="text-4xl md:text-5xl font-bold">{value}</div>
-          <div className="text-sm text-muted-foreground">{title}</div>
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{title}</p>
+            <div className="text-2xl md:text-3xl font-bold">{value}</div>
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
+          </div>
+          {icon && <div className="p-2 rounded-lg bg-muted/50">{icon}</div>}
         </div>
       </CardContent>
     </Card>
@@ -23,28 +30,36 @@ function MetricCard({ title, value, subtitle }: MetricCardProps) {
 }
 
 interface SubscriptionMetrics {
+  totalMembers: number
   paidMembers: number
   mrr: number
   mrrTruheirs: number
   mrrProgram: number
+  ltgp: number
   churn: number
   signups: number
   conversionRate: number
   trialsInProgress: number
   trialConversionRate: number
+  truheirdPaidCount: number
+  programPaidCount: number
 }
 
 export function AdminAnalyticsOverview() {
   const [metrics, setMetrics] = useState<SubscriptionMetrics>({
+    totalMembers: 0,
     paidMembers: 0,
     mrr: 0,
     mrrTruheirs: 0,
     mrrProgram: 0,
+    ltgp: 0,
     churn: 0,
     signups: 0,
     conversionRate: 0,
     trialsInProgress: 0,
-    trialConversionRate: 0
+    trialConversionRate: 0,
+    truheirdPaidCount: 0,
+    programPaidCount: 0,
   })
   const [loading, setLoading] = useState(true)
   const [landingPageVisitors, setLandingPageVisitors] = useState(0)
@@ -57,11 +72,10 @@ export function AdminAnalyticsOverview() {
     try {
       setLoading(true)
 
-      // Fetch landing page views from last 30 days
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
       
-      const { count: pageViewsCount, error: pageViewsError } = await supabase
+      const { count: pageViewsCount } = await supabase
         .from('page_views')
         .select('*', { count: 'exact', head: true })
         .gte('created_at', thirtyDaysAgo.toISOString())
@@ -69,28 +83,18 @@ export function AdminAnalyticsOverview() {
 
       const visitors = pageViewsCount || 0
       setLandingPageVisitors(visitors)
-      
-      if (pageViewsError) {
-        console.error('Error fetching page views:', pageViewsError)
-      }
 
-      // Get all subscribers
       const { data: subscribers } = await supabase
         .from('subscribers')
         .select('*')
 
-      // Get all profiles to calculate metrics
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, membership_type, created_at, program_name, truheirs_access')
 
-      const totalUsers = profiles?.length || 0
-
-      // Calculate paid members (subscribed = true)
+      const totalMembers = profiles?.length || 0
       const paidMembers = subscribers?.filter(s => s.subscribed === true).length || 0
 
-      // Calculate MRR based on subscription tiers
-      // Starter: $97/month, Professional: $247/quarter, Enterprise: $897/annual
       const calcMrrForSub = (sub: any) => {
         const tier = sub.subscription_tier
         if (tier === 'Starter') return 97
@@ -102,24 +106,31 @@ export function AdminAnalyticsOverview() {
       const activeSubs = subscribers?.filter(s => s.subscribed === true) || []
       const mrr = activeSubs.reduce((sum, sub) => sum + calcMrrForSub(sub), 0)
 
-      // Calculate TruHeirs MRR vs Program MRR
-      // TruHeirs: users with truheirs_access, Program: users with program_name
       let mrrTruheirs = 0
       let mrrProgram = 0
+      let truheirdPaidCount = 0
+      let programPaidCount = 0
+      
       for (const sub of activeSubs) {
         const userProfile = profiles?.find(p => p.user_id === sub.user_id)
         const amount = calcMrrForSub(sub)
-        if (userProfile?.truheirs_access) mrrTruheirs += amount
-        if (userProfile?.program_name) mrrProgram += amount
+        if (userProfile?.truheirs_access) {
+          mrrTruheirs += amount
+          truheirdPaidCount++
+        }
+        if (userProfile?.program_name) {
+          mrrProgram += amount
+          programPaidCount++
+        }
       }
 
+      // LTGP = Lifetime Gross Profit (annualized MRR)
+      const ltgp = mrr * 12
 
-      // Calculate trials in progress (users who have trial_days_remaining > 0)
       const trialsInProgress = subscribers?.filter(s => 
         s.trial_days_remaining && s.trial_days_remaining > 0 && !s.subscribed
       ).length || 0
 
-      // Calculate churn (cancelled in last 30 days)
       const cancelledLast30Days = subscribers?.filter(s => {
         if (!s.subscription_end) return false
         const endDate = new Date(s.subscription_end)
@@ -127,43 +138,37 @@ export function AdminAnalyticsOverview() {
       }).length || 0
       
       const totalSubscribersStart = paidMembers + cancelledLast30Days
-      const churn = totalSubscribersStart > 0 
-        ? (cancelledLast30Days / totalSubscribersStart) * 100 
-        : 0
+      const churn = totalSubscribersStart > 0 ? (cancelledLast30Days / totalSubscribersStart) * 100 : 0
 
-      // Calculate paid signups in last 30 days (only users who became paid members)
       const paidSignups = profiles?.filter(p => {
         const createdAt = new Date(p.created_at)
         if (createdAt < thirtyDaysAgo) return false
         return subscribers?.some(s => s.user_id === p.user_id && s.subscribed)
       }).length || 0
 
-      // Calculate conversion rate (paid signups / landing page visitors)
-      const conversionRate = visitors > 0 
-        ? (paidSignups / visitors) * 100 
-        : 0
+      const conversionRate = visitors > 0 ? (paidSignups / visitors) * 100 : 0
 
-      // Calculate trial conversion rate (users who converted from trial to paid)
       const convertedFromTrial = subscribers?.filter(s => 
-        s.subscribed && s.trial_end_date && 
-        new Date(s.trial_end_date) >= thirtyDaysAgo
+        s.subscribed && s.trial_end_date && new Date(s.trial_end_date) >= thirtyDaysAgo
       ).length || 0
       
       const totalTrialsStarted = trialsInProgress + convertedFromTrial
-      const trialConversionRate = totalTrialsStarted > 0 
-        ? (convertedFromTrial / totalTrialsStarted) * 100 
-        : 0
+      const trialConversionRate = totalTrialsStarted > 0 ? (convertedFromTrial / totalTrialsStarted) * 100 : 0
 
       setMetrics({
+        totalMembers,
         paidMembers,
         mrr: Math.round(mrr),
         mrrTruheirs: Math.round(mrrTruheirs),
         mrrProgram: Math.round(mrrProgram),
+        ltgp: Math.round(ltgp),
         churn: Number(churn.toFixed(1)),
         signups: paidSignups,
         conversionRate: Number(conversionRate.toFixed(1)),
         trialsInProgress,
-        trialConversionRate: Number(trialConversionRate.toFixed(1))
+        trialConversionRate: Number(trialConversionRate.toFixed(1)),
+        truheirdPaidCount,
+        programPaidCount,
       })
     } catch (error) {
       console.error('Error fetching metrics:', error)
@@ -182,88 +187,157 @@ export function AdminAnalyticsOverview() {
 
   return (
     <div className="space-y-6">
-      {/* Subscriptions Section */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Subscriptions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <MetricCard 
-            title="Paid members" 
-            value={metrics.paidMembers} 
-            subtitle="Active subscriptions"
-          />
-          <MetricCard 
-            title="Total MRR" 
-            value={`$${metrics.mrr.toLocaleString()}`} 
-            subtitle="Monthly recurring revenue"
-          />
-          <MetricCard 
-            title="Churn (last 30d)" 
-            value={`${metrics.churn}%`} 
-            subtitle="Cancellation rate"
-          />
-        </div>
-      </div>
+      <Tabs defaultValue="overall" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overall" className="flex items-center gap-1.5 text-sm">
+            <BarChart3 className="h-4 w-4" />
+            Overall
+          </TabsTrigger>
+          <TabsTrigger value="truheirs" className="flex items-center gap-1.5 text-sm">
+            <DollarSign className="h-4 w-4" />
+            TruHeirs
+          </TabsTrigger>
+          <TabsTrigger value="program" className="flex items-center gap-1.5 text-sm">
+            <TrendingUp className="h-4 w-4" />
+            Program
+          </TabsTrigger>
+        </TabsList>
 
-      {/* MRR Breakdown */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Revenue Breakdown</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <MetricCard 
-            title="TruHeirs MRR" 
-            value={`$${metrics.mrrTruheirs.toLocaleString()}`} 
-            subtitle="TruHeirs subscription revenue"
-          />
-          <MetricCard 
-            title="Program MRR" 
-            value={`$${metrics.mrrProgram.toLocaleString()}`} 
-            subtitle="Program subscription revenue"
-          />
-          <MetricCard 
-            title="Avg revenue per user" 
-            value={metrics.paidMembers > 0 ? `$${Math.round(metrics.mrr / metrics.paidMembers)}` : '$0'} 
-            subtitle="Per paying member"
-          />
-        </div>
-      </div>
+        {/* OVERALL TAB */}
+        <TabsContent value="overall" className="space-y-6">
+          {/* LTGP Hero Card */}
+          <Card className="border-[#ffb500]/40 bg-gradient-to-r from-[#ffb500]/10 to-transparent">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Lifetime Gross Profit (LTGP)</p>
+                  <div className="text-4xl md:text-5xl font-bold mt-1" style={{ color: '#ffb500' }}>
+                    ${metrics.ltgp.toLocaleString()}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">Annualized recurring revenue</p>
+                </div>
+                <div className="p-3 rounded-xl" style={{ backgroundColor: '#ffb500' }}>
+                  <DollarSign className="h-6 w-6" style={{ color: '#290a52' }} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Traffic Section */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Traffic (last 30 days)</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <MetricCard 
-            title="Landing page visitors" 
-            value={landingPageVisitors} 
-            subtitle="Total page views"
-          />
-          <MetricCard 
-            title="Paid signups" 
-            value={metrics.signups} 
-            subtitle="New paid members"
-          />
-          <MetricCard 
-            title="Conversion rate" 
-            value={`${metrics.conversionRate}%`} 
-            subtitle="Visitors to paid members"
-          />
-        </div>
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <MetricCard 
+              title="Total Members" 
+              value={metrics.totalMembers} 
+              subtitle="All registered users"
+              icon={<Users className="h-4 w-4 text-muted-foreground" />}
+            />
+            <MetricCard 
+              title="Paid Members" 
+              value={metrics.paidMembers} 
+              subtitle="Active subscriptions"
+              icon={<TrendingUp className="h-4 w-4 text-muted-foreground" />}
+            />
+            <MetricCard 
+              title="Total MRR" 
+              value={`$${metrics.mrr.toLocaleString()}`} 
+              subtitle="Monthly recurring revenue"
+              icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+            />
+            <MetricCard 
+              title="Churn Rate" 
+              value={`${metrics.churn}%`} 
+              subtitle="Last 30 days"
+            />
+          </div>
 
-      {/* Other Section */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Other</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Traffic & Conversion */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Traffic & Conversions</CardTitle>
+              <CardDescription>Last 30 days performance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-3 rounded-lg bg-muted/30">
+                  <div className="text-2xl font-bold">{landingPageVisitors}</div>
+                  <p className="text-xs text-muted-foreground">Page Visitors</p>
+                </div>
+                <div className="text-center p-3 rounded-lg bg-muted/30">
+                  <div className="text-2xl font-bold">{metrics.signups}</div>
+                  <p className="text-xs text-muted-foreground">Paid Signups</p>
+                </div>
+                <div className="text-center p-3 rounded-lg bg-muted/30">
+                  <div className="text-2xl font-bold">{metrics.conversionRate}%</div>
+                  <p className="text-xs text-muted-foreground">Conversion Rate</p>
+                </div>
+                <div className="text-center p-3 rounded-lg bg-muted/30">
+                  <div className="text-2xl font-bold">{metrics.trialsInProgress}</div>
+                  <p className="text-xs text-muted-foreground">Trials Active</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TRUHEIRS TAB */}
+        <TabsContent value="truheirs" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <MetricCard 
+              title="TruHeirs MRR" 
+              value={`$${metrics.mrrTruheirs.toLocaleString()}`} 
+              subtitle="Monthly recurring from TruHeirs"
+              icon={<DollarSign className="h-4 w-4" style={{ color: '#ffb500' }} />}
+              highlight
+            />
+            <MetricCard 
+              title="TruHeirs Paid Members" 
+              value={metrics.truheirdPaidCount} 
+              subtitle="Active TruHeirs subscribers"
+              icon={<Users className="h-4 w-4" style={{ color: '#ffb500' }} />}
+            />
+            <MetricCard 
+              title="TruHeirs ARPU" 
+              value={metrics.truheirdPaidCount > 0 ? `$${Math.round(metrics.mrrTruheirs / metrics.truheirdPaidCount)}` : '$0'} 
+              subtitle="Avg revenue per TruHeirs user"
+            />
+          </div>
           <MetricCard 
-            title="Trials in progress" 
-            value={metrics.trialsInProgress} 
-            subtitle="Active trial users"
+            title="TruHeirs Annual Revenue" 
+            value={`$${(metrics.mrrTruheirs * 12).toLocaleString()}`} 
+            subtitle="Projected annual TruHeirs revenue"
+            highlight
           />
+        </TabsContent>
+
+        {/* PROGRAM TAB */}
+        <TabsContent value="program" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <MetricCard 
+              title="Program MRR" 
+              value={`$${metrics.mrrProgram.toLocaleString()}`} 
+              subtitle="Monthly recurring from programs"
+              icon={<DollarSign className="h-4 w-4" style={{ color: '#ffb500' }} />}
+              highlight
+            />
+            <MetricCard 
+              title="Program Paid Members" 
+              value={metrics.programPaidCount} 
+              subtitle="Active program subscribers"
+              icon={<Users className="h-4 w-4" style={{ color: '#ffb500' }} />}
+            />
+            <MetricCard 
+              title="Program ARPU" 
+              value={metrics.programPaidCount > 0 ? `$${Math.round(metrics.mrrProgram / metrics.programPaidCount)}` : '$0'} 
+              subtitle="Avg revenue per program user"
+            />
+          </div>
           <MetricCard 
-            title="Trial conversion rate" 
-            value={`${metrics.trialConversionRate}%`} 
-            subtitle="Trial to paid conversion"
+            title="Program Annual Revenue" 
+            value={`$${(metrics.mrrProgram * 12).toLocaleString()}`} 
+            subtitle="Projected annual program revenue"
+            highlight
           />
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
