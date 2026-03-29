@@ -975,7 +975,7 @@ export function AdminAllUsersManagement() {
                   <TableBody>
                     {filteredUsers.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
+                        <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
                           No users found
                         </TableCell>
                       </TableRow>
