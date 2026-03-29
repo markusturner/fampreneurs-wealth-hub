@@ -600,8 +600,8 @@ export function AdminAllUsersManagement() {
     setLoadingForms(true)
     try {
       const [onboardingRes, agreementsRes, trustRes] = await Promise.all([
-        supabase.from('onboarding_submissions').select('*').eq('user_id', userId).maybeSingle(),
-        supabase.from('program_agreements').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('onboarding_submissions' as any).select('*').eq('user_id', userId).maybeSingle(),
+        supabase.from('program_agreements' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
         supabase.from('trust_form_submissions' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       ])
       setFormsData({
