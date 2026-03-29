@@ -654,7 +654,7 @@ export function AdminAllUsersManagement() {
       setEditingFinanceUserId(null)
       setEditingFinanceField(null)
       setEditingFinanceValue('')
-      await fetchUsers()
+      await fetchUsers(true)
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to save', variant: 'destructive' })
     } finally {
