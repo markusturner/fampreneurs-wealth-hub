@@ -3730,6 +3730,9 @@ export type Database = {
           backend_cash_collected: number | null
           bio: string | null
           city: string | null
+          contract_due_date: string | null
+          contract_extension_date: string | null
+          contract_start_date: string | null
           cover_photo_url: string | null
           created_at: string
           display_name: string | null
@@ -3775,6 +3778,9 @@ export type Database = {
           backend_cash_collected?: number | null
           bio?: string | null
           city?: string | null
+          contract_due_date?: string | null
+          contract_extension_date?: string | null
+          contract_start_date?: string | null
           cover_photo_url?: string | null
           created_at?: string
           display_name?: string | null
@@ -3820,6 +3826,9 @@ export type Database = {
           backend_cash_collected?: number | null
           bio?: string | null
           city?: string | null
+          contract_due_date?: string | null
+          contract_extension_date?: string | null
+          contract_start_date?: string | null
           cover_photo_url?: string | null
           created_at?: string
           display_name?: string | null
