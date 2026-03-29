@@ -137,6 +137,7 @@ function AppWithNotifications() {
         <Route path="/trust-creation" element={<WithLayout><TrustCreation /></WithLayout>} />
         <Route path="/trust-form-submissions" element={<WithLayout><TrustFormSubmissions /></WithLayout>} />
         <Route path="/program-agreements" element={<WithLayout><ProgramAgreements /></WithLayout>} />
+        <Route path="/onboarding-submissions" element={<WithLayout><OnboardingSubmissions /></WithLayout>} />
         
         <Route path="*" element={<div>Page not found</div>} />
       </Routes>

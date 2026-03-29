@@ -21,9 +21,7 @@ import {
   LogOut,
   Search,
   Mail,
-  ClipboardList,
   ScrollText,
-  FileCheck,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
