@@ -327,7 +327,9 @@ export function AccountSettings() {
             onClick={handleUpdateEmail} 
             disabled={isLoading}
             className="w-full"
-            style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+            style={{ backgroundColor: '#ffb500', color: '#290a52', transition: 'background-color 0.2s' }}
+            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2eb2ff')}
+            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffb500')}
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Update Email
