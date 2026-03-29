@@ -43,6 +43,9 @@ interface SubscriptionMetrics {
   trialConversionRate: number
   truheirdPaidCount: number
   programPaidCount: number
+  programContractValue: number
+  programCashCollected: number
+  programRemaining: number
 }
 
 export function AdminAnalyticsOverview() {
