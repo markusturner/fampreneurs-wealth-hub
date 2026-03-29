@@ -588,7 +588,7 @@ export function AdminAllUsersManagement() {
       toast({ title: 'Joined Date Updated', description: 'Date saved successfully' })
       setEditingJoinedUserId(null)
       setEditingJoinedValue('')
-      await fetchUsers()
+      await fetchUsers(true)
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to save date', variant: 'destructive' })
     } finally {
