@@ -96,7 +96,7 @@ export function AdminAnalyticsOverview() {
 
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, membership_type, created_at, program_name, truheirs_access')
+        .select('user_id, membership_type, created_at, program_name, truheirs_access, program_contract_value, program_cash_collected')
 
       const totalMembers = profiles?.length || 0
       const paidMembers = subscribers?.filter(s => s.subscribed === true).length || 0
