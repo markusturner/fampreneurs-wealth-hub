@@ -3723,6 +3723,8 @@ export type Database = {
         Row: {
           accountability_specialties: string[] | null
           activation_point: string | null
+          admin_joined_date: string | null
+          admin_notes: string | null
           admin_permissions: string[] | null
           avatar_url: string | null
           backend_cash_collected: number | null
@@ -3763,6 +3765,8 @@ export type Database = {
         Insert: {
           accountability_specialties?: string[] | null
           activation_point?: string | null
+          admin_joined_date?: string | null
+          admin_notes?: string | null
           admin_permissions?: string[] | null
           avatar_url?: string | null
           backend_cash_collected?: number | null
@@ -3803,6 +3807,8 @@ export type Database = {
         Update: {
           accountability_specialties?: string[] | null
           activation_point?: string | null
+          admin_joined_date?: string | null
+          admin_notes?: string | null
           admin_permissions?: string[] | null
           avatar_url?: string | null
           backend_cash_collected?: number | null

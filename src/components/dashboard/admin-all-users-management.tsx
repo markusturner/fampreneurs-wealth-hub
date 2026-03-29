@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Badge } from '@/components/ui/badge'
@@ -45,6 +45,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Textarea } from '@/components/ui/textarea'
 
 interface UserProfile {
   user_id: string
@@ -99,6 +100,18 @@ export function AdminAllUsersManagement() {
   const [editingPhoneUserId, setEditingPhoneUserId] = useState<string | null>(null)
   const [editingPhoneValue, setEditingPhoneValue] = useState('')
   const [savingPhone, setSavingPhone] = useState(false)
+  // Editable joined date
+  const [editingJoinedUserId, setEditingJoinedUserId] = useState<string | null>(null)
+  const [editingJoinedValue, setEditingJoinedValue] = useState('')
+  const [savingJoined, setSavingJoined] = useState(false)
+  // Admin notes
+  const [notesUserId, setNotesUserId] = useState<string | null>(null)
+  const [notesValue, setNotesValue] = useState('')
+  const [savingNotes, setSavingNotes] = useState(false)
+  // User forms dialog
+  const [formsUserId, setFormsUserId] = useState<string | null>(null)
+  const [formsData, setFormsData] = useState<{onboarding: any, agreements: any[], trustForms: any[]}>({ onboarding: null, agreements: [], trustForms: [] })
+  const [loadingForms, setLoadingForms] = useState(false)
   const { toast } = useToast()
 
   const syncStripeData = async (silent = false) => {
@@ -545,6 +558,63 @@ export function AdminAllUsersManagement() {
     }
   }
 
+  const handleSaveInlineJoined = async (userId: string) => {
+    setSavingJoined(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ admin_joined_date: editingJoinedValue || null } as any)
+        .eq('user_id', userId)
+      if (error) throw error
+      toast({ title: 'Joined Date Updated', description: 'Date saved successfully' })
+      setEditingJoinedUserId(null)
+      setEditingJoinedValue('')
+      await fetchUsers()
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to save date', variant: 'destructive' })
+    } finally {
+      setSavingJoined(false)
+    }
+  }
+
+  const handleSaveNotes = async (userId: string) => {
+    setSavingNotes(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ admin_notes: notesValue || null } as any)
+        .eq('user_id', userId)
+      if (error) throw error
+      toast({ title: 'Notes Saved' })
+      setNotesUserId(null)
+      setNotesValue('')
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to save notes', variant: 'destructive' })
+    } finally {
+      setSavingNotes(false)
+    }
+  }
+
+  const handleOpenForms = async (userId: string) => {
+    setFormsUserId(userId)
+    setLoadingForms(true)
+    try {
+      const [onboardingRes, agreementsRes, trustRes] = await Promise.all([
+        supabase.from('onboarding_submissions' as any).select('*').eq('user_id', userId).maybeSingle(),
+        supabase.from('program_agreements' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('trust_form_submissions' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      ])
+      setFormsData({
+        onboarding: onboardingRes.data,
+        agreements: agreementsRes.data || [],
+        trustForms: trustRes.data || [],
+      })
+    } catch (err) {
+      console.error('Error fetching forms:', err)
+    } finally {
+      setLoadingForms(false)
+    }
+  }
 
   const syncStripeSubscriptions = async () => {
     setSyncingStripe(true)
@@ -826,7 +896,7 @@ export function AdminAllUsersManagement() {
                         </Badge>
                       </div>
                       <div className="flex justify-between items-center gap-2">
-                        <span className="text-muted-foreground shrink-0">Payment</span>
+                        <span className="text-muted-foreground shrink-0">DFO</span>
                         <div className="text-right">
                           <span className="font-medium text-xs">{getPackageInfo(mobileSelectedUser).package}</span>
                           <span className="text-xs text-muted-foreground ml-1">{getPackageInfo(mobileSelectedUser).amount}</span>
@@ -837,8 +907,30 @@ export function AdminAllUsersManagement() {
                         <span className="text-right text-xs">{mobileSelectedUser.program_name || 'None'}</span>
                       </div>
                       <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Forms</span>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(mobileSelectedUser.user_id)}>
+                          <FileText className="h-3 w-3 mr-1" /> View
+                        </Button>
+                      </div>
+                      <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Joined</span>
-                        <span className="text-xs">{new Date(mobileSelectedUser.created_at).toLocaleDateString()}</span>
+                        <button
+                          className="text-xs hover:underline"
+                          onClick={() => {
+                            setEditingJoinedUserId(mobileSelectedUser.user_id)
+                            setEditingJoinedValue((mobileSelectedUser as any).admin_joined_date || mobileSelectedUser.created_at?.split('T')[0] || '')
+                          }}
+                        >
+                          {(mobileSelectedUser as any).admin_joined_date
+                            ? new Date((mobileSelectedUser as any).admin_joined_date).toLocaleDateString()
+                            : new Date(mobileSelectedUser.created_at).toLocaleDateString()}
+                        </button>
+                      </div>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Notes</span>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setNotesUserId(mobileSelectedUser.user_id); setNotesValue((mobileSelectedUser as any).admin_notes || '') }}>
+                          <StickyNote className="h-3 w-3 mr-1" /> {(mobileSelectedUser as any).admin_notes ? 'Edit' : 'Add'}
+                        </Button>
                       </div>
                     </div>
                     <div className="grid grid-cols-4 gap-1.5 pt-3 border-t">
@@ -882,7 +974,7 @@ export function AdminAllUsersManagement() {
             ) : (
             <div className="border rounded-lg overflow-x-auto">
               <ScrollArea className="h-[500px]">
-                <div className="min-w-[1050px]">
+                <div className="min-w-[1250px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -894,16 +986,18 @@ export function AdminAllUsersManagement() {
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>TruHeirs</TableHead>
-                      <TableHead>Payment</TableHead>
+                      <TableHead>DFO</TableHead>
                       <TableHead>Program</TableHead>
+                      <TableHead>Forms</TableHead>
                       <TableHead>Joined</TableHead>
+                      <TableHead>Notes</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredUsers.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
+                        <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
                           No users found
                         </TableCell>
                       </TableRow>
@@ -967,8 +1061,62 @@ export function AdminAllUsersManagement() {
                             </div>
                           </TableCell>
                           <TableCell className="whitespace-nowrap">{user.program_name || 'None'}</TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 text-xs"
+                              onClick={() => handleOpenForms(user.user_id)}
+                            >
+                              <FileText className="h-3 w-3 mr-1" />
+                              View
+                            </Button>
+                          </TableCell>
                           <TableCell className="whitespace-nowrap">
-                            {new Date(user.created_at).toLocaleDateString()}
+                            {editingJoinedUserId === user.user_id ? (
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  type="date"
+                                  value={editingJoinedValue}
+                                  onChange={(e) => setEditingJoinedValue(e.target.value)}
+                                  className="h-7 w-32 text-xs"
+                                  onKeyDown={(e) => e.key === 'Enter' && handleSaveInlineJoined(user.user_id)}
+                                />
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlineJoined(user.user_id)} disabled={savingJoined}>
+                                  {savingJoined ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingJoinedUserId(null)}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <button
+                                className="text-sm hover:underline cursor-pointer"
+                                onClick={() => {
+                                  setEditingJoinedUserId(user.user_id)
+                                  const dateVal = (user as any).admin_joined_date || user.created_at?.split('T')[0] || ''
+                                  setEditingJoinedValue(dateVal)
+                                }}
+                              >
+                                {(user as any).admin_joined_date
+                                  ? new Date((user as any).admin_joined_date).toLocaleDateString()
+                                  : new Date(user.created_at).toLocaleDateString()}
+                              </button>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 text-xs"
+                              onClick={() => {
+                                setNotesUserId(user.user_id)
+                                setNotesValue((user as any).admin_notes || '')
+                              }}
+                            >
+                              <StickyNote className="h-3 w-3 mr-1" />
+                              {(user as any).admin_notes ? 'Edit' : 'Add'}
+                            </Button>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1">
@@ -1480,6 +1628,128 @@ export function AdminAllUsersManagement() {
 
           <DialogFooter>
             <Button onClick={() => setManagingPrograms(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Admin Notes Dialog */}
+      <Dialog open={!!notesUserId} onOpenChange={(open) => !open && setNotesUserId(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <StickyNote className="h-5 w-5" />
+              Admin Notes
+            </DialogTitle>
+            <DialogDescription>
+              Add notes or descriptions for this user (supports rich text formatting)
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              value={notesValue}
+              onChange={(e) => setNotesValue(e.target.value)}
+              placeholder="Enter notes about this user... (supports **bold**, *italic*, - lists)"
+              rows={8}
+              className="font-mono text-sm"
+            />
+            <div className="text-xs text-muted-foreground">
+              Tip: Use **bold**, *italic*, - for lists, # for headings
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNotesUserId(null)}>Cancel</Button>
+            <Button onClick={() => notesUserId && handleSaveNotes(notesUserId)} disabled={savingNotes}>
+              {savingNotes ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Save Notes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* User Forms Dialog */}
+      <Dialog open={!!formsUserId} onOpenChange={(open) => !open && setFormsUserId(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              User Forms & Submissions
+            </DialogTitle>
+            <DialogDescription>
+              {users.find(u => u.user_id === formsUserId)?.display_name || 'User'}'s onboarding form, agreements, and trust forms
+            </DialogDescription>
+          </DialogHeader>
+          {loadingForms ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Onboarding Form */}
+              <div className="space-y-2">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Badge variant="secondary">Onboarding Form</Badge>
+                  {formsData.onboarding ? (
+                    <Badge className="bg-green-600 text-white">Completed</Badge>
+                  ) : (
+                    <Badge variant="outline">Not Submitted</Badge>
+                  )}
+                </h4>
+                {formsData.onboarding && (
+                  <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                    {Object.entries(formsData.onboarding).filter(([key]) => !['id', 'user_id', 'created_at', 'updated_at'].includes(key)).map(([key, value]) => (
+                      <div key={key} className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                        <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
+                        <span className="text-right font-medium">{String(value || 'N/A')}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Program Agreements */}
+              <div className="space-y-2">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Badge variant="secondary">Program Agreements</Badge>
+                  <Badge className={formsData.agreements.length > 0 ? "bg-green-600 text-white" : ""} variant={formsData.agreements.length > 0 ? "default" : "outline"}>
+                    {formsData.agreements.length > 0 ? `${formsData.agreements.length} Signed` : 'None'}
+                  </Badge>
+                </h4>
+                {formsData.agreements.map((agreement: any) => (
+                  <div key={agreement.id} className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                    {Object.entries(agreement).filter(([key]) => !['id', 'user_id'].includes(key)).map(([key, value]) => (
+                      <div key={key} className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                        <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
+                        <span className="text-right font-medium max-w-[60%] break-words">{String(value || 'N/A')}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+
+              {/* Trust Forms */}
+              <div className="space-y-2">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Badge variant="secondary">Trust Forms</Badge>
+                  <Badge className={formsData.trustForms.length > 0 ? "bg-green-600 text-white" : ""} variant={formsData.trustForms.length > 0 ? "default" : "outline"}>
+                    {formsData.trustForms.length > 0 ? `${formsData.trustForms.length} Submitted` : 'None'}
+                  </Badge>
+                </h4>
+                {formsData.trustForms.map((form: any) => (
+                  <div key={form.id} className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                    {Object.entries(form).filter(([key]) => !['id', 'user_id'].includes(key)).map(([key, value]) => (
+                      <div key={key} className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                        <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
+                        <span className="text-right font-medium max-w-[60%] break-words">
+                          {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value || 'N/A')}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setFormsUserId(null)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
