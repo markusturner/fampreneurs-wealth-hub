@@ -25,7 +25,7 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
 
   useEffect(() => {
     fetchCourseCompletion()
-  }, [programOnly])
+  }, [programOnly, truheirsOnly])
 
   const fetchCourseCompletion = async () => {
     try {
