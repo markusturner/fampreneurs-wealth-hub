@@ -1137,8 +1137,19 @@ export function AdminAllUsersManagement() {
                   )
                 }
 
-                const isOverdue = progress !== null && progress >= 100 && !extensionDate
+                const hasExtension = !!extensionDate
+                const isOverdue = progress !== null && progress >= 100 && !hasExtension
                 const progressColor = isOverdue ? 'bg-destructive' : progress !== null && progress > 75 ? 'bg-orange-500' : 'bg-[#2eb2ff]'
+
+                // Calculate where original due date falls on the extended timeline
+                let dueMarkerPercent: number | null = null
+                if (hasExtension && startDate && dueDate) {
+                  const start = new Date(startDate).getTime()
+                  const due = new Date(dueDate).getTime()
+                  const ext = new Date(extensionDate).getTime()
+                  const total = ext - start
+                  if (total > 0) dueMarkerPercent = Math.round(((due - start) / total) * 100)
+                }
 
                 return (
                   <button
@@ -1152,13 +1163,38 @@ export function AdminAllUsersManagement() {
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
-                      <span className="text-xs font-medium">{formatShortDate(startDate)} – {formatShortDate(dueDate)}</span>
-                      {progress !== null && <span className={`text-xs font-semibold ml-auto ${isOverdue ? 'text-destructive' : 'text-[#2eb2ff]'}`}>{progress}%</span>}
+                      <span className="text-xs font-medium">
+                        {formatShortDate(startDate)} – {formatShortDate(hasExtension ? extensionDate : dueDate)}
+                      </span>
+                      {progress !== null && (
+                        <span className={`text-xs font-semibold ml-auto ${isOverdue ? 'text-destructive' : hasExtension ? 'text-emerald-500' : 'text-[#2eb2ff]'}`}>
+                          {progress}%
+                        </span>
+                      )}
                     </div>
-                    <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
-                      <div className={`h-full rounded-full transition-all ${progressColor}`} style={{ width: `${Math.min(progress || 0, 100)}%` }} />
+                    <div className="relative w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                      {hasExtension && dueMarkerPercent !== null && (
+                        <>
+                          {/* Original due date portion */}
+                          <div className="absolute h-full rounded-l-full bg-[#2eb2ff]" style={{ width: `${Math.min(dueMarkerPercent, progress || 0)}%` }} />
+                          {/* Extension portion */}
+                          {(progress || 0) > dueMarkerPercent && (
+                            <div className="absolute h-full bg-emerald-500 rounded-r-full" style={{ left: `${dueMarkerPercent}%`, width: `${Math.min((progress || 0) - dueMarkerPercent, 100 - dueMarkerPercent)}%` }} />
+                          )}
+                          {/* Due date marker line */}
+                          <div className="absolute top-0 h-full w-0.5 bg-muted-foreground/50" style={{ left: `${dueMarkerPercent}%` }} />
+                        </>
+                      )}
+                      {!hasExtension && (
+                        <div className={`h-full rounded-full transition-all ${progressColor}`} style={{ width: `${Math.min(progress || 0, 100)}%` }} />
+                      )}
                     </div>
-                    {extensionDate && <div className="text-[10px] text-muted-foreground mt-0.5">Ext: {formatShortDate(extensionDate)}</div>}
+                    {hasExtension && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Clock className="h-2.5 w-2.5 text-emerald-500" />
+                        <span className="text-[10px] text-emerald-500 font-medium">Extended to {formatShortDate(extensionDate)}</span>
+                      </div>
+                    )}
                   </button>
                 )
               }
