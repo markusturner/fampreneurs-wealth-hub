@@ -1226,7 +1226,7 @@ export function AdminAllUsersManagement() {
                       size="sm"
                       variant={memberView === 'active' ? 'default' : 'outline'}
                       onClick={() => setMemberView('active')}
-                      className="text-xs"
+                      className={`text-xs ${memberView === 'active' ? 'bg-[#ffb500] hover:bg-[#ffb500]/90 text-black border-[#ffb500]' : ''}`}
                     >
                       <Users className="h-3 w-3 mr-1" />
                       Active ({activeUsers.length})
@@ -1235,7 +1235,7 @@ export function AdminAllUsersManagement() {
                       size="sm"
                       variant={memberView === 'pending' ? 'default' : 'outline'}
                       onClick={() => setMemberView('pending')}
-                      className="text-xs"
+                      className={`text-xs ${memberView === 'pending' ? 'bg-[#ffb500] hover:bg-[#ffb500]/90 text-black border-[#ffb500]' : ''}`}
                     >
                       <Clock className="h-3 w-3 mr-1" />
                       Pending ({pendingUsers.length})
