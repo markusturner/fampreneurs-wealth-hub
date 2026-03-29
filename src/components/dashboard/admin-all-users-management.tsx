@@ -1078,7 +1078,7 @@ export function AdminAllUsersManagement() {
                       <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
                     </TableHead>
                     <TableHead className="min-w-[160px] sticky left-[40px] z-20 bg-background">Name</TableHead>
-                    <TableHead className="min-w-[280px] sticky left-[200px] z-20 bg-background">Contract Timeline</TableHead>
+                    <TableHead className="min-w-[280px] sticky left-[200px] z-20 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Contract Timeline</TableHead>
                     <TableHead className="min-w-[120px]">Role</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>Email</TableHead>
