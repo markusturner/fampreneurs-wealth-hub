@@ -18,7 +18,11 @@ interface ActivityDay {
   level: number
 }
 
-export function AdminGrowthCharts() {
+interface AdminGrowthChartsProps {
+  programOnly?: boolean
+}
+
+export function AdminGrowthCharts({ programOnly = false }: AdminGrowthChartsProps) {
   const [growthData, setGrowthData] = useState<GrowthData[]>([])
   const [activityData, setActivityData] = useState<ActivityDay[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,16 +35,22 @@ export function AdminGrowthCharts() {
 
   useEffect(() => {
     fetchData()
-  }, [])
+  }, [programOnly])
 
   const fetchData = async () => {
     try {
       setLoading(true)
 
-      const { data: profiles } = await supabase
+      let profilesQuery = supabase
         .from('profiles')
-        .select('user_id, created_at')
+        .select('user_id, created_at, program_name')
         .order('created_at', { ascending: true })
+
+      if (programOnly) {
+        profilesQuery = profilesQuery.not('program_name', 'is', null)
+      }
+
+      const { data: profiles } = await profilesQuery
 
       if (!profiles) { setLoading(false); return }
 
