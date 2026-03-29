@@ -668,8 +668,6 @@ export function AdminAllUsersManagement() {
       } else if (editingFinanceField === 'cash_collected') {
         const val = editingFinanceValue.replace(/,/g, '')
         updateData.program_cash_collected = val ? Number(val) : null
-      } else if (editingFinanceField === 'stripe_sub') {
-        updateData.stripe_subscription_id = editingFinanceValue || null
       }
       const { error } = await supabase.from('profiles').update(updateData).eq('user_id', userId)
       if (error) throw error
