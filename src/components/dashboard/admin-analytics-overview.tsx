@@ -251,7 +251,7 @@ export function AdminAnalyticsOverview() {
       {/* Other Section */}
       <div>
         <h3 className="text-lg font-semibold mb-4">Other</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <MetricCard 
             title="Trials in progress" 
             value={metrics.trialsInProgress} 
@@ -261,11 +261,6 @@ export function AdminAnalyticsOverview() {
             title="Trial conversion rate" 
             value={`${metrics.trialConversionRate}%`} 
             subtitle="Trial to paid conversion"
-          />
-          <MetricCard 
-            title="Avg revenue per user" 
-            value={metrics.paidMembers > 0 ? `$${Math.round(metrics.mrr / metrics.paidMembers)}` : '$0'} 
-            subtitle="Per paying member"
           />
         </div>
       </div>
