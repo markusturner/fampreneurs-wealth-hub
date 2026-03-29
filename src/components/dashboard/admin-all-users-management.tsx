@@ -181,8 +181,13 @@ export function AdminAllUsersManagement() {
         }
       })
 
-      setUsers(usersWithSubscriptions)
-      setFilteredUsers(usersWithSubscriptions)
+      const sorted = usersWithSubscriptions.sort((a: any, b: any) => {
+        const nameA = (a.full_name || '').toLowerCase()
+        const nameB = (b.full_name || '').toLowerCase()
+        return nameA.localeCompare(nameB)
+      })
+      setUsers(sorted)
+      setFilteredUsers(sorted)
     } catch (error: any) {
       console.error('Error fetching users:', error)
       toast({
