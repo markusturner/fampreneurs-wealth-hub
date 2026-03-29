@@ -1288,6 +1288,7 @@ export function AdminAllUsersManagement() {
                   </TableBody>
                 </Table>
                 </div>
+                <ScrollBar orientation="horizontal" />
               </ScrollArea>
             </div>
             )}
