@@ -192,7 +192,7 @@ export function AdminAnalyticsOverview() {
             subtitle="Active subscriptions"
           />
           <MetricCard 
-            title="MRR" 
+            title="Total MRR" 
             value={`$${metrics.mrr.toLocaleString()}`} 
             subtitle="Monthly recurring revenue"
           />
@@ -200,6 +200,28 @@ export function AdminAnalyticsOverview() {
             title="Churn (last 30d)" 
             value={`${metrics.churn}%`} 
             subtitle="Cancellation rate"
+          />
+        </div>
+      </div>
+
+      {/* MRR Breakdown */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Revenue Breakdown</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <MetricCard 
+            title="TruHeirs MRR" 
+            value={`$${metrics.mrrTruheirs.toLocaleString()}`} 
+            subtitle="TruHeirs subscription revenue"
+          />
+          <MetricCard 
+            title="Program MRR" 
+            value={`$${metrics.mrrProgram.toLocaleString()}`} 
+            subtitle="Program subscription revenue"
+          />
+          <MetricCard 
+            title="Avg revenue per user" 
+            value={metrics.paidMembers > 0 ? `$${Math.round(metrics.mrr / metrics.paidMembers)}` : '$0'} 
+            subtitle="Per paying member"
           />
         </div>
       </div>
