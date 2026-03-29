@@ -1289,19 +1289,18 @@ export function AdminAllUsersManagement() {
                   </div>
 
                   <div className={`border rounded-lg ${memberView === 'pending' ? 'border-amber-500/30' : ''}`}>
-                    <ScrollArea className="h-[500px] w-full">
-                    <table className="w-full caption-bottom text-sm min-w-[1800px]">
-                          {renderTableHeader()}
-                          <TableBody>
-                            {(memberView === 'active' ? activeUsers : pendingUsers).length === 0 ? (
-                              <TableRow><TableCell colSpan={16} className="text-center text-muted-foreground py-8">
-                                {memberView === 'active' ? 'No active members' : 'No pending users'}
-                              </TableCell></TableRow>
-                            ) : (memberView === 'active' ? activeUsers : pendingUsers).map(renderUserRow)}
-                          </TableBody>
-                        </table>
-                      <ScrollBar orientation="horizontal" />
-                    </ScrollArea>
+                    <div className="h-[500px] w-full overflow-auto">
+                      <table className="w-full caption-bottom text-sm min-w-[1800px]">
+                        {renderTableHeader()}
+                        <TableBody>
+                          {(memberView === 'active' ? activeUsers : pendingUsers).length === 0 ? (
+                            <TableRow><TableCell colSpan={15} className="text-center text-muted-foreground py-8">
+                              {memberView === 'active' ? 'No active members' : 'No pending users'}
+                            </TableCell></TableRow>
+                          ) : (memberView === 'active' ? activeUsers : pendingUsers).map(renderUserRow)}
+                        </TableBody>
+                      </table>
+                    </div>
                   </div>
 
                   <div className="text-sm text-muted-foreground">
