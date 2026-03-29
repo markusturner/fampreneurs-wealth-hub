@@ -1109,7 +1109,67 @@ export function AdminAllUsersManagement() {
                               <span className="text-xs text-muted-foreground">{packageInfo.amount}</span>
                             </div>
                           </TableCell>
+                          {/* Contract Value */}
+                          <TableCell className="whitespace-nowrap">
+                            {editingFinanceUserId === user.user_id && editingFinanceField === 'contract_value' ? (
+                              <div className="flex items-center gap-1">
+                                <Input value={editingFinanceValue} onChange={(e) => setEditingFinanceValue(e.target.value)} placeholder="0" className="h-7 w-28 text-xs" onKeyDown={(e) => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>
+                                  {savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setEditingFinanceUserId(null); setEditingFinanceField(null) }}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <button className="text-sm hover:underline" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('contract_value'); setEditingFinanceValue(String((user as any).program_contract_value ?? '')) }}>
+                                {formatCurrency((user as any).program_contract_value)}
+                              </button>
+                            )}
+                          </TableCell>
+                          {/* Cash Collected */}
+                          <TableCell className="whitespace-nowrap">
+                            {editingFinanceUserId === user.user_id && editingFinanceField === 'cash_collected' ? (
+                              <div className="flex items-center gap-1">
+                                <Input value={editingFinanceValue} onChange={(e) => setEditingFinanceValue(e.target.value)} placeholder="0" className="h-7 w-28 text-xs" onKeyDown={(e) => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>
+                                  {savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setEditingFinanceUserId(null); setEditingFinanceField(null) }}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <button className="text-sm hover:underline" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('cash_collected'); setEditingFinanceValue(String((user as any).program_cash_collected ?? '')) }}>
+                                {formatCurrency((user as any).program_cash_collected)}
+                              </button>
+                            )}
+                          </TableCell>
+                          {/* Remaining Balance */}
+                          <TableCell className="whitespace-nowrap">
+                            <span className={`text-sm font-medium ${getRemainingBalance(user) > 0 ? 'text-orange-500' : getRemainingBalance(user) === 0 && (user as any).program_contract_value ? 'text-green-600' : ''}`}>
+                              {(user as any).program_contract_value ? formatCurrency(getRemainingBalance(user)) : '—'}
+                            </span>
+                          </TableCell>
                           <TableCell className="whitespace-nowrap">{user.program_name || 'None'}</TableCell>
+                          {/* Stripe Subscription */}
+                          <TableCell className="whitespace-nowrap">
+                            {editingFinanceUserId === user.user_id && editingFinanceField === 'stripe_sub' ? (
+                              <div className="flex items-center gap-1">
+                                <Input value={editingFinanceValue} onChange={(e) => setEditingFinanceValue(e.target.value)} placeholder="sub_..." className="h-7 w-36 text-xs" onKeyDown={(e) => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>
+                                  {savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setEditingFinanceUserId(null); setEditingFinanceField(null) }}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <button className="text-xs hover:underline text-muted-foreground" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('stripe_sub'); setEditingFinanceValue((user as any).stripe_subscription_id || '') }}>
+                                {(user as any).stripe_subscription_id ? (user as any).stripe_subscription_id.substring(0, 16) + '...' : 'Assign'}
+                              </button>
+                            )}
+                          </TableCell>
                           <TableCell>
                             <Button
                               size="sm"
