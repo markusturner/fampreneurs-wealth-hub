@@ -44,7 +44,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 
 interface UserProfile {
@@ -1029,8 +1029,8 @@ export function AdminAllUsersManagement() {
                 </ScrollArea>
               )
             ) : (
-            <div className="border rounded-lg overflow-x-auto">
-              <ScrollArea className="h-[500px]">
+            <div className="border rounded-lg">
+              <ScrollArea className="h-[500px] w-full">
                 <div className="min-w-[1800px]">
                 <Table>
                   <TableHeader>
@@ -1288,6 +1288,7 @@ export function AdminAllUsersManagement() {
                   </TableBody>
                 </Table>
                 </div>
+                <ScrollBar orientation="horizontal" />
               </ScrollArea>
             </div>
             )}

@@ -79,7 +79,7 @@ export function AffiliateProgram() {
             </p>
           </div>
 
-          <Button onClick={handleGenerateLink} className="w-full" style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
+          <Button onClick={handleGenerateLink} className="w-full" style={{ backgroundColor: '#ffb500', color: '#290a52', transition: 'background-color 0.2s' }} onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2eb2ff')} onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffb500')}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Generate Affiliate Link
           </Button>
