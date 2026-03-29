@@ -1175,7 +1175,7 @@ export function AdminAllUsersManagement() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setFormsUser(user)}>View</Button>
+                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(user.user_id)}>View</Button>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       {editingJoinedUserId === user.user_id ? (
