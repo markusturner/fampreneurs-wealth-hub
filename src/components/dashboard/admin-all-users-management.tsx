@@ -685,7 +685,7 @@ export function AdminAllUsersManagement() {
         description: `Synced ${data.synced} trustees successfully. ${data.errors > 0 ? `${data.errors} errors.` : ''}`,
       })
 
-      await fetchUsers()
+      await fetchUsers(true)
     } catch (error: any) {
       console.error('Error syncing Stripe:', error)
       toast({
