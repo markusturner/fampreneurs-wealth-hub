@@ -109,9 +109,10 @@ export function AdminAllUsersManagement() {
   const [editingContractDueDate, setEditingContractDueDate] = useState('')
   const [editingContractExtensionDate, setEditingContractExtensionDate] = useState('')
   const [savingContract, setSavingContract] = useState(false)
-  // Admin notes
+  // Admin notes with sections
   const [notesUserId, setNotesUserId] = useState<string | null>(null)
-  const [notesValue, setNotesValue] = useState('')
+  const [notesMainDescription, setNotesMainDescription] = useState('')
+  const [notesSections, setNotesSections] = useState<{title: string, content: string}[]>([])
   const [savingNotes, setSavingNotes] = useState(false)
   // User forms dialog
   const [formsUserId, setFormsUserId] = useState<string | null>(null)
@@ -619,17 +620,37 @@ export function AdminAllUsersManagement() {
     return `${months[d.getMonth()]} ${d.getDate()}, '${String(d.getFullYear()).slice(2)}`
   }
 
+  const parseNotesData = (raw: string | null) => {
+    if (!raw) return { main: '', sections: [] as {title: string, content: string}[] }
+    try {
+      const parsed = JSON.parse(raw)
+      if (parsed && typeof parsed === 'object' && 'main' in parsed) {
+        return { main: parsed.main || '', sections: parsed.sections || [] }
+      }
+    } catch {}
+    return { main: raw, sections: [] as {title: string, content: string}[] }
+  }
+
+  const openNotesForUser = (userId: string, rawNotes: string | null) => {
+    const data = parseNotesData(rawNotes)
+    setNotesUserId(userId)
+    setNotesMainDescription(data.main)
+    setNotesSections(data.sections)
+  }
+
   const handleSaveNotes = async (userId: string) => {
     setSavingNotes(true)
     try {
+      const notesData = JSON.stringify({ main: notesMainDescription, sections: notesSections })
       const { error } = await supabase
         .from('profiles')
-        .update({ admin_notes: notesValue || null } as any)
+        .update({ admin_notes: notesData } as any)
         .eq('user_id', userId)
       if (error) throw error
       toast({ title: 'Notes Saved' })
       setNotesUserId(null)
-      setNotesValue('')
+      setNotesMainDescription('')
+      setNotesSections([])
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to save notes', variant: 'destructive' })
     } finally {
@@ -1019,7 +1040,7 @@ export function AdminAllUsersManagement() {
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Notes</span>
-                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setNotesUserId(mobileSelectedUser.user_id); setNotesValue((mobileSelectedUser as any).admin_notes || '') }}>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => openNotesForUser(mobileSelectedUser.user_id, (mobileSelectedUser as any).admin_notes)}>
                           <StickyNote className="h-3 w-3 mr-1" /> {(mobileSelectedUser as any).admin_notes ? 'Edit' : 'Add'}
                         </Button>
                       </div>
@@ -1078,8 +1099,8 @@ export function AdminAllUsersManagement() {
                       <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
                     </TableHead>
                     <TableHead className="min-w-[160px] sticky left-[40px] z-20 bg-background">Name</TableHead>
-                    <TableHead className="min-w-[280px] sticky left-[200px] z-20 bg-background">Contract Timeline</TableHead>
-                    <TableHead className="min-w-[120px] sticky left-[480px] z-20 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Role</TableHead>
+                    <TableHead className="min-w-[280px] sticky left-[200px] z-20 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Contract Timeline</TableHead>
+                    <TableHead className="min-w-[120px]">Role</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>TruHeirs</TableHead>
@@ -1150,10 +1171,10 @@ export function AdminAllUsersManagement() {
                     <TableCell className="font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 bg-background">
                       {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}
                     </TableCell>
-                    <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background">
+                    <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
                       {renderContractTimeline(user)}
                     </TableCell>
-                    <TableCell className="min-w-[120px] sticky left-[480px] z-10 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                    <TableCell className="min-w-[120px]">
                       <Badge variant="outline" className="text-xs" style={{ backgroundColor: '#ffb500', color: '#1a1a2e', borderColor: '#ffb500' }}>
                         {user.role || 'Trustee'}
                       </Badge>
@@ -1240,10 +1261,7 @@ export function AdminAllUsersManagement() {
                         size="sm"
                         variant="ghost"
                         className="h-7 text-xs"
-                        onClick={() => {
-                          setNotesUserId(user.user_id)
-                          setNotesValue((user as any).admin_notes || '')
-                        }}
+                        onClick={() => openNotesForUser(user.user_id, (user as any).admin_notes)}
                       >
                         <StickyNote className="h-3 w-3 mr-1" />
                         {(user as any).admin_notes ? 'Edit' : 'Add'}
@@ -1773,21 +1791,77 @@ export function AdminAllUsersManagement() {
               Admin Notes
             </DialogTitle>
             <DialogDescription>
-              Add notes or descriptions for this user (supports rich text formatting)
+              Add a main description and multiple description sections for this user
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <Textarea
-              value={notesValue}
-              onChange={(e) => setNotesValue(e.target.value)}
-              placeholder="Enter notes about this user... (supports **bold**, *italic*, - lists)"
-              rows={8}
-              className="font-mono text-sm"
-            />
-            <div className="text-xs text-muted-foreground">
-              Tip: Use **bold**, *italic*, - for lists, # for headings
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-6 pr-4">
+              {/* Main Description */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Main Description</Label>
+                <Textarea
+                  value={notesMainDescription}
+                  onChange={(e) => setNotesMainDescription(e.target.value)}
+                  placeholder="Enter main description for this user..."
+                  rows={4}
+                  className="text-sm"
+                />
+              </div>
+
+              {/* Description Sections */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold">Description Sections</Label>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setNotesSections([...notesSections, { title: `Description ${notesSections.length + 1}`, content: '' }])}
+                  >
+                    <Plus className="h-3 w-3 mr-1" /> Add Section
+                  </Button>
+                </div>
+
+                {notesSections.map((section, index) => (
+                  <div key={index} className="border rounded-xl p-4 space-y-3 bg-muted/20">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground cursor-grab">⋮⋮</span>
+                        <Input
+                          value={section.title}
+                          onChange={(e) => {
+                            const updated = [...notesSections]
+                            updated[index] = { ...updated[index], title: e.target.value }
+                            setNotesSections(updated)
+                          }}
+                          className="h-8 text-sm font-semibold border-none bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                          placeholder="Section title..."
+                        />
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                        onClick={() => setNotesSections(notesSections.filter((_, i) => i !== index))}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <Textarea
+                      value={section.content}
+                      onChange={(e) => {
+                        const updated = [...notesSections]
+                        updated[index] = { ...updated[index], content: e.target.value }
+                        setNotesSections(updated)
+                      }}
+                      placeholder="Enter section content..."
+                      rows={4}
+                      className="text-sm"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          </ScrollArea>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNotesUserId(null)}>Cancel</Button>
             <Button onClick={() => notesUserId && handleSaveNotes(notesUserId)} disabled={savingNotes}>
