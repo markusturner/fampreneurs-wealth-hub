@@ -620,17 +620,37 @@ export function AdminAllUsersManagement() {
     return `${months[d.getMonth()]} ${d.getDate()}, '${String(d.getFullYear()).slice(2)}`
   }
 
+  const parseNotesData = (raw: string | null) => {
+    if (!raw) return { main: '', sections: [] as {title: string, content: string}[] }
+    try {
+      const parsed = JSON.parse(raw)
+      if (parsed && typeof parsed === 'object' && 'main' in parsed) {
+        return { main: parsed.main || '', sections: parsed.sections || [] }
+      }
+    } catch {}
+    return { main: raw, sections: [] as {title: string, content: string}[] }
+  }
+
+  const openNotesForUser = (userId: string, rawNotes: string | null) => {
+    const data = parseNotesData(rawNotes)
+    setNotesUserId(userId)
+    setNotesMainDescription(data.main)
+    setNotesSections(data.sections)
+  }
+
   const handleSaveNotes = async (userId: string) => {
     setSavingNotes(true)
     try {
+      const notesData = JSON.stringify({ main: notesMainDescription, sections: notesSections })
       const { error } = await supabase
         .from('profiles')
-        .update({ admin_notes: notesValue || null } as any)
+        .update({ admin_notes: notesData } as any)
         .eq('user_id', userId)
       if (error) throw error
       toast({ title: 'Notes Saved' })
       setNotesUserId(null)
-      setNotesValue('')
+      setNotesMainDescription('')
+      setNotesSections([])
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to save notes', variant: 'destructive' })
     } finally {
