@@ -103,10 +103,12 @@ export function AdminAllUsersManagement() {
   const [editingPhoneUserId, setEditingPhoneUserId] = useState<string | null>(null)
   const [editingPhoneValue, setEditingPhoneValue] = useState('')
   const [savingPhone, setSavingPhone] = useState(false)
-  // Editable joined date
-  const [editingJoinedUserId, setEditingJoinedUserId] = useState<string | null>(null)
-  const [editingJoinedValue, setEditingJoinedValue] = useState('')
-  const [savingJoined, setSavingJoined] = useState(false)
+  // Contract timeline editing
+  const [editingContractUserId, setEditingContractUserId] = useState<string | null>(null)
+  const [editingContractStartDate, setEditingContractStartDate] = useState('')
+  const [editingContractDueDate, setEditingContractDueDate] = useState('')
+  const [editingContractExtensionDate, setEditingContractExtensionDate] = useState('')
+  const [savingContract, setSavingContract] = useState(false)
   // Admin notes
   const [notesUserId, setNotesUserId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState('')
