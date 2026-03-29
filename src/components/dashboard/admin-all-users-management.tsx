@@ -1153,7 +1153,7 @@ export function AdminAllUsersManagement() {
                     <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background">
                       {renderContractTimeline(user)}
                     </TableCell>
-                    <TableCell className="min-w-[120px] sticky left-[480px] z-10 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                    <TableCell className="min-w-[120px]">
                       <Badge variant="outline" className="text-xs" style={{ backgroundColor: '#ffb500', color: '#1a1a2e', borderColor: '#ffb500' }}>
                         {user.role || 'Trustee'}
                       </Badge>
