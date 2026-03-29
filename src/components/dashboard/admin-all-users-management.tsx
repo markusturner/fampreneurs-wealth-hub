@@ -1042,7 +1042,7 @@ export function AdminAllUsersManagement() {
             (() => {
               const isInvitedUser = (u: any) => {
                 const name = (u.display_name || `${u.first_name || ''} ${u.last_name || ''}`.trim())
-                return !name || name.length === 0
+                return !name || name.length === 0 || name === 'Invited User' || u.needs_profile_completion === true
               }
               const activeUsers = filteredUsers.filter((u: any) => !isInvitedUser(u))
               const pendingUsers = filteredUsers.filter((u: any) => isInvitedUser(u))
