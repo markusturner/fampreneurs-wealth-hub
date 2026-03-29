@@ -1142,7 +1142,7 @@ export default function WorkspaceCommunity() {
                             <div className="mt-3 pt-3 border-t border-border/30 space-y-3">
                               {/* Existing comments */}
                               {(postComments[post.id] || []).map(comment => (
-                                <div key={comment.id} className="flex items-start gap-2">
+                                <div key={comment.id} className="flex items-start gap-2 group/comment">
                                   <Avatar className="h-7 w-7 flex-shrink-0">
                                     {comment.author_avatar && <AvatarImage src={comment.author_avatar} />}
                                     <AvatarFallback className="bg-muted text-muted-foreground text-xs">
@@ -1154,6 +1154,22 @@ export default function WorkspaceCommunity() {
                                       <div className="flex items-center gap-2">
                                         <span className="text-xs font-semibold">{comment.author_name}</span>
                                         <span className="text-[10px] text-muted-foreground">{timeAgo(comment.created_at)}</span>
+                                        {(comment.user_id === user?.id || isAdmin || isOwner) && (
+                                          <button
+                                            onClick={async () => {
+                                              try {
+                                                await supabase.from('community_comments').delete().eq('id', comment.id)
+                                                fetchComments(post.id)
+                                                toast({ title: 'Comment deleted' })
+                                              } catch {
+                                                toast({ title: 'Error', description: 'Failed to delete comment', variant: 'destructive' })
+                                              }
+                                            }}
+                                            className="opacity-0 group-hover/comment:opacity-100 text-destructive hover:text-destructive/80 transition-opacity"
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </button>
+                                        )}
                                       </div>
                                       {comment.content && <p className="text-sm mt-0.5">{comment.content}</p>}
                                       {comment.image_url && (

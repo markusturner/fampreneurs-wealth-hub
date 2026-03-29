@@ -403,16 +403,50 @@ export default function Messenger() {
                     </div>
                   ) : (
                     messages.map(msg => (
-                      <div key={msg.id} className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${
-                          msg.sender_id === user?.id
-                            ? 'bg-[hsl(43,100%,50%)] text-[hsl(270,80%,15%)] font-medium'
-                            : 'bg-accent text-accent-foreground'
-                        }`}>
-                          <p>{msg.content}</p>
-                          <p className={`text-[10px] mt-1 ${msg.sender_id === user?.id ? 'text-[hsl(270,80%,15%)]/60' : 'text-muted-foreground'}`}>
-                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </p>
+                      <div key={msg.id} className={`flex group/msg ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
+                        <div className="flex items-center gap-1">
+                          {msg.sender_id === user?.id && (isAdmin || isOwner || msg.sender_id === user?.id) && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await supabase.from('direct_messages').delete().eq('id', msg.id)
+                                  setMessages(prev => prev.filter(m => m.id !== msg.id))
+                                  toast({ title: 'Message deleted' })
+                                } catch {
+                                  toast({ title: 'Error', description: 'Failed to delete message', variant: 'destructive' })
+                                }
+                              }}
+                              className="opacity-0 group-hover/msg:opacity-100 text-destructive hover:text-destructive/80 transition-opacity p-1"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          )}
+                          <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${
+                            msg.sender_id === user?.id
+                              ? 'bg-[hsl(43,100%,50%)] text-[hsl(270,80%,15%)] font-medium'
+                              : 'bg-accent text-accent-foreground'
+                          }`}>
+                            <p>{msg.content}</p>
+                            <p className={`text-[10px] mt-1 ${msg.sender_id === user?.id ? 'text-[hsl(270,80%,15%)]/60' : 'text-muted-foreground'}`}>
+                              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                          {msg.sender_id !== user?.id && (isAdmin || isOwner) && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await supabase.from('direct_messages').delete().eq('id', msg.id)
+                                  setMessages(prev => prev.filter(m => m.id !== msg.id))
+                                  toast({ title: 'Message deleted' })
+                                } catch {
+                                  toast({ title: 'Error', description: 'Failed to delete message', variant: 'destructive' })
+                                }
+                              }}
+                              className="opacity-0 group-hover/msg:opacity-100 text-destructive hover:text-destructive/80 transition-opacity p-1"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))
