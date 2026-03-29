@@ -569,7 +569,7 @@ export function AdminAllUsersManagement() {
       toast({ title: 'Phone Updated', description: 'Phone number saved successfully' })
       setEditingPhoneUserId(null)
       setEditingPhoneValue('')
-      await fetchUsers()
+      await fetchUsers(true)
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to save phone', variant: 'destructive' })
     } finally {
