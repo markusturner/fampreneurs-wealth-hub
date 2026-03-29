@@ -952,7 +952,7 @@ export function AdminAllUsersManagement() {
             ) : (
             <div className="border rounded-lg overflow-x-auto">
               <ScrollArea className="h-[500px]">
-                <div className="min-w-[1050px]">
+                <div className="min-w-[1250px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -964,9 +964,11 @@ export function AdminAllUsersManagement() {
                       <TableHead>Email</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>TruHeirs</TableHead>
-                      <TableHead>Payment</TableHead>
+                      <TableHead>DFO</TableHead>
                       <TableHead>Program</TableHead>
+                      <TableHead>Forms</TableHead>
                       <TableHead>Joined</TableHead>
+                      <TableHead>Notes</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
