@@ -1119,6 +1119,18 @@ export function AdminAllUsersManagement() {
               )
 
               const renderContractTimeline = (user: any) => {
+                // Family members just show join date
+                if (user.membership_type === 'family_member') {
+                  return (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <div>
+                        <span className="text-xs font-medium">Joined {formatShortDate(user.created_at)}</span>
+                      </div>
+                    </div>
+                  )
+                }
+
                 const progress = getContractProgress(user)
                 const startDate = user.contract_start_date
                 const dueDate = user.contract_due_date
@@ -1175,13 +1187,10 @@ export function AdminAllUsersManagement() {
                     <div className="relative w-full h-1.5 rounded-full bg-muted overflow-hidden">
                       {hasExtension && dueMarkerPercent !== null && (
                         <>
-                          {/* Original due date portion */}
                           <div className="absolute h-full rounded-l-full bg-[#2eb2ff]" style={{ width: `${Math.min(dueMarkerPercent, progress || 0)}%` }} />
-                          {/* Extension portion */}
                           {(progress || 0) > dueMarkerPercent && (
                             <div className="absolute h-full bg-emerald-500 rounded-r-full" style={{ left: `${dueMarkerPercent}%`, width: `${Math.min((progress || 0) - dueMarkerPercent, 100 - dueMarkerPercent)}%` }} />
                           )}
-                          {/* Due date marker line */}
                           <div className="absolute top-0 h-full w-0.5 bg-muted-foreground/50" style={{ left: `${dueMarkerPercent}%` }} />
                         </>
                       )}
