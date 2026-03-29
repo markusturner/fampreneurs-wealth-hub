@@ -896,7 +896,7 @@ export function AdminAllUsersManagement() {
                         </Badge>
                       </div>
                       <div className="flex justify-between items-center gap-2">
-                        <span className="text-muted-foreground shrink-0">Payment</span>
+                        <span className="text-muted-foreground shrink-0">DFO</span>
                         <div className="text-right">
                           <span className="font-medium text-xs">{getPackageInfo(mobileSelectedUser).package}</span>
                           <span className="text-xs text-muted-foreground ml-1">{getPackageInfo(mobileSelectedUser).amount}</span>
@@ -907,8 +907,30 @@ export function AdminAllUsersManagement() {
                         <span className="text-right text-xs">{mobileSelectedUser.program_name || 'None'}</span>
                       </div>
                       <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Forms</span>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(mobileSelectedUser.user_id)}>
+                          <FileText className="h-3 w-3 mr-1" /> View
+                        </Button>
+                      </div>
+                      <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Joined</span>
-                        <span className="text-xs">{new Date(mobileSelectedUser.created_at).toLocaleDateString()}</span>
+                        <button
+                          className="text-xs hover:underline"
+                          onClick={() => {
+                            setEditingJoinedUserId(mobileSelectedUser.user_id)
+                            setEditingJoinedValue((mobileSelectedUser as any).admin_joined_date || mobileSelectedUser.created_at?.split('T')[0] || '')
+                          }}
+                        >
+                          {(mobileSelectedUser as any).admin_joined_date
+                            ? new Date((mobileSelectedUser as any).admin_joined_date).toLocaleDateString()
+                            : new Date(mobileSelectedUser.created_at).toLocaleDateString()}
+                        </button>
+                      </div>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Notes</span>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setNotesUserId(mobileSelectedUser.user_id); setNotesValue((mobileSelectedUser as any).admin_notes || '') }}>
+                          <StickyNote className="h-3 w-3 mr-1" /> {(mobileSelectedUser as any).admin_notes ? 'Edit' : 'Add'}
+                        </Button>
                       </div>
                     </div>
                     <div className="grid grid-cols-4 gap-1.5 pt-3 border-t">
