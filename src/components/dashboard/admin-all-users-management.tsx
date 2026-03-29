@@ -1076,10 +1076,11 @@ export function AdminAllUsersManagement() {
               const renderTableHeader = () => (
                 <TableHeader>
                   <TableRow>
-                     <TableHead className="w-10 sticky left-0 z-20 bg-background">
+                    <TableHead className="w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-20 bg-background">
                       <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
                     </TableHead>
-                     <TableHead className="sticky left-10 z-20 bg-background">Name</TableHead>
+                    <TableHead className="min-w-[160px] sticky left-[40px] z-20 bg-background">Name</TableHead>
+                    <TableHead className="min-w-[280px] sticky left-[200px] z-20 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Contract Timeline</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
@@ -1091,22 +1092,69 @@ export function AdminAllUsersManagement() {
                     <TableHead>Program</TableHead>
                     <TableHead>Stripe Sub</TableHead>
                     <TableHead>Forms</TableHead>
-                    <TableHead>Joined</TableHead>
                     <TableHead>Notes</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
               )
 
+              const renderContractTimeline = (user: any) => {
+                const progress = getContractProgress(user)
+                const startDate = user.contract_start_date
+                const dueDate = user.contract_due_date
+                const extensionDate = user.contract_extension_date
+
+                if (!startDate && !dueDate) {
+                  return (
+                    <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => {
+                      setEditingContractUserId(user.user_id)
+                      setEditingContractStartDate('')
+                      setEditingContractDueDate('')
+                      setEditingContractExtensionDate('')
+                    }}>
+                      <Calendar className="h-3 w-3 mr-1" /> Set dates
+                    </Button>
+                  )
+                }
+
+                const isOverdue = progress !== null && progress >= 100 && !extensionDate
+                const progressColor = isOverdue ? 'bg-destructive' : progress !== null && progress > 75 ? 'bg-orange-500' : 'bg-[#2eb2ff]'
+
+                return (
+                  <button
+                    className="w-full text-left"
+                    onClick={() => {
+                      setEditingContractUserId(user.user_id)
+                      setEditingContractStartDate(startDate || '')
+                      setEditingContractDueDate(dueDate || '')
+                      setEditingContractExtensionDate(extensionDate || '')
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <span className="text-xs font-medium">{formatShortDate(startDate)} – {formatShortDate(dueDate)}</span>
+                      {progress !== null && <span className={`text-xs font-semibold ml-auto ${isOverdue ? 'text-destructive' : 'text-[#2eb2ff]'}`}>{progress}%</span>}
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div className={`h-full rounded-full transition-all ${progressColor}`} style={{ width: `${Math.min(progress || 0, 100)}%` }} />
+                    </div>
+                    {extensionDate && <div className="text-[10px] text-muted-foreground mt-0.5">Ext: {formatShortDate(extensionDate)}</div>}
+                  </button>
+                )
+              }
+
               const renderUserRow = (user: any) => {
                 const packageInfo = getPackageInfo(user)
                 return (
                   <TableRow key={user.user_id}>
-                    <TableCell className="w-10 sticky left-0 z-10 bg-background">
+                    <TableCell className="w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 bg-background">
                       <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
                     </TableCell>
-                    <TableCell className="font-medium whitespace-nowrap sticky left-10 z-10 bg-background">
+                    <TableCell className="font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 bg-background">
                       {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}
+                    </TableCell>
+                    <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                      {renderContractTimeline(user)}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       {editingPhoneUserId === user.user_id ? (
