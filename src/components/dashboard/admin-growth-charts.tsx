@@ -79,17 +79,9 @@ export function AdminGrowthCharts() {
       addActivity(comments, 'user_id')
       addActivity(meetings, 'created_by')
 
-      // Also count profiles created and documents
-      const [{ data: docs }] = await Promise.all([
-        supabase.from('family_documents').select('created_at').gte('created_at', format(yearStart, 'yyyy-MM-dd'))
-      ])
-      
+      // Also count profiles created
       profiles?.forEach(p => {
         const date = format(new Date(p.created_at), 'yyyy-MM-dd')
-        activityCountByDate[date] = (activityCountByDate[date] || 0) + 1
-      })
-      docs?.forEach(d => {
-        const date = format(new Date(d.created_at), 'yyyy-MM-dd')
         activityCountByDate[date] = (activityCountByDate[date] || 0) + 1
       })
 
