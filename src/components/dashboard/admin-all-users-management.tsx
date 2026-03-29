@@ -256,7 +256,7 @@ export function AdminAllUsersManagement() {
   // Debounced fetch effect
   useEffect(() => {
     if (debouncedFetchTrigger > 0) {
-      fetchUsers()
+      fetchUsers(true)
     }
   }, [debouncedFetchTrigger, fetchUsers])
 
