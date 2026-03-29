@@ -1051,10 +1051,10 @@ export function AdminAllUsersManagement() {
               const renderTableHeader = () => (
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-10 sticky left-0 z-20 bg-background">
+                     <TableHead className="w-10 sticky left-0 z-20 bg-background">
                       <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
                     </TableHead>
-                    <TableHead className="sticky left-10 z-20 bg-background after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-border">Name</TableHead>
+                     <TableHead className="sticky left-10 z-20 bg-background">Name</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
@@ -1080,7 +1080,7 @@ export function AdminAllUsersManagement() {
                     <TableCell className="w-10 sticky left-0 z-10 bg-background">
                       <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
                     </TableCell>
-                    <TableCell className="font-medium whitespace-nowrap sticky left-10 z-10 bg-background after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-border">
+                    <TableCell className="font-medium whitespace-nowrap sticky left-10 z-10 bg-background">
                       {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
@@ -1244,8 +1244,7 @@ export function AdminAllUsersManagement() {
 
                   <div className={`border rounded-lg ${memberView === 'pending' ? 'border-amber-500/30' : ''}`}>
                     <ScrollArea className="h-[500px] w-full">
-                      <div className="min-w-[1800px]">
-                        <Table>
+                    <table className="w-full caption-bottom text-sm min-w-[1800px]">
                           {renderTableHeader()}
                           <TableBody>
                             {(memberView === 'active' ? activeUsers : pendingUsers).length === 0 ? (
@@ -1254,8 +1253,7 @@ export function AdminAllUsersManagement() {
                               </TableCell></TableRow>
                             ) : (memberView === 'active' ? activeUsers : pendingUsers).map(renderUserRow)}
                           </TableBody>
-                        </Table>
-                      </div>
+                        </table>
                       <ScrollBar orientation="horizontal" />
                     </ScrollArea>
                   </div>
