@@ -45,6 +45,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Textarea } from '@/components/ui/textarea'
 
 interface UserProfile {
   user_id: string
