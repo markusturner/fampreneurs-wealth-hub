@@ -1220,52 +1220,45 @@ export function AdminAllUsersManagement() {
               }
 
               return (
-                <div className="space-y-6">
-                  {/* Active Members Section */}
-                  <div>
-                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Active Members ({activeUsers.length})
-                    </h3>
-                    <div className="border rounded-lg">
-                      <ScrollArea className="h-[400px] w-full">
-                        <div className="min-w-[1800px]">
-                          <Table>
-                            {renderTableHeader()}
-                            <TableBody>
-                              {activeUsers.length === 0 ? (
-                                <TableRow><TableCell colSpan={16} className="text-center text-muted-foreground py-8">No active members</TableCell></TableRow>
-                              ) : activeUsers.map(renderUserRow)}
-                            </TableBody>
-                          </Table>
-                        </div>
-                        <ScrollBar orientation="horizontal" />
-                      </ScrollArea>
-                    </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant={memberView === 'active' ? 'default' : 'outline'}
+                      onClick={() => setMemberView('active')}
+                      className="text-xs"
+                    >
+                      <Users className="h-3 w-3 mr-1" />
+                      Active ({activeUsers.length})
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={memberView === 'pending' ? 'default' : 'outline'}
+                      onClick={() => setMemberView('pending')}
+                      className="text-xs"
+                    >
+                      <Clock className="h-3 w-3 mr-1" />
+                      Pending ({pendingUsers.length})
+                    </Button>
                   </div>
 
-                  {/* Pending (Invited) Section */}
-                  {pendingUsers.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-amber-500" />
-                        Pending ({pendingUsers.length})
-                      </h3>
-                      <div className="border rounded-lg border-amber-500/30">
-                        <ScrollArea className="h-[300px] w-full">
-                          <div className="min-w-[1800px]">
-                            <Table>
-                              {renderTableHeader()}
-                              <TableBody>
-                                {pendingUsers.map(renderUserRow)}
-                              </TableBody>
-                            </Table>
-                          </div>
-                          <ScrollBar orientation="horizontal" />
-                        </ScrollArea>
+                  <div className={`border rounded-lg ${memberView === 'pending' ? 'border-amber-500/30' : ''}`}>
+                    <ScrollArea className="h-[500px] w-full">
+                      <div className="min-w-[1800px]">
+                        <Table>
+                          {renderTableHeader()}
+                          <TableBody>
+                            {(memberView === 'active' ? activeUsers : pendingUsers).length === 0 ? (
+                              <TableRow><TableCell colSpan={16} className="text-center text-muted-foreground py-8">
+                                {memberView === 'active' ? 'No active members' : 'No pending users'}
+                              </TableCell></TableRow>
+                            ) : (memberView === 'active' ? activeUsers : pendingUsers).map(renderUserRow)}
+                          </TableBody>
+                        </Table>
                       </div>
-                    </div>
-                  )}
+                      <ScrollBar orientation="horizontal" />
+                    </ScrollArea>
+                  </div>
 
                   <div className="text-sm text-muted-foreground">
                     Total users: {filteredUsers.length} ({activeUsers.length} active, {pendingUsers.length} pending)
