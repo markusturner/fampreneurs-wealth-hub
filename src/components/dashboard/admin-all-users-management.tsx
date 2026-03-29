@@ -1004,17 +1004,19 @@ export function AdminAllUsersManagement() {
                         </Button>
                       </div>
                       <div className="flex justify-between items-center gap-2">
-                        <span className="text-muted-foreground shrink-0">Joined</span>
+                        <span className="text-muted-foreground shrink-0">Contract</span>
                         <button
                           className="text-xs hover:underline"
                           onClick={() => {
-                            setEditingJoinedUserId(mobileSelectedUser.user_id)
-                            setEditingJoinedValue((mobileSelectedUser as any).admin_joined_date || mobileSelectedUser.created_at?.split('T')[0] || '')
+                            setEditingContractUserId(mobileSelectedUser.user_id)
+                            setEditingContractStartDate((mobileSelectedUser as any).contract_start_date || '')
+                            setEditingContractDueDate((mobileSelectedUser as any).contract_due_date || '')
+                            setEditingContractExtensionDate((mobileSelectedUser as any).contract_extension_date || '')
                           }}
                         >
-                          {(mobileSelectedUser as any).admin_joined_date
-                            ? new Date((mobileSelectedUser as any).admin_joined_date).toLocaleDateString()
-                            : new Date(mobileSelectedUser.created_at).toLocaleDateString()}
+                          {(mobileSelectedUser as any).contract_start_date
+                            ? `${formatShortDate((mobileSelectedUser as any).contract_start_date)} – ${formatShortDate((mobileSelectedUser as any).contract_due_date)}`
+                            : 'Set dates'}
                         </button>
                       </div>
                       <div className="flex justify-between items-center gap-2">
