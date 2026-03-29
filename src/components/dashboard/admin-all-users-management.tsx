@@ -100,6 +100,18 @@ export function AdminAllUsersManagement() {
   const [editingPhoneUserId, setEditingPhoneUserId] = useState<string | null>(null)
   const [editingPhoneValue, setEditingPhoneValue] = useState('')
   const [savingPhone, setSavingPhone] = useState(false)
+  // Editable joined date
+  const [editingJoinedUserId, setEditingJoinedUserId] = useState<string | null>(null)
+  const [editingJoinedValue, setEditingJoinedValue] = useState('')
+  const [savingJoined, setSavingJoined] = useState(false)
+  // Admin notes
+  const [notesUserId, setNotesUserId] = useState<string | null>(null)
+  const [notesValue, setNotesValue] = useState('')
+  const [savingNotes, setSavingNotes] = useState(false)
+  // User forms dialog
+  const [formsUserId, setFormsUserId] = useState<string | null>(null)
+  const [formsData, setFormsData] = useState<{onboarding: any, agreements: any[], trustForms: any[]}>({ onboarding: null, agreements: [], trustForms: [] })
+  const [loadingForms, setLoadingForms] = useState(false)
   const { toast } = useToast()
 
   const syncStripeData = async (silent = false) => {
