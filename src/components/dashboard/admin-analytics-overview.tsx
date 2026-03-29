@@ -336,32 +336,72 @@ export function AdminAnalyticsOverview() {
 
         {/* PROGRAM TAB */}
         <TabsContent value="program" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Contract Overview Hero */}
+          <Card className="border-[#ffb500]/40 bg-gradient-to-r from-[#ffb500]/10 to-transparent">
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center md:text-left">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Total Contract Value</p>
+                  <div className="text-3xl md:text-4xl font-bold mt-1" style={{ color: '#ffb500' }}>
+                    ${metrics.programContractValue.toLocaleString()}
+                  </div>
+                </div>
+                <div className="text-center md:text-left">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Cash Collected</p>
+                  <div className="text-3xl md:text-4xl font-bold mt-1 text-green-500">
+                    ${metrics.programCashCollected.toLocaleString()}
+                  </div>
+                </div>
+                <div className="text-center md:text-left">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Remaining Balance</p>
+                  <div className="text-3xl md:text-4xl font-bold mt-1 text-orange-500">
+                    ${metrics.programRemaining.toLocaleString()}
+                  </div>
+                </div>
+              </div>
+              {metrics.programContractValue > 0 && (
+                <div className="mt-4">
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <span>Collection Progress</span>
+                    <span>{Math.round((metrics.programCashCollected / metrics.programContractValue) * 100)}%</span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-muted">
+                    <div 
+                      className="h-2 rounded-full bg-green-500 transition-all"
+                      style={{ width: `${Math.min((metrics.programCashCollected / metrics.programContractValue) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <MetricCard 
               title="Program MRR" 
               value={`$${metrics.mrrProgram.toLocaleString()}`} 
-              subtitle="Monthly recurring from programs"
+              subtitle="Cash collected ÷ 12"
               icon={<DollarSign className="h-4 w-4" style={{ color: '#ffb500' }} />}
               highlight
             />
             <MetricCard 
               title="Program Paid Members" 
               value={metrics.programPaidCount} 
-              subtitle="Active program subscribers"
+              subtitle="Trustees with programs"
               icon={<Users className="h-4 w-4" style={{ color: '#ffb500' }} />}
             />
             <MetricCard 
               title="Program ARPU" 
-              value={metrics.programPaidCount > 0 ? `$${Math.round(metrics.mrrProgram / metrics.programPaidCount)}` : '$0'} 
-              subtitle="Avg revenue per program user"
+              value={metrics.programPaidCount > 0 ? `$${Math.round(metrics.programContractValue / metrics.programPaidCount).toLocaleString()}` : '$0'} 
+              subtitle="Avg contract per trustee"
+            />
+            <MetricCard 
+              title="Program Annual Revenue" 
+              value={`$${(metrics.mrrProgram * 12).toLocaleString()}`} 
+              subtitle="Projected annual revenue"
+              highlight
             />
           </div>
-          <MetricCard 
-            title="Program Annual Revenue" 
-            value={`$${(metrics.mrrProgram * 12).toLocaleString()}`} 
-            subtitle="Projected annual program revenue"
-            highlight
-          />
         </TabsContent>
       </Tabs>
     </div>
