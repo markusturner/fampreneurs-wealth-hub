@@ -20,9 +20,10 @@ interface ActivityDay {
 
 interface AdminGrowthChartsProps {
   programOnly?: boolean
+  truheirsOnly?: boolean
 }
 
-export function AdminGrowthCharts({ programOnly = false }: AdminGrowthChartsProps) {
+export function AdminGrowthCharts({ programOnly = false, truheirsOnly = false }: AdminGrowthChartsProps) {
   const [growthData, setGrowthData] = useState<GrowthData[]>([])
   const [activityData, setActivityData] = useState<ActivityDay[]>([])
   const [loading, setLoading] = useState(true)
