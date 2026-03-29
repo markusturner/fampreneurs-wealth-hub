@@ -120,7 +120,7 @@ export function AdminAllUsersManagement() {
   const [loadingForms, setLoadingForms] = useState(false)
   // Financial inline editing
   const [editingFinanceUserId, setEditingFinanceUserId] = useState<string | null>(null)
-  const [editingFinanceField, setEditingFinanceField] = useState<'contract_value' | 'cash_collected' | 'stripe_sub' | null>(null)
+  const [editingFinanceField, setEditingFinanceField] = useState<'contract_value' | 'cash_collected' | null>(null)
   const [editingFinanceValue, setEditingFinanceValue] = useState('')
   const [savingFinance, setSavingFinance] = useState(false)
   const { toast } = useToast()
@@ -668,8 +668,6 @@ export function AdminAllUsersManagement() {
       } else if (editingFinanceField === 'cash_collected') {
         const val = editingFinanceValue.replace(/,/g, '')
         updateData.program_cash_collected = val ? Number(val) : null
-      } else if (editingFinanceField === 'stripe_sub') {
-        updateData.stripe_subscription_id = editingFinanceValue || null
       }
       const { error } = await supabase.from('profiles').update(updateData).eq('user_id', userId)
       if (error) throw error
@@ -1080,17 +1078,16 @@ export function AdminAllUsersManagement() {
                       <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
                     </TableHead>
                     <TableHead className="min-w-[160px] sticky left-[40px] z-20 bg-background">Name</TableHead>
-                    <TableHead className="min-w-[280px] sticky left-[200px] z-20 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Contract Timeline</TableHead>
+                    <TableHead className="min-w-[280px] sticky left-[200px] z-20 bg-background">Contract Timeline</TableHead>
+                    <TableHead className="min-w-[120px] sticky left-[480px] z-20 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Role</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
                     <TableHead>TruHeirs</TableHead>
                     <TableHead>DFO</TableHead>
                     <TableHead>Contract Value</TableHead>
                     <TableHead>Cash Collected</TableHead>
                     <TableHead>Remaining</TableHead>
                     <TableHead>Program</TableHead>
-                    <TableHead>Stripe Sub</TableHead>
                     <TableHead>Forms</TableHead>
                     <TableHead>Notes</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -1153,8 +1150,13 @@ export function AdminAllUsersManagement() {
                     <TableCell className="font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 bg-background">
                       {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}
                     </TableCell>
-                    <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                    <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background">
                       {renderContractTimeline(user)}
+                    </TableCell>
+                    <TableCell className="min-w-[120px] sticky left-[480px] z-10 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                      <Badge variant="outline" className="text-xs" style={{ backgroundColor: '#ffb500', color: '#1a1a2e', borderColor: '#ffb500' }}>
+                        {user.role || 'Trustee'}
+                      </Badge>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       {editingPhoneUserId === user.user_id ? (
@@ -1188,12 +1190,7 @@ export function AdminAllUsersManagement() {
                     </TableCell>
                     <TableCell className="text-sm">{user.email}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-xs" style={{ backgroundColor: '#ffb500', color: '#1a1a2e', borderColor: '#ffb500' }}>
-                        {user.role || 'Trustee'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.truheirs_access ? "default" : "destructive"} className="text-xs">
+                      <Badge className={`text-xs ${user.truheirs_access ? 'bg-green-600 hover:bg-green-700 text-white border-green-600' : ''}`} variant={user.truheirs_access ? "default" : "destructive"}>
                         {user.truheirs_access ? 'Yes' : 'No'}
                       </Badge>
                     </TableCell>
@@ -1235,19 +1232,6 @@ export function AdminAllUsersManagement() {
                         : '—'}
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-xs">{user.program_name || '—'}</TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {editingFinanceUserId === user.user_id && editingFinanceField === 'stripe_sub' ? (
-                        <div className="flex items-center gap-1">
-                          <Input value={editingFinanceValue} onChange={e => setEditingFinanceValue(e.target.value)} placeholder="sub_..." className="h-7 w-28 text-xs" onKeyDown={e => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>{savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingFinanceUserId(null)}><X className="h-3 w-3" /></Button>
-                        </div>
-                      ) : (
-                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('stripe_sub'); setEditingFinanceValue(user.stripe_subscription_id || '') }}>
-                          {user.stripe_subscription_id ? 'Assigned' : 'Assign'}
-                        </Button>
-                      )}
-                    </TableCell>
                     <TableCell>
                       <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(user.user_id)}>View</Button>
                     </TableCell>
@@ -1303,19 +1287,18 @@ export function AdminAllUsersManagement() {
                   </div>
 
                   <div className={`border rounded-lg ${memberView === 'pending' ? 'border-amber-500/30' : ''}`}>
-                    <ScrollArea className="h-[500px] w-full">
-                    <table className="w-full caption-bottom text-sm min-w-[1800px]">
-                          {renderTableHeader()}
-                          <TableBody>
-                            {(memberView === 'active' ? activeUsers : pendingUsers).length === 0 ? (
-                              <TableRow><TableCell colSpan={16} className="text-center text-muted-foreground py-8">
-                                {memberView === 'active' ? 'No active members' : 'No pending users'}
-                              </TableCell></TableRow>
-                            ) : (memberView === 'active' ? activeUsers : pendingUsers).map(renderUserRow)}
-                          </TableBody>
-                        </table>
-                      <ScrollBar orientation="horizontal" />
-                    </ScrollArea>
+                    <div className="h-[500px] w-full overflow-auto">
+                      <table className="w-full caption-bottom text-sm min-w-[1800px]">
+                        {renderTableHeader()}
+                        <TableBody>
+                          {(memberView === 'active' ? activeUsers : pendingUsers).length === 0 ? (
+                            <TableRow><TableCell colSpan={15} className="text-center text-muted-foreground py-8">
+                              {memberView === 'active' ? 'No active members' : 'No pending users'}
+                            </TableCell></TableRow>
+                          ) : (memberView === 'active' ? activeUsers : pendingUsers).map(renderUserRow)}
+                        </TableBody>
+                      </table>
+                    </div>
                   </div>
 
                   <div className="text-sm text-muted-foreground">
@@ -1830,15 +1813,36 @@ export function AdminAllUsersManagement() {
           <div className="grid grid-cols-3 gap-4 py-4">
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Start Date</Label>
-              <Input type="date" value={editingContractStartDate} onChange={e => setEditingContractStartDate(e.target.value)} />
+              <div className="relative">
+                <Input
+                  type="date"
+                  value={editingContractStartDate}
+                  onChange={e => setEditingContractStartDate(e.target.value)}
+                  className="h-11 rounded-xl border-2 border-muted bg-muted/30 px-4 text-sm font-medium focus:border-[#ffb500] focus:ring-[#ffb500] transition-all [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Due Date</Label>
-              <Input type="date" value={editingContractDueDate} onChange={e => setEditingContractDueDate(e.target.value)} />
+              <div className="relative">
+                <Input
+                  type="date"
+                  value={editingContractDueDate}
+                  onChange={e => setEditingContractDueDate(e.target.value)}
+                  className="h-11 rounded-xl border-2 border-muted bg-muted/30 px-4 text-sm font-medium focus:border-[#ffb500] focus:ring-[#ffb500] transition-all [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Extension Date</Label>
-              <Input type="date" value={editingContractExtensionDate} onChange={e => setEditingContractExtensionDate(e.target.value)} />
+              <div className="relative">
+                <Input
+                  type="date"
+                  value={editingContractExtensionDate}
+                  onChange={e => setEditingContractExtensionDate(e.target.value)}
+                  className="h-11 rounded-xl border-2 border-muted bg-muted/30 px-4 text-sm font-medium focus:border-[#ffb500] focus:ring-[#ffb500] transition-all [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                />
+              </div>
             </div>
           </div>
           {editingContractStartDate && editingContractDueDate && (() => {
