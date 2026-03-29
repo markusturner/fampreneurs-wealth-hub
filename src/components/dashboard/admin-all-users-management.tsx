@@ -579,23 +579,44 @@ export function AdminAllUsersManagement() {
     }
   }
 
-  const handleSaveInlineJoined = async (userId: string) => {
-    setSavingJoined(true)
+  const handleSaveContractDates = async (userId: string) => {
+    setSavingContract(true)
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ admin_joined_date: editingJoinedValue || null } as any)
+        .update({
+          contract_start_date: editingContractStartDate || null,
+          contract_due_date: editingContractDueDate || null,
+          contract_extension_date: editingContractExtensionDate || null,
+        } as any)
         .eq('user_id', userId)
       if (error) throw error
-      toast({ title: 'Joined Date Updated', description: 'Date saved successfully' })
-      setEditingJoinedUserId(null)
-      setEditingJoinedValue('')
+      toast({ title: 'Contract Dates Updated', description: 'Timeline saved successfully' })
+      setEditingContractUserId(null)
       await fetchUsers(true)
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message || 'Failed to save date', variant: 'destructive' })
+      toast({ title: 'Error', description: err.message || 'Failed to save dates', variant: 'destructive' })
     } finally {
-      setSavingJoined(false)
+      setSavingContract(false)
     }
+  }
+
+  const getContractProgress = (user: any) => {
+    const start = user.contract_start_date ? new Date(user.contract_start_date) : null
+    const due = user.contract_due_date ? new Date(user.contract_due_date) : null
+    if (!start || !due) return null
+    const now = new Date()
+    const total = due.getTime() - start.getTime()
+    if (total <= 0) return 100
+    const elapsed = now.getTime() - start.getTime()
+    return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)))
+  }
+
+  const formatShortDate = (dateStr: string | null) => {
+    if (!dateStr) return '—'
+    const d = new Date(dateStr)
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    return `${months[d.getMonth()]} ${d.getDate()}, '${String(d.getFullYear()).slice(2)}`
   }
 
   const handleSaveNotes = async (userId: string) => {
