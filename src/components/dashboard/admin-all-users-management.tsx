@@ -1815,7 +1815,62 @@ export function AdminAllUsersManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* User Forms Dialog */}
+      {/* Contract Timeline Dialog */}
+      <Dialog open={!!editingContractUserId} onOpenChange={(open) => !open && setEditingContractUserId(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Contract Timeline
+            </DialogTitle>
+            <DialogDescription>
+              Set the contract start date, due date, and optional extension date for {users.find(u => u.user_id === editingContractUserId)?.display_name || 'this user'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-3 gap-4 py-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Start Date</Label>
+              <Input type="date" value={editingContractStartDate} onChange={e => setEditingContractStartDate(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Due Date</Label>
+              <Input type="date" value={editingContractDueDate} onChange={e => setEditingContractDueDate(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Extension Date</Label>
+              <Input type="date" value={editingContractExtensionDate} onChange={e => setEditingContractExtensionDate(e.target.value)} />
+            </div>
+          </div>
+          {editingContractStartDate && editingContractDueDate && (() => {
+            const start = new Date(editingContractStartDate)
+            const due = new Date(editingContractDueDate)
+            const now = new Date()
+            const total = due.getTime() - start.getTime()
+            const elapsed = now.getTime() - start.getTime()
+            const pct = total > 0 ? Math.min(100, Math.max(0, Math.round((elapsed / total) * 100))) : 0
+            const isOverdue = pct >= 100
+            return (
+              <div className="space-y-2 pb-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span>{formatShortDate(editingContractStartDate)} – {formatShortDate(editingContractDueDate)}</span>
+                  <span className={`font-semibold ${isOverdue ? 'text-destructive' : 'text-[#2eb2ff]'}`}>{pct}%</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                  <div className={`h-full rounded-full transition-all ${isOverdue ? 'bg-destructive' : pct > 75 ? 'bg-orange-500' : 'bg-[#2eb2ff]'}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                </div>
+              </div>
+            )
+          })()}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingContractUserId(null)}>Cancel</Button>
+            <Button onClick={() => editingContractUserId && handleSaveContractDates(editingContractUserId)} disabled={savingContract} style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
+              {savingContract ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Save Dates
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={!!formsUserId} onOpenChange={(open) => !open && setFormsUserId(null)}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
