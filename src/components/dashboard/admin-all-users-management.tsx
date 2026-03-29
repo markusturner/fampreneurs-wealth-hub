@@ -1244,8 +1244,8 @@ export function AdminAllUsersManagement() {
 
                   <div className={`border rounded-lg ${memberView === 'pending' ? 'border-amber-500/30' : ''}`}>
                     <ScrollArea className="h-[500px] w-full">
-                      <div className="min-w-[1800px]">
-                        <Table>
+                    <div className="min-w-[1800px]">
+                        <Table className="[&>div]:overflow-visible">{/* Override Table's overflow-auto for sticky to work */}
                           {renderTableHeader()}
                           <TableBody>
                             {(memberView === 'active' ? activeUsers : pendingUsers).length === 0 ? (
