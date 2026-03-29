@@ -155,8 +155,8 @@ export function AdminAllUsersManagement() {
     }
   };
 
-  const fetchUsers = useCallback(async () => {
-    setIsLoading(true)
+  const fetchUsers = useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true)
     try {
       const { data: profilesData, error } = await supabase
         .from('profiles')
