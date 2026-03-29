@@ -98,10 +98,10 @@ export function AdminGrowthCharts({ programOnly = false }: AdminGrowthChartsProp
         })
       }
 
-      addActivity(messages, 'sender_id')
-      addActivity(posts, 'user_id')
-      addActivity(comments, 'user_id')
-      addActivity(meetings, 'created_by')
+      addActivity(filteredMessages, 'sender_id')
+      addActivity(filteredPosts, 'user_id')
+      addActivity(filteredComments, 'user_id')
+      addActivity(filteredMeetings, 'created_by')
 
       // Also count profiles created
       profiles?.forEach(p => {
