@@ -13,22 +13,36 @@ interface CourseCompletion {
   completedCount: number
 }
 
-export function AdminCourseCompletion() {
+interface AdminCourseCompletionProps {
+  programOnly?: boolean
+}
+
+export function AdminCourseCompletion({ programOnly = false }: AdminCourseCompletionProps) {
   const [courses, setCourses] = useState<CourseCompletion[]>([])
   const [loading, setLoading] = useState(true)
   const [overallAvg, setOverallAvg] = useState(0)
 
   useEffect(() => {
     fetchCourseCompletion()
-  }, [])
+  }, [programOnly])
 
   const fetchCourseCompletion = async () => {
     try {
       setLoading(true)
 
+      // If programOnly, get program user IDs first
+      let programUserIds: Set<string> | null = null
+      if (programOnly) {
+        const { data: programProfiles } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .not('program_name', 'is', null)
+        programUserIds = new Set(programProfiles?.map(p => p.user_id) || [])
+      }
+
       const [{ data: allCourses }, { data: enrollments }] = await Promise.all([
         supabase.from('courses').select('id, title').order('title'),
-        supabase.from('course_enrollments').select('course_id, progress, completed_at'),
+        supabase.from('course_enrollments').select('course_id, progress, completed_at, user_id'),
       ])
 
       if (!allCourses) return
