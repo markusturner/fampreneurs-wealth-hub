@@ -1125,8 +1125,8 @@ export function AdminAllUsersManagement() {
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       <div className="text-xs">
-                        <span>{packageInfo.tier}</span>
-                        {packageInfo.price && <div className="text-muted-foreground">{packageInfo.price}</div>}
+                        <span>{packageInfo.package}</span>
+                        {packageInfo.amount && <div className="text-muted-foreground">{packageInfo.amount}</div>}
                       </div>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
