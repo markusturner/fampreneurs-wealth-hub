@@ -3752,9 +3752,12 @@ export type Database = {
           occupation: string | null
           phone: string | null
           profile_photo_uploaded: boolean
+          program_cash_collected: number | null
+          program_contract_value: number | null
           program_name: string | null
           state: string | null
           street_address: string | null
+          stripe_subscription_id: string | null
           truheirs_access: boolean
           updated_at: string
           user_id: string
@@ -3794,9 +3797,12 @@ export type Database = {
           occupation?: string | null
           phone?: string | null
           profile_photo_uploaded?: boolean
+          program_cash_collected?: number | null
+          program_contract_value?: number | null
           program_name?: string | null
           state?: string | null
           street_address?: string | null
+          stripe_subscription_id?: string | null
           truheirs_access?: boolean
           updated_at?: string
           user_id: string
@@ -3836,9 +3842,12 @@ export type Database = {
           occupation?: string | null
           phone?: string | null
           profile_photo_uploaded?: boolean
+          program_cash_collected?: number | null
+          program_contract_value?: number | null
           program_name?: string | null
           state?: string | null
           street_address?: string | null
+          stripe_subscription_id?: string | null
           truheirs_access?: boolean
           updated_at?: string
           user_id?: string

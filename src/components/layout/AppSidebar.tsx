@@ -21,9 +21,7 @@ import {
   LogOut,
   Search,
   Mail,
-  ClipboardList,
   ScrollText,
-  FileCheck,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -121,9 +119,6 @@ const SEARCH_SUGGESTIONS = [
   { label: 'Messenger', path: '/messenger', requiresSubscription: false },
   { label: 'Profile Settings', path: '/profile-settings', requiresSubscription: false },
   { label: 'Admin Settings', path: '/admin-settings', requiresAdmin: true },
-  { label: 'Onboarding Form', path: '/onboarding-submissions', requiresAdmin: true },
-  { label: 'Program Agreements', path: '/program-agreements', requiresAdmin: true },
-  { label: 'Trust Forms', path: '/trust-form-submissions', requiresAdmin: true },
 ]
 
 export function AppSidebar({ className }: { className?: string }) {
@@ -256,9 +251,6 @@ export function AppSidebar({ className }: { className?: string }) {
             </div>
             <div className="space-y-0.5">
               <NavItem label="Admin Settings" icon={Shield} href="/admin-settings" active={isActive("/admin-settings")} />
-              <NavItem label="Onboarding Form" icon={ClipboardList} href="/onboarding-submissions" active={isActive("/onboarding-submissions")} />
-              <NavItem label="Program Agreements" icon={FileCheck} href="/program-agreements" active={isActive("/program-agreements")} />
-              <NavItem label="Trust Forms" icon={FileText} href="/trust-form-submissions" active={isActive("/trust-form-submissions")} />
             </div>
           </>
         )}

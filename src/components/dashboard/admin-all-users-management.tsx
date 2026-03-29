@@ -64,6 +64,9 @@ interface UserProfile {
   subscription_tier?: string | null
   subscription_period?: string | null
   subscribed?: boolean
+  program_contract_value?: number | null
+  program_cash_collected?: number | null
+  stripe_subscription_id?: string | null
 }
 
 export function AdminAllUsersManagement() {
@@ -112,6 +115,11 @@ export function AdminAllUsersManagement() {
   const [formsUserId, setFormsUserId] = useState<string | null>(null)
   const [formsData, setFormsData] = useState<{onboarding: any, agreements: any[], trustForms: any[]}>({ onboarding: null, agreements: [], trustForms: [] })
   const [loadingForms, setLoadingForms] = useState(false)
+  // Financial inline editing
+  const [editingFinanceUserId, setEditingFinanceUserId] = useState<string | null>(null)
+  const [editingFinanceField, setEditingFinanceField] = useState<'contract_value' | 'cash_collected' | 'stripe_sub' | null>(null)
+  const [editingFinanceValue, setEditingFinanceValue] = useState('')
+  const [savingFinance, setSavingFinance] = useState(false)
   const { toast } = useToast()
 
   const syncStripeData = async (silent = false) => {
@@ -616,6 +624,44 @@ export function AdminAllUsersManagement() {
     }
   }
 
+  const handleSaveFinance = async (userId: string) => {
+    setSavingFinance(true)
+    try {
+      const updateData: any = {}
+      if (editingFinanceField === 'contract_value') {
+        const val = editingFinanceValue.replace(/,/g, '')
+        updateData.program_contract_value = val ? Number(val) : null
+      } else if (editingFinanceField === 'cash_collected') {
+        const val = editingFinanceValue.replace(/,/g, '')
+        updateData.program_cash_collected = val ? Number(val) : null
+      } else if (editingFinanceField === 'stripe_sub') {
+        updateData.stripe_subscription_id = editingFinanceValue || null
+      }
+      const { error } = await supabase.from('profiles').update(updateData).eq('user_id', userId)
+      if (error) throw error
+      toast({ title: 'Updated', description: 'Financial data saved' })
+      setEditingFinanceUserId(null)
+      setEditingFinanceField(null)
+      setEditingFinanceValue('')
+      await fetchUsers()
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to save', variant: 'destructive' })
+    } finally {
+      setSavingFinance(false)
+    }
+  }
+
+  const formatCurrency = (val: number | null | undefined) => {
+    if (val === null || val === undefined) return '—'
+    return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+  }
+
+  const getRemainingBalance = (user: UserProfile) => {
+    const contract = (user as any).program_contract_value ?? 0
+    const collected = (user as any).program_cash_collected ?? 0
+    return contract - collected
+  }
+
   const syncStripeSubscriptions = async () => {
     setSyncingStripe(true)
     try {
@@ -628,7 +674,6 @@ export function AdminAllUsersManagement() {
         description: `Synced ${data.synced} trustees successfully. ${data.errors > 0 ? `${data.errors} errors.` : ''}`,
       })
 
-      // Refresh user list to show updated subscription data
       await fetchUsers()
     } catch (error: any) {
       console.error('Error syncing Stripe:', error)
@@ -903,6 +948,18 @@ export function AdminAllUsersManagement() {
                         </div>
                       </div>
                       <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Contract Value</span>
+                        <span className="text-right text-xs">{formatCurrency((mobileSelectedUser as any).program_contract_value)}</span>
+                      </div>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Cash Collected</span>
+                        <span className="text-right text-xs">{formatCurrency((mobileSelectedUser as any).program_cash_collected)}</span>
+                      </div>
+                      <div className="flex justify-between items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Remaining</span>
+                        <span className="text-right text-xs font-medium">{(mobileSelectedUser as any).program_contract_value ? formatCurrency(getRemainingBalance(mobileSelectedUser)) : '—'}</span>
+                      </div>
+                      <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Program</span>
                         <span className="text-right text-xs">{mobileSelectedUser.program_name || 'None'}</span>
                       </div>
@@ -974,7 +1031,7 @@ export function AdminAllUsersManagement() {
             ) : (
             <div className="border rounded-lg overflow-x-auto">
               <ScrollArea className="h-[500px]">
-                <div className="min-w-[1250px]">
+                <div className="min-w-[1800px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -987,7 +1044,11 @@ export function AdminAllUsersManagement() {
                       <TableHead>Role</TableHead>
                       <TableHead>TruHeirs</TableHead>
                       <TableHead>DFO</TableHead>
+                      <TableHead>Contract Value</TableHead>
+                      <TableHead>Cash Collected</TableHead>
+                      <TableHead>Remaining</TableHead>
                       <TableHead>Program</TableHead>
+                      <TableHead>Stripe Sub</TableHead>
                       <TableHead>Forms</TableHead>
                       <TableHead>Joined</TableHead>
                       <TableHead>Notes</TableHead>
@@ -997,7 +1058,7 @@ export function AdminAllUsersManagement() {
                   <TableBody>
                     {filteredUsers.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={12} className="text-center text-muted-foreground py-8">
+                        <TableCell colSpan={16} className="text-center text-muted-foreground py-8">
                           No users found
                         </TableCell>
                       </TableRow>
@@ -1060,7 +1121,67 @@ export function AdminAllUsersManagement() {
                               <span className="text-xs text-muted-foreground">{packageInfo.amount}</span>
                             </div>
                           </TableCell>
+                          {/* Contract Value */}
+                          <TableCell className="whitespace-nowrap">
+                            {editingFinanceUserId === user.user_id && editingFinanceField === 'contract_value' ? (
+                              <div className="flex items-center gap-1">
+                                <Input value={editingFinanceValue} onChange={(e) => setEditingFinanceValue(e.target.value)} placeholder="0" className="h-7 w-28 text-xs" onKeyDown={(e) => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>
+                                  {savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setEditingFinanceUserId(null); setEditingFinanceField(null) }}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <button className="text-sm hover:underline" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('contract_value'); setEditingFinanceValue(String((user as any).program_contract_value ?? '')) }}>
+                                {formatCurrency((user as any).program_contract_value)}
+                              </button>
+                            )}
+                          </TableCell>
+                          {/* Cash Collected */}
+                          <TableCell className="whitespace-nowrap">
+                            {editingFinanceUserId === user.user_id && editingFinanceField === 'cash_collected' ? (
+                              <div className="flex items-center gap-1">
+                                <Input value={editingFinanceValue} onChange={(e) => setEditingFinanceValue(e.target.value)} placeholder="0" className="h-7 w-28 text-xs" onKeyDown={(e) => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>
+                                  {savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setEditingFinanceUserId(null); setEditingFinanceField(null) }}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <button className="text-sm hover:underline" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('cash_collected'); setEditingFinanceValue(String((user as any).program_cash_collected ?? '')) }}>
+                                {formatCurrency((user as any).program_cash_collected)}
+                              </button>
+                            )}
+                          </TableCell>
+                          {/* Remaining Balance */}
+                          <TableCell className="whitespace-nowrap">
+                            <span className={`text-sm font-medium ${getRemainingBalance(user) > 0 ? 'text-orange-500' : getRemainingBalance(user) === 0 && (user as any).program_contract_value ? 'text-green-600' : ''}`}>
+                              {(user as any).program_contract_value ? formatCurrency(getRemainingBalance(user)) : '—'}
+                            </span>
+                          </TableCell>
                           <TableCell className="whitespace-nowrap">{user.program_name || 'None'}</TableCell>
+                          {/* Stripe Subscription */}
+                          <TableCell className="whitespace-nowrap">
+                            {editingFinanceUserId === user.user_id && editingFinanceField === 'stripe_sub' ? (
+                              <div className="flex items-center gap-1">
+                                <Input value={editingFinanceValue} onChange={(e) => setEditingFinanceValue(e.target.value)} placeholder="sub_..." className="h-7 w-36 text-xs" onKeyDown={(e) => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>
+                                  {savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setEditingFinanceUserId(null); setEditingFinanceField(null) }}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <button className="text-xs hover:underline text-muted-foreground" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('stripe_sub'); setEditingFinanceValue((user as any).stripe_subscription_id || '') }}>
+                                {(user as any).stripe_subscription_id ? (user as any).stripe_subscription_id.substring(0, 16) + '...' : 'Assign'}
+                              </button>
+                            )}
+                          </TableCell>
                           <TableCell>
                             <Button
                               size="sm"
