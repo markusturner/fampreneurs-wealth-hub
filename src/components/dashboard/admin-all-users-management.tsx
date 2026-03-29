@@ -1251,19 +1251,6 @@ export function AdminAllUsersManagement() {
                     <TableCell>
                       <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(user.user_id)}>View</Button>
                     </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {editingJoinedUserId === user.user_id ? (
-                        <div className="flex items-center gap-1">
-                          <Input type="date" value={editingJoinedValue} onChange={e => setEditingJoinedValue(e.target.value)} className="h-7 w-32 text-xs" />
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlineJoined(user.user_id)} disabled={savingJoined}>{savingJoined ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingJoinedUserId(null)}><X className="h-3 w-3" /></Button>
-                        </div>
-                      ) : (
-                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setEditingJoinedUserId(user.user_id); setEditingJoinedValue(user.created_at ? new Date(user.created_at).toISOString().split('T')[0] : '') }}>
-                          {user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
-                        </Button>
-                      )}
-                    </TableCell>
                     <TableCell>
                       <Button
                         size="sm"
