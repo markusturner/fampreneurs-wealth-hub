@@ -1159,7 +1159,7 @@ export default function WorkspaceCommunity() {
                                             onClick={async () => {
                                               try {
                                                 await supabase.from('community_comments').delete().eq('id', comment.id)
-                                                fetchComments(post.id)
+                                                fetchCommentsForPost(post.id)
                                                 toast({ title: 'Comment deleted' })
                                               } catch {
                                                 toast({ title: 'Error', description: 'Failed to delete comment', variant: 'destructive' })
