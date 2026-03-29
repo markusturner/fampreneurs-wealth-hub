@@ -44,11 +44,14 @@ export function AdminGrowthCharts({ programOnly = false, truheirsOnly = false }:
 
       let profilesQuery = supabase
         .from('profiles')
-        .select('user_id, created_at, program_name')
+        .select('user_id, created_at, program_name, truheirs_access')
         .order('created_at', { ascending: true })
 
       if (programOnly) {
         profilesQuery = profilesQuery.not('program_name', 'is', null)
+      }
+      if (truheirsOnly) {
+        profilesQuery = profilesQuery.eq('truheirs_access', true)
       }
 
       const { data: profiles } = await profilesQuery

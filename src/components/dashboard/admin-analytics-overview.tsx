@@ -334,6 +334,9 @@ export function AdminAnalyticsOverview() {
             subtitle="Projected annual TruHeirs revenue"
             highlight
           />
+
+          <AdminCourseCompletion truheirsOnly />
+          <AdminGrowthCharts truheirsOnly />
         </TabsContent>
 
         {/* PROGRAM TAB */}

@@ -31,7 +31,7 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
     try {
       setLoading(true)
 
-      // If programOnly, get program user IDs first
+      // If programOnly or truheirsOnly, get filtered user IDs first
       let programUserIds: Set<string> | null = null
       if (programOnly) {
         const { data: programProfiles } = await supabase
@@ -39,6 +39,12 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
           .select('user_id')
           .not('program_name', 'is', null)
         programUserIds = new Set(programProfiles?.map(p => p.user_id) || [])
+      } else if (truheirsOnly) {
+        const { data: truheirsProfiles } = await supabase
+          .from('profiles')
+          .select('user_id')
+          .eq('truheirs_access', true)
+        programUserIds = new Set(truheirsProfiles?.map(p => p.user_id) || [])
       }
 
       const [{ data: allCourses }, { data: enrollments }] = await Promise.all([
