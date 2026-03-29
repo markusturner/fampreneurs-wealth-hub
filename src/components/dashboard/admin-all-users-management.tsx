@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar, Clock } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Badge } from '@/components/ui/badge'
@@ -181,9 +181,10 @@ export function AdminAllUsersManagement() {
         }
       })
 
+      const getUserDisplayName = (u: any) => (u.display_name || `${u.first_name || ''} ${u.last_name || ''}`.trim()).toLowerCase()
       const sorted = usersWithSubscriptions.sort((a: any, b: any) => {
-        const nameA = (a.full_name || '').trim().toLowerCase()
-        const nameB = (b.full_name || '').trim().toLowerCase()
+        const nameA = getUserDisplayName(a)
+        const nameB = getUserDisplayName(b)
         const hasNameA = nameA.length > 0
         const hasNameB = nameB.length > 0
         if (hasNameA && !hasNameB) return -1
@@ -1038,274 +1039,240 @@ export function AdminAllUsersManagement() {
                 </ScrollArea>
               )
             ) : (
-            <div className="border rounded-lg">
-              <ScrollArea className="h-[500px] w-full">
-                <div className="min-w-[1800px]">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-10">
-                        <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
-                      </TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>TruHeirs</TableHead>
-                      <TableHead>DFO</TableHead>
-                      <TableHead>Contract Value</TableHead>
-                      <TableHead>Cash Collected</TableHead>
-                      <TableHead>Remaining</TableHead>
-                      <TableHead>Program</TableHead>
-                      <TableHead>Stripe Sub</TableHead>
-                      <TableHead>Forms</TableHead>
-                      <TableHead>Joined</TableHead>
-                      <TableHead>Notes</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredUsers.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={16} className="text-center text-muted-foreground py-8">
-                          No users found
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredUsers.map((user) => {
-                        const packageInfo = getPackageInfo(user)
-                        return (
-                        <TableRow key={user.user_id}>
-                          <TableCell className="w-10">
-                            <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
-                          </TableCell>
-                          <TableCell className="font-medium whitespace-nowrap">
-                            {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'N/A'}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {editingPhoneUserId === user.user_id ? (
-                              <div className="flex items-center gap-1">
-                                <Input
-                                  value={editingPhoneValue}
-                                  onChange={(e) => setEditingPhoneValue(e.target.value)}
-                                  placeholder="Enter phone"
-                                  className="h-7 w-32 text-xs"
-                                  onKeyDown={(e) => e.key === 'Enter' && handleSaveInlinePhone(user.user_id)}
-                                />
-                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlinePhone(user.user_id)} disabled={savingPhone}>
-                                  {savingPhone ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
-                                </Button>
-                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingPhoneUserId(null)}>
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            ) : user.phone ? (
-                              <span className="text-sm">{user.phone}</span>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 text-xs text-muted-foreground"
-                                onClick={() => { setEditingPhoneUserId(user.user_id); setEditingPhoneValue('') }}
-                              >
-                                <Phone className="h-3 w-3 mr-1" />
-                                Add
-                              </Button>
-                            )}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">{user.email}</TableCell>
-                          <TableCell>
-                            <div className="flex gap-1 flex-wrap">
-                              {getRoleBadges(user)}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={user.truheirs_access !== false ? "default" : "secondary"} className={user.truheirs_access !== false ? "bg-green-600 text-white" : ""}>
-                              {user.truheirs_access !== false ? "Yes" : "No"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col whitespace-nowrap">
-                              <span className="font-medium">{packageInfo.package}</span>
-                              <span className="text-xs text-muted-foreground">{packageInfo.amount}</span>
-                            </div>
-                          </TableCell>
-                          {/* Contract Value */}
-                          <TableCell className="whitespace-nowrap">
-                            {editingFinanceUserId === user.user_id && editingFinanceField === 'contract_value' ? (
-                              <div className="flex items-center gap-1">
-                                <Input value={editingFinanceValue} onChange={(e) => setEditingFinanceValue(e.target.value)} placeholder="0" className="h-7 w-28 text-xs" onKeyDown={(e) => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
-                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>
-                                  {savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
-                                </Button>
-                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setEditingFinanceUserId(null); setEditingFinanceField(null) }}>
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            ) : (
-                              <button className="text-sm hover:underline" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('contract_value'); setEditingFinanceValue(String((user as any).program_contract_value ?? '')) }}>
-                                {formatCurrency((user as any).program_contract_value)}
-                              </button>
-                            )}
-                          </TableCell>
-                          {/* Cash Collected */}
-                          <TableCell className="whitespace-nowrap">
-                            {editingFinanceUserId === user.user_id && editingFinanceField === 'cash_collected' ? (
-                              <div className="flex items-center gap-1">
-                                <Input value={editingFinanceValue} onChange={(e) => setEditingFinanceValue(e.target.value)} placeholder="0" className="h-7 w-28 text-xs" onKeyDown={(e) => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
-                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>
-                                  {savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
-                                </Button>
-                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setEditingFinanceUserId(null); setEditingFinanceField(null) }}>
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            ) : (
-                              <button className="text-sm hover:underline" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('cash_collected'); setEditingFinanceValue(String((user as any).program_cash_collected ?? '')) }}>
-                                {formatCurrency((user as any).program_cash_collected)}
-                              </button>
-                            )}
-                          </TableCell>
-                          {/* Remaining Balance */}
-                          <TableCell className="whitespace-nowrap">
-                            <span className={`text-sm font-medium ${getRemainingBalance(user) > 0 ? 'text-orange-500' : getRemainingBalance(user) === 0 && (user as any).program_contract_value ? 'text-green-600' : ''}`}>
-                              {(user as any).program_contract_value ? formatCurrency(getRemainingBalance(user)) : '—'}
-                            </span>
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">{user.program_name || 'None'}</TableCell>
-                          {/* Stripe Subscription */}
-                          <TableCell className="whitespace-nowrap">
-                            {editingFinanceUserId === user.user_id && editingFinanceField === 'stripe_sub' ? (
-                              <div className="flex items-center gap-1">
-                                <Input value={editingFinanceValue} onChange={(e) => setEditingFinanceValue(e.target.value)} placeholder="sub_..." className="h-7 w-36 text-xs" onKeyDown={(e) => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
-                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>
-                                  {savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
-                                </Button>
-                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setEditingFinanceUserId(null); setEditingFinanceField(null) }}>
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            ) : (
-                              <button className="text-xs hover:underline text-muted-foreground" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('stripe_sub'); setEditingFinanceValue((user as any).stripe_subscription_id || '') }}>
-                                {(user as any).stripe_subscription_id ? (user as any).stripe_subscription_id.substring(0, 16) + '...' : 'Assign'}
-                              </button>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 text-xs"
-                              onClick={() => handleOpenForms(user.user_id)}
-                            >
-                              <FileText className="h-3 w-3 mr-1" />
-                              View
-                            </Button>
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap">
-                            {editingJoinedUserId === user.user_id ? (
-                              <div className="flex items-center gap-1">
-                                <Input
-                                  type="date"
-                                  value={editingJoinedValue}
-                                  onChange={(e) => setEditingJoinedValue(e.target.value)}
-                                  className="h-7 w-32 text-xs"
-                                  onKeyDown={(e) => e.key === 'Enter' && handleSaveInlineJoined(user.user_id)}
-                                />
-                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlineJoined(user.user_id)} disabled={savingJoined}>
-                                  {savingJoined ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
-                                </Button>
-                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingJoinedUserId(null)}>
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            ) : (
-                              <button
-                                className="text-sm hover:underline cursor-pointer"
-                                onClick={() => {
-                                  setEditingJoinedUserId(user.user_id)
-                                  const dateVal = (user as any).admin_joined_date || user.created_at?.split('T')[0] || ''
-                                  setEditingJoinedValue(dateVal)
-                                }}
-                              >
-                                {(user as any).admin_joined_date
-                                  ? new Date((user as any).admin_joined_date).toLocaleDateString()
-                                  : new Date(user.created_at).toLocaleDateString()}
-                              </button>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-7 text-xs"
-                              onClick={() => {
-                                setNotesUserId(user.user_id)
-                                setNotesValue((user as any).admin_notes || '')
-                              }}
-                            >
-                              <StickyNote className="h-3 w-3 mr-1" />
-                              {(user as any).admin_notes ? 'Edit' : 'Add'}
-                            </Button>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setPreviewUser(user)}
-                                title="Preview user view"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleResendCredentials(user)}
-                                title="Resend login credentials"
-                                disabled={resendingCredentialsId === user.user_id}
-                              >
-                                {resendingCredentialsId === user.user_id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <Mail className="h-4 w-4" />
-                                )}
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setEditingUser(user)}
-                                title="Edit user"
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => setDeletingUserId(user.user_id)}
-                                title="Delete user"
-                                className="text-destructive hover:text-destructive"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                        )
-                      })
-                    )}
-                  </TableBody>
-                </Table>
+            (() => {
+              const isInvitedUser = (u: any) => {
+                const name = (u.display_name || `${u.first_name || ''} ${u.last_name || ''}`.trim())
+                return !name || name.length === 0
+              }
+              const activeUsers = filteredUsers.filter((u: any) => !isInvitedUser(u))
+              const pendingUsers = filteredUsers.filter((u: any) => isInvitedUser(u))
+
+              const renderTableHeader = () => (
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-10">
+                      <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
+                    </TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>TruHeirs</TableHead>
+                    <TableHead>DFO</TableHead>
+                    <TableHead>Contract Value</TableHead>
+                    <TableHead>Cash Collected</TableHead>
+                    <TableHead>Remaining</TableHead>
+                    <TableHead>Program</TableHead>
+                    <TableHead>Stripe Sub</TableHead>
+                    <TableHead>Forms</TableHead>
+                    <TableHead>Joined</TableHead>
+                    <TableHead>Notes</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+              )
+
+              const renderUserRow = (user: any) => {
+                const packageInfo = getPackageInfo(user)
+                return (
+                  <TableRow key={user.user_id}>
+                    <TableCell className="w-10">
+                      <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
+                    </TableCell>
+                    <TableCell className="font-medium whitespace-nowrap">
+                      {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {editingPhoneUserId === user.user_id ? (
+                        <div className="flex items-center gap-1">
+                          <Input
+                            value={editingPhoneValue}
+                            onChange={(e) => setEditingPhoneValue(e.target.value)}
+                            placeholder="Enter phone"
+                            className="h-7 w-32 text-xs"
+                            onKeyDown={(e) => e.key === 'Enter' && handleSaveInlinePhone(user.user_id)}
+                          />
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlinePhone(user.user_id)} disabled={savingPhone}>
+                            {savingPhone ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingPhoneUserId(null)}>
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ) : user.phone ? (
+                        <span className="text-sm">{user.phone}</span>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs text-muted-foreground"
+                          onClick={() => { setEditingPhoneUserId(user.user_id); setEditingPhoneValue('') }}
+                        >
+                          <Phone className="h-3 w-3 mr-1" /> Add
+                        </Button>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm">{user.email}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs" style={{ backgroundColor: '#ffb500', color: '#1a1a2e', borderColor: '#ffb500' }}>
+                        {user.role || 'Trustee'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={user.truheirs_access ? "default" : "destructive"} className="text-xs">
+                        {user.truheirs_access ? 'Yes' : 'No'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <div className="text-xs">
+                        <span>{packageInfo.package}</span>
+                        {packageInfo.amount && <div className="text-muted-foreground">{packageInfo.amount}</div>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {editingFinanceUserId === user.user_id && editingFinanceField === 'contract_value' ? (
+                        <div className="flex items-center gap-1">
+                          <Input value={editingFinanceValue} onChange={e => setEditingFinanceValue(e.target.value)} className="h-7 w-24 text-xs" onKeyDown={e => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>{savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingFinanceUserId(null)}><X className="h-3 w-3" /></Button>
+                        </div>
+                      ) : (
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('contract_value'); setEditingFinanceValue(user.program_contract_value ? Number(user.program_contract_value).toLocaleString() : '') }}>
+                          {user.program_contract_value ? `$${Number(user.program_contract_value).toLocaleString()}` : '—'}
+                        </Button>
+                      )}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {editingFinanceUserId === user.user_id && editingFinanceField === 'cash_collected' ? (
+                        <div className="flex items-center gap-1">
+                          <Input value={editingFinanceValue} onChange={e => setEditingFinanceValue(e.target.value)} className="h-7 w-24 text-xs" onKeyDown={e => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>{savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingFinanceUserId(null)}><X className="h-3 w-3" /></Button>
+                        </div>
+                      ) : (
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('cash_collected'); setEditingFinanceValue(user.program_cash_collected ? Number(user.program_cash_collected).toLocaleString() : '') }}>
+                          {user.program_cash_collected ? `$${Number(user.program_cash_collected).toLocaleString()}` : '—'}
+                        </Button>
+                      )}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-xs">
+                      {user.program_contract_value && user.program_cash_collected
+                        ? `$${(Number(user.program_contract_value) - Number(user.program_cash_collected)).toLocaleString()}`
+                        : '—'}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-xs">{user.program_name || '—'}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {editingFinanceUserId === user.user_id && editingFinanceField === 'stripe_sub' ? (
+                        <div className="flex items-center gap-1">
+                          <Input value={editingFinanceValue} onChange={e => setEditingFinanceValue(e.target.value)} placeholder="sub_..." className="h-7 w-28 text-xs" onKeyDown={e => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>{savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingFinanceUserId(null)}><X className="h-3 w-3" /></Button>
+                        </div>
+                      ) : (
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('stripe_sub'); setEditingFinanceValue(user.stripe_subscription_id || '') }}>
+                          {user.stripe_subscription_id ? 'Assigned' : 'Assign'}
+                        </Button>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(user.user_id)}>View</Button>
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {editingJoinedUserId === user.user_id ? (
+                        <div className="flex items-center gap-1">
+                          <Input type="date" value={editingJoinedValue} onChange={e => setEditingJoinedValue(e.target.value)} className="h-7 w-32 text-xs" />
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlineJoined(user.user_id)} disabled={savingJoined}>{savingJoined ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingJoinedUserId(null)}><X className="h-3 w-3" /></Button>
+                        </div>
+                      ) : (
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setEditingJoinedUserId(user.user_id); setEditingJoinedValue(user.created_at ? new Date(user.created_at).toISOString().split('T')[0] : '') }}>
+                          {user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
+                        </Button>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs"
+                        onClick={() => {
+                          setNotesUserId(user.user_id)
+                          setNotesValue((user as any).admin_notes || '')
+                        }}
+                      >
+                        <StickyNote className="h-3 w-3 mr-1" />
+                        {(user as any).admin_notes ? 'Edit' : 'Add'}
+                      </Button>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => setPreviewUser(user)} title="Preview user view"><Eye className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleResendCredentials(user)} title="Resend login credentials" disabled={resendingCredentialsId === user.user_id}>
+                          {resendingCredentialsId === user.user_id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setEditingUser(user)} title="Edit user"><Pencil className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => setDeletingUserId(user.user_id)} title="Delete user" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              }
+
+              return (
+                <div className="space-y-6">
+                  {/* Active Members Section */}
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Active Members ({activeUsers.length})
+                    </h3>
+                    <div className="border rounded-lg">
+                      <ScrollArea className="h-[400px] w-full">
+                        <div className="min-w-[1800px]">
+                          <Table>
+                            {renderTableHeader()}
+                            <TableBody>
+                              {activeUsers.length === 0 ? (
+                                <TableRow><TableCell colSpan={16} className="text-center text-muted-foreground py-8">No active members</TableCell></TableRow>
+                              ) : activeUsers.map(renderUserRow)}
+                            </TableBody>
+                          </Table>
+                        </div>
+                        <ScrollBar orientation="horizontal" />
+                      </ScrollArea>
+                    </div>
+                  </div>
+
+                  {/* Pending (Invited) Section */}
+                  {pendingUsers.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-amber-500" />
+                        Pending ({pendingUsers.length})
+                      </h3>
+                      <div className="border rounded-lg border-amber-500/30">
+                        <ScrollArea className="h-[300px] w-full">
+                          <div className="min-w-[1800px]">
+                            <Table>
+                              {renderTableHeader()}
+                              <TableBody>
+                                {pendingUsers.map(renderUserRow)}
+                              </TableBody>
+                            </Table>
+                          </div>
+                          <ScrollBar orientation="horizontal" />
+                        </ScrollArea>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="text-sm text-muted-foreground">
+                    Total users: {filteredUsers.length} ({activeUsers.length} active, {pendingUsers.length} pending)
+                  </div>
                 </div>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            </div>
+              )
+            })()
             )}
-
-
-          <div className="text-sm text-muted-foreground">
-            Total users: {filteredUsers.length}
-          </div>
         </CardContent>
       </Card>
 
