@@ -1019,7 +1019,7 @@ export function AdminAllUsersManagement() {
             ) : (
             <div className="border rounded-lg overflow-x-auto">
               <ScrollArea className="h-[500px]">
-                <div className="min-w-[1250px]">
+                <div className="min-w-[1800px]">
                 <Table>
                   <TableHeader>
                     <TableRow>
