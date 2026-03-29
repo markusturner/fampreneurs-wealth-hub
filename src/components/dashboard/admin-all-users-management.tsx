@@ -1244,8 +1244,7 @@ export function AdminAllUsersManagement() {
 
                   <div className={`border rounded-lg ${memberView === 'pending' ? 'border-amber-500/30' : ''}`}>
                     <ScrollArea className="h-[500px] w-full">
-                    <div className="min-w-[1800px]">
-                        <Table className="[&>div]:overflow-visible">{/* Override Table's overflow-auto for sticky to work */}
+                    <table className="w-full caption-bottom text-sm min-w-[1800px]">
                           {renderTableHeader()}
                           <TableBody>
                             {(memberView === 'active' ? activeUsers : pendingUsers).length === 0 ? (
@@ -1254,8 +1253,7 @@ export function AdminAllUsersManagement() {
                               </TableCell></TableRow>
                             ) : (memberView === 'active' ? activeUsers : pendingUsers).map(renderUserRow)}
                           </TableBody>
-                        </Table>
-                      </div>
+                        </table>
                       <ScrollBar orientation="horizontal" />
                     </ScrollArea>
                   </div>
