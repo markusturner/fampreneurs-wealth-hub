@@ -25,6 +25,8 @@ function MetricCard({ title, value, subtitle }: MetricCardProps) {
 interface SubscriptionMetrics {
   paidMembers: number
   mrr: number
+  mrrTruheirs: number
+  mrrProgram: number
   churn: number
   signups: number
   conversionRate: number
