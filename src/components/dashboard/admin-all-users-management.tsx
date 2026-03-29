@@ -1032,7 +1032,11 @@ export function AdminAllUsersManagement() {
                       <TableHead>Role</TableHead>
                       <TableHead>TruHeirs</TableHead>
                       <TableHead>DFO</TableHead>
+                      <TableHead>Contract Value</TableHead>
+                      <TableHead>Cash Collected</TableHead>
+                      <TableHead>Remaining</TableHead>
                       <TableHead>Program</TableHead>
+                      <TableHead>Stripe Sub</TableHead>
                       <TableHead>Forms</TableHead>
                       <TableHead>Joined</TableHead>
                       <TableHead>Notes</TableHead>
