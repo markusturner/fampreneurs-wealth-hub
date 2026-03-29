@@ -1495,13 +1495,14 @@ export function AdminAllUsersManagement() {
                   </Button>
                 </div>
                 <Select
-                  value={editingUser.program_name || ''}
-                  onValueChange={(value) => setEditingUser({...editingUser, program_name: value})}
+                  value={editingUser.program_name || '__none__'}
+                  onValueChange={(value) => setEditingUser({...editingUser, program_name: value === '__none__' ? '' : value})}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a program" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="__none__">None</SelectItem>
                     {programOptions.map((program) => (
                       <SelectItem key={program} value={program}>
                         {program}
