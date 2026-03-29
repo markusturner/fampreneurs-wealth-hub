@@ -113,6 +113,7 @@ export function AdminAllUsersManagement() {
   const [savingNotes, setSavingNotes] = useState(false)
   // User forms dialog
   const [formsUserId, setFormsUserId] = useState<string | null>(null)
+  const [memberView, setMemberView] = useState<'active' | 'pending'>('active')
   const [formsData, setFormsData] = useState<{onboarding: any, agreements: any[], trustForms: any[]}>({ onboarding: null, agreements: [], trustForms: [] })
   const [loadingForms, setLoadingForms] = useState(false)
   // Financial inline editing
