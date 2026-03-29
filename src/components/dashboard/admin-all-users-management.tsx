@@ -1039,8 +1039,62 @@ export function AdminAllUsersManagement() {
                             </div>
                           </TableCell>
                           <TableCell className="whitespace-nowrap">{user.program_name || 'None'}</TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 text-xs"
+                              onClick={() => handleOpenForms(user.user_id)}
+                            >
+                              <FileText className="h-3 w-3 mr-1" />
+                              View
+                            </Button>
+                          </TableCell>
                           <TableCell className="whitespace-nowrap">
-                            {new Date(user.created_at).toLocaleDateString()}
+                            {editingJoinedUserId === user.user_id ? (
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  type="date"
+                                  value={editingJoinedValue}
+                                  onChange={(e) => setEditingJoinedValue(e.target.value)}
+                                  className="h-7 w-32 text-xs"
+                                  onKeyDown={(e) => e.key === 'Enter' && handleSaveInlineJoined(user.user_id)}
+                                />
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlineJoined(user.user_id)} disabled={savingJoined}>
+                                  {savingJoined ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}
+                                </Button>
+                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingJoinedUserId(null)}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <button
+                                className="text-sm hover:underline cursor-pointer"
+                                onClick={() => {
+                                  setEditingJoinedUserId(user.user_id)
+                                  const dateVal = (user as any).admin_joined_date || user.created_at?.split('T')[0] || ''
+                                  setEditingJoinedValue(dateVal)
+                                }}
+                              >
+                                {(user as any).admin_joined_date
+                                  ? new Date((user as any).admin_joined_date).toLocaleDateString()
+                                  : new Date(user.created_at).toLocaleDateString()}
+                              </button>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 text-xs"
+                              onClick={() => {
+                                setNotesUserId(user.user_id)
+                                setNotesValue((user as any).admin_notes || '')
+                              }}
+                            >
+                              <StickyNote className="h-3 w-3 mr-1" />
+                              {(user as any).admin_notes ? 'Edit' : 'Add'}
+                            </Button>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1">
