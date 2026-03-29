@@ -1175,8 +1175,12 @@ export function AdminAllUsersManagement() {
                       {renderContractTimeline(user)}
                     </TableCell>
                     <TableCell className="min-w-[120px]">
-                      <Badge variant="outline" className="text-xs" style={{ backgroundColor: '#ffb500', color: '#1a1a2e', borderColor: '#ffb500' }}>
-                        {user.role || 'Trustee'}
+                      <Badge variant="outline" className="text-xs" style={{ 
+                        backgroundColor: user.membership_type === 'family_member' ? '#ffb500' : user.is_admin ? '#ef4444' : '#2eb2ff',
+                        color: '#1a1a2e', 
+                        borderColor: user.membership_type === 'family_member' ? '#ffb500' : user.is_admin ? '#ef4444' : '#2eb2ff'
+                      }}>
+                        {user.is_admin ? 'Admin' : user.membership_type === 'family_member' ? 'Family Member' : 'Trustee'}
                       </Badge>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
