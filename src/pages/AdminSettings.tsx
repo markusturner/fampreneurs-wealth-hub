@@ -1,5 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext'
-import { AdminCourseCompletion } from '@/components/dashboard/admin-course-completion'
+import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-overview'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AdminUserManagement } from '@/components/dashboard/admin-user-management'
 import { AdminMassNotification } from '@/components/dashboard/admin-mass-notification'
