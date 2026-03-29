@@ -1537,7 +1537,7 @@ export function AdminAllUsersManagement() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingUser(null)}>Cancel</Button>
-            <Button onClick={handleUpdateUser}>Save Changes</Button>
+            <Button onClick={handleUpdateUser} style={{ backgroundColor: '#ffb500', color: '#290a52' }}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
