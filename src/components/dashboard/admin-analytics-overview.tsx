@@ -82,7 +82,7 @@ export function AdminAnalyticsOverview() {
       // Get all profiles to calculate metrics
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, membership_type, created_at')
+        .select('user_id, membership_type, created_at, program_name, truheirs_access')
 
       const totalUsers = profiles?.length || 0
 
@@ -91,15 +91,27 @@ export function AdminAnalyticsOverview() {
 
       // Calculate MRR based on subscription tiers
       // Starter: $97/month, Professional: $247/quarter, Enterprise: $897/annual
-      const mrr = subscribers
-        ?.filter(s => s.subscribed === true)
-        .reduce((sum, sub) => {
-          const tier = sub.subscription_tier
-          if (tier === 'Starter') return sum + 97 // Monthly
-          if (tier === 'Professional') return sum + (247 / 3) // Quarterly to monthly
-          if (tier === 'Enterprise') return sum + (897 / 12) // Annual to monthly
-          return sum
-        }, 0) || 0
+      const calcMrrForSub = (sub: any) => {
+        const tier = sub.subscription_tier
+        if (tier === 'Starter') return 97
+        if (tier === 'Professional') return 247 / 3
+        if (tier === 'Enterprise') return 897 / 12
+        return 0
+      }
+
+      const activeSubs = subscribers?.filter(s => s.subscribed === true) || []
+      const mrr = activeSubs.reduce((sum, sub) => sum + calcMrrForSub(sub), 0)
+
+      // Calculate TruHeirs MRR vs Program MRR
+      // TruHeirs: users with truheirs_access, Program: users with program_name
+      let mrrTruheirs = 0
+      let mrrProgram = 0
+      for (const sub of activeSubs) {
+        const userProfile = profiles?.find(p => p.user_id === sub.user_id)
+        const amount = calcMrrForSub(sub)
+        if (userProfile?.truheirs_access) mrrTruheirs += amount
+        if (userProfile?.program_name) mrrProgram += amount
+      }
 
 
       // Calculate trials in progress (users who have trial_days_remaining > 0)
