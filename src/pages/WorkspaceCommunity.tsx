@@ -1246,7 +1246,7 @@ export default function WorkspaceCommunity() {
                           )}
                         </div>
 
-                        {post.user_id === user?.id && (
+                        {(post.user_id === user?.id || isAdmin || isOwner) && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
