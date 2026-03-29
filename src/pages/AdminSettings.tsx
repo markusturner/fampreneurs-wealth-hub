@@ -1,13 +1,12 @@
 import { useAuth } from '@/contexts/AuthContext'
-import { AdminCourseCompletion } from '@/components/dashboard/admin-course-completion'
+import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-overview'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AdminUserManagement } from '@/components/dashboard/admin-user-management'
 import { AdminMassNotification } from '@/components/dashboard/admin-mass-notification'
 import { AdminAllUsersManagement } from '@/components/dashboard/admin-all-users-management'
 import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
 import { AdminTutorialVideoManager, AdminUpgradeVideoManager, AdminVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
-import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-overview'
-import { AdminGrowthCharts } from '@/components/dashboard/admin-growth-charts'
+
 import { RolePermissionsManager } from '@/components/dashboard/role-permissions-manager'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -115,8 +114,6 @@ export function AdminSettings() {
         {(isAdmin || isOwner) && (
           <TabsContent value="metrics" className="space-y-6">
             <AdminAnalyticsOverview />
-            <AdminCourseCompletion />
-            <AdminGrowthCharts />
           </TabsContent>
         )}
         {isOwner && (
