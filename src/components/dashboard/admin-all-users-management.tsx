@@ -389,7 +389,7 @@ export function AdminAllUsersManagement() {
       setEditingUser(null)
       
       // Refresh the user list
-      await fetchUsers()
+      await fetchUsers(true)
       console.log('Users refreshed after update')
     } catch (error: any) {
       console.error('Error updating user:', error)
