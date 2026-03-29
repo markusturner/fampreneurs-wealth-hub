@@ -120,7 +120,7 @@ export function AdminAllUsersManagement() {
   const [loadingForms, setLoadingForms] = useState(false)
   // Financial inline editing
   const [editingFinanceUserId, setEditingFinanceUserId] = useState<string | null>(null)
-  const [editingFinanceField, setEditingFinanceField] = useState<'contract_value' | 'cash_collected' | 'stripe_sub' | null>(null)
+  const [editingFinanceField, setEditingFinanceField] = useState<'contract_value' | 'cash_collected' | null>(null)
   const [editingFinanceValue, setEditingFinanceValue] = useState('')
   const [savingFinance, setSavingFinance] = useState(false)
   const { toast } = useToast()
