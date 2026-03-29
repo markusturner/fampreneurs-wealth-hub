@@ -1029,8 +1029,8 @@ export function AdminAllUsersManagement() {
                 </ScrollArea>
               )
             ) : (
-            <div className="border rounded-lg overflow-x-auto">
-              <ScrollArea className="h-[500px]">
+            <div className="border rounded-lg">
+              <ScrollArea className="h-[500px] w-full">
                 <div className="min-w-[1800px]">
                 <Table>
                   <TableHeader>
