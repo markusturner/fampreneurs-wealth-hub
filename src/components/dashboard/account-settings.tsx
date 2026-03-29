@@ -325,6 +325,7 @@ export function AccountSettings() {
             onClick={handleUpdateEmail} 
             disabled={isLoading}
             className="w-full"
+            style={{ backgroundColor: '#ffb500', color: '#290a52' }}
           >
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Update Email
