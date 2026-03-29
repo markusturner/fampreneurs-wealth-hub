@@ -6,7 +6,6 @@ import { AdminMassNotification } from '@/components/dashboard/admin-mass-notific
 import { AdminAllUsersManagement } from '@/components/dashboard/admin-all-users-management'
 import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
 import { AdminTutorialVideoManager, AdminUpgradeVideoManager, AdminVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
-import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-overview'
 
 import { RolePermissionsManager } from '@/components/dashboard/role-permissions-manager'
 import { Badge } from '@/components/ui/badge'
