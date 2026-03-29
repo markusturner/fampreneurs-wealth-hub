@@ -63,6 +63,9 @@ export function AdminAnalyticsOverview() {
     trialConversionRate: 0,
     truheirdPaidCount: 0,
     programPaidCount: 0,
+    programContractValue: 0,
+    programCashCollected: 0,
+    programRemaining: 0,
   })
   const [loading, setLoading] = useState(true)
   const [landingPageVisitors, setLandingPageVisitors] = useState(0)
