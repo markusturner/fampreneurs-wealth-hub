@@ -1077,10 +1077,10 @@ export function AdminAllUsersManagement() {
                 const packageInfo = getPackageInfo(user)
                 return (
                   <TableRow key={user.user_id}>
-                    <TableCell className="w-10">
+                    <TableCell className="w-10 sticky left-0 z-10 bg-background">
                       <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
                     </TableCell>
-                    <TableCell className="font-medium whitespace-nowrap">
+                    <TableCell className="font-medium whitespace-nowrap sticky left-10 z-10 bg-background after:absolute after:right-0 after:top-0 after:bottom-0 after:w-px after:bg-border">
                       {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
