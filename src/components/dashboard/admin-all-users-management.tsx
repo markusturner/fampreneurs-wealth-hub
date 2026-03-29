@@ -1040,7 +1040,7 @@ export function AdminAllUsersManagement() {
                       </div>
                       <div className="flex justify-between items-center gap-2">
                         <span className="text-muted-foreground shrink-0">Notes</span>
-                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setNotesUserId(mobileSelectedUser.user_id); setNotesValue((mobileSelectedUser as any).admin_notes || '') }}>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => openNotesForUser(mobileSelectedUser.user_id, (mobileSelectedUser as any).admin_notes)}>
                           <StickyNote className="h-3 w-3 mr-1" /> {(mobileSelectedUser as any).admin_notes ? 'Edit' : 'Add'}
                         </Button>
                       </div>
