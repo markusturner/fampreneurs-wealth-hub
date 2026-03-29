@@ -1181,7 +1181,7 @@ export function AdminAllUsersManagement() {
                       {editingJoinedUserId === user.user_id ? (
                         <div className="flex items-center gap-1">
                           <Input type="date" value={editingJoinedValue} onChange={e => setEditingJoinedValue(e.target.value)} className="h-7 w-32 text-xs" />
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveJoinedDate(user.user_id)} disabled={savingJoined}>{savingJoined ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
+                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlineJoined(user.user_id)} disabled={savingJoined}>{savingJoined ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingJoinedUserId(null)}><X className="h-3 w-3" /></Button>
                         </div>
                       ) : (
