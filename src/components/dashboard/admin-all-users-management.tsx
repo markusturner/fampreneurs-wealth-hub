@@ -103,10 +103,12 @@ export function AdminAllUsersManagement() {
   const [editingPhoneUserId, setEditingPhoneUserId] = useState<string | null>(null)
   const [editingPhoneValue, setEditingPhoneValue] = useState('')
   const [savingPhone, setSavingPhone] = useState(false)
-  // Editable joined date
-  const [editingJoinedUserId, setEditingJoinedUserId] = useState<string | null>(null)
-  const [editingJoinedValue, setEditingJoinedValue] = useState('')
-  const [savingJoined, setSavingJoined] = useState(false)
+  // Contract timeline editing
+  const [editingContractUserId, setEditingContractUserId] = useState<string | null>(null)
+  const [editingContractStartDate, setEditingContractStartDate] = useState('')
+  const [editingContractDueDate, setEditingContractDueDate] = useState('')
+  const [editingContractExtensionDate, setEditingContractExtensionDate] = useState('')
+  const [savingContract, setSavingContract] = useState(false)
   // Admin notes
   const [notesUserId, setNotesUserId] = useState<string | null>(null)
   const [notesValue, setNotesValue] = useState('')
@@ -133,7 +135,7 @@ export function AdminAllUsersManagement() {
       console.log('Stripe sync completed:', data);
       
       // Always refresh after sync
-      await fetchUsers();
+      await fetchUsers(true);
       
       if (!silent) {
         toast({
@@ -155,8 +157,8 @@ export function AdminAllUsersManagement() {
     }
   };
 
-  const fetchUsers = useCallback(async () => {
-    setIsLoading(true)
+  const fetchUsers = useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true)
     try {
       const { data: profilesData, error } = await supabase
         .from('profiles')
@@ -256,7 +258,7 @@ export function AdminAllUsersManagement() {
   // Debounced fetch effect
   useEffect(() => {
     if (debouncedFetchTrigger > 0) {
-      fetchUsers()
+      fetchUsers(true)
     }
   }, [debouncedFetchTrigger, fetchUsers])
 
@@ -389,7 +391,7 @@ export function AdminAllUsersManagement() {
       setEditingUser(null)
       
       // Refresh the user list
-      await fetchUsers()
+      await fetchUsers(true)
       console.log('Users refreshed after update')
     } catch (error: any) {
       console.error('Error updating user:', error)
@@ -569,7 +571,7 @@ export function AdminAllUsersManagement() {
       toast({ title: 'Phone Updated', description: 'Phone number saved successfully' })
       setEditingPhoneUserId(null)
       setEditingPhoneValue('')
-      await fetchUsers()
+      await fetchUsers(true)
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to save phone', variant: 'destructive' })
     } finally {
@@ -577,23 +579,44 @@ export function AdminAllUsersManagement() {
     }
   }
 
-  const handleSaveInlineJoined = async (userId: string) => {
-    setSavingJoined(true)
+  const handleSaveContractDates = async (userId: string) => {
+    setSavingContract(true)
     try {
       const { error } = await supabase
         .from('profiles')
-        .update({ admin_joined_date: editingJoinedValue || null } as any)
+        .update({
+          contract_start_date: editingContractStartDate || null,
+          contract_due_date: editingContractDueDate || null,
+          contract_extension_date: editingContractExtensionDate || null,
+        } as any)
         .eq('user_id', userId)
       if (error) throw error
-      toast({ title: 'Joined Date Updated', description: 'Date saved successfully' })
-      setEditingJoinedUserId(null)
-      setEditingJoinedValue('')
-      await fetchUsers()
+      toast({ title: 'Contract Dates Updated', description: 'Timeline saved successfully' })
+      setEditingContractUserId(null)
+      await fetchUsers(true)
     } catch (err: any) {
-      toast({ title: 'Error', description: err.message || 'Failed to save date', variant: 'destructive' })
+      toast({ title: 'Error', description: err.message || 'Failed to save dates', variant: 'destructive' })
     } finally {
-      setSavingJoined(false)
+      setSavingContract(false)
     }
+  }
+
+  const getContractProgress = (user: any) => {
+    const start = user.contract_start_date ? new Date(user.contract_start_date) : null
+    const due = user.contract_due_date ? new Date(user.contract_due_date) : null
+    if (!start || !due) return null
+    const now = new Date()
+    const total = due.getTime() - start.getTime()
+    if (total <= 0) return 100
+    const elapsed = now.getTime() - start.getTime()
+    return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)))
+  }
+
+  const formatShortDate = (dateStr: string | null) => {
+    if (!dateStr) return '—'
+    const d = new Date(dateStr)
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    return `${months[d.getMonth()]} ${d.getDate()}, '${String(d.getFullYear()).slice(2)}`
   }
 
   const handleSaveNotes = async (userId: string) => {
@@ -654,7 +677,7 @@ export function AdminAllUsersManagement() {
       setEditingFinanceUserId(null)
       setEditingFinanceField(null)
       setEditingFinanceValue('')
-      await fetchUsers()
+      await fetchUsers(true)
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to save', variant: 'destructive' })
     } finally {
@@ -685,7 +708,7 @@ export function AdminAllUsersManagement() {
         description: `Synced ${data.synced} trustees successfully. ${data.errors > 0 ? `${data.errors} errors.` : ''}`,
       })
 
-      await fetchUsers()
+      await fetchUsers(true)
     } catch (error: any) {
       console.error('Error syncing Stripe:', error)
       toast({
@@ -981,17 +1004,19 @@ export function AdminAllUsersManagement() {
                         </Button>
                       </div>
                       <div className="flex justify-between items-center gap-2">
-                        <span className="text-muted-foreground shrink-0">Joined</span>
+                        <span className="text-muted-foreground shrink-0">Contract</span>
                         <button
                           className="text-xs hover:underline"
                           onClick={() => {
-                            setEditingJoinedUserId(mobileSelectedUser.user_id)
-                            setEditingJoinedValue((mobileSelectedUser as any).admin_joined_date || mobileSelectedUser.created_at?.split('T')[0] || '')
+                            setEditingContractUserId(mobileSelectedUser.user_id)
+                            setEditingContractStartDate((mobileSelectedUser as any).contract_start_date || '')
+                            setEditingContractDueDate((mobileSelectedUser as any).contract_due_date || '')
+                            setEditingContractExtensionDate((mobileSelectedUser as any).contract_extension_date || '')
                           }}
                         >
-                          {(mobileSelectedUser as any).admin_joined_date
-                            ? new Date((mobileSelectedUser as any).admin_joined_date).toLocaleDateString()
-                            : new Date(mobileSelectedUser.created_at).toLocaleDateString()}
+                          {(mobileSelectedUser as any).contract_start_date
+                            ? `${formatShortDate((mobileSelectedUser as any).contract_start_date)} – ${formatShortDate((mobileSelectedUser as any).contract_due_date)}`
+                            : 'Set dates'}
                         </button>
                       </div>
                       <div className="flex justify-between items-center gap-2">
@@ -1051,10 +1076,11 @@ export function AdminAllUsersManagement() {
               const renderTableHeader = () => (
                 <TableHeader>
                   <TableRow>
-                     <TableHead className="w-10 sticky left-0 z-20 bg-background">
+                    <TableHead className="w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-20 bg-background">
                       <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
                     </TableHead>
-                     <TableHead className="sticky left-10 z-20 bg-background">Name</TableHead>
+                    <TableHead className="min-w-[160px] sticky left-[40px] z-20 bg-background">Name</TableHead>
+                    <TableHead className="min-w-[280px] sticky left-[200px] z-20 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Contract Timeline</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
@@ -1066,22 +1092,69 @@ export function AdminAllUsersManagement() {
                     <TableHead>Program</TableHead>
                     <TableHead>Stripe Sub</TableHead>
                     <TableHead>Forms</TableHead>
-                    <TableHead>Joined</TableHead>
                     <TableHead>Notes</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
               )
 
+              const renderContractTimeline = (user: any) => {
+                const progress = getContractProgress(user)
+                const startDate = user.contract_start_date
+                const dueDate = user.contract_due_date
+                const extensionDate = user.contract_extension_date
+
+                if (!startDate && !dueDate) {
+                  return (
+                    <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => {
+                      setEditingContractUserId(user.user_id)
+                      setEditingContractStartDate('')
+                      setEditingContractDueDate('')
+                      setEditingContractExtensionDate('')
+                    }}>
+                      <Calendar className="h-3 w-3 mr-1" /> Set dates
+                    </Button>
+                  )
+                }
+
+                const isOverdue = progress !== null && progress >= 100 && !extensionDate
+                const progressColor = isOverdue ? 'bg-destructive' : progress !== null && progress > 75 ? 'bg-orange-500' : 'bg-[#2eb2ff]'
+
+                return (
+                  <button
+                    className="w-full text-left"
+                    onClick={() => {
+                      setEditingContractUserId(user.user_id)
+                      setEditingContractStartDate(startDate || '')
+                      setEditingContractDueDate(dueDate || '')
+                      setEditingContractExtensionDate(extensionDate || '')
+                    }}
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <span className="text-xs font-medium">{formatShortDate(startDate)} – {formatShortDate(dueDate)}</span>
+                      {progress !== null && <span className={`text-xs font-semibold ml-auto ${isOverdue ? 'text-destructive' : 'text-[#2eb2ff]'}`}>{progress}%</span>}
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div className={`h-full rounded-full transition-all ${progressColor}`} style={{ width: `${Math.min(progress || 0, 100)}%` }} />
+                    </div>
+                    {extensionDate && <div className="text-[10px] text-muted-foreground mt-0.5">Ext: {formatShortDate(extensionDate)}</div>}
+                  </button>
+                )
+              }
+
               const renderUserRow = (user: any) => {
                 const packageInfo = getPackageInfo(user)
                 return (
                   <TableRow key={user.user_id}>
-                    <TableCell className="w-10 sticky left-0 z-10 bg-background">
+                    <TableCell className="w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 bg-background">
                       <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
                     </TableCell>
-                    <TableCell className="font-medium whitespace-nowrap sticky left-10 z-10 bg-background">
+                    <TableCell className="font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 bg-background">
                       {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}
+                    </TableCell>
+                    <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                      {renderContractTimeline(user)}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       {editingPhoneUserId === user.user_id ? (
@@ -1177,19 +1250,6 @@ export function AdminAllUsersManagement() {
                     </TableCell>
                     <TableCell>
                       <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(user.user_id)}>View</Button>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {editingJoinedUserId === user.user_id ? (
-                        <div className="flex items-center gap-1">
-                          <Input type="date" value={editingJoinedValue} onChange={e => setEditingJoinedValue(e.target.value)} className="h-7 w-32 text-xs" />
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveInlineJoined(user.user_id)} disabled={savingJoined}>{savingJoined ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingJoinedUserId(null)}><X className="h-3 w-3" /></Button>
-                        </div>
-                      ) : (
-                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setEditingJoinedUserId(user.user_id); setEditingJoinedValue(user.created_at ? new Date(user.created_at).toISOString().split('T')[0] : '') }}>
-                          {user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
-                        </Button>
-                      )}
                     </TableCell>
                     <TableCell>
                       <Button
@@ -1755,7 +1815,62 @@ export function AdminAllUsersManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* User Forms Dialog */}
+      {/* Contract Timeline Dialog */}
+      <Dialog open={!!editingContractUserId} onOpenChange={(open) => !open && setEditingContractUserId(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Contract Timeline
+            </DialogTitle>
+            <DialogDescription>
+              Set the contract start date, due date, and optional extension date for {users.find(u => u.user_id === editingContractUserId)?.display_name || 'this user'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-3 gap-4 py-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Start Date</Label>
+              <Input type="date" value={editingContractStartDate} onChange={e => setEditingContractStartDate(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Due Date</Label>
+              <Input type="date" value={editingContractDueDate} onChange={e => setEditingContractDueDate(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">Extension Date</Label>
+              <Input type="date" value={editingContractExtensionDate} onChange={e => setEditingContractExtensionDate(e.target.value)} />
+            </div>
+          </div>
+          {editingContractStartDate && editingContractDueDate && (() => {
+            const start = new Date(editingContractStartDate)
+            const due = new Date(editingContractDueDate)
+            const now = new Date()
+            const total = due.getTime() - start.getTime()
+            const elapsed = now.getTime() - start.getTime()
+            const pct = total > 0 ? Math.min(100, Math.max(0, Math.round((elapsed / total) * 100))) : 0
+            const isOverdue = pct >= 100
+            return (
+              <div className="space-y-2 pb-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span>{formatShortDate(editingContractStartDate)} – {formatShortDate(editingContractDueDate)}</span>
+                  <span className={`font-semibold ${isOverdue ? 'text-destructive' : 'text-[#2eb2ff]'}`}>{pct}%</span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-muted overflow-hidden">
+                  <div className={`h-full rounded-full transition-all ${isOverdue ? 'bg-destructive' : pct > 75 ? 'bg-orange-500' : 'bg-[#2eb2ff]'}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                </div>
+              </div>
+            )
+          })()}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingContractUserId(null)}>Cancel</Button>
+            <Button onClick={() => editingContractUserId && handleSaveContractDates(editingContractUserId)} disabled={savingContract} style={{ backgroundColor: '#ffb500', color: '#290a52' }}>
+              {savingContract ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+              Save Dates
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={!!formsUserId} onOpenChange={(open) => !open && setFormsUserId(null)}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
