@@ -605,9 +605,11 @@ export function AdminAllUsersManagement() {
   const getContractProgress = (user: any) => {
     const start = user.contract_start_date ? new Date(user.contract_start_date) : null
     const due = user.contract_due_date ? new Date(user.contract_due_date) : null
+    const ext = user.contract_extension_date ? new Date(user.contract_extension_date) : null
     if (!start || !due) return null
+    const endDate = ext || due
     const now = new Date()
-    const total = due.getTime() - start.getTime()
+    const total = endDate.getTime() - start.getTime()
     if (total <= 0) return 100
     const elapsed = now.getTime() - start.getTime()
     return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)))
