@@ -38,6 +38,8 @@ export function AdminAnalyticsOverview() {
   const [metrics, setMetrics] = useState<SubscriptionMetrics>({
     paidMembers: 0,
     mrr: 0,
+    mrrTruheirs: 0,
+    mrrProgram: 0,
     churn: 0,
     signups: 0,
     conversionRate: 0,
