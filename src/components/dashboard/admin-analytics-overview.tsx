@@ -137,6 +137,16 @@ export function AdminAnalyticsOverview() {
         }
       }
 
+      // Program metrics from contract data
+      const programProfiles = profiles?.filter(p => p.program_name) || []
+      const programContractValue = programProfiles.reduce((sum, p) => sum + ((p as any).program_contract_value || 0), 0)
+      const programCashCollected = programProfiles.reduce((sum, p) => sum + ((p as any).program_cash_collected || 0), 0)
+      const programRemaining = programContractValue - programCashCollected
+      programPaidCount = programProfiles.length
+
+      // Program MRR based on cash collected / 12
+      mrrProgram = Math.round(programCashCollected / 12)
+
       // LTGP = Lifetime Gross Profit (annualized MRR)
       const ltgp = mrr * 12
 
