@@ -157,6 +157,8 @@ export function AdminAnalyticsOverview() {
       setMetrics({
         paidMembers,
         mrr: Math.round(mrr),
+        mrrTruheirs: Math.round(mrrTruheirs),
+        mrrProgram: Math.round(mrrProgram),
         churn: Number(churn.toFixed(1)),
         signups: paidSignups,
         conversionRate: Number(conversionRate.toFixed(1)),
