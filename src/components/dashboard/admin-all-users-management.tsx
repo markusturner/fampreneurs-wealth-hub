@@ -1815,15 +1815,36 @@ export function AdminAllUsersManagement() {
           <div className="grid grid-cols-3 gap-4 py-4">
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Start Date</Label>
-              <Input type="date" value={editingContractStartDate} onChange={e => setEditingContractStartDate(e.target.value)} />
+              <div className="relative">
+                <Input
+                  type="date"
+                  value={editingContractStartDate}
+                  onChange={e => setEditingContractStartDate(e.target.value)}
+                  className="h-11 rounded-xl border-2 border-muted bg-muted/30 px-4 text-sm font-medium focus:border-[#ffb500] focus:ring-[#ffb500] transition-all [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Due Date</Label>
-              <Input type="date" value={editingContractDueDate} onChange={e => setEditingContractDueDate(e.target.value)} />
+              <div className="relative">
+                <Input
+                  type="date"
+                  value={editingContractDueDate}
+                  onChange={e => setEditingContractDueDate(e.target.value)}
+                  className="h-11 rounded-xl border-2 border-muted bg-muted/30 px-4 text-sm font-medium focus:border-[#ffb500] focus:ring-[#ffb500] transition-all [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label className="text-sm font-semibold">Extension Date</Label>
-              <Input type="date" value={editingContractExtensionDate} onChange={e => setEditingContractExtensionDate(e.target.value)} />
+              <div className="relative">
+                <Input
+                  type="date"
+                  value={editingContractExtensionDate}
+                  onChange={e => setEditingContractExtensionDate(e.target.value)}
+                  className="h-11 rounded-xl border-2 border-muted bg-muted/30 px-4 text-sm font-medium focus:border-[#ffb500] focus:ring-[#ffb500] transition-all [&::-webkit-calendar-picker-indicator]:opacity-60 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                />
+              </div>
             </div>
           </div>
           {editingContractStartDate && editingContractDueDate && (() => {
