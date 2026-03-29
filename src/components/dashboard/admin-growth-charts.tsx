@@ -20,9 +20,10 @@ interface ActivityDay {
 
 interface AdminGrowthChartsProps {
   programOnly?: boolean
+  truheirsOnly?: boolean
 }
 
-export function AdminGrowthCharts({ programOnly = false }: AdminGrowthChartsProps) {
+export function AdminGrowthCharts({ programOnly = false, truheirsOnly = false }: AdminGrowthChartsProps) {
   const [growthData, setGrowthData] = useState<GrowthData[]>([])
   const [activityData, setActivityData] = useState<ActivityDay[]>([])
   const [loading, setLoading] = useState(true)
@@ -35,7 +36,7 @@ export function AdminGrowthCharts({ programOnly = false }: AdminGrowthChartsProp
 
   useEffect(() => {
     fetchData()
-  }, [programOnly])
+  }, [programOnly, truheirsOnly])
 
   const fetchData = async () => {
     try {
@@ -43,11 +44,14 @@ export function AdminGrowthCharts({ programOnly = false }: AdminGrowthChartsProp
 
       let profilesQuery = supabase
         .from('profiles')
-        .select('user_id, created_at, program_name')
+        .select('user_id, created_at, program_name, truheirs_access')
         .order('created_at', { ascending: true })
 
       if (programOnly) {
         profilesQuery = profilesQuery.not('program_name', 'is', null)
+      }
+      if (truheirsOnly) {
+        profilesQuery = profilesQuery.eq('truheirs_access', true)
       }
 
       const { data: profiles } = await profilesQuery
