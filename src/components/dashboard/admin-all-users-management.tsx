@@ -133,7 +133,7 @@ export function AdminAllUsersManagement() {
       console.log('Stripe sync completed:', data);
       
       // Always refresh after sync
-      await fetchUsers();
+      await fetchUsers(true);
       
       if (!silent) {
         toast({
