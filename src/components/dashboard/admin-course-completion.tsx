@@ -15,9 +15,10 @@ interface CourseCompletion {
 
 interface AdminCourseCompletionProps {
   programOnly?: boolean
+  truheirsOnly?: boolean
 }
 
-export function AdminCourseCompletion({ programOnly = false }: AdminCourseCompletionProps) {
+export function AdminCourseCompletion({ programOnly = false, truheirsOnly = false }: AdminCourseCompletionProps) {
   const [courses, setCourses] = useState<CourseCompletion[]>([])
   const [loading, setLoading] = useState(true)
   const [overallAvg, setOverallAvg] = useState(0)
