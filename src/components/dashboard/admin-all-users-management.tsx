@@ -558,6 +558,63 @@ export function AdminAllUsersManagement() {
     }
   }
 
+  const handleSaveInlineJoined = async (userId: string) => {
+    setSavingJoined(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ admin_joined_date: editingJoinedValue || null } as any)
+        .eq('user_id', userId)
+      if (error) throw error
+      toast({ title: 'Joined Date Updated', description: 'Date saved successfully' })
+      setEditingJoinedUserId(null)
+      setEditingJoinedValue('')
+      await fetchUsers()
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to save date', variant: 'destructive' })
+    } finally {
+      setSavingJoined(false)
+    }
+  }
+
+  const handleSaveNotes = async (userId: string) => {
+    setSavingNotes(true)
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ admin_notes: notesValue || null } as any)
+        .eq('user_id', userId)
+      if (error) throw error
+      toast({ title: 'Notes Saved' })
+      setNotesUserId(null)
+      setNotesValue('')
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to save notes', variant: 'destructive' })
+    } finally {
+      setSavingNotes(false)
+    }
+  }
+
+  const handleOpenForms = async (userId: string) => {
+    setFormsUserId(userId)
+    setLoadingForms(true)
+    try {
+      const [onboardingRes, agreementsRes, trustRes] = await Promise.all([
+        supabase.from('onboarding_submissions').select('*').eq('user_id', userId).maybeSingle(),
+        supabase.from('program_agreements').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('trust_form_submissions' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      ])
+      setFormsData({
+        onboarding: onboardingRes.data,
+        agreements: agreementsRes.data || [],
+        trustForms: trustRes.data || [],
+      })
+    } catch (err) {
+      console.error('Error fetching forms:', err)
+    } finally {
+      setLoadingForms(false)
+    }
+  }
 
   const syncStripeSubscriptions = async () => {
     setSyncingStripe(true)
