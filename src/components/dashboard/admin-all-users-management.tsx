@@ -181,9 +181,10 @@ export function AdminAllUsersManagement() {
         }
       })
 
+      const getUserDisplayName = (u: any) => (u.display_name || `${u.first_name || ''} ${u.last_name || ''}`.trim()).toLowerCase()
       const sorted = usersWithSubscriptions.sort((a: any, b: any) => {
-        const nameA = (a.full_name || '').trim().toLowerCase()
-        const nameB = (b.full_name || '').trim().toLowerCase()
+        const nameA = getUserDisplayName(a)
+        const nameB = getUserDisplayName(b)
         const hasNameA = nameA.length > 0
         const hasNameB = nameB.length > 0
         if (hasNameA && !hasNameB) return -1
