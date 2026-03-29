@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { supabase } from '@/integrations/supabase/client'
 import { Loader2, TrendingUp, DollarSign, Users, BarChart3 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { AdminGrowthCharts } from './admin-growth-charts'
+import { AdminCourseCompletion } from './admin-course-completion'
 
 interface MetricCardProps {
   title: string
@@ -402,6 +404,9 @@ export function AdminAnalyticsOverview() {
               highlight
             />
           </div>
+
+          <AdminCourseCompletion programOnly />
+          <AdminGrowthCharts programOnly />
         </TabsContent>
       </Tabs>
     </div>

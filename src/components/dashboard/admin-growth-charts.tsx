@@ -18,7 +18,11 @@ interface ActivityDay {
   level: number
 }
 
-export function AdminGrowthCharts() {
+interface AdminGrowthChartsProps {
+  programOnly?: boolean
+}
+
+export function AdminGrowthCharts({ programOnly = false }: AdminGrowthChartsProps) {
   const [growthData, setGrowthData] = useState<GrowthData[]>([])
   const [activityData, setActivityData] = useState<ActivityDay[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,16 +35,22 @@ export function AdminGrowthCharts() {
 
   useEffect(() => {
     fetchData()
-  }, [])
+  }, [programOnly])
 
   const fetchData = async () => {
     try {
       setLoading(true)
 
-      const { data: profiles } = await supabase
+      let profilesQuery = supabase
         .from('profiles')
-        .select('user_id, created_at')
+        .select('user_id, created_at, program_name')
         .order('created_at', { ascending: true })
+
+      if (programOnly) {
+        profilesQuery = profilesQuery.not('program_name', 'is', null)
+      }
+
+      const { data: profiles } = await profilesQuery
 
       if (!profiles) { setLoading(false); return }
 
@@ -48,6 +58,9 @@ export function AdminGrowthCharts() {
       const today = new Date()
       const startDate = subDays(today, days)
       const yearStart = startOfYear(today)
+
+      // Get the set of user IDs to filter by
+      const programUserIds = new Set(profiles.map(p => p.user_id))
 
       const [
         { data: messages },
@@ -60,6 +73,17 @@ export function AdminGrowthCharts() {
         supabase.from('community_comments').select('user_id, created_at').gte('created_at', format(yearStart, 'yyyy-MM-dd')),
         supabase.from('meetings').select('created_by, created_at').gte('created_at', format(yearStart, 'yyyy-MM-dd'))
       ])
+
+      // Filter activity to program members if needed
+      const filterByProgram = (items: any[] | null, userKey: string) => {
+        if (!programOnly || !items) return items
+        return items.filter(item => programUserIds.has(item[userKey]))
+      }
+
+      const filteredMessages = filterByProgram(messages, 'sender_id')
+      const filteredPosts = filterByProgram(posts, 'user_id')
+      const filteredComments = filterByProgram(comments, 'user_id')
+      const filteredMeetings = filterByProgram(meetings, 'created_by')
 
       // Build activity map
       const activityByDate: Record<string, Set<string>> = {}
@@ -74,10 +98,10 @@ export function AdminGrowthCharts() {
         })
       }
 
-      addActivity(messages, 'sender_id')
-      addActivity(posts, 'user_id')
-      addActivity(comments, 'user_id')
-      addActivity(meetings, 'created_by')
+      addActivity(filteredMessages, 'sender_id')
+      addActivity(filteredPosts, 'user_id')
+      addActivity(filteredComments, 'user_id')
+      addActivity(filteredMeetings, 'created_by')
 
       // Also count profiles created
       profiles?.forEach(p => {
