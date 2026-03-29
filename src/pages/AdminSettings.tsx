@@ -118,7 +118,6 @@ export function AdminSettings() {
             <AdminAnalyticsOverview />
             <AdminCourseCompletion />
             <AdminGrowthCharts />
-            <AdminActivityHeatmap />
           </TabsContent>
         )}
         {isOwner && (
