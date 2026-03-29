@@ -1152,8 +1152,13 @@ export function AdminAllUsersManagement() {
                     <TableCell className="font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 bg-background">
                       {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}
                     </TableCell>
-                    <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                    <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background">
                       {renderContractTimeline(user)}
+                    </TableCell>
+                    <TableCell className="min-w-[120px] sticky left-[480px] z-10 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                      <Badge variant="outline" className="text-xs" style={{ backgroundColor: '#ffb500', color: '#1a1a2e', borderColor: '#ffb500' }}>
+                        {user.role || 'Trustee'}
+                      </Badge>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
                       {editingPhoneUserId === user.user_id ? (
@@ -1187,12 +1192,7 @@ export function AdminAllUsersManagement() {
                     </TableCell>
                     <TableCell className="text-sm">{user.email}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-xs" style={{ backgroundColor: '#ffb500', color: '#1a1a2e', borderColor: '#ffb500' }}>
-                        {user.role || 'Trustee'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.truheirs_access ? "default" : "destructive"} className="text-xs">
+                      <Badge className={`text-xs ${user.truheirs_access ? 'bg-green-600 hover:bg-green-700 text-white border-green-600' : ''}`} variant={user.truheirs_access ? "default" : "destructive"}>
                         {user.truheirs_access ? 'Yes' : 'No'}
                       </Badge>
                     </TableCell>
@@ -1234,19 +1234,6 @@ export function AdminAllUsersManagement() {
                         : '—'}
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-xs">{user.program_name || '—'}</TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      {editingFinanceUserId === user.user_id && editingFinanceField === 'stripe_sub' ? (
-                        <div className="flex items-center gap-1">
-                          <Input value={editingFinanceValue} onChange={e => setEditingFinanceValue(e.target.value)} placeholder="sub_..." className="h-7 w-28 text-xs" onKeyDown={e => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>{savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
-                          <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setEditingFinanceUserId(null)}><X className="h-3 w-3" /></Button>
-                        </div>
-                      ) : (
-                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setEditingFinanceUserId(user.user_id); setEditingFinanceField('stripe_sub'); setEditingFinanceValue(user.stripe_subscription_id || '') }}>
-                          {user.stripe_subscription_id ? 'Assigned' : 'Assign'}
-                        </Button>
-                      )}
-                    </TableCell>
                     <TableCell>
                       <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(user.user_id)}>View</Button>
                     </TableCell>
