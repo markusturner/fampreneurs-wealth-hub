@@ -624,6 +624,44 @@ export function AdminAllUsersManagement() {
     }
   }
 
+  const handleSaveFinance = async (userId: string) => {
+    setSavingFinance(true)
+    try {
+      const updateData: any = {}
+      if (editingFinanceField === 'contract_value') {
+        const val = editingFinanceValue.replace(/,/g, '')
+        updateData.program_contract_value = val ? Number(val) : null
+      } else if (editingFinanceField === 'cash_collected') {
+        const val = editingFinanceValue.replace(/,/g, '')
+        updateData.program_cash_collected = val ? Number(val) : null
+      } else if (editingFinanceField === 'stripe_sub') {
+        updateData.stripe_subscription_id = editingFinanceValue || null
+      }
+      const { error } = await supabase.from('profiles').update(updateData).eq('user_id', userId)
+      if (error) throw error
+      toast({ title: 'Updated', description: 'Financial data saved' })
+      setEditingFinanceUserId(null)
+      setEditingFinanceField(null)
+      setEditingFinanceValue('')
+      await fetchUsers()
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to save', variant: 'destructive' })
+    } finally {
+      setSavingFinance(false)
+    }
+  }
+
+  const formatCurrency = (val: number | null | undefined) => {
+    if (val === null || val === undefined) return '—'
+    return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })
+  }
+
+  const getRemainingBalance = (user: UserProfile) => {
+    const contract = (user as any).program_contract_value ?? 0
+    const collected = (user as any).program_cash_collected ?? 0
+    return contract - collected
+  }
+
   const syncStripeSubscriptions = async () => {
     setSyncingStripe(true)
     try {
@@ -636,7 +674,6 @@ export function AdminAllUsersManagement() {
         description: `Synced ${data.synced} trustees successfully. ${data.errors > 0 ? `${data.errors} errors.` : ''}`,
       })
 
-      // Refresh user list to show updated subscription data
       await fetchUsers()
     } catch (error: any) {
       console.error('Error syncing Stripe:', error)
