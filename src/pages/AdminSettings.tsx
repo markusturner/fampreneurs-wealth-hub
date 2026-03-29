@@ -115,8 +115,6 @@ export function AdminSettings() {
         {(isAdmin || isOwner) && (
           <TabsContent value="metrics" className="space-y-6">
             <AdminAnalyticsOverview />
-            <AdminCourseCompletion />
-            <AdminGrowthCharts />
           </TabsContent>
         )}
         {isOwner && (
