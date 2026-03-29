@@ -48,7 +48,10 @@ export function AdminCourseCompletion({ programOnly = false }: AdminCourseComple
       if (!allCourses) return
 
       const courseMap: CourseCompletion[] = allCourses.map((course) => {
-        const courseEnrollments = enrollments?.filter((e) => e.course_id === course.id) || []
+        let courseEnrollments = enrollments?.filter((e) => e.course_id === course.id) || []
+        if (programUserIds) {
+          courseEnrollments = courseEnrollments.filter((e) => e.user_id && programUserIds.has(e.user_id))
+        }
         const enrolledCount = courseEnrollments.length
         const avgProgress =
           enrolledCount > 0
