@@ -114,12 +114,19 @@ export function AdminAnalyticsOverview() {
       for (const sub of activeSubs) {
         const userProfile = profiles?.find(p => p.user_id === sub.user_id)
         const amount = calcMrrForSub(sub)
-        if (userProfile?.truheirs_access) {
+        if (userProfile?.truheirs_access && !userProfile?.program_name) {
+          // TruHeirs/DFO only (no program)
           mrrTruheirs += amount
           truheirdPaidCount++
-        }
-        if (userProfile?.program_name) {
+        } else if (userProfile?.program_name && !userProfile?.truheirs_access) {
+          // Program only (no TruHeirs/DFO)
           mrrProgram += amount
+          programPaidCount++
+        } else if (userProfile?.truheirs_access && userProfile?.program_name) {
+          // Has both — split: count in both but attribute revenue to each
+          mrrTruheirs += amount / 2
+          truheirdPaidCount++
+          mrrProgram += amount / 2
           programPaidCount++
         }
       }
