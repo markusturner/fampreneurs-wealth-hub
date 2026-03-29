@@ -10,7 +10,7 @@ import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { useSubscription } from '@/hooks/useSubscription'
 import { supabase } from '@/integrations/supabase/client'
-import { Search, Send, MessageCircle } from 'lucide-react'
+import { Search, Send, MessageCircle, Trash2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 interface Profile {
