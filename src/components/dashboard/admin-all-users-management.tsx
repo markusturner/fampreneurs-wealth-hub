@@ -1261,10 +1261,7 @@ export function AdminAllUsersManagement() {
                         size="sm"
                         variant="ghost"
                         className="h-7 text-xs"
-                        onClick={() => {
-                          setNotesUserId(user.user_id)
-                          setNotesValue((user as any).admin_notes || '')
-                        }}
+                        onClick={() => openNotesForUser(user.user_id, (user as any).admin_notes)}
                       >
                         <StickyNote className="h-3 w-3 mr-1" />
                         {(user as any).admin_notes ? 'Edit' : 'Add'}
