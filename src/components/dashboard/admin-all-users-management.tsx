@@ -109,9 +109,10 @@ export function AdminAllUsersManagement() {
   const [editingContractDueDate, setEditingContractDueDate] = useState('')
   const [editingContractExtensionDate, setEditingContractExtensionDate] = useState('')
   const [savingContract, setSavingContract] = useState(false)
-  // Admin notes
+  // Admin notes with sections
   const [notesUserId, setNotesUserId] = useState<string | null>(null)
-  const [notesValue, setNotesValue] = useState('')
+  const [notesMainDescription, setNotesMainDescription] = useState('')
+  const [notesSections, setNotesSections] = useState<{title: string, content: string}[]>([])
   const [savingNotes, setSavingNotes] = useState(false)
   // User forms dialog
   const [formsUserId, setFormsUserId] = useState<string | null>(null)
