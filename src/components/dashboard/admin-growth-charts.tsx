@@ -36,7 +36,7 @@ export function AdminGrowthCharts({ programOnly = false, truheirsOnly = false }:
 
   useEffect(() => {
     fetchData()
-  }, [programOnly])
+  }, [programOnly, truheirsOnly])
 
   const fetchData = async () => {
     try {
