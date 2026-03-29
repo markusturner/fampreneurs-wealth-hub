@@ -115,6 +115,11 @@ export function AdminAllUsersManagement() {
   const [formsUserId, setFormsUserId] = useState<string | null>(null)
   const [formsData, setFormsData] = useState<{onboarding: any, agreements: any[], trustForms: any[]}>({ onboarding: null, agreements: [], trustForms: [] })
   const [loadingForms, setLoadingForms] = useState(false)
+  // Financial inline editing
+  const [editingFinanceUserId, setEditingFinanceUserId] = useState<string | null>(null)
+  const [editingFinanceField, setEditingFinanceField] = useState<'contract_value' | 'cash_collected' | 'stripe_sub' | null>(null)
+  const [editingFinanceValue, setEditingFinanceValue] = useState('')
+  const [savingFinance, setSavingFinance] = useState(false)
   const { toast } = useToast()
 
   const syncStripeData = async (silent = false) => {
