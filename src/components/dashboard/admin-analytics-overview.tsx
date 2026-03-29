@@ -192,6 +192,9 @@ export function AdminAnalyticsOverview() {
         trialConversionRate: Number(trialConversionRate.toFixed(1)),
         truheirdPaidCount,
         programPaidCount,
+        programContractValue,
+        programCashCollected,
+        programRemaining,
       })
     } catch (error) {
       console.error('Error fetching metrics:', error)
