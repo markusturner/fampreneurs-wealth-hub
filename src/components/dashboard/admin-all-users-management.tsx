@@ -1150,7 +1150,7 @@ export function AdminAllUsersManagement() {
                     <TableCell className="font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 bg-background">
                       {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}
                     </TableCell>
-                    <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background">
+                    <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
                       {renderContractTimeline(user)}
                     </TableCell>
                     <TableCell className="min-w-[120px]">
