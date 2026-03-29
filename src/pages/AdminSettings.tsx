@@ -7,7 +7,7 @@ import { AdminAllUsersManagement } from '@/components/dashboard/admin-all-users-
 import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
 import { AdminTutorialVideoManager, AdminUpgradeVideoManager, AdminVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
 import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-overview'
-import { AdminGrowthCharts } from '@/components/dashboard/admin-growth-charts'
+
 import { RolePermissionsManager } from '@/components/dashboard/role-permissions-manager'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
