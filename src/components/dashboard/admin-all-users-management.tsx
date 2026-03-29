@@ -1791,21 +1791,77 @@ export function AdminAllUsersManagement() {
               Admin Notes
             </DialogTitle>
             <DialogDescription>
-              Add notes or descriptions for this user (supports rich text formatting)
+              Add a main description and multiple description sections for this user
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <Textarea
-              value={notesValue}
-              onChange={(e) => setNotesValue(e.target.value)}
-              placeholder="Enter notes about this user... (supports **bold**, *italic*, - lists)"
-              rows={8}
-              className="font-mono text-sm"
-            />
-            <div className="text-xs text-muted-foreground">
-              Tip: Use **bold**, *italic*, - for lists, # for headings
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-6 pr-4">
+              {/* Main Description */}
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">Main Description</Label>
+                <Textarea
+                  value={notesMainDescription}
+                  onChange={(e) => setNotesMainDescription(e.target.value)}
+                  placeholder="Enter main description for this user..."
+                  rows={4}
+                  className="text-sm"
+                />
+              </div>
+
+              {/* Description Sections */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold">Description Sections</Label>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setNotesSections([...notesSections, { title: `Description ${notesSections.length + 1}`, content: '' }])}
+                  >
+                    <Plus className="h-3 w-3 mr-1" /> Add Section
+                  </Button>
+                </div>
+
+                {notesSections.map((section, index) => (
+                  <div key={index} className="border rounded-xl p-4 space-y-3 bg-muted/20">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground cursor-grab">⋮⋮</span>
+                        <Input
+                          value={section.title}
+                          onChange={(e) => {
+                            const updated = [...notesSections]
+                            updated[index] = { ...updated[index], title: e.target.value }
+                            setNotesSections(updated)
+                          }}
+                          className="h-8 text-sm font-semibold border-none bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                          placeholder="Section title..."
+                        />
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                        onClick={() => setNotesSections(notesSections.filter((_, i) => i !== index))}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <Textarea
+                      value={section.content}
+                      onChange={(e) => {
+                        const updated = [...notesSections]
+                        updated[index] = { ...updated[index], content: e.target.value }
+                        setNotesSections(updated)
+                      }}
+                      placeholder="Enter section content..."
+                      rows={4}
+                      className="text-sm"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          </ScrollArea>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNotesUserId(null)}>Cancel</Button>
             <Button onClick={() => notesUserId && handleSaveNotes(notesUserId)} disabled={savingNotes}>
