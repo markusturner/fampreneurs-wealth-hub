@@ -64,6 +64,9 @@ interface UserProfile {
   subscription_tier?: string | null
   subscription_period?: string | null
   subscribed?: boolean
+  program_contract_value?: number | null
+  program_cash_collected?: number | null
+  stripe_subscription_id?: string | null
 }
 
 export function AdminAllUsersManagement() {
