@@ -182,8 +182,12 @@ export function AdminAllUsersManagement() {
       })
 
       const sorted = usersWithSubscriptions.sort((a: any, b: any) => {
-        const nameA = (a.full_name || '').toLowerCase()
-        const nameB = (b.full_name || '').toLowerCase()
+        const nameA = (a.full_name || '').trim().toLowerCase()
+        const nameB = (b.full_name || '').trim().toLowerCase()
+        const hasNameA = nameA.length > 0
+        const hasNameB = nameB.length > 0
+        if (hasNameA && !hasNameB) return -1
+        if (!hasNameA && hasNameB) return 1
         return nameA.localeCompare(nameB)
       })
       setUsers(sorted)
