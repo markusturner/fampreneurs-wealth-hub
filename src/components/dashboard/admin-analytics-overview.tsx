@@ -404,6 +404,9 @@ export function AdminAnalyticsOverview() {
               highlight
             />
           </div>
+
+          <AdminCourseCompletion programOnly />
+          <AdminGrowthCharts programOnly />
         </TabsContent>
       </Tabs>
     </div>
