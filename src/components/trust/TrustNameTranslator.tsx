@@ -156,30 +156,34 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
             {(Object.entries(translations) as [keyof Translations, string][]).map(([lang, value]) => {
               const info = LANGUAGE_LABELS[lang]
               if (!info) return null
+              const isRtl = lang === "arabic" || lang === "hebrew"
               return (
-                <Card key={lang} className="border-border/50">
-                  <CardContent className="p-3 flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-base">{info.flag}</span>
-                        <Badge variant="outline" className="text-xs">{info.label}</Badge>
+                <Card key={lang} className="border-border/50 hover:border-primary/30 transition-colors">
+                  <CardContent className="p-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{info.flag}</span>
+                        <Badge variant="outline" className="text-xs font-medium">{info.label}</Badge>
                       </div>
-                      <p className="text-sm text-foreground break-words" dir={lang === "arabic" || lang === "hebrew" ? "rtl" : "ltr"}>
-                        {value}
-                      </p>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 shrink-0"
+                        onClick={() => handleCopy(lang, value)}
+                      >
+                        {copiedKey === lang ? (
+                          <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                        )}
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 shrink-0"
-                      onClick={() => handleCopy(lang, value)}
+                    <p
+                      className={`text-sm font-medium text-foreground leading-relaxed break-words ${isRtl ? "text-right font-serif" : ""}`}
+                      dir={isRtl ? "rtl" : "ltr"}
                     >
-                      {copiedKey === lang ? (
-                        <CheckCircle2 className="h-4 w-4 text-accent" />
-                      ) : (
-                        <Copy className="h-4 w-4 text-muted-foreground" />
-                      )}
-                    </Button>
+                      {value}
+                    </p>
                   </CardContent>
                 </Card>
               )
