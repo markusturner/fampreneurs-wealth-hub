@@ -236,6 +236,12 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
+    // Reset code_issued_at on family_secret_codes for this user's email (15-min timer reset)
+    await supabaseAdmin
+      .from("family_secret_codes")
+      .update({ code_issued_at: new Date().toISOString() })
+      .eq("created_by_email", email);
+
     // Send email in background
     const sendEmailInBackground = async () => {
       try {
