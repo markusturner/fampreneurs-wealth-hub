@@ -174,10 +174,11 @@ export function AdminAllUsersManagement() {
 
       if (error) throw error
 
-      // Fetch subscription data for all users
-      const { data: subscribersData } = await supabase
-        .from('subscribers')
-        .select('user_id, subscription_tier, subscription_period, subscribed')
+      // Fetch subscription data and trust submissions for all users
+      const [{ data: subscribersData }, { data: trustSubsData }] = await Promise.all([
+        supabase.from('subscribers').select('user_id, subscription_tier, subscription_period, subscribed'),
+        supabase.from('trust_submissions' as any).select('user_id, trust_type, submitted_at').order('submitted_at', { ascending: false }),
+      ])
 
       // Merge subscription data with profiles
       const usersWithSubscriptions = (profilesData || []).map(profile => {
