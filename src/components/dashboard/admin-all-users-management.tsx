@@ -173,10 +173,22 @@ export function AdminAllUsersManagement() {
 
       if (error) throw error
 
-      // Fetch subscription data for all users
-      const { data: subscribersData } = await supabase
-        .from('subscribers')
-        .select('user_id, subscription_tier, subscription_period, subscribed')
+      // Fetch subscription data and trust submission dates for all users
+      const [{ data: subscribersData }, { data: allTrustSubs }] = await Promise.all([
+        supabase.from('subscribers').select('user_id, subscription_tier, subscription_period, subscribed'),
+        supabase.from('trust_submissions' as any).select('user_id, trust_type, submitted_at').order('submitted_at', { ascending: true }),
+      ])
+
+      // Build a map of user_id -> { trust_type -> earliest submitted_at }
+      const trustSubMap: Record<string, Record<string, string>> = {}
+      if (allTrustSubs) {
+        for (const sub of allTrustSubs as any[]) {
+          if (!trustSubMap[sub.user_id]) trustSubMap[sub.user_id] = {}
+          if (!trustSubMap[sub.user_id][sub.trust_type]) {
+            trustSubMap[sub.user_id][sub.trust_type] = sub.submitted_at
+          }
+        }
+      }
 
       // Merge subscription data with profiles
       const usersWithSubscriptions = (profilesData || []).map(profile => {
@@ -186,7 +198,8 @@ export function AdminAllUsersManagement() {
           ...profile,
           subscription_tier: subscription?.subscription_tier || null,
           subscription_period: subscription?.subscription_period || null,
-          subscribed: subscription?.subscribed === true
+          subscribed: subscription?.subscribed === true,
+          trust_sub_dates: trustSubMap[profile.user_id] || {},
         }
       })
 
@@ -1192,6 +1205,11 @@ export function AdminAllUsersManagement() {
                     <TableHead className="min-w-[180px]">Activation Points</TableHead>
                     <TableHead>Satisfaction</TableHead>
                     <TableHead>First Win Date</TableHead>
+                    <TableHead className="min-w-[100px]">Family Trust</TableHead>
+                    <TableHead className="min-w-[100px]">Ministry Trust</TableHead>
+                    <TableHead className="min-w-[100px]">Business Trust</TableHead>
+                    <TableHead className="min-w-[100px]">Name Translator</TableHead>
+                    <TableHead className="min-w-[100px]">Asset Inventory</TableHead>
                     <TableHead className="min-w-[160px]">Testimonials</TableHead>
                     <TableHead className="min-w-[120px]">Trust Access</TableHead>
                     <TableHead>Forms</TableHead>
@@ -1459,6 +1477,19 @@ export function AdminAllUsersManagement() {
                         className="h-7 w-32 text-xs"
                       />
                     </TableCell>
+                    {/* Trust Submission Date Columns */}
+                    {['family', 'ministry', 'business', 'trust_name_translator', 'asset_inventory'].map(trustType => {
+                      const dateStr = (user as any).trust_sub_dates?.[trustType]
+                      return (
+                        <TableCell key={trustType}>
+                          {dateStr ? (
+                            <span className="text-xs text-muted-foreground">{new Date(dateStr).toLocaleDateString()}</span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground/50">—</span>
+                          )}
+                        </TableCell>
+                      )
+                    })}
                     {/* Testimonials & Trust Pilot Reviews */}
                     <TableCell>
                       <Textarea
