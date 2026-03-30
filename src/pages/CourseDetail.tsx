@@ -154,9 +154,11 @@ function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, onS
           <GripVertical className="h-3 w-3 text-muted-foreground" />
         </div>
       )}
-      <button
+      <div
         onClick={() => onSelect(lesson)}
-        style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', width: '100%', padding: isAdminOrOwner ? '10px 16px 10px 0' : '10px 16px', textAlign: 'left' as const }}
+        role="button"
+        tabIndex={0}
+        style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', width: '100%', padding: isAdminOrOwner ? '10px 16px 10px 0' : '10px 16px', textAlign: 'left' as const, cursor: 'pointer' }}
         className="flex-1"
       >
         <div style={{
@@ -189,7 +191,7 @@ function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, onS
             <Pencil className="h-3 w-3 text-muted-foreground" />
           </button>
         )}
-      </button>
+      </div>
     </div>
   )
 }
