@@ -247,6 +247,10 @@ export default function CourseDetail() {
   const [showEditCourse, setShowEditCourse] = useState(false)
   const [editingResource, setEditingResource] = useState<Resource | null>(null)
   const [activeDragLessonId, setActiveDragLessonId] = useState<string | null>(null)
+  const [overLessonId, setOverLessonId] = useState<string | null>(null)
+  const [dragType, setDragType] = useState<'lesson' | 'module' | null>(null)
+  const [activeDragModuleId, setActiveDragModuleId] = useState<string | null>(null)
+  const [overModuleId, setOverModuleId] = useState<string | null>(null)
 
   const dndSensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
