@@ -56,7 +56,7 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
     setTranslations(null)
     try {
       const { data, error } = await supabase.functions.invoke("translate-trust-name", {
-        body: { name: name.trim(), trustType },
+        body: { name: name.trim() },
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
