@@ -1339,6 +1339,15 @@ export default function WorkspaceCommunity() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              {(post.user_id === user?.id || isAdmin || isOwner) && (
+                                <DropdownMenuItem onClick={() => {
+                                  setEditingPostId(post.id);
+                                  setEditingPostContent(post.content);
+                                }}>
+                                  <Pencil className="h-3.5 w-3.5 mr-2" />
+                                  Edit Post
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem className="text-destructive" onClick={() => handleDeletePost(post.id)}>
                                 Delete Post
                               </DropdownMenuItem>
