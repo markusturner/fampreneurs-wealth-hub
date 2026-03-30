@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar, Clock } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar, Clock, Star, Trophy, MessageSquare } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Badge } from '@/components/ui/badge'
@@ -1111,6 +1111,10 @@ export function AdminAllUsersManagement() {
                     <TableHead>Cash Collected</TableHead>
                     <TableHead>Remaining</TableHead>
                     <TableHead>Program</TableHead>
+                    <TableHead className="min-w-[180px]">Activation Points</TableHead>
+                    <TableHead>Satisfaction</TableHead>
+                    <TableHead>First Win Date</TableHead>
+                    <TableHead className="min-w-[160px]">Testimonials</TableHead>
                     <TableHead>Forms</TableHead>
                     <TableHead>Notes</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -1304,6 +1308,91 @@ export function AdminAllUsersManagement() {
                         : '—'}
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-xs">{user.program_name || '—'}</TableCell>
+                    {/* Activation Points */}
+                    <TableCell>
+                      <Select
+                        value="__view__"
+                        onValueChange={(val) => {
+                          if (val === '__view__') return
+                          const current: string[] = (user as any).activation_points || []
+                          const updated = current.includes(val) ? current.filter((p: string) => p !== val) : [...current, val]
+                          supabase.from('profiles').update({ activation_points: updated } as any).eq('user_id', user.user_id).then(() => fetchUsers(true))
+                        }}
+                      >
+                        <SelectTrigger className="h-7 w-[160px] text-xs">
+                          <SelectValue>{((user as any).activation_points || []).length > 0 ? `${((user as any).activation_points || []).length} selected` : '—'}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[
+                            { value: 'trust_name_selected', label: 'Trust Name Selected', color: '#2eb2ff' },
+                            { value: 'asset_inventory_completed', label: 'Asset Inventory Completed', color: '#ffb500' },
+                            { value: '3_trusts_approved', label: '3 Trusts Approved', color: '#290a52' },
+                            { value: 'first_asset_funded', label: 'First Asset Funded', color: '#ef4444' },
+                            { value: 'family_legacy_meeting', label: 'Family Legacy Meeting Scheduled', color: '#3b82f6' },
+                          ].map(opt => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              <div className="flex items-center gap-2">
+                                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: opt.color }} />
+                                <span>{opt.label}</span>
+                                {((user as any).activation_points || []).includes(opt.value) && <Check className="h-3 w-3 ml-auto" />}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {((user as any).activation_points || []).length > 0 && (
+                        <div className="flex flex-wrap gap-0.5 mt-1">
+                          {((user as any).activation_points || []).map((p: string) => {
+                            const colors: Record<string, string> = { trust_name_selected: '#2eb2ff', asset_inventory_completed: '#ffb500', '3_trusts_approved': '#290a52', first_asset_funded: '#ef4444', family_legacy_meeting: '#3b82f6' }
+                            return <div key={p} className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[p] || '#888' }} title={p.replace(/_/g, ' ')} />
+                          })}
+                        </div>
+                      )}
+                    </TableCell>
+                    {/* Satisfaction Score */}
+                    <TableCell>
+                      <Select
+                        value={(user as any).satisfaction_score?.toString() || '__none__'}
+                        onValueChange={(val) => {
+                          const score = val === '__none__' ? null : Number(val)
+                          supabase.from('profiles').update({ satisfaction_score: score } as any).eq('user_id', user.user_id).then(() => fetchUsers(true))
+                        }}
+                      >
+                        <SelectTrigger className="h-7 w-16 text-xs">
+                          <SelectValue>{(user as any).satisfaction_score || '—'}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__none__">—</SelectItem>
+                          {[1,2,3,4,5,6,7,8,9,10].map(n => (
+                            <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    {/* First Win Date */}
+                    <TableCell>
+                      <Input
+                        type="date"
+                        value={(user as any).first_win_date || ''}
+                        onChange={(e) => {
+                          supabase.from('profiles').update({ first_win_date: e.target.value || null } as any).eq('user_id', user.user_id).then(() => fetchUsers(true))
+                        }}
+                        className="h-7 w-32 text-xs"
+                      />
+                    </TableCell>
+                    {/* Testimonials & Trust Pilot Reviews */}
+                    <TableCell>
+                      <Textarea
+                        value={(user as any).testimonial_review || ''}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          supabase.from('profiles').update({ testimonial_review: val || null } as any).eq('user_id', user.user_id).then(() => fetchUsers(true))
+                        }}
+                        placeholder="Add review..."
+                        className="h-7 min-h-[28px] w-36 text-xs resize-none"
+                        rows={1}
+                      />
+                    </TableCell>
                     <TableCell>
                       <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(user.user_id)}>View</Button>
                     </TableCell>
