@@ -36,11 +36,6 @@ const LANGUAGE_LABELS: Record<keyof Translations, { label: string; flag: string 
   arabic: { label: "Arabic", flag: "🇸🇦" },
 }
 
-const TRUST_TYPES = [
-  { value: "family", label: "Family Trust" },
-  { value: "business", label: "Business Trust" },
-  { value: "ministry", label: "Ministry Trust" },
-]
 
 export function TrustNameTranslator({ onSubmitted }: Props) {
   const { user } = useAuth()
