@@ -181,6 +181,7 @@ export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingU
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [uploadingCategory, setUploadingCategory] = useState<UploadCategory | null>(null)
+  const [submitterName, setSubmitterName] = useState("")
 
   useEffect(() => {
     fetchUploads()

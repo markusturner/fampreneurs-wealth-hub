@@ -179,6 +179,10 @@ export function TrustAssetUploads({ onSubmitted }: TrustAssetUploadsProps) {
 
   const handleUpload = async (files: FileList, category: UploadCategory) => {
     if (!user?.id) return
+    if (!submitterName.trim()) {
+      toast({ title: "Name required", description: "Please enter your full name before uploading.", variant: "destructive" })
+      return
+    }
     setUploading(true)
 
     try {
@@ -199,6 +203,10 @@ export function TrustAssetUploads({ onSubmitted }: TrustAssetUploadsProps) {
             file_path: filePath,
             file_size: file.size,
             mime_type: file.type || null,
+            submitter_name: submitterName.trim(),
+          } as any)
+        if (dbError) throw dbError
+      }
           } as any)
         if (dbError) throw dbError
       }
