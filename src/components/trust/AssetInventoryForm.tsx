@@ -429,11 +429,23 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
         { key: "successionAddressed", label: "Succession Addressed?" },
       ], businessInterests, setBusinessInterests)}
 
-      <div className="flex justify-end pt-4">
-        <Button onClick={handleSubmit} disabled={submitting} className="gap-2 bg-[#ffb500] hover:bg-[#2eb2ff] text-[#290a52] hover:text-white">
-          {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-          Submit Asset Inventory
-        </Button>
+      <div className="space-y-4 pt-4 border-t">
+        <div className="space-y-2">
+          <Label htmlFor="submitter-name" className="font-semibold">Your Full Name <span className="text-destructive">*</span></Label>
+          <Input
+            id="submitter-name"
+            placeholder="Enter your full legal name"
+            value={submitterName}
+            onChange={(e) => setSubmitterName(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">Required to assign this submission to you.</p>
+        </div>
+        <div className="flex justify-end">
+          <Button onClick={handleSubmit} disabled={submitting || !submitterName.trim()} className="gap-2 bg-[#ffb500] hover:bg-[#2eb2ff] text-[#290a52] hover:text-white">
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+            Submit Asset Inventory
+          </Button>
+        </div>
       </div>
     </div>
   )
