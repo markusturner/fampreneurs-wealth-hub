@@ -124,6 +124,11 @@ export function AdminAllUsersManagement() {
   const [editingFinanceField, setEditingFinanceField] = useState<'contract_value' | 'cash_collected' | null>(null)
   const [editingFinanceValue, setEditingFinanceValue] = useState('')
   const [savingFinance, setSavingFinance] = useState(false)
+  // Trust Access
+  const [trustAccessUserId, setTrustAccessUserId] = useState<string | null>(null)
+  const [trustAccessLocks, setTrustAccessLocks] = useState<{page_name: string, is_locked: boolean}[]>([])
+  const [trustSubmissionDates, setTrustSubmissionDates] = useState<{trust_type: string, submitted_at: string}[]>([])
+  const [savingTrustAccess, setSavingTrustAccess] = useState(false)
   const { toast } = useToast()
 
   const syncStripeData = async (silent = false) => {
