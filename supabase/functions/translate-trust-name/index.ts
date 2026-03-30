@@ -48,7 +48,7 @@ Return ONLY a valid JSON object with this exact structure (no markdown, no code 
         model: "google/gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: `Name: ${name.trim()}\nTrust Type: ${trustType}` },
+          { role: "user", content: `Name: ${name.trim()}` },
         ],
       }),
     });

@@ -116,7 +116,7 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
 
       <Button
         onClick={handleTranslate}
-        disabled={loading || !name.trim() || !trustType}
+        disabled={loading || !name.trim()}
         className="gap-2"
         style={{ backgroundColor: "#ffb500", color: "#290a52" }}
       >
