@@ -573,7 +573,25 @@ export default function ProgramAgreement() {
       })
       if (error) throw error
 
-      toast({ title: 'Agreement signed!', description: 'Please upload your profile photo to continue.' })
+      // Send signed agreement copy via email
+      try {
+        await supabase.functions.invoke('send-agreement-email', {
+          body: {
+            agreementId: user.id,
+            recipientEmail: user.email,
+            fullName,
+            programName: agreementKey,
+            agreementDate: new Date().toISOString().split('T')[0],
+            mailingAddress: address || 'Not provided',
+            signatureData,
+          },
+        })
+      } catch (emailErr) {
+        console.error('Failed to send agreement email:', emailErr)
+        // Don't block the flow if email fails
+      }
+
+      toast({ title: 'Agreement signed!', description: 'A copy has been emailed to you. Please upload your profile photo to continue.' })
       window.location.href = '/profile-photo'
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to save agreement.', variant: 'destructive' })
