@@ -1442,6 +1442,17 @@ export function AdminAllUsersManagement() {
                         rows={1}
                       />
                     </TableCell>
+                    {/* Trust Access */}
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs"
+                        onClick={() => handleOpenTrustAccess(user.user_id)}
+                      >
+                        <ShieldCheck className="h-3 w-3 mr-1" /> Manage
+                      </Button>
+                    </TableCell>
                     <TableCell>
                       <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(user.user_id)}>View</Button>
                     </TableCell>
