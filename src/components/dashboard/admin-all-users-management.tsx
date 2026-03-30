@@ -129,6 +129,7 @@ export function AdminAllUsersManagement() {
   const [trustAccessLocks, setTrustAccessLocks] = useState<{page_name: string, is_locked: boolean}[]>([])
   const [trustSubmissionDates, setTrustSubmissionDates] = useState<{trust_type: string, submitted_at: string}[]>([])
   const [savingTrustAccess, setSavingTrustAccess] = useState(false)
+  const [allTrustSubmissions, setAllTrustSubmissions] = useState<Record<string, {trust_type: string, submitted_at: string}[]>>({})
   const { toast } = useToast()
 
   const syncStripeData = async (silent = false) => {
