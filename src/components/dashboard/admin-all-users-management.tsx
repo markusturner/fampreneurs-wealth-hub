@@ -1438,6 +1438,22 @@ export function AdminAllUsersManagement() {
                         </TableCell>
                       )
                     })}
+                    {/* Proof of Transfer Date */}
+                    <TableCell>
+                      {(user as any).proof_of_transfer_date ? (
+                        <span className="text-xs text-muted-foreground">{new Date((user as any).proof_of_transfer_date).toLocaleDateString()}</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground/50">—</span>
+                      )}
+                    </TableCell>
+                    {/* Legacy Meeting Date */}
+                    <TableCell>
+                      {(user as any).legacy_meeting_date ? (
+                        <span className="text-xs text-muted-foreground">{new Date((user as any).legacy_meeting_date).toLocaleDateString()}</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground/50">—</span>
+                      )}
+                    </TableCell>
                     {/* Testimonials & Trust Pilot Reviews */}
                     <TableCell>
                       <Textarea
