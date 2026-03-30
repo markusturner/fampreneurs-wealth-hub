@@ -71,7 +71,7 @@ serve(async (req) => {
       )
     }
 
-    // Check if code has expired
+    // Check if code has expired (standard expiry)
     if (codeRecord.expires_at && new Date(codeRecord.expires_at) < new Date()) {
       return new Response(
         JSON.stringify({ 
@@ -83,6 +83,24 @@ serve(async (req) => {
           status: 401 
         }
       )
+    }
+
+    // Check 15-minute timeout from code_issued_at
+    if (codeRecord.code_issued_at) {
+      const issuedAt = new Date(codeRecord.code_issued_at)
+      const fifteenMinutesLater = new Date(issuedAt.getTime() + 15 * 60 * 1000)
+      if (new Date() > fifteenMinutesLater) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: 'Access code has timed out (15-minute window expired). Please request a new code.' 
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 401 
+          }
+        )
+      }
     }
 
     // Check usage limit
