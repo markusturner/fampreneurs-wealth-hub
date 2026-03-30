@@ -262,6 +262,26 @@ export default function WorkspaceCommunity() {
     setCommunityDesc(programDesc)
   }, [programName, programDesc])
 
+  // Load persisted community photo from community_groups
+  useEffect(() => {
+    if (!program) return
+    const loadCommunityPhoto = async () => {
+      const groupName = PROGRAM_NAMES[program]
+      if (!groupName) return
+      const { data } = await supabase
+        .from('community_groups')
+        .select('image_url')
+        .eq('name', groupName)
+        .maybeSingle()
+      if (data?.image_url) {
+        setCommunityPhoto(data.image_url)
+      } else {
+        setCommunityPhoto(null)
+      }
+    }
+    loadCommunityPhoto()
+  }, [program])
+
   const getEligibleCommunityUserIds = useCallback(async (): Promise<string[]> => {
     if (!program) return []
 
@@ -493,10 +513,40 @@ export default function WorkspaceCommunity() {
     }
   }
 
-  const handleCommunityPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCommunityPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file) {
-      setCommunityPhoto(URL.createObjectURL(file))
+    if (!file || !program) return
+
+    // Show preview immediately
+    setCommunityPhoto(URL.createObjectURL(file))
+
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${program}/${Date.now()}.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('community-photos')
+        .upload(fileName, file, { cacheControl: '3600', upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('community-photos')
+        .getPublicUrl(fileName)
+
+      const groupName = PROGRAM_NAMES[program]
+      const { error: updateError } = await supabase
+        .from('community_groups')
+        .update({ image_url: publicUrl })
+        .eq('name', groupName)
+
+      if (updateError) throw updateError
+
+      setCommunityPhoto(publicUrl)
+      toast({ title: 'Community photo saved!' })
+    } catch (error) {
+      console.error('Error uploading community photo:', error)
+      toast({ title: 'Error', description: 'Failed to save community photo.', variant: 'destructive' })
     }
   }
 
