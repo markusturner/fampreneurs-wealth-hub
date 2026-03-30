@@ -1486,6 +1486,18 @@ export function AdminAllUsersManagement() {
                         rows={1}
                       />
                     </TableCell>
+                    {/* Trust Pilot Review URL */}
+                    <TableCell>
+                      <Input
+                        value={(user as any).trustpilot_review_url || ''}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          supabase.from('profiles').update({ trustpilot_review_url: val || null } as any).eq('user_id', user.user_id).then(() => fetchUsers(true))
+                        }}
+                        placeholder="Paste URL..."
+                        className="h-7 w-36 text-xs"
+                      />
+                    </TableCell>
                     {/* Trust Access */}
                     <TableCell>
                       <Button
