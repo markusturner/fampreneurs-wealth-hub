@@ -391,6 +391,8 @@ export default function WorkspaceCommunity() {
           } as any)
         if (error) throw error
       }
+      // Notify mentioned users (fire and forget)
+      notifyMentionedUsers(newPost.trim(), 'post', 'post')
       setNewPost('')
       // Reset textarea height
       const textarea = document.querySelector<HTMLTextAreaElement>('.post-composer-textarea');
@@ -580,6 +582,9 @@ export default function WorkspaceCommunity() {
 
       if (error) throw error
 
+      // Notify mentioned users
+      if (text) notifyMentionedUsers(text, postId, 'comment')
+
       setCommentText(prev => ({ ...prev, [postId]: '' }))
       setCommentImageFiles(prev => ({ ...prev, [postId]: null }))
       setCommentAudioFiles(prev => ({ ...prev, [postId]: null }))
@@ -595,6 +600,12 @@ export default function WorkspaceCommunity() {
   const getInitials = (name: string) =>
     name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 
+  const formatPostDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    return `${months[date.getMonth()]} ${date.getDate()}`
+  }
+
   const timeAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime()
     const mins = Math.floor(diff / 60000)
@@ -604,6 +615,75 @@ export default function WorkspaceCommunity() {
     const days = Math.floor(hours / 24)
     if (days < 30) return `${days}d`
     return `${Math.floor(days / 30)}mo`
+  }
+
+  const renderContentWithMentions = (content: string) => {
+    const mentionRegex = /@(\w[\w\s]*?\w)(?=\s|$|[.,!?;:])/g
+    const parts: React.ReactNode[] = []
+    let lastIndex = 0
+    let match
+
+    while ((match = mentionRegex.exec(content)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(content.slice(lastIndex, match.index))
+      }
+      parts.push(
+        <span key={match.index} className="font-bold text-primary">
+          @{match[1]}
+        </span>
+      )
+      lastIndex = match.index + match[0].length
+    }
+
+    if (lastIndex < content.length) {
+      parts.push(content.slice(lastIndex))
+    }
+
+    return parts.length > 0 ? parts : content
+  }
+
+  const extractMentions = (content: string): string[] => {
+    const mentionRegex = /@(\w[\w\s]*?\w)(?=\s|$|[.,!?;:])/g
+    const mentions: string[] = []
+    let match
+    while ((match = mentionRegex.exec(content)) !== null) {
+      mentions.push(match[1])
+    }
+    return mentions
+  }
+
+  const notifyMentionedUsers = async (content: string, referenceId: string, type: 'post' | 'comment') => {
+    if (!user?.id) return
+    const mentions = extractMentions(content)
+    if (mentions.length === 0) return
+
+    try {
+      // Look up mentioned users by display_name
+      const { data: mentionedProfiles } = await supabase
+        .from('profiles')
+        .select('user_id, display_name')
+        .in('display_name', mentions)
+
+      if (!mentionedProfiles || mentionedProfiles.length === 0) return
+
+      const notifications = mentionedProfiles
+        .filter(p => p.user_id !== user.id)
+        .map(p => ({
+          user_id: p.user_id,
+          sender_id: user.id,
+          notification_type: 'community_post',
+          title: type === 'post' ? 'You were mentioned in a post' : 'You were mentioned in a comment',
+          message: `${profile?.display_name || 'Someone'} mentioned you: "${content.substring(0, 100)}${content.length > 100 ? '...' : ''}"`,
+          reference_id: referenceId,
+          is_read: false,
+        }))
+
+      if (notifications.length > 0) {
+        await supabase.from('notifications').insert(notifications)
+      }
+    } catch (error) {
+      console.error('Error notifying mentioned users:', error)
+    }
   }
 
   const getEmbedUrl = (url: string): string => {
@@ -1122,7 +1202,7 @@ export default function WorkspaceCommunity() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-semibold text-sm">{post.author_name}</span>
-                            <span className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</span>
+                            <span className="text-xs text-muted-foreground">{formatPostDate(post.created_at)}</span>
                             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">{post.category}</Badge>
                           </div>
                           {editingPostId === post.id ? (
@@ -1210,7 +1290,7 @@ export default function WorkspaceCommunity() {
                               </div>
                             </div>
                           ) : (
-                            <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed">{post.content}</p>
+                            <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed">{renderContentWithMentions(post.content)}</p>
                           )}
                           
                           {post.image_url && (
@@ -1276,7 +1356,7 @@ export default function WorkspaceCommunity() {
                                           </button>
                                         )}
                                       </div>
-                                      {comment.content && <p className="text-sm mt-0.5">{comment.content}</p>}
+                                      {comment.content && <p className="text-sm mt-0.5">{renderContentWithMentions(comment.content)}</p>}
                                       {comment.image_url && (
                                         <img src={comment.image_url} alt="" className="rounded mt-2 max-h-40 object-cover" />
                                       )}
