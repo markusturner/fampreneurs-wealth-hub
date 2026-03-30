@@ -1229,6 +1229,7 @@ export function AdminAllUsersManagement() {
                     <TableHead className="min-w-[100px]">Proof of Transfer</TableHead>
                     <TableHead className="min-w-[100px]">Legacy Meeting</TableHead>
                     <TableHead className="min-w-[160px]">Testimonials</TableHead>
+                    <TableHead className="min-w-[160px]">Trust Pilot Review</TableHead>
                     <TableHead className="min-w-[120px]">Trust Access</TableHead>
                     <TableHead>Forms</TableHead>
                     <TableHead>Notes</TableHead>
