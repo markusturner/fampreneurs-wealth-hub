@@ -17,7 +17,7 @@ import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { 
   Image, Video, ThumbsUp, MessageCircle, Send, 
   MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X,
-  Mic, MicOff, Lock, Calendar, CreditCard, Play
+  Mic, MicOff, Lock, Calendar, CreditCard, Play, Pencil, Check
 } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import {
