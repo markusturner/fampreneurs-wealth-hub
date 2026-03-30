@@ -147,6 +147,10 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
 
   const handleSubmit = async () => {
     if (!user?.id) return
+    if (!submitterName.trim()) {
+      toast({ title: "Name required", description: "Please enter your full name before submitting.", variant: "destructive" })
+      return
+    }
     setSubmitting(true)
     try {
       const formData = {
@@ -173,10 +177,22 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
       }
       const { error } = await supabase
         .from("trust_submissions")
-        .insert({ user_id: user.id, trust_type: "asset_inventory", form_data: formData } as any)
+        .insert({ user_id: user.id, trust_type: "asset_inventory", form_data: formData, submitter_name: submitterName.trim() } as any)
       if (error) throw error
       toast({ title: "Asset Inventory submitted", description: "Your asset inventory has been recorded." })
       onSubmitted()
+    } catch (err: any) {
+      if (err?.code === "23505") {
+        toast({ title: "Already submitted", description: "You have already submitted your asset inventory.", variant: "destructive" })
+        onSubmitted()
+      } else {
+        console.error("Error submitting asset inventory:", err)
+        toast({ title: "Error", description: "Failed to submit asset inventory.", variant: "destructive" })
+      }
+    } finally {
+      setSubmitting(false)
+    }
+  }
     } catch (err: any) {
       if (err?.code === "23505") {
         toast({ title: "Already submitted", description: "You have already submitted your asset inventory.", variant: "destructive" })
