@@ -413,7 +413,7 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
       ], businessInterests, setBusinessInterests)}
 
       <div className="flex justify-end pt-4">
-        <Button onClick={handleSubmit} disabled={submitting} className="gap-2">
+        <Button onClick={handleSubmit} disabled={submitting} className="gap-2 bg-[#ffb500] hover:bg-[#2eb2ff] text-white">
           {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
           Submit Asset Inventory
         </Button>
