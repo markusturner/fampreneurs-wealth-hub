@@ -390,6 +390,9 @@ export default function WorkspaceCommunity() {
         if (error) throw error
       }
       setNewPost('')
+      // Reset textarea height
+      const textarea = document.querySelector<HTMLTextAreaElement>('.post-composer-textarea');
+      if (textarea) textarea.style.height = '';
       setPostImageFile(null)
       setPostImagePreview(null)
       setPostVideoFile(null)
