@@ -332,6 +332,8 @@ export default function TrustCreation() {
                 <AssetInventoryForm onSubmitted={handleFormSubmitted} />
               ) : selectedSection === 'trust_asset_uploads' ? (
                 <TrustAssetUploads onSubmitted={handleFormSubmitted} />
+              ) : selectedSection === 'legacy_meeting' ? (
+                <FamilyLegacyMeetingUploads onSubmitted={handleFormSubmitted} />
               ) : (
                 <TrustNameTranslator onSubmitted={handleFormSubmitted} />
               )}
