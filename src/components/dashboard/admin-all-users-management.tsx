@@ -1493,7 +1493,7 @@ export function AdminAllUsersManagement() {
                           }
                           return subs.map((s: any, i: number) => (
                             <div key={i} className="text-xs flex items-center gap-1">
-                              <CheckCircle className="h-3 w-3 text-green-600 shrink-0" />
+                              <Check className="h-3 w-3 text-green-600 shrink-0" />
                               <span className="font-medium">{trustLabels[s.trust_type] || s.trust_type}</span>
                               <span className="text-muted-foreground">— {new Date(s.submitted_at).toLocaleDateString()}</span>
                             </div>
