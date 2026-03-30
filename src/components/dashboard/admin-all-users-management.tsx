@@ -1205,6 +1205,11 @@ export function AdminAllUsersManagement() {
                     <TableHead className="min-w-[180px]">Activation Points</TableHead>
                     <TableHead>Satisfaction</TableHead>
                     <TableHead>First Win Date</TableHead>
+                    <TableHead className="min-w-[100px]">Family Trust</TableHead>
+                    <TableHead className="min-w-[100px]">Ministry Trust</TableHead>
+                    <TableHead className="min-w-[100px]">Business Trust</TableHead>
+                    <TableHead className="min-w-[100px]">Name Translator</TableHead>
+                    <TableHead className="min-w-[100px]">Asset Inventory</TableHead>
                     <TableHead className="min-w-[160px]">Testimonials</TableHead>
                     <TableHead className="min-w-[120px]">Trust Access</TableHead>
                     <TableHead>Forms</TableHead>
