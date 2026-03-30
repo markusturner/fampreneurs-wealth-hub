@@ -1202,7 +1202,7 @@ export function AdminAllUsersManagement() {
                     <TableHead>Cash Collected</TableHead>
                     <TableHead>Remaining</TableHead>
                     <TableHead>Program</TableHead>
-                    <TableHead className="min-w-[180px]">Activation Points</TableHead>
+                    <TableHead>Satisfaction</TableHead>
                     <TableHead>Satisfaction</TableHead>
                     <TableHead className="min-w-[100px]">Name Selected</TableHead>
                     <TableHead className="min-w-[100px]">Asset Inventory</TableHead>
