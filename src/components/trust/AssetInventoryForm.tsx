@@ -21,6 +21,7 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
   const { user } = useAuth()
   const { toast } = useToast()
   const [submitting, setSubmitting] = useState(false)
+  const [submitterName, setSubmitterName] = useState("")
 
   // Beneficiary Information
   const [beneficiaries, setBeneficiaries] = useState<TableRow[]>(
