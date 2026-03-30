@@ -294,6 +294,8 @@ export default function CourseDetail() {
 
   const handleLessonDragEnd = async (event: DragEndEvent) => {
     setActiveDragLessonId(null)
+    setOverLessonId(null)
+    setDragType(null)
     const { active, over } = event
     if (!over || active.id === over.id) return
 
