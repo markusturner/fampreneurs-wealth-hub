@@ -1202,7 +1202,7 @@ export default function WorkspaceCommunity() {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-7 text-xs"
+                                  className="h-7 text-xs bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground"
                                   onClick={() => setEditingPostId(null)}
                                 >
                                   Cancel
