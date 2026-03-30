@@ -1373,13 +1373,30 @@ export function AdminAllUsersManagement() {
 
               const renderUserRow = (user: any) => {
                 const packageInfo = getPackageInfo(user)
+                const isFamilyMember = user.membership_type === 'family_member'
+                const hasTrustee = isFamilyMember && user.trustee_user_id
+                // Find trustee name for display
+                const trusteeName = hasTrustee
+                  ? (() => {
+                      const t = users.find((u: any) => u.user_id === user.trustee_user_id)
+                      return t ? (t.display_name || `${t.first_name || ''} ${t.last_name || ''}`.trim()) : null
+                    })()
+                  : null
                 return (
-                  <TableRow key={user.user_id}>
+                  <TableRow key={user.user_id} className={isFamilyMember && hasTrustee ? 'bg-accent/5' : ''}>
                     <TableCell className="w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 bg-background">
                       <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
                     </TableCell>
                     <TableCell className="font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 bg-background">
-                      {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}
+                      <div className={isFamilyMember && hasTrustee ? 'pl-6 flex items-center gap-1.5' : ''}>
+                        {isFamilyMember && hasTrustee && <span className="text-muted-foreground text-xs">↳</span>}
+                        <div>
+                          <span>{user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}</span>
+                          {trusteeName && (
+                            <p className="text-[10px] text-muted-foreground leading-tight">under {trusteeName}</p>
+                          )}
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
                       {renderContractTimeline(user)}
