@@ -980,8 +980,8 @@ export default function WorkspaceCommunity() {
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex items-center gap-1 flex-wrap">
                         <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                         <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
                         <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
@@ -1033,17 +1033,19 @@ export default function WorkspaceCommunity() {
                           </Button>
                         )}
                       </div>
-                      {isOwner && useCustomDateTime && (
-                        <div className="flex gap-2 mt-2">
-                          <Input type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 text-xs w-40" />
-                          <Input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 text-xs w-32" />
-                        </div>
-                      )}
-                      <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim()} className="gap-1.5">
-                        <Send className="h-4 w-4" />
-                        <span className="hidden sm:inline">{postToAll ? 'Post to All' : 'Post'}</span>
-                      </Button>
+                      <div className="ml-auto">
+                        <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim()} className="gap-1.5">
+                          <Send className="h-4 w-4" />
+                          {postToAll ? 'Post to All' : 'Post'}
+                        </Button>
+                      </div>
                     </div>
+                    {isOwner && useCustomDateTime && (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Input type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 text-xs w-40" />
+                        <Input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 text-xs w-32" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
