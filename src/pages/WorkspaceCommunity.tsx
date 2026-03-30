@@ -160,6 +160,8 @@ export default function WorkspaceCommunity() {
   // Edit post state
   const [editingPostId, setEditingPostId] = useState<string | null>(null)
   const [editingPostContent, setEditingPostContent] = useState('')
+  const [editingPostCategory, setEditingPostCategory] = useState('discussion')
+  const [editingPostDate, setEditingPostDate] = useState('')
 
   // Comments state
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
@@ -1145,20 +1147,51 @@ export default function WorkspaceCommunity() {
                                   }
                                 }}
                               />
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Select value={editingPostCategory} onValueChange={setEditingPostCategory}>
+                                  <SelectTrigger className="h-7 w-auto min-w-[120px] text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="discussion">💬 Discussion</SelectItem>
+                                    <SelectItem value="question">❓ Question</SelectItem>
+                                    <SelectItem value="win">🏆 Win</SelectItem>
+                                    <SelectItem value="resource">📚 Resource</SelectItem>
+                                    <SelectItem value="introduction">👋 Introduction</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                {(isOwner) && (
+                                  <Input
+                                    type="date"
+                                    value={editingPostDate}
+                                    onChange={(e) => setEditingPostDate(e.target.value)}
+                                    className="h-7 text-xs w-36"
+                                  />
+                                )}
+                              </div>
                               <div className="flex items-center gap-2">
                                 <Button
                                   size="sm"
                                   className="h-7 gap-1 text-xs"
                                   onClick={async () => {
                                     if (!editingPostContent.trim()) return;
+                                    const updateData: Record<string, unknown> = {
+                                      content: editingPostContent.trim(),
+                                      category: editingPostCategory,
+                                    };
+                                    if (isOwner && editingPostDate) {
+                                      const originalTime = new Date(post.created_at);
+                                      const newDate = new Date(editingPostDate + 'T' + originalTime.toISOString().split('T')[1]);
+                                      updateData.created_at = newDate.toISOString();
+                                    }
                                     const { error } = await supabase
                                       .from('community_posts')
-                                      .update({ content: editingPostContent.trim() })
+                                      .update(updateData)
                                       .eq('id', post.id);
                                     if (error) {
                                       toast({ title: 'Error', description: 'Failed to update post', variant: 'destructive' });
                                     } else {
-                                      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, content: editingPostContent.trim() } : p));
+                                      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, content: editingPostContent.trim(), category: editingPostCategory, ...(updateData.created_at ? { created_at: updateData.created_at as string } : {}) } : p));
                                       setEditingPostId(null);
                                       toast({ title: 'Post updated' });
                                     }
@@ -1346,6 +1379,9 @@ export default function WorkspaceCommunity() {
                                 <DropdownMenuItem onClick={() => {
                                   setEditingPostId(post.id);
                                   setEditingPostContent(post.content);
+                                  setEditingPostCategory(post.category || 'discussion');
+                                  const postDate = new Date(post.created_at);
+                                  setEditingPostDate(postDate.toISOString().split('T')[0]);
                                 }}>
                                   <Pencil className="h-3.5 w-3.5 mr-2" />
                                   Edit Post
