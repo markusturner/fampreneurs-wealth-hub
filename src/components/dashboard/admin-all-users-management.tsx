@@ -1111,6 +1111,10 @@ export function AdminAllUsersManagement() {
                     <TableHead>Cash Collected</TableHead>
                     <TableHead>Remaining</TableHead>
                     <TableHead>Program</TableHead>
+                    <TableHead className="min-w-[180px]">Activation Points</TableHead>
+                    <TableHead>Satisfaction</TableHead>
+                    <TableHead>First Win Date</TableHead>
+                    <TableHead className="min-w-[160px]">Testimonials</TableHead>
                     <TableHead>Forms</TableHead>
                     <TableHead>Notes</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
