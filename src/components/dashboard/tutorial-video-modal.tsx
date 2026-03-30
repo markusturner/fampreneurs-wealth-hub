@@ -67,7 +67,8 @@ export const TutorialVideoModal = ({ isOpen, onClose, onWatched, onSkipped, user
 
     // Tella.tv
     if (url.includes("tella.tv")) {
-      const tellaMatch = url.match(/tella\.tv\/video\/([a-zA-Z0-9_-]+)/);
+      if (url.includes("/embed")) return url;
+      const tellaMatch = url.match(/tella\.tv\/(?:video|share)\/([a-zA-Z0-9_-]+)/);
       if (tellaMatch) return `https://www.tella.tv/video/${tellaMatch[1]}/embed`;
     }
 
