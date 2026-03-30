@@ -229,9 +229,9 @@ export function AppSidebar({ className }: { className?: string }) {
           </>
         )}
 
-        {/* TRUHEIRS */}
+        {/* DIGITAL FAMILY OFFICE */}
         <div className="mb-1 mt-5">
-          <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">TruHeirs</p>
+          <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Digital Family Office</p>
         </div>
         <div className="space-y-0.5">
           <>
