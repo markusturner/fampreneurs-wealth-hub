@@ -3723,6 +3723,7 @@ export type Database = {
         Row: {
           accountability_specialties: string[] | null
           activation_point: string | null
+          activation_points: string[] | null
           admin_joined_date: string | null
           admin_notes: string | null
           admin_permissions: string[] | null
@@ -3740,6 +3741,7 @@ export type Database = {
           facebook_url: string | null
           family_role: string | null
           first_name: string | null
+          first_win_date: string | null
           id: string
           instagram_url: string | null
           investment_amount: number | null
@@ -3758,9 +3760,11 @@ export type Database = {
           program_cash_collected: number | null
           program_contract_value: number | null
           program_name: string | null
+          satisfaction_score: number | null
           state: string | null
           street_address: string | null
           stripe_subscription_id: string | null
+          testimonial_review: string | null
           truheirs_access: boolean
           updated_at: string
           user_id: string
@@ -3771,6 +3775,7 @@ export type Database = {
         Insert: {
           accountability_specialties?: string[] | null
           activation_point?: string | null
+          activation_points?: string[] | null
           admin_joined_date?: string | null
           admin_notes?: string | null
           admin_permissions?: string[] | null
@@ -3788,6 +3793,7 @@ export type Database = {
           facebook_url?: string | null
           family_role?: string | null
           first_name?: string | null
+          first_win_date?: string | null
           id?: string
           instagram_url?: string | null
           investment_amount?: number | null
@@ -3806,9 +3812,11 @@ export type Database = {
           program_cash_collected?: number | null
           program_contract_value?: number | null
           program_name?: string | null
+          satisfaction_score?: number | null
           state?: string | null
           street_address?: string | null
           stripe_subscription_id?: string | null
+          testimonial_review?: string | null
           truheirs_access?: boolean
           updated_at?: string
           user_id: string
@@ -3819,6 +3827,7 @@ export type Database = {
         Update: {
           accountability_specialties?: string[] | null
           activation_point?: string | null
+          activation_points?: string[] | null
           admin_joined_date?: string | null
           admin_notes?: string | null
           admin_permissions?: string[] | null
@@ -3836,6 +3845,7 @@ export type Database = {
           facebook_url?: string | null
           family_role?: string | null
           first_name?: string | null
+          first_win_date?: string | null
           id?: string
           instagram_url?: string | null
           investment_amount?: number | null
@@ -3854,9 +3864,11 @@ export type Database = {
           program_cash_collected?: number | null
           program_contract_value?: number | null
           program_name?: string | null
+          satisfaction_score?: number | null
           state?: string | null
           street_address?: string | null
           stripe_subscription_id?: string | null
+          testimonial_review?: string | null
           truheirs_access?: boolean
           updated_at?: string
           user_id?: string
