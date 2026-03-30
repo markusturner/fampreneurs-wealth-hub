@@ -46,6 +46,8 @@ import {
 } from "@/components/ui/select"
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { getAgreementTextByProgram } from '@/lib/agreement-texts'
 
 interface UserProfile {
   user_id: string
