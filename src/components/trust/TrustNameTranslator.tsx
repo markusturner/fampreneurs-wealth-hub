@@ -41,7 +41,6 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
   const { user } = useAuth()
   const { toast } = useToast()
   const [name, setName] = useState("")
-  const [trustType, setTrustType] = useState("")
   const [translations, setTranslations] = useState<Translations | null>(null)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
