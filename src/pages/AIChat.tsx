@@ -784,7 +784,7 @@ export default function AIChat() {
                   ))}
                 </Tabs>
               </div>
-              <Button className="w-full h-8 text-xs" onClick={() => { setSettingsOpen(false); toast({ title: 'Settings saved' }) }}>Save Settings</Button>
+              <Button className="w-full h-8 text-xs transition-colors" style={{ backgroundColor: '#ffb500', color: '#290a52' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#2eb2ff'; e.currentTarget.style.color = '#290a52'; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#ffb500'; e.currentTarget.style.color = '#290a52'; }} onClick={() => { setSettingsOpen(false); toast({ title: 'Settings saved' }) }}>Save Settings</Button>
             </div>
           </DialogContent>
         </Dialog>
