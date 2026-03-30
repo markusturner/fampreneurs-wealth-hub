@@ -396,6 +396,33 @@ export default function CourseDetail() {
     toast({ title: 'Lesson moved' })
   }
 
+  const handleModuleDragEnd = async (event: DragEndEvent) => {
+    setActiveDragModuleId(null)
+    setOverModuleId(null)
+    setDragType(null)
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const activeModId = (active.id as string).replace('module-drag-', '')
+    const overModId = (over.id as string).replace('module-drag-', '')
+
+    const oldIndex = modules.findIndex(m => m.id === activeModId)
+    const newIndex = modules.findIndex(m => m.id === overModId)
+    if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return
+
+    const reordered = arrayMove(modules, oldIndex, newIndex)
+    setModules(reordered)
+
+    // Persist new order (skip __uncategorized)
+    const updates = reordered
+      .filter(m => m.id !== '__uncategorized')
+      .map((mod, idx) =>
+        supabase.from('course_modules').update({ order_index: idx } as any).eq('id', mod.id)
+      )
+    await Promise.all(updates)
+    toast({ title: 'Module reordered' })
+  }
+
   const cancelEditingLesson = () => {
     setIsEditingLesson(false)
   }
