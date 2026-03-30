@@ -146,6 +146,12 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
       return `https://player.vimeo.com/video/${vimeoId}`;
     }
 
+    // Tella.tv
+    if (url.includes("tella.tv")) {
+      const tellaMatch = url.match(/tella\.tv\/video\/([a-zA-Z0-9_-]+)/);
+      if (tellaMatch) return `https://www.tella.tv/video/${tellaMatch[1]}/embed`;
+    }
+
     return url;
   };
 
@@ -173,7 +179,7 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
 
           <TabsContent value="url" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor={`${settingKey}-url`}>Video URL (YouTube, Loom, Vimeo)</Label>
+              <Label htmlFor={`${settingKey}-url`}>Video URL (YouTube, Loom, Vimeo, Tella.tv)</Label>
               <Input
                 id={`${settingKey}-url`}
                 placeholder="https://www.youtube.com/watch?v=..."
@@ -203,7 +209,7 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
           <div className="space-y-2">
             <Label>Current Video</Label>
             <div className="aspect-video w-full">
-              {currentUrl.startsWith("http") && (currentUrl.includes("youtube") || currentUrl.includes("loom") || currentUrl.includes("vimeo")) ? (
+              {currentUrl.startsWith("http") && (currentUrl.includes("youtube") || currentUrl.includes("loom") || currentUrl.includes("vimeo") || currentUrl.includes("tella.tv")) ? (
                 <iframe
                   src={getEmbedUrl(currentUrl)}
                   className="w-full h-full rounded-lg border"

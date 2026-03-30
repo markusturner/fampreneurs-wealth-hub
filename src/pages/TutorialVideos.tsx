@@ -146,6 +146,12 @@ export default function TutorialVideos() {
       return `https://player.vimeo.com/video/${vimeoId}`;
     }
 
+    // Tella.tv
+    if (url.includes("tella.tv")) {
+      const tellaMatch = url.match(/tella\.tv\/video\/([a-zA-Z0-9_-]+)/);
+      if (tellaMatch) return `https://www.tella.tv/video/${tellaMatch[1]}/embed`;
+    }
+
     return url;
   };
 
@@ -634,7 +640,7 @@ export default function TutorialVideos() {
                 placeholder="https://www.youtube.com/watch?v=... or Loom/Vimeo URL"
               />
               <p className="text-xs text-muted-foreground">
-                Supports YouTube, Loom, and Vimeo links
+                Supports YouTube, Loom, Vimeo, and Tella.tv links
               </p>
             </div>
             <div className="space-y-2">

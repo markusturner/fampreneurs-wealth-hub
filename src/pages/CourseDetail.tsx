@@ -659,6 +659,9 @@ export default function CourseDetail() {
     if (loomMatch) return `https://www.loom.com/embed/${loomMatch[1]}`
     const fathomMatch = url.match(/fathom\.video\/share\/([a-zA-Z0-9_-]+)/)
     if (fathomMatch) return `https://fathom.video/embed/${fathomMatch[1]}`
+    // Tella.tv
+    const tellaMatch = url.match(/tella\.tv\/video\/([a-zA-Z0-9_-]+)/)
+    if (tellaMatch) return `https://www.tella.tv/video/${tellaMatch[1]}/embed`
     return url
   }
 

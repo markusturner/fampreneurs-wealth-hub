@@ -41,6 +41,11 @@ export function PricingPopup({ open, onOpenChange, programFilter }: PricingPopup
       const vimeoId = url.split("vimeo.com/")[1]?.split("?")[0]
       return `https://player.vimeo.com/video/${vimeoId}`
     }
+    // Tella.tv
+    if (url.includes("tella.tv")) {
+      const tellaMatch = url.match(/tella\.tv\/video\/([a-zA-Z0-9_-]+)/)
+      if (tellaMatch) return `https://www.tella.tv/video/${tellaMatch[1]}/embed`
+    }
     return url
   }
 
@@ -86,7 +91,7 @@ export function PricingPopup({ open, onOpenChange, programFilter }: PricingPopup
         {/* Upgrade Video */}
         {upgradeVideoUrl && (
           <div className="aspect-video w-full rounded-xl overflow-hidden mb-2 border">
-            {(upgradeVideoUrl.includes('youtube') || upgradeVideoUrl.includes('loom') || upgradeVideoUrl.includes('vimeo')) ? (
+            {(upgradeVideoUrl.includes('youtube') || upgradeVideoUrl.includes('loom') || upgradeVideoUrl.includes('vimeo') || upgradeVideoUrl.includes('tella.tv')) ? (
               <iframe src={getEmbedUrl(upgradeVideoUrl)} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
             ) : (
               <video src={upgradeVideoUrl} controls className="w-full h-full" />
