@@ -2292,7 +2292,7 @@ export function AdminAllUsersManagement() {
             })}
           </div>
           <DialogFooter>
-            <Button onClick={() => setTrustAccessUserId(null)}>Close</Button>
+            <Button onClick={() => setTrustAccessUserId(null)} style={{ backgroundColor: '#ffb500', color: '#290a52' }} className="hover:!bg-[#2eb2ff] hover:!text-white">Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
