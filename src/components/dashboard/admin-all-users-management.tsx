@@ -1163,6 +1163,7 @@ export function AdminAllUsersManagement() {
                     <TableHead>Satisfaction</TableHead>
                     <TableHead>First Win Date</TableHead>
                     <TableHead className="min-w-[160px]">Testimonials</TableHead>
+                    <TableHead className="min-w-[120px]">Trust Access</TableHead>
                     <TableHead>Forms</TableHead>
                     <TableHead>Notes</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
