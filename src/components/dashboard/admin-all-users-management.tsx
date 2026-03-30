@@ -129,7 +129,6 @@ export function AdminAllUsersManagement() {
   const [trustAccessLocks, setTrustAccessLocks] = useState<{page_name: string, is_locked: boolean}[]>([])
   const [trustSubmissionDates, setTrustSubmissionDates] = useState<{trust_type: string, submitted_at: string}[]>([])
   const [savingTrustAccess, setSavingTrustAccess] = useState(false)
-  const [allTrustSubmissions, setAllTrustSubmissions] = useState<Record<string, {trust_type: string, submitted_at: string}[]>>({})
   const { toast } = useToast()
 
   const syncStripeData = async (silent = false) => {
@@ -174,11 +173,10 @@ export function AdminAllUsersManagement() {
 
       if (error) throw error
 
-      // Fetch subscription data and trust submissions for all users
-      const [{ data: subscribersData }, { data: trustSubsData }] = await Promise.all([
-        supabase.from('subscribers').select('user_id, subscription_tier, subscription_period, subscribed'),
-        supabase.from('trust_submissions' as any).select('user_id, trust_type, submitted_at').order('submitted_at', { ascending: false }),
-      ])
+      // Fetch subscription data for all users
+      const { data: subscribersData } = await supabase
+        .from('subscribers')
+        .select('user_id, subscription_tier, subscription_period, subscribed')
 
       // Merge subscription data with profiles
       const usersWithSubscriptions = (profilesData || []).map(profile => {
@@ -204,14 +202,6 @@ export function AdminAllUsersManagement() {
       })
       setUsers(sorted)
       setFilteredUsers(sorted)
-
-      // Group trust submissions by user_id
-      const trustByUser: Record<string, {trust_type: string, submitted_at: string}[]> = {}
-      ;(trustSubsData as any[] || []).forEach((s: any) => {
-        if (!trustByUser[s.user_id]) trustByUser[s.user_id] = []
-        trustByUser[s.user_id].push({ trust_type: s.trust_type, submitted_at: s.submitted_at })
-      })
-      setAllTrustSubmissions(trustByUser)
     } catch (error: any) {
       console.error('Error fetching users:', error)
       toast({
@@ -1483,31 +1473,15 @@ export function AdminAllUsersManagement() {
                       />
                     </TableCell>
                     {/* Trust Access */}
-                    <TableCell className="min-w-[200px]">
-                      <div className="space-y-1">
-                        {(() => {
-                          const subs = allTrustSubmissions[user.user_id] || []
-                          const trustLabels: Record<string, string> = { family: 'Family', ministry: 'Ministry', business: 'Business', trust_name_translator: 'Name Translator', asset_inventory: 'Asset Inventory' }
-                          if (subs.length === 0) {
-                            return <span className="text-xs text-muted-foreground">No submissions</span>
-                          }
-                          return subs.map((s: any, i: number) => (
-                            <div key={i} className="text-xs flex items-center gap-1">
-                              <Check className="h-3 w-3 text-green-600 shrink-0" />
-                              <span className="font-medium">{trustLabels[s.trust_type] || s.trust_type}</span>
-                              <span className="text-muted-foreground">— {new Date(s.submitted_at).toLocaleDateString()}</span>
-                            </div>
-                          ))
-                        })()}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 text-xs mt-1 p-0"
-                          onClick={() => handleOpenTrustAccess(user.user_id)}
-                        >
-                          <ShieldCheck className="h-3 w-3 mr-1" /> Manage
-                        </Button>
-                      </div>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs"
+                        onClick={() => handleOpenTrustAccess(user.user_id)}
+                      >
+                        <ShieldCheck className="h-3 w-3 mr-1" /> Manage
+                      </Button>
                     </TableCell>
                     <TableCell>
                       <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(user.user_id)}>View</Button>
