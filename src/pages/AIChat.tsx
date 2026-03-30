@@ -150,12 +150,20 @@ export default function AIChat() {
     }
   }, [user?.id])
 
-  // Load workspace video URL
+  // Load workspace video URL and auto-show for first-time visitors
   useEffect(() => {
     supabase.from('app_settings').select('workspace_video_url').single().then(({ data }) => {
-      if ((data as any)?.workspace_video_url) setWorkspaceVideoUrl((data as any).workspace_video_url)
+      const url = (data as any)?.workspace_video_url
+      if (url) {
+        setWorkspaceVideoUrl(url)
+        // Auto-open for users who haven't seen it yet
+        const seenKey = `workspace_tutorial_seen_${user?.id || 'anon'}`
+        if (!localStorage.getItem(seenKey)) {
+          setWorkspaceVideoOpen(true)
+        }
+      }
     })
-  }, [])
+  }, [user?.id])
 
   const loadConversations = async () => {
     const { data } = await supabase
@@ -783,7 +791,13 @@ export default function AIChat() {
       )}
 
       {/* Workspace Tutorial Video Dialog */}
-      <Dialog open={workspaceVideoOpen} onOpenChange={setWorkspaceVideoOpen}>
+      <Dialog open={workspaceVideoOpen} onOpenChange={(open) => {
+        setWorkspaceVideoOpen(open)
+        if (!open) {
+          const seenKey = `workspace_tutorial_seen_${user?.id || 'anon'}`
+          localStorage.setItem(seenKey, 'true')
+        }
+      }}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Workspace Tutorial</DialogTitle>
