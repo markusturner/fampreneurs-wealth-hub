@@ -12,7 +12,7 @@ import { AssetInventoryForm } from "@/components/trust/AssetInventoryForm"
 import { TrustChecklistForm } from "@/components/trust/TrustChecklistForm"
 import { TrustNameTranslator } from "@/components/trust/TrustNameTranslator"
 
-type SectionType = 'business' | 'ministry' | 'family' | 'asset_inventory' | 'trust_checklist' | 'trust_name_translator'
+type SectionType = 'business' | 'ministry' | 'family' | 'asset_inventory' | 'trust_name_translator'
 
 interface TrustAccess {
   has_access: boolean
@@ -50,11 +50,6 @@ const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2;
     icon: Package,
     description: "Organize your financial information for transferring assets into your trust.",
   },
-  trust_checklist: {
-    label: "Trust Checklist",
-    icon: ClipboardList,
-    description: "Checklist for establishing a trust — grantor, trustee, beneficiaries, and more.",
-  },
   trust_name_translator: {
     label: "Trust Name Translator",
     icon: FileText,
@@ -63,7 +58,7 @@ const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2;
 }
 
 const TRUST_TYPES: SectionType[] = ['family', 'ministry', 'business']
-const TOOL_TYPES: SectionType[] = ['trust_name_translator', 'asset_inventory', 'trust_checklist']
+const TOOL_TYPES: SectionType[] = ['trust_name_translator', 'asset_inventory']
 
 // Submission limits: trust_name_translator = 3, everything else = 1
 const getSubmissionLimit = (type: SectionType): number => {
@@ -184,7 +179,7 @@ export default function TrustCreation() {
   }
 
   const isUnlocked = (type: SectionType) => {
-    if (type === 'asset_inventory' || type === 'trust_checklist' || type === 'trust_name_translator') return true
+    if (type === 'asset_inventory' || type === 'trust_name_translator') return true
     return trustAccess?.unlocked_trusts?.includes(type) ?? false
   }
 
@@ -307,7 +302,7 @@ export default function TrustCreation() {
     }
 
     // Asset Inventory & Trust Checklist use React forms
-    if (selectedSection === 'asset_inventory' || selectedSection === 'trust_checklist' || selectedSection === 'trust_name_translator') {
+    if (selectedSection === 'asset_inventory' || selectedSection === 'trust_name_translator') {
       return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-5xl mx-auto">
           <Button variant="ghost" onClick={() => setSelectedSection(null)} className="gap-2">
@@ -324,8 +319,6 @@ export default function TrustCreation() {
             <CardContent>
               {selectedSection === 'asset_inventory' ? (
                 <AssetInventoryForm onSubmitted={handleFormSubmitted} />
-              ) : selectedSection === 'trust_checklist' ? (
-                <TrustChecklistForm onSubmitted={handleFormSubmitted} />
               ) : (
                 <TrustNameTranslator onSubmitted={handleFormSubmitted} />
               )}
