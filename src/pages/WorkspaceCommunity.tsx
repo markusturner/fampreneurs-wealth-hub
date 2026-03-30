@@ -1120,7 +1120,62 @@ export default function WorkspaceCommunity() {
                             <span className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</span>
                             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">{post.category}</Badge>
                           </div>
-                          <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed">{post.content}</p>
+                          {editingPostId === post.id ? (
+                            <div className="mt-2 space-y-2">
+                              <Textarea
+                                value={editingPostContent}
+                                onChange={(e) => {
+                                  setEditingPostContent(e.target.value);
+                                  e.target.style.height = 'auto';
+                                  if (e.target.value) {
+                                    e.target.style.height = e.target.scrollHeight + 'px';
+                                  } else {
+                                    e.target.style.height = '';
+                                  }
+                                }}
+                                className="min-h-[44px] resize-none bg-muted/50 rounded-lg px-3 py-2 text-sm overflow-hidden focus-visible:ring-1"
+                                rows={1}
+                                ref={(el) => {
+                                  if (el) {
+                                    el.style.height = 'auto';
+                                    el.style.height = el.scrollHeight + 'px';
+                                  }
+                                }}
+                              />
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  className="h-7 gap-1 text-xs"
+                                  onClick={async () => {
+                                    if (!editingPostContent.trim()) return;
+                                    const { error } = await supabase
+                                      .from('community_posts')
+                                      .update({ content: editingPostContent.trim() })
+                                      .eq('id', post.id);
+                                    if (error) {
+                                      toast({ title: 'Error', description: 'Failed to update post', variant: 'destructive' });
+                                    } else {
+                                      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, content: editingPostContent.trim() } : p));
+                                      setEditingPostId(null);
+                                      toast({ title: 'Post updated' });
+                                    }
+                                  }}
+                                >
+                                  <Check className="h-3 w-3" /> Save
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                  onClick={() => setEditingPostId(null)}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed">{post.content}</p>
+                          )}
                           
                           {post.image_url && (
                             <img src={post.image_url} alt="" className="rounded-lg mt-3 max-h-80 object-cover w-full" />
