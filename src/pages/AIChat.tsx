@@ -133,6 +133,8 @@ export default function AIChat() {
   const displayName = profile?.display_name || profile?.first_name || ''
   const [workspaceVideoOpen, setWorkspaceVideoOpen] = useState(false)
   const [workspaceVideoUrl, setWorkspaceVideoUrl] = useState('')
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
+  const [savingSettings, setSavingSettings] = useState(false)
 
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false)
