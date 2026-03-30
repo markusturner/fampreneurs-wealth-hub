@@ -81,7 +81,6 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
           submitter_name: name.trim(),
           form_data: {
             original_name: name.trim(),
-            trust_type: trustType,
             translations,
           },
         } as any)
