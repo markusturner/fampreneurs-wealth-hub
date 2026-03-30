@@ -765,6 +765,8 @@ export default function CourseDetail() {
 
             return (
               <SortableModuleWrapper key={mod.id} moduleId={mod.id} disabled={!isDraggableModule} isDragging={isModuleDragging}>
+                {({ attributes: modAttrs, listeners: modListeners }) => (
+                  <>
                 {showModuleDropBefore && (
                   <div className="relative h-0 w-full z-20">
                     <div className="absolute left-2 right-2 top-0 h-[3px] rounded-full" style={{ backgroundColor: '#ffb500' }}>
@@ -792,7 +794,12 @@ export default function CourseDetail() {
                 <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 text-xs font-semibold uppercase tracking-wider hover:bg-accent/40 transition-colors text-left group/mod">
                   <div className="flex items-center gap-1.5">
                     {isDraggableModule && (
-                      <div className="cursor-grab active:cursor-grabbing opacity-0 group-hover/mod:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+                      <div
+                        {...modAttrs}
+                        {...modListeners}
+                        className="cursor-grab active:cursor-grabbing opacity-0 group-hover/mod:opacity-100 transition-opacity"
+                        onClick={e => e.stopPropagation()}
+                      >
                         <GripVertical className="h-3 w-3 text-muted-foreground" />
                       </div>
                     )}
@@ -852,6 +859,8 @@ export default function CourseDetail() {
                   )}
                 </CollapsibleContent>
               </Collapsible>
+                  </>
+                )}
               </SortableModuleWrapper>
             )
           })}
