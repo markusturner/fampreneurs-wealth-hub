@@ -211,7 +211,7 @@ export function AppSidebar({ className }: { className?: string }) {
         {(!isFamilyOfficeOnly || isAdmin || isOwner || isFamilyMember || !!profile?.program_name) && (
           <>
             <div className="mb-1">
-              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Workspace</p>
+              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Community</p>
             </div>
             <div className="space-y-0.5">
               <NavItem label="Community" icon={MessageSquare} defaultOpen={currentPath.includes("/workspace-community")}>
