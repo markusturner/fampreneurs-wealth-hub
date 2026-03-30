@@ -1202,8 +1202,8 @@ export function AdminAllUsersManagement() {
                     <TableHead>Cash Collected</TableHead>
                     <TableHead>Remaining</TableHead>
                     <TableHead>Program</TableHead>
-                    <TableHead className="min-w-[180px]">Activation Points</TableHead>
                     <TableHead>Satisfaction</TableHead>
+                    <TableHead className="min-w-[100px]">Name Selected</TableHead>
                     <TableHead className="min-w-[100px]">Name Selected</TableHead>
                     <TableHead className="min-w-[100px]">Asset Inventory</TableHead>
                     <TableHead className="min-w-[100px]">Family Trust</TableHead>
@@ -1404,47 +1404,6 @@ export function AdminAllUsersManagement() {
                         : '—'}
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-xs">{user.program_name || '—'}</TableCell>
-                    {/* Activation Points */}
-                    <TableCell>
-                      <Select
-                        value="__view__"
-                        onValueChange={(val) => {
-                          if (val === '__view__') return
-                          const current: string[] = (user as any).activation_points || []
-                          const updated = current.includes(val) ? current.filter((p: string) => p !== val) : [...current, val]
-                          supabase.from('profiles').update({ activation_points: updated } as any).eq('user_id', user.user_id).then(() => fetchUsers(true))
-                        }}
-                      >
-                        <SelectTrigger className="h-7 w-[160px] text-xs">
-                          <SelectValue>{((user as any).activation_points || []).length > 0 ? `${((user as any).activation_points || []).length} selected` : '—'}</SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[
-                            { value: 'trust_name_selected', label: 'Trust Name Selected', color: '#2eb2ff' },
-                            { value: 'asset_inventory_completed', label: 'Asset Inventory Completed', color: '#ffb500' },
-                            { value: '3_trusts_approved', label: '3 Trusts Approved', color: '#290a52' },
-                            { value: 'first_asset_funded', label: 'First Asset Funded', color: '#ef4444' },
-                            { value: 'family_legacy_meeting', label: 'Family Legacy Meeting Scheduled', color: '#3b82f6' },
-                          ].map(opt => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              <div className="flex items-center gap-2">
-                                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: opt.color }} />
-                                <span>{opt.label}</span>
-                                {((user as any).activation_points || []).includes(opt.value) && <Check className="h-3 w-3 ml-auto" />}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {((user as any).activation_points || []).length > 0 && (
-                        <div className="flex flex-wrap gap-0.5 mt-1">
-                          {((user as any).activation_points || []).map((p: string) => {
-                            const colors: Record<string, string> = { trust_name_selected: '#2eb2ff', asset_inventory_completed: '#ffb500', '3_trusts_approved': '#290a52', first_asset_funded: '#ef4444', family_legacy_meeting: '#3b82f6' }
-                            return <div key={p} className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[p] || '#888' }} title={p.replace(/_/g, ' ')} />
-                          })}
-                        </div>
-                      )}
-                    </TableCell>
                     {/* Satisfaction Score */}
                     <TableCell>
                       <Select
