@@ -88,18 +88,18 @@ const PERSONA_GREETINGS: Record<Persona, string> = {
 
 const PRESET_PROMPTS: Record<Persona, { label: string; prompt: string }[]> = {
   rachel: [
-    { label: '💬 I need help', prompt: '__i_need_help__' },
+    { label: '💬 I need help', prompt: '__intro_rachel__' },
   ],
   asset_protection: [
-    { label: '🛡️ Setup an asset protection trust', prompt: 'How can I setup an asset protection trust?' },
+    { label: '🛡️ I need asset protection help', prompt: '__intro_asset_protection__' },
     { label: '🏦 Infinite banking concept', prompt: 'Can you explain the infinite banking concept?' },
     { label: '📜 Family constitution contents', prompt: 'What should I include within my family constitution?' },
   ],
   business_structure: [
-    { label: '🚀 START', prompt: 'START' },
+    { label: '🏢 I need help structuring my business', prompt: '__intro_business_structure__' },
   ],
   trust_writer: [
-    { label: '📝 Draft a clause or provision', prompt: 'Draft a clause or provision in my trust' },
+    { label: '📝 I need help with my trust', prompt: '__intro_trust_writer__' },
   ],
 }
 
