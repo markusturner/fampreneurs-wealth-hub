@@ -104,31 +104,14 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
   return (
     <div className="space-y-6">
       {/* Input Section */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="trust-name">Your Name (English)</Label>
-          <Input
-            id="trust-name"
-            placeholder="e.g. John Smith"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Trust Type</Label>
-          <Select value={trustType} onValueChange={setTrustType}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select trust type" />
-            </SelectTrigger>
-            <SelectContent>
-              {TRUST_TYPES.map((t) => (
-                <SelectItem key={t.value} value={t.value}>
-                  {t.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="space-y-2 max-w-md">
+        <Label htmlFor="trust-name">Your Name (English)</Label>
+        <Input
+          id="trust-name"
+          placeholder="e.g. John Smith"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
       </div>
 
       <Button
