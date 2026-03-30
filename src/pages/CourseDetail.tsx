@@ -645,22 +645,9 @@ export default function CourseDetail() {
               onClick={() => setShowAddModule(true)}
               className="px-4 py-3 text-xs text-muted-foreground hover:text-foreground w-full text-left flex items-center gap-1"
             >
-              <span className="text-base leading-none">+</span> Add module
-            </button>
-                  )}
-                </CollapsibleContent>
-              </Collapsible>
-            )
-          })}
-          {isAdminOrOwner && (
-            <button
-              onClick={() => setShowAddModule(true)}
-              className="px-4 py-3 text-xs text-muted-foreground hover:text-foreground w-full text-left flex items-center gap-1"
-            >
-              <span className="text-base leading-none">+</span> Add module
-            </button>
           )}
         </div>
+        </DndContext>
       </ScrollArea>
     </div>
   )
