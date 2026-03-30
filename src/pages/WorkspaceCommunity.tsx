@@ -160,6 +160,8 @@ export default function WorkspaceCommunity() {
   // Edit post state
   const [editingPostId, setEditingPostId] = useState<string | null>(null)
   const [editingPostContent, setEditingPostContent] = useState('')
+  const [editingPostCategory, setEditingPostCategory] = useState('discussion')
+  const [editingPostDate, setEditingPostDate] = useState('')
 
   // Comments state
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
