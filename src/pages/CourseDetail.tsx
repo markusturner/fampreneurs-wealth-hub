@@ -181,6 +181,85 @@ export default function CourseDetail() {
     setRenamingModuleId(null)
   }
 
+  const handleLessonDragEnd = async (event: DragEndEvent) => {
+    setActiveDragLessonId(null)
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const lessonId = active.id as string
+    // Find source module
+    const srcMod = modules.find(m => m.lessons.some(l => l.id === lessonId))
+    if (!srcMod) return
+
+    // Determine target: could be a lesson id or a module droppable id (prefixed)
+    const overId = over.id as string
+    let destModId: string | null = null
+    let destIndex = 0
+
+    // Check if dropped over another lesson
+    const destModByLesson = modules.find(m => m.lessons.some(l => l.id === overId))
+    if (destModByLesson) {
+      destModId = destModByLesson.id
+      destIndex = destModByLesson.lessons.findIndex(l => l.id === overId)
+    } else if (overId.startsWith('droppable-module-')) {
+      // Dropped on a module droppable zone
+      destModId = overId.replace('droppable-module-', '')
+      const destMod = modules.find(m => m.id === destModId)
+      destIndex = destMod ? destMod.lessons.length : 0
+    }
+
+    if (!destModId) return
+
+    // Same module reorder
+    if (srcMod.id === destModId) {
+      const srcIndex = srcMod.lessons.findIndex(l => l.id === lessonId)
+      if (srcIndex === destIndex) return
+      // Reorder within module
+      const reordered = [...srcMod.lessons]
+      const [moved] = reordered.splice(srcIndex, 1)
+      reordered.splice(destIndex, 0, moved)
+      // Optimistic update
+      setModules(prev => prev.map(m => m.id === srcMod.id ? { ...m, lessons: reordered } : m))
+      // Persist
+      await Promise.all(reordered.map((l, idx) =>
+        supabase.from('course_videos').update({ order_index: idx } as any).eq('id', l.id)
+      ))
+    } else {
+      // Cross-module move
+      const realDestModId = destModId === '__uncategorized' ? null : destModId
+      const realSrcModId = srcMod.id === '__uncategorized' ? null : srcMod.id
+
+      // Optimistic update
+      const lesson = srcMod.lessons.find(l => l.id === lessonId)!
+      const newSrcLessons = srcMod.lessons.filter(l => l.id !== lessonId)
+      const destMod = modules.find(m => m.id === destModId)!
+      const newDestLessons = [...destMod.lessons]
+      newDestLessons.splice(destIndex, 0, { ...lesson, module_id: realDestModId })
+
+      setModules(prev => prev.map(m => {
+        if (m.id === srcMod.id) return { ...m, lessons: newSrcLessons }
+        if (m.id === destModId) return { ...m, lessons: newDestLessons }
+        return m
+      }))
+
+      // Open destination module
+      setOpenModules(prev => { const next = new Set(prev); next.add(destModId!); return next })
+
+      // Persist: update module_id and order
+      await supabase.from('course_videos').update({ module_id: realDestModId, order_index: destIndex } as any).eq('id', lessonId)
+      // Reorder destination
+      await Promise.all(newDestLessons.map((l, idx) =>
+        supabase.from('course_videos').update({ order_index: idx } as any).eq('id', l.id)
+      ))
+      // Reorder source
+      await Promise.all(newSrcLessons.map((l, idx) =>
+        supabase.from('course_videos').update({ order_index: idx } as any).eq('id', l.id)
+      ))
+    }
+
+    toast({ title: 'Lesson moved' })
+  }
+
   const cancelEditingLesson = () => {
     setIsEditingLesson(false)
   }
