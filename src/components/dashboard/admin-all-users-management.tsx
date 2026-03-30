@@ -1465,19 +1465,8 @@ export function AdminAllUsersManagement() {
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    {/* First Win Date */}
-                    <TableCell>
-                      <Input
-                        type="date"
-                        value={(user as any).first_win_date || ''}
-                        onChange={(e) => {
-                          supabase.from('profiles').update({ first_win_date: e.target.value || null } as any).eq('user_id', user.user_id).then(() => fetchUsers(true))
-                        }}
-                        className="h-7 w-32 text-xs"
-                      />
-                    </TableCell>
                     {/* Trust Submission Date Columns */}
-                    {['family', 'ministry', 'business', 'trust_name_translator', 'asset_inventory'].map(trustType => {
+                    {['trust_name_translator', 'family', 'ministry', 'business', 'asset_inventory'].map(trustType => {
                       const dateStr = (user as any).trust_sub_dates?.[trustType]
                       return (
                         <TableCell key={trustType}>
