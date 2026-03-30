@@ -27,24 +27,27 @@ interface PageLock {
   is_locked: boolean
 }
 
-const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2; description: string; formUrl?: string }> = {
+const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2; description: string; formUrl?: string; prepDocUrl?: string }> = {
   family: {
     label: "Family Trust",
     icon: Home,
     description: "Private Family Trust for protecting family assets and generational wealth transfer.",
     formUrl: "https://docs.google.com/forms/d/e/1FAIpQLScG21XrblvIjpA0sugRS3JzuBMXlqESE5ZLWcBJJpy5P6z-6w/viewform?embedded=true",
+    prepDocUrl: "https://docs.google.com/document/d/1X58jQC12S6XRmWBen_wxSf2_Uup2zo4LbBzS9fKfBFY/edit?usp=sharing",
   },
   ministry: {
     label: "Ministry Trust",
     icon: Church,
     description: "Tax-Exempt Ministry Charitable Trust under Section 508(c)(1)(a) of the IRC.",
     formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSfBgkmTrnvnpfL4-h4MhBqbbgjCspz_nTFxB3-62C5lajv7og/viewform?embedded=true",
+    prepDocUrl: "https://docs.google.com/document/d/13h393BbHmkxEueYWHvVQk3AmVPV6L-KtL9uwjYJB9as/edit?usp=sharing",
   },
   business: {
     label: "Business Trust",
     icon: Building2,
     description: "Private Unincorporated Business Trust for protecting business assets and operations.",
     formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSd_pqYjkF0_ij5PZ51rwEnebC2saONxDo-6XNuj599Lagoa2g/viewform?embedded=true",
+    prepDocUrl: "https://docs.google.com/document/d/1hfXA3fDJC0gfcNRHlQhgSYQexkdHxaCRNWvEu0BlEss/edit?usp=sharing",
   },
   asset_inventory: {
     label: "Asset Inventory List",
