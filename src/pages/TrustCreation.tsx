@@ -408,8 +408,6 @@ export default function TrustCreation() {
         </div>
       </div>
 
-      {/* Trust Documents Section */}
-      <TrustDocumentsSection />
     </div>
   )
 }
