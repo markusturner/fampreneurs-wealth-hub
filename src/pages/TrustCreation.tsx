@@ -11,8 +11,9 @@ import { TrustAssetUploads } from "@/components/trust/TrustAssetUploads"
 import { AssetInventoryForm } from "@/components/trust/AssetInventoryForm"
 import { TrustChecklistForm } from "@/components/trust/TrustChecklistForm"
 import { TrustNameTranslator } from "@/components/trust/TrustNameTranslator"
+import { FamilyLegacyMeetingUploads } from "@/components/trust/FamilyLegacyMeetingUploads"
 
-type SectionType = 'business' | 'ministry' | 'family' | 'asset_inventory' | 'trust_name_translator' | 'trust_asset_uploads'
+type SectionType = 'business' | 'ministry' | 'family' | 'asset_inventory' | 'trust_name_translator' | 'trust_asset_uploads' | 'legacy_meeting'
 
 interface TrustAccess {
   has_access: boolean
