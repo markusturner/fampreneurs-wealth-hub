@@ -88,7 +88,7 @@ const PERSONA_GREETINGS: Record<Persona, string> = {
 
 const PRESET_PROMPTS: Record<Persona, { label: string; prompt: string }[]> = {
   rachel: [
-    { label: '💬 I need help', prompt: 'I need help' },
+    { label: '💬 I need help', prompt: '__i_need_help__' },
   ],
   asset_protection: [
     { label: '🛡️ Setup an asset protection trust', prompt: 'How can I setup an asset protection trust?' },
