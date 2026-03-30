@@ -1483,15 +1483,31 @@ export function AdminAllUsersManagement() {
                       />
                     </TableCell>
                     {/* Trust Access */}
-                    <TableCell>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 text-xs"
-                        onClick={() => handleOpenTrustAccess(user.user_id)}
-                      >
-                        <ShieldCheck className="h-3 w-3 mr-1" /> Manage
-                      </Button>
+                    <TableCell className="min-w-[200px]">
+                      <div className="space-y-1">
+                        {(() => {
+                          const subs = allTrustSubmissions[user.user_id] || []
+                          const trustLabels: Record<string, string> = { family: 'Family', ministry: 'Ministry', business: 'Business', trust_name_translator: 'Name Translator', asset_inventory: 'Asset Inventory' }
+                          if (subs.length === 0) {
+                            return <span className="text-xs text-muted-foreground">No submissions</span>
+                          }
+                          return subs.map((s: any, i: number) => (
+                            <div key={i} className="text-xs flex items-center gap-1">
+                              <CheckCircle className="h-3 w-3 text-green-600 shrink-0" />
+                              <span className="font-medium">{trustLabels[s.trust_type] || s.trust_type}</span>
+                              <span className="text-muted-foreground">— {new Date(s.submitted_at).toLocaleDateString()}</span>
+                            </div>
+                          ))
+                        })()}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 text-xs mt-1 p-0"
+                          onClick={() => handleOpenTrustAccess(user.user_id)}
+                        >
+                          <ShieldCheck className="h-3 w-3 mr-1" /> Manage
+                        </Button>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(user.user_id)}>View</Button>
