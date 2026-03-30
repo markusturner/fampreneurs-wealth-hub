@@ -1285,7 +1285,7 @@ export default function WorkspaceCommunity() {
                               </div>
                             </div>
                           ) : (
-                            <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed">{post.content}</p>
+                            <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed">{renderContentWithMentions(post.content)}</p>
                           )}
                           
                           {post.image_url && (
