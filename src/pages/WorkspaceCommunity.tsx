@@ -947,7 +947,11 @@ export default function WorkspaceCommunity() {
                       onChange={(e) => {
                         setNewPost(e.target.value);
                         e.target.style.height = 'auto';
-                        e.target.style.height = e.target.scrollHeight + 'px';
+                        if (e.target.value) {
+                          e.target.style.height = e.target.scrollHeight + 'px';
+                        } else {
+                          e.target.style.height = '';
+                        }
                       }}
                       className="min-h-[44px] resize-none border-0 bg-muted/50 rounded-lg px-4 py-2.5 focus-visible:ring-1 text-sm overflow-hidden"
                       rows={1}
