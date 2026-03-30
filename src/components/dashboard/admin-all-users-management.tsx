@@ -1204,7 +1204,6 @@ export function AdminAllUsersManagement() {
                     <TableHead>Program</TableHead>
                     <TableHead>Satisfaction</TableHead>
                     <TableHead className="min-w-[100px]">Name Selected</TableHead>
-                    <TableHead className="min-w-[100px]">Name Selected</TableHead>
                     <TableHead className="min-w-[100px]">Asset Inventory</TableHead>
                     <TableHead className="min-w-[100px]">Family Trust</TableHead>
                     <TableHead className="min-w-[100px]">Ministry Trust</TableHead>
