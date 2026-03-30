@@ -897,6 +897,7 @@ export function AdminAllUsersManagement() {
       setResendingAgreementId(null)
     }
   }
+  const handleSaveFinance = async (userId: string) => {
     setSavingFinance(true)
     try {
       const updateData: any = {}
