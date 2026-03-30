@@ -2998,6 +2998,7 @@ export type Database = {
           file_size: number | null
           id: string
           mime_type: string | null
+          submitter_name: string | null
           user_id: string
         }
         Insert: {
@@ -3008,6 +3009,7 @@ export type Database = {
           file_size?: number | null
           id?: string
           mime_type?: string | null
+          submitter_name?: string | null
           user_id: string
         }
         Update: {
@@ -3018,6 +3020,7 @@ export type Database = {
           file_size?: number | null
           id?: string
           mime_type?: string | null
+          submitter_name?: string | null
           user_id?: string
         }
         Relationships: []
@@ -4369,6 +4372,7 @@ export type Database = {
           file_size: number | null
           id: string
           mime_type: string | null
+          submitter_name: string | null
           user_id: string
         }
         Insert: {
@@ -4380,6 +4384,7 @@ export type Database = {
           file_size?: number | null
           id?: string
           mime_type?: string | null
+          submitter_name?: string | null
           user_id: string
         }
         Update: {
@@ -4391,6 +4396,7 @@ export type Database = {
           file_size?: number | null
           id?: string
           mime_type?: string | null
+          submitter_name?: string | null
           user_id?: string
         }
         Relationships: []
@@ -4475,6 +4481,7 @@ export type Database = {
           id: string
           status: string
           submitted_at: string | null
+          submitter_name: string | null
           trust_type: string
           updated_at: string
           user_id: string
@@ -4486,6 +4493,7 @@ export type Database = {
           id?: string
           status?: string
           submitted_at?: string | null
+          submitter_name?: string | null
           trust_type: string
           updated_at?: string
           user_id: string
@@ -4497,6 +4505,7 @@ export type Database = {
           id?: string
           status?: string
           submitted_at?: string | null
+          submitter_name?: string | null
           trust_type?: string
           updated_at?: string
           user_id?: string

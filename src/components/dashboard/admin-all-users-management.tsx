@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar, Clock, Star, Trophy, MessageSquare, ShieldCheck, Lock, Unlock } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar, Clock, Star, Trophy, MessageSquare, ShieldCheck, Lock, Unlock, Download, Upload, Image } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Badge } from '@/components/ui/badge'
@@ -117,7 +117,7 @@ export function AdminAllUsersManagement() {
   // User forms dialog
   const [formsUserId, setFormsUserId] = useState<string | null>(null)
   const [memberView, setMemberView] = useState<'active' | 'pending'>('active')
-  const [formsData, setFormsData] = useState<{onboarding: any, agreements: any[], trustForms: any[]}>({ onboarding: null, agreements: [], trustForms: [] })
+  const [formsData, setFormsData] = useState<{onboarding: any, agreements: any[], trustForms: any[], assetUploads: any[], legacyMeetingUploads: any[]}>({ onboarding: null, agreements: [], trustForms: [], assetUploads: [], legacyMeetingUploads: [] })
   const [loadingForms, setLoadingForms] = useState(false)
   // Financial inline editing
   const [editingFinanceUserId, setEditingFinanceUserId] = useState<string | null>(null)
@@ -743,21 +743,117 @@ export function AdminAllUsersManagement() {
     setFormsUserId(userId)
     setLoadingForms(true)
     try {
-      const [onboardingRes, agreementsRes, trustRes] = await Promise.all([
+      const [onboardingRes, agreementsRes, trustRes, assetUploadsRes, legacyMeetingRes] = await Promise.all([
         supabase.from('onboarding_responses' as any).select('*').eq('user_id', userId).maybeSingle(),
         supabase.from('program_agreements' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-        supabase.from('trust_form_submissions' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('trust_submissions' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('trust_asset_uploads' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('legacy_meeting_uploads' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       ])
       setFormsData({
         onboarding: onboardingRes.data,
         agreements: agreementsRes.data || [],
         trustForms: trustRes.data || [],
+        assetUploads: assetUploadsRes.data || [],
+        legacyMeetingUploads: legacyMeetingRes.data || [],
       })
     } catch (err) {
       console.error('Error fetching forms:', err)
     } finally {
       setLoadingForms(false)
     }
+  }
+
+  const handleDownloadAgreement = async (agreement: any) => {
+    const { jsPDF } = await import('jspdf')
+    const doc = new jsPDF()
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const margin = 20
+    const maxWidth = pageWidth - margin * 2
+    let y = 20
+
+    // Title
+    doc.setFontSize(16)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Program Services Agreement', pageWidth / 2, y, { align: 'center' })
+    y += 10
+
+    // Program name
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'normal')
+    doc.text(agreement.program_name || '', pageWidth / 2, y, { align: 'center' })
+    y += 15
+
+    // Signer info
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Full Name:', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(agreement.full_name || 'N/A', margin + 30, y)
+    y += 7
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Address:', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(agreement.mailing_address || 'N/A', margin + 30, y)
+    y += 7
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Date:', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(agreement.agreement_date || 'N/A', margin + 30, y)
+    y += 15
+
+    // Agreement text - get it from the agreement map
+    const AGREEMENT_MAP: Record<string, string> = {
+      'The Family Vault': 'TFV Agreement',
+      'The Family Business Accelerator': 'TFBA Agreement',
+      'The Family Fortune Mastermind': 'TFFM Agreement',
+    }
+
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    const agreementLabel = agreement.program_name || 'Agreement'
+    const bodyText = `This Program Services Agreement was signed by ${agreement.full_name || 'the mentee'} on ${agreement.agreement_date || 'N/A'} for the ${agreementLabel} program.\n\nMailing Address: ${agreement.mailing_address || 'N/A'}\n\nThis document confirms that the above-named individual has read, agreed to, and accepted all terms and conditions of the ${agreementLabel} Program Services Agreement.`
+
+    const lines = doc.splitTextToSize(bodyText, maxWidth)
+    for (const line of lines) {
+      if (y > doc.internal.pageSize.getHeight() - 30) {
+        doc.addPage()
+        y = 20
+      }
+      doc.text(line, margin, y)
+      y += 5
+    }
+
+    y += 15
+
+    // Signature section
+    doc.setFont('helvetica', 'bold')
+    doc.text('Signature:', margin, y)
+    y += 7
+
+    if (agreement.signature_data?.startsWith('data:image')) {
+      try {
+        doc.addImage(agreement.signature_data, 'PNG', margin, y, 60, 20)
+        y += 25
+      } catch {
+        doc.setFont('courier', 'italic')
+        doc.text(agreement.signature_data?.substring(0, 50) || 'N/A', margin, y)
+        y += 7
+      }
+    } else {
+      doc.setFontSize(14)
+      doc.setFont('courier', 'italic')
+      doc.text(agreement.signature_data || agreement.full_name || 'N/A', margin, y)
+      y += 10
+    }
+
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Signed at: ${agreement.signed_at || agreement.created_at || 'N/A'}`, margin, y)
+
+    doc.save(`${(agreement.full_name || 'agreement').replace(/\s+/g, '_')}_signed_agreement.pdf`)
   }
 
   const handleSaveFinance = async (userId: string) => {
@@ -2316,17 +2412,38 @@ export function AdminAllUsersManagement() {
                 </h4>
                 {formsData.agreements.map((agreement: any) => (
                   <div key={agreement.id} className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-                    {Object.entries(agreement).filter(([key]) => !['id', 'user_id'].includes(key)).map(([key, value]) => (
+                    {Object.entries(agreement).filter(([key]) => !['id', 'user_id', 'signature_data'].includes(key)).map(([key, value]) => (
                       <div key={key} className="flex justify-between gap-4 border-b border-border/30 pb-1">
                         <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
                         <span className="text-right font-medium max-w-[60%] break-words">{String(value || 'N/A')}</span>
                       </div>
                     ))}
+                    {agreement.signature_data && (
+                      <div className="border-b border-border/30 pb-1">
+                        <span className="text-muted-foreground capitalize">Signature</span>
+                        {agreement.signature_data.startsWith('data:image') ? (
+                          <img src={agreement.signature_data} alt="Signature" className="h-10 mt-1 border rounded bg-white p-1" />
+                        ) : (
+                          <p className="text-right font-medium italic font-serif text-lg">{agreement.signature_data}</p>
+                        )}
+                      </div>
+                    )}
+                    <Button
+                      size="sm"
+                      className="gap-2 mt-2"
+                      style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2eb2ff'; e.currentTarget.style.color = '#ffffff' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffb500'; e.currentTarget.style.color = '#290a52' }}
+                      onClick={() => handleDownloadAgreement(agreement)}
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      Download Signed Agreement
+                    </Button>
                   </div>
                 ))}
               </div>
 
-              {/* Trust Forms */}
+              {/* Trust Forms (trust_submissions) */}
               <div className="space-y-2">
                 <h4 className="font-semibold flex items-center gap-2">
                   <Badge variant="secondary">Trust Forms</Badge>
@@ -2336,21 +2453,94 @@ export function AdminAllUsersManagement() {
                 </h4>
                 {formsData.trustForms.map((form: any) => (
                   <div key={form.id} className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-                    {Object.entries(form).filter(([key]) => !['id', 'user_id'].includes(key)).map(([key, value]) => (
-                      <div key={key} className="flex justify-between gap-4 border-b border-border/30 pb-1">
-                        <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
-                        <span className="text-right font-medium max-w-[60%] break-words">
-                          {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value || 'N/A')}
-                        </span>
+                    <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                      <span className="text-muted-foreground">Type</span>
+                      <span className="text-right font-medium capitalize">{(form.trust_type || 'N/A').replace(/_/g, ' ')}</span>
+                    </div>
+                    <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                      <span className="text-muted-foreground">Submitted</span>
+                      <span className="text-right font-medium">{new Date(form.created_at).toLocaleDateString()}</span>
+                    </div>
+                    {form.submitter_name && (
+                      <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                        <span className="text-muted-foreground">Submitter</span>
+                        <span className="text-right font-medium">{form.submitter_name}</span>
+                      </div>
+                    )}
+                    {form.form_data && typeof form.form_data === 'object' && (
+                      <details className="text-xs">
+                        <summary className="cursor-pointer text-muted-foreground hover:text-foreground">View Form Data</summary>
+                        <pre className="mt-2 p-2 rounded bg-background border text-xs overflow-x-auto max-h-40">
+                          {JSON.stringify(form.form_data, null, 2)}
+                        </pre>
+                      </details>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Schedule B & Proof of Transfer Uploads */}
+              <div className="space-y-2">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Badge variant="secondary">Schedule B & Proof of Transfer</Badge>
+                  <Badge className={formsData.assetUploads.length > 0 ? "bg-green-600 text-white" : ""} variant={formsData.assetUploads.length > 0 ? "default" : "outline"}>
+                    {formsData.assetUploads.length > 0 ? `${formsData.assetUploads.length} Files` : 'None'}
+                  </Badge>
+                </h4>
+                {formsData.assetUploads.length > 0 && (
+                  <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                    {formsData.assetUploads.map((upload: any) => (
+                      <div key={upload.id} className="flex justify-between gap-4 border-b border-border/30 pb-1 items-center">
+                        <div className="flex items-center gap-2 min-w-0">
+                          {upload.mime_type?.startsWith('image/') ? <Image className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" /> : <FileText className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />}
+                          <span className="truncate">{upload.file_name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Badge variant="outline" className="text-[10px]">{(upload.category || '').replace(/_/g, ' ')}</Badge>
+                          <span className="text-muted-foreground text-xs">{new Date(upload.created_at).toLocaleDateString()}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
-                ))}
+                )}
+              </div>
+
+              {/* Family Legacy Meeting Uploads */}
+              <div className="space-y-2">
+                <h4 className="font-semibold flex items-center gap-2">
+                  <Badge variant="secondary">Family Legacy Meeting</Badge>
+                  <Badge className={formsData.legacyMeetingUploads.length > 0 ? "bg-green-600 text-white" : ""} variant={formsData.legacyMeetingUploads.length > 0 ? "default" : "outline"}>
+                    {formsData.legacyMeetingUploads.length > 0 ? `${formsData.legacyMeetingUploads.length} Files` : 'None'}
+                  </Badge>
+                </h4>
+                {formsData.legacyMeetingUploads.length > 0 && (
+                  <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                    {formsData.legacyMeetingUploads.map((upload: any) => (
+                      <div key={upload.id} className="flex justify-between gap-4 border-b border-border/30 pb-1 items-center">
+                        <div className="flex items-center gap-2 min-w-0">
+                          {upload.mime_type?.startsWith('image/') ? <Image className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" /> : <FileText className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />}
+                          <span className="truncate">{upload.file_name}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Badge variant="outline" className="text-[10px]">{(upload.category || '').replace(/_/g, ' ')}</Badge>
+                          <span className="text-muted-foreground text-xs">{new Date(upload.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button onClick={() => setFormsUserId(null)}>Close</Button>
+            <Button
+              onClick={() => setFormsUserId(null)}
+              style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2eb2ff'; e.currentTarget.style.color = '#ffffff' }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffb500'; e.currentTarget.style.color = '#290a52' }}
+            >
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

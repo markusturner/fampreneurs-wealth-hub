@@ -181,6 +181,7 @@ export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingU
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [uploadingCategory, setUploadingCategory] = useState<UploadCategory | null>(null)
+  const [submitterName, setSubmitterName] = useState("")
 
   useEffect(() => {
     fetchUploads()
@@ -200,6 +201,10 @@ export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingU
 
   const handleUpload = async (files: FileList, category: UploadCategory) => {
     if (!user?.id) return
+    if (!submitterName.trim()) {
+      toast({ title: "Name required", description: "Please enter your full name before uploading.", variant: "destructive" })
+      return
+    }
     setUploading(true)
     setUploadingCategory(category)
 
@@ -221,6 +226,7 @@ export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingU
             file_path: filePath,
             file_size: file.size,
             mime_type: file.type || null,
+            submitter_name: submitterName.trim(),
           } as any)
         if (dbError) throw dbError
       }
@@ -272,6 +278,18 @@ export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingU
         <p className="text-xs text-muted-foreground mt-1">
           Upload all documentation from your first family legacy meeting. This includes meeting notes, attendance records, action items, recordings, signed agreements, family structure documents, and your family constitution.
         </p>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-semibold">Your Full Name <span className="text-destructive">*</span></label>
+        <input
+          type="text"
+          placeholder="Enter your full legal name"
+          value={submitterName}
+          onChange={(e) => setSubmitterName(e.target.value)}
+          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        />
+        <p className="text-xs text-muted-foreground">Required before you can upload files.</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
