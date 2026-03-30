@@ -67,7 +67,8 @@ const TOOL_TYPES: SectionType[] = ['trust_name_translator', 'asset_inventory', '
 
 // Submission limits: trust_name_translator = 3, everything else = 1
 const getSubmissionLimit = (type: SectionType): number => {
-  return 1 // All current sections auto-lock after 1 submission
+  if (type === 'trust_name_translator') return 3
+  return 1
 }
 
 export default function TrustCreation() {
