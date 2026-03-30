@@ -2312,11 +2312,24 @@ export function AdminAllUsersManagement() {
                     )}
                     <span className="text-xs text-muted-foreground ml-5 italic">{lockSource}</span>
                   </div>
-                  <Switch
-                    checked={isEffectivelyLocked}
-                    onCheckedChange={(checked) => trustAccessUserId && handleToggleTrustLock(trustAccessUserId, page.name, checked)}
-                    disabled={savingTrustAccess}
-                  />
+                  <div className="flex items-center gap-2">
+                    {hasSubmission && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => trustAccessUserId && handleResetTrustPage(trustAccessUserId, page.name)}
+                        disabled={savingTrustAccess}
+                        className="text-xs h-7 px-2 border-destructive/50 text-destructive hover:bg-destructive hover:text-white"
+                      >
+                        Reset
+                      </Button>
+                    )}
+                    <Switch
+                      checked={isEffectivelyLocked}
+                      onCheckedChange={(checked) => trustAccessUserId && handleToggleTrustLock(trustAccessUserId, page.name, checked)}
+                      disabled={savingTrustAccess}
+                    />
+                  </div>
                 </div>
               )
             })}
