@@ -391,6 +391,8 @@ export default function WorkspaceCommunity() {
           } as any)
         if (error) throw error
       }
+      // Notify mentioned users (fire and forget)
+      notifyMentionedUsers(newPost.trim(), 'post', 'post')
       setNewPost('')
       // Reset textarea height
       const textarea = document.querySelector<HTMLTextAreaElement>('.post-composer-textarea');
