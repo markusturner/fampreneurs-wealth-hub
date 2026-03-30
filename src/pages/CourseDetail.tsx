@@ -133,7 +133,7 @@ interface SortableLessonItemProps {
   onEdit: (lesson: Lesson) => void
 }
 
-function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, onSelect, onEdit }: SortableLessonItemProps) {
+function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, showDropBefore, showDropAfter, onSelect, onEdit }: SortableLessonItemProps) {
   const {
     attributes,
     listeners,
@@ -146,69 +146,73 @@ function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, onS
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.4 : 1,
+    opacity: isDragging ? 0.3 : 1,
   }
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        'flex items-start gap-2 w-full transition-colors group border-l-2',
-        isSelected
-          ? 'bg-secondary/10 border-secondary'
-          : 'hover:bg-accent/40 border-transparent'
-      )}
-    >
-      {isAdminOrOwner && (
-        <div
-          {...attributes}
-          {...listeners}
-          className="flex items-center justify-center pt-3 pl-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={e => e.stopPropagation()}
-        >
-          <GripVertical className="h-3 w-3 text-muted-foreground" />
-        </div>
-      )}
+    <>
+      {showDropBefore && <DropIndicatorLine />}
       <div
-        onClick={() => onSelect(lesson)}
-        role="button"
-        tabIndex={0}
-        style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', width: '100%', padding: isAdminOrOwner ? '10px 16px 10px 0' : '10px 16px', textAlign: 'left' as const, cursor: 'pointer' }}
-        className="flex-1"
+        ref={setNodeRef}
+        style={style}
+        className={cn(
+          'flex items-start gap-2 w-full transition-colors group border-l-2',
+          isSelected
+            ? 'bg-secondary/10 border-secondary'
+            : 'hover:bg-accent/40 border-transparent'
+        )}
       >
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          width: '20px', height: '20px', borderRadius: '50%',
-          fontSize: '10px', fontWeight: 'bold', flexShrink: 0, marginTop: '2px',
-          backgroundColor: lesson.completed ? '#FFB500' : isSelected ? '#290a52' : '#e5e7eb',
-          color: lesson.completed ? '#000' : isSelected ? '#fff' : '#6b7280',
-        }}>
-          {lesson.completed
-            ? <CheckCircle2 className="h-3 w-3" />
-            : <span>{globalIdx}</span>
-          }
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <span style={{ display: 'block', color: '#290a52', fontSize: '12px', fontWeight: 500, lineHeight: '1.4', wordBreak: 'break-word' }}>
-            {lesson.title}
-          </span>
-          {lesson.duration_seconds && (
-            <p className="text-[10px] text-muted-foreground mt-0.5">
-              {Math.floor(lesson.duration_seconds / 60)} min
-            </p>
+        {isAdminOrOwner && (
+          <div
+            {...attributes}
+            {...listeners}
+            className="flex items-center justify-center pt-3 pl-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={e => e.stopPropagation()}
+          >
+            <GripVertical className="h-3 w-3 text-muted-foreground" />
+          </div>
+        )}
+        <div
+          onClick={() => onSelect(lesson)}
+          role="button"
+          tabIndex={0}
+          style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', width: '100%', padding: isAdminOrOwner ? '10px 16px 10px 0' : '10px 16px', textAlign: 'left' as const, cursor: 'pointer' }}
+          className="flex-1"
+        >
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: '20px', height: '20px', borderRadius: '50%',
+            fontSize: '10px', fontWeight: 'bold', flexShrink: 0, marginTop: '2px',
+            backgroundColor: lesson.completed ? '#FFB500' : isSelected ? '#290a52' : '#e5e7eb',
+            color: lesson.completed ? '#000' : isSelected ? '#fff' : '#6b7280',
+          }}>
+            {lesson.completed
+              ? <CheckCircle2 className="h-3 w-3" />
+              : <span>{globalIdx}</span>
+            }
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: 'block', color: '#290a52', fontSize: '12px', fontWeight: 500, lineHeight: '1.4', wordBreak: 'break-word' }}>
+              {lesson.title}
+            </span>
+            {lesson.duration_seconds && (
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                {Math.floor(lesson.duration_seconds / 60)} min
+              </p>
+            )}
+          </div>
+          {isAdminOrOwner && (
+            <button
+              onClick={e => { e.stopPropagation(); onEdit(lesson) }}
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
+            >
+              <Pencil className="h-3 w-3 text-muted-foreground" />
+            </button>
           )}
         </div>
-        {isAdminOrOwner && (
-          <button
-            onClick={e => { e.stopPropagation(); onEdit(lesson) }}
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
-          >
-            <Pencil className="h-3 w-3 text-muted-foreground" />
-          </button>
-        )}
       </div>
-    </div>
+      {showDropAfter && <DropIndicatorLine />}
+    </>
   )
 }
 
