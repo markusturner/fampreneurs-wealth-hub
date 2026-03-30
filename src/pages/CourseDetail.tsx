@@ -60,13 +60,27 @@ import {
   DragOverEvent,
   DragStartEvent,
   DragOverlay,
+  useDroppable,
 } from '@dnd-kit/core'
 import {
   SortableContext,
   verticalListSortingStrategy,
+  arrayMove,
   useSortable,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+
+// Drop indicator line component
+function DropIndicatorLine() {
+  return (
+    <div className="relative h-0 w-full z-20">
+      <div className="absolute left-3 right-3 top-0 h-[2px] rounded-full" style={{ backgroundColor: '#2eb2ff' }}>
+        <div className="absolute -left-1 -top-[3px] w-2 h-2 rounded-full" style={{ backgroundColor: '#2eb2ff' }} />
+        <div className="absolute -right-1 -top-[3px] w-2 h-2 rounded-full" style={{ backgroundColor: '#2eb2ff' }} />
+      </div>
+    </div>
+  )
+}
 
 interface Module {
   id: string
