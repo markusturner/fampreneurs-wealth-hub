@@ -193,18 +193,8 @@ export function AssetInventoryForm({ onSubmitted }: { onSubmitted: () => void })
       setSubmitting(false)
     }
   }
-    } catch (err: any) {
-      if (err?.code === "23505") {
-        toast({ title: "Already submitted", description: "You have already submitted your asset inventory.", variant: "destructive" })
-        onSubmitted()
-      } else {
-        console.error("Error submitting asset inventory:", err)
-        toast({ title: "Error", description: "Failed to submit asset inventory.", variant: "destructive" })
-      }
-    } finally {
-      setSubmitting(false)
-    }
-  }
+
+
 
   const renderTableSection = (
     title: string,
