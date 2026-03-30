@@ -179,7 +179,7 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
 
           <TabsContent value="url" className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor={`${settingKey}-url`}>Video URL (YouTube, Loom, Vimeo)</Label>
+              <Label htmlFor={`${settingKey}-url`}>Video URL (YouTube, Loom, Vimeo, Tella.tv)</Label>
               <Input
                 id={`${settingKey}-url`}
                 placeholder="https://www.youtube.com/watch?v=..."
