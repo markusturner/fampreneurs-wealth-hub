@@ -806,26 +806,39 @@ export function AdminAllUsersManagement() {
     doc.text(agreement.agreement_date || 'N/A', margin + 30, y)
     y += 15
 
-    // Agreement text - get it from the agreement map
-    const AGREEMENT_MAP: Record<string, string> = {
-      'The Family Vault': 'TFV Agreement',
-      'The Family Business Accelerator': 'TFBA Agreement',
-      'The Family Fortune Mastermind': 'TFFM Agreement',
-    }
+    // Get the full agreement text
+    const programName = agreement.program_name || agreement.agreement_type || ''
+    const fullAgreementText = getAgreementTextByProgram(programName)
 
-    doc.setFontSize(10)
+    doc.setFontSize(9)
     doc.setFont('helvetica', 'normal')
-    const agreementLabel = agreement.program_name || 'Agreement'
-    const bodyText = `This Program Services Agreement was signed by ${agreement.full_name || 'the mentee'} on ${agreement.agreement_date || 'N/A'} for the ${agreementLabel} program.\n\nMailing Address: ${agreement.mailing_address || 'N/A'}\n\nThis document confirms that the above-named individual has read, agreed to, and accepted all terms and conditions of the ${agreementLabel} Program Services Agreement.`
 
-    const lines = doc.splitTextToSize(bodyText, maxWidth)
-    for (const line of lines) {
-      if (y > doc.internal.pageSize.getHeight() - 30) {
-        doc.addPage()
-        y = 20
+    if (fullAgreementText) {
+      // Fill in the blanks in the agreement text
+      let filledText = fullAgreementText
+        .replace('on this date ______________________________,', `on this date ${agreement.agreement_date || 'N/A'},`)
+        .replace('by and between _________________________________ ("Mentee"), residing at ____________________________________________________________________________,', `by and between ${agreement.full_name || 'N/A'} ("Mentee"), residing at ${agreement.mailing_address || 'N/A'},`)
+
+      const lines = doc.splitTextToSize(filledText, maxWidth)
+      for (const line of lines) {
+        if (y > doc.internal.pageSize.getHeight() - 30) {
+          doc.addPage()
+          y = 20
+        }
+        doc.text(line, margin, y)
+        y += 4.5
       }
-      doc.text(line, margin, y)
-      y += 5
+    } else {
+      const bodyText = `This Program Services Agreement was signed by ${agreement.full_name || 'the mentee'} on ${agreement.agreement_date || 'N/A'} for the ${programName} program.\n\nMailing Address: ${agreement.mailing_address || 'N/A'}\n\nThis document confirms that the above-named individual has read, agreed to, and accepted all terms and conditions of the ${programName} Program Services Agreement.`
+      const lines = doc.splitTextToSize(bodyText, maxWidth)
+      for (const line of lines) {
+        if (y > doc.internal.pageSize.getHeight() - 30) {
+          doc.addPage()
+          y = 20
+        }
+        doc.text(line, margin, y)
+        y += 5
+      }
     }
 
     y += 15
