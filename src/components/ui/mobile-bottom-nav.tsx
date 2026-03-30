@@ -154,9 +154,9 @@ export function MobileBottomNav() {
                   )
                 })}
 
-                {/* TruHeirs Section */}
+                {/* Digital Family Office Section */}
                 <div className="pt-2 pb-1 px-3">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">TruHeirs</p>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Digital Family Office</p>
                 </div>
                 {truHeirsItems.map((item) => {
                   const Icon = item.icon

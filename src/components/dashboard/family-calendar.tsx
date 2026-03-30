@@ -1,7 +1,8 @@
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { CalendarIcon, Clock } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { CalendarIcon, Clock, Trash2 } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
@@ -27,6 +28,14 @@ export function FamilyCalendar() {
       setEvents(JSON.parse(stored))
     }
   }, [user])
+
+  const deleteEvent = (eventId: string) => {
+    const updated = events.filter(e => e.id !== eventId)
+    setEvents(updated)
+    if (user) {
+      localStorage.setItem(`family_calendar_${user.id}`, JSON.stringify(updated))
+    }
+  }
 
   const eventDates = events.map(e => new Date(e.date))
   const upcomingEvents = events
@@ -82,9 +91,20 @@ export function FamilyCalendar() {
               <div key={event.id} className="p-3 sm:p-4 border border-primary/20 bg-primary/5 rounded-lg">
                 <div className="flex items-start justify-between mb-2">
                   <p className="font-medium text-sm sm:text-base leading-tight pr-2">{event.title}</p>
-                  <Badge variant="secondary" className="text-xs px-2 py-1 flex-shrink-0">
-                    {event.type}
-                  </Badge>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <Badge variant="secondary" className="text-xs px-2 py-1">
+                      {event.type}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteEvent(event.id)}
+                      className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                      title="Delete event"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
