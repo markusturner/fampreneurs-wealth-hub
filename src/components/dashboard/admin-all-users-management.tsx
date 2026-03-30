@@ -722,6 +722,49 @@ export function AdminAllUsersManagement() {
     return contract - collected
   }
 
+  const TRUST_PAGES = [
+    { name: 'family', label: 'Family Trust' },
+    { name: 'ministry', label: 'Ministry Trust' },
+    { name: 'business', label: 'Business Trust' },
+    { name: 'asset_inventory', label: 'Asset Inventory' },
+    { name: 'trust_checklist', label: 'Trust Checklist' },
+  ]
+
+  const handleOpenTrustAccess = async (userId: string) => {
+    setTrustAccessUserId(userId)
+    const [locksRes, subsRes] = await Promise.all([
+      supabase.from('trust_page_locks' as any).select('page_name, is_locked').eq('user_id', userId),
+      supabase.from('trust_submissions' as any).select('trust_type, submitted_at').eq('user_id', userId).order('submitted_at', { ascending: false }),
+    ])
+    setTrustAccessLocks((locksRes.data as any[]) || [])
+    setTrustSubmissionDates((subsRes.data as any[]) || [])
+  }
+
+  const handleToggleTrustLock = async (userId: string, pageName: string, lock: boolean) => {
+    setSavingTrustAccess(true)
+    try {
+      const currentUser = (await supabase.auth.getUser()).data.user
+      const { error } = await supabase
+        .from('trust_page_locks' as any)
+        .upsert({
+          user_id: userId,
+          page_name: pageName,
+          is_locked: lock,
+          locked_by: currentUser?.id,
+          locked_at: lock ? new Date().toISOString() : null,
+        } as any, { onConflict: 'user_id,page_name' })
+      if (error) throw error
+      // Refresh locks
+      const { data } = await supabase.from('trust_page_locks' as any).select('page_name, is_locked').eq('user_id', userId)
+      setTrustAccessLocks((data as any[]) || [])
+      toast({ title: lock ? 'Page Locked' : 'Page Unlocked' })
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' })
+    } finally {
+      setSavingTrustAccess(false)
+    }
+  }
+
   const syncStripeSubscriptions = async () => {
     setSyncingStripe(true)
     try {
