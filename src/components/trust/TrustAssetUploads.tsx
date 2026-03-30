@@ -207,9 +207,6 @@ export function TrustAssetUploads({ onSubmitted }: TrustAssetUploadsProps) {
           } as any)
         if (dbError) throw dbError
       }
-          } as any)
-        if (dbError) throw dbError
-      }
 
       toast({
         title: "Files uploaded",
