@@ -1205,10 +1205,10 @@ export function AdminAllUsersManagement() {
                     <TableHead className="min-w-[180px]">Activation Points</TableHead>
                     <TableHead>Satisfaction</TableHead>
                     <TableHead className="min-w-[100px]">Name Selected</TableHead>
+                    <TableHead className="min-w-[100px]">Asset Inventory</TableHead>
                     <TableHead className="min-w-[100px]">Family Trust</TableHead>
                     <TableHead className="min-w-[100px]">Ministry Trust</TableHead>
                     <TableHead className="min-w-[100px]">Business Trust</TableHead>
-                    <TableHead className="min-w-[100px]">Asset Inventory</TableHead>
                     <TableHead className="min-w-[160px]">Testimonials</TableHead>
                     <TableHead className="min-w-[120px]">Trust Access</TableHead>
                     <TableHead>Forms</TableHead>
@@ -1466,7 +1466,7 @@ export function AdminAllUsersManagement() {
                       </Select>
                     </TableCell>
                     {/* Trust Submission Date Columns */}
-                    {['trust_name_translator', 'family', 'ministry', 'business', 'asset_inventory'].map(trustType => {
+                    {['trust_name_translator', 'asset_inventory', 'family', 'ministry', 'business'].map(trustType => {
                       const dateStr = (user as any).trust_sub_dates?.[trustType]
                       return (
                         <TableCell key={trustType}>
