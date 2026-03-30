@@ -324,6 +324,8 @@ export default function TrustCreation() {
             <CardContent>
               {selectedSection === 'asset_inventory' ? (
                 <AssetInventoryForm onSubmitted={handleFormSubmitted} />
+              ) : selectedSection === 'trust_asset_uploads' ? (
+                <TrustAssetUploads onSubmitted={handleFormSubmitted} />
               ) : (
                 <TrustNameTranslator onSubmitted={handleFormSubmitted} />
               )}
