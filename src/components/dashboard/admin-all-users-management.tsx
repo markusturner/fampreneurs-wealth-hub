@@ -204,6 +204,14 @@ export function AdminAllUsersManagement() {
       })
       setUsers(sorted)
       setFilteredUsers(sorted)
+
+      // Group trust submissions by user_id
+      const trustByUser: Record<string, {trust_type: string, submitted_at: string}[]> = {}
+      ;(trustSubsData as any[] || []).forEach((s: any) => {
+        if (!trustByUser[s.user_id]) trustByUser[s.user_id] = []
+        trustByUser[s.user_id].push({ trust_type: s.trust_type, submitted_at: s.submitted_at })
+      })
+      setAllTrustSubmissions(trustByUser)
     } catch (error: any) {
       console.error('Error fetching users:', error)
       toast({
