@@ -1,0 +1,1 @@
+ALTER TABLE public.trust_submissions ADD COLUMN IF NOT EXISTS form_data jsonb DEFAULT NULL;
