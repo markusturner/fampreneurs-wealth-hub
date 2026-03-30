@@ -216,9 +216,11 @@ function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, sho
   )
 }
 
-// Sortable wrapper for modules - only provides ref + transform, no drag listeners on whole element
-function SortableModuleWrapper({ moduleId, disabled, isDragging, children }: { moduleId: string; disabled: boolean; isDragging: boolean; children: React.ReactNode }) {
+// Sortable wrapper for modules - provides ref + transform + exposes drag handle props via render
+function SortableModuleWrapper({ moduleId, disabled, isDragging, children }: { moduleId: string; disabled: boolean; isDragging: boolean; children: (handleProps: { attributes: any; listeners: any }) => React.ReactNode }) {
   const {
+    attributes,
+    listeners,
     setNodeRef,
     transform,
     transition,
@@ -232,7 +234,7 @@ function SortableModuleWrapper({ moduleId, disabled, isDragging, children }: { m
 
   return (
     <div ref={setNodeRef} style={style}>
-      {children}
+      {children({ attributes, listeners })}
     </div>
   )
 }
