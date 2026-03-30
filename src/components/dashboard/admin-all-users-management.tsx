@@ -1477,6 +1477,19 @@ export function AdminAllUsersManagement() {
                         className="h-7 w-32 text-xs"
                       />
                     </TableCell>
+                    {/* Trust Submission Date Columns */}
+                    {['family', 'ministry', 'business', 'trust_name_translator', 'asset_inventory'].map(trustType => {
+                      const dateStr = (user as any).trust_sub_dates?.[trustType]
+                      return (
+                        <TableCell key={trustType}>
+                          {dateStr ? (
+                            <span className="text-xs text-muted-foreground">{new Date(dateStr).toLocaleDateString()}</span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground/50">—</span>
+                          )}
+                        </TableCell>
+                      )
+                    })}
                     {/* Testimonials & Trust Pilot Reviews */}
                     <TableCell>
                       <Textarea
