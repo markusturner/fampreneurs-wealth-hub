@@ -207,9 +207,22 @@ export function AdminAllUsersManagement() {
         }
       }
 
+      // Build a map of email -> trustee user_id from family_members table
+      const emailToTrusteeMap: Record<string, string> = {}
+      if (familyMembersData) {
+        for (const fm of familyMembersData as any[]) {
+          if (fm.email && fm.added_by) {
+            emailToTrusteeMap[fm.email.toLowerCase()] = fm.added_by
+          }
+        }
+      }
+
       // Merge subscription data with profiles
       const usersWithSubscriptions = (profilesData || []).map(profile => {
         const subscription = subscribersData?.find(sub => sub.user_id === profile.user_id)
+        const trusteeUserId = profile.membership_type === 'family_member' && profile.email
+          ? emailToTrusteeMap[profile.email.toLowerCase()] || null
+          : null
         
         return {
           ...profile,
@@ -219,11 +232,17 @@ export function AdminAllUsersManagement() {
           trust_sub_dates: trustSubMap[profile.user_id] || {},
           proof_of_transfer_date: proofOfTransferMap[profile.user_id] || null,
           legacy_meeting_date: legacyMeetingMap[profile.user_id] || null,
+          trustee_user_id: trusteeUserId,
         }
       })
 
       const getUserDisplayName = (u: any) => (u.display_name || `${u.first_name || ''} ${u.last_name || ''}`.trim()).toLowerCase()
-      const sorted = usersWithSubscriptions.sort((a: any, b: any) => {
+      
+      // Sort: trustees alphabetically, then nest family members under their trustee
+      const trustees = usersWithSubscriptions.filter((u: any) => u.membership_type !== 'family_member')
+      const familyMembers = usersWithSubscriptions.filter((u: any) => u.membership_type === 'family_member')
+      
+      trustees.sort((a: any, b: any) => {
         const nameA = getUserDisplayName(a)
         const nameB = getUserDisplayName(b)
         const hasNameA = nameA.length > 0
@@ -232,6 +251,29 @@ export function AdminAllUsersManagement() {
         if (!hasNameA && hasNameB) return 1
         return nameA.localeCompare(nameB)
       })
+      
+      // Build final list: each trustee followed by their family members
+      const sorted: any[] = []
+      const placedFamilyMembers = new Set<string>()
+      
+      for (const trustee of trustees) {
+        sorted.push(trustee)
+        // Find family members belonging to this trustee
+        const children = familyMembers
+          .filter((fm: any) => fm.trustee_user_id === trustee.user_id)
+          .sort((a: any, b: any) => getUserDisplayName(a).localeCompare(getUserDisplayName(b)))
+        for (const child of children) {
+          sorted.push(child)
+          placedFamilyMembers.add(child.user_id)
+        }
+      }
+      
+      // Add any orphan family members (no matched trustee) at the end
+      const orphans = familyMembers
+        .filter((fm: any) => !placedFamilyMembers.has(fm.user_id))
+        .sort((a: any, b: any) => getUserDisplayName(a).localeCompare(getUserDisplayName(b)))
+      sorted.push(...orphans)
+      
       setUsers(sorted)
       setFilteredUsers(sorted)
     } catch (error: any) {
