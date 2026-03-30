@@ -640,7 +640,7 @@ export default function TutorialVideos() {
                 placeholder="https://www.youtube.com/watch?v=... or Loom/Vimeo URL"
               />
               <p className="text-xs text-muted-foreground">
-                Supports YouTube, Loom, and Vimeo links
+                Supports YouTube, Loom, Vimeo, and Tella.tv links
               </p>
             </div>
             <div className="space-y-2">

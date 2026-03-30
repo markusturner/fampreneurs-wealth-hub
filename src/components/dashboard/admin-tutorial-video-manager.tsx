@@ -209,7 +209,7 @@ export const AdminVideoManager = ({ settingKey, title, description }: AdminVideo
           <div className="space-y-2">
             <Label>Current Video</Label>
             <div className="aspect-video w-full">
-              {currentUrl.startsWith("http") && (currentUrl.includes("youtube") || currentUrl.includes("loom") || currentUrl.includes("vimeo")) ? (
+              {currentUrl.startsWith("http") && (currentUrl.includes("youtube") || currentUrl.includes("loom") || currentUrl.includes("vimeo") || currentUrl.includes("tella.tv")) ? (
                 <iframe
                   src={getEmbedUrl(currentUrl)}
                   className="w-full h-full rounded-lg border"

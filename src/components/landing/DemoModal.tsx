@@ -34,6 +34,11 @@ export const DemoModal = ({ isOpen, onClose }: DemoModalProps) => {
       const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/)
       return match ? `https://www.youtube.com/embed/${match[1]}` : url
     }
+    // Tella.tv
+    if (url.includes('tella.tv')) {
+      const match = url.match(/tella\.tv\/video\/([a-zA-Z0-9_-]+)/)
+      return match ? `https://www.tella.tv/video/${match[1]}/embed` : url
+    }
     return url
   }
 
