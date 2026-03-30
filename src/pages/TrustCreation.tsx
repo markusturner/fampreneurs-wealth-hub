@@ -55,6 +55,11 @@ const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2;
     icon: FileText,
     description: "Translate your trust name into multiple languages including Latin, Hebrew, Greek, and more.",
   },
+  trust_asset_uploads: {
+    label: "Schedule B & Proof of Transfer",
+    icon: ClipboardList,
+    description: "Upload your Schedule B asset lists and proof of transfer documents for your trust.",
+  },
 }
 
 const TRUST_TYPES: SectionType[] = ['family', 'ministry', 'business']
