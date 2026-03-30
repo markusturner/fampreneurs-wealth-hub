@@ -920,6 +920,7 @@ export type Database = {
           created_by: string
           description: string | null
           id: string
+          image_url: string | null
           is_premium: boolean
           is_private: boolean
           name: string
@@ -934,6 +935,7 @@ export type Database = {
           created_by: string
           description?: string | null
           id?: string
+          image_url?: string | null
           is_premium?: boolean
           is_private?: boolean
           name: string
@@ -948,6 +950,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           id?: string
+          image_url?: string | null
           is_premium?: boolean
           is_private?: boolean
           name?: string
