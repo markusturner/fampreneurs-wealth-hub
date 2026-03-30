@@ -1051,7 +1051,7 @@ export default function WorkspaceCommunity() {
                     {isOwner && useCustomDateTime && (
                       <div className="flex items-center gap-2 flex-wrap">
                         <Input type="date" value={customDate} onChange={e => setCustomDate(e.target.value)} className="h-8 text-xs w-40" />
-                        <Input type="time" value={customTime} onChange={e => setCustomTime(e.target.value)} className="h-8 text-xs w-32" />
+                        
                       </div>
                     )}
                   </div>
