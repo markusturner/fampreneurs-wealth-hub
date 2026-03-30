@@ -120,7 +120,7 @@ export function AdminAllUsersManagement() {
   const [formsUserId, setFormsUserId] = useState<string | null>(null)
   const [memberView, setMemberView] = useState<'active' | 'pending'>('active')
   const [formsData, setFormsData] = useState<{onboarding: any, agreements: any[], trustForms: any[], assetUploads: any[], legacyMeetingUploads: any[]}>({ onboarding: null, agreements: [], trustForms: [], assetUploads: [], legacyMeetingUploads: [] })
-  const [loadingForms, setLoadingForms] = useState(false)
+  const [resendingAgreementId, setResendingAgreementId] = useState<string | null>(null)
   // Financial inline editing
   const [editingFinanceUserId, setEditingFinanceUserId] = useState<string | null>(null)
   const [editingFinanceField, setEditingFinanceField] = useState<'contract_value' | 'cash_collected' | null>(null)
