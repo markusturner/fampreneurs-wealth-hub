@@ -1165,7 +1165,7 @@ export default function WorkspaceCommunity() {
                                     type="date"
                                     value={editingPostDate}
                                     onChange={(e) => setEditingPostDate(e.target.value)}
-                                    className="h-7 text-xs w-36"
+                                    className="h-7 text-xs w-44"
                                   />
                                 )}
                               </div>
