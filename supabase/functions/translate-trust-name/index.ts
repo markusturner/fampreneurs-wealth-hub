@@ -26,9 +26,16 @@ serve(async (req) => {
       ministry: "Tax-Exempt Ministry Charitable Trust",
     };
 
-    const systemPrompt = `You are a professional trust name translator. Given a person's name and trust type, generate the official trust name in English, then translate it into the following languages: Latin, Hebrew, Greek, Spanish, French, Portuguese, and Arabic.
+    const systemPrompt = `You are a professional legal trust name translator. Given a person's name and trust type, create the full official trust name in English first, then translate the ENTIRE trust name (including the person's name transliterated into each language's script) into each target language.
 
-For each language, return the trust name formatted as "[Name] ${trustLabels[trustType]}" translated appropriately into that language.
+The English trust name format is: "[Name] ${trustLabels[trustType]}"
+
+IMPORTANT RULES:
+- Transliterate the person's name into each language's native script (e.g., Hebrew script for Hebrew, Greek script for Greek, Arabic script for Arabic)
+- Translate ALL words including "Private", "Family", "Trust", "Business", "Ministry", "Charitable", "Tax-Exempt", "Unincorporated" into the target language
+- The result for each language should be fully written in that language's script and words — do NOT mix English words in
+- For Latin, use proper Latin legal terminology
+- Each translation should read naturally as a formal legal trust name in that language
 
 Return ONLY a valid JSON object with this exact structure (no markdown, no code blocks):
 {
