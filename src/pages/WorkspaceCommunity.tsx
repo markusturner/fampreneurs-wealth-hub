@@ -390,6 +390,9 @@ export default function WorkspaceCommunity() {
         if (error) throw error
       }
       setNewPost('')
+      // Reset textarea height
+      const textarea = document.querySelector<HTMLTextAreaElement>('.post-composer-textarea');
+      if (textarea) textarea.style.height = '';
       setPostImageFile(null)
       setPostImagePreview(null)
       setPostVideoFile(null)
@@ -957,7 +960,7 @@ export default function WorkspaceCommunity() {
                           e.target.style.height = '';
                         }
                       }}
-                      className="min-h-[44px] resize-none border-0 bg-muted/50 rounded-lg px-4 py-2.5 focus-visible:ring-1 text-sm overflow-hidden"
+                      className="post-composer-textarea min-h-[44px] resize-none border-0 bg-muted/50 rounded-lg px-4 py-2.5 focus-visible:ring-1 text-sm overflow-hidden"
                       rows={1}
                     />
                     {/* Preview attachments */}
