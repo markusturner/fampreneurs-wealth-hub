@@ -216,6 +216,29 @@ function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, sho
   )
 }
 
+// Sortable wrapper for modules
+function SortableModuleWrapper({ moduleId, disabled, isDragging, children }: { moduleId: string; disabled: boolean; isDragging: boolean; children: React.ReactNode }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: `module-drag-${moduleId}`, disabled })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.3 : 1,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {children}
+    </div>
+  )
+}
+
 export default function CourseDetail() {
   const { courseId } = useParams<{ courseId: string }>()
   const { user } = useAuth()
