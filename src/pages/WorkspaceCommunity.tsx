@@ -618,7 +618,8 @@ export default function WorkspaceCommunity() {
   }
 
   const renderContentWithMentions = (content: string) => {
-    const mentionRegex = /@(\w[\w\s]*?\w)(?=\s|$|[.,!?;:])/g
+    // Match @Name or @First Last (up to 3 words, no newlines)
+    const mentionRegex = /@([A-Za-z]\w*(?:\s[A-Za-z]\w*){0,2})/g
     const parts: React.ReactNode[] = []
     let lastIndex = 0
     let match
@@ -628,9 +629,9 @@ export default function WorkspaceCommunity() {
         parts.push(content.slice(lastIndex, match.index))
       }
       parts.push(
-        <span key={match.index} className="font-bold text-primary">
+        <strong key={match.index} className="font-bold">
           @{match[1]}
-        </span>
+        </strong>
       )
       lastIndex = match.index + match[0].length
     }
@@ -643,7 +644,7 @@ export default function WorkspaceCommunity() {
   }
 
   const extractMentions = (content: string): string[] => {
-    const mentionRegex = /@(\w[\w\s]*?\w)(?=\s|$|[.,!?;:])/g
+    const mentionRegex = /@([A-Za-z]\w*(?:\s[A-Za-z]\w*){0,2})/g
     const mentions: string[] = []
     let match
     while ((match = mentionRegex.exec(content)) !== null) {
