@@ -121,6 +121,7 @@ export function AdminAllUsersManagement() {
   const [memberView, setMemberView] = useState<'active' | 'pending'>('active')
   const [formsData, setFormsData] = useState<{onboarding: any, agreements: any[], trustForms: any[], assetUploads: any[], legacyMeetingUploads: any[]}>({ onboarding: null, agreements: [], trustForms: [], assetUploads: [], legacyMeetingUploads: [] })
   const [loadingForms, setLoadingForms] = useState(false)
+  const [resendingAgreementId, setResendingAgreementId] = useState<string | null>(null)
   // Financial inline editing
   const [editingFinanceUserId, setEditingFinanceUserId] = useState<string | null>(null)
   const [editingFinanceField, setEditingFinanceField] = useState<'contract_value' | 'cash_collected' | null>(null)
@@ -871,6 +872,31 @@ export function AdminAllUsersManagement() {
     doc.save(`${(agreement.full_name || 'agreement').replace(/\s+/g, '_')}_signed_agreement.pdf`)
   }
 
+  const handleResendAgreementEmail = async (agreement: any) => {
+    const user = users.find(u => u.user_id === formsUserId)
+    if (!user) return
+    setResendingAgreementId(agreement.id)
+    try {
+      const programLabel = agreement.program_name || agreement.agreement_type || 'Program'
+      const { error } = await supabase.functions.invoke('send-agreement-email', {
+        body: {
+          agreementId: agreement.id,
+          recipientEmail: user.email,
+          fullName: agreement.full_name,
+          programName: programLabel,
+          agreementDate: agreement.agreement_date || agreement.signed_at?.split('T')[0],
+          mailingAddress: agreement.mailing_address,
+          signatureData: agreement.signature_data,
+        }
+      })
+      if (error) throw error
+      toast({ title: 'Email Sent', description: `Agreement copy re-sent to ${user.email}` })
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Failed to send email', variant: 'destructive' })
+    } finally {
+      setResendingAgreementId(null)
+    }
+  }
   const handleSaveFinance = async (userId: string) => {
     setSavingFinance(true)
     try {
@@ -2450,17 +2476,34 @@ export function AdminAllUsersManagement() {
                           )}
                         </div>
                       )}
-                      <Button
-                        size="sm"
-                        className="gap-2 mt-2"
-                        style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2eb2ff'; e.currentTarget.style.color = '#ffffff' }}
-                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffb500'; e.currentTarget.style.color = '#290a52' }}
-                        onClick={() => handleDownloadAgreement(agreement)}
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                        Download Signed Agreement
-                      </Button>
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        <Button
+                          size="sm"
+                          className="gap-2"
+                          style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2eb2ff'; e.currentTarget.style.color = '#ffffff' }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffb500'; e.currentTarget.style.color = '#290a52' }}
+                          onClick={() => handleDownloadAgreement(agreement)}
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                          Download
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="gap-2"
+                          style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2eb2ff'; e.currentTarget.style.color = '#ffffff' }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffb500'; e.currentTarget.style.color = '#290a52' }}
+                          onClick={() => handleResendAgreementEmail(agreement)}
+                          disabled={resendingAgreementId === agreement.id}
+                        >
+                          {resendingAgreementId === agreement.id ? (
+                            <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Sending...</>
+                          ) : (
+                            <><Mail className="h-3.5 w-3.5" /> Re-send Email</>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </AccordionContent>
