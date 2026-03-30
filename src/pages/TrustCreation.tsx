@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
-import { Lock, FileText, Building2, Church, Home, Loader2, CheckCircle2, ArrowLeft, ShieldCheck, ClipboardList, Package, Users } from "lucide-react"
+import { Lock, FileText, Building2, Church, Home, Loader2, CheckCircle2, ArrowLeft, ShieldCheck, ClipboardList, Package, Users, AlertTriangle, ExternalLink } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { TrustAssetUploads } from "@/components/trust/TrustAssetUploads"
 import { AssetInventoryForm } from "@/components/trust/AssetInventoryForm"
 import { TrustChecklistForm } from "@/components/trust/TrustChecklistForm"
@@ -27,24 +28,27 @@ interface PageLock {
   is_locked: boolean
 }
 
-const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2; description: string; formUrl?: string }> = {
+const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2; description: string; formUrl?: string; prepDocUrl?: string }> = {
   family: {
     label: "Family Trust",
     icon: Home,
     description: "Private Family Trust for protecting family assets and generational wealth transfer.",
     formUrl: "https://docs.google.com/forms/d/e/1FAIpQLScG21XrblvIjpA0sugRS3JzuBMXlqESE5ZLWcBJJpy5P6z-6w/viewform?embedded=true",
+    prepDocUrl: "https://docs.google.com/document/d/1X58jQC12S6XRmWBen_wxSf2_Uup2zo4LbBzS9fKfBFY/edit?usp=sharing",
   },
   ministry: {
     label: "Ministry Trust",
     icon: Church,
     description: "Tax-Exempt Ministry Charitable Trust under Section 508(c)(1)(a) of the IRC.",
     formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSfBgkmTrnvnpfL4-h4MhBqbbgjCspz_nTFxB3-62C5lajv7og/viewform?embedded=true",
+    prepDocUrl: "https://docs.google.com/document/d/13h393BbHmkxEueYWHvVQk3AmVPV6L-KtL9uwjYJB9as/edit?usp=sharing",
   },
   business: {
     label: "Business Trust",
     icon: Building2,
     description: "Private Unincorporated Business Trust for protecting business assets and operations.",
     formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSd_pqYjkF0_ij5PZ51rwEnebC2saONxDo-6XNuj599Lagoa2g/viewform?embedded=true",
+    prepDocUrl: "https://docs.google.com/document/d/1hfXA3fDJC0gfcNRHlQhgSYQexkdHxaCRNWvEu0BlEss/edit?usp=sharing",
   },
   asset_inventory: {
     label: "Asset Inventory List",
@@ -359,6 +363,27 @@ export default function TrustCreation() {
             Mark as Submitted
           </Button>
         </div>
+        <Alert className="border-[#ffb500]/40 bg-[#ffb500]/10">
+          <AlertTriangle className="h-4 w-4 text-[#ffb500]" />
+          <AlertDescription className="text-sm">
+            <strong>Important:</strong> This page will auto-lock after you submit. Once submitted, you will not be able to make changes — so please make sure all your information is accurate before submitting.
+            {info.prepDocUrl && (
+              <span className="block mt-2">
+                Want to prepare first?{' '}
+                <a
+                  href={info.prepDocUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-semibold text-[#ffb500] hover:text-[#2eb2ff] underline underline-offset-2 transition-colors"
+                >
+                  Download the questions doc to review before submitting
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </span>
+            )}
+          </AlertDescription>
+        </Alert>
+
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2">
