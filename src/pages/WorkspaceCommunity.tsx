@@ -262,6 +262,26 @@ export default function WorkspaceCommunity() {
     setCommunityDesc(programDesc)
   }, [programName, programDesc])
 
+  // Load persisted community photo from community_groups
+  useEffect(() => {
+    if (!program) return
+    const loadCommunityPhoto = async () => {
+      const groupName = PROGRAM_NAMES[program]
+      if (!groupName) return
+      const { data } = await supabase
+        .from('community_groups')
+        .select('image_url')
+        .eq('name', groupName)
+        .maybeSingle()
+      if (data?.image_url) {
+        setCommunityPhoto(data.image_url)
+      } else {
+        setCommunityPhoto(null)
+      }
+    }
+    loadCommunityPhoto()
+  }, [program])
+
   const getEligibleCommunityUserIds = useCallback(async (): Promise<string[]> => {
     if (!program) return []
 
