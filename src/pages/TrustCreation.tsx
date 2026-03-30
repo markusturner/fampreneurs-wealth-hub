@@ -55,10 +55,15 @@ const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2;
     icon: ClipboardList,
     description: "Checklist for establishing a trust — grantor, trustee, beneficiaries, and more.",
   },
+  trust_name_translator: {
+    label: "Trust Name Translator",
+    icon: FileText,
+    description: "Translate your trust name into multiple languages including Latin, Hebrew, Greek, and more.",
+  },
 }
 
 const TRUST_TYPES: SectionType[] = ['family', 'ministry', 'business']
-const TOOL_TYPES: SectionType[] = ['asset_inventory', 'trust_checklist']
+const TOOL_TYPES: SectionType[] = ['trust_name_translator', 'asset_inventory', 'trust_checklist']
 
 // Submission limits: trust_name_translator = 3, everything else = 1
 const getSubmissionLimit = (type: SectionType): number => {
