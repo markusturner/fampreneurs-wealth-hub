@@ -497,7 +497,6 @@ export default function CourseDetail() {
                   </div>
                 </CollapsibleTrigger>
                 )}
-                </CollapsibleTrigger>
                 <CollapsibleContent>
                   {mod.lessons.map((lesson, idx) => {
                     const globalIdx = lessonCounter + idx + 1
