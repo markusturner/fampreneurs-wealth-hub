@@ -174,11 +174,12 @@ export function AdminAllUsersManagement() {
       if (error) throw error
 
       // Fetch subscription data and trust submission dates for all users
-      const [{ data: subscribersData }, { data: allTrustSubs }, { data: assetUploads }, { data: legacyUploads }] = await Promise.all([
+      const [{ data: subscribersData }, { data: allTrustSubs }, { data: assetUploads }, { data: legacyUploads }, { data: familyMembersData }] = await Promise.all([
         supabase.from('subscribers').select('user_id, subscription_tier, subscription_period, subscribed'),
         supabase.from('trust_submissions' as any).select('user_id, trust_type, submitted_at').order('submitted_at', { ascending: true }),
         supabase.from('trust_asset_uploads' as any).select('user_id, created_at').order('created_at', { ascending: true }),
         supabase.from('legacy_meeting_uploads' as any).select('user_id, created_at').order('created_at', { ascending: true }),
+        supabase.from('family_members').select('email, added_by'),
       ])
 
       // Build a map of user_id -> { trust_type -> earliest submitted_at }
