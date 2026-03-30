@@ -4323,6 +4323,42 @@ export type Database = {
         }
         Relationships: []
       }
+      trust_asset_uploads: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       trust_documents: {
         Row: {
           created_at: string | null
