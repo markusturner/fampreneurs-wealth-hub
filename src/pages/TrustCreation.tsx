@@ -302,7 +302,7 @@ export default function TrustCreation() {
     }
 
     // Asset Inventory & Trust Checklist use React forms
-    if (selectedSection === 'asset_inventory' || selectedSection === 'trust_checklist' || selectedSection === 'trust_name_translator') {
+    if (selectedSection === 'asset_inventory' || selectedSection === 'trust_name_translator') {
       return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-5xl mx-auto">
           <Button variant="ghost" onClick={() => setSelectedSection(null)} className="gap-2">
@@ -319,8 +319,6 @@ export default function TrustCreation() {
             <CardContent>
               {selectedSection === 'asset_inventory' ? (
                 <AssetInventoryForm onSubmitted={handleFormSubmitted} />
-              ) : selectedSection === 'trust_checklist' ? (
-                <TrustChecklistForm onSubmitted={handleFormSubmitted} />
               ) : (
                 <TrustNameTranslator onSubmitted={handleFormSubmitted} />
               )}
