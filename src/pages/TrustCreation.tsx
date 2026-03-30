@@ -190,7 +190,7 @@ export default function TrustCreation() {
   }
 
   const isUnlocked = (type: SectionType) => {
-    if (type === 'asset_inventory' || type === 'trust_name_translator' || type === 'trust_asset_uploads') return true
+    if (type === 'asset_inventory' || type === 'trust_name_translator' || type === 'trust_asset_uploads' || type === 'legacy_meeting') return true
     return trustAccess?.unlocked_trusts?.includes(type) ?? false
   }
 
