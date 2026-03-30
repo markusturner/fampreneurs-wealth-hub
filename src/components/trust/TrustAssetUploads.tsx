@@ -159,6 +159,7 @@ export function TrustAssetUploads({ onSubmitted }: TrustAssetUploadsProps) {
   const [uploads, setUploads] = useState<AssetUpload[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [submitterName, setSubmitterName] = useState("")
 
   useEffect(() => {
     fetchUploads()
