@@ -2253,13 +2253,19 @@ export function AdminAllUsersManagement() {
           <div className="space-y-4 py-2">
             {TRUST_PAGES.map(page => {
               const lock = trustAccessLocks.find((l: any) => l.page_name === page.name)
-              const isLocked = lock?.is_locked === true
               const submissions = trustSubmissionDates.filter((s: any) => s.trust_type === page.name)
+              const hasSubmission = submissions.length > 0
+              // Effective lock: admin override takes priority, otherwise auto-lock if submitted
+              const hasAdminOverride = !!lock
+              const isEffectivelyLocked = hasAdminOverride ? lock.is_locked === true : hasSubmission
+              const lockSource = hasAdminOverride
+                ? (lock.is_locked ? 'Admin Locked' : 'Admin Unlocked')
+                : (hasSubmission ? 'Auto-Locked (submitted)' : 'Open')
               return (
                 <div key={page.name} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      {isLocked ? <Lock className="h-3.5 w-3.5 text-destructive" /> : <Unlock className="h-3.5 w-3.5 text-green-600" />}
+                      {isEffectivelyLocked ? <Lock className="h-3.5 w-3.5 text-destructive" /> : <Unlock className="h-3.5 w-3.5 text-green-600" />}
                       <span className="text-sm font-medium">{page.label}</span>
                     </div>
                     {submissions.length > 0 ? (
@@ -2274,9 +2280,10 @@ export function AdminAllUsersManagement() {
                     ) : (
                       <span className="text-xs text-muted-foreground ml-5">Not submitted</span>
                     )}
+                    <span className="text-xs text-muted-foreground ml-5 italic">{lockSource}</span>
                   </div>
                   <Switch
-                    checked={isLocked}
+                    checked={isEffectivelyLocked}
                     onCheckedChange={(checked) => trustAccessUserId && handleToggleTrustLock(trustAccessUserId, page.name, checked)}
                     disabled={savingTrustAccess}
                   />
