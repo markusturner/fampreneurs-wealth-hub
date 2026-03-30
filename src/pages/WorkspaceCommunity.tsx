@@ -157,6 +157,10 @@ export default function WorkspaceCommunity() {
   const [customDate, setCustomDate] = useState('')
   const [customTime, setCustomTime] = useState('')
 
+  // Edit post state
+  const [editingPostId, setEditingPostId] = useState<string | null>(null)
+  const [editingPostContent, setEditingPostContent] = useState('')
+
   // Comments state
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [postComments, setPostComments] = useState<Record<string, Comment[]>>({})
