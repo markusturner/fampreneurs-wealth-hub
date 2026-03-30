@@ -174,11 +174,12 @@ export function AdminAllUsersManagement() {
       if (error) throw error
 
       // Fetch subscription data and trust submission dates for all users
-      const [{ data: subscribersData }, { data: allTrustSubs }, { data: assetUploads }, { data: legacyUploads }] = await Promise.all([
+      const [{ data: subscribersData }, { data: allTrustSubs }, { data: assetUploads }, { data: legacyUploads }, { data: familyMembersData }] = await Promise.all([
         supabase.from('subscribers').select('user_id, subscription_tier, subscription_period, subscribed'),
         supabase.from('trust_submissions' as any).select('user_id, trust_type, submitted_at').order('submitted_at', { ascending: true }),
         supabase.from('trust_asset_uploads' as any).select('user_id, created_at').order('created_at', { ascending: true }),
         supabase.from('legacy_meeting_uploads' as any).select('user_id, created_at').order('created_at', { ascending: true }),
+        supabase.from('family_members').select('email, added_by'),
       ])
 
       // Build a map of user_id -> { trust_type -> earliest submitted_at }
@@ -206,9 +207,22 @@ export function AdminAllUsersManagement() {
         }
       }
 
+      // Build a map of email -> trustee user_id from family_members table
+      const emailToTrusteeMap: Record<string, string> = {}
+      if (familyMembersData) {
+        for (const fm of familyMembersData as any[]) {
+          if (fm.email && fm.added_by) {
+            emailToTrusteeMap[fm.email.toLowerCase()] = fm.added_by
+          }
+        }
+      }
+
       // Merge subscription data with profiles
       const usersWithSubscriptions = (profilesData || []).map(profile => {
         const subscription = subscribersData?.find(sub => sub.user_id === profile.user_id)
+        const trusteeUserId = profile.membership_type === 'family_member' && profile.email
+          ? emailToTrusteeMap[profile.email.toLowerCase()] || null
+          : null
         
         return {
           ...profile,
@@ -218,11 +232,17 @@ export function AdminAllUsersManagement() {
           trust_sub_dates: trustSubMap[profile.user_id] || {},
           proof_of_transfer_date: proofOfTransferMap[profile.user_id] || null,
           legacy_meeting_date: legacyMeetingMap[profile.user_id] || null,
+          trustee_user_id: trusteeUserId,
         }
       })
 
       const getUserDisplayName = (u: any) => (u.display_name || `${u.first_name || ''} ${u.last_name || ''}`.trim()).toLowerCase()
-      const sorted = usersWithSubscriptions.sort((a: any, b: any) => {
+      
+      // Sort: trustees alphabetically, then nest family members under their trustee
+      const trustees = usersWithSubscriptions.filter((u: any) => u.membership_type !== 'family_member')
+      const familyMembers = usersWithSubscriptions.filter((u: any) => u.membership_type === 'family_member')
+      
+      trustees.sort((a: any, b: any) => {
         const nameA = getUserDisplayName(a)
         const nameB = getUserDisplayName(b)
         const hasNameA = nameA.length > 0
@@ -231,6 +251,29 @@ export function AdminAllUsersManagement() {
         if (!hasNameA && hasNameB) return 1
         return nameA.localeCompare(nameB)
       })
+      
+      // Build final list: each trustee followed by their family members
+      const sorted: any[] = []
+      const placedFamilyMembers = new Set<string>()
+      
+      for (const trustee of trustees) {
+        sorted.push(trustee)
+        // Find family members belonging to this trustee
+        const children = familyMembers
+          .filter((fm: any) => fm.trustee_user_id === trustee.user_id)
+          .sort((a: any, b: any) => getUserDisplayName(a).localeCompare(getUserDisplayName(b)))
+        for (const child of children) {
+          sorted.push(child)
+          placedFamilyMembers.add(child.user_id)
+        }
+      }
+      
+      // Add any orphan family members (no matched trustee) at the end
+      const orphans = familyMembers
+        .filter((fm: any) => !placedFamilyMembers.has(fm.user_id))
+        .sort((a: any, b: any) => getUserDisplayName(a).localeCompare(getUserDisplayName(b)))
+      sorted.push(...orphans)
+      
       setUsers(sorted)
       setFilteredUsers(sorted)
     } catch (error: any) {
@@ -1330,13 +1373,30 @@ export function AdminAllUsersManagement() {
 
               const renderUserRow = (user: any) => {
                 const packageInfo = getPackageInfo(user)
+                const isFamilyMember = user.membership_type === 'family_member'
+                const hasTrustee = isFamilyMember && user.trustee_user_id
+                // Find trustee name for display
+                const trusteeName = hasTrustee
+                  ? (() => {
+                      const t = users.find((u: any) => u.user_id === user.trustee_user_id)
+                      return t ? (t.display_name || `${t.first_name || ''} ${t.last_name || ''}`.trim()) : null
+                    })()
+                  : null
                 return (
-                  <TableRow key={user.user_id}>
+                  <TableRow key={user.user_id} className={isFamilyMember && hasTrustee ? 'bg-accent/5' : ''}>
                     <TableCell className="w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 bg-background">
                       <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
                     </TableCell>
                     <TableCell className="font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 bg-background">
-                      {user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}
+                      <div className={isFamilyMember && hasTrustee ? 'pl-6 flex items-center gap-1.5' : ''}>
+                        {isFamilyMember && hasTrustee && <span className="text-muted-foreground text-xs">↳</span>}
+                        <div>
+                          <span>{user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}</span>
+                          {trusteeName && (
+                            <p className="text-[10px] text-muted-foreground leading-tight">under {trusteeName}</p>
+                          )}
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
                       {renderContractTimeline(user)}
