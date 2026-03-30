@@ -1172,7 +1172,7 @@ export default function WorkspaceCommunity() {
                               <div className="flex items-center gap-2">
                                 <Button
                                   size="sm"
-                                  className="h-7 gap-1 text-xs"
+                                  className="h-7 gap-1 text-xs bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground"
                                   onClick={async () => {
                                     if (!editingPostContent.trim()) return;
                                     const updateData: Record<string, unknown> = {
