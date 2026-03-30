@@ -36,6 +36,7 @@ import {
   Trash2,
   X,
   RefreshCw,
+  GripVertical,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AddModuleDialog } from '@/components/classroom/AddModuleDialog'
@@ -49,6 +50,23 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+  DragOverlay,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface Module {
   id: string
@@ -90,6 +108,93 @@ interface Course {
   duration?: string | null
   level?: string | null
 }
+interface SortableLessonItemProps {
+  lesson: Lesson
+  globalIdx: number
+  isSelected: boolean
+  isAdminOrOwner: boolean
+  onSelect: (lesson: Lesson) => void
+  onEdit: (lesson: Lesson) => void
+}
+
+function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, onSelect, onEdit }: SortableLessonItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: lesson.id, disabled: !isAdminOrOwner })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        'flex items-start gap-2 w-full transition-colors group border-l-2',
+        isSelected
+          ? 'bg-secondary/10 border-secondary'
+          : 'hover:bg-accent/40 border-transparent'
+      )}
+    >
+      {isAdminOrOwner && (
+        <div
+          {...attributes}
+          {...listeners}
+          className="flex items-center justify-center pt-3 pl-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={e => e.stopPropagation()}
+        >
+          <GripVertical className="h-3 w-3 text-muted-foreground" />
+        </div>
+      )}
+      <div
+        onClick={() => onSelect(lesson)}
+        role="button"
+        tabIndex={0}
+        style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', width: '100%', padding: isAdminOrOwner ? '10px 16px 10px 0' : '10px 16px', textAlign: 'left' as const, cursor: 'pointer' }}
+        className="flex-1"
+      >
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: '20px', height: '20px', borderRadius: '50%',
+          fontSize: '10px', fontWeight: 'bold', flexShrink: 0, marginTop: '2px',
+          backgroundColor: lesson.completed ? '#FFB500' : isSelected ? '#290a52' : '#e5e7eb',
+          color: lesson.completed ? '#000' : isSelected ? '#fff' : '#6b7280',
+        }}>
+          {lesson.completed
+            ? <CheckCircle2 className="h-3 w-3" />
+            : <span>{globalIdx}</span>
+          }
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: 'block', color: '#290a52', fontSize: '12px', fontWeight: 500, lineHeight: '1.4', wordBreak: 'break-word' }}>
+            {lesson.title}
+          </span>
+          {lesson.duration_seconds && (
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              {Math.floor(lesson.duration_seconds / 60)} min
+            </p>
+          )}
+        </div>
+        {isAdminOrOwner && (
+          <button
+            onClick={e => { e.stopPropagation(); onEdit(lesson) }}
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
+          >
+            <Pencil className="h-3 w-3 text-muted-foreground" />
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
 
 export default function CourseDetail() {
   const { courseId } = useParams<{ courseId: string }>()
@@ -121,6 +226,11 @@ export default function CourseDetail() {
   const [showAddResource, setShowAddResource] = useState(false)
   const [showEditCourse, setShowEditCourse] = useState(false)
   const [editingResource, setEditingResource] = useState<Resource | null>(null)
+  const [activeDragLessonId, setActiveDragLessonId] = useState<string | null>(null)
+
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  )
 
   // Inline editing state
   const [isEditingLesson, setIsEditingLesson] = useState(false)
@@ -156,6 +266,85 @@ export default function CourseDetail() {
       await fetchData()
     }
     setRenamingModuleId(null)
+  }
+
+  const handleLessonDragEnd = async (event: DragEndEvent) => {
+    setActiveDragLessonId(null)
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const lessonId = active.id as string
+    // Find source module
+    const srcMod = modules.find(m => m.lessons.some(l => l.id === lessonId))
+    if (!srcMod) return
+
+    // Determine target: could be a lesson id or a module droppable id (prefixed)
+    const overId = over.id as string
+    let destModId: string | null = null
+    let destIndex = 0
+
+    // Check if dropped over another lesson
+    const destModByLesson = modules.find(m => m.lessons.some(l => l.id === overId))
+    if (destModByLesson) {
+      destModId = destModByLesson.id
+      destIndex = destModByLesson.lessons.findIndex(l => l.id === overId)
+    } else if (overId.startsWith('droppable-module-')) {
+      // Dropped on a module droppable zone
+      destModId = overId.replace('droppable-module-', '')
+      const destMod = modules.find(m => m.id === destModId)
+      destIndex = destMod ? destMod.lessons.length : 0
+    }
+
+    if (!destModId) return
+
+    // Same module reorder
+    if (srcMod.id === destModId) {
+      const srcIndex = srcMod.lessons.findIndex(l => l.id === lessonId)
+      if (srcIndex === destIndex) return
+      // Reorder within module
+      const reordered = [...srcMod.lessons]
+      const [moved] = reordered.splice(srcIndex, 1)
+      reordered.splice(destIndex, 0, moved)
+      // Optimistic update
+      setModules(prev => prev.map(m => m.id === srcMod.id ? { ...m, lessons: reordered } : m))
+      // Persist
+      await Promise.all(reordered.map((l, idx) =>
+        supabase.from('course_videos').update({ order_index: idx } as any).eq('id', l.id)
+      ))
+    } else {
+      // Cross-module move
+      const realDestModId = destModId === '__uncategorized' ? null : destModId
+      const realSrcModId = srcMod.id === '__uncategorized' ? null : srcMod.id
+
+      // Optimistic update
+      const lesson = srcMod.lessons.find(l => l.id === lessonId)!
+      const newSrcLessons = srcMod.lessons.filter(l => l.id !== lessonId)
+      const destMod = modules.find(m => m.id === destModId)!
+      const newDestLessons = [...destMod.lessons]
+      newDestLessons.splice(destIndex, 0, { ...lesson, module_id: realDestModId })
+
+      setModules(prev => prev.map(m => {
+        if (m.id === srcMod.id) return { ...m, lessons: newSrcLessons }
+        if (m.id === destModId) return { ...m, lessons: newDestLessons }
+        return m
+      }))
+
+      // Open destination module
+      setOpenModules(prev => { const next = new Set(prev); next.add(destModId!); return next })
+
+      // Persist: update module_id and order
+      await supabase.from('course_videos').update({ module_id: realDestModId, order_index: destIndex } as any).eq('id', lessonId)
+      // Reorder destination
+      await Promise.all(newDestLessons.map((l, idx) =>
+        supabase.from('course_videos').update({ order_index: idx } as any).eq('id', l.id)
+      ))
+      // Reorder source
+      await Promise.all(newSrcLessons.map((l, idx) =>
+        supabase.from('course_videos').update({ order_index: idx } as any).eq('id', l.id)
+      ))
+    }
+
+    toast({ title: 'Lesson moved' })
   }
 
   const cancelEditingLesson = () => {
@@ -459,6 +648,7 @@ export default function CourseDetail() {
 
       {/* Module / Lesson list */}
       <ScrollArea className="flex-1">
+        <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragStart={(e) => setActiveDragLessonId(e.active.id as string)} onDragEnd={handleLessonDragEnd}>
         <div className="py-2">
           {modules.map((mod) => {
             let lessonCounter = 0
@@ -498,55 +688,31 @@ export default function CourseDetail() {
                 </CollapsibleTrigger>
                 )}
                 <CollapsibleContent>
-                  {mod.lessons.map((lesson, idx) => {
-                    const globalIdx = lessonCounter + idx + 1
-                    const isSelected = selectedLesson?.id === lesson.id
-                    return (
-                      <button
-                        key={lesson.id}
-                        onClick={() => handleSelectLesson(lesson)}
-                        style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', width: '100%', padding: '10px 16px', textAlign: 'left' as const }}
-                        className={cn(
-                          'transition-colors group border-l-2',
-                          isSelected
-                            ? 'bg-secondary/10 border-secondary'
-                            : 'hover:bg-accent/40 border-transparent'
-                        )}
-                      >
-                        {/* Number badge or check */}
-                        <div style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          width: '20px', height: '20px', borderRadius: '50%',
-                          fontSize: '10px', fontWeight: 'bold', flexShrink: 0, marginTop: '2px',
-                          backgroundColor: lesson.completed ? '#FFB500' : isSelected ? '#290a52' : '#e5e7eb',
-                          color: lesson.completed ? '#000' : isSelected ? '#fff' : '#6b7280',
-                        }}>
-                          {lesson.completed
-                            ? <CheckCircle2 className="h-3 w-3" />
-                            : <span>{globalIdx}</span>
-                          }
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <span style={{ display: 'block', color: '#290a52', fontSize: '12px', fontWeight: 500, lineHeight: '1.4', wordBreak: 'break-word' }}>
-                            {lesson.title}
-                          </span>
-                          {lesson.duration_seconds && (
-                            <p className="text-[10px] text-muted-foreground mt-0.5">
-                              {Math.floor(lesson.duration_seconds / 60)} min
-                            </p>
-                          )}
-                        </div>
-                        {isAdminOrOwner && (
-                          <button
-                            onClick={e => { e.stopPropagation(); handleSelectLesson(lesson); setTimeout(startEditingLesson, 50) }}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
-                          >
-                            <Pencil className="h-3 w-3 text-muted-foreground" />
-                          </button>
-                        )}
-                      </button>
-                    )
-                  })}
+                  <SortableContext items={mod.lessons.map(l => l.id)} strategy={verticalListSortingStrategy}>
+                    {mod.lessons.map((lesson, idx) => {
+                      const globalIdx = lessonCounter + idx + 1
+                      return (
+                        <SortableLessonItem
+                          key={lesson.id}
+                          lesson={lesson}
+                          globalIdx={globalIdx}
+                          isSelected={selectedLesson?.id === lesson.id}
+                          isAdminOrOwner={isAdminOrOwner}
+                          onSelect={handleSelectLesson}
+                          onEdit={(l) => { handleSelectLesson(l); setTimeout(startEditingLesson, 50) }}
+                        />
+                      )
+                    })}
+                  </SortableContext>
+                  {/* Empty module drop zone */}
+                  {mod.lessons.length === 0 && isAdminOrOwner && (
+                    <div
+                      data-droppable-module={mod.id}
+                      className="px-4 py-3 text-[10px] text-muted-foreground text-center italic border border-dashed border-border/50 mx-3 my-1 rounded"
+                    >
+                      Drop lessons here
+                    </div>
+                  )}
                   {isAdminOrOwner && mod.id !== '__uncategorized' && (
                     <button
                       onClick={() => handleAddLessonInline(mod.id)}
@@ -570,6 +736,7 @@ export default function CourseDetail() {
             </button>
           )}
         </div>
+        </DndContext>
       </ScrollArea>
     </div>
   )
