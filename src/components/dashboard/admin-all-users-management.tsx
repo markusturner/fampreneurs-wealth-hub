@@ -1466,7 +1466,7 @@ export function AdminAllUsersManagement() {
                       </Select>
                     </TableCell>
                     {/* Trust Submission Date Columns */}
-                    {['trust_name_translator', 'family', 'ministry', 'business', 'asset_inventory'].map(trustType => {
+                    {['trust_name_translator', 'asset_inventory', 'family', 'ministry', 'business'].map(trustType => {
                       const dateStr = (user as any).trust_sub_dates?.[trustType]
                       return (
                         <TableCell key={trustType}>
