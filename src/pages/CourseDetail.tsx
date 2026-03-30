@@ -127,6 +127,8 @@ interface SortableLessonItemProps {
   globalIdx: number
   isSelected: boolean
   isAdminOrOwner: boolean
+  showDropBefore: boolean
+  showDropAfter: boolean
   onSelect: (lesson: Lesson) => void
   onEdit: (lesson: Lesson) => void
 }
