@@ -61,6 +61,11 @@ const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2;
     icon: ClipboardList,
     description: "Upload your Schedule B asset lists and proof of transfer documents for your trust.",
   },
+  legacy_meeting: {
+    label: "First Family Legacy Meeting",
+    icon: Users,
+    description: "Schedule and document your first family legacy meeting with notes, recordings, and agreements.",
+  },
 }
 
 const TRUST_TYPES: SectionType[] = ['family', 'ministry', 'business']
