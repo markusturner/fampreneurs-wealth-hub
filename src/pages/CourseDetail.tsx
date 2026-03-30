@@ -674,15 +674,56 @@ export default function CourseDetail() {
 
       {/* Module / Lesson list */}
       <ScrollArea className="flex-1">
-        <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragStart={(e) => setActiveDragLessonId(e.active.id as string)} onDragEnd={handleLessonDragEnd}>
+        <DndContext
+          sensors={dndSensors}
+          collisionDetection={closestCenter}
+          onDragStart={(e) => {
+            const id = e.active.id as string
+            // Determine if dragging a module or a lesson
+            if (id.startsWith('module-drag-')) {
+              setDragType('module')
+              setActiveDragModuleId(id.replace('module-drag-', ''))
+            } else {
+              setDragType('lesson')
+              setActiveDragLessonId(id)
+            }
+          }}
+          onDragOver={(e) => {
+            if (dragType === 'lesson') {
+              setOverLessonId(e.over?.id as string || null)
+            } else if (dragType === 'module') {
+              const overId = e.over?.id as string || null
+              setOverModuleId(overId?.startsWith('module-drag-') ? overId.replace('module-drag-', '') : null)
+            }
+          }}
+          onDragEnd={(e) => {
+            if (dragType === 'module') {
+              handleModuleDragEnd(e)
+            } else {
+              handleLessonDragEnd(e)
+            }
+          }}
+        >
+        <SortableContext items={modules.filter(m => m.id !== '__uncategorized').map(m => `module-drag-${m.id}`)} strategy={verticalListSortingStrategy}>
         <div className="py-2">
-          {modules.map((mod) => {
+          {modules.map((mod, modIdx) => {
             let lessonCounter = 0
-            const modIndex = modules.indexOf(mod)
-            for (let i = 0; i < modIndex; i++) lessonCounter += modules[i].lessons.length
+            for (let i = 0; i < modIdx; i++) lessonCounter += modules[i].lessons.length
+            const isModuleDragging = activeDragModuleId === mod.id
+            const showModuleDropBefore = dragType === 'module' && overModuleId === mod.id && mod.id !== '__uncategorized' && activeDragModuleId !== mod.id
+            const isDraggableModule = isAdminOrOwner && mod.id !== '__uncategorized'
 
             return (
-              <Collapsible key={mod.id} open={openModules.has(mod.id)} onOpenChange={() => toggleModule(mod.id)}>
+              <SortableModuleWrapper key={mod.id} moduleId={mod.id} disabled={!isDraggableModule} isDragging={isModuleDragging}>
+                {showModuleDropBefore && (
+                  <div className="relative h-0 w-full z-20">
+                    <div className="absolute left-2 right-2 top-0 h-[3px] rounded-full" style={{ backgroundColor: '#ffb500' }}>
+                      <div className="absolute -left-1 -top-[3px] w-[9px] h-[9px] rounded-full" style={{ backgroundColor: '#ffb500' }} />
+                      <div className="absolute -right-1 -top-[3px] w-[9px] h-[9px] rounded-full" style={{ backgroundColor: '#ffb500' }} />
+                    </div>
+                  </div>
+                )}
+                <Collapsible open={openModules.has(mod.id)} onOpenChange={() => toggleModule(mod.id)}>
                 {renamingModuleId === mod.id ? (
                   <div className="flex items-center gap-1 px-4 py-2">
                     <Input
@@ -699,7 +740,14 @@ export default function CourseDetail() {
                   </div>
                 ) : (
                 <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 text-xs font-semibold uppercase tracking-wider hover:bg-accent/40 transition-colors text-left group/mod">
-                  <span style={{ color: '#290a52' }}>{mod.title}</span>
+                  <div className="flex items-center gap-1.5">
+                    {isDraggableModule && (
+                      <div className="cursor-grab active:cursor-grabbing opacity-0 group-hover/mod:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+                        <GripVertical className="h-3 w-3 text-muted-foreground" />
+                      </div>
+                    )}
+                    <span style={{ color: '#290a52' }}>{mod.title}</span>
+                  </div>
                   <div className="flex items-center gap-1">
                     {isAdminOrOwner && mod.id !== '__uncategorized' && (
                       <button
@@ -717,6 +765,7 @@ export default function CourseDetail() {
                   <SortableContext items={mod.lessons.map(l => l.id)} strategy={verticalListSortingStrategy}>
                     {mod.lessons.map((lesson, idx) => {
                       const globalIdx = lessonCounter + idx + 1
+                      const isOver = overLessonId === lesson.id && activeDragLessonId !== lesson.id && dragType === 'lesson'
                       return (
                         <SortableLessonItem
                           key={lesson.id}
@@ -724,6 +773,8 @@ export default function CourseDetail() {
                           globalIdx={globalIdx}
                           isSelected={selectedLesson?.id === lesson.id}
                           isAdminOrOwner={isAdminOrOwner}
+                          showDropBefore={isOver}
+                          showDropAfter={false}
                           onSelect={handleSelectLesson}
                           onEdit={(l) => { handleSelectLesson(l); setTimeout(startEditingLesson, 50) }}
                         />
@@ -751,6 +802,7 @@ export default function CourseDetail() {
                   )}
                 </CollapsibleContent>
               </Collapsible>
+              </SortableModuleWrapper>
             )
           })}
           {isAdminOrOwner && (
@@ -762,6 +814,27 @@ export default function CourseDetail() {
             </button>
           )}
         </div>
+        </SortableContext>
+        <DragOverlay>
+          {dragType === 'lesson' && activeDragLessonId && (() => {
+            const lesson = modules.flatMap(m => m.lessons).find(l => l.id === activeDragLessonId)
+            if (!lesson) return null
+            return (
+              <div className="bg-background border border-border rounded-md shadow-lg px-4 py-2 text-xs font-medium opacity-90" style={{ color: '#290a52' }}>
+                {lesson.title}
+              </div>
+            )
+          })()}
+          {dragType === 'module' && activeDragModuleId && (() => {
+            const mod = modules.find(m => m.id === activeDragModuleId)
+            if (!mod) return null
+            return (
+              <div className="bg-background border border-border rounded-md shadow-lg px-4 py-2 text-xs font-bold uppercase tracking-wider opacity-90" style={{ color: '#290a52' }}>
+                {mod.title} ({mod.lessons.length} lessons)
+              </div>
+            )
+          })()}
+        </DragOverlay>
         </DndContext>
       </ScrollArea>
     </div>
