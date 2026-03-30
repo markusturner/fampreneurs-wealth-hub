@@ -743,21 +743,117 @@ export function AdminAllUsersManagement() {
     setFormsUserId(userId)
     setLoadingForms(true)
     try {
-      const [onboardingRes, agreementsRes, trustRes] = await Promise.all([
+      const [onboardingRes, agreementsRes, trustRes, assetUploadsRes, legacyMeetingRes] = await Promise.all([
         supabase.from('onboarding_responses' as any).select('*').eq('user_id', userId).maybeSingle(),
         supabase.from('program_agreements' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-        supabase.from('trust_form_submissions' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('trust_submissions' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('trust_asset_uploads' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('legacy_meeting_uploads' as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       ])
       setFormsData({
         onboarding: onboardingRes.data,
         agreements: agreementsRes.data || [],
         trustForms: trustRes.data || [],
+        assetUploads: assetUploadsRes.data || [],
+        legacyMeetingUploads: legacyMeetingRes.data || [],
       })
     } catch (err) {
       console.error('Error fetching forms:', err)
     } finally {
       setLoadingForms(false)
     }
+  }
+
+  const handleDownloadAgreement = (agreement: any) => {
+    const { jsPDF } = require('jspdf')
+    const doc = new jsPDF()
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const margin = 20
+    const maxWidth = pageWidth - margin * 2
+    let y = 20
+
+    // Title
+    doc.setFontSize(16)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Program Services Agreement', pageWidth / 2, y, { align: 'center' })
+    y += 10
+
+    // Program name
+    doc.setFontSize(12)
+    doc.setFont('helvetica', 'normal')
+    doc.text(agreement.program_name || '', pageWidth / 2, y, { align: 'center' })
+    y += 15
+
+    // Signer info
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Full Name:', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(agreement.full_name || 'N/A', margin + 30, y)
+    y += 7
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Address:', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(agreement.mailing_address || 'N/A', margin + 30, y)
+    y += 7
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Date:', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(agreement.agreement_date || 'N/A', margin + 30, y)
+    y += 15
+
+    // Agreement text - get it from the agreement map
+    const AGREEMENT_MAP: Record<string, string> = {
+      'The Family Vault': 'TFV Agreement',
+      'The Family Business Accelerator': 'TFBA Agreement',
+      'The Family Fortune Mastermind': 'TFFM Agreement',
+    }
+
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    const agreementLabel = agreement.program_name || 'Agreement'
+    const bodyText = `This Program Services Agreement was signed by ${agreement.full_name || 'the mentee'} on ${agreement.agreement_date || 'N/A'} for the ${agreementLabel} program.\n\nMailing Address: ${agreement.mailing_address || 'N/A'}\n\nThis document confirms that the above-named individual has read, agreed to, and accepted all terms and conditions of the ${agreementLabel} Program Services Agreement.`
+
+    const lines = doc.splitTextToSize(bodyText, maxWidth)
+    for (const line of lines) {
+      if (y > doc.internal.pageSize.getHeight() - 30) {
+        doc.addPage()
+        y = 20
+      }
+      doc.text(line, margin, y)
+      y += 5
+    }
+
+    y += 15
+
+    // Signature section
+    doc.setFont('helvetica', 'bold')
+    doc.text('Signature:', margin, y)
+    y += 7
+
+    if (agreement.signature_data?.startsWith('data:image')) {
+      try {
+        doc.addImage(agreement.signature_data, 'PNG', margin, y, 60, 20)
+        y += 25
+      } catch {
+        doc.setFont('courier', 'italic')
+        doc.text(agreement.signature_data?.substring(0, 50) || 'N/A', margin, y)
+        y += 7
+      }
+    } else {
+      doc.setFontSize(14)
+      doc.setFont('courier', 'italic')
+      doc.text(agreement.signature_data || agreement.full_name || 'N/A', margin, y)
+      y += 10
+    }
+
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Signed at: ${agreement.signed_at || agreement.created_at || 'N/A'}`, margin, y)
+
+    doc.save(`${(agreement.full_name || 'agreement').replace(/\s+/g, '_')}_signed_agreement.pdf`)
   }
 
   const handleSaveFinance = async (userId: string) => {
