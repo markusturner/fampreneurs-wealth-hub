@@ -216,6 +216,8 @@ export function AdminAllUsersManagement() {
           subscription_period: subscription?.subscription_period || null,
           subscribed: subscription?.subscribed === true,
           trust_sub_dates: trustSubMap[profile.user_id] || {},
+          proof_of_transfer_date: proofOfTransferMap[profile.user_id] || null,
+          legacy_meeting_date: legacyMeetingMap[profile.user_id] || null,
         }
       })
 
