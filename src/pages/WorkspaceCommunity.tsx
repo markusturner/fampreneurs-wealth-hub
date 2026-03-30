@@ -1042,7 +1042,7 @@ export default function WorkspaceCommunity() {
                         )}
                       </div>
                       <div className="ml-auto">
-                        <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim()} className="gap-1.5">
+                        <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim()} className="gap-1.5 bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
                           <Send className="h-4 w-4" />
                           {postToAll ? 'Post to All' : 'Post'}
                         </Button>
