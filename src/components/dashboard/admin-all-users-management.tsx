@@ -1383,17 +1383,19 @@ export function AdminAllUsersManagement() {
                     })()
                   : null
                 return (
-                  <TableRow key={user.user_id} className={isFamilyMember && hasTrustee ? 'bg-accent/5' : ''}>
+                  <TableRow key={user.user_id} className={isFamilyMember && hasTrustee ? 'border-l-2 border-l-[#ffb500]/60' : ''}>
                     <TableCell className="w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 bg-background">
                       <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
                     </TableCell>
-                    <TableCell className="font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 bg-background">
-                      <div className={isFamilyMember && hasTrustee ? 'pl-6 flex items-center gap-1.5' : ''}>
-                        {isFamilyMember && hasTrustee && <span className="text-muted-foreground text-xs">↳</span>}
+                    <TableCell className={`font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 ${isFamilyMember && hasTrustee ? 'bg-[#ffb500]/5' : 'bg-background'}`}>
+                      <div className={isFamilyMember && hasTrustee ? 'pl-5 flex items-center gap-2' : ''}>
+                        {isFamilyMember && hasTrustee && (
+                          <span className="text-[#ffb500] text-sm font-medium">↳</span>
+                        )}
                         <div>
                           <span>{user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}</span>
                           {trusteeName && (
-                            <p className="text-[10px] text-muted-foreground leading-tight">under {trusteeName}</p>
+                            <p className="text-[10px] text-muted-foreground leading-tight italic">under {trusteeName}</p>
                           )}
                         </div>
                       </div>
