@@ -2394,158 +2394,178 @@ export function AdminAllUsersManagement() {
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : (
-            <div className="space-y-6">
+            <Accordion type="multiple" className="space-y-2">
               {/* Onboarding Form */}
-              <div className="space-y-2">
-                <h4 className="font-semibold flex items-center gap-2">
-                  <Badge variant="secondary">Onboarding Form</Badge>
-                  {formsData.onboarding ? (
-                    <Badge className="bg-green-600 text-white">Completed</Badge>
-                  ) : (
-                    <Badge variant="outline">Not Submitted</Badge>
-                  )}
-                </h4>
-                {formsData.onboarding && (
-                  <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-                    {Object.entries(formsData.onboarding).filter(([key]) => !['id', 'user_id', 'created_at', 'updated_at'].includes(key)).map(([key, value]) => (
-                      <div key={key} className="flex justify-between gap-4 border-b border-border/30 pb-1">
-                        <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
-                        <span className="text-right font-medium">{String(value || 'N/A')}</span>
-                      </div>
-                    ))}
+              <AccordionItem value="onboarding" className="border rounded-lg px-4">
+                <AccordionTrigger className="hover:no-underline py-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">Onboarding Form</Badge>
+                    {formsData.onboarding ? (
+                      <Badge className="bg-green-600 text-white">Completed</Badge>
+                    ) : (
+                      <Badge variant="outline">Not Submitted</Badge>
+                    )}
                   </div>
-                )}
-              </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  {formsData.onboarding && (
+                    <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                      {Object.entries(formsData.onboarding).filter(([key]) => !['id', 'user_id', 'created_at', 'updated_at'].includes(key)).map(([key, value]) => (
+                        <div key={key} className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                          <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
+                          <span className="text-right font-medium">{String(value || 'N/A')}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
 
               {/* Program Agreements */}
-              <div className="space-y-2">
-                <h4 className="font-semibold flex items-center gap-2">
-                  <Badge variant="secondary">Program Agreements</Badge>
-                  <Badge className={formsData.agreements.length > 0 ? "bg-green-600 text-white" : ""} variant={formsData.agreements.length > 0 ? "default" : "outline"}>
-                    {formsData.agreements.length > 0 ? `${formsData.agreements.length} Signed` : 'None'}
-                  </Badge>
-                </h4>
-                {formsData.agreements.map((agreement: any) => (
-                  <div key={agreement.id} className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-                    {Object.entries(agreement).filter(([key]) => !['id', 'user_id', 'signature_data'].includes(key)).map(([key, value]) => (
-                      <div key={key} className="flex justify-between gap-4 border-b border-border/30 pb-1">
-                        <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
-                        <span className="text-right font-medium max-w-[60%] break-words">{String(value || 'N/A')}</span>
-                      </div>
-                    ))}
-                    {agreement.signature_data && (
-                      <div className="border-b border-border/30 pb-1">
-                        <span className="text-muted-foreground capitalize">Signature</span>
-                        {agreement.signature_data.startsWith('data:image') ? (
-                          <img src={agreement.signature_data} alt="Signature" className="h-10 mt-1 border rounded bg-white p-1" />
-                        ) : (
-                          <p className="text-right font-medium italic font-serif text-lg">{agreement.signature_data}</p>
-                        )}
-                      </div>
-                    )}
-                    <Button
-                      size="sm"
-                      className="gap-2 mt-2"
-                      style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2eb2ff'; e.currentTarget.style.color = '#ffffff' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffb500'; e.currentTarget.style.color = '#290a52' }}
-                      onClick={() => handleDownloadAgreement(agreement)}
-                    >
-                      <Download className="h-3.5 w-3.5" />
-                      Download Signed Agreement
-                    </Button>
+              <AccordionItem value="agreements" className="border rounded-lg px-4">
+                <AccordionTrigger className="hover:no-underline py-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">Program Agreements</Badge>
+                    <Badge className={formsData.agreements.length > 0 ? "bg-green-600 text-white" : ""} variant={formsData.agreements.length > 0 ? "default" : "outline"}>
+                      {formsData.agreements.length > 0 ? `${formsData.agreements.length} Signed` : 'None'}
+                    </Badge>
                   </div>
-                ))}
-              </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  {formsData.agreements.map((agreement: any) => (
+                    <div key={agreement.id} className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm mb-2">
+                      {Object.entries(agreement).filter(([key]) => !['id', 'user_id', 'signature_data'].includes(key)).map(([key, value]) => (
+                        <div key={key} className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                          <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
+                          <span className="text-right font-medium max-w-[60%] break-words">{String(value || 'N/A')}</span>
+                        </div>
+                      ))}
+                      {agreement.signature_data && (
+                        <div className="border-b border-border/30 pb-1">
+                          <span className="text-muted-foreground capitalize">Signature</span>
+                          {agreement.signature_data.startsWith('data:image') ? (
+                            <img src={agreement.signature_data} alt="Signature" className="h-10 mt-1 border rounded bg-white p-1" />
+                          ) : (
+                            <p className="text-right font-medium italic font-serif text-lg">{agreement.signature_data}</p>
+                          )}
+                        </div>
+                      )}
+                      <Button
+                        size="sm"
+                        className="gap-2 mt-2"
+                        style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2eb2ff'; e.currentTarget.style.color = '#ffffff' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffb500'; e.currentTarget.style.color = '#290a52' }}
+                        onClick={() => handleDownloadAgreement(agreement)}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        Download Signed Agreement
+                      </Button>
+                    </div>
+                  ))}
+                </AccordionContent>
+              </AccordionItem>
 
-              {/* Trust Forms (trust_submissions) */}
-              <div className="space-y-2">
-                <h4 className="font-semibold flex items-center gap-2">
-                  <Badge variant="secondary">Trust Forms</Badge>
-                  <Badge className={formsData.trustForms.length > 0 ? "bg-green-600 text-white" : ""} variant={formsData.trustForms.length > 0 ? "default" : "outline"}>
-                    {formsData.trustForms.length > 0 ? `${formsData.trustForms.length} Submitted` : 'None'}
-                  </Badge>
-                </h4>
-                {formsData.trustForms.map((form: any) => (
-                  <div key={form.id} className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-                    <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
-                      <span className="text-muted-foreground">Type</span>
-                      <span className="text-right font-medium capitalize">{(form.trust_type || 'N/A').replace(/_/g, ' ')}</span>
-                    </div>
-                    <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
-                      <span className="text-muted-foreground">Submitted</span>
-                      <span className="text-right font-medium">{new Date(form.created_at).toLocaleDateString()}</span>
-                    </div>
-                    {form.submitter_name && (
+              {/* Trust Forms */}
+              <AccordionItem value="trust-forms" className="border rounded-lg px-4">
+                <AccordionTrigger className="hover:no-underline py-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">Trust Forms</Badge>
+                    <Badge className={formsData.trustForms.length > 0 ? "bg-green-600 text-white" : ""} variant={formsData.trustForms.length > 0 ? "default" : "outline"}>
+                      {formsData.trustForms.length > 0 ? `${formsData.trustForms.length} Submitted` : 'None'}
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  {formsData.trustForms.map((form: any) => (
+                    <div key={form.id} className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm mb-2">
                       <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
-                        <span className="text-muted-foreground">Submitter</span>
-                        <span className="text-right font-medium">{form.submitter_name}</span>
+                        <span className="text-muted-foreground">Type</span>
+                        <span className="text-right font-medium capitalize">{(form.trust_type || 'N/A').replace(/_/g, ' ')}</span>
                       </div>
-                    )}
-                    {form.form_data && typeof form.form_data === 'object' && (
-                      <details className="text-xs">
-                        <summary className="cursor-pointer text-muted-foreground hover:text-foreground">View Form Data</summary>
-                        <pre className="mt-2 p-2 rounded bg-background border text-xs overflow-x-auto max-h-40">
-                          {JSON.stringify(form.form_data, null, 2)}
-                        </pre>
-                      </details>
-                    )}
-                  </div>
-                ))}
-              </div>
+                      <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                        <span className="text-muted-foreground">Submitted</span>
+                        <span className="text-right font-medium">{new Date(form.created_at).toLocaleDateString()}</span>
+                      </div>
+                      {form.submitter_name && (
+                        <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                          <span className="text-muted-foreground">Submitter</span>
+                          <span className="text-right font-medium">{form.submitter_name}</span>
+                        </div>
+                      )}
+                      {form.form_data && typeof form.form_data === 'object' && (
+                        <details className="text-xs">
+                          <summary className="cursor-pointer text-muted-foreground hover:text-foreground">View Form Data</summary>
+                          <pre className="mt-2 p-2 rounded bg-background border text-xs overflow-x-auto max-h-40">
+                            {JSON.stringify(form.form_data, null, 2)}
+                          </pre>
+                        </details>
+                      )}
+                    </div>
+                  ))}
+                </AccordionContent>
+              </AccordionItem>
 
-              {/* Schedule B & Proof of Transfer Uploads */}
-              <div className="space-y-2">
-                <h4 className="font-semibold flex items-center gap-2">
-                  <Badge variant="secondary">Schedule B & Proof of Transfer</Badge>
-                  <Badge className={formsData.assetUploads.length > 0 ? "bg-green-600 text-white" : ""} variant={formsData.assetUploads.length > 0 ? "default" : "outline"}>
-                    {formsData.assetUploads.length > 0 ? `${formsData.assetUploads.length} Files` : 'None'}
-                  </Badge>
-                </h4>
-                {formsData.assetUploads.length > 0 && (
-                  <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-                    {formsData.assetUploads.map((upload: any) => (
-                      <div key={upload.id} className="flex justify-between gap-4 border-b border-border/30 pb-1 items-center">
-                        <div className="flex items-center gap-2 min-w-0">
-                          {upload.mime_type?.startsWith('image/') ? <Image className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" /> : <FileText className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />}
-                          <span className="truncate">{upload.file_name}</span>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <Badge variant="outline" className="text-[10px]">{(upload.category || '').replace(/_/g, ' ')}</Badge>
-                          <span className="text-muted-foreground text-xs">{new Date(upload.created_at).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    ))}
+              {/* Schedule B & Proof of Transfer */}
+              <AccordionItem value="asset-uploads" className="border rounded-lg px-4">
+                <AccordionTrigger className="hover:no-underline py-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">Schedule B & Proof of Transfer</Badge>
+                    <Badge className={formsData.assetUploads.length > 0 ? "bg-green-600 text-white" : ""} variant={formsData.assetUploads.length > 0 ? "default" : "outline"}>
+                      {formsData.assetUploads.length > 0 ? `${formsData.assetUploads.length} Files` : 'None'}
+                    </Badge>
                   </div>
-                )}
-              </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  {formsData.assetUploads.length > 0 && (
+                    <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                      {formsData.assetUploads.map((upload: any) => (
+                        <div key={upload.id} className="flex justify-between gap-4 border-b border-border/30 pb-1 items-center">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {upload.mime_type?.startsWith('image/') ? <Image className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" /> : <FileText className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />}
+                            <span className="truncate">{upload.file_name}</span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <Badge variant="outline" className="text-[10px]">{(upload.category || '').replace(/_/g, ' ')}</Badge>
+                            <span className="text-muted-foreground text-xs">{new Date(upload.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
 
-              {/* Family Legacy Meeting Uploads */}
-              <div className="space-y-2">
-                <h4 className="font-semibold flex items-center gap-2">
-                  <Badge variant="secondary">Family Legacy Meeting</Badge>
-                  <Badge className={formsData.legacyMeetingUploads.length > 0 ? "bg-green-600 text-white" : ""} variant={formsData.legacyMeetingUploads.length > 0 ? "default" : "outline"}>
-                    {formsData.legacyMeetingUploads.length > 0 ? `${formsData.legacyMeetingUploads.length} Files` : 'None'}
-                  </Badge>
-                </h4>
-                {formsData.legacyMeetingUploads.length > 0 && (
-                  <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
-                    {formsData.legacyMeetingUploads.map((upload: any) => (
-                      <div key={upload.id} className="flex justify-between gap-4 border-b border-border/30 pb-1 items-center">
-                        <div className="flex items-center gap-2 min-w-0">
-                          {upload.mime_type?.startsWith('image/') ? <Image className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" /> : <FileText className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />}
-                          <span className="truncate">{upload.file_name}</span>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <Badge variant="outline" className="text-[10px]">{(upload.category || '').replace(/_/g, ' ')}</Badge>
-                          <span className="text-muted-foreground text-xs">{new Date(upload.created_at).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    ))}
+              {/* Family Legacy Meeting */}
+              <AccordionItem value="legacy-meeting" className="border rounded-lg px-4">
+                <AccordionTrigger className="hover:no-underline py-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">Family Legacy Meeting</Badge>
+                    <Badge className={formsData.legacyMeetingUploads.length > 0 ? "bg-green-600 text-white" : ""} variant={formsData.legacyMeetingUploads.length > 0 ? "default" : "outline"}>
+                      {formsData.legacyMeetingUploads.length > 0 ? `${formsData.legacyMeetingUploads.length} Files` : 'None'}
+                    </Badge>
                   </div>
-                )}
-              </div>
-            </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  {formsData.legacyMeetingUploads.length > 0 && (
+                    <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                      {formsData.legacyMeetingUploads.map((upload: any) => (
+                        <div key={upload.id} className="flex justify-between gap-4 border-b border-border/30 pb-1 items-center">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {upload.mime_type?.startsWith('image/') ? <Image className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" /> : <FileText className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />}
+                            <span className="truncate">{upload.file_name}</span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <Badge variant="outline" className="text-[10px]">{(upload.category || '').replace(/_/g, ' ')}</Badge>
+                            <span className="text-muted-foreground text-xs">{new Date(upload.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           )}
           <DialogFooter>
             <Button
