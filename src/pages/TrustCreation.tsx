@@ -10,8 +10,9 @@ import { Lock, FileText, Building2, Church, Home, Loader2, CheckCircle2, ArrowLe
 import { TrustDocumentsSection } from "@/components/trust/TrustDocumentsSection"
 import { AssetInventoryForm } from "@/components/trust/AssetInventoryForm"
 import { TrustChecklistForm } from "@/components/trust/TrustChecklistForm"
+import { TrustNameTranslator } from "@/components/trust/TrustNameTranslator"
 
-type SectionType = 'business' | 'ministry' | 'family' | 'asset_inventory' | 'trust_checklist'
+type SectionType = 'business' | 'ministry' | 'family' | 'asset_inventory' | 'trust_checklist' | 'trust_name_translator'
 
 interface TrustAccess {
   has_access: boolean
