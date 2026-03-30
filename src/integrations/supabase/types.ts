@@ -2250,6 +2250,7 @@ export type Database = {
         Row: {
           access_level: string
           code: string
+          code_issued_at: string | null
           created_at: string
           created_by: string
           current_uses: number
@@ -2264,6 +2265,7 @@ export type Database = {
         Insert: {
           access_level?: string
           code: string
+          code_issued_at?: string | null
           created_at?: string
           created_by: string
           current_uses?: number
@@ -2278,6 +2280,7 @@ export type Database = {
         Update: {
           access_level?: string
           code?: string
+          code_issued_at?: string | null
           created_at?: string
           created_by?: string
           current_uses?: number
@@ -4359,6 +4362,39 @@ export type Database = {
         }
         Relationships: []
       }
+      trust_page_locks: {
+        Row: {
+          created_at: string
+          id: string
+          is_locked: boolean
+          locked_at: string | null
+          locked_by: string | null
+          page_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_locked?: boolean
+          locked_at?: string | null
+          locked_by?: string | null
+          page_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_locked?: boolean
+          locked_at?: string | null
+          locked_by?: string | null
+          page_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       trust_submissions: {
         Row: {
           created_at: string
@@ -4366,6 +4402,7 @@ export type Database = {
           generated_document: string | null
           id: string
           status: string
+          submitted_at: string | null
           trust_type: string
           updated_at: string
           user_id: string
@@ -4376,6 +4413,7 @@ export type Database = {
           generated_document?: string | null
           id?: string
           status?: string
+          submitted_at?: string | null
           trust_type: string
           updated_at?: string
           user_id: string
@@ -4386,6 +4424,7 @@ export type Database = {
           generated_document?: string | null
           id?: string
           status?: string
+          submitted_at?: string | null
           trust_type?: string
           updated_at?: string
           user_id?: string

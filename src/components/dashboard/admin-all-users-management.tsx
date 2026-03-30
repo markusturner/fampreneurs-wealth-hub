@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar, Clock, Star, Trophy, MessageSquare } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar, Clock, Star, Trophy, MessageSquare, ShieldCheck, Lock, Unlock } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Badge } from '@/components/ui/badge'
@@ -124,6 +124,11 @@ export function AdminAllUsersManagement() {
   const [editingFinanceField, setEditingFinanceField] = useState<'contract_value' | 'cash_collected' | null>(null)
   const [editingFinanceValue, setEditingFinanceValue] = useState('')
   const [savingFinance, setSavingFinance] = useState(false)
+  // Trust Access
+  const [trustAccessUserId, setTrustAccessUserId] = useState<string | null>(null)
+  const [trustAccessLocks, setTrustAccessLocks] = useState<{page_name: string, is_locked: boolean}[]>([])
+  const [trustSubmissionDates, setTrustSubmissionDates] = useState<{trust_type: string, submitted_at: string}[]>([])
+  const [savingTrustAccess, setSavingTrustAccess] = useState(false)
   const { toast } = useToast()
 
   const syncStripeData = async (silent = false) => {
@@ -717,6 +722,49 @@ export function AdminAllUsersManagement() {
     return contract - collected
   }
 
+  const TRUST_PAGES = [
+    { name: 'family', label: 'Family Trust' },
+    { name: 'ministry', label: 'Ministry Trust' },
+    { name: 'business', label: 'Business Trust' },
+    { name: 'asset_inventory', label: 'Asset Inventory' },
+    { name: 'trust_checklist', label: 'Trust Checklist' },
+  ]
+
+  const handleOpenTrustAccess = async (userId: string) => {
+    setTrustAccessUserId(userId)
+    const [locksRes, subsRes] = await Promise.all([
+      supabase.from('trust_page_locks' as any).select('page_name, is_locked').eq('user_id', userId),
+      supabase.from('trust_submissions' as any).select('trust_type, submitted_at').eq('user_id', userId).order('submitted_at', { ascending: false }),
+    ])
+    setTrustAccessLocks((locksRes.data as any[]) || [])
+    setTrustSubmissionDates((subsRes.data as any[]) || [])
+  }
+
+  const handleToggleTrustLock = async (userId: string, pageName: string, lock: boolean) => {
+    setSavingTrustAccess(true)
+    try {
+      const currentUser = (await supabase.auth.getUser()).data.user
+      const { error } = await supabase
+        .from('trust_page_locks' as any)
+        .upsert({
+          user_id: userId,
+          page_name: pageName,
+          is_locked: lock,
+          locked_by: currentUser?.id,
+          locked_at: lock ? new Date().toISOString() : null,
+        } as any, { onConflict: 'user_id,page_name' })
+      if (error) throw error
+      // Refresh locks
+      const { data } = await supabase.from('trust_page_locks' as any).select('page_name, is_locked').eq('user_id', userId)
+      setTrustAccessLocks((data as any[]) || [])
+      toast({ title: lock ? 'Page Locked' : 'Page Unlocked' })
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' })
+    } finally {
+      setSavingTrustAccess(false)
+    }
+  }
+
   const syncStripeSubscriptions = async () => {
     setSyncingStripe(true)
     try {
@@ -1115,6 +1163,7 @@ export function AdminAllUsersManagement() {
                     <TableHead>Satisfaction</TableHead>
                     <TableHead>First Win Date</TableHead>
                     <TableHead className="min-w-[160px]">Testimonials</TableHead>
+                    <TableHead className="min-w-[120px]">Trust Access</TableHead>
                     <TableHead>Forms</TableHead>
                     <TableHead>Notes</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -1392,6 +1441,17 @@ export function AdminAllUsersManagement() {
                         className="h-7 min-h-[28px] w-36 text-xs resize-none"
                         rows={1}
                       />
+                    </TableCell>
+                    {/* Trust Access */}
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs"
+                        onClick={() => handleOpenTrustAccess(user.user_id)}
+                      >
+                        <ShieldCheck className="h-3 w-3 mr-1" /> Manage
+                      </Button>
                     </TableCell>
                     <TableCell>
                       <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => handleOpenForms(user.user_id)}>View</Button>
@@ -2174,6 +2234,58 @@ export function AdminAllUsersManagement() {
           )}
           <DialogFooter>
             <Button onClick={() => setFormsUserId(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Trust Access Dialog */}
+      <Dialog open={!!trustAccessUserId} onOpenChange={(open) => !open && setTrustAccessUserId(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5" />
+              Trust Access Management
+            </DialogTitle>
+            <DialogDescription>
+              Lock or unlock trust creation pages for {users.find(u => u.user_id === trustAccessUserId)?.display_name || 'this user'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {TRUST_PAGES.map(page => {
+              const lock = trustAccessLocks.find((l: any) => l.page_name === page.name)
+              const isLocked = lock?.is_locked === true
+              const submissions = trustSubmissionDates.filter((s: any) => s.trust_type === page.name)
+              return (
+                <div key={page.name} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      {isLocked ? <Lock className="h-3.5 w-3.5 text-destructive" /> : <Unlock className="h-3.5 w-3.5 text-green-600" />}
+                      <span className="text-sm font-medium">{page.label}</span>
+                    </div>
+                    {submissions.length > 0 ? (
+                      <div className="text-xs text-muted-foreground ml-5">
+                        {submissions.map((s: any, i: number) => (
+                          <span key={i}>
+                            Submitted: {new Date(s.submitted_at).toLocaleDateString()}
+                            {i < submissions.length - 1 && ', '}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground ml-5">Not submitted</span>
+                    )}
+                  </div>
+                  <Switch
+                    checked={isLocked}
+                    onCheckedChange={(checked) => trustAccessUserId && handleToggleTrustLock(trustAccessUserId, page.name, checked)}
+                    disabled={savingTrustAccess}
+                  />
+                </div>
+              )
+            })}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setTrustAccessUserId(null)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

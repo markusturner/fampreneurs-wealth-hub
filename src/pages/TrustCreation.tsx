@@ -20,6 +20,11 @@ interface TrustAccess {
   is_pif: boolean
 }
 
+interface PageLock {
+  page_name: string
+  is_locked: boolean
+}
+
 const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2; description: string; formUrl?: string }> = {
   family: {
     label: "Family Trust",
@@ -54,6 +59,11 @@ const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2;
 const TRUST_TYPES: SectionType[] = ['family', 'ministry', 'business']
 const TOOL_TYPES: SectionType[] = ['asset_inventory', 'trust_checklist']
 
+// Submission limits: trust_name_translator = 3, everything else = 1
+const getSubmissionLimit = (type: SectionType): number => {
+  return 1 // All current sections auto-lock after 1 submission
+}
+
 export default function TrustCreation() {
   const [searchParams] = useSearchParams()
   const initialType = searchParams.get("type") as SectionType | null
@@ -64,11 +74,14 @@ export default function TrustCreation() {
   const [loadingAccess, setLoadingAccess] = useState(true)
   const [selectedSection, setSelectedSection] = useState<SectionType | null>(initialType)
   const [submittedTrusts, setSubmittedTrusts] = useState<Set<string>>(new Set())
+  const [submissionCounts, setSubmissionCounts] = useState<Record<string, number>>({})
+  const [adminLocks, setAdminLocks] = useState<PageLock[]>([])
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     checkAccess()
     fetchSubmissions()
+    fetchAdminLocks()
   }, [])
 
   useEffect(() => {
@@ -98,7 +111,23 @@ export default function TrustCreation() {
       .select('trust_type')
       .eq('user_id', user.id)
     if (data) {
-      setSubmittedTrusts(new Set(data.map(d => d.trust_type)))
+      const types = data.map(d => d.trust_type)
+      setSubmittedTrusts(new Set(types))
+      // Count submissions per type
+      const counts: Record<string, number> = {}
+      types.forEach(t => { counts[t] = (counts[t] || 0) + 1 })
+      setSubmissionCounts(counts)
+    }
+  }
+
+  const fetchAdminLocks = async () => {
+    if (!user?.id) return
+    const { data } = await supabase
+      .from('trust_page_locks' as any)
+      .select('page_name, is_locked')
+      .eq('user_id', user.id)
+    if (data) {
+      setAdminLocks((data as any[]).map((d: any) => ({ page_name: d.page_name, is_locked: d.is_locked })))
     }
   }
 
@@ -111,7 +140,8 @@ export default function TrustCreation() {
         .insert({ user_id: user.id, trust_type: type } as any)
       if (error) throw error
       setSubmittedTrusts(prev => new Set([...prev, type]))
-      toast({ title: 'Form submitted', description: 'Your submission has been recorded.' })
+      setSubmissionCounts(prev => ({ ...prev, [type]: (prev[type] || 0) + 1 }))
+      toast({ title: 'Form submitted', description: 'Your submission has been recorded. This page is now locked.' })
     } catch (err: any) {
       if (err?.code === '23505') {
         toast({ title: 'Already submitted', description: 'You have already submitted this form.', variant: 'destructive' })
@@ -125,8 +155,28 @@ export default function TrustCreation() {
     }
   }
 
+  const isAdminLocked = (type: SectionType): boolean => {
+    const lock = adminLocks.find(l => l.page_name === type)
+    return lock?.is_locked === true
+  }
+
+  const isAutoLocked = (type: SectionType): boolean => {
+    const count = submissionCounts[type] || 0
+    const limit = getSubmissionLimit(type)
+    return count >= limit
+  }
+
+  const isSectionLocked = (type: SectionType): boolean => {
+    // Admin lock takes priority (admin can lock OR unlock)
+    const adminLock = adminLocks.find(l => l.page_name === type)
+    if (adminLock) {
+      return adminLock.is_locked
+    }
+    // Otherwise check auto-lock
+    return isAutoLocked(type)
+  }
+
   const isUnlocked = (type: SectionType) => {
-    // Asset inventory and trust checklist are always unlocked if user has trust access
     if (type === 'asset_inventory' || type === 'trust_checklist') return true
     return trustAccess?.unlocked_trusts?.includes(type) ?? false
   }
@@ -141,31 +191,43 @@ export default function TrustCreation() {
   const renderSectionCard = (type: SectionType) => {
     const info = SECTION_INFO[type]
     const unlocked = isUnlocked(type)
+    const locked = isSectionLocked(type)
     const submitted = isSubmitted(type)
+    const adminLockedExplicitly = isAdminLocked(type)
     const Icon = info.icon
+
+    const isDisabled = locked || (!unlocked && !submitted)
+
     return (
       <Card
         key={type}
         className={`cursor-pointer transition-all duration-200 ${
-          submitted
+          locked
+            ? "border-destructive/30 opacity-60 cursor-not-allowed"
+            : submitted && !locked
             ? "border-accent/50 opacity-75"
             : unlocked
             ? "hover:border-accent hover:shadow-lg hover:shadow-accent/10"
             : "opacity-50 cursor-not-allowed"
         }`}
-        onClick={() => !submitted && unlocked && setSelectedSection(type)}
+        onClick={() => !isDisabled && setSelectedSection(type)}
       >
         <CardHeader className="text-center pb-2">
           <div className="mx-auto mb-2 relative">
-            <Icon className={`h-10 w-10 ${submitted ? "text-accent" : unlocked ? "text-accent" : "text-muted-foreground"}`} />
-            {!unlocked && !submitted && <Lock className="h-4 w-4 absolute -top-1 -right-1 text-destructive" />}
-            {submitted && <ShieldCheck className="h-4 w-4 absolute -top-1 -right-1 text-accent" />}
+            <Icon className={`h-10 w-10 ${locked ? "text-destructive" : submitted ? "text-accent" : unlocked ? "text-accent" : "text-muted-foreground"}`} />
+            {locked && <Lock className="h-4 w-4 absolute -top-1 -right-1 text-destructive" />}
+            {!locked && !unlocked && !submitted && <Lock className="h-4 w-4 absolute -top-1 -right-1 text-destructive" />}
+            {submitted && !locked && <ShieldCheck className="h-4 w-4 absolute -top-1 -right-1 text-accent" />}
           </div>
           <CardTitle className="text-base">{info.label}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-xs text-muted-foreground text-center">{info.description}</p>
-          {submitted ? (
+          {locked ? (
+            <Badge variant="outline" className="w-full justify-center mt-3 border-destructive/50 text-destructive">
+              <Lock className="h-3 w-3 mr-1" /> {adminLockedExplicitly ? 'Admin Locked' : 'Auto-Locked'}
+            </Badge>
+          ) : submitted ? (
             <Badge variant="outline" className="w-full justify-center mt-3 border-accent/50 text-accent">
               <ShieldCheck className="h-3 w-3 mr-1" /> Submitted
             </Badge>
@@ -215,20 +277,21 @@ export default function TrustCreation() {
   // Selected section view
   if (selectedSection) {
     const info = SECTION_INFO[selectedSection]
-    const submitted = isSubmitted(selectedSection)
+    const locked = isSectionLocked(selectedSection)
 
-    if (submitted) {
+    if (locked) {
       return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-5xl mx-auto">
           <Button variant="ghost" onClick={() => setSelectedSection(null)} className="gap-2">
             <ArrowLeft className="h-4 w-4" /> Back to Trust Selection
           </Button>
-          <Card className="border-accent/30">
+          <Card className="border-destructive/30">
             <CardHeader className="text-center">
-              <ShieldCheck className="h-12 w-12 mx-auto text-accent mb-4" />
-              <CardTitle>Already Submitted</CardTitle>
+              <Lock className="h-12 w-12 mx-auto text-destructive mb-4" />
+              <CardTitle>Page Locked</CardTitle>
               <CardDescription>
-                You have already submitted your {info.label} form. Each form can only be submitted once.
+                This {info.label} page has been locked. {isAdminLocked(selectedSection) ? 'An administrator has locked this page.' : 'You have already submitted this form and it has been auto-locked.'}
+                {' '}Contact an administrator if you need to make changes.
               </CardDescription>
             </CardHeader>
           </Card>
