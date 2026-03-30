@@ -174,9 +174,11 @@ export function AdminAllUsersManagement() {
       if (error) throw error
 
       // Fetch subscription data and trust submission dates for all users
-      const [{ data: subscribersData }, { data: allTrustSubs }] = await Promise.all([
+      const [{ data: subscribersData }, { data: allTrustSubs }, { data: assetUploads }, { data: legacyUploads }] = await Promise.all([
         supabase.from('subscribers').select('user_id, subscription_tier, subscription_period, subscribed'),
         supabase.from('trust_submissions' as any).select('user_id, trust_type, submitted_at').order('submitted_at', { ascending: true }),
+        supabase.from('trust_asset_uploads' as any).select('user_id, created_at').order('created_at', { ascending: true }),
+        supabase.from('legacy_meeting_uploads' as any).select('user_id, created_at').order('created_at', { ascending: true }),
       ])
 
       // Build a map of user_id -> { trust_type -> earliest submitted_at }
@@ -187,6 +189,20 @@ export function AdminAllUsersManagement() {
           if (!trustSubMap[sub.user_id][sub.trust_type]) {
             trustSubMap[sub.user_id][sub.trust_type] = sub.submitted_at
           }
+        }
+      }
+
+      // Build maps for earliest upload dates
+      const proofOfTransferMap: Record<string, string> = {}
+      if (assetUploads) {
+        for (const u of assetUploads as any[]) {
+          if (!proofOfTransferMap[u.user_id]) proofOfTransferMap[u.user_id] = u.created_at
+        }
+      }
+      const legacyMeetingMap: Record<string, string> = {}
+      if (legacyUploads) {
+        for (const u of legacyUploads as any[]) {
+          if (!legacyMeetingMap[u.user_id]) legacyMeetingMap[u.user_id] = u.created_at
         }
       }
 
