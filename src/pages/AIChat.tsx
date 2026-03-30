@@ -791,7 +791,13 @@ export default function AIChat() {
       )}
 
       {/* Workspace Tutorial Video Dialog */}
-      <Dialog open={workspaceVideoOpen} onOpenChange={setWorkspaceVideoOpen}>
+      <Dialog open={workspaceVideoOpen} onOpenChange={(open) => {
+        setWorkspaceVideoOpen(open)
+        if (!open) {
+          const seenKey = `workspace_tutorial_seen_${user?.id || 'anon'}`
+          localStorage.setItem(seenKey, 'true')
+        }
+      }}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Workspace Tutorial</DialogTitle>
