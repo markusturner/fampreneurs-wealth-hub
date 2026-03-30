@@ -41,6 +41,11 @@ export function PricingPopup({ open, onOpenChange, programFilter }: PricingPopup
       const vimeoId = url.split("vimeo.com/")[1]?.split("?")[0]
       return `https://player.vimeo.com/video/${vimeoId}`
     }
+    // Tella.tv
+    if (url.includes("tella.tv")) {
+      const tellaMatch = url.match(/tella\.tv\/video\/([a-zA-Z0-9_-]+)/)
+      if (tellaMatch) return `https://www.tella.tv/video/${tellaMatch[1]}/embed`
+    }
     return url
   }
 
