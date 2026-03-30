@@ -88,7 +88,7 @@ const PERSONA_GREETINGS: Record<Persona, string> = {
 
 const PRESET_PROMPTS: Record<Persona, { label: string; prompt: string }[]> = {
   rachel: [
-    { label: '💬 I need help', prompt: 'I need help' },
+    { label: '💬 I need help', prompt: '__i_need_help__' },
   ],
   asset_protection: [
     { label: '🛡️ Setup an asset protection trust', prompt: 'How can I setup an asset protection trust?' },
@@ -271,6 +271,17 @@ export default function AIChat() {
   const sendMessage = async (text?: string) => {
     const messageText = text || input.trim()
     if (!messageText || isLoading) return
+
+    // Special "I need help" flow: show user message + canned Rachel reply, no AI call
+    if (messageText === '__i_need_help__') {
+      setMessages(prev => [
+        ...prev,
+        { id: Date.now().toString(), content: 'I need help', role: 'user', timestamp: new Date() },
+        { id: (Date.now() + 1).toString(), content: 'Of course! How can I help you today? Please describe what you need assistance with and I\'ll do my best to guide you.', role: 'assistant', timestamp: new Date() }
+      ])
+      setInput('')
+      return
+    }
     
     const attachmentNames = attachedFiles.map(f => f.name)
     const userMessage: Message = { 
