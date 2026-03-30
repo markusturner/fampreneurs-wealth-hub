@@ -12,7 +12,7 @@ import { AssetInventoryForm } from "@/components/trust/AssetInventoryForm"
 import { TrustChecklistForm } from "@/components/trust/TrustChecklistForm"
 import { TrustNameTranslator } from "@/components/trust/TrustNameTranslator"
 
-type SectionType = 'business' | 'ministry' | 'family' | 'asset_inventory' | 'trust_name_translator'
+type SectionType = 'business' | 'ministry' | 'family' | 'asset_inventory' | 'trust_name_translator' | 'trust_asset_uploads'
 
 interface TrustAccess {
   has_access: boolean
