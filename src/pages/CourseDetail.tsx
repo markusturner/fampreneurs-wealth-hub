@@ -116,6 +116,8 @@ export default function CourseDetail() {
 
   const [showAddModule, setShowAddModule] = useState(false)
   const [addingLessonModuleId, setAddingLessonModuleId] = useState<string | null>(null)
+  const [renamingModuleId, setRenamingModuleId] = useState<string | null>(null)
+  const [renameModuleTitle, setRenameModuleTitle] = useState('')
   const [showAddResource, setShowAddResource] = useState(false)
   const [showEditCourse, setShowEditCourse] = useState(false)
   const [editingResource, setEditingResource] = useState<Resource | null>(null)
