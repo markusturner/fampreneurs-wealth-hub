@@ -47,8 +47,8 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
 
   const handleTranslate = async () => {
-    if (!name.trim() || !trustType) {
-      toast({ title: "Missing fields", description: "Please enter a name and select a trust type.", variant: "destructive" })
+    if (!name.trim()) {
+      toast({ title: "Missing field", description: "Please enter a name.", variant: "destructive" })
       return
     }
 
