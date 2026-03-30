@@ -299,12 +299,31 @@ export default function AIChat() {
     const messageText = text || input.trim()
     if (!messageText || isLoading) return
 
-    // Special "I need help" flow: user message first, then Rachel reply, no AI call
-    if (messageText === '__i_need_help__') {
-      const userName = displayName || 'there'
+    // Special intro flows: user message first, then persona introduces itself
+    const introMap: Record<string, { userMsg: string; reply: string }> = {
+      '__intro_rachel__': {
+        userMsg: 'I need help',
+        reply: `Hey ${displayName || 'there'}! I'm Rachel, your TruHeirs Advisor. How can I help you today?`
+      },
+      '__intro_asset_protection__': {
+        userMsg: 'I need asset protection help',
+        reply: `Hey ${displayName || 'there'}! I'm your Asset Protection Specialist. I help with trust documents, asset shielding strategies, and wealth preservation. What assets would you like to protect today?`
+      },
+      '__intro_business_structure__': {
+        userMsg: 'I need help structuring my business',
+        reply: `Hey ${displayName || 'there'}! I'm your Business Structure Builder, powered by The F.L.I.P. Formula™. I help optimize your business entities for maximum tax savings and asset protection. What's your current business setup?`
+      },
+      '__intro_trust_writer__': {
+        userMsg: 'I need help with my trust',
+        reply: `Hey ${displayName || 'there'}! I'm your Trust Writer. I help draft trust clauses, provisions, and language for irrevocable trusts. What type of trust provision would you like to work on today?`
+      },
+    }
+
+    if (introMap[messageText]) {
+      const { userMsg, reply } = introMap[messageText]
       setMessages([
-        { id: Date.now().toString(), content: 'I need help', role: 'user', timestamp: new Date() },
-        { id: (Date.now() + 1).toString(), content: `Hey ${userName}! I'm Rachel, your TruHeirs Advisor. How can I help you today?`, role: 'assistant', timestamp: new Date() }
+        { id: Date.now().toString(), content: userMsg, role: 'user', timestamp: new Date() },
+        { id: (Date.now() + 1).toString(), content: reply, role: 'assistant', timestamp: new Date() }
       ])
       setInput('')
       return
