@@ -1204,11 +1204,10 @@ export function AdminAllUsersManagement() {
                     <TableHead>Program</TableHead>
                     <TableHead className="min-w-[180px]">Activation Points</TableHead>
                     <TableHead>Satisfaction</TableHead>
-                    <TableHead>First Win Date</TableHead>
+                    <TableHead className="min-w-[100px]">Name Selected</TableHead>
                     <TableHead className="min-w-[100px]">Family Trust</TableHead>
                     <TableHead className="min-w-[100px]">Ministry Trust</TableHead>
                     <TableHead className="min-w-[100px]">Business Trust</TableHead>
-                    <TableHead className="min-w-[100px]">Name Translator</TableHead>
                     <TableHead className="min-w-[100px]">Asset Inventory</TableHead>
                     <TableHead className="min-w-[160px]">Testimonials</TableHead>
                     <TableHead className="min-w-[120px]">Trust Access</TableHead>
@@ -1466,19 +1465,8 @@ export function AdminAllUsersManagement() {
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    {/* First Win Date */}
-                    <TableCell>
-                      <Input
-                        type="date"
-                        value={(user as any).first_win_date || ''}
-                        onChange={(e) => {
-                          supabase.from('profiles').update({ first_win_date: e.target.value || null } as any).eq('user_id', user.user_id).then(() => fetchUsers(true))
-                        }}
-                        className="h-7 w-32 text-xs"
-                      />
-                    </TableCell>
                     {/* Trust Submission Date Columns */}
-                    {['family', 'ministry', 'business', 'trust_name_translator', 'asset_inventory'].map(trustType => {
+                    {['trust_name_translator', 'family', 'ministry', 'business', 'asset_inventory'].map(trustType => {
                       const dateStr = (user as any).trust_sub_dates?.[trustType]
                       return (
                         <TableCell key={trustType}>
