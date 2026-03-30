@@ -467,9 +467,36 @@ export default function CourseDetail() {
 
             return (
               <Collapsible key={mod.id} open={openModules.has(mod.id)} onOpenChange={() => toggleModule(mod.id)}>
-                <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 text-xs font-semibold uppercase tracking-wider hover:bg-accent/40 transition-colors text-left">
+                {renamingModuleId === mod.id ? (
+                  <div className="flex items-center gap-1 px-4 py-2">
+                    <Input
+                      value={renameModuleTitle}
+                      onChange={e => setRenameModuleTitle(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleRenameModule(mod.id); if (e.key === 'Escape') setRenamingModuleId(null) }}
+                      autoFocus
+                      className="h-7 text-xs flex-1"
+                    />
+                    <Button size="sm" className="h-7 px-2 text-xs" style={{ backgroundColor: '#ffb500', color: '#290a52' }} onClick={() => handleRenameModule(mod.id)}>Save</Button>
+                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setRenamingModuleId(null)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                <CollapsibleTrigger className="flex items-center justify-between w-full px-4 py-3 text-xs font-semibold uppercase tracking-wider hover:bg-accent/40 transition-colors text-left group/mod">
                   <span style={{ color: '#290a52' }}>{mod.title}</span>
-                  <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform text-muted-foreground', openModules.has(mod.id) && 'rotate-180')} />
+                  <div className="flex items-center gap-1">
+                    {isAdminOrOwner && mod.id !== '__uncategorized' && (
+                      <button
+                        onClick={e => { e.stopPropagation(); setRenamingModuleId(mod.id); setRenameModuleTitle(mod.title) }}
+                        className="opacity-0 group-hover/mod:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
+                      >
+                        <Pencil className="h-3 w-3 text-muted-foreground" />
+                      </button>
+                    )}
+                    <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform text-muted-foreground', openModules.has(mod.id) && 'rotate-180')} />
+                  </div>
+                </CollapsibleTrigger>
+                )}
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   {mod.lessons.map((lesson, idx) => {
