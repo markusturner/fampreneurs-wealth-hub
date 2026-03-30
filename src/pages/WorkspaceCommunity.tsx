@@ -1348,6 +1348,9 @@ export default function WorkspaceCommunity() {
                                 <DropdownMenuItem onClick={() => {
                                   setEditingPostId(post.id);
                                   setEditingPostContent(post.content);
+                                  setEditingPostCategory(post.category || 'discussion');
+                                  const postDate = new Date(post.created_at);
+                                  setEditingPostDate(postDate.toISOString().split('T')[0]);
                                 }}>
                                   <Pencil className="h-3.5 w-3.5 mr-2" />
                                   Edit Post
