@@ -29,6 +29,14 @@ export function FamilyCalendar() {
     }
   }, [user])
 
+  const deleteEvent = (eventId: string) => {
+    const updated = events.filter(e => e.id !== eventId)
+    setEvents(updated)
+    if (user) {
+      localStorage.setItem(`family_calendar_${user.id}`, JSON.stringify(updated))
+    }
+  }
+
   const eventDates = events.map(e => new Date(e.date))
   const upcomingEvents = events
     .filter(e => new Date(e.date) >= new Date())
