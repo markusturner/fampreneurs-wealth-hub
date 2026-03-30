@@ -1197,7 +1197,7 @@ export default function WorkspaceCommunity() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-semibold text-sm">{post.author_name}</span>
-                            <span className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</span>
+                            <span className="text-xs text-muted-foreground">{formatPostDate(post.created_at)}</span>
                             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">{post.category}</Badge>
                           </div>
                           {editingPostId === post.id ? (
