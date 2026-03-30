@@ -174,9 +174,11 @@ export function AdminAllUsersManagement() {
       if (error) throw error
 
       // Fetch subscription data and trust submission dates for all users
-      const [{ data: subscribersData }, { data: allTrustSubs }] = await Promise.all([
+      const [{ data: subscribersData }, { data: allTrustSubs }, { data: assetUploads }, { data: legacyUploads }] = await Promise.all([
         supabase.from('subscribers').select('user_id, subscription_tier, subscription_period, subscribed'),
         supabase.from('trust_submissions' as any).select('user_id, trust_type, submitted_at').order('submitted_at', { ascending: true }),
+        supabase.from('trust_asset_uploads' as any).select('user_id, created_at').order('created_at', { ascending: true }),
+        supabase.from('legacy_meeting_uploads' as any).select('user_id, created_at').order('created_at', { ascending: true }),
       ])
 
       // Build a map of user_id -> { trust_type -> earliest submitted_at }
@@ -190,6 +192,20 @@ export function AdminAllUsersManagement() {
         }
       }
 
+      // Build maps for earliest upload dates
+      const proofOfTransferMap: Record<string, string> = {}
+      if (assetUploads) {
+        for (const u of assetUploads as any[]) {
+          if (!proofOfTransferMap[u.user_id]) proofOfTransferMap[u.user_id] = u.created_at
+        }
+      }
+      const legacyMeetingMap: Record<string, string> = {}
+      if (legacyUploads) {
+        for (const u of legacyUploads as any[]) {
+          if (!legacyMeetingMap[u.user_id]) legacyMeetingMap[u.user_id] = u.created_at
+        }
+      }
+
       // Merge subscription data with profiles
       const usersWithSubscriptions = (profilesData || []).map(profile => {
         const subscription = subscribersData?.find(sub => sub.user_id === profile.user_id)
@@ -200,6 +216,8 @@ export function AdminAllUsersManagement() {
           subscription_period: subscription?.subscription_period || null,
           subscribed: subscription?.subscribed === true,
           trust_sub_dates: trustSubMap[profile.user_id] || {},
+          proof_of_transfer_date: proofOfTransferMap[profile.user_id] || null,
+          legacy_meeting_date: legacyMeetingMap[profile.user_id] || null,
         }
       })
 
@@ -1208,6 +1226,8 @@ export function AdminAllUsersManagement() {
                     <TableHead className="min-w-[100px]">Family Trust</TableHead>
                     <TableHead className="min-w-[100px]">Ministry Trust</TableHead>
                     <TableHead className="min-w-[100px]">Business Trust</TableHead>
+                    <TableHead className="min-w-[100px]">Proof of Transfer</TableHead>
+                    <TableHead className="min-w-[100px]">Legacy Meeting</TableHead>
                     <TableHead className="min-w-[160px]">Testimonials</TableHead>
                     <TableHead className="min-w-[120px]">Trust Access</TableHead>
                     <TableHead>Forms</TableHead>
@@ -1436,6 +1456,22 @@ export function AdminAllUsersManagement() {
                         </TableCell>
                       )
                     })}
+                    {/* Proof of Transfer Date */}
+                    <TableCell>
+                      {(user as any).proof_of_transfer_date ? (
+                        <span className="text-xs text-muted-foreground">{new Date((user as any).proof_of_transfer_date).toLocaleDateString()}</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground/50">—</span>
+                      )}
+                    </TableCell>
+                    {/* Legacy Meeting Date */}
+                    <TableCell>
+                      {(user as any).legacy_meeting_date ? (
+                        <span className="text-xs text-muted-foreground">{new Date((user as any).legacy_meeting_date).toLocaleDateString()}</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground/50">—</span>
+                      )}
+                    </TableCell>
                     {/* Testimonials & Trust Pilot Reviews */}
                     <TableCell>
                       <Textarea
