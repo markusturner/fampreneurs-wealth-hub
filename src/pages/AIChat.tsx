@@ -133,6 +133,8 @@ export default function AIChat() {
   const displayName = profile?.display_name || profile?.first_name || ''
   const [workspaceVideoOpen, setWorkspaceVideoOpen] = useState(false)
   const [workspaceVideoUrl, setWorkspaceVideoUrl] = useState('')
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
+  const [savingSettings, setSavingSettings] = useState(false)
 
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -149,6 +151,31 @@ export default function AIChat() {
       loadProjects()
     }
   }, [user?.id])
+
+  // Load persona settings from DB
+  useEffect(() => {
+    const loadSettings = async () => {
+      const { data } = await supabase.from('ai_persona_settings').select('persona, instructions')
+      if (data) {
+        const loaded = { ...DEFAULT_PERSONA_SETTINGS }
+        for (const row of data as any[]) {
+          if (loaded[row.persona as Persona]) {
+            loaded[row.persona as Persona].instructions = row.instructions || ''
+          }
+        }
+        // Load files from storage for each persona
+        for (const persona of ['rachel', 'asset_protection', 'business_structure', 'trust_writer'] as Persona[]) {
+          const { data: files } = await supabase.storage.from('ai-persona-documents').list(persona)
+          if (files && files.length > 0) {
+            loaded[persona].files = files.map(f => ({ name: f.name, type: f.metadata?.mimetype || 'application/octet-stream' }))
+          }
+        }
+        setPersonaSettings(loaded)
+        setSettingsLoaded(true)
+      }
+    }
+    loadSettings()
+  }, [])
 
   // Load workspace video URL and auto-show for first-time visitors
   useEffect(() => {
@@ -272,10 +299,9 @@ export default function AIChat() {
     const messageText = text || input.trim()
     if (!messageText || isLoading) return
 
-    // Special "I need help" flow: show user message + canned Rachel reply, no AI call
+    // Special "I need help" flow: user message first, then Rachel reply, no AI call
     if (messageText === '__i_need_help__') {
-      setMessages(prev => [
-        ...prev,
+      setMessages([
         { id: Date.now().toString(), content: 'I need help', role: 'user', timestamp: new Date() },
         { id: (Date.now() + 1).toString(), content: 'Of course! How can I help you today? Please describe what you need assistance with and I\'ll do my best to guide you.', role: 'assistant', timestamp: new Date() }
       ])
@@ -352,18 +378,30 @@ export default function AIChat() {
     if (e.target.files) setAttachedFiles(prev => [...prev, ...Array.from(e.target.files!)])
   }
 
-  const handleSettingsFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSettingsFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files).map(f => ({ name: f.name, type: f.type }))
+      const persona = settingsTab as Persona
+      const filesToUpload = Array.from(e.target.files)
+      for (const file of filesToUpload) {
+        const path = `${persona}/${file.name}`
+        const { error } = await supabase.storage.from('ai-persona-documents').upload(path, file, { upsert: true })
+        if (error) {
+          toast({ title: 'Upload failed', description: error.message, variant: 'destructive' })
+          continue
+        }
+      }
+      const newFiles = filesToUpload.map(f => ({ name: f.name, type: f.type }))
       setPersonaSettings(prev => ({
         ...prev,
-        [settingsTab]: { ...prev[settingsTab as Persona], files: [...prev[settingsTab as Persona].files, ...newFiles] }
+        [persona]: { ...prev[persona], files: [...prev[persona].files, ...newFiles] }
       }))
-      toast({ title: 'Files added', description: `${e.target.files.length} file(s) added` })
+      toast({ title: 'Files uploaded', description: `${filesToUpload.length} file(s) uploaded and saved` })
     }
   }
 
-  const removeSettingsFile = (persona: Persona, index: number) => {
+  const removeSettingsFile = async (persona: Persona, index: number) => {
+    const file = personaSettings[persona].files[index]
+    await supabase.storage.from('ai-persona-documents').remove([`${persona}/${file.name}`])
     setPersonaSettings(prev => ({
       ...prev,
       [persona]: { ...prev[persona], files: prev[persona].files.filter((_, i) => i !== index) }
@@ -372,6 +410,23 @@ export default function AIChat() {
 
   const updatePersonaInstructions = (persona: Persona, instructions: string) => {
     setPersonaSettings(prev => ({ ...prev, [persona]: { ...prev[persona], instructions } }))
+  }
+
+  const saveAllSettings = async () => {
+    setSavingSettings(true)
+    try {
+      for (const persona of ['rachel', 'asset_protection', 'business_structure', 'trust_writer'] as Persona[]) {
+        await supabase.from('ai_persona_settings')
+          .update({ instructions: personaSettings[persona].instructions, updated_by: user?.id, updated_at: new Date().toISOString() })
+          .eq('persona', persona)
+      }
+      toast({ title: 'Settings saved' })
+      setSettingsOpen(false)
+    } catch (err) {
+      toast({ title: 'Error saving settings', variant: 'destructive' })
+    } finally {
+      setSavingSettings(false)
+    }
   }
 
   const toggleVoiceInput = () => {
@@ -795,7 +850,7 @@ export default function AIChat() {
                   ))}
                 </Tabs>
               </div>
-              <Button className="w-full h-8 text-xs transition-colors" style={{ backgroundColor: '#ffb500', color: '#290a52' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#2eb2ff'; e.currentTarget.style.color = '#290a52'; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#ffb500'; e.currentTarget.style.color = '#290a52'; }} onClick={() => { setSettingsOpen(false); toast({ title: 'Settings saved' }) }}>Save Settings</Button>
+              <Button className="w-full h-8 text-xs transition-colors" style={{ backgroundColor: '#ffb500', color: '#290a52' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#2eb2ff'; e.currentTarget.style.color = '#290a52'; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#ffb500'; e.currentTarget.style.color = '#290a52'; }} onClick={saveAllSettings} disabled={savingSettings}>{savingSettings ? 'Saving...' : 'Save Settings'}</Button>
             </div>
           </DialogContent>
         </Dialog>

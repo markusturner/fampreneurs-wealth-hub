@@ -11,7 +11,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const PERSONA_PROMPTS: Record<string, string> = {
+const BASE_PERSONA_PROMPTS: Record<string, string> = {
   rachel: `You are Rachel, the AI Family Office Director for TruHeirs - an AI-first family office platform revolutionizing wealth management.
 
 ## Your Identity & Role:
@@ -49,13 +49,6 @@ You are the primary AI assistant helping families build generational wealth thro
 - Fraudulent transfer laws and compliance
 - Trust document review and recommendations
 
-## Your Approach:
-- Walk users through asset protection step by step
-- Explain trust types with real-world examples
-- Help users understand what assets need protection and why
-- Recommend specific trust structures based on their situation
-- Always emphasize the importance of working with a licensed attorney for final documents
-
 ## Communication Style:
 - Professional and thorough
 - Use clear examples to explain complex legal concepts
@@ -73,19 +66,6 @@ You are the primary AI assistant helping families build generational wealth thro
 - Business succession planning
 - State-specific entity formation guidance
 - Holding company and subsidiary structures
-
-## The F.L.I.P. Formula™ Framework:
-- **F**inancial Liberation: Free cash flow through smart structuring
-- **L**everage: Use entities to multiply tax benefits
-- **I**nvestment Power: Channel savings into wealth-building assets
-- **P**rotection: Shield business and personal assets
-
-## Your Approach:
-- Analyze current business structure for optimization opportunities
-- Recommend entity types based on revenue, industry, and goals
-- Show tax savings projections with restructuring
-- Guide family employment strategies (hiring spouse, children)
-- Create actionable restructuring roadmaps
 
 ## Communication Style:
 - Strategic and numbers-focused
@@ -105,26 +85,55 @@ You are the primary AI assistant helping families build generational wealth thro
 - Incentive trust clauses (education, career, values-based)
 - Trust protector provisions
 
-## Your Approach:
-- Help users understand each clause's purpose and impact
-- Draft sample clause language that can be reviewed by their attorney
-- Explain the legal implications of different provisions
-- Provide multiple options for distribution structures
-- Include family values and legacy intentions in trust language
-
-## Types of Clauses You Draft:
-1. **Distribution Clauses**: HEMS standard, discretionary, mandatory
-2. **Incentive Provisions**: Education completion, employment, community service
-3. **Protection Clauses**: Spendthrift, divorce protection, substance abuse
-4. **Administrative Provisions**: Trustee succession, investment authority
-5. **Special Provisions**: Special needs, charitable giving, family business
-
 ## Communication Style:
 - Precise legal-style language with plain English explanations
 - Show clause drafts in quoted blocks for clarity
 - Always note: "These sample clauses should be reviewed and customized by your estate planning attorney before inclusion in any legal document."
 - Ask about family values, goals, and concerns to personalize clauses`
 };
+
+async function buildSystemPrompt(supabase: any, persona: string): Promise<string> {
+  let systemPrompt = BASE_PERSONA_PROMPTS[persona] || BASE_PERSONA_PROMPTS.rachel;
+
+  // Fetch custom instructions from DB
+  const { data: settings } = await supabase
+    .from('ai_persona_settings')
+    .select('instructions')
+    .eq('persona', persona)
+    .single();
+
+  if (settings?.instructions) {
+    systemPrompt += `\n\n## Custom Instructions (from project settings):\n${settings.instructions}`;
+  }
+
+  // Fetch uploaded documents content from storage
+  const { data: files } = await supabase.storage.from('ai-persona-documents').list(persona);
+  
+  if (files && files.length > 0) {
+    const docContents: string[] = [];
+    for (const file of files) {
+      // Only read text-based files
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      const textExts = ['txt', 'md', 'csv', 'json', 'xml', 'html', 'htm', 'doc', 'rtf'];
+      if (textExts.includes(ext || '')) {
+        const { data: fileData } = await supabase.storage
+          .from('ai-persona-documents')
+          .download(`${persona}/${file.name}`);
+        if (fileData) {
+          const text = await fileData.text();
+          if (text.length > 0) {
+            docContents.push(`### Document: ${file.name}\n${text.substring(0, 10000)}`);
+          }
+        }
+      }
+    }
+    if (docContents.length > 0) {
+      systemPrompt += `\n\n## Reference Documents (uploaded by admin):\n${docContents.join('\n\n')}`;
+    }
+  }
+
+  return systemPrompt;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -172,10 +181,13 @@ serve(async (req) => {
     }
     
     const { message, persona, instructions } = validation.data;
-    let systemPrompt = PERSONA_PROMPTS[persona] || PERSONA_PROMPTS.rachel;
     
+    // Build system prompt from DB settings + uploaded documents
+    let systemPrompt = await buildSystemPrompt(supabase, persona);
+    
+    // Also append any client-side instructions (backward compat)
     if (instructions) {
-      systemPrompt += `\n\n## Additional Custom Instructions:\n${instructions}`;
+      systemPrompt += `\n\n## Additional Instructions:\n${instructions}`;
     }
 
     // Fetch chat history (last 20 messages)
@@ -211,14 +223,12 @@ serve(async (req) => {
       console.error('AI gateway error:', response.status, errorData);
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please wait a moment and try again.' }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
       if (response.status === 402) {
         return new Response(JSON.stringify({ error: 'AI credits exhausted. Please add funds.' }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }
       throw new Error(`AI gateway error: ${response.status}`);

@@ -120,6 +120,33 @@ export type Database = {
           },
         ]
       }
+      ai_persona_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          instructions: string | null
+          persona: string
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          instructions?: string | null
+          persona: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          instructions?: string | null
+          persona?: string
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
           content: string
