@@ -2476,17 +2476,34 @@ export function AdminAllUsersManagement() {
                           )}
                         </div>
                       )}
-                      <Button
-                        size="sm"
-                        className="gap-2 mt-2"
-                        style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2eb2ff'; e.currentTarget.style.color = '#ffffff' }}
-                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffb500'; e.currentTarget.style.color = '#290a52' }}
-                        onClick={() => handleDownloadAgreement(agreement)}
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                        Download Signed Agreement
-                      </Button>
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        <Button
+                          size="sm"
+                          className="gap-2"
+                          style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2eb2ff'; e.currentTarget.style.color = '#ffffff' }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffb500'; e.currentTarget.style.color = '#290a52' }}
+                          onClick={() => handleDownloadAgreement(agreement)}
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                          Download
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="gap-2"
+                          style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+                          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#2eb2ff'; e.currentTarget.style.color = '#ffffff' }}
+                          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#ffb500'; e.currentTarget.style.color = '#290a52' }}
+                          onClick={() => handleResendAgreementEmail(agreement)}
+                          disabled={resendingAgreementId === agreement.id}
+                        >
+                          {resendingAgreementId === agreement.id ? (
+                            <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Sending...</>
+                          ) : (
+                            <><Mail className="h-3.5 w-3.5" /> Re-send Email</>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </AccordionContent>
