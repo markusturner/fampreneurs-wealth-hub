@@ -944,8 +944,12 @@ export default function WorkspaceCommunity() {
                     <Textarea
                       placeholder="Write something..."
                       value={newPost}
-                      onChange={(e) => setNewPost(e.target.value)}
-                      className="min-h-[44px] max-h-[120px] resize-none border-0 bg-muted/50 rounded-lg px-4 py-2.5 focus-visible:ring-1 text-sm"
+                      onChange={(e) => {
+                        setNewPost(e.target.value);
+                        e.target.style.height = 'auto';
+                        e.target.style.height = e.target.scrollHeight + 'px';
+                      }}
+                      className="min-h-[44px] resize-none border-0 bg-muted/50 rounded-lg px-4 py-2.5 focus-visible:ring-1 text-sm overflow-hidden"
                       rows={1}
                     />
                     {/* Preview attachments */}
