@@ -561,6 +561,7 @@ export default function CourseDetail() {
 
       {/* Module / Lesson list */}
       <ScrollArea className="flex-1">
+        <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragStart={(e) => setActiveDragLessonId(e.active.id as string)} onDragEnd={handleLessonDragEnd}>
         <div className="py-2">
           {modules.map((mod) => {
             let lessonCounter = 0
@@ -600,55 +601,31 @@ export default function CourseDetail() {
                 </CollapsibleTrigger>
                 )}
                 <CollapsibleContent>
-                  {mod.lessons.map((lesson, idx) => {
-                    const globalIdx = lessonCounter + idx + 1
-                    const isSelected = selectedLesson?.id === lesson.id
-                    return (
-                      <button
-                        key={lesson.id}
-                        onClick={() => handleSelectLesson(lesson)}
-                        style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', width: '100%', padding: '10px 16px', textAlign: 'left' as const }}
-                        className={cn(
-                          'transition-colors group border-l-2',
-                          isSelected
-                            ? 'bg-secondary/10 border-secondary'
-                            : 'hover:bg-accent/40 border-transparent'
-                        )}
-                      >
-                        {/* Number badge or check */}
-                        <div style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          width: '20px', height: '20px', borderRadius: '50%',
-                          fontSize: '10px', fontWeight: 'bold', flexShrink: 0, marginTop: '2px',
-                          backgroundColor: lesson.completed ? '#FFB500' : isSelected ? '#290a52' : '#e5e7eb',
-                          color: lesson.completed ? '#000' : isSelected ? '#fff' : '#6b7280',
-                        }}>
-                          {lesson.completed
-                            ? <CheckCircle2 className="h-3 w-3" />
-                            : <span>{globalIdx}</span>
-                          }
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <span style={{ display: 'block', color: '#290a52', fontSize: '12px', fontWeight: 500, lineHeight: '1.4', wordBreak: 'break-word' }}>
-                            {lesson.title}
-                          </span>
-                          {lesson.duration_seconds && (
-                            <p className="text-[10px] text-muted-foreground mt-0.5">
-                              {Math.floor(lesson.duration_seconds / 60)} min
-                            </p>
-                          )}
-                        </div>
-                        {isAdminOrOwner && (
-                          <button
-                            onClick={e => { e.stopPropagation(); handleSelectLesson(lesson); setTimeout(startEditingLesson, 50) }}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
-                          >
-                            <Pencil className="h-3 w-3 text-muted-foreground" />
-                          </button>
-                        )}
-                      </button>
-                    )
-                  })}
+                  <SortableContext items={mod.lessons.map(l => l.id)} strategy={verticalListSortingStrategy}>
+                    {mod.lessons.map((lesson, idx) => {
+                      const globalIdx = lessonCounter + idx + 1
+                      return (
+                        <SortableLessonItem
+                          key={lesson.id}
+                          lesson={lesson}
+                          globalIdx={globalIdx}
+                          isSelected={selectedLesson?.id === lesson.id}
+                          isAdminOrOwner={isAdminOrOwner}
+                          onSelect={handleSelectLesson}
+                          onEdit={(l) => { handleSelectLesson(l); setTimeout(startEditingLesson, 50) }}
+                        />
+                      )
+                    })}
+                  </SortableContext>
+                  {/* Empty module drop zone */}
+                  {mod.lessons.length === 0 && isAdminOrOwner && (
+                    <div
+                      data-droppable-module={mod.id}
+                      className="px-4 py-3 text-[10px] text-muted-foreground text-center italic border border-dashed border-border/50 mx-3 my-1 rounded"
+                    >
+                      Drop lessons here
+                    </div>
+                  )}
                   {isAdminOrOwner && mod.id !== '__uncategorized' && (
                     <button
                       onClick={() => handleAddLessonInline(mod.id)}
@@ -658,6 +635,18 @@ export default function CourseDetail() {
                       <span className="text-base leading-none">+</span>
                       {addingLessonModuleId === mod.id ? 'Adding...' : 'Add lesson'}
                     </button>
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
+            )
+          })}
+          {isAdminOrOwner && (
+            <button
+              onClick={() => setShowAddModule(true)}
+              className="px-4 py-3 text-xs text-muted-foreground hover:text-foreground w-full text-left flex items-center gap-1"
+            >
+              <span className="text-base leading-none">+</span> Add module
+            </button>
                   )}
                 </CollapsibleContent>
               </Collapsible>
