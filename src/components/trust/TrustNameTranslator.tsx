@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
@@ -36,25 +36,19 @@ const LANGUAGE_LABELS: Record<keyof Translations, { label: string; flag: string 
   arabic: { label: "Arabic", flag: "🇸🇦" },
 }
 
-const TRUST_TYPES = [
-  { value: "family", label: "Family Trust" },
-  { value: "business", label: "Business Trust" },
-  { value: "ministry", label: "Ministry Trust" },
-]
 
 export function TrustNameTranslator({ onSubmitted }: Props) {
   const { user } = useAuth()
   const { toast } = useToast()
   const [name, setName] = useState("")
-  const [trustType, setTrustType] = useState("")
   const [translations, setTranslations] = useState<Translations | null>(null)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
 
   const handleTranslate = async () => {
-    if (!name.trim() || !trustType) {
-      toast({ title: "Missing fields", description: "Please enter a name and select a trust type.", variant: "destructive" })
+    if (!name.trim()) {
+      toast({ title: "Missing field", description: "Please enter a name.", variant: "destructive" })
       return
     }
 
@@ -62,7 +56,7 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
     setTranslations(null)
     try {
       const { data, error } = await supabase.functions.invoke("translate-trust-name", {
-        body: { name: name.trim(), trustType },
+        body: { name: name.trim() },
       })
       if (error) throw error
       if (data?.error) throw new Error(data.error)
@@ -87,7 +81,6 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
           submitter_name: name.trim(),
           form_data: {
             original_name: name.trim(),
-            trust_type: trustType,
             translations,
           },
         } as any)
@@ -111,36 +104,19 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
   return (
     <div className="space-y-6">
       {/* Input Section */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="trust-name">Your Name (English)</Label>
-          <Input
-            id="trust-name"
-            placeholder="e.g. John Smith"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Trust Type</Label>
-          <Select value={trustType} onValueChange={setTrustType}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select trust type" />
-            </SelectTrigger>
-            <SelectContent>
-              {TRUST_TYPES.map((t) => (
-                <SelectItem key={t.value} value={t.value}>
-                  {t.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="space-y-2 max-w-md">
+        <Label htmlFor="trust-name">Your Name (English)</Label>
+        <Input
+          id="trust-name"
+          placeholder="e.g. John Smith"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
       </div>
 
       <Button
         onClick={handleTranslate}
-        disabled={loading || !name.trim() || !trustType}
+        disabled={loading || !name.trim()}
         className="gap-2"
         style={{ backgroundColor: "#ffb500", color: "#290a52" }}
       >
