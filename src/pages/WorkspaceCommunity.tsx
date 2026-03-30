@@ -1351,7 +1351,7 @@ export default function WorkspaceCommunity() {
                                           </button>
                                         )}
                                       </div>
-                                      {comment.content && <p className="text-sm mt-0.5">{comment.content}</p>}
+                                      {comment.content && <p className="text-sm mt-0.5">{renderContentWithMentions(comment.content)}</p>}
                                       {comment.image_url && (
                                         <img src={comment.image_url} alt="" className="rounded mt-2 max-h-40 object-cover" />
                                       )}
