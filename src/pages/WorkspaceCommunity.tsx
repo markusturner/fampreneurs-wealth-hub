@@ -582,6 +582,9 @@ export default function WorkspaceCommunity() {
 
       if (error) throw error
 
+      // Notify mentioned users
+      if (text) notifyMentionedUsers(text, postId, 'comment')
+
       setCommentText(prev => ({ ...prev, [postId]: '' }))
       setCommentImageFiles(prev => ({ ...prev, [postId]: null }))
       setCommentAudioFiles(prev => ({ ...prev, [postId]: null }))
