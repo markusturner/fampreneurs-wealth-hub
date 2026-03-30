@@ -299,10 +299,9 @@ export default function AIChat() {
     const messageText = text || input.trim()
     if (!messageText || isLoading) return
 
-    // Special "I need help" flow: show user message + canned Rachel reply, no AI call
+    // Special "I need help" flow: user message first, then Rachel reply, no AI call
     if (messageText === '__i_need_help__') {
-      setMessages(prev => [
-        ...prev,
+      setMessages([
         { id: Date.now().toString(), content: 'I need help', role: 'user', timestamp: new Date() },
         { id: (Date.now() + 1).toString(), content: 'Of course! How can I help you today? Please describe what you need assistance with and I\'ll do my best to guide you.', role: 'assistant', timestamp: new Date() }
       ])
