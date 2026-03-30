@@ -301,9 +301,10 @@ export default function AIChat() {
 
     // Special "I need help" flow: user message first, then Rachel reply, no AI call
     if (messageText === '__i_need_help__') {
+      const userName = displayName || 'there'
       setMessages([
         { id: Date.now().toString(), content: 'I need help', role: 'user', timestamp: new Date() },
-        { id: (Date.now() + 1).toString(), content: 'Of course! How can I help you today? Please describe what you need assistance with and I\'ll do my best to guide you.', role: 'assistant', timestamp: new Date() }
+        { id: (Date.now() + 1).toString(), content: `Hey ${userName}! I'm Rachel, your TruHeirs Advisor. How can I help you today?`, role: 'assistant', timestamp: new Date() }
       ])
       setInput('')
       return
