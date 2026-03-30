@@ -139,6 +139,11 @@ export default function CourseDetail() {
   const [showAddResource, setShowAddResource] = useState(false)
   const [showEditCourse, setShowEditCourse] = useState(false)
   const [editingResource, setEditingResource] = useState<Resource | null>(null)
+  const [activeDragLessonId, setActiveDragLessonId] = useState<string | null>(null)
+
+  const dndSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  )
 
   // Inline editing state
   const [isEditingLesson, setIsEditingLesson] = useState(false)
