@@ -2237,6 +2237,58 @@ export function AdminAllUsersManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Trust Access Dialog */}
+      <Dialog open={!!trustAccessUserId} onOpenChange={(open) => !open && setTrustAccessUserId(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5" />
+              Trust Access Management
+            </DialogTitle>
+            <DialogDescription>
+              Lock or unlock trust creation pages for {users.find(u => u.user_id === trustAccessUserId)?.display_name || 'this user'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            {TRUST_PAGES.map(page => {
+              const lock = trustAccessLocks.find((l: any) => l.page_name === page.name)
+              const isLocked = lock?.is_locked === true
+              const submissions = trustSubmissionDates.filter((s: any) => s.trust_type === page.name)
+              return (
+                <div key={page.name} className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      {isLocked ? <Lock className="h-3.5 w-3.5 text-destructive" /> : <Unlock className="h-3.5 w-3.5 text-green-600" />}
+                      <span className="text-sm font-medium">{page.label}</span>
+                    </div>
+                    {submissions.length > 0 ? (
+                      <div className="text-xs text-muted-foreground ml-5">
+                        {submissions.map((s: any, i: number) => (
+                          <span key={i}>
+                            Submitted: {new Date(s.submitted_at).toLocaleDateString()}
+                            {i < submissions.length - 1 && ', '}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground ml-5">Not submitted</span>
+                    )}
+                  </div>
+                  <Switch
+                    checked={isLocked}
+                    onCheckedChange={(checked) => trustAccessUserId && handleToggleTrustLock(trustAccessUserId, page.name, checked)}
+                    disabled={savingTrustAccess}
+                  />
+                </div>
+              )
+            })}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setTrustAccessUserId(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
