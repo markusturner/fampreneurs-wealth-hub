@@ -765,6 +765,36 @@ export function AdminAllUsersManagement() {
     }
   }
 
+  const handleResetTrustPage = async (userId: string, pageName: string) => {
+    setSavingTrustAccess(true)
+    try {
+      // Delete submissions for this trust type
+      await supabase
+        .from('trust_submissions' as any)
+        .delete()
+        .eq('user_id', userId)
+        .eq('trust_type', pageName)
+      // Also remove admin lock override if any
+      await supabase
+        .from('trust_page_locks' as any)
+        .delete()
+        .eq('user_id', userId)
+        .eq('page_name', pageName)
+      // Refresh both
+      const [locksRes, subsRes] = await Promise.all([
+        supabase.from('trust_page_locks' as any).select('page_name, is_locked').eq('user_id', userId),
+        supabase.from('trust_submissions' as any).select('trust_type, submitted_at').eq('user_id', userId).order('submitted_at', { ascending: false }),
+      ])
+      setTrustAccessLocks((locksRes.data as any[]) || [])
+      setTrustSubmissionDates((subsRes.data as any[]) || [])
+      toast({ title: 'Reset Complete', description: `${pageName.replace(/_/g, ' ')} has been reset for this user.` })
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' })
+    } finally {
+      setSavingTrustAccess(false)
+    }
+  }
+
   const syncStripeSubscriptions = async () => {
     setSyncingStripe(true)
     try {
@@ -2282,11 +2312,24 @@ export function AdminAllUsersManagement() {
                     )}
                     <span className="text-xs text-muted-foreground ml-5 italic">{lockSource}</span>
                   </div>
-                  <Switch
-                    checked={isEffectivelyLocked}
-                    onCheckedChange={(checked) => trustAccessUserId && handleToggleTrustLock(trustAccessUserId, page.name, checked)}
-                    disabled={savingTrustAccess}
-                  />
+                  <div className="flex items-center gap-2">
+                    {hasSubmission && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => trustAccessUserId && handleResetTrustPage(trustAccessUserId, page.name)}
+                        disabled={savingTrustAccess}
+                        className="text-xs h-7 px-2 border-destructive/50 text-destructive hover:bg-destructive hover:text-white"
+                      >
+                        Reset
+                      </Button>
+                    )}
+                    <Switch
+                      checked={isEffectivelyLocked}
+                      onCheckedChange={(checked) => trustAccessUserId && handleToggleTrustLock(trustAccessUserId, page.name, checked)}
+                      disabled={savingTrustAccess}
+                    />
+                  </div>
                 </div>
               )
             })}
