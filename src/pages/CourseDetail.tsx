@@ -146,6 +146,18 @@ export default function CourseDetail() {
     setIsEditingLesson(true)
   }
 
+  const handleRenameModule = async (moduleId: string) => {
+    if (!renameModuleTitle.trim()) { setRenamingModuleId(null); return }
+    const { error } = await supabase.from('course_modules').update({ title: renameModuleTitle.trim() } as any).eq('id', moduleId)
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to rename module', variant: 'destructive' })
+    } else {
+      toast({ title: 'Module renamed' })
+      await fetchData()
+    }
+    setRenamingModuleId(null)
+  }
+
   const cancelEditingLesson = () => {
     setIsEditingLesson(false)
   }
