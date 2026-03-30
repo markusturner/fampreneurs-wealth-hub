@@ -50,11 +50,7 @@ const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2;
     icon: Package,
     description: "Organize your financial information for transferring assets into your trust.",
   },
-  trust_checklist: {
-    label: "Trust Checklist",
-    icon: ClipboardList,
-    description: "Checklist for establishing a trust — grantor, trustee, beneficiaries, and more.",
-  },
+}
   trust_name_translator: {
     label: "Trust Name Translator",
     icon: FileText,
