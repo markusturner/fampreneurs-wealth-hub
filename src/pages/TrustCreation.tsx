@@ -127,7 +127,7 @@ export default function TrustCreation() {
       .select('page_name, is_locked')
       .eq('user_id', user.id)
     if (data) {
-      setAdminLocks(data as PageLock[])
+      setAdminLocks((data as any[]).map((d: any) => ({ page_name: d.page_name, is_locked: d.is_locked })))
     }
   }
 
