@@ -17,7 +17,7 @@ import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { 
   Image, Video, ThumbsUp, MessageCircle, Send, 
   MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X,
-  Mic, MicOff, Lock, Calendar, CreditCard, Play
+  Mic, MicOff, Lock, Calendar, CreditCard, Play, Pencil, Check
 } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import {
@@ -156,6 +156,10 @@ export default function WorkspaceCommunity() {
   const [useCustomDateTime, setUseCustomDateTime] = useState(false)
   const [customDate, setCustomDate] = useState('')
   const [customTime, setCustomTime] = useState('')
+
+  // Edit post state
+  const [editingPostId, setEditingPostId] = useState<string | null>(null)
+  const [editingPostContent, setEditingPostContent] = useState('')
 
   // Comments state
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
@@ -1116,7 +1120,62 @@ export default function WorkspaceCommunity() {
                             <span className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</span>
                             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">{post.category}</Badge>
                           </div>
-                          <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed">{post.content}</p>
+                          {editingPostId === post.id ? (
+                            <div className="mt-2 space-y-2">
+                              <Textarea
+                                value={editingPostContent}
+                                onChange={(e) => {
+                                  setEditingPostContent(e.target.value);
+                                  e.target.style.height = 'auto';
+                                  if (e.target.value) {
+                                    e.target.style.height = e.target.scrollHeight + 'px';
+                                  } else {
+                                    e.target.style.height = '';
+                                  }
+                                }}
+                                className="min-h-[44px] resize-none bg-muted/50 rounded-lg px-3 py-2 text-sm overflow-hidden focus-visible:ring-1"
+                                rows={1}
+                                ref={(el) => {
+                                  if (el) {
+                                    el.style.height = 'auto';
+                                    el.style.height = el.scrollHeight + 'px';
+                                  }
+                                }}
+                              />
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  className="h-7 gap-1 text-xs"
+                                  onClick={async () => {
+                                    if (!editingPostContent.trim()) return;
+                                    const { error } = await supabase
+                                      .from('community_posts')
+                                      .update({ content: editingPostContent.trim() })
+                                      .eq('id', post.id);
+                                    if (error) {
+                                      toast({ title: 'Error', description: 'Failed to update post', variant: 'destructive' });
+                                    } else {
+                                      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, content: editingPostContent.trim() } : p));
+                                      setEditingPostId(null);
+                                      toast({ title: 'Post updated' });
+                                    }
+                                  }}
+                                >
+                                  <Check className="h-3 w-3" /> Save
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 text-xs"
+                                  onClick={() => setEditingPostId(null)}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed">{post.content}</p>
+                          )}
                           
                           {post.image_url && (
                             <img src={post.image_url} alt="" className="rounded-lg mt-3 max-h-80 object-cover w-full" />
@@ -1280,6 +1339,15 @@ export default function WorkspaceCommunity() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              {(post.user_id === user?.id || isAdmin || isOwner) && (
+                                <DropdownMenuItem onClick={() => {
+                                  setEditingPostId(post.id);
+                                  setEditingPostContent(post.content);
+                                }}>
+                                  <Pencil className="h-3.5 w-3.5 mr-2" />
+                                  Edit Post
+                                </DropdownMenuItem>
+                              )}
                               <DropdownMenuItem className="text-destructive" onClick={() => handleDeletePost(post.id)}>
                                 Delete Post
                               </DropdownMenuItem>
