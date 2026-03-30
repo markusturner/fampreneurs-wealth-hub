@@ -152,6 +152,31 @@ export default function AIChat() {
     }
   }, [user?.id])
 
+  // Load persona settings from DB
+  useEffect(() => {
+    const loadSettings = async () => {
+      const { data } = await supabase.from('ai_persona_settings').select('persona, instructions')
+      if (data) {
+        const loaded = { ...DEFAULT_PERSONA_SETTINGS }
+        for (const row of data as any[]) {
+          if (loaded[row.persona as Persona]) {
+            loaded[row.persona as Persona].instructions = row.instructions || ''
+          }
+        }
+        // Load files from storage for each persona
+        for (const persona of ['rachel', 'asset_protection', 'business_structure', 'trust_writer'] as Persona[]) {
+          const { data: files } = await supabase.storage.from('ai-persona-documents').list(persona)
+          if (files && files.length > 0) {
+            loaded[persona].files = files.map(f => ({ name: f.name, type: f.metadata?.mimetype || 'application/octet-stream' }))
+          }
+        }
+        setPersonaSettings(loaded)
+        setSettingsLoaded(true)
+      }
+    }
+    loadSettings()
+  }, [])
+
   // Load workspace video URL and auto-show for first-time visitors
   useEffect(() => {
     supabase.from('app_settings').select('workspace_video_url').single().then(({ data }) => {
