@@ -458,8 +458,10 @@ export default function ProgramAgreement() {
   const [hasDrawn, setHasDrawn] = useState(false)
   const [useTypedSignature, setUseTypedSignature] = useState(true)
   const allowPreviewAccess = typeof window !== 'undefined' && (
-    window.location.hostname.includes('lovableproject.com') ||
-    window.location.hostname.includes('lovable.app') ||
+    window.location.hostname.startsWith('id-preview--') ||
+    window.location.hostname.startsWith('preview--') ||
+    window.location.hostname.endsWith('.lovableproject.com') ||
+    window.location.hostname === 'localhost' ||
     window.location.search.includes('__lovable_token=')
   )
   
@@ -481,7 +483,8 @@ export default function ProgramAgreement() {
 
   const programName = profile?.program_name
   const agreementKey = getAgreementKey(programName)
-  const agreementText = agreementKey ? AGREEMENT_MAP[agreementKey] : null
+  const displayAgreementKey = agreementKey ?? (allowPreviewAccess ? 'The Family Vault' : null)
+  const agreementText = displayAgreementKey ? AGREEMENT_MAP[displayAgreementKey] : null
 
   // Outside Lovable preview, keep the normal funnel auto-forward behavior
   useEffect(() => {
@@ -504,14 +507,15 @@ export default function ProgramAgreement() {
     }
   }, [allowPreviewAccess, authLoading, roleLoading, agreementLoading, user, isAdminOrOwner, profile, needsAgreement, agreementSigned, verificationCompleted, agreementCompleted, navigate, agreementStep])
 
-  const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ')
+  const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || (allowPreviewAccess ? 'Preview Member' : '')
   const address = profile?.mailing_address || [
     (profile as any)?.street_address,
     (profile as any)?.city,
     (profile as any)?.state,
     (profile as any)?.zip_code
-  ].filter(Boolean).join(', ')
+  ].filter(Boolean).join(', ') || (allowPreviewAccess ? '123 Example St, Atlanta, GA 30303' : '')
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  const displaySignId = signId || (allowPreviewAccess ? 'SID-PREVIEW-EXAMPLE' : '')
 
   // Canvas drawing
   useEffect(() => {
@@ -533,7 +537,12 @@ export default function ProgramAgreement() {
   }, [allowPreviewAccess, agreementText, authLoading, roleLoading, isAdminOrOwner, profile, navigate])
 
   // Loading state
-  if (authLoading || roleLoading || agreementLoading || (!!user && !isAdminOrOwner && !profile)) {
+  if (
+    authLoading ||
+    roleLoading ||
+    (!allowPreviewAccess && agreementLoading) ||
+    (!allowPreviewAccess && !!user && !isAdminOrOwner && !profile)
+  ) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
@@ -832,7 +841,7 @@ export default function ProgramAgreement() {
           <CardHeader className="text-center">
             <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-12 h-12 mx-auto mb-2 object-contain" />
             <CardTitle className="text-2xl">Program Services Agreement</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">{agreementKey}</p>
+            <p className="text-sm text-muted-foreground mt-1">{displayAgreementKey}</p>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Auto-filled info */}
@@ -929,14 +938,14 @@ export default function ProgramAgreement() {
                 <PenTool className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div>
                   <Label className="text-xs text-muted-foreground">Sign ID</Label>
-                  <p className="text-xs font-mono font-medium">{signId}</p>
+                   <p className="text-xs font-mono font-medium">{displaySignId}</p>
                 </div>
               </div>
             </div>
 
             <Button
               onClick={handleSubmit}
-              disabled={submitting || (useTypedSignature ? !signature.trim() : !hasDrawn)}
+              disabled={submitting || !user || !agreementKey || (useTypedSignature ? !signature.trim() : !hasDrawn)}
               className="w-full"
               style={{ backgroundColor: '#ffb500', color: '#290a52' }}
             >
@@ -1015,7 +1024,7 @@ export default function ProgramAgreement() {
               {/* Sign ID in sidebar */}
               <div className="pt-3 border-t">
                 <Label className="text-[10px] text-muted-foreground">Document Sign ID</Label>
-                <p className="text-[11px] font-mono font-medium mt-0.5">{signId}</p>
+                <p className="text-[11px] font-mono font-medium mt-0.5">{displaySignId}</p>
               </div>
             </CardContent>
           </Card>
