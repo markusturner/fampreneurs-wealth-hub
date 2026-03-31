@@ -232,7 +232,7 @@ export default function Onboarding() {
           display_name: displayName,
           email: form.email_address,
           phone: form.phone_number,
-          mailing_address: form.mailing_address,
+          mailing_address: [form.street_address, form.apt_number, form.city, form.state, form.zip_code].filter(Boolean).join(', '),
           needs_profile_completion: false,
         })
         .eq('user_id', user.id)
