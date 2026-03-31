@@ -98,6 +98,11 @@ export default function Onboarding() {
   const { toast } = useToast()
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
+  const allowPreviewAccess = typeof window !== 'undefined' && (
+    window.location.hostname.includes('lovableproject.com') ||
+    window.location.hostname.includes('lovable.app') ||
+    window.location.search.includes('__lovable_token=')
+  )
   const [form, setForm] = useState<FormData>({
     first_name: '',
     last_name: '',
@@ -134,7 +139,6 @@ export default function Onboarding() {
     }
   }, [user])
 
-  // Owners/admins can view the page without redirect
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth')
@@ -142,12 +146,13 @@ export default function Onboarding() {
     }
   }, [authLoading, user, navigate])
 
-  // If onboarding is already completed and user is NOT admin, skip to the next step
+  // Outside Lovable preview, keep the normal funnel auto-forward behavior
   useEffect(() => {
+    if (allowPreviewAccess) return
     if (!authLoading && !onboardingLoading && !roleLoading && user && !isAdminOrOwner && onboardingCompleted) {
       navigate('/program-agreement')
     }
-  }, [authLoading, onboardingLoading, roleLoading, user, isAdminOrOwner, onboardingCompleted, navigate])
+  }, [allowPreviewAccess, authLoading, onboardingLoading, roleLoading, user, isAdminOrOwner, onboardingCompleted, navigate])
 
   if (authLoading || roleLoading || onboardingLoading) {
     return (
@@ -157,7 +162,7 @@ export default function Onboarding() {
     )
   }
 
-  if (!user || isAdminOrOwner || onboardingCompleted) return null
+  if (!user || (!allowPreviewAccess && (isAdminOrOwner || onboardingCompleted))) return null
 
   const set = (field: keyof FormData, value: string) =>
     setForm(prev => ({ ...prev, [field]: value }))
