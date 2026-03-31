@@ -528,13 +528,19 @@ export default function ProgramAgreement() {
     ctx.lineCap = 'round'
   }, [useTypedSignature])
 
-  // If no agreement needed for this program, redirect to community outside preview only
+  // If no agreement needed for this program, redirect forward outside preview only
   useEffect(() => {
     if (allowPreviewAccess) return
-    if (!authLoading && !roleLoading && !isAdminOrOwner && profile && !agreementText) {
-      navigate('/community')
+    if (!authLoading && !roleLoading && !agreementLoading && !isAdminOrOwner && profile) {
+      if (!needsAgreement || agreementCompleted || !agreementText) {
+        if (!profile.profile_photo_uploaded) {
+          navigate('/profile-photo')
+        } else {
+          window.location.href = '/community'
+        }
+      }
     }
-  }, [allowPreviewAccess, agreementText, authLoading, roleLoading, isAdminOrOwner, profile, navigate])
+  }, [allowPreviewAccess, agreementText, authLoading, roleLoading, agreementLoading, isAdminOrOwner, profile, needsAgreement, agreementCompleted, navigate])
 
   // Loading state
   if (
@@ -550,9 +556,22 @@ export default function ProgramAgreement() {
     )
   }
 
+  // While redirecting, show loader instead of blank screen
   if (!allowPreviewAccess && isAdminOrOwner) return null
-  if (!allowPreviewAccess && (!needsAgreement || agreementCompleted)) return null
-  if (!agreementText) return null
+  if (!allowPreviewAccess && (!needsAgreement || agreementCompleted)) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      </div>
+    )
+  }
+  if (!agreementText) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      </div>
+    )
+  }
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
