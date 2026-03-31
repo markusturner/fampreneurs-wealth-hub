@@ -350,8 +350,7 @@ export default function Onboarding() {
                 >
                   {o}
                 </Button>)
-              }
-              ))}
+              })}
             </div>
           </div>
         )
