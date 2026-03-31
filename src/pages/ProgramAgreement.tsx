@@ -528,6 +528,7 @@ export default function ProgramAgreement() {
     window.location.hostname === 'localhost' ||
     window.location.search.includes('__lovable_token=')
   )
+  const allowManualAgreementAccess = allowPreviewAccess || isAdminOrOwner
   
   // Post-signing verification states
   const [agreementStep, setAgreementStep] = useState<'signing' | 'verification'>('signing')
@@ -547,12 +548,12 @@ export default function ProgramAgreement() {
 
   const programName = profile?.program_name
   const agreementKey = getAgreementKey(programName)
-  const displayAgreementKey = agreementKey ?? (allowPreviewAccess ? 'The Family Vault' : null)
+  const displayAgreementKey = agreementKey ?? (allowManualAgreementAccess ? 'The Family Business University' : null)
   const agreementText = displayAgreementKey ? AGREEMENT_MAP[displayAgreementKey] : null
 
   // Outside Lovable preview, keep the normal funnel auto-forward behavior
   useEffect(() => {
-    if (allowPreviewAccess || isAdminOrOwner) return
+    if (allowManualAgreementAccess) return
 
     if (needsAgreement && agreementSigned && !verificationCompleted) {
       setAgreementStep('verification')
@@ -569,17 +570,23 @@ export default function ProgramAgreement() {
         }
       }
     }
-  }, [allowPreviewAccess, authLoading, roleLoading, agreementLoading, user, isAdminOrOwner, profile, needsAgreement, agreementSigned, verificationCompleted, agreementCompleted, navigate, agreementStep])
+  }, [allowManualAgreementAccess, authLoading, roleLoading, agreementLoading, user, profile, needsAgreement, agreementSigned, verificationCompleted, agreementCompleted, navigate, agreementStep])
 
-  const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || (allowPreviewAccess ? 'Preview Member' : '')
+  const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || (allowManualAgreementAccess ? 'Preview Member' : '')
   const address = profile?.mailing_address || [
     (profile as any)?.street_address,
     (profile as any)?.city,
     (profile as any)?.state,
     (profile as any)?.zip_code
-  ].filter(Boolean).join(', ') || (allowPreviewAccess ? '123 Example St, Atlanta, GA 30303' : '')
+  ].filter(Boolean).join(', ') || (allowManualAgreementAccess ? '123 Example St, Atlanta, GA 30303' : '')
   const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-  const displaySignId = signId || (allowPreviewAccess ? 'SID-PREVIEW-EXAMPLE' : '')
+  const displaySignId = signId || (allowManualAgreementAccess ? 'SID-PREVIEW-EXAMPLE' : '')
+
+  useEffect(() => {
+    if (!allowManualAgreementAccess && !authLoading && !user) {
+      navigate('/auth')
+    }
+  }, [allowManualAgreementAccess, authLoading, user, navigate])
 
   // Canvas drawing
   useEffect(() => {
@@ -594,8 +601,8 @@ export default function ProgramAgreement() {
 
   // If no agreement needed for this program, redirect forward outside preview only
   useEffect(() => {
-    if (allowPreviewAccess) return
-    if (!authLoading && !roleLoading && !agreementLoading && !isAdminOrOwner && profile) {
+    if (allowManualAgreementAccess) return
+    if (!authLoading && !roleLoading && !agreementLoading && profile) {
       if (!needsAgreement || agreementCompleted || !agreementText) {
         if (!profile.profile_photo_uploaded) {
           navigate('/profile-photo')
@@ -604,14 +611,14 @@ export default function ProgramAgreement() {
         }
       }
     }
-  }, [allowPreviewAccess, agreementText, authLoading, roleLoading, agreementLoading, isAdminOrOwner, profile, needsAgreement, agreementCompleted, navigate])
+  }, [allowManualAgreementAccess, agreementText, authLoading, roleLoading, agreementLoading, profile, needsAgreement, agreementCompleted, navigate])
 
   // Loading state
   if (
     authLoading ||
     roleLoading ||
-    (!allowPreviewAccess && agreementLoading) ||
-    (!allowPreviewAccess && !!user && !isAdminOrOwner && !profile)
+    (!allowManualAgreementAccess && agreementLoading) ||
+    (!allowManualAgreementAccess && !!user && !profile)
   ) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -621,8 +628,7 @@ export default function ProgramAgreement() {
   }
 
   // While redirecting, show loader instead of blank screen
-  if (!allowPreviewAccess && isAdminOrOwner) return null
-  if (!allowPreviewAccess && (!needsAgreement || agreementCompleted)) {
+  if (!allowManualAgreementAccess && (!needsAgreement || agreementCompleted)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
