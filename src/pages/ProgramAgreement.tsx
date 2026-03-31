@@ -665,7 +665,7 @@ export default function ProgramAgreement() {
         body: { email: user?.email, code: verificationCode, method: 'email' }
       })
       if (error) throw error
-      if (data?.verified) {
+      if (data?.success || data?.verified) {
         setCodeVerified(true)
         toast({ title: 'Verified!', description: 'Your identity has been verified. Redirecting...' })
         setTimeout(() => {

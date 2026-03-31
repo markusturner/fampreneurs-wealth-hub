@@ -475,11 +475,23 @@ export default function Onboarding() {
             </Button>
 
             {step < STEPS.length - 1 ? (
-              <Button onClick={() => setStep(s => s + 1)} disabled={!canProceed}>
+              <Button
+                onClick={() => setStep(s => s + 1)}
+                disabled={!canProceed}
+                style={{ backgroundColor: '#ffb500', color: '#290a52', transition: 'background-color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2eb2ff')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffb500')}
+              >
                 Next <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             ) : (
-              <Button onClick={handleSubmit} disabled={!canProceed || submitting}>
+              <Button
+                onClick={handleSubmit}
+                disabled={!canProceed || submitting}
+                style={{ backgroundColor: '#ffb500', color: '#290a52', transition: 'background-color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2eb2ff')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffb500')}
+              >
                 {submitting ? (
                   <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Submitting…</>
                 ) : (
