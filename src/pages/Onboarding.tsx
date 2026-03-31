@@ -201,7 +201,7 @@ export default function Onboarding() {
         improvementSuggestion = form.improvement_suggestion.replace('Other', `Other: ${form.improvement_other}`)
       }
 
-      const { error } = await supabase.from('onboarding_responses').insert({
+      const { error } = await supabase.from('onboarding_responses').upsert({
         user_id: user.id,
         full_name: `${form.first_name} ${form.last_name}`.trim(),
         tshirt_size: form.tshirt_size,
@@ -219,7 +219,7 @@ export default function Onboarding() {
         why_choose_me: form.why_choose_me,
         specific_content: form.specific_content,
         anything_else: form.anything_else,
-      })
+      }, { onConflict: 'user_id' })
       if (error) throw error
 
       // Update the user's profile with collected info
