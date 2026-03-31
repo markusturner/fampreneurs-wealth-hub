@@ -26,15 +26,17 @@ export function useAgreementStatus() {
     }
 
     const programName = profile.program_name?.trim().toLowerCase() ?? ''
-    // TFV, TFBA, and TFFM require agreements (support both short IDs and full names)
+    // All programs require agreements (support both short IDs and full names)
     const requiresAgreement =
       programName === 'tfv' ||
       programName === 'tfba' ||
       programName === 'tffm' ||
+      programName === 'fbu' ||
       programName.includes('vault') ||
       programName.includes('accelerator') ||
       programName.includes('mastermind') ||
-      programName.includes('fortune')
+      programName.includes('fortune') ||
+      programName.includes('university')
 
     if (!requiresAgreement) {
       setSigned(true) // No agreement needed
