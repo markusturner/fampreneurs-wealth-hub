@@ -247,7 +247,7 @@ onClick={() => navigateToRoute('/auth')}
         {/* Footer */}
         <div className="text-center mt-16 py-8 border-t border-border">
           <Button
-            onClick={() => navigateToRoute('/')}
+onClick={() => navigateToRoute('/auth')}
             size="lg"
             className="text-white hover:opacity-90 transition-opacity"
             style={{backgroundColor: '#290A52'}}
