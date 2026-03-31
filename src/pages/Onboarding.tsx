@@ -87,7 +87,7 @@ const STEPS = [
 ]
 
 // Fields that are conditional and should not block progress
-const CONDITIONAL_FIELDS = ['referral_who', 'touchpoint_other', 'improvement_other']
+const CONDITIONAL_FIELDS = ['referral_who', 'touchpoint_other', 'improvement_other', 'apt_number']
 
 export default function Onboarding() {
   const { user, loading: authLoading, refreshProfile } = useAuth()
