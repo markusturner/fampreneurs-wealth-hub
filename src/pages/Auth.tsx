@@ -16,15 +16,7 @@ export default function Auth() {
   const { toast } = useToast()
   const navigate = useNavigate()
 
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        window.location.href = '/onboarding-explanation'
-      }
-    }
-    checkUser()
-  }, [])
+  // No auto-redirect on load — user must explicitly sign in
 
   const cleanupAuthState = () => {
     Object.keys(localStorage).forEach((key) => {
