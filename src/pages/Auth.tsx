@@ -20,7 +20,7 @@ export default function Auth() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        window.location.href = '/ai-chat'
+        window.location.href = '/onboarding-explanation'
       }
     }
     checkUser()
