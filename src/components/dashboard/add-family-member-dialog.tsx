@@ -69,6 +69,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
   const { user } = useAuth()
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
