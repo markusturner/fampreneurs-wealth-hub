@@ -50,6 +50,7 @@ import TrustCreation from "./pages/TrustCreation";
 import TrustFormSubmissions from "./pages/TrustFormSubmissions";
 import ProgramAgreement from "./pages/ProgramAgreement";
 import ProgramAgreements from "./pages/ProgramAgreements";
+import OnboardingExplanation from "./pages/OnboardingExplanation";
 import ProfilePhotoUpload from "./pages/ProfilePhotoUpload";
 
 import { initializeMobileServices } from "./lib/mobile";
