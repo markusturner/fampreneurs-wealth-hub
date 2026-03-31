@@ -5,12 +5,16 @@ import { useAuth } from '@/contexts/AuthContext'
 export function useAgreementStatus() {
   const { user, profile } = useAuth()
   const [signed, setSigned] = useState<boolean | null>(null)
+  const [verificationCompleted, setVerificationCompleted] = useState(false)
   const [loading, setLoading] = useState(true)
   const [needsAgreement, setNeedsAgreement] = useState(false)
 
   useEffect(() => {
+    let isActive = true
+
     if (!user) {
       setSigned(null)
+      setVerificationCompleted(false)
       setLoading(false)
       return
     }
@@ -35,24 +39,56 @@ export function useAgreementStatus() {
     if (!requiresAgreement) {
       setSigned(true) // No agreement needed
       setNeedsAgreement(false)
+      setVerificationCompleted(true)
       setLoading(false)
       return
     }
 
     setNeedsAgreement(true)
+    setLoading(true)
 
     const check = async () => {
-      const { data } = await supabase
-        .from('program_agreements')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle()
+      const [agreementResult, verificationResult] = await Promise.all([
+        supabase
+          .from('program_agreements')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle(),
+        user.email
+          ? supabase
+              .from('user_2fa_settings')
+              .select('id')
+              .eq('email', user.email)
+              .eq('method', 'email')
+              .eq('enabled', true)
+              .not('verified_at', 'is', null)
+              .maybeSingle()
+          : Promise.resolve({ data: null, error: null }),
+      ])
 
-      setSigned(!!data)
+      if (!isActive) return
+
+      if (agreementResult.error) {
+        console.error('Error checking agreement status:', agreementResult.error)
+      }
+
+      if (verificationResult.error) {
+        console.error('Error checking verification status:', verificationResult.error)
+      }
+
+      setSigned(!!agreementResult.data)
+      setVerificationCompleted(!!verificationResult.data)
       setLoading(false)
     }
+
     check()
+
+    return () => {
+      isActive = false
+    }
   }, [user, profile])
 
-  return { signed, loading, needsAgreement }
+  const completed = !needsAgreement || (signed === true && verificationCompleted)
+
+  return { signed, loading, needsAgreement, verificationCompleted, completed }
 }
