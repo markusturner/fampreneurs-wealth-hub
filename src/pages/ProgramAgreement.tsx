@@ -451,6 +451,22 @@ export default function ProgramAgreement() {
   const [isDrawing, setIsDrawing] = useState(false)
   const [hasDrawn, setHasDrawn] = useState(false)
   const [useTypedSignature, setUseTypedSignature] = useState(true)
+  
+  // Post-signing verification states
+  const [agreementStep, setAgreementStep] = useState<'signing' | 'verification'>('signing')
+  const [humanVerified, setHumanVerified] = useState(false)
+  const [idUploading, setIdUploading] = useState(false)
+  const [idUploaded, setIdUploaded] = useState(false)
+  const [idFileName, setIdFileName] = useState('')
+  const [verificationCode, setVerificationCode] = useState('')
+  const [codeSent, setCodeSent] = useState(false)
+  const [codeVerified, setCodeVerified] = useState(false)
+  const [sendingCode, setSendingCode] = useState(false)
+  const [verifyingCode, setVerifyingCode] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  // Generate Sign ID
+  const signId = user ? `SID-${user.id.slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}` : ''
 
   const programName = profile?.program_name
   const agreementKey = getAgreementKey(programName)
