@@ -105,8 +105,8 @@ export function AffiliateProgram() {
         <CardContent>
           <div className="space-y-3 text-sm text-muted-foreground">
             <p>• Share your affiliate link with friends and family</p>
-            <p>• When someone signs up using your link, you earn a commission</p>
-            <p>• Track your referrals and earnings in your dashboard</p>
+            <p>• When someone clicks your link, they'll be taken to book a discovery call</p>
+            <p>• When they sign up through your referral, you earn a commission</p>
             <p>• Customize your link to make it more memorable</p>
           </div>
         </CardContent>

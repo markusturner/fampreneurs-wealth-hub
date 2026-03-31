@@ -1579,9 +1579,10 @@ export default function Documents() {
             </Button>
             
             
-            <Button variant="outline" className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3 col-span-2 sm:col-span-1" onClick={() => setShowMessagesDialog(true)}>
+            <Button variant="outline" className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3 col-span-2 sm:col-span-1 relative" onClick={() => setShowMessagesDialog(true)}>
               <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7 text-purple-600" />
               <span className="text-xs sm:text-sm font-medium text-center">Messages</span>
+              <Badge variant="secondary" className="absolute top-2 right-2 text-[10px] px-1.5 py-0 h-5 bg-amber-100 text-amber-700 border-amber-300">β</Badge>
             </Button>
           </div>
         </section>

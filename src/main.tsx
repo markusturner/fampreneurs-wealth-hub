@@ -104,6 +104,7 @@ function AppWithNotifications() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
+        <Route path="/onboarding-explanation" element={<OnboardingExplanation />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/program-agreement" element={<ProgramAgreement />} />
         <Route path="/profile-photo" element={<ProfilePhotoUpload />} />
