@@ -27,29 +27,13 @@ import { useFamilyTree } from "@/hooks/useFamilyTree";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 const familyEducationModules = [{
-  title: "Family Business Education",
-  description: "Learn the fundamentals of running a successful family business",
-  icon: Building2,
+  title: "Trust Education",
+  description: "Learn the fundamentals of trusts, asset protection, and legacy planning",
+  icon: Shield,
   status: "Available",
   lessons: 12,
   duration: "3 hours",
   color: "text-blue-600"
-}, {
-  title: "Family Constitution",
-  description: "Understanding and implementing your family's core values and principles",
-  icon: Scroll,
-  status: "Available",
-  lessons: 8,
-  duration: "2 hours",
-  color: "text-amber-600"
-}, {
-  title: "Wealth Management",
-  description: "Strategic approaches to preserving and growing family wealth",
-  icon: Crown,
-  status: "Available",
-  lessons: 15,
-  duration: "4 hours",
-  color: "text-purple-600"
 }, {
   title: "Next Generation Leadership",
   description: "Preparing future leaders for family business success",
