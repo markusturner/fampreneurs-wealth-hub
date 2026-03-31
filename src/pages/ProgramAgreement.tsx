@@ -481,6 +481,7 @@ export default function ProgramAgreement() {
 
   // If agreement already signed, skip to profile photo (or community)
   useEffect(() => {
+    if (agreementStep === 'verification') return // Don't redirect during verification
     if (!authLoading && !roleLoading && !agreementLoading && user && !isAdminOrOwner && profile) {
       if (!needsAgreement || agreementSigned) {
         // Agreement done or not needed — go to profile photo if needed, else community
@@ -491,7 +492,7 @@ export default function ProgramAgreement() {
         }
       }
     }
-  }, [authLoading, roleLoading, agreementLoading, user, isAdminOrOwner, profile, needsAgreement, agreementSigned, navigate])
+  }, [authLoading, roleLoading, agreementLoading, user, isAdminOrOwner, profile, needsAgreement, agreementSigned, navigate, agreementStep])
 
   const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ')
   const address = profile?.mailing_address || [
