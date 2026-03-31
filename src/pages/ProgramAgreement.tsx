@@ -442,7 +442,13 @@ function getAgreementKey(programName: string | null | undefined): string | null 
 export default function ProgramAgreement() {
   const { user, profile, loading: authLoading } = useAuth()
   const { isAdminOrOwner, isLoading: roleLoading } = useIsAdminOrOwner()
-  const { signed: agreementSigned, loading: agreementLoading, needsAgreement } = useAgreementStatus()
+  const {
+    signed: agreementSigned,
+    loading: agreementLoading,
+    needsAgreement,
+    verificationCompleted,
+    completed: agreementCompleted,
+  } = useAgreementStatus()
   const navigate = useNavigate()
   const { toast } = useToast()
   const [submitting, setSubmitting] = useState(false)
@@ -479,11 +485,16 @@ export default function ProgramAgreement() {
     }
   }, [authLoading, roleLoading, isAdminOrOwner, navigate])
 
-  // If agreement already signed, skip to profile photo (or community)
+  // If agreement is fully completed, skip to profile photo (or community)
   useEffect(() => {
+    if (needsAgreement && agreementSigned && !verificationCompleted) {
+      setAgreementStep('verification')
+      return
+    }
+
     if (agreementStep === 'verification') return // Don't redirect during verification
     if (!authLoading && !roleLoading && !agreementLoading && user && !isAdminOrOwner && profile) {
-      if (!needsAgreement || agreementSigned) {
+      if (!needsAgreement || agreementCompleted) {
         // Agreement done or not needed — go to profile photo if needed, else community
         if (!profile.profile_photo_uploaded) {
           navigate('/profile-photo')
@@ -492,7 +503,7 @@ export default function ProgramAgreement() {
         }
       }
     }
-  }, [authLoading, roleLoading, agreementLoading, user, isAdminOrOwner, profile, needsAgreement, agreementSigned, navigate, agreementStep])
+  }, [authLoading, roleLoading, agreementLoading, user, isAdminOrOwner, profile, needsAgreement, agreementSigned, verificationCompleted, agreementCompleted, navigate, agreementStep])
 
   const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ')
   const address = profile?.mailing_address || [
@@ -531,7 +542,7 @@ export default function ProgramAgreement() {
   }
 
   if (isAdminOrOwner) return null
-  if (!needsAgreement || agreementSigned) return null
+  if (!needsAgreement || agreementCompleted) return null
   if (!agreementText) return null
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
