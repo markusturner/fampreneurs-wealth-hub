@@ -606,15 +606,77 @@ export default function ProgramAgreement() {
         })
       } catch (emailErr) {
         console.error('Failed to send agreement email:', emailErr)
-        // Don't block the flow if email fails
       }
 
-      toast({ title: 'Agreement signed!', description: 'A copy has been emailed to you. Please upload your profile photo to continue.' })
-      window.location.href = '/profile-photo'
+      toast({ title: 'Agreement signed!', description: 'Please complete the verification process.' })
+      setAgreementStep('verification')
     } catch (err: any) {
       toast({ title: 'Error', description: err.message || 'Failed to save agreement.', variant: 'destructive' })
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleIdUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+    
+    setIdUploading(true)
+    try {
+      const filePath = `${user.id}/id-verification/${Date.now()}-${file.name}`
+      const { error } = await supabase.storage
+        .from('documents')
+        .upload(filePath, file)
+      
+      if (error) throw error
+      setIdUploaded(true)
+      setIdFileName(file.name)
+      toast({ title: 'ID Uploaded', description: 'Your identification has been uploaded for verification.' })
+    } catch (err: any) {
+      toast({ title: 'Upload Failed', description: err.message || 'Failed to upload ID.', variant: 'destructive' })
+    } finally {
+      setIdUploading(false)
+    }
+  }
+
+  const handleSendVerificationCode = async () => {
+    if (!user?.email) return
+    setSendingCode(true)
+    try {
+      const { error } = await supabase.functions.invoke('send-email-verification', {
+        body: { email: user.email }
+      })
+      if (error) throw error
+      setCodeSent(true)
+      toast({ title: 'Code Sent', description: `A verification code has been sent to ${user.email}` })
+    } catch (err: any) {
+      toast({ title: 'Error', description: 'Failed to send verification code.', variant: 'destructive' })
+    } finally {
+      setSendingCode(false)
+    }
+  }
+
+  const handleVerifyCode = async () => {
+    if (!verificationCode.trim()) return
+    setVerifyingCode(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-2fa-code', {
+        body: { email: user?.email, code: verificationCode, method: 'email' }
+      })
+      if (error) throw error
+      if (data?.verified) {
+        setCodeVerified(true)
+        toast({ title: 'Verified!', description: 'Your identity has been verified. Redirecting...' })
+        setTimeout(() => {
+          window.location.href = '/profile-photo'
+        }, 1500)
+      } else {
+        toast({ title: 'Invalid Code', description: 'Please check your code and try again.', variant: 'destructive' })
+      }
+    } catch (err: any) {
+      toast({ title: 'Error', description: 'Verification failed. Please try again.', variant: 'destructive' })
+    } finally {
+      setVerifyingCode(false)
     }
   }
 
