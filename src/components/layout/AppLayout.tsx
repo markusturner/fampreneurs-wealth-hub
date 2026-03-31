@@ -32,7 +32,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const { user, loading, profile } = useAuth()
   const { completed: onboardingCompleted, loading: onboardingLoading } = useOnboardingStatus()
-  const { signed: agreementSigned, loading: agreementLoading, needsAgreement } = useAgreementStatus()
+  const { signed: agreementSigned, loading: agreementLoading, needsAgreement, completed: agreementCompleted } = useAgreementStatus()
   const { isAdminOrOwner, isLoading: roleLoading } = useIsAdminOrOwner()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const { subscriptionStatus } = useSubscription()
@@ -67,22 +67,22 @@ export function AppLayout({ children }: AppLayoutProps) {
   useEffect(() => {
     if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner) {
       if (onboardingCompleted === false) return
-      if (needsAgreement && agreementSigned === false && location.pathname !== '/program-agreement' && location.pathname !== '/profile-photo') {
+      if (needsAgreement && agreementCompleted === false && location.pathname !== '/program-agreement' && location.pathname !== '/profile-photo') {
         navigate("/program-agreement")
       }
     }
-  }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementSigned, needsAgreement, isAdminOrOwner, navigate, location.pathname])
+  }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementCompleted, needsAgreement, isAdminOrOwner, navigate, location.pathname])
 
   // THEN profile photo — only after onboarding AND agreement are done
   useEffect(() => {
     if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner && profile) {
       if (onboardingCompleted === false) return
-      if (needsAgreement && agreementSigned === false) return
+      if (needsAgreement && agreementCompleted === false) return
       if (!profile.profile_photo_uploaded && location.pathname !== '/profile-photo' && location.pathname !== '/program-agreement') {
         navigate("/profile-photo")
       }
     }
-  }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementSigned, needsAgreement, isAdminOrOwner, profile, navigate, location.pathname])
+  }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementCompleted, needsAgreement, isAdminOrOwner, profile, navigate, location.pathname])
 
   if (loading || onboardingLoading || agreementLoading || roleLoading) {
     return (
