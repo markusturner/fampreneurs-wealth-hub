@@ -127,57 +127,6 @@ export default function Documents() {
       duration: "60 minutes"
     }]
   }, {
-    title: "Family Business Education",
-    instructor: "Dr. Sarah Johnson",
-    duration: "4 weeks",
-    description: "Learn the fundamentals of running a successful family business",
-    status: "published",
-    videos: [{ url: "https://youtu.be/example1", type: "youtube" }],
-    modules: [{
-      name: "Introduction to Family Business",
-      duration: "45 minutes"
-    }, {
-      name: "Strategic Planning",
-      duration: "60 minutes"
-    }, {
-      name: "Succession Planning",
-      duration: "75 minutes"
-    }]
-  }, {
-    title: "Family Constitution",
-    instructor: "Dr. Emily Roberts",
-    duration: "5 weeks",
-    description: "Understanding and implementing your family's core values and principles",
-    status: "published",
-    videos: [{ url: "https://youtu.be/example2", type: "youtube" }],
-    modules: [{
-      name: "Core Values Development",
-      duration: "45 minutes"
-    }, {
-      name: "Governance Structure",
-      duration: "50 minutes"
-    }, {
-      name: "Implementation Strategies",
-      duration: "60 minutes"
-    }]
-  }, {
-    title: "Wealth Management",
-    instructor: "Michael Chen, CFA",
-    duration: "6 weeks",
-    description: "Strategic approaches to preserving and growing family wealth",
-    status: "published",
-    videos: [{ url: "https://youtu.be/example3", type: "youtube" }],
-    modules: [{
-      name: "Investment Principles",
-      duration: "50 minutes"
-    }, {
-      name: "Risk Management",
-      duration: "40 minutes"
-    }, {
-      name: "Estate Planning",
-      duration: "70 minutes"
-    }]
-  }, {
     title: "Next Generation Leadership",
     instructor: "Prof. Amanda Rodriguez",
     duration: "8 weeks",
