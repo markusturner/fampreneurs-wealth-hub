@@ -51,7 +51,11 @@ interface FormData {
   email_address: string
   phone_number: string
   tshirt_size: string
-  mailing_address: string
+  street_address: string
+  apt_number: string
+  city: string
+  state: string
+  zip_code: string
   first_touchpoint: string
   referral_who: string
   touchpoint_other: string
