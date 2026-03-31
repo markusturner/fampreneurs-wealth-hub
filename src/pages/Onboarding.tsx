@@ -205,7 +205,7 @@ export default function Onboarding() {
         user_id: user.id,
         full_name: `${form.first_name} ${form.last_name}`.trim(),
         tshirt_size: form.tshirt_size,
-        mailing_address: form.mailing_address,
+        mailing_address: [form.street_address, form.apt_number, form.city, form.state, form.zip_code].filter(Boolean).join(', '),
         first_touchpoint: firstTouchpoint,
         decision_reason: form.decision_reason,
         investment_reason: form.investment_reason,
