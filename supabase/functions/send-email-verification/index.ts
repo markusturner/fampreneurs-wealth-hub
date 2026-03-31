@@ -43,19 +43,55 @@ const handler = async (req: Request): Promise<Response> => {
         verified: false
       });
 
-    // For demo purposes, we'll simulate email sending
-    // In production, you would integrate with Resend, SendGrid, or similar service
-    console.log(`Email Verification Code for ${email}: ${verificationCode}`);
-    
-    // Simulate email service call
-    // await sendEmail(email, 'Your Fampreneurs Verification Code', `Your verification code is: ${verificationCode}`);
+    // Send email via Resend
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    const fromEmail = Deno.env.get('RESEND_FROM_EMAIL') || 'noreply@thefampreneurs.com';
+
+    if (resendApiKey) {
+      const emailResponse = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: [email],
+          subject: 'Your TruHeirs Verification Code',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+              <div style="text-align: center; margin-bottom: 24px;">
+                <h1 style="color: #290a52; font-size: 24px; margin: 0;">TruHeirs</h1>
+                <p style="color: #666; margin-top: 8px;">Identity Verification</p>
+              </div>
+              <div style="background: #f9f9f9; border-radius: 12px; padding: 24px; text-align: center;">
+                <p style="color: #333; margin: 0 0 16px;">Your verification code is:</p>
+                <div style="background: #ffb500; color: #290a52; font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 16px 24px; border-radius: 8px; display: inline-block;">
+                  ${verificationCode}
+                </div>
+                <p style="color: #666; font-size: 13px; margin-top: 16px;">This code expires in 10 minutes.</p>
+              </div>
+              <p style="color: #999; font-size: 12px; text-align: center; margin-top: 24px;">
+                If you did not request this code, please ignore this email.
+              </p>
+            </div>
+          `,
+        }),
+      });
+
+      if (!emailResponse.ok) {
+        const errorData = await emailResponse.text();
+        console.error('Resend error:', errorData);
+        throw new Error('Failed to send verification email');
+      }
+    } else {
+      console.log(`[DEV] Email Verification Code for ${email}: ${verificationCode}`);
+    }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'Verification code sent successfully',
-        // In development, return the code for testing
-        ...(Deno.env.get('ENVIRONMENT') === 'development' && { code: verificationCode })
       }),
       {
         status: 200,
