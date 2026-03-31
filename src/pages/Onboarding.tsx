@@ -77,7 +77,7 @@ interface FormData {
 const TSHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
 
 const STEPS = [
-  { title: 'About You', fields: ['first_name', 'last_name', 'email_address', 'phone_number', 'tshirt_size', 'mailing_address'] },
+  { title: 'About You', fields: ['first_name', 'last_name', 'email_address', 'phone_number', 'tshirt_size', 'street_address', 'apt_number', 'city', 'state', 'zip_code'] },
   { title: 'How You Found Us', fields: ['first_touchpoint', 'decision_reason'] },
   { title: 'Your Investment', fields: ['investment_reason', 'join_elaboration'] },
   { title: 'Your Journey', fields: ['time_to_decide', 'improvement_suggestion'] },
