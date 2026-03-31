@@ -332,13 +332,16 @@ export default function Onboarding() {
           <div className="space-y-2" key={field}>
             <Label>What made you invest into our program? *</Label>
             <div className="flex flex-wrap gap-2 mb-2">
-              {INVESTMENT_REASON_OPTIONS.map(o => (
+              {INVESTMENT_REASON_OPTIONS.map(o => {
+                const isSelected = form.investment_reason.includes(o)
+                return (
                 <Button
                   key={o}
                   type="button"
-                  variant={form.investment_reason.includes(o) ? 'default' : 'outline'}
+                  variant={isSelected ? 'default' : 'outline'}
                   size="sm"
                   className="text-xs"
+                  style={isSelected ? { backgroundColor: '#ffb500', color: '#290a52', borderColor: '#ffb500' } : {}}
                   onClick={() => {
                     const current = form.investment_reason ? form.investment_reason.split(', ') : []
                     const updated = current.includes(o) ? current.filter(c => c !== o) : [...current, o]
@@ -346,7 +349,8 @@ export default function Onboarding() {
                   }}
                 >
                   {o}
-                </Button>
+                </Button>)
+              }
               ))}
             </div>
           </div>
