@@ -93,6 +93,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
       governancePosition: 'none',
       notes: ''
     })
+    setAgreedToTerms(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
