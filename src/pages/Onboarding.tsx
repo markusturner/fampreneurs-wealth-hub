@@ -51,7 +51,11 @@ interface FormData {
   email_address: string
   phone_number: string
   tshirt_size: string
-  mailing_address: string
+  street_address: string
+  apt_number: string
+  city: string
+  state: string
+  zip_code: string
   first_touchpoint: string
   referral_who: string
   touchpoint_other: string
@@ -73,7 +77,7 @@ interface FormData {
 const TSHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
 
 const STEPS = [
-  { title: 'About You', fields: ['first_name', 'last_name', 'email_address', 'phone_number', 'tshirt_size', 'mailing_address'] },
+  { title: 'About You', fields: ['first_name', 'last_name', 'email_address', 'phone_number', 'tshirt_size', 'street_address', 'apt_number', 'city', 'state', 'zip_code'] },
   { title: 'How You Found Us', fields: ['first_touchpoint', 'decision_reason'] },
   { title: 'Your Investment', fields: ['investment_reason', 'join_elaboration'] },
   { title: 'Your Journey', fields: ['time_to_decide', 'improvement_suggestion'] },
@@ -83,7 +87,7 @@ const STEPS = [
 ]
 
 // Fields that are conditional and should not block progress
-const CONDITIONAL_FIELDS = ['referral_who', 'touchpoint_other', 'improvement_other']
+const CONDITIONAL_FIELDS = ['referral_who', 'touchpoint_other', 'improvement_other', 'apt_number']
 
 export default function Onboarding() {
   const { user, loading: authLoading, refreshProfile } = useAuth()
@@ -100,7 +104,11 @@ export default function Onboarding() {
     email_address: '',
     phone_number: '',
     tshirt_size: '',
-    mailing_address: '',
+    street_address: '',
+    apt_number: '',
+    city: '',
+    state: '',
+    zip_code: '',
     first_touchpoint: '',
     referral_who: '',
     touchpoint_other: '',
@@ -197,7 +205,7 @@ export default function Onboarding() {
         user_id: user.id,
         full_name: `${form.first_name} ${form.last_name}`.trim(),
         tshirt_size: form.tshirt_size,
-        mailing_address: form.mailing_address,
+        mailing_address: [form.street_address, form.apt_number, form.city, form.state, form.zip_code].filter(Boolean).join(', '),
         first_touchpoint: firstTouchpoint,
         decision_reason: form.decision_reason,
         investment_reason: form.investment_reason,
@@ -224,7 +232,7 @@ export default function Onboarding() {
           display_name: displayName,
           email: form.email_address,
           phone: form.phone_number,
-          mailing_address: form.mailing_address,
+          mailing_address: [form.street_address, form.apt_number, form.city, form.state, form.zip_code].filter(Boolean).join(', '),
           needs_profile_completion: false,
         })
         .eq('user_id', user.id)
@@ -289,11 +297,39 @@ export default function Onboarding() {
             </Select>
           </div>
         )
-      case 'mailing_address':
+      case 'street_address':
         return (
           <div className="space-y-2" key={field}>
-            <Label>Mailing Address *</Label>
-            <Textarea value={form.mailing_address} onChange={e => set('mailing_address', e.target.value)} placeholder="Full mailing address" rows={3} />
+            <Label>Street Address *</Label>
+            <Input value={form.street_address} onChange={e => set('street_address', e.target.value)} placeholder="123 Main St" />
+          </div>
+        )
+      case 'apt_number':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>Apt / Suite / Unit</Label>
+            <Input value={form.apt_number} onChange={e => set('apt_number', e.target.value)} placeholder="Apt 4B (optional)" />
+          </div>
+        )
+      case 'city':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>City *</Label>
+            <Input value={form.city} onChange={e => set('city', e.target.value)} placeholder="Atlanta" />
+          </div>
+        )
+      case 'state':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>State *</Label>
+            <Input value={form.state} onChange={e => set('state', e.target.value)} placeholder="GA" />
+          </div>
+        )
+      case 'zip_code':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>Zip Code *</Label>
+            <Input value={form.zip_code} onChange={e => set('zip_code', e.target.value)} placeholder="30101" />
           </div>
         )
       case 'first_touchpoint':
