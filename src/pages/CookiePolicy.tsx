@@ -12,11 +12,11 @@ const CookiePolicy = () => {
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
-              onClick={() => navigateToRoute('/')}
+onClick={() => navigateToRoute('/auth')}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to Home
+              Back to Sign In
             </Button>
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold" style={{backgroundColor: '#290A52'}}>
@@ -345,7 +345,7 @@ const CookiePolicy = () => {
         {/* Footer */}
         <div className="text-center mt-16 py-8 border-t border-border">
           <Button
-            onClick={() => navigateToRoute('/')}
+onClick={() => navigateToRoute('/auth')}
             size="lg"
             className="text-white hover:opacity-90 transition-opacity"
             style={{backgroundColor: '#290A52'}}
