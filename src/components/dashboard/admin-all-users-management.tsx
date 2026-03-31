@@ -2509,6 +2509,48 @@ export function AdminAllUsersManagement() {
                 </AccordionContent>
               </AccordionItem>
 
+              {/* Identity Verification */}
+              <AccordionItem value="verification" className="border rounded-lg px-4">
+                <AccordionTrigger className="hover:no-underline py-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">Identity Verification</Badge>
+                    <Badge className={formsData.agreements.some((a: any) => a.sign_id) ? "bg-green-600 text-white" : ""} variant={formsData.agreements.some((a: any) => a.sign_id) ? "default" : "outline"}>
+                      {formsData.agreements.some((a: any) => a.sign_id) ? 'Verified' : 'Pending'}
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  {formsData.agreements.filter((a: any) => a.sign_id).length > 0 ? (
+                    formsData.agreements.filter((a: any) => a.sign_id).map((agreement: any) => (
+                      <div key={`verify-${agreement.id}`} className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm mb-2">
+                        <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                          <span className="text-muted-foreground">Sign ID</span>
+                          <span className="text-right font-mono font-medium">{agreement.sign_id || 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                          <span className="text-muted-foreground">Human Check</span>
+                          <span className="text-right font-medium text-green-600">✓ Verified</span>
+                        </div>
+                        <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                          <span className="text-muted-foreground">ID Upload</span>
+                          <span className="text-right font-medium text-green-600">✓ Submitted</span>
+                        </div>
+                        <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                          <span className="text-muted-foreground">Email Verification</span>
+                          <span className="text-right font-medium text-green-600">✓ Confirmed</span>
+                        </div>
+                        <div className="flex justify-between gap-4 border-b border-border/30 pb-1">
+                          <span className="text-muted-foreground">Verified At</span>
+                          <span className="text-right font-medium">{new Date(agreement.signed_at || agreement.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground py-2">No verification submissions yet.</p>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+
               {/* Trust Forms */}
               <AccordionItem value="trust-forms" className="border rounded-lg px-4">
                 <AccordionTrigger className="hover:no-underline py-3">

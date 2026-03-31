@@ -6,25 +6,25 @@ import { Shield, ClipboardList, FileCheck, Camera, Users, ArrowRight, Lock } fro
 
 const steps = [
   {
-    icon: Shield,
-    title: '1. Verification Process',
-    description: 'For your security and privacy, we require identity verification. As a private company, protecting our members\' information is at the core of who we are and what we stand for. This verification process represents our commitment to maintaining a trusted and secure environment for every member.',
-    color: 'text-blue-600',
-    bg: 'bg-blue-50',
-  },
-  {
     icon: ClipboardList,
-    title: '2. Onboarding Form',
+    title: '1. Onboarding Form',
     description: 'Complete a brief onboarding form so we can personalize your experience and ensure you get the most out of your membership.',
     color: 'text-amber-600',
     bg: 'bg-amber-50',
   },
   {
     icon: FileCheck,
-    title: '3. Program Agreement',
+    title: '2. Program Agreement',
     description: 'Review and sign your program services agreement — a binding agreement that outlines the terms, deliverables, and expectations of your membership.',
     color: 'text-purple-600',
     bg: 'bg-purple-50',
+  },
+  {
+    icon: Shield,
+    title: '3. Verification Process',
+    description: 'For your security and privacy, we require identity verification. As a private company, protecting our members\' information is at the core of who we are and what we stand for. This verification process represents our commitment to maintaining a trusted and secure environment for every member.',
+    color: 'text-blue-600',
+    bg: 'bg-blue-50',
   },
   {
     icon: Camera,
