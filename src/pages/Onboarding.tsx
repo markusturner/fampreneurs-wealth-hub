@@ -332,13 +332,16 @@ export default function Onboarding() {
           <div className="space-y-2" key={field}>
             <Label>What made you invest into our program? *</Label>
             <div className="flex flex-wrap gap-2 mb-2">
-              {INVESTMENT_REASON_OPTIONS.map(o => (
+              {INVESTMENT_REASON_OPTIONS.map(o => {
+                const isSelected = form.investment_reason.includes(o)
+                return (
                 <Button
                   key={o}
                   type="button"
-                  variant={form.investment_reason.includes(o) ? 'default' : 'outline'}
+                  variant={isSelected ? 'default' : 'outline'}
                   size="sm"
                   className="text-xs"
+                  style={isSelected ? { backgroundColor: '#ffb500', color: '#290a52', borderColor: '#ffb500' } : {}}
                   onClick={() => {
                     const current = form.investment_reason ? form.investment_reason.split(', ') : []
                     const updated = current.includes(o) ? current.filter(c => c !== o) : [...current, o]
@@ -346,8 +349,8 @@ export default function Onboarding() {
                   }}
                 >
                   {o}
-                </Button>
-              ))}
+                </Button>)
+              })}
             </div>
           </div>
         )
@@ -370,13 +373,16 @@ export default function Onboarding() {
           <div className="space-y-2" key={field}>
             <Label>What could we have improved to make you invest earlier? *</Label>
             <div className="flex flex-wrap gap-2 mb-2">
-              {IMPROVEMENT_OPTIONS.map(o => (
+              {IMPROVEMENT_OPTIONS.map(o => {
+                const isSelected = form.improvement_suggestion.includes(o)
+                return (
                 <Button
                   key={o}
                   type="button"
-                  variant={form.improvement_suggestion.includes(o) ? 'default' : 'outline'}
+                  variant={isSelected ? 'default' : 'outline'}
                   size="sm"
                   className="text-xs"
+                  style={isSelected ? { backgroundColor: '#ffb500', color: '#290a52', borderColor: '#ffb500' } : {}}
                   onClick={() => {
                     const current = form.improvement_suggestion ? form.improvement_suggestion.split(', ') : []
                     const updated = current.includes(o) ? current.filter(c => c !== o) : [...current, o]
@@ -385,8 +391,8 @@ export default function Onboarding() {
                   }}
                 >
                   {o}
-                </Button>
-              ))}
+                </Button>)
+              })}
             </div>
             {form.improvement_suggestion.includes('Other') && (
               <div className="mt-2">
@@ -468,11 +474,23 @@ export default function Onboarding() {
             </Button>
 
             {step < STEPS.length - 1 ? (
-              <Button onClick={() => setStep(s => s + 1)} disabled={!canProceed}>
+              <Button
+                onClick={() => setStep(s => s + 1)}
+                disabled={!canProceed}
+                style={{ backgroundColor: '#ffb500', color: '#290a52', transition: 'background-color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2eb2ff')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffb500')}
+              >
                 Next <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             ) : (
-              <Button onClick={handleSubmit} disabled={!canProceed || submitting}>
+              <Button
+                onClick={handleSubmit}
+                disabled={!canProceed || submitting}
+                style={{ backgroundColor: '#ffb500', color: '#290a52', transition: 'background-color 0.2s' }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2eb2ff')}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffb500')}
+              >
                 {submitting ? (
                   <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Submitting…</>
                 ) : (

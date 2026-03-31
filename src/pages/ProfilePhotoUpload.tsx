@@ -123,7 +123,14 @@ export default function ProfilePhotoUploadPage() {
           />
         </div>
 
-        <Button onClick={handleUpload} disabled={!selectedFile || uploading} className="w-full">
+        <Button
+          onClick={handleUpload}
+          disabled={!selectedFile || uploading}
+          className="w-full"
+          style={{ backgroundColor: '#ffb500', color: '#290a52', transition: 'background-color 0.2s' }}
+          onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2eb2ff')}
+          onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffb500')}
+        >
           <Upload className="h-4 w-4 mr-2" />
           {uploading ? 'Uploading...' : 'Upload Photo & Continue'}
         </Button>
