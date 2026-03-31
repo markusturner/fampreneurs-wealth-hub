@@ -29,6 +29,11 @@ const AGREEMENT_LABELS: Record<string, string> = {
   tfv: 'The Family Vault',
   tfba: 'The Family Business Accelerator',
   tffm: 'The Family Fortune Mastermind',
+  fbu: 'The Family Business University',
+  'The Family Vault': 'The Family Vault',
+  'The Family Business Accelerator': 'The Family Business Accelerator',
+  'The Family Fortune Mastermind': 'The Family Fortune Mastermind',
+  'The Family Business University': 'The Family Business University',
 }
 
 export default function ProgramAgreements() {

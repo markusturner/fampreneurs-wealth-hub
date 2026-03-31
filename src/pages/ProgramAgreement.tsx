@@ -403,10 +403,67 @@ You acknowledge and agree to all charges associated with this program and you wi
 
 By their signatures below, the parties hereby understand and agree to all terms and conditions of this agreement.`
 
+const FBU_AGREEMENT = `Course Access Agreement
+
+Thank you for enrolling in The Family Business University, a program offered by VNCI, LLC ("The Fampreneurs"). We are excited to have you join our learning community.
+
+This Agreement is entered into on this date ______________________________, by and between _________________________________ ("Student"), residing at ____________________________________________________________________________, and VNCI, LLC ("The Fampreneurs").
+
+The Student and The Fampreneurs agree as follows:
+
+Section 1. Program Overview and Access
+
+Program: The Family Business University (FBU)
+
+Program Details:
+
+The Family Business University provides:
+
+Access to The Fampreneurs Community platform and all community features
+
+Access to The Family Business University course library, including all published video lessons, modules, and downloadable resources
+
+Participation in community discussions, group channels, and peer networking
+
+Access to any live group coaching calls or Q&A sessions made available to FBU members
+
+Section 2. Terms of Participation
+
+Our goal at The Fampreneurs is to provide the best possible learning experience for all program participants. Due to this fact, The Fampreneurs holds the right to limit, suspend, and/or terminate your access and participation at any point due to:
+
+Becoming disruptive or overly difficult to work with, hindering the productivity and/or participation of any Fampreneurs employee, student, customer, or instructor. Failure to follow The Fampreneurs program guidelines as laid out in this agreement.
+
+Section 3. Content Sharing and Intellectual Property
+
+The Fampreneurs will respect your and your fellow members' privacy. In return, The Fampreneurs expects you to respect fellow program members' privacy.
+
+You agree not to infringe upon The Fampreneurs or fellow members' rights, trademarks, logos, designs, programs, and/or businesses without prior written consent.
+
+All course materials, content, recordings, writings, and resources are the property of VNCI, LLC and are provided for your personal educational use only.
+
+Any reproduction, distribution, resale, or unauthorized sharing of course content is strictly prohibited and is subject to immediate removal from the program.
+
+Section 4. Terms of Service
+
+By signing this agreement, you acknowledge that you have read, agree to, and accept all of the terms and conditions in this Agreement. We may amend this Agreement at any time by notifying you at the email address associated with your account.
+
+You agree that the Company may, at its sole discretion, terminate this agreement and limit, suspend, or terminate your participation in the Program if you become disruptive or difficult to work with, if you fail to follow the Program guidelines, or if you impair the participation of Program instructors or participants.
+
+Section 5. Right to Use Name and Likeness
+
+You hereby consent to the use of your name, photograph, likeness, voice, testimonial, and biographical material, in whole or in part, for publication or reproduction in any medium, including but not limited to television, radio, print media, and the internet, for purposes including but not limited to public relations, education, advertising, marketing, training, and research.
+
+Section 6. Disclaimer
+
+The information contained within The Family Business University is strictly for educational purposes. Program content is for individual member use only. You understand that results depend on your own effort, dedication, and action. There is no guarantee of specific outcomes from participation in this program.
+
+By their signatures below, the parties hereby understand and agree to all terms and conditions of this agreement.`
+
 const AGREEMENT_MAP: Record<string, string> = {
   'The Family Vault': TFV_AGREEMENT,
   'The Family Business Accelerator': TFBA_AGREEMENT,
   'The Family Fortune Mastermind': TFFM_AGREEMENT,
+  'The Family Business University': FBU_AGREEMENT,
 }
 
 // Map profile program_name values to agreement keys
@@ -434,6 +491,13 @@ function getAgreementKey(programName: string | null | undefined): string | null 
     normalizedProgramName.includes('fortune')
   ) {
     return 'The Family Fortune Mastermind'
+  }
+
+  if (
+    normalizedProgramName === 'fbu' ||
+    normalizedProgramName.includes('university')
+  ) {
+    return 'The Family Business University'
   }
 
   return null
