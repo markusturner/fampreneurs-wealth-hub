@@ -62,3 +62,6 @@ verify_jwt = false
 
 [functions.notify-community-post-email]
 verify_jwt = false
+
+[functions.notify-admin-submission]
+verify_jwt = false
