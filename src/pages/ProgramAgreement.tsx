@@ -680,119 +680,335 @@ export default function ProgramAgreement() {
     }
   }
 
+  if (agreementStep === 'verification') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-xl">
+          <CardHeader className="text-center">
+            <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-12 h-12 mx-auto mb-2 object-contain" />
+            <CardTitle className="text-xl">Identity Verification</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">Complete these steps to verify your agreement</p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Step 1: Human Verification */}
+            <div className={`p-4 rounded-lg border ${humanVerified ? 'border-green-300 bg-green-50' : 'border-border'}`}>
+              <div className="flex items-center gap-3">
+                {humanVerified ? (
+                  <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+                ) : (
+                  <Shield className="h-5 w-5 text-muted-foreground shrink-0" />
+                )}
+                <div className="flex-1">
+                  <h3 className="font-semibold text-sm">Verify You Are Human</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Confirm that you are a real person signing this agreement</p>
+                </div>
+              </div>
+              {!humanVerified && (
+                <div className="mt-3 flex items-center gap-2">
+                  <Checkbox
+                    id="human-verify"
+                    onCheckedChange={(checked) => setHumanVerified(!!checked)}
+                  />
+                  <label htmlFor="human-verify" className="text-sm cursor-pointer">
+                    I confirm that I am a real person and I have read and signed this agreement
+                  </label>
+                </div>
+              )}
+            </div>
+
+            {/* Step 2: ID Upload */}
+            <div className={`p-4 rounded-lg border ${idUploaded ? 'border-green-300 bg-green-50' : humanVerified ? 'border-border' : 'border-border opacity-50'}`}>
+              <div className="flex items-center gap-3">
+                {idUploaded ? (
+                  <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+                ) : (
+                  <Upload className="h-5 w-5 text-muted-foreground shrink-0" />
+                )}
+                <div className="flex-1">
+                  <h3 className="font-semibold text-sm">Upload Driver's License / ID</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Upload a photo of your government-issued ID to verify your identity</p>
+                </div>
+              </div>
+              {humanVerified && !idUploaded && (
+                <div className="mt-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,.pdf"
+                    className="hidden"
+                    onChange={handleIdUpload}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={idUploading}
+                    style={{ backgroundColor: '#ffb500', color: '#290a52', transition: 'background-color 0.2s' }}
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2eb2ff')}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffb500')}
+                  >
+                    {idUploading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading...</> : <><Upload className="h-4 w-4 mr-2" /> Choose File</>}
+                  </Button>
+                </div>
+              )}
+              {idUploaded && (
+                <p className="text-xs text-green-600 mt-2">✓ {idFileName} uploaded</p>
+              )}
+            </div>
+
+            {/* Step 3: Email Verification */}
+            <div className={`p-4 rounded-lg border ${codeVerified ? 'border-green-300 bg-green-50' : idUploaded ? 'border-border' : 'border-border opacity-50'}`}>
+              <div className="flex items-center gap-3">
+                {codeVerified ? (
+                  <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+                ) : (
+                  <Mail className="h-5 w-5 text-muted-foreground shrink-0" />
+                )}
+                <div className="flex-1">
+                  <h3 className="font-semibold text-sm">Email Verification</h3>
+                  <p className="text-xs text-muted-foreground mt-1">We'll send a verification code to {user?.email}</p>
+                </div>
+              </div>
+              {idUploaded && !codeVerified && (
+                <div className="mt-3 space-y-3">
+                  {!codeSent ? (
+                    <Button
+                      size="sm"
+                      onClick={handleSendVerificationCode}
+                      disabled={sendingCode}
+                      style={{ backgroundColor: '#ffb500', color: '#290a52', transition: 'background-color 0.2s' }}
+                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2eb2ff')}
+                      onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffb500')}
+                    >
+                      {sendingCode ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending...</> : <><Mail className="h-4 w-4 mr-2" /> Send Verification Code</>}
+                    </Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter 6-digit code"
+                        value={verificationCode}
+                        onChange={e => setVerificationCode(e.target.value)}
+                        maxLength={6}
+                        className="w-40"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={handleVerifyCode}
+                        disabled={verifyingCode || !verificationCode.trim()}
+                        style={{ backgroundColor: '#ffb500', color: '#290a52', transition: 'background-color 0.2s' }}
+                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2eb2ff')}
+                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#ffb500')}
+                      >
+                        {verifyingCode ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify'}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-3xl">
-        <CardHeader className="text-center">
-          <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-12 h-12 mx-auto mb-2 object-contain" />
-          <CardTitle className="text-2xl">Program Services Agreement</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">{agreementKey}</p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Auto-filled info */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-lg bg-muted/50 border">
-            <div>
-              <Label className="text-xs text-muted-foreground">Date</Label>
-              <p className="text-sm font-medium">{today}</p>
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Mentee Name</Label>
-              <p className="text-sm font-medium">{fullName || 'Not set'}</p>
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Address</Label>
-              <p className="text-sm font-medium">{address || 'Not set'}</p>
-            </div>
-          </div>
-
-          {/* Agreement text */}
-          <ScrollArea className="h-[400px] border rounded-lg p-4">
-            <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-              {agreementText}
-            </div>
-          </ScrollArea>
-
-          {/* Signature section */}
-          <div className="border rounded-lg p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-sm">Your Signature</h3>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={useTypedSignature ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setUseTypedSignature(true)}
-                >
-                  Type
-                </Button>
-                <Button
-                  type="button"
-                  variant={!useTypedSignature ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setUseTypedSignature(false)}
-                >
-                  Draw
-                </Button>
-              </div>
-            </div>
-
-            {useTypedSignature ? (
-              <div className="space-y-2">
-                <Label>Type your full legal name as your signature</Label>
-                <Input
-                  value={signature}
-                  onChange={e => setSignature(e.target.value)}
-                  placeholder="Your full legal name"
-                  className="text-lg italic font-serif"
-                />
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <Label>Draw your signature below</Label>
-                <div className="border rounded-lg bg-white relative">
-                  <canvas
-                    ref={canvasRef}
-                    width={500}
-                    height={150}
-                    className="w-full cursor-crosshair"
-                    onMouseDown={startDrawing}
-                    onMouseMove={draw}
-                    onMouseUp={stopDrawing}
-                    onMouseLeave={stopDrawing}
-                  />
-                </div>
-                <Button type="button" variant="ghost" size="sm" onClick={clearCanvas}>
-                  Clear
-                </Button>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-4 pt-2">
-              <div>
-                <Label className="text-xs text-muted-foreground">Mentee's Printed Name</Label>
-                <p className="text-sm font-medium border-b pb-1">{fullName}</p>
-              </div>
+      <div className="w-full max-w-5xl flex gap-6">
+        {/* Main Agreement Card */}
+        <Card className="flex-1">
+          <CardHeader className="text-center">
+            <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-12 h-12 mx-auto mb-2 object-contain" />
+            <CardTitle className="text-2xl">Program Services Agreement</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">{agreementKey}</p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Auto-filled info */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-lg bg-muted/50 border">
               <div>
                 <Label className="text-xs text-muted-foreground">Date</Label>
-                <p className="text-sm font-medium border-b pb-1">{today}</p>
+                <p className="text-sm font-medium">{today}</p>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Mentee Name</Label>
+                <p className="text-sm font-medium">{fullName || 'Not set'}</p>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Address</Label>
+                <p className="text-sm font-medium">{address || 'Not set'}</p>
               </div>
             </div>
-          </div>
 
-          <Button
-            onClick={handleSubmit}
-            disabled={submitting || (useTypedSignature ? !signature.trim() : !hasDrawn)}
-            className="w-full"
-            style={{ backgroundColor: '#ffb500', color: '#290a52' }}
-          >
-            {submitting ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Submitting...</>
-            ) : (
-              <><CheckCircle2 className="h-4 w-4 mr-2" /> Sign Agreement & Continue</>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
+            {/* Agreement text */}
+            <ScrollArea className="h-[400px] border rounded-lg p-4">
+              <div className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                {agreementText}
+              </div>
+            </ScrollArea>
+
+            {/* Signature section */}
+            <div className="border rounded-lg p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-sm">Your Signature</h3>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={useTypedSignature ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setUseTypedSignature(true)}
+                  >
+                    Type
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={!useTypedSignature ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setUseTypedSignature(false)}
+                  >
+                    Draw
+                  </Button>
+                </div>
+              </div>
+
+              {useTypedSignature ? (
+                <div className="space-y-2">
+                  <Label>Type your full legal name as your signature</Label>
+                  <Input
+                    value={signature}
+                    onChange={e => setSignature(e.target.value)}
+                    placeholder="Your full legal name"
+                    className="text-lg italic font-serif"
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label>Draw your signature below</Label>
+                  <div className="border rounded-lg bg-white relative">
+                    <canvas
+                      ref={canvasRef}
+                      width={500}
+                      height={150}
+                      className="w-full cursor-crosshair"
+                      onMouseDown={startDrawing}
+                      onMouseMove={draw}
+                      onMouseUp={stopDrawing}
+                      onMouseLeave={stopDrawing}
+                    />
+                  </div>
+                  <Button type="button" variant="ghost" size="sm" onClick={clearCanvas}>
+                    Clear
+                  </Button>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Mentee's Printed Name</Label>
+                  <p className="text-sm font-medium border-b pb-1">{fullName}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Date</Label>
+                  <p className="text-sm font-medium border-b pb-1">{today}</p>
+                </div>
+              </div>
+
+              {/* Sign ID */}
+              <div className="mt-3 p-3 rounded-lg bg-muted/50 border flex items-center gap-3">
+                <PenTool className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div>
+                  <Label className="text-xs text-muted-foreground">Sign ID</Label>
+                  <p className="text-xs font-mono font-medium">{signId}</p>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              onClick={handleSubmit}
+              disabled={submitting || (useTypedSignature ? !signature.trim() : !hasDrawn)}
+              className="w-full"
+              style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+            >
+              {submitting ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Submitting...</>
+              ) : (
+                <><CheckCircle2 className="h-4 w-4 mr-2" /> Sign Agreement & Continue</>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Activity Timeline Sidebar - Desktop Only */}
+        <div className="hidden lg:block w-64 shrink-0">
+          <Card className="sticky top-8">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Clock className="h-4 w-4" />
+                Activity Timeline
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-3">
+                <div className="flex flex-col items-center">
+                  <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                  </div>
+                  <div className="w-px h-full bg-border mt-1" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium">Agreement Opened</p>
+                  <p className="text-[10px] text-muted-foreground">{today}</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="flex flex-col items-center">
+                  <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                    <Eye className="h-3.5 w-3.5 text-green-600" />
+                  </div>
+                  <div className="w-px h-full bg-border mt-1" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium">Agreement Reviewed</p>
+                  <p className="text-[10px] text-muted-foreground">In progress</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="flex flex-col items-center">
+                  <div className={`h-6 w-6 rounded-full ${(useTypedSignature ? signature.trim() : hasDrawn) ? 'bg-green-100' : 'bg-muted'} flex items-center justify-center`}>
+                    <PenTool className={`h-3.5 w-3.5 ${(useTypedSignature ? signature.trim() : hasDrawn) ? 'text-green-600' : 'text-muted-foreground'}`} />
+                  </div>
+                  <div className="w-px h-full bg-border mt-1" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium">Signature</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {(useTypedSignature ? signature.trim() : hasDrawn) ? 'Signed' : 'Pending'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="flex flex-col items-center">
+                  <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                    <FileCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-medium">Verification</p>
+                  <p className="text-[10px] text-muted-foreground">After signing</p>
+                </div>
+              </div>
+
+              {/* Sign ID in sidebar */}
+              <div className="pt-3 border-t">
+                <Label className="text-[10px] text-muted-foreground">Document Sign ID</Label>
+                <p className="text-[11px] font-mono font-medium mt-0.5">{signId}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
