@@ -629,6 +629,26 @@ export default function ProgramAgreement() {
         console.error('Failed to send agreement email:', emailErr)
       }
 
+      // Notify admins/owners about the agreement
+      try {
+        await supabase.functions.invoke('notify-admin-submission', {
+          body: {
+            type: 'agreement',
+            userName: fullName,
+            userEmail: user.email || '',
+            programName: agreementKey,
+            details: {
+              'Program': agreementKey || 'N/A',
+              'Full Name': fullName,
+              'Date Signed': new Date().toLocaleDateString(),
+              'Mailing Address': address || 'Not provided',
+            },
+          },
+        })
+      } catch (adminErr) {
+        console.error('Failed to notify admins about agreement:', adminErr)
+      }
+
       toast({ title: 'Agreement signed!', description: 'Please complete the verification process.' })
       setAgreementStep('verification')
     } catch (err: any) {

@@ -241,6 +241,26 @@ export default function Onboarding() {
         console.error('Error updating profile:', profileError)
       }
 
+      // Notify admins/owners about the onboarding submission
+      try {
+        await supabase.functions.invoke('notify-admin-submission', {
+          body: {
+            type: 'onboarding',
+            userName: `${form.first_name} ${form.last_name}`.trim(),
+            userEmail: form.email_address || user.email || '',
+            details: {
+              'Full Name': `${form.first_name} ${form.last_name}`.trim(),
+              'Email': form.email_address || '',
+              'Phone': form.phone_number || '',
+              'T-Shirt Size': form.tshirt_size || '',
+              'Mailing Address': [form.street_address, form.apt_number, form.city, form.state, form.zip_code].filter(Boolean).join(', '),
+            },
+          },
+        })
+      } catch (adminErr) {
+        console.error('Failed to notify admins about onboarding:', adminErr)
+      }
+
       await refreshProfile()
       toast({ title: 'Onboarding complete!', description: 'Proceeding to your program agreement...' })
       // Redirect to agreement page (or community if no agreement needed)
