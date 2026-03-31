@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
-import { UserPlus, X, Plus, TreePine, Info } from 'lucide-react'
+import { UserPlus, X, Plus, TreePine, Info, Shield } from 'lucide-react'
 import { Card, CardContent, CardDescription } from '@/components/ui/card'
 
 interface AddFamilyMemberDialogProps {
