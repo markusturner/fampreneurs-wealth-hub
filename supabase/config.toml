@@ -59,3 +59,6 @@ verify_jwt = false
 
 [functions.fetch-trust-sheets]
 verify_jwt = false
+
+[functions.notify-community-post-email]
+verify_jwt = false
