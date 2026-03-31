@@ -27,29 +27,13 @@ import { useFamilyTree } from "@/hooks/useFamilyTree";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 const familyEducationModules = [{
-  title: "Family Business Education",
-  description: "Learn the fundamentals of running a successful family business",
-  icon: Building2,
+  title: "Trust Education",
+  description: "Learn the fundamentals of trusts, asset protection, and legacy planning",
+  icon: Shield,
   status: "Available",
   lessons: 12,
   duration: "3 hours",
   color: "text-blue-600"
-}, {
-  title: "Family Constitution",
-  description: "Understanding and implementing your family's core values and principles",
-  icon: Scroll,
-  status: "Available",
-  lessons: 8,
-  duration: "2 hours",
-  color: "text-amber-600"
-}, {
-  title: "Wealth Management",
-  description: "Strategic approaches to preserving and growing family wealth",
-  icon: Crown,
-  status: "Available",
-  lessons: 15,
-  duration: "4 hours",
-  color: "text-purple-600"
 }, {
   title: "Next Generation Leadership",
   description: "Preparing future leaders for family business success",
@@ -125,57 +109,6 @@ export default function Documents() {
     }, {
       name: "Asset Protection Strategies",
       duration: "60 minutes"
-    }]
-  }, {
-    title: "Family Business Education",
-    instructor: "Dr. Sarah Johnson",
-    duration: "4 weeks",
-    description: "Learn the fundamentals of running a successful family business",
-    status: "published",
-    videos: [{ url: "https://youtu.be/example1", type: "youtube" }],
-    modules: [{
-      name: "Introduction to Family Business",
-      duration: "45 minutes"
-    }, {
-      name: "Strategic Planning",
-      duration: "60 minutes"
-    }, {
-      name: "Succession Planning",
-      duration: "75 minutes"
-    }]
-  }, {
-    title: "Family Constitution",
-    instructor: "Dr. Emily Roberts",
-    duration: "5 weeks",
-    description: "Understanding and implementing your family's core values and principles",
-    status: "published",
-    videos: [{ url: "https://youtu.be/example2", type: "youtube" }],
-    modules: [{
-      name: "Core Values Development",
-      duration: "45 minutes"
-    }, {
-      name: "Governance Structure",
-      duration: "50 minutes"
-    }, {
-      name: "Implementation Strategies",
-      duration: "60 minutes"
-    }]
-  }, {
-    title: "Wealth Management",
-    instructor: "Michael Chen, CFA",
-    duration: "6 weeks",
-    description: "Strategic approaches to preserving and growing family wealth",
-    status: "published",
-    videos: [{ url: "https://youtu.be/example3", type: "youtube" }],
-    modules: [{
-      name: "Investment Principles",
-      duration: "50 minutes"
-    }, {
-      name: "Risk Management",
-      duration: "40 minutes"
-    }, {
-      name: "Estate Planning",
-      duration: "70 minutes"
     }]
   }, {
     title: "Next Generation Leadership",
@@ -1579,9 +1512,10 @@ export default function Documents() {
             </Button>
             
             
-            <Button variant="outline" className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3 col-span-2 sm:col-span-1" onClick={() => setShowMessagesDialog(true)}>
+            <Button variant="outline" className="h-auto min-h-[100px] sm:min-h-[120px] p-3 sm:p-4 flex flex-col items-center justify-center gap-2 sm:gap-3 col-span-2 sm:col-span-1 relative" onClick={() => setShowMessagesDialog(true)}>
               <MessageCircle className="h-6 w-6 sm:h-7 sm:w-7 text-purple-600" />
               <span className="text-xs sm:text-sm font-medium text-center">Messages</span>
+              <Badge variant="secondary" className="absolute top-2 right-2 text-[10px] px-1.5 py-0 h-5 bg-amber-100 text-amber-700 border-amber-300">β</Badge>
             </Button>
           </div>
         </section>

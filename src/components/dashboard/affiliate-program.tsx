@@ -13,12 +13,13 @@ export function AffiliateProgram() {
   const [customCode, setCustomCode] = useState('')
   const [affiliateLink, setAffiliateLink] = useState('')
 
+  const CALENDLY_LINK = 'https://calendly.com/turnermarkus50/tfv'
+
   // Generate default affiliate link using user ID
   const generateDefaultLink = () => {
     if (user?.id) {
-      const baseUrl = window.location.origin
       const defaultCode = user.id.slice(0, 8)
-      return `${baseUrl}?ref=${defaultCode}`
+      return `${CALENDLY_LINK}?ref=${defaultCode}`
     }
     return ''
   }
@@ -26,9 +27,8 @@ export function AffiliateProgram() {
   // Generate custom affiliate link
   const generateCustomLink = () => {
     if (customCode.trim()) {
-      const baseUrl = window.location.origin
       const sanitizedCode = customCode.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
-      return `${baseUrl}?ref=${sanitizedCode}`
+      return `${CALENDLY_LINK}?ref=${sanitizedCode}`
     }
     return generateDefaultLink()
   }
@@ -61,7 +61,7 @@ export function AffiliateProgram() {
             Affiliate Program
           </CardTitle>
           <CardDescription>
-            Create your custom affiliate link to earn commissions when people sign up through your referral.
+            Create your custom affiliate link to share with friends and family. When they click it, they'll be taken to book a call to learn more about our programs.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -105,8 +105,8 @@ export function AffiliateProgram() {
         <CardContent>
           <div className="space-y-3 text-sm text-muted-foreground">
             <p>• Share your affiliate link with friends and family</p>
-            <p>• When someone signs up using your link, you earn a commission</p>
-            <p>• Track your referrals and earnings in your dashboard</p>
+            <p>• When someone clicks your link, they'll be taken to book a discovery call</p>
+            <p>• When they sign up through your referral, you earn a commission</p>
             <p>• Customize your link to make it more memorable</p>
           </div>
         </CardContent>

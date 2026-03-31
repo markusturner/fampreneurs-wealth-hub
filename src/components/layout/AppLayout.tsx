@@ -49,11 +49,16 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [user, loading, navigate])
 
-  // ONBOARDING FIRST — redirect to onboarding if not completed
+  // ONBOARDING EXPLANATION — show explanation first if not seen
   useEffect(() => {
     if (!loading && !onboardingLoading && !roleLoading && user && !isAdminOrOwner) {
-      if (onboardingCompleted === false && location.pathname !== '/onboarding') {
-        navigate("/onboarding")
+      if (onboardingCompleted === false) {
+        const explained = localStorage.getItem(`onboarding_explained_${user.id}`)
+        if (!explained && location.pathname !== '/onboarding-explanation' && location.pathname !== '/onboarding') {
+          navigate("/onboarding-explanation")
+        } else if (explained && location.pathname !== '/onboarding') {
+          navigate("/onboarding")
+        }
       }
     }
   }, [user, loading, onboardingLoading, roleLoading, onboardingCompleted, isAdminOrOwner, navigate, location.pathname])

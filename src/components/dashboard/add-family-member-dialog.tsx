@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/hooks/use-toast'
-import { UserPlus, X, Plus, TreePine, Info } from 'lucide-react'
+import { UserPlus, X, Plus, TreePine, Info, Shield } from 'lucide-react'
 import { Card, CardContent, CardDescription } from '@/components/ui/card'
 
 interface AddFamilyMemberDialogProps {
@@ -68,6 +69,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
   const { user } = useAuth()
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -91,6 +93,7 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
       governancePosition: 'none',
       notes: ''
     })
+    setAgreedToTerms(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -443,6 +446,29 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
             />
           </div>
 
+          {/* Family Member Agreement */}
+          <Card className="border-amber-200 bg-amber-50/50">
+            <CardContent className="pt-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-amber-600" />
+                <Label className="text-sm font-semibold">Family Member Agreement</Label>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                By adding this family member, you acknowledge and agree that all new family members will be required to complete a verification process upon joining, including identity verification, an onboarding form, and a program agreement. All family information, trust documents, financial records, and internal communications are strictly confidential and must never be shared with anyone outside the family. Violations may result in immediate removal of access.
+              </p>
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="family-agreement"
+                  checked={agreedToTerms}
+                  onCheckedChange={(checked) => setAgreedToTerms(!!checked)}
+                />
+                <label htmlFor="family-agreement" className="text-xs cursor-pointer leading-relaxed">
+                  I agree that this family member must complete the full verification and onboarding process, and I understand that all family information is confidential and must not be shared externally.
+                </label>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Actions */}
           <div className="flex gap-2 pt-4">
             <Button 
@@ -455,8 +481,9 @@ export function AddFamilyMemberDialog({ open, onOpenChange }: AddFamilyMemberDia
             </Button>
             <Button 
               type="submit" 
-              disabled={loading}
+              disabled={loading || !agreedToTerms}
               className="flex-1"
+              style={{ backgroundColor: agreedToTerms ? '#ffb500' : undefined, color: agreedToTerms ? '#290a52' : undefined }}
             >
               {loading ? "Adding..." : "Add Family Member"}
             </Button>
