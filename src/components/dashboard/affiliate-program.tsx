@@ -61,7 +61,7 @@ export function AffiliateProgram() {
             Affiliate Program
           </CardTitle>
           <CardDescription>
-            Create your custom affiliate link to earn commissions when people sign up through your referral.
+            Create your custom affiliate link to share with friends and family. When they click it, they'll be taken to book a call to learn more about our programs.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
