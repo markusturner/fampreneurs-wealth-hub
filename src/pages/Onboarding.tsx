@@ -297,11 +297,39 @@ export default function Onboarding() {
             </Select>
           </div>
         )
-      case 'mailing_address':
+      case 'street_address':
         return (
           <div className="space-y-2" key={field}>
-            <Label>Mailing Address *</Label>
-            <Textarea value={form.mailing_address} onChange={e => set('mailing_address', e.target.value)} placeholder="Full mailing address" rows={3} />
+            <Label>Street Address *</Label>
+            <Input value={form.street_address} onChange={e => set('street_address', e.target.value)} placeholder="123 Main St" />
+          </div>
+        )
+      case 'apt_number':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>Apt / Suite / Unit</Label>
+            <Input value={form.apt_number} onChange={e => set('apt_number', e.target.value)} placeholder="Apt 4B (optional)" />
+          </div>
+        )
+      case 'city':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>City *</Label>
+            <Input value={form.city} onChange={e => set('city', e.target.value)} placeholder="Atlanta" />
+          </div>
+        )
+      case 'state':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>State *</Label>
+            <Input value={form.state} onChange={e => set('state', e.target.value)} placeholder="GA" />
+          </div>
+        )
+      case 'zip_code':
+        return (
+          <div className="space-y-2" key={field}>
+            <Label>Zip Code *</Label>
+            <Input value={form.zip_code} onChange={e => set('zip_code', e.target.value)} placeholder="30101" />
           </div>
         )
       case 'first_touchpoint':
