@@ -119,7 +119,7 @@ export default function ProfilePhotoUploadPage() {
             type="file"
             accept="image/jpeg,image/png,image/jpg"
             onChange={handleFileSelect}
-            className="mt-1"
+            className="mt-1 file:bg-[#ffb500] file:text-[#290a52] file:border-0 file:rounded-md file:px-3 file:py-1 file:font-medium file:cursor-pointer file:hover:bg-[#2eb2ff] file:transition-colors"
           />
         </div>
 
