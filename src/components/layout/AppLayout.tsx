@@ -49,7 +49,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [user, loading, navigate])
 
-  // ONBOARDING EXPLANATION — show explanation first if not seen
+  // ONBOARDING EXPLANATION — show explanation first if not seen (non-admin only)
   useEffect(() => {
     if (!loading && !onboardingLoading && !roleLoading && user && !isAdminOrOwner) {
       if (onboardingCompleted === false) {

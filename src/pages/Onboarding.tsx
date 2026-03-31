@@ -134,22 +134,17 @@ export default function Onboarding() {
     }
   }, [user])
 
-  // Owners/admins bypass onboarding
+  // Owners/admins can view the page without redirect
   useEffect(() => {
-    if (!authLoading && !roleLoading && isAdminOrOwner) {
-      navigate('/dashboard')
-      return
-    }
     if (!authLoading && !user) {
       navigate('/auth')
       return
     }
-  }, [authLoading, roleLoading, isAdminOrOwner, user, navigate])
+  }, [authLoading, user, navigate])
 
-  // If onboarding is already completed, skip to the next step in the funnel
+  // If onboarding is already completed and user is NOT admin, skip to the next step
   useEffect(() => {
     if (!authLoading && !onboardingLoading && !roleLoading && user && !isAdminOrOwner && onboardingCompleted) {
-      // Onboarding already done — redirect to agreement (AppLayout will handle further routing)
       navigate('/program-agreement')
     }
   }, [authLoading, onboardingLoading, roleLoading, user, isAdminOrOwner, onboardingCompleted, navigate])

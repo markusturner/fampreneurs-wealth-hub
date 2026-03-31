@@ -478,24 +478,18 @@ export default function ProgramAgreement() {
   const agreementKey = getAgreementKey(programName)
   const agreementText = agreementKey ? AGREEMENT_MAP[agreementKey] : null
 
-  // Owners/admins bypass agreement
+  // If agreement is fully completed and user is NOT admin, skip to profile photo (or community)
   useEffect(() => {
-    if (!authLoading && !roleLoading && isAdminOrOwner) {
-      navigate('/dashboard')
-    }
-  }, [authLoading, roleLoading, isAdminOrOwner, navigate])
+    if (isAdminOrOwner) return // Admins can view without redirect
 
-  // If agreement is fully completed, skip to profile photo (or community)
-  useEffect(() => {
     if (needsAgreement && agreementSigned && !verificationCompleted) {
       setAgreementStep('verification')
       return
     }
 
     if (agreementStep === 'verification') return // Don't redirect during verification
-    if (!authLoading && !roleLoading && !agreementLoading && user && !isAdminOrOwner && profile) {
+    if (!authLoading && !roleLoading && !agreementLoading && user && profile) {
       if (!needsAgreement || agreementCompleted) {
-        // Agreement done or not needed — go to profile photo if needed, else community
         if (!profile.profile_photo_uploaded) {
           navigate('/profile-photo')
         } else {

@@ -16,9 +16,9 @@ export default function ProfilePhotoUploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
-  // If profile photo already uploaded, skip to community
+  // If profile photo already uploaded and user is not admin, skip to community
   useEffect(() => {
-    if (!authLoading && user && profile?.profile_photo_uploaded) {
+    if (!authLoading && user && profile?.profile_photo_uploaded && !profile?.is_admin) {
       window.location.href = '/community'
     }
   }, [authLoading, user, profile])
