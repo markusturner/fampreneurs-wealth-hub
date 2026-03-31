@@ -457,6 +457,11 @@ export default function ProgramAgreement() {
   const [isDrawing, setIsDrawing] = useState(false)
   const [hasDrawn, setHasDrawn] = useState(false)
   const [useTypedSignature, setUseTypedSignature] = useState(true)
+  const allowPreviewAccess = typeof window !== 'undefined' && (
+    window.location.hostname.includes('lovableproject.com') ||
+    window.location.hostname.includes('lovable.app') ||
+    window.location.search.includes('__lovable_token=')
+  )
   
   // Post-signing verification states
   const [agreementStep, setAgreementStep] = useState<'signing' | 'verification'>('signing')
@@ -478,16 +483,16 @@ export default function ProgramAgreement() {
   const agreementKey = getAgreementKey(programName)
   const agreementText = agreementKey ? AGREEMENT_MAP[agreementKey] : null
 
-  // If agreement is fully completed and user is NOT admin, skip to profile photo (or community)
+  // Outside Lovable preview, keep the normal funnel auto-forward behavior
   useEffect(() => {
-    if (isAdminOrOwner) return // Admins can view without redirect
+    if (allowPreviewAccess || isAdminOrOwner) return
 
     if (needsAgreement && agreementSigned && !verificationCompleted) {
       setAgreementStep('verification')
       return
     }
 
-    if (agreementStep === 'verification') return // Don't redirect during verification
+    if (agreementStep === 'verification') return
     if (!authLoading && !roleLoading && !agreementLoading && user && profile) {
       if (!needsAgreement || agreementCompleted) {
         if (!profile.profile_photo_uploaded) {
@@ -497,7 +502,7 @@ export default function ProgramAgreement() {
         }
       }
     }
-  }, [authLoading, roleLoading, agreementLoading, user, isAdminOrOwner, profile, needsAgreement, agreementSigned, verificationCompleted, agreementCompleted, navigate, agreementStep])
+  }, [allowPreviewAccess, authLoading, roleLoading, agreementLoading, user, isAdminOrOwner, profile, needsAgreement, agreementSigned, verificationCompleted, agreementCompleted, navigate, agreementStep])
 
   const fullName = [profile?.first_name, profile?.last_name].filter(Boolean).join(' ')
   const address = profile?.mailing_address || [
@@ -519,12 +524,13 @@ export default function ProgramAgreement() {
     ctx.lineCap = 'round'
   }, [useTypedSignature])
 
-  // If no agreement needed for this program, redirect to community
+  // If no agreement needed for this program, redirect to community outside preview only
   useEffect(() => {
+    if (allowPreviewAccess) return
     if (!authLoading && !roleLoading && !isAdminOrOwner && profile && !agreementText) {
       navigate('/community')
     }
-  }, [agreementText, authLoading, roleLoading, isAdminOrOwner, profile, navigate])
+  }, [allowPreviewAccess, agreementText, authLoading, roleLoading, isAdminOrOwner, profile, navigate])
 
   // Loading state
   if (authLoading || roleLoading || agreementLoading || (!!user && !isAdminOrOwner && !profile)) {
@@ -535,8 +541,8 @@ export default function ProgramAgreement() {
     )
   }
 
-  if (isAdminOrOwner) return null
-  if (!needsAgreement || agreementCompleted) return null
+  if (!allowPreviewAccess && isAdminOrOwner) return null
+  if (!allowPreviewAccess && (!needsAgreement || agreementCompleted)) return null
   if (!agreementText) return null
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
