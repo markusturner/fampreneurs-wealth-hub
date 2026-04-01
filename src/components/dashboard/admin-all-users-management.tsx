@@ -1422,10 +1422,10 @@ export function AdminAllUsersManagement() {
                 // Family members just show join date
                 if (user.membership_type === 'family_member') {
                   return (
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <div className="flex items-center gap-2 text-sidebar-foreground">
+                      <Calendar className="h-3 w-3 text-sidebar-foreground/70 shrink-0" />
                       <div>
-                        <span className="text-xs font-medium">Joined {formatShortDate(user.created_at)}</span>
+                        <span className="text-xs font-medium text-sidebar-foreground">Joined {formatShortDate(user.created_at)}</span>
                       </div>
                     </div>
                   )
@@ -1520,24 +1520,24 @@ export function AdminAllUsersManagement() {
                     })()
                   : null
                 return (
-                  <TableRow key={user.user_id} className={isFamilyMember && hasTrustee ? 'border-l-2 border-l-[#ffb500]/60' : ''}>
-                    <TableCell className="w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 bg-background">
+                  <TableRow key={user.user_id} className={isFamilyMember && hasTrustee ? 'border-l-2 border-l-secondary/60' : ''}>
+                    <TableCell className={`w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : 'bg-background'}`}>
                       <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
                     </TableCell>
-                    <TableCell className={`font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 ${isFamilyMember && hasTrustee ? 'bg-[hsl(43,100%,97%)] dark:bg-[hsl(43,30%,12%)]' : 'bg-background'}`}>
+                    <TableCell className={`font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : 'bg-background'}`}>
                       <div className={isFamilyMember && hasTrustee ? 'pl-5 flex items-center gap-2' : ''}>
                         {isFamilyMember && hasTrustee && (
-                          <span className="text-[#ffb500] text-sm font-medium">↳</span>
+                          <span className="text-secondary text-sm font-medium">↳</span>
                         )}
                         <div>
                           <span>{user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Invited User'}</span>
                           {trusteeName && (
-                            <p className="text-[10px] text-muted-foreground leading-tight italic">under {trusteeName}</p>
+                            <p className={`text-[10px] leading-tight italic ${isFamilyMember && hasTrustee ? 'text-sidebar-foreground/70' : 'text-muted-foreground'}`}>under {trusteeName}</p>
                           )}
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className={`min-w-[280px] sticky left-[200px] z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] ${isFamilyMember && hasTrustee ? 'bg-[hsl(43,100%,97%)] dark:bg-[hsl(43,30%,12%)]' : 'bg-background'}`}>
+                    <TableCell className={`min-w-[280px] sticky left-[200px] z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : 'bg-background'}`}>
                       {renderContractTimeline(user)}
                     </TableCell>
                     <TableCell className="min-w-[120px]">
