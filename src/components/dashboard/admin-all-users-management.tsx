@@ -1537,7 +1537,7 @@ export function AdminAllUsersManagement() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="min-w-[280px] sticky left-[200px] z-10 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                    <TableCell className={`min-w-[280px] sticky left-[200px] z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] ${isFamilyMember && hasTrustee ? 'bg-[hsl(43,100%,97%)] dark:bg-[hsl(43,30%,12%)]' : 'bg-background'}`}>
                       {renderContractTimeline(user)}
                     </TableCell>
                     <TableCell className="min-w-[120px]">
