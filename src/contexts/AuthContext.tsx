@@ -94,6 +94,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setSession(session)
         setUser(session?.user ?? null)
         
+        // Redirect to reset-password page on PASSWORD_RECOVERY event
+        if (event === 'PASSWORD_RECOVERY' && session) {
+          if (window.location.pathname !== '/reset-password') {
+            window.location.href = '/reset-password'
+            return
+          }
+        }
+        
         // Defer profile fetching to prevent deadlocks
         if (session?.user) {
           setTimeout(() => {
