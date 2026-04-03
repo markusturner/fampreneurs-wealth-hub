@@ -106,7 +106,7 @@ export default function ResetPassword() {
         <CardContent>
           {isSuccess ? (
             <div className="text-center space-y-4 py-4">
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
+              <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto" />
               <p className="text-lg font-medium">Password successfully reset!</p>
               <p className="text-sm text-muted-foreground">Redirecting you to the sign in page...</p>
               <Button onClick={() => navigate('/auth')} variant="outline" className="mt-2">
@@ -120,6 +120,11 @@ export default function ResetPassword() {
               <Button onClick={() => navigate('/auth')} variant="outline" className="mt-2">
                 Back to Sign In
               </Button>
+            </div>
+          ) : !isReady ? (
+            <div className="flex flex-col items-center justify-center py-8 gap-3">
+              <Loader2 className="h-8 w-8 animate-spin text-accent" />
+              <p className="text-sm text-muted-foreground">Verifying your reset link...</p>
             </div>
           ) : (
             <form onSubmit={handleResetPassword} className="space-y-4">
