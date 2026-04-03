@@ -515,16 +515,16 @@ export default function Onboarding() {
   return (
     <div className="min-h-[100dvh] bg-background flex items-start md:items-center justify-center p-4 pt-6 md:pt-4 pb-4 overflow-y-auto">
       <Card className="w-full max-w-2xl max-h-[calc(100dvh-3rem)] md:max-h-none flex flex-col">
-        <CardHeader className="text-center">
-          <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-12 h-12 mx-auto mb-2 object-contain" />
-          <CardTitle className="text-2xl">Welcome to Fampreneurs</CardTitle>
+        <CardHeader className="text-center flex-shrink-0 py-3 md:py-6">
+          <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-1 md:mb-2 object-contain" />
+          <CardTitle className="text-xl md:text-2xl">Welcome to Fampreneurs</CardTitle>
           <CardDescription>Step {step + 1} of {STEPS.length} — {STEPS[step].title}</CardDescription>
-          <Progress value={progress} className="mt-3" />
+          <Progress value={progress} className="mt-2 md:mt-3" />
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 md:space-y-6 overflow-y-auto flex-1 min-h-0">
           {currentFields.map(renderField)}
 
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-between pt-3 md:pt-4 flex-shrink-0">
             <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 0}>
               <ArrowLeft className="h-4 w-4 mr-1" /> Back
             </Button>
