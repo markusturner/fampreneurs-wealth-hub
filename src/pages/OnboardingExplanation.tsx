@@ -54,8 +54,8 @@ export default function OnboardingExplanation() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl shadow-soft">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-background via-background to-primary/5 flex items-start md:items-center justify-center p-4 pt-6 md:pt-4 overflow-y-auto">
+      <Card className="w-full max-w-2xl shadow-soft mb-6">
         <CardHeader className="text-center pb-2">
           <div className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-3">
             <img
