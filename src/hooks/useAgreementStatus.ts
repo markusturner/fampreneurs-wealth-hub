@@ -55,6 +55,8 @@ export function useAgreementStatus() {
           .from('program_agreements')
           .select('id')
           .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
           .maybeSingle(),
         user.email
           ? supabase
@@ -64,6 +66,8 @@ export function useAgreementStatus() {
               .eq('method', 'email')
               .eq('enabled', true)
               .not('verified_at', 'is', null)
+              .order('created_at', { ascending: false })
+              .limit(1)
               .maybeSingle()
           : Promise.resolve({ data: null, error: null }),
       ])
