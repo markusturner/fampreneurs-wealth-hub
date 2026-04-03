@@ -51,7 +51,8 @@ export default function Auth() {
 
       if (data.user) {
         toast({ title: "Welcome back!", description: "Successfully signed in to your family dashboard." })
-        window.location.href = '/onboarding-explanation'
+        // Let AppLayout determine the correct destination based on onboarding/agreement status
+        window.location.href = '/workspace-community'
       }
     } catch (error) {
       toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" })
