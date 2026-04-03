@@ -30,7 +30,7 @@ serve(async (req: Request) => {
     // Password reset requests can use built-in Supabase functionality
     if (type === "password" && method === "email") {
       const { error } = await supabaseAdmin.auth.resetPasswordForEmail(contact, {
-        redirectTo: `${req.headers.get("origin") || ""}/auth?reset=password`,
+        redirectTo: `${req.headers.get("origin") || ""}/reset-password`,
       })
       
       if (error) throw error

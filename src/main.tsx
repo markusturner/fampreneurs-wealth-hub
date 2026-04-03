@@ -52,6 +52,7 @@ import ProgramAgreement from "./pages/ProgramAgreement";
 import ProgramAgreements from "./pages/ProgramAgreements";
 import OnboardingExplanation from "./pages/OnboardingExplanation";
 import ProfilePhotoUpload from "./pages/ProfilePhotoUpload";
+import ResetPassword from "./pages/ResetPassword";
 
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
@@ -108,6 +109,7 @@ function AppWithNotifications() {
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/program-agreement" element={<ProgramAgreement />} />
         <Route path="/profile-photo" element={<ProfilePhotoUpload />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Authenticated routes - with sidebar */}
         <Route path="/dashboard" element={<WithLayout><Dashboard /></WithLayout>} />
