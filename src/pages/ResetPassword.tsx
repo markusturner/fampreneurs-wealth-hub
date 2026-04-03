@@ -14,22 +14,46 @@ export default function ResetPassword() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isReady, setIsReady] = useState(false)
   const { toast } = useToast()
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Check if this is a valid recovery session by looking for the hash fragment
-    const hash = window.location.hash
-    if (!hash || !hash.includes('type=recovery')) {
-      // Also check URL params for the access_token (Supabase may put it there)
-      const params = new URLSearchParams(window.location.search)
-      const hashParams = new URLSearchParams(hash.replace('#', ''))
-      const accessToken = hashParams.get('access_token') || params.get('access_token')
-      
-      if (!accessToken) {
-        setError('This password reset link is invalid or has expired. Please request a new one.')
+    // Listen for the PASSWORD_RECOVERY event from Supabase auth
+    // The hash fragment is consumed by Supabase JS before React mounts,
+    // so we can't rely on checking window.location.hash.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsReady(true)
+        setError(null)
+      } else if (event === 'SIGNED_IN' && session) {
+        // Recovery flow also triggers SIGNED_IN — accept it
+        setIsReady(true)
+        setError(null)
       }
-    }
+    })
+
+    // Also check if there's already an active session (user may have
+    // arrived here via the recovery link and Supabase already processed it)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsReady(true)
+        setError(null)
+      } else {
+        // Give Supabase a moment to process the hash fragment
+        setTimeout(() => {
+          supabase.auth.getSession().then(({ data: { session: s } }) => {
+            if (s) {
+              setIsReady(true)
+            } else {
+              setError('This password reset link is invalid or has expired. Please request a new one.')
+            }
+          })
+        }, 2000)
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
   const handleResetPassword = async (e: React.FormEvent) => {
@@ -82,7 +106,7 @@ export default function ResetPassword() {
         <CardContent>
           {isSuccess ? (
             <div className="text-center space-y-4 py-4">
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
+              <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto" />
               <p className="text-lg font-medium">Password successfully reset!</p>
               <p className="text-sm text-muted-foreground">Redirecting you to the sign in page...</p>
               <Button onClick={() => navigate('/auth')} variant="outline" className="mt-2">
@@ -96,6 +120,11 @@ export default function ResetPassword() {
               <Button onClick={() => navigate('/auth')} variant="outline" className="mt-2">
                 Back to Sign In
               </Button>
+            </div>
+          ) : !isReady ? (
+            <div className="flex flex-col items-center justify-center py-8 gap-3">
+              <Loader2 className="h-8 w-8 animate-spin text-accent" />
+              <p className="text-sm text-muted-foreground">Verifying your reset link...</p>
             </div>
           ) : (
             <form onSubmit={handleResetPassword} className="space-y-4">
