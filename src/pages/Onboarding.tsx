@@ -513,8 +513,8 @@ export default function Onboarding() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl">
+    <div className="min-h-[100dvh] bg-background flex items-start md:items-center justify-center p-4 pt-6 md:pt-4 pb-4 overflow-y-auto">
+      <Card className="w-full max-w-2xl max-h-[calc(100dvh-3rem)] md:max-h-none flex flex-col">
         <CardHeader className="text-center">
           <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-12 h-12 mx-auto mb-2 object-contain" />
           <CardTitle className="text-2xl">Welcome to Fampreneurs</CardTitle>
