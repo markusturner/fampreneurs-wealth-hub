@@ -19,7 +19,9 @@ export function MobileBottomNav() {
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const [moreOpen, setMoreOpen] = useState(false)
 
-  const shouldShowNav = user && !location.pathname.includes('/sign-up') && !location.pathname.includes('/auth') && location.pathname !== '/'
+  const onboardingRoutes = ['/onboarding-explanation', '/onboarding', '/program-agreement', '/profile-photo']
+  const isOnboardingRoute = onboardingRoutes.some(r => location.pathname === r)
+  const shouldShowNav = user && !location.pathname.includes('/sign-up') && !location.pathname.includes('/auth') && location.pathname !== '/' && !isOnboardingRoute
 
   if (!shouldShowNav) return null
 
