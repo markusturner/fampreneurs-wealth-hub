@@ -32,7 +32,7 @@ export function RecoveryDialog() {
       if (recoveryMethod === 'email') {
         // Reset password via email using Supabase's built-in functionality
         const { error } = await supabase.auth.resetPasswordForEmail(emailOrPhone, {
-          redirectTo: `${window.location.origin}/sign-up?reset=password`,
+          redirectTo: `${window.location.origin}/reset-password`,
         })
         
         if (error) throw error
