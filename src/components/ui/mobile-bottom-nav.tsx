@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
+import { useSubscription } from '@/hooks/useSubscription'
 import { useState } from 'react'
 import {
   Sheet,
@@ -11,13 +12,30 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 
+const PROGRAM_SLUGS: Record<string, { slug: string; label: string }> = {
+  'Family Business University': { slug: 'fbu', label: 'Family Business University' },
+  'The Family Business University': { slug: 'fbu', label: 'Family Business University' },
+  'The Family Vault': { slug: 'tfv', label: 'The Family Vault' },
+  'The Family Business Accelerator': { slug: 'tfba', label: 'The Family Business Accelerator' },
+  'The Family Fortune Mastermind': { slug: 'tffm', label: 'The Family Fortune Mastermind' },
+}
+
+const ALL_COMMUNITIES = [
+  { slug: 'fbu', label: 'Family Business University' },
+  { slug: 'tfv', label: 'The Family Vault' },
+  { slug: 'tfba', label: 'The Family Business Accelerator' },
+  { slug: 'tffm', label: 'The Family Fortune Mastermind' },
+]
+
 export function MobileBottomNav() {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, profile, signOut } = useAuth()
   const { isAdmin } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
+  const { subscriptionStatus } = useSubscription()
   const [moreOpen, setMoreOpen] = useState(false)
+  const [communityPickerOpen, setCommunityPickerOpen] = useState(false)
 
   const onboardingRoutes = ['/onboarding-explanation', '/onboarding', '/program-agreement', '/profile-photo']
   const isOnboardingRoute = onboardingRoutes.some(r => location.pathname === r)
@@ -32,6 +50,36 @@ export function MobileBottomNav() {
   else if (programName.includes('accelerator')) programSlug = 'tfba'
   else if (programName.includes('mastermind') || programName.includes('fortune')) programSlug = 'tffm'
 
+  // Determine which communities the user can access
+  const getUserCommunities = () => {
+    if (isAdmin || isOwner) return ALL_COMMUNITIES
+
+    const accessible = new Set<string>()
+
+    // From subscription
+    subscriptionStatus.programs.forEach(p => accessible.add(p))
+
+    // From profile program_name
+    if (profile?.program_name && PROGRAM_SLUGS[profile.program_name]) {
+      accessible.add(PROGRAM_SLUGS[profile.program_name].slug)
+    }
+
+    // Fallback to derived slug
+    if (accessible.size === 0) accessible.add(programSlug)
+
+    return ALL_COMMUNITIES.filter(c => accessible.has(c.slug))
+  }
+
+  const userCommunities = getUserCommunities()
+
+  const handleCommunityClick = (e?: React.MouseEvent) => {
+    if (userCommunities.length > 1) {
+      e?.preventDefault()
+      setCommunityPickerOpen(true)
+    }
+    // If only 1 community, default NavLink behavior handles it
+  }
+
   const communityHref = `/workspace-community?program=${programSlug}`
   const classroomHref = '/classroom'
 
@@ -42,10 +90,12 @@ export function MobileBottomNav() {
     return true
   }
 
+  const isCommunityActive = location.pathname === '/workspace-community'
+
   const navItems = [
     { name: 'Messages', href: '/messenger', icon: Mail },
     { name: 'Calendar', href: '/workspace-calendar', icon: Calendar },
-    { name: 'Community', href: communityHref, icon: MessageSquare },
+    { name: 'Community', href: communityHref, icon: MessageSquare, isCommunity: true },
     { name: 'Classroom', href: classroomHref, icon: BookOpen },
   ]
 
@@ -79,8 +129,32 @@ export function MobileBottomNav() {
       <nav className="bg-[hsl(262_86%_19%)] backdrop-blur-xl rounded-full px-4 shadow-lg">
         <div className="flex items-center justify-around h-14">
           {navItems.map((item) => {
-            const active = isActive(item.href)
+            const active = (item as any).isCommunity ? isCommunityActive : isActive(item.href)
             const Icon = item.icon
+
+            if ((item as any).isCommunity && userCommunities.length > 1) {
+              return (
+                <button
+                  key={item.name}
+                  onClick={handleCommunityClick}
+                  className="flex items-center justify-center"
+                >
+                  <div className={cn(
+                    "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
+                    active
+                      ? "bg-white text-[hsl(262,86%,19%)] shadow-lg"
+                      : "text-white/70 hover:text-white active:scale-95"
+                  )}>
+                    <Icon className="h-5 w-5 flex-shrink-0" />
+                    {active && (
+                      <span className="text-xs font-semibold whitespace-nowrap animate-in slide-in-from-left-2 fade-in duration-300">
+                        {item.name}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              )
+            }
 
             return (
               <NavLink
@@ -232,6 +306,43 @@ export function MobileBottomNav() {
           </Sheet>
         </div>
       </nav>
+
+      {/* Community Picker Sheet */}
+      <Sheet open={communityPickerOpen} onOpenChange={setCommunityPickerOpen}>
+        <SheetContent side="bottom" className="rounded-t-3xl px-4 pt-3 pb-8 max-h-[50vh] overflow-hidden flex flex-col">
+          <div className="flex justify-center mb-4 flex-shrink-0">
+            <div className="w-10 h-1 rounded-full bg-border" />
+          </div>
+          <h3 className="text-sm font-semibold text-foreground px-3 mb-3">Choose Community</h3>
+          <div className="space-y-1 overflow-y-auto flex-1">
+            {userCommunities.map((community) => {
+              const isCurrentCommunity = location.pathname === '/workspace-community' && location.search.includes(`program=${community.slug}`)
+              return (
+                <button
+                  key={community.slug}
+                  onClick={() => {
+                    navigate(`/workspace-community?program=${community.slug}`)
+                    setCommunityPickerOpen(false)
+                  }}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors",
+                    isCurrentCommunity
+                      ? "bg-primary/10 text-primary"
+                      : "text-foreground hover:bg-muted/50 active:bg-muted"
+                  )}
+                >
+                  <MessageSquare className="h-4 w-4 flex-shrink-0" />
+                  <span className="flex-1 text-left">{community.label}</span>
+                  {isCurrentCommunity && (
+                    <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">Active</span>
+                  )}
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
+                </button>
+              )
+            })}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
