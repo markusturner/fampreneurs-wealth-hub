@@ -117,9 +117,6 @@ export function MobileBottomNav() {
 
   const adminItems = (isAdmin || isOwner) ? [
     { name: 'Admin Settings', href: '/admin-settings', icon: Shield },
-    { name: 'Onboarding Form', href: '/onboarding-submissions', icon: ClipboardList },
-    { name: 'Program Agreements', href: '/program-agreements', icon: FileCheck },
-    { name: 'Trust Forms', href: '/trust-form-submissions', icon: FileText },
   ] : []
 
   const isMoreActive = [...moreItems, ...adminItems].some(i => location.pathname === i.href)
