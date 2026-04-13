@@ -1250,6 +1250,10 @@ export function AdminAllUsersManagement() {
                     {bulkResending ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Mail className="h-3 w-3 mr-1" />}
                     Resend Logins
                   </Button>
+                  <Button size="sm" variant="outline" onClick={() => setBulkTrustOpen(true)}>
+                    <ShieldCheck className="h-3 w-3 mr-1" />
+                    Trust Access
+                  </Button>
                   <Button size="sm" variant="destructive" onClick={handleBulkDelete} disabled={bulkDeleting}>
                     {bulkDeleting ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Trash2 className="h-3 w-3 mr-1" />}
                     Delete
