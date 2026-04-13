@@ -53,6 +53,7 @@ import ProgramAgreements from "./pages/ProgramAgreements";
 import OnboardingExplanation from "./pages/OnboardingExplanation";
 import ProfilePhotoUpload from "./pages/ProfilePhotoUpload";
 import ResetPassword from "./pages/ResetPassword";
+import TrustDesignBooking from "./pages/TrustDesignBooking";
 
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
