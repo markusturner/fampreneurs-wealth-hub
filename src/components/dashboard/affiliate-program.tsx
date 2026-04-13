@@ -13,7 +13,7 @@ export function AffiliateProgram() {
   const [customCode, setCustomCode] = useState('')
   const [affiliateLink, setAffiliateLink] = useState('')
 
-  const CALENDLY_LINK = 'https://calendly.com/turnermarkus50/tfv'
+  const AFFILIATE_LINK = 'https://famlytics.io/f/the-family-business-accelerator-d3q4x7'
 
   // Generate default affiliate link using user ID
   const generateDefaultLink = () => {
