@@ -132,6 +132,11 @@ export function AdminAllUsersManagement() {
   const [trustAccessLocks, setTrustAccessLocks] = useState<{page_name: string, is_locked: boolean}[]>([])
   const [trustSubmissionDates, setTrustSubmissionDates] = useState<{trust_type: string, submitted_at: string}[]>([])
   const [savingTrustAccess, setSavingTrustAccess] = useState(false)
+  // Bulk Trust Access
+  const [bulkTrustOpen, setBulkTrustOpen] = useState(false)
+  const [bulkTrustAction, setBulkTrustAction] = useState<'unlock' | 'lock'>('unlock')
+  const [bulkTrustPages, setBulkTrustPages] = useState<Set<string>>(new Set())
+  const [bulkTrustProcessing, setBulkTrustProcessing] = useState(false)
   const { toast } = useToast()
 
   const syncStripeData = async (silent = false) => {
@@ -1006,6 +1011,42 @@ export function AdminAllUsersManagement() {
     }
   }
 
+  const handleBulkTrustAccess = async () => {
+    if (selectedUserIds.size === 0 || bulkTrustPages.size === 0) return
+    setBulkTrustProcessing(true)
+    const currentUser = (await supabase.auth.getUser()).data.user
+    let successCount = 0
+    let failCount = 0
+    const isLock = bulkTrustAction === 'lock'
+
+    for (const userId of selectedUserIds) {
+      for (const pageName of bulkTrustPages) {
+        try {
+          const { error } = await supabase
+            .from('trust_page_locks' as any)
+            .upsert({
+              user_id: userId,
+              page_name: pageName,
+              is_locked: isLock,
+              locked_by: currentUser?.id,
+              locked_at: isLock ? new Date().toISOString() : null,
+            } as any, { onConflict: 'user_id,page_name' })
+          if (error) throw error
+          successCount++
+        } catch {
+          failCount++
+        }
+      }
+    }
+
+    setBulkTrustProcessing(false)
+    setBulkTrustOpen(false)
+    setBulkTrustPages(new Set())
+    toast({
+      title: 'Bulk Trust Access Updated',
+      description: `${isLock ? 'Locked' : 'Unlocked'} ${bulkTrustPages.size} page(s) for ${selectedUserIds.size} user(s). ${failCount > 0 ? `${failCount} failed.` : ''}`
+    })
+  }
   const syncStripeSubscriptions = async () => {
     setSyncingStripe(true)
     try {
@@ -1208,6 +1249,10 @@ export function AdminAllUsersManagement() {
                   <Button size="sm" variant="outline" onClick={handleBulkResendCredentials} disabled={bulkResending}>
                     {bulkResending ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Mail className="h-3 w-3 mr-1" />}
                     Resend Logins
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setBulkTrustOpen(true)}>
+                    <ShieldCheck className="h-3 w-3 mr-1" />
+                    Trust Access
                   </Button>
                   <Button size="sm" variant="destructive" onClick={handleBulkDelete} disabled={bulkDeleting}>
                     {bulkDeleting ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Trash2 className="h-3 w-3 mr-1" />}
@@ -2733,6 +2778,70 @@ export function AdminAllUsersManagement() {
           </div>
           <DialogFooter>
             <Button onClick={() => setTrustAccessUserId(null)} style={{ backgroundColor: '#ffb500', color: '#290a52' }} className="hover:!bg-[#2eb2ff] hover:!text-white">Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Trust Access Dialog */}
+      <Dialog open={bulkTrustOpen} onOpenChange={(open) => { if (!open) { setBulkTrustOpen(false); setBulkTrustPages(new Set()) } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5" />
+              Bulk Trust Access
+            </DialogTitle>
+            <DialogDescription>
+              {bulkTrustAction === 'unlock' ? 'Unlock' : 'Lock'} trust pages for {selectedUserIds.size} selected user(s)
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant={bulkTrustAction === 'unlock' ? 'default' : 'outline'}
+                onClick={() => setBulkTrustAction('unlock')}
+                className={bulkTrustAction === 'unlock' ? 'bg-green-600 hover:bg-green-700 text-white' : ''}
+              >
+                <Unlock className="h-3 w-3 mr-1" /> Unlock
+              </Button>
+              <Button
+                size="sm"
+                variant={bulkTrustAction === 'lock' ? 'default' : 'outline'}
+                onClick={() => setBulkTrustAction('lock')}
+                className={bulkTrustAction === 'lock' ? 'bg-destructive hover:bg-destructive/90 text-white' : ''}
+              >
+                <Lock className="h-3 w-3 mr-1" /> Lock
+              </Button>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Select trust pages:</Label>
+              {TRUST_PAGES.map(page => (
+                <label key={page.name} className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors">
+                  <Checkbox
+                    checked={bulkTrustPages.has(page.name)}
+                    onCheckedChange={(checked) => {
+                      const next = new Set(bulkTrustPages)
+                      if (checked) next.add(page.name)
+                      else next.delete(page.name)
+                      setBulkTrustPages(next)
+                    }}
+                  />
+                  <span className="text-sm font-medium">{page.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="ghost" onClick={() => { setBulkTrustOpen(false); setBulkTrustPages(new Set()) }}>Cancel</Button>
+            <Button
+              onClick={handleBulkTrustAccess}
+              disabled={bulkTrustProcessing || bulkTrustPages.size === 0}
+              style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+              className="hover:!bg-[#2eb2ff] hover:!text-white"
+            >
+              {bulkTrustProcessing ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
+              {bulkTrustAction === 'unlock' ? 'Unlock' : 'Lock'} for {selectedUserIds.size} user(s)
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
