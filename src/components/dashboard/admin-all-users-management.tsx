@@ -1011,6 +1011,42 @@ export function AdminAllUsersManagement() {
     }
   }
 
+  const handleBulkTrustAccess = async () => {
+    if (selectedUserIds.size === 0 || bulkTrustPages.size === 0) return
+    setBulkTrustProcessing(true)
+    const currentUser = (await supabase.auth.getUser()).data.user
+    let successCount = 0
+    let failCount = 0
+    const isLock = bulkTrustAction === 'lock'
+
+    for (const userId of selectedUserIds) {
+      for (const pageName of bulkTrustPages) {
+        try {
+          const { error } = await supabase
+            .from('trust_page_locks' as any)
+            .upsert({
+              user_id: userId,
+              page_name: pageName,
+              is_locked: isLock,
+              locked_by: currentUser?.id,
+              locked_at: isLock ? new Date().toISOString() : null,
+            } as any, { onConflict: 'user_id,page_name' })
+          if (error) throw error
+          successCount++
+        } catch {
+          failCount++
+        }
+      }
+    }
+
+    setBulkTrustProcessing(false)
+    setBulkTrustOpen(false)
+    setBulkTrustPages(new Set())
+    toast({
+      title: 'Bulk Trust Access Updated',
+      description: `${isLock ? 'Locked' : 'Unlocked'} ${bulkTrustPages.size} page(s) for ${selectedUserIds.size} user(s). ${failCount > 0 ? `${failCount} failed.` : ''}`
+    })
+  }
   const syncStripeSubscriptions = async () => {
     setSyncingStripe(true)
     try {
