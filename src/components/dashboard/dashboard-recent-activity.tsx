@@ -35,7 +35,7 @@ export function DashboardRecentActivity() {
         { data: documents },
         { data: governance }
       ] = await Promise.all([
-        supabase.from('notifications').select('id, title, message, created_at, notification_type').eq('user_id', user.id).order('created_at', { ascending: false }).limit(5),
+        supabase.from('notifications').select('id, title, message, created_at, notification_type').eq('user_id', user.id).not('notification_type', 'in', '("community_post","community_comment","community_reaction","new_member","message","direct_message")').order('created_at', { ascending: false }).limit(5),
         supabase.from('family_members').select('id, full_name, family_position, office_role, created_at').eq('added_by', user.id).order('created_at', { ascending: false }).limit(3),
         supabase.from('family_documents').select('id, document_name, category, uploaded_at').eq('user_id', user.id).order('uploaded_at', { ascending: false }).limit(3),
         supabase.from('family_governance_policies').select('id, title, policy_type, created_at').eq('user_id', user.id).order('created_at', { ascending: false }).limit(2)
@@ -98,7 +98,7 @@ export function DashboardRecentActivity() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-bold">Recent Activity</h3>
-          <p className="text-sm text-muted-foreground">Latest updates from your TruHeirs pages</p>
+          <p className="text-sm text-muted-foreground">Latest updates from your Digital Family Office</p>
         </div>
       </div>
       {activities.length === 0 ? (
