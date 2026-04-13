@@ -13,13 +13,13 @@ export function AffiliateProgram() {
   const [customCode, setCustomCode] = useState('')
   const [affiliateLink, setAffiliateLink] = useState('')
 
-  const CALENDLY_LINK = 'https://calendly.com/turnermarkus50/tfv'
+  const AFFILIATE_LINK = 'https://famlytics.io/f/the-family-business-accelerator-d3q4x7'
 
   // Generate default affiliate link using user ID
   const generateDefaultLink = () => {
     if (user?.id) {
       const defaultCode = user.id.slice(0, 8)
-      return `${CALENDLY_LINK}?ref=${defaultCode}`
+      return `${AFFILIATE_LINK}?ref=${defaultCode}`
     }
     return ''
   }
@@ -28,7 +28,7 @@ export function AffiliateProgram() {
   const generateCustomLink = () => {
     if (customCode.trim()) {
       const sanitizedCode = customCode.trim().toLowerCase().replace(/[^a-z0-9]/g, '')
-      return `${CALENDLY_LINK}?ref=${sanitizedCode}`
+      return `${AFFILIATE_LINK}?ref=${sanitizedCode}`
     }
     return generateDefaultLink()
   }
