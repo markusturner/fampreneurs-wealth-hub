@@ -481,7 +481,7 @@ export default function Messenger() {
                                   >
                                     <div className={`rounded-2xl px-3 py-2 text-sm break-words overflow-wrap-anywhere ${
                                       isMine
-                                        ? 'bg-primary text-primary-foreground font-medium'
+                                        ? 'bg-[hsl(202,100%,59%)] text-white font-medium'
                                         : 'bg-muted text-foreground'
                                     }`}>
                                       <p className="whitespace-pre-wrap">{msg.content}</p>
