@@ -228,6 +228,56 @@ export default function Messenger() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
 
+  // Group messages by date
+  const formatDateHeader = (dateStr: string) => {
+    const date = new Date(dateStr)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    
+    if (date.toDateString() === today.toDateString()) return 'Today'
+    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday'
+    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined })
+  }
+
+  const getDateKey = (dateStr: string) => new Date(dateStr).toDateString()
+
+  const groupedMessages = messages.reduce<{ dateKey: string; label: string; msgs: DirectMessage[] }[]>((acc, msg) => {
+    const key = getDateKey(msg.created_at)
+    const last = acc[acc.length - 1]
+    if (last && last.dateKey === key) {
+      last.msgs.push(msg)
+    } else {
+      acc.push({ dateKey: key, label: formatDateHeader(msg.created_at), msgs: [msg] })
+    }
+    return acc
+  }, [])
+
+  // Touch handlers for iPhone-style swipe-to-reveal time (mobile only)
+  const handleTouchStart = useCallback((e: ReactTouchEvent, msgId: string) => {
+    if (!isMobile) return
+    touchStartX.current = e.touches[0].clientX
+    setDraggedMsgId(msgId)
+    setDragOffset(0)
+  }, [isMobile])
+
+  const handleTouchMove = useCallback((e: ReactTouchEvent) => {
+    if (!isMobile || !draggedMsgId) return
+    const diff = touchStartX.current - e.touches[0].clientX
+    const clamped = Math.max(0, Math.min(diff, 60))
+    setDragOffset(clamped)
+  }, [isMobile, draggedMsgId])
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isMobile) return
+    if (dragOffset > 30) {
+      setRevealedMsgId(draggedMsgId)
+      setTimeout(() => setRevealedMsgId(null), 2500)
+    }
+    setDraggedMsgId(null)
+    setDragOffset(0)
+  }, [isMobile, dragOffset, draggedMsgId])
+
   const selectedConvo = conversations.find(c => c.user_id === selectedUserId)
 
   const filtered = conversations.filter(c =>
