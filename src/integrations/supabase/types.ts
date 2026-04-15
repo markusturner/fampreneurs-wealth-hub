@@ -3395,6 +3395,7 @@ export type Database = {
           created_at: string
           id: string
           is_read: boolean
+          link: string | null
           message: string
           notification_type: string
           reference_id: string | null
@@ -3407,6 +3408,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_read?: boolean
+          link?: string | null
           message: string
           notification_type: string
           reference_id?: string | null
@@ -3419,6 +3421,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_read?: boolean
+          link?: string | null
           message?: string
           notification_type?: string
           reference_id?: string | null

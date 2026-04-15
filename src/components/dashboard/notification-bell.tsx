@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from "react"
-import { supabase } from "@/integrations/supabase/client"
+import { useState } from "react"
 import { Bell, Video } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -11,6 +10,10 @@ import { WeeklyCheckinDialog } from "@/components/dashboard/weekly-checkin-dialo
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { useAuth } from "@/contexts/AuthContext"
 import { cn } from "@/lib/utils"
+import { useNavigate } from "react-router-dom"
+
+const DIALOG_TYPES = new Set(['satisfaction_survey', 'weekly_checkin', 'tutorial_reminder'])
+
 export function NotificationBell() {
   const [open, setOpen] = useState(false)
   const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false)
@@ -18,61 +21,54 @@ export function NotificationBell() {
   const [tutorialVideoOpen, setTutorialVideoOpen] = useState(false)
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications()
   const { user } = useAuth()
-  const postProgramCache = useRef<Record<string, string>>({})
-
-  // Pre-fetch programs for all community_post notifications so clicks are instant
-  useEffect(() => {
-    const communityNotifs = notifications.filter(
-      n => n.notification_type === 'community_post' && n.reference_id && !postProgramCache.current[n.reference_id]
-    )
-    if (communityNotifs.length === 0) return
-    const postIds = communityNotifs.map(n => n.reference_id!).filter(Boolean)
-    supabase
-      .from('community_posts')
-      .select('id, program')
-      .in('id', postIds)
-      .then(({ data }) => {
-        data?.forEach(p => {
-          if (p.program) postProgramCache.current[p.id] = p.program
-        })
-      })
-  }, [notifications])
+  const navigate = useNavigate()
 
   const handleNotificationClick = async (notification: any) => {
-    // Mark as read if not already read
     if (!notification.is_read) {
       await markAsRead(notification.id)
     }
 
-    // Close the notification popover
     setOpen(false)
 
-    // Open the appropriate dialog based on notification type
+    // Dialog-based notifications
     if (notification.notification_type === 'satisfaction_survey') {
       setFeedbackDialogOpen(true)
-    } else if (notification.notification_type === 'weekly_checkin') {
+      return
+    }
+    if (notification.notification_type === 'weekly_checkin') {
       setWeeklyCheckinDialogOpen(true)
-    } else if (notification.notification_type === 'tutorial_reminder') {
+      return
+    }
+    if (notification.notification_type === 'tutorial_reminder') {
       setTutorialVideoOpen(true)
-    } else if (notification.notification_type === 'video_call_started') {
-      window.location.href = '/community'
-    } else if (notification.notification_type === 'family_message' || notification.notification_type === 'group_message') {
-      window.location.href = '/community'
-    } else if (notification.notification_type === 'message') {
-      window.location.href = '/messenger'
-    } else if (notification.notification_type === 'meeting_scheduled') {
-      window.location.href = '/workspace-calendar'
-    } else if (notification.notification_type === 'community_post') {
-      const program = notification.reference_id ? postProgramCache.current[notification.reference_id] : ''
-      window.location.href = `/workspace-community${program ? `?program=${program}` : ''}`
-    } else if (notification.notification_type === 'course_created') {
-      window.location.href = '/classroom'
-    } else if (notification.notification_type === 'new_member') {
-      window.location.href = '/workspace-members'
-    } else if (notification.notification_type === 'trust_created') {
-      window.location.href = '/workspace-community?program=tfv'
+      return
+    }
+
+    // Use data-driven link when available
+    if (notification.link) {
+      navigate(notification.link)
+      return
+    }
+
+    // Fallback for older notifications without link field
+    const fallbackRoutes: Record<string, string> = {
+      'video_call_started': '/community',
+      'family_message': '/community',
+      'group_message': '/community',
+      'message': '/messenger',
+      'meeting_scheduled': '/workspace-calendar',
+      'community_post': '/workspace-community',
+      'course_created': '/classroom',
+      'new_member': '/workspace-members',
+      'trust_created': '/workspace-community?program=tfv',
+    }
+
+    const route = fallbackRoutes[notification.notification_type]
+    if (route) {
+      navigate(route)
     }
   }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -169,7 +165,6 @@ export function NotificationBell() {
         </ScrollArea>
       </PopoverContent>
       
-      {/* Dialogs */}
       <FeedbackDialog 
         open={feedbackDialogOpen} 
         onOpenChange={setFeedbackDialogOpen}

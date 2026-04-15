@@ -7,15 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface Profile {
-  user_id: string;
-  display_name: string | null;
-  first_name: string | null;
-  last_name: string | null;
-}
-
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -23,7 +15,6 @@ serve(async (req) => {
   console.log('Starting feedback notification process...');
 
   try {
-    // Validate input
     const RequestSchema = z.object({
       sendToAllUsers: z.boolean().optional().default(false)
     });
@@ -33,14 +24,8 @@ serve(async (req) => {
     
     if (!validation.success) {
       return new Response(
-        JSON.stringify({ 
-          error: 'Invalid input', 
-          details: validation.error.flatten() 
-        }), 
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        JSON.stringify({ error: 'Invalid input', details: validation.error.flatten() }), 
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
@@ -48,7 +33,6 @@ serve(async (req) => {
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     // Verify admin authorization
@@ -56,10 +40,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'No authorization header' }), 
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
@@ -69,14 +50,10 @@ serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Invalid authentication' }), 
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    // Check if user has admin role
     const { data: isAdmin, error: roleError } = await supabase.rpc('has_role', {
       _user_id: user.id,
       _role: 'admin'
@@ -85,14 +62,10 @@ serve(async (req) => {
     if (roleError || !isAdmin) {
       return new Response(
         JSON.stringify({ error: 'Insufficient permissions - admin required' }), 
-        { 
-          status: 403, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get all active profiles
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('user_id, display_name, first_name, last_name')
@@ -111,11 +84,9 @@ serve(async (req) => {
     for (const profile of profiles || []) {
       usersProcessed++;
       
-      // If sendToAllUsers is true, send to everyone regardless of timing
       let needsNotification = sendToAllUsers;
       
       if (!sendToAllUsers) {
-        // Check if user needs feedback notification using the database function
         const { data: checkResult, error: checkError } = await supabase
           .rpc('user_needs_feedback_notification', { target_user_id: profile.user_id });
 
@@ -123,84 +94,62 @@ serve(async (req) => {
           console.error(`Error checking notification status for user ${profile.user_id}:`, checkError);
           continue;
         }
-        
         needsNotification = checkResult;
       }
 
       if (needsNotification) {
         console.log(`User ${profile.user_id} ${sendToAllUsers ? '(admin-triggered)' : 'needs feedback notification'}`);
         
-        // Insert or update notification record
+        // Update tracking record
         const { error: upsertError } = await supabase
           .from('feedback_notifications')
           .upsert({
             user_id: profile.user_id,
             last_notification_sent: new Date().toISOString(),
             notification_count: 1
-          }, {
-            onConflict: 'user_id'
-          });
+          }, { onConflict: 'user_id' });
 
         if (upsertError) {
           console.error(`Error updating notification record for user ${profile.user_id}:`, upsertError);
           continue;
         }
 
-        // Create actual notification for the user
-        const { error: userNotificationError } = await supabase
-          .from('family_notifications')
+        // Insert into notifications table (triggers push + real-time)
+        const { error: notifError } = await supabase
+          .from('notifications')
           .insert({
             user_id: profile.user_id,
+            sender_id: user.id,
             notification_type: 'satisfaction_survey',
             title: 'Satisfaction Survey Reminder',
             message: 'Please complete your satisfaction survey to help us improve our coaching, curriculum, calls, and processes.',
-            is_read: false
+            is_read: false,
+            link: null // dialog-based, no navigation link
           });
 
-        if (userNotificationError) {
-          console.error(`Failed to create user notification for user ${profile.user_id}:`, userNotificationError);
+        if (notifError) {
+          console.error(`Failed to create notification for user ${profile.user_id}:`, notifError);
           continue;
         }
 
         notificationsSent++;
-        console.log(`Feedback notification sent to ${profile.display_name || profile.first_name || 'User'}`);
-      } else {
-        console.log(`User ${profile.user_id} does not need notification yet`);
+        console.log(`notification_created: type=satisfaction_survey recipient=${profile.user_id}`);
       }
     }
 
-    const result = {
-      success: true,
-      usersProcessed,
-      notificationsSent,
-      timestamp: new Date().toISOString()
-    };
-
+    const result = { success: true, usersProcessed, notificationsSent, timestamp: new Date().toISOString() };
     console.log('Feedback notification process completed:', result);
 
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        ...corsHeaders,
-      },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
 
   } catch (error) {
     console.error('Error in feedback notification function:', error);
-    
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'An error occurred',
-        timestamp: new Date().toISOString()
-      }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          ...corsHeaders,
-        },
-      }
+      JSON.stringify({ error: error.message || 'An error occurred', timestamp: new Date().toISOString() }),
+      { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   }
 });
