@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 export interface Notification {
   id: string
@@ -13,6 +14,7 @@ export interface Notification {
   is_read: boolean
   created_at: string
   updated_at: string
+  link: string | null
 }
 
 export function useNotifications() {
@@ -20,15 +22,23 @@ export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const browserPermissionRequested = useRef(false)
 
-  const fetchNotifications = async () => {
-    if (!user) {
-      console.log('useNotifications: No user found')
-      return
+  // Request browser notification permission once
+  useEffect(() => {
+    if (browserPermissionRequested.current) return
+    if (typeof window === 'undefined' || !('Notification' in window)) return
+    if (Notification.permission === 'default') {
+      browserPermissionRequested.current = true
+      Notification.requestPermission().then(perm => {
+        console.log('Browser notification permission:', perm)
+      })
     }
+  }, [])
 
-    console.log('useNotifications: Fetching notifications for user:', user.id)
-    console.log('useNotifications: User email:', user.email)
+  const fetchNotifications = useCallback(async () => {
+    if (!user) return
 
     try {
       const { data, error } = await supabase
@@ -42,7 +52,6 @@ export function useNotifications() {
         throw error
       }
 
-      console.log('useNotifications: Fetched notifications:', data)
       setNotifications(data || [])
       setUnreadCount(data?.filter(n => !n.is_read).length || 0)
     } catch (error) {
@@ -50,7 +59,7 @@ export function useNotifications() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
 
   const markAsRead = async (notificationId: string) => {
     if (!user) return
@@ -85,9 +94,7 @@ export function useNotifications() {
 
       if (error) throw error
 
-      setNotifications(prev => 
-        prev.map(n => ({ ...n, is_read: true }))
-      )
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
       setUnreadCount(0)
     } catch (error) {
       console.error('Error marking all notifications as read:', error)
@@ -107,7 +114,6 @@ export function useNotifications() {
       if (error) throw error
 
       setNotifications(prev => prev.filter(n => n.id !== notificationId))
-      // Recalculate unread count
       setUnreadCount(prev => {
         const deletedNotification = notifications.find(n => n.id === notificationId)
         return deletedNotification && !deletedNotification.is_read ? Math.max(0, prev - 1) : prev
@@ -120,7 +126,6 @@ export function useNotifications() {
   useEffect(() => {
     fetchNotifications()
     
-    // Set up real-time subscription for new notifications
     const channel = supabase
       .channel('notifications-changes')
       .on(
@@ -131,9 +136,31 @@ export function useNotifications() {
           table: 'notifications',
           filter: `user_id=eq.${user?.id}`
         },
-        () => {
-          console.log('New notification received, refetching...')
+        (payload) => {
+          console.log('New notification received via real-time:', payload.new)
           fetchNotifications()
+
+          // Fire browser notification only when tab is NOT visible
+          const newNotif = payload.new as any
+          if (
+            document.visibilityState !== 'visible' &&
+            'Notification' in window &&
+            Notification.permission === 'granted'
+          ) {
+            const browserNotif = new window.Notification(newNotif.title || 'New Notification', {
+              body: newNotif.message || '',
+              icon: '/favicon.ico',
+              tag: newNotif.id, // prevents duplicates for same notification
+            })
+
+            browserNotif.onclick = () => {
+              window.focus()
+              browserNotif.close()
+              if (newNotif.link) {
+                navigate(newNotif.link)
+              }
+            }
+          }
         }
       )
       .subscribe()
@@ -141,7 +168,7 @@ export function useNotifications() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [user])
+  }, [user, fetchNotifications, navigate])
 
   return {
     notifications,

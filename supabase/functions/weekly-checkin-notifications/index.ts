@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -15,7 +14,6 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     // Verify admin authorization
@@ -23,10 +21,7 @@ serve(async (req) => {
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'No authorization header' }), 
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
@@ -36,14 +31,10 @@ serve(async (req) => {
     if (authError || !user) {
       return new Response(
         JSON.stringify({ error: 'Invalid authentication' }), 
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
-    // Check if user has admin role
     const { data: isAdmin, error: roleError } = await supabase.rpc('has_role', {
       _user_id: user.id,
       _role: 'admin'
@@ -52,16 +43,12 @@ serve(async (req) => {
     if (roleError || !isAdmin) {
       return new Response(
         JSON.stringify({ error: 'Insufficient permissions - admin required' }), 
-        { 
-          status: 403, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     console.log('Starting weekly check-in notification process...');
 
-    // Get all user profiles
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
       .select('user_id, display_name, first_name, last_name')
@@ -77,43 +64,42 @@ serve(async (req) => {
     let notificationsSent = 0;
     const usersProcessed = profiles?.length || 0;
 
-    // Send notification to each user
     if (profiles) {
       for (const profile of profiles) {
         try {
-          // Insert or update weekly check-in notification record
-          const { error: notificationError } = await supabase
+          // Update tracking record
+          const { error: trackingError } = await supabase
             .from('weekly_checkin_notifications')
             .upsert({
               user_id: profile.user_id,
               last_notification_sent: new Date().toISOString(),
               notification_count: 1
-            }, {
-              onConflict: 'user_id'
-            });
+            }, { onConflict: 'user_id' });
 
-          if (notificationError) {
-            console.error(`Failed to create notification record for user ${profile.user_id}:`, notificationError);
+          if (trackingError) {
+            console.error(`Failed to update tracking for user ${profile.user_id}:`, trackingError);
             continue;
           }
 
-          // Create actual notification for the user
-          const { error: userNotificationError } = await supabase
-            .from('family_notifications')
+          // Insert into notifications table (triggers push + real-time)
+          const { error: notifError } = await supabase
+            .from('notifications')
             .insert({
               user_id: profile.user_id,
+              sender_id: user.id,
               notification_type: 'weekly_checkin',
               title: 'Weekly Check-in Reminder',
               message: 'Please complete your weekly check-in to help us track your progress and well-being.',
-              is_read: false
+              is_read: false,
+              link: null // dialog-based, no navigation link
             });
 
-          if (userNotificationError) {
-            console.error(`Failed to create user notification for user ${profile.user_id}:`, userNotificationError);
+          if (notifError) {
+            console.error(`Failed to create notification for user ${profile.user_id}:`, notifError);
             continue;
           }
 
-          console.log(`Weekly check-in notification sent to user ${profile.user_id}`);
+          console.log(`notification_created: type=weekly_checkin recipient=${profile.user_id}`);
           notificationsSent++;
 
         } catch (error) {
@@ -122,36 +108,18 @@ serve(async (req) => {
       }
     }
 
-    const result = {
-      success: true,
-      usersProcessed,
-      notificationsSent,
-      timestamp: new Date().toISOString()
-    };
-
+    const result = { success: true, usersProcessed, notificationsSent, timestamp: new Date().toISOString() };
     console.log('Weekly check-in notification process completed:', result);
 
     return new Response(JSON.stringify(result), {
-      headers: { 
-        'Content-Type': 'application/json',
-        ...corsHeaders 
-      },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
 
   } catch (error) {
     console.error('Error in weekly check-in notifications function:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        timestamp: new Date().toISOString()
-      }),
-      {
-        status: 500,
-        headers: { 
-          'Content-Type': 'application/json',
-          ...corsHeaders 
-        },
-      }
+      JSON.stringify({ error: error.message, timestamp: new Date().toISOString() }),
+      { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   }
 });

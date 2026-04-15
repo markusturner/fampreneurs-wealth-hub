@@ -13,29 +13,23 @@ interface NotifyVideoCallRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { 
-      status: 405, 
-      headers: corsHeaders 
-    });
+    return new Response('Method not allowed', { status: 405, headers: corsHeaders });
   }
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { callId, roomName, createdBy }: NotifyVideoCallRequest = await req.json();
 
     console.log('Processing video call notification request:', { callId, roomName, createdBy });
 
-    // Get the creator's profile info
     const { data: creatorProfile, error: profileError } = await supabase
       .from('profiles')
       .select('display_name, first_name, last_name')
@@ -51,7 +45,6 @@ const handler = async (req: Request): Promise<Response> => {
       `${creatorProfile?.first_name || ''} ${creatorProfile?.last_name || ''}`.trim() || 
       'Someone';
 
-    // Get all users except the creator
     const { data: allUsers, error: usersError } = await supabase
       .from('profiles')
       .select('user_id')
@@ -64,7 +57,6 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Found ${allUsers?.length || 0} users to notify`);
 
-    // Create notifications for all users
     const notifications = (allUsers || []).map(user => ({
       user_id: user.user_id,
       sender_id: createdBy,
@@ -72,7 +64,8 @@ const handler = async (req: Request): Promise<Response> => {
       title: 'Live Video Call',
       message: `${creatorName} started a video call. Join now!`,
       reference_id: callId,
-      is_read: false
+      is_read: false,
+      link: '/community'
     }));
 
     if (notifications.length > 0) {
@@ -85,38 +78,19 @@ const handler = async (req: Request): Promise<Response> => {
         throw notificationError;
       }
 
-      console.log(`Successfully created ${notifications.length} notifications`);
+      console.log(`notification_created: type=video_call_started count=${notifications.length} ref=${callId}`);
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        notificationsSent: notifications.length,
-        creatorName 
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          ...corsHeaders,
-        },
-      }
+      JSON.stringify({ success: true, notificationsSent: notifications.length, creatorName }),
+      { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
 
   } catch (error: any) {
     console.error('Error in notify-video-call-start function:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        success: false 
-      }),
-      {
-        status: 500,
-        headers: { 
-          'Content-Type': 'application/json', 
-          ...corsHeaders 
-        },
-      }
+      JSON.stringify({ error: error.message, success: false }),
+      { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   }
 };

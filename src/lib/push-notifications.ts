@@ -9,20 +9,17 @@ export async function initPushNotifications(userId: string) {
   if (!Capacitor.isNativePlatform() || pushInitialized) return
   
   try {
-    // Request permission
     const permResult = await PushNotifications.requestPermissions()
     if (permResult.receive !== 'granted') {
       console.warn('Push notification permission not granted')
       return
     }
 
-    // Register with Apple/Google
     await PushNotifications.register()
 
-    // Listen for registration success — save token
     PushNotifications.addListener('registration', async (token) => {
       console.log('Push token received:', token.value)
-      const platform = Capacitor.getPlatform() // 'ios' or 'android'
+      const platform = Capacitor.getPlatform()
 
       const { error } = await supabase
         .from('push_tokens' as any)
@@ -38,12 +35,10 @@ export async function initPushNotifications(userId: string) {
       }
     })
 
-    // Registration error
     PushNotifications.addListener('registrationError', (err) => {
       console.error('Push registration error:', err)
     })
 
-    // Notification received while app is in foreground
     PushNotifications.addListener('pushNotificationReceived', (notification) => {
       console.log('Push notification received in foreground:', notification)
       toast({
@@ -52,28 +47,31 @@ export async function initPushNotifications(userId: string) {
       })
     })
 
-    // User tapped on a notification
     PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
       const data = action.notification.data
       console.log('Push notification tapped:', data)
 
-      // Navigate based on notification type
-      const type = data?.notification_type
-      if (type === 'message') {
-        window.location.href = '/messenger'
-      } else if (type === 'family_message' || type === 'group_message' || type === 'community_post') {
-        window.location.href = '/workspace-community'
-      } else if (type === 'meeting_scheduled') {
-        window.location.href = '/workspace-calendar'
-      } else if (type === 'course_created') {
-        window.location.href = '/classroom'
-      } else if (type === 'new_member') {
-        window.location.href = '/workspace-members'
-      } else if (type === 'trust_created') {
-        window.location.href = '/workspace-community?program=tfv'
-      } else {
-        window.location.href = '/dashboard'
+      // Use data-driven link for deep linking, fallback to type-based routing
+      if (data?.link) {
+        window.location.href = data.link
+        return
       }
+
+      const type = data?.notification_type
+      const fallbackRoutes: Record<string, string> = {
+        'message': '/messenger',
+        'family_message': '/community',
+        'group_message': '/community',
+        'community_post': '/workspace-community',
+        'meeting_scheduled': '/workspace-calendar',
+        'course_created': '/classroom',
+        'new_member': '/workspace-members',
+        'trust_created': '/workspace-community?program=tfv',
+        'video_call_started': '/community',
+        'tutorial_reminder': '/tutorial-videos',
+      }
+
+      window.location.href = fallbackRoutes[type] || '/dashboard'
     })
 
     pushInitialized = true
