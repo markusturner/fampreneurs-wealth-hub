@@ -1,76 +1,87 @@
 
 
-## Enable Native Push Notifications
+## Notification System — Production-Ready Implementation
 
-Since you already configured push notifications in BuildNatively (APNs certificates, capabilities, etc.), the only missing pieces are on the code side:
+### Summary of Issues Found
 
-1. **The app never registers for push notifications** — `@capacitor/push-notifications` is installed but never imported or used
-2. **No device token storage** — when Apple gives your app a device token, it needs to be saved so the server can send pushes to it
-3. **No server-side push sending** — when a notification row is inserted in the database, nothing sends it to Apple's servers
+1. **No `link` column** on the `notifications` table — navigation is hardcoded in the bell component
+2. **No browser notifications** — Web Notifications API not wired up
+3. **Feedback & checkin edge functions insert into `family_notifications`** (wrong table!) instead of `notifications` — so they never appear in the bell or trigger push
+4. **No `tutorial_reminder` edge function** exists at all
+5. **Push notification payload** lacks `link` for deep linking
+6. **All DB triggers** (`notify_community_post`, `notify_direct_message`, etc.) don't set a `link` value
+7. **`video_call_started`** is manually triggered via an edge function (not a DB trigger) — this is fine but needs `link` added
 
-### Step 1: Create `push_tokens` table (Migration)
+### Implementation Steps
 
-Create a table to store device tokens:
-- `id` (uuid, PK)
-- `user_id` (uuid, references auth.users, not null)
-- `token` (text, not null)
-- `platform` (text — 'ios' or 'android')
-- `created_at`, `updated_at`
-- Unique constraint on `(user_id, token)` to avoid duplicates
-- RLS: users can only insert/update/delete their own tokens
+#### Step 1 — Database Migration: Add `link` column
 
-### Step 2: Create `src/lib/push-notifications.ts`
+Add `link TEXT` to the `notifications` table. Update all 7 existing DB trigger functions to populate it:
 
-- Import `PushNotifications` from `@capacitor/push-notifications`
-- Accept a `userId` parameter (called after auth)
-- Request permission, register with Apple
-- On `registration` event: upsert the token into `push_tokens` table
-- On `pushNotificationReceived` (foreground): show in-app toast
-- On `pushNotificationActionPerformed` (tapped): navigate to the relevant page based on notification data
+| Trigger | Link Value |
+|---|---|
+| `notify_community_post` | `/workspace-community?program=<program>` |
+| `notify_direct_message` | `/messenger` |
+| `notify_group_message` | `/community` |
+| `notify_meeting_created` | `/workspace-calendar` |
+| `notify_course_created` | `/classroom` |
+| `notify_new_member` | `/workspace-members` |
+| `notify_trust_created` | `/workspace-community?program=tfv` |
 
-### Step 3: Initialize push after authentication
+Also add logging: each trigger will `RAISE LOG` with the notification type, recipient, and reference_id.
 
-- In `src/lib/mobile.ts` or `src/contexts/AuthContext.tsx`: after user is authenticated and on a native platform, call the push notification setup with the user's ID
-- This ensures tokens are always fresh and tied to the correct user
+#### Step 2 — Fix Edge Functions
 
-### Step 4: Create `send-push-notification` edge function
+**`feedback-notifications`** and **`weekly-checkin-notifications`**: Change from inserting into `family_notifications` to inserting into `notifications` (with `sender_id`, `link`). This ensures they appear in the bell and trigger push.
 
-- Triggered by a database webhook on `notifications` table INSERT
-- Looks up the target user's device token(s) from `push_tokens`
-- Sends the push via **APNs HTTP/2** using the APNs auth key
-- Requires secrets: `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_PRIVATE_KEY`, `APP_BUNDLE_ID`
+**`notify-video-call-start`**: Add `link: '/community'` to the notification insert.
 
-### Step 5: Add database webhook trigger
+**`send-push-notification`**: Accept and forward `link` in the APNs payload for deep linking. Log every dispatch attempt with user_id, type, and result.
 
-- Add config in `supabase/config.toml` for the new edge function
-- Create a database trigger on `notifications` INSERT that calls the edge function via `pg_net`
+#### Step 3 — Create Tutorial Reminder Edge Function
 
-### What You'll Need to Provide
+New edge function `send-tutorial-reminder` that inserts into `notifications` with:
+- `notification_type: 'tutorial_reminder'`
+- `title: 'Watch Your Tutorial Video'`
+- `message: 'Complete your tutorial video to get the most out of TruHeirs.'`
+- `link: '/tutorial-videos'`
+- `sender_id`: the admin user_id calling the function
 
-Since BuildNatively handles the Apple side, you'll need to add 4 secrets to Supabase:
-- **APNS_KEY_ID** — from the APNs key you created in Apple Developer
-- **APNS_TEAM_ID** — your Apple Developer Team ID
-- **APNS_PRIVATE_KEY** — the `.p8` file contents from Apple
-- **APP_BUNDLE_ID** — your app's bundle ID (likely `app.lovable.27136ee712594a9a98641109582fab4d`)
+#### Step 4 — Browser Notifications (useNotifications.ts)
 
-### Technical Details
+- On mount, request `Notification.permission` if not already granted
+- On real-time INSERT event, check `document.visibilityState !== 'visible'` before firing `new Notification()`
+- This prevents duplicate in-app + browser alerts when the user is actively looking at the app
+- On browser notification click: `window.focus()` then navigate to `notification.link`
+- Add the `link` field to the `Notification` TypeScript interface
 
-**Files to create:**
-- `supabase/migrations/add_push_tokens.sql` — new table + RLS
-- `src/lib/push-notifications.ts` — Capacitor push setup
-- `supabase/functions/send-push-notification/index.ts` — APNs sender
+#### Step 5 — Update Notification Bell (notification-bell.tsx)
 
-**Files to modify:**
-- `src/contexts/AuthContext.tsx` — call push init after auth
-- `src/lib/mobile.ts` — export helper
-- `supabase/config.toml` — register new edge function
+- Simplify `handleNotificationClick` to use `notification.link` when available, with fallback to current type-based routing
+- Remove the `postProgramCache` logic since `link` is now pre-computed
+- Dialog-based types (`satisfaction_survey`, `weekly_checkin`, `tutorial_reminder`) continue to open dialogs instead of navigating
 
-**Flow:**
-```text
-User opens app → Capacitor requests permission → Apple returns token
-  → Token saved to push_tokens table
+#### Step 6 — Update Push Notification Client (push-notifications.ts)
 
-New notification inserted → DB trigger → send-push-notification edge function
-  → Lookup token → Send to APNs → User's phone buzzes
-```
+- On notification tap, use `data.link` for navigation with fallback to current type-based routing
+
+#### Step 7 — Generate Reference Document
+
+Create both `/mnt/documents/notification-system-reference.md` and `.pdf` documenting all 11 types with trigger source, recipients, content, link, delivery channels, and logging behavior.
+
+### Files Changed
+
+| File | Change |
+|---|---|
+| Migration SQL | Add `link` column, update 7 trigger functions with `link` + logging |
+| `supabase/functions/feedback-notifications/index.ts` | Insert into `notifications` instead of `family_notifications`, add `link` |
+| `supabase/functions/weekly-checkin-notifications/index.ts` | Same fix |
+| `supabase/functions/notify-video-call-start/index.ts` | Add `link` to notification insert |
+| `supabase/functions/send-push-notification/index.ts` | Accept `link`, include in APNs payload, add logging |
+| New: `supabase/functions/send-tutorial-reminder/index.ts` | New edge function |
+| `src/hooks/useNotifications.ts` | Add browser notification support with visibility check + click handler |
+| `src/components/dashboard/notification-bell.tsx` | Use `link` field for navigation |
+| `src/lib/push-notifications.ts` | Use `data.link` for deep linking |
+| `/mnt/documents/notification-system-reference.md` | Reference document |
+| `/mnt/documents/notification-system-reference.pdf` | PDF version |
 
