@@ -104,15 +104,28 @@ export default function Messenger() {
         }
 
         const profileMap = new Map(profileData.map(p => [p.user_id, p]))
+        
+        // Ensure DM partners not in the profile list are fetched (safety net)
+        const missingUserIds = [...convMap.keys()].filter(id => !profileMap.has(id))
+        if (missingUserIds.length > 0) {
+          const { data: missingProfiles } = await supabase
+            .from('profiles')
+            .select('user_id, display_name, avatar_url')
+            .in('user_id', missingUserIds)
+          for (const mp of missingProfiles || []) {
+            profileMap.set(mp.user_id, mp)
+            profileData.push(mp)
+          }
+          setProfiles([...profileData])
+        }
+
         const convList: ConversationSummary[] = []
-        // Only include DM conversations with users in allowed profiles
         convMap.forEach((val, otherId) => {
           const p = profileMap.get(otherId)
-          if (!p) return
           convList.push({
             user_id: otherId,
-            display_name: p.display_name || 'Member',
-            avatar_url: p.avatar_url || null,
+            display_name: p?.display_name || 'Member',
+            avatar_url: p?.avatar_url || null,
             last_message: val.lastMsg.content,
             last_message_at: val.lastMsg.created_at,
             unread_count: val.unread,
