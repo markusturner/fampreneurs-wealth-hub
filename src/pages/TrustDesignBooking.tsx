@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
@@ -8,6 +8,8 @@ import { Calendar } from 'lucide-react'
 export default function TrustDesignBooking() {
   const { user, profile } = useAuth()
   const navigate = useNavigate()
+  const calendlyRef = useRef<HTMLDivElement>(null)
+  const scriptRef = useRef<HTMLScriptElement | null>(null)
 
   // If already booked, redirect immediately
   useEffect(() => {
@@ -19,22 +21,22 @@ export default function TrustDesignBooking() {
   const markBookingComplete = useCallback(async () => {
     if (user) {
       console.log('[TrustDesignBooking] Booking marked complete for', user.id)
-      // Persist in database
       await supabase
         .from('profiles')
         .update({ trust_design_booked: true })
         .eq('id', user.id)
-      // Also set localStorage as a fast cache
       localStorage.setItem(`trust_design_booking_${user.id}`, 'true')
       setTimeout(() => navigate('/workspace-community', { replace: true }), 1500)
     }
   }, [user, navigate])
 
   useEffect(() => {
+    // Load Calendly widget script outside React's managed DOM
     const script = document.createElement('script')
     script.src = 'https://assets.calendly.com/assets/external/widget.js'
     script.async = true
-    document.body.appendChild(script)
+    document.head.appendChild(script)
+    scriptRef.current = script
 
     const handleMessage = (e: MessageEvent) => {
       if (e.data?.event === 'calendly.event_scheduled') {
@@ -46,8 +48,13 @@ export default function TrustDesignBooking() {
 
     return () => {
       window.removeEventListener('message', handleMessage)
-      if (document.body.contains(script)) {
-        document.body.removeChild(script)
+      // Safe cleanup - script is in <head>, not managed by React
+      try {
+        if (scriptRef.current && scriptRef.current.parentNode) {
+          scriptRef.current.parentNode.removeChild(scriptRef.current)
+        }
+      } catch (e) {
+        // Ignore if already removed
       }
     }
   }, [markBookingComplete])
@@ -64,12 +71,14 @@ export default function TrustDesignBooking() {
             Before accessing the community, schedule a private consultation to design your trust structure with our team.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div 
-            className="calendly-inline-widget" 
-            data-url="https://calendly.com/turnermarkus50/private-trust-design?primary_color=290a52" 
-            style={{ minWidth: '320px', height: '700px' }}
-          />
+        <CardContent>
+          <div ref={calendlyRef}>
+            <div 
+              className="calendly-inline-widget" 
+              data-url="https://calendly.com/turnermarkus50/private-trust-design?primary_color=290a52" 
+              style={{ minWidth: '320px', height: '700px' }}
+            />
+          </div>
         </CardContent>
       </Card>
     </div>
