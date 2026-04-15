@@ -1,10 +1,21 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Calendar } from 'lucide-react'
 
 export default function TrustDesignBooking() {
   const { user } = useAuth()
+  const navigate = useNavigate()
+
+  const markBookingComplete = useCallback(() => {
+    if (user) {
+      localStorage.setItem(`trust_design_booking_${user.id}`, 'true')
+      console.log('[TrustDesignBooking] Booking marked complete for', user.id)
+      // Navigate to community after short delay
+      setTimeout(() => navigate('/workspace-community', { replace: true }), 1500)
+    }
+  }, [user, navigate])
 
   useEffect(() => {
     // Load Calendly widget script
@@ -13,10 +24,20 @@ export default function TrustDesignBooking() {
     script.async = true
     document.body.appendChild(script)
 
+    // Listen for Calendly scheduling events via postMessage
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data?.event === 'calendly.event_scheduled') {
+        console.log('[TrustDesignBooking] Calendly event_scheduled received')
+        markBookingComplete()
+      }
+    }
+    window.addEventListener('message', handleMessage)
+
     return () => {
+      window.removeEventListener('message', handleMessage)
       document.body.removeChild(script)
     }
-  }, [])
+  }, [markBookingComplete])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
