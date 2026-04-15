@@ -3838,6 +3838,7 @@ export type Database = {
           stripe_subscription_id: string | null
           testimonial_review: string | null
           truheirs_access: boolean
+          trust_design_booked: boolean | null
           trustpilot_review_url: string | null
           updated_at: string
           user_id: string
@@ -3891,6 +3892,7 @@ export type Database = {
           stripe_subscription_id?: string | null
           testimonial_review?: string | null
           truheirs_access?: boolean
+          trust_design_booked?: boolean | null
           trustpilot_review_url?: string | null
           updated_at?: string
           user_id: string
@@ -3944,6 +3946,7 @@ export type Database = {
           stripe_subscription_id?: string | null
           testimonial_review?: string | null
           truheirs_access?: boolean
+          trust_design_booked?: boolean | null
           trustpilot_review_url?: string | null
           updated_at?: string
           user_id?: string
