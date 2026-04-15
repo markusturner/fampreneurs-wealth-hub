@@ -149,7 +149,7 @@ export default function Messenger() {
       }
     }
     init()
-  }, [user, profile?.program_name, subscriptionStatus.loading, isAdmin, isOwner])
+  }, [user, subscriptionStatus.loading])
 
   // Fetch messages for selected conversation
   useEffect(() => {
