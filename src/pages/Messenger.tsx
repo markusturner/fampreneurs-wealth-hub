@@ -44,6 +44,7 @@ export default function Messenger() {
   const { isAdmin } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const { subscriptionStatus } = useSubscription()
+  const isMobile = useIsMobile()
   const [searchParams] = useSearchParams()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [conversations, setConversations] = useState<ConversationSummary[]>([])
@@ -53,6 +54,10 @@ export default function Messenger() {
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [draggedMsgId, setDraggedMsgId] = useState<string | null>(null)
+  const [dragOffset, setDragOffset] = useState(0)
+  const [revealedMsgId, setRevealedMsgId] = useState<string | null>(null)
+  const touchStartX = useRef(0)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // Handle URL param changes
