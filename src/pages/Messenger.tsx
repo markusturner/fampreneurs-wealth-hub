@@ -63,67 +63,23 @@ export default function Messenger() {
   }, [searchParams])
 
 
-  // Fetch profiles: get all members from all community groups the user belongs to
+  // Fetch profiles: all community members can message each other
   useEffect(() => {
     if (!user || subscriptionStatus.loading) return
     const init = async () => {
       try {
         let profileData: Profile[] = []
 
-        if (isAdmin || isOwner) {
-          // Admin/owner: fetch all profiles except placeholder invited profiles
-          const { data: profiles } = await supabase
-            .from('profiles')
-            .select('user_id, display_name, avatar_url')
-            .neq('user_id', user.id)
-            .not('display_name', 'is', null)
-            .not('display_name', 'ilike', 'invited user%')
-            .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
-            .order('display_name')
-          profileData = profiles || []
-        } else {
-          // Get all community groups the current user belongs to
-          const { data: myMemberships } = await supabase
-            .from('group_memberships')
-            .select('group_id')
-            .eq('user_id', user.id)
-
-          if (myMemberships && myMemberships.length > 0) {
-            const groupIds = myMemberships.map(m => m.group_id)
-            // Get all members from those groups
-            const { data: groupMembers } = await supabase
-              .from('group_memberships')
-              .select('user_id')
-              .in('group_id', groupIds)
-              .neq('user_id', user.id)
-
-            if (groupMembers && groupMembers.length > 0) {
-              // Deduplicate user IDs
-              const uniqueUserIds = [...new Set(groupMembers.map(m => m.user_id))]
-              const { data: profiles } = await supabase
-                .from('profiles')
-                .select('user_id, display_name, avatar_url')
-                .in('user_id', uniqueUserIds)
-                .not('display_name', 'is', null)
-                .not('display_name', 'ilike', 'invited user%')
-                .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
-                .order('display_name')
-              profileData = profiles || []
-            }
-          } else {
-            // Fallback: same program_name
-            const { data: profiles } = await supabase
-              .from('profiles')
-              .select('user_id, display_name, avatar_url')
-              .eq('program_name', profile?.program_name || '')
-              .neq('user_id', user.id)
-              .not('display_name', 'is', null)
-              .not('display_name', 'ilike', 'invited user%')
-              .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
-              .order('display_name')
-            profileData = profiles || []
-          }
-        }
+        // All authenticated users can see and message all community members
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, display_name, avatar_url')
+          .neq('user_id', user.id)
+          .not('display_name', 'is', null)
+          .not('display_name', 'ilike', 'invited user%')
+          .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
+          .order('display_name')
+        profileData = profiles || []
 
         setProfiles(profileData)
 
