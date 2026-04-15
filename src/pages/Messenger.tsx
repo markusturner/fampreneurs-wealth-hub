@@ -419,7 +419,7 @@ export default function Messenger() {
                 </div>
               </div>
               <ScrollArea className="flex-1">
-                <div className="space-y-3 p-4">
+                <div className="p-4 space-y-1">
                   {messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full py-12 text-center">
                       <MessageCircle className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
@@ -427,51 +427,103 @@ export default function Messenger() {
                       <p className="text-muted-foreground text-xs mt-1">Send a message to start the conversation</p>
                     </div>
                   ) : (
-                    messages.map(msg => (
-                      <div key={msg.id} className={`flex group/msg ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}>
-                        <div className="flex items-center gap-1">
-                          {msg.sender_id === user?.id && (isAdmin || isOwner || msg.sender_id === user?.id) && (
-                            <button
-                              onClick={async () => {
-                                try {
-                                  await supabase.from('direct_messages').delete().eq('id', msg.id)
-                                  setMessages(prev => prev.filter(m => m.id !== msg.id))
-                                  toast({ title: 'Message deleted' })
-                                } catch {
-                                  toast({ title: 'Error', description: 'Failed to delete message', variant: 'destructive' })
-                                }
-                              }}
-                              className="opacity-0 group-hover/msg:opacity-100 text-destructive hover:text-destructive/80 transition-opacity p-1"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          )}
-                          <div className={`max-w-[75%] rounded-lg px-3 py-2 text-sm ${
-                            msg.sender_id === user?.id
-                              ? 'bg-[hsl(43,100%,50%)] text-[hsl(270,80%,15%)] font-medium'
-                              : 'bg-accent text-accent-foreground'
-                          }`}>
-                            <p>{msg.content}</p>
-                            <p className={`text-[10px] mt-1 ${msg.sender_id === user?.id ? 'text-[hsl(270,80%,15%)]/60' : 'text-muted-foreground'}`}>
-                              {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </p>
-                          </div>
-                          {msg.sender_id !== user?.id && (isAdmin || isOwner) && (
-                            <button
-                              onClick={async () => {
-                                try {
-                                  await supabase.from('direct_messages').delete().eq('id', msg.id)
-                                  setMessages(prev => prev.filter(m => m.id !== msg.id))
-                                  toast({ title: 'Message deleted' })
-                                } catch {
-                                  toast({ title: 'Error', description: 'Failed to delete message', variant: 'destructive' })
-                                }
-                              }}
-                              className="opacity-0 group-hover/msg:opacity-100 text-destructive hover:text-destructive/80 transition-opacity p-1"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          )}
+                    groupedMessages.map(group => (
+                      <div key={group.dateKey}>
+                        {/* Date separator */}
+                        <div className="flex items-center justify-center my-4">
+                          <span className="px-3 py-1 rounded-full bg-muted text-muted-foreground text-[11px] font-medium">
+                            {group.label}
+                          </span>
+                        </div>
+                        {/* Messages for this date */}
+                        <div className="space-y-1">
+                          {group.msgs.map(msg => {
+                            const isMine = msg.sender_id === user?.id
+                            const isBeingDragged = draggedMsgId === msg.id
+                            const isRevealed = revealedMsgId === msg.id
+                            const showTime = isBeingDragged ? dragOffset > 15 : isRevealed
+                            const translateX = isBeingDragged ? -dragOffset : isRevealed ? -50 : 0
+
+                            return (
+                              <div
+                                key={msg.id}
+                                className={`flex group/msg ${isMine ? 'justify-end' : 'justify-start'} overflow-hidden`}
+                              >
+                                <div className="flex items-center gap-1 relative max-w-[85%] md:max-w-[75%]">
+                                  {/* Delete button - sender side (left of bubble for own messages) */}
+                                  {isMine && (isAdmin || isOwner || isMine) && (
+                                    <button
+                                      onClick={async () => {
+                                        try {
+                                          await supabase.from('direct_messages').delete().eq('id', msg.id)
+                                          setMessages(prev => prev.filter(m => m.id !== msg.id))
+                                          toast({ title: 'Message deleted' })
+                                        } catch {
+                                          toast({ title: 'Error', description: 'Failed to delete message', variant: 'destructive' })
+                                        }
+                                      }}
+                                      className="opacity-0 group-hover/msg:opacity-100 text-destructive hover:text-destructive/80 transition-opacity p-1 flex-shrink-0"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </button>
+                                  )}
+
+                                  {/* Message bubble + time container */}
+                                  <div
+                                    className="flex items-center gap-2"
+                                    style={{
+                                      transform: isMobile ? `translateX(${translateX}px)` : undefined,
+                                      transition: isBeingDragged ? 'none' : 'transform 0.3s ease-out',
+                                    }}
+                                    onTouchStart={e => handleTouchStart(e, msg.id)}
+                                    onTouchMove={handleTouchMove}
+                                    onTouchEnd={handleTouchEnd}
+                                  >
+                                    <div className={`rounded-2xl px-3 py-2 text-sm break-words overflow-wrap-anywhere ${
+                                      isMine
+                                        ? 'bg-primary text-primary-foreground font-medium'
+                                        : 'bg-muted text-foreground'
+                                    }`}>
+                                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                                    </div>
+
+                                    {/* Time label - revealed by swipe on mobile, hover on desktop */}
+                                    {isMobile ? (
+                                      <span
+                                        className={`text-[10px] text-muted-foreground whitespace-nowrap flex-shrink-0 transition-opacity duration-200 ${
+                                          showTime ? 'opacity-100' : 'opacity-0'
+                                        }`}
+                                      >
+                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                      </span>
+                                    ) : (
+                                      <span className="text-[10px] text-muted-foreground whitespace-nowrap flex-shrink-0 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-200">
+                                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {/* Delete button - receiver side (right of bubble for other's messages) */}
+                                  {!isMine && (isAdmin || isOwner) && (
+                                    <button
+                                      onClick={async () => {
+                                        try {
+                                          await supabase.from('direct_messages').delete().eq('id', msg.id)
+                                          setMessages(prev => prev.filter(m => m.id !== msg.id))
+                                          toast({ title: 'Message deleted' })
+                                        } catch {
+                                          toast({ title: 'Error', description: 'Failed to delete message', variant: 'destructive' })
+                                        }
+                                      }}
+                                      className="opacity-0 group-hover/msg:opacity-100 text-destructive hover:text-destructive/80 transition-opacity p-1 flex-shrink-0"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
                     ))
