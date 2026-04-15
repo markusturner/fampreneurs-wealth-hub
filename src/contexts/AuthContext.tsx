@@ -23,6 +23,7 @@ interface Profile {
   profile_photo_uploaded: boolean
   mailing_address: string | null
   truheirs_access: boolean
+  trust_design_booked: boolean
   created_at: string
   updated_at: string
 }

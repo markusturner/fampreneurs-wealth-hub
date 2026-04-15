@@ -1,30 +1,41 @@
 import { useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Calendar } from 'lucide-react'
 
 export default function TrustDesignBooking() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const navigate = useNavigate()
 
-  const markBookingComplete = useCallback(() => {
+  // If already booked, redirect immediately
+  useEffect(() => {
+    if (profile?.trust_design_booked) {
+      navigate('/workspace-community', { replace: true })
+    }
+  }, [profile, navigate])
+
+  const markBookingComplete = useCallback(async () => {
     if (user) {
-      localStorage.setItem(`trust_design_booking_${user.id}`, 'true')
       console.log('[TrustDesignBooking] Booking marked complete for', user.id)
-      // Navigate to community after short delay
+      // Persist in database
+      await supabase
+        .from('profiles')
+        .update({ trust_design_booked: true })
+        .eq('id', user.id)
+      // Also set localStorage as a fast cache
+      localStorage.setItem(`trust_design_booking_${user.id}`, 'true')
       setTimeout(() => navigate('/workspace-community', { replace: true }), 1500)
     }
   }, [user, navigate])
 
   useEffect(() => {
-    // Load Calendly widget script
     const script = document.createElement('script')
     script.src = 'https://assets.calendly.com/assets/external/widget.js'
     script.async = true
     document.body.appendChild(script)
 
-    // Listen for Calendly scheduling events via postMessage
     const handleMessage = (e: MessageEvent) => {
       if (e.data?.event === 'calendly.event_scheduled') {
         console.log('[TrustDesignBooking] Calendly event_scheduled received')
@@ -35,7 +46,9 @@ export default function TrustDesignBooking() {
 
     return () => {
       window.removeEventListener('message', handleMessage)
-      document.body.removeChild(script)
+      if (document.body.contains(script)) {
+        document.body.removeChild(script)
+      }
     }
   }, [markBookingComplete])
 
@@ -52,7 +65,6 @@ export default function TrustDesignBooking() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Calendly inline widget */}
           <div 
             className="calendly-inline-widget" 
             data-url="https://calendly.com/turnermarkus50/private-trust-design?primary_color=290a52" 
