@@ -6,19 +6,27 @@ import { toast } from '@/hooks/use-toast'
 let pushInitialized = false
 
 export async function initPushNotifications(userId: string) {
-  if (!Capacitor.isNativePlatform() || pushInitialized) return
-  
+  if (!Capacitor.isNativePlatform() || pushInitialized) {
+    console.log(`[PUSH-CLIENT] Skip init: native=${Capacitor.isNativePlatform()} initialized=${pushInitialized}`)
+    return
+  }
+
+  console.log(`[PUSH-CLIENT] Initializing push notifications for user=${userId}`)
+
   try {
     const permResult = await PushNotifications.requestPermissions()
+    console.log(`[PUSH-CLIENT] Permission result: ${permResult.receive}`)
+
     if (permResult.receive !== 'granted') {
-      console.warn('Push notification permission not granted')
+      console.warn('[PUSH-CLIENT] Push notification permission not granted')
       return
     }
 
     await PushNotifications.register()
+    console.log('[PUSH-CLIENT] PushNotifications.register() called')
 
     PushNotifications.addListener('registration', async (token) => {
-      console.log('Push token received:', token.value)
+      console.log(`[PUSH-CLIENT] Token received: ${token.value.substring(0, 20)}...`)
       const platform = Capacitor.getPlatform()
 
       const { error } = await supabase
@@ -29,18 +37,18 @@ export async function initPushNotifications(userId: string) {
         )
 
       if (error) {
-        console.error('Failed to save push token:', error)
+        console.error('[PUSH-CLIENT] Failed to save push token:', JSON.stringify(error))
       } else {
-        console.log('Push token saved successfully')
+        console.log(`[PUSH-CLIENT] Token saved: platform=${platform} token=${token.value.substring(0, 20)}...`)
       }
     })
 
     PushNotifications.addListener('registrationError', (err) => {
-      console.error('Push registration error:', err)
+      console.error('[PUSH-CLIENT] Registration error:', JSON.stringify(err))
     })
 
     PushNotifications.addListener('pushNotificationReceived', (notification) => {
-      console.log('Push notification received in foreground:', notification)
+      console.log('[PUSH-CLIENT] Foreground push received:', JSON.stringify(notification))
       toast({
         title: notification.title || 'Notification',
         description: notification.body || '',
@@ -49,9 +57,8 @@ export async function initPushNotifications(userId: string) {
 
     PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
       const data = action.notification.data
-      console.log('Push notification tapped:', data)
+      console.log('[PUSH-CLIENT] Push tapped, data:', JSON.stringify(data))
 
-      // Use data-driven link for deep linking, fallback to type-based routing
       if (data?.link) {
         window.location.href = data.link
         return
@@ -75,23 +82,25 @@ export async function initPushNotifications(userId: string) {
     })
 
     pushInitialized = true
-    console.log('Push notifications initialized successfully')
+    console.log('[PUSH-CLIENT] Push notifications initialized successfully')
   } catch (error) {
-    console.error('Error initializing push notifications:', error)
+    console.error('[PUSH-CLIENT] Error initializing push notifications:', error)
   }
 }
 
 export async function removePushToken(userId: string) {
   if (!Capacitor.isNativePlatform()) return
-  
+
   try {
+    console.log(`[PUSH-CLIENT] Removing push tokens for user=${userId}`)
     await supabase
       .from('push_tokens' as any)
       .delete()
       .eq('user_id', userId)
-    
+
     pushInitialized = false
+    console.log('[PUSH-CLIENT] Push tokens removed')
   } catch (error) {
-    console.error('Error removing push token:', error)
+    console.error('[PUSH-CLIENT] Error removing push token:', error)
   }
 }
