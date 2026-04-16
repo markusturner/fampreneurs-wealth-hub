@@ -30,6 +30,11 @@ export function useNotifications() {
   const browserPermissionRequested = useRef(false)
   const broadcastChannel = useRef<BroadcastChannel | null>(null)
 
+  // Sync app icon badge with unread count
+  useEffect(() => {
+    setAppBadge(unreadCount)
+  }, [unreadCount])
+
   // Request browser notification permission once
   useEffect(() => {
     if (browserPermissionRequested.current) return
