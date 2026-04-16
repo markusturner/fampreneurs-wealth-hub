@@ -35,6 +35,7 @@ export function useNotifications() {
     setAppBadge(unreadCount)
   }, [unreadCount])
 
+
   // Request browser notification permission once
   useEffect(() => {
     if (browserPermissionRequested.current) return
