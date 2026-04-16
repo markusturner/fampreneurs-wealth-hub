@@ -59,27 +59,38 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { user_id, title, message, notification_type, reference_id, link } =
-      await req.json();
+    const body = await req.json();
+    const { user_id, title, message, notification_type, reference_id, link } = body;
 
-    console.log(`push_request: user=${user_id} type=${notification_type} ref=${reference_id} link=${link}`);
+    console.log(`[PUSH] ===== START push notification =====`);
+    console.log(`[PUSH] user_id=${user_id} type=${notification_type} ref=${reference_id} link=${link}`);
+    console.log(`[PUSH] title="${title}" message="${message?.substring(0, 50)}..."`);
 
     if (!user_id) {
+      console.error("[PUSH] ERROR: user_id is missing from request body");
       return new Response(JSON.stringify({ error: "user_id required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // Check APNs configuration
     const apnsKeyId = Deno.env.get("APNS_KEY_ID");
     const apnsTeamId = Deno.env.get("APNS_TEAM_ID");
     const apnsPrivateKey = Deno.env.get("APNS_PRIVATE_KEY");
     const bundleId = Deno.env.get("APP_BUNDLE_ID");
 
+    console.log(`[PUSH] APNs config: keyId=${!!apnsKeyId} teamId=${!!apnsTeamId} privateKey=${!!apnsPrivateKey} bundleId=${bundleId || 'MISSING'}`);
+
     if (!apnsKeyId || !apnsTeamId || !apnsPrivateKey || !bundleId) {
-      console.error("Missing APNs configuration secrets");
+      console.error("[PUSH] ERROR: Missing APNs configuration secrets. Ensure APNS_KEY_ID, APNS_TEAM_ID, APNS_PRIVATE_KEY, and APP_BUNDLE_ID are set.");
       return new Response(
-        JSON.stringify({ error: "APNs not configured" }),
+        JSON.stringify({ error: "APNs not configured", details: {
+          APNS_KEY_ID: !!apnsKeyId,
+          APNS_TEAM_ID: !!apnsTeamId,
+          APNS_PRIVATE_KEY: !!apnsPrivateKey,
+          APP_BUNDLE_ID: !!bundleId,
+        }}),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -89,33 +100,46 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    console.log(`[PUSH] Fetching push tokens for user=${user_id}`);
     const { data: tokens, error: tokensError } = await supabase
       .from("push_tokens")
       .select("token, platform")
       .eq("user_id", user_id);
 
     if (tokensError) {
-      console.error("Error fetching tokens:", tokensError);
+      console.error(`[PUSH] ERROR fetching tokens:`, JSON.stringify(tokensError));
       return new Response(
-        JSON.stringify({ error: "Failed to fetch tokens" }),
+        JSON.stringify({ error: "Failed to fetch tokens", details: tokensError }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    console.log(`[PUSH] Found ${tokens?.length || 0} token(s) for user=${user_id}`);
+
     if (!tokens || tokens.length === 0) {
-      console.log(`push_skip: no tokens for user=${user_id}`);
+      console.log(`[PUSH] SKIP: No push tokens registered for user=${user_id}. User needs to install the native app and grant push permission.`);
       return new Response(
-        JSON.stringify({ message: "No push tokens for user" }),
+        JSON.stringify({ message: "No push tokens for user", user_id }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    // Log each token (redacted)
+    tokens.forEach((t, i) => {
+      console.log(`[PUSH] Token[${i}]: platform=${t.platform} token=${t.token.substring(0, 12)}...${t.token.substring(t.token.length - 6)}`);
+    });
+
+    console.log(`[PUSH] Creating APNs JWT...`);
     const jwt = await createApnsJwt(apnsPrivateKey, apnsKeyId, apnsTeamId);
+    console.log(`[PUSH] APNs JWT created successfully`);
 
     let sent = 0;
     let failed = 0;
+    const results: Array<{ token: string; platform: string; status: string; detail?: string }> = [];
 
     for (const { token, platform } of tokens) {
+      const tokenShort = `${token.substring(0, 12)}...`;
+
       if (platform === "ios") {
         const apnsPayload = {
           aps: {
@@ -125,56 +149,73 @@ Deno.serve(async (req) => {
             },
             sound: "default",
             badge: 1,
+            "mutable-content": 1,
           },
           notification_type: notification_type || "general",
           reference_id: reference_id || null,
           link: link || null,
         };
 
+        console.log(`[PUSH] Sending to APNs: token=${tokenShort} payload=${JSON.stringify(apnsPayload).substring(0, 200)}`);
+
         try {
-          const response = await fetch(
-            `https://api.push.apple.com/3/device/${token}`,
-            {
-              method: "POST",
-              headers: {
-                authorization: `bearer ${jwt}`,
-                "apns-topic": bundleId,
-                "apns-push-type": "alert",
-                "apns-priority": "10",
-                "content-type": "application/json",
-              },
-              body: JSON.stringify(apnsPayload),
-            }
-          );
+          const apnsUrl = `https://api.push.apple.com/3/device/${token}`;
+          console.log(`[PUSH] APNs URL: ${apnsUrl.substring(0, 60)}...`);
+
+          const response = await fetch(apnsUrl, {
+            method: "POST",
+            headers: {
+              authorization: `bearer ${jwt}`,
+              "apns-topic": bundleId,
+              "apns-push-type": "alert",
+              "apns-priority": "10",
+              "apns-expiration": "0",
+              "content-type": "application/json",
+            },
+            body: JSON.stringify(apnsPayload),
+          });
 
           if (response.ok) {
             sent++;
-            console.log(`push_sent: user=${user_id} type=${notification_type} token=${token.substring(0, 10)}...`);
+            const apnsId = response.headers.get("apns-id") || "unknown";
+            console.log(`[PUSH] SUCCESS: token=${tokenShort} apns-id=${apnsId}`);
+            results.push({ token: tokenShort, platform, status: "sent", detail: `apns-id=${apnsId}` });
           } else {
             failed++;
             const errorBody = await response.text();
-            console.error(`push_failed: user=${user_id} status=${response.status} error=${errorBody}`);
+            console.error(`[PUSH] FAILED: token=${tokenShort} status=${response.status} body=${errorBody}`);
+            results.push({ token: tokenShort, platform, status: "failed", detail: `status=${response.status} ${errorBody}` });
 
+            // Clean up invalid tokens
             if (response.status === 410 || response.status === 400) {
-              await supabase.from("push_tokens").delete().eq("token", token);
-              console.log(`push_token_removed: token=${token.substring(0, 10)}...`);
+              console.log(`[PUSH] Removing invalid token: ${tokenShort} (status ${response.status})`);
+              const { error: deleteError } = await supabase.from("push_tokens").delete().eq("token", token);
+              if (deleteError) {
+                console.error(`[PUSH] Failed to delete token: ${JSON.stringify(deleteError)}`);
+              } else {
+                console.log(`[PUSH] Token removed successfully: ${tokenShort}`);
+              }
             }
           }
         } catch (err) {
           failed++;
-          console.error(`push_error: user=${user_id}`, err);
+          console.error(`[PUSH] EXCEPTION sending to token=${tokenShort}:`, err);
+          results.push({ token: tokenShort, platform, status: "error", detail: String(err) });
         }
+      } else {
+        console.log(`[PUSH] SKIP: unsupported platform="${platform}" for token=${tokenShort}`);
+        results.push({ token: tokenShort, platform, status: "skipped", detail: "unsupported platform" });
       }
     }
 
-    console.log(`push_result: user=${user_id} sent=${sent} failed=${failed}`);
+    console.log(`[PUSH] ===== RESULT: sent=${sent} failed=${failed} total=${tokens.length} =====`);
 
     return new Response(
-      JSON.stringify({ sent, failed }),
+      JSON.stringify({ sent, failed, total: tokens.length, results }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Error in send-push-notification:", error);
+    console.error("[PUSH] FATAL ERROR:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
