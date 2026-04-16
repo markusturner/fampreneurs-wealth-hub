@@ -83,7 +83,7 @@ Deno.serve(async (req) => {
     console.log(`[PUSH] APNs config: keyId=${!!apnsKeyId} teamId=${!!apnsTeamId} privateKey=${!!apnsPrivateKey} bundleId=${bundleId || 'MISSING'}`);
 
     if (!apnsKeyId || !apnsTeamId || !apnsPrivateKey || !bundleId) {
-      console.error("[PUSH] ERROR: Missing APNs configuration secrets. Ensure APNS_KEY_ID, APNS_TEAM_ID, APNS_PRIVATE_KEY, and APP_BUNDLE_ID are set.");
+      console.error("[PUSH] ERROR: Missing APNs configuration secrets.");
       return new Response(
         JSON.stringify({ error: "APNs not configured", details: {
           APNS_KEY_ID: !!apnsKeyId,
@@ -100,6 +100,17 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // ── Compute accurate unread badge count from DB ──
+    const { count: unreadBadgeCount, error: countError } = await supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user_id)
+      .eq("is_read", false);
+
+    const badgeCount = countError ? 1 : (unreadBadgeCount ?? 1);
+    console.log(`[PUSH] Badge count from DB: ${badgeCount} (error=${!!countError})`);
+
+    // ── Fetch push tokens ──
     console.log(`[PUSH] Fetching push tokens for user=${user_id}`);
     const { data: tokens, error: tokensError } = await supabase
       .from("push_tokens")
@@ -117,14 +128,13 @@ Deno.serve(async (req) => {
     console.log(`[PUSH] Found ${tokens?.length || 0} token(s) for user=${user_id}`);
 
     if (!tokens || tokens.length === 0) {
-      console.log(`[PUSH] SKIP: No push tokens registered for user=${user_id}. User needs to install the native app and grant push permission.`);
+      console.log(`[PUSH] SKIP: No push tokens registered for user=${user_id}.`);
       return new Response(
-        JSON.stringify({ message: "No push tokens for user", user_id }),
+        JSON.stringify({ message: "No push tokens for user", user_id, badge: badgeCount }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Log each token (redacted)
     tokens.forEach((t, i) => {
       console.log(`[PUSH] Token[${i}]: platform=${t.platform} token=${t.token.substring(0, 12)}...${t.token.substring(t.token.length - 6)}`);
     });
@@ -148,7 +158,7 @@ Deno.serve(async (req) => {
               body: message || "",
             },
             sound: "default",
-            badge: 1,
+            badge: badgeCount,
             "mutable-content": 1,
           },
           notification_type: notification_type || "general",
@@ -156,11 +166,10 @@ Deno.serve(async (req) => {
           link: link || null,
         };
 
-        console.log(`[PUSH] Sending to APNs: token=${tokenShort} payload=${JSON.stringify(apnsPayload).substring(0, 200)}`);
+        console.log(`[PUSH] Sending APNs: token=${tokenShort} badge=${badgeCount} payload=${JSON.stringify(apnsPayload).substring(0, 200)}`);
 
         try {
           const apnsUrl = `https://api.push.apple.com/3/device/${token}`;
-          console.log(`[PUSH] APNs URL: ${apnsUrl.substring(0, 60)}...`);
 
           const response = await fetch(apnsUrl, {
             method: "POST",
@@ -178,28 +187,24 @@ Deno.serve(async (req) => {
           if (response.ok) {
             sent++;
             const apnsId = response.headers.get("apns-id") || "unknown";
-            console.log(`[PUSH] SUCCESS: token=${tokenShort} apns-id=${apnsId}`);
-            results.push({ token: tokenShort, platform, status: "sent", detail: `apns-id=${apnsId}` });
+            console.log(`[PUSH] SUCCESS: token=${tokenShort} apns-id=${apnsId} badge=${badgeCount}`);
+            results.push({ token: tokenShort, platform, status: "sent", detail: `apns-id=${apnsId} badge=${badgeCount}` });
           } else {
             failed++;
             const errorBody = await response.text();
             console.error(`[PUSH] FAILED: token=${tokenShort} status=${response.status} body=${errorBody}`);
             results.push({ token: tokenShort, platform, status: "failed", detail: `status=${response.status} ${errorBody}` });
 
-            // Clean up invalid tokens
             if (response.status === 410 || response.status === 400) {
-              console.log(`[PUSH] Removing invalid token: ${tokenShort} (status ${response.status})`);
+              console.log(`[PUSH] Removing invalid token: ${tokenShort}`);
               const { error: deleteError } = await supabase.from("push_tokens").delete().eq("token", token);
-              if (deleteError) {
-                console.error(`[PUSH] Failed to delete token: ${JSON.stringify(deleteError)}`);
-              } else {
-                console.log(`[PUSH] Token removed successfully: ${tokenShort}`);
-              }
+              if (deleteError) console.error(`[PUSH] Failed to delete token: ${JSON.stringify(deleteError)}`);
+              else console.log(`[PUSH] Token removed: ${tokenShort}`);
             }
           }
         } catch (err) {
           failed++;
-          console.error(`[PUSH] EXCEPTION sending to token=${tokenShort}:`, err);
+          console.error(`[PUSH] EXCEPTION token=${tokenShort}:`, err);
           results.push({ token: tokenShort, platform, status: "error", detail: String(err) });
         }
       } else {
@@ -208,10 +213,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`[PUSH] ===== RESULT: sent=${sent} failed=${failed} total=${tokens.length} =====`);
+    console.log(`[PUSH] ===== RESULT: sent=${sent} failed=${failed} total=${tokens.length} badge=${badgeCount} =====`);
 
     return new Response(
-      JSON.stringify({ sent, failed, total: tokens.length, results }),
+      JSON.stringify({ sent, failed, total: tokens.length, badge: badgeCount, results }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
