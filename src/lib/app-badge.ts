@@ -20,13 +20,17 @@ export async function setAppBadge(count: number) {
     console.warn('[BADGE] Badging API error:', e)
   }
 
-  // 2. Capacitor Badge plugin (native iOS / Android)
+  // 2. Capacitor Badge plugin (native iOS / Android) — dynamic import to avoid build errors
   try {
-    const { Badge } = await import('@capacitor-community/badge')
-    if (count > 0) {
-      await Badge.set({ count })
-    } else {
-      await Badge.clear()
+    // @ts-ignore — optional native dependency
+    const mod = await import(/* @vite-ignore */ '@capacitor-community/badge')
+    const Badge = mod?.Badge
+    if (Badge) {
+      if (count > 0) {
+        await Badge.set({ count })
+      } else {
+        await Badge.clear()
+      }
     }
   } catch {
     // Plugin not installed or not running in Capacitor — silently ignore
