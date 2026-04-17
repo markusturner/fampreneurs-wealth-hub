@@ -704,8 +704,15 @@ export function AdminAllUsersManagement() {
 
   const formatShortDate = (dateStr: string | null) => {
     if (!dateStr) return '—'
-    const d = new Date(dateStr)
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    // Parse YYYY-MM-DD as a local date to avoid UTC timezone shifting (e.g. Jul 8 -> Jul 7)
+    const isoMatch = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateStr)
+    let d: Date
+    if (isoMatch) {
+      d = new Date(parseInt(isoMatch[1]), parseInt(isoMatch[2]) - 1, parseInt(isoMatch[3]))
+    } else {
+      d = new Date(dateStr)
+    }
     return `${months[d.getMonth()]} ${d.getDate()}, '${String(d.getFullYear()).slice(2)}`
   }
 
