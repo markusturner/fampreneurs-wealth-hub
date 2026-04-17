@@ -103,6 +103,17 @@ export function AdminUserManagement() {
             ? paymentStartDate
             : null
 
+          const total = Number(totalAmount)
+          const cashCollected = planType === 'paid_in_full' ? total : 0
+
+          await supabase
+            .from('profiles')
+            .update({
+              program_contract_value: total,
+              program_cash_collected: cashCollected,
+            } as any)
+            .eq('id', userId)
+
           await supabase
             .from('user_payment_plans' as any)
             .insert({
