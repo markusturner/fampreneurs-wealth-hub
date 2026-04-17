@@ -1429,36 +1429,36 @@ export function AdminAllUsersManagement() {
               const pendingUsers = filteredUsers.filter((u: any) => isInvitedUser(u))
 
               const renderTableHeader = () => (
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-20 bg-background">
+                <TableHeader className="sticky top-0 z-30 bg-background">
+                  <TableRow className="bg-background hover:bg-background">
+                    <TableHead className="w-[40px] min-w-[40px] max-w-[40px] sticky left-0 top-0 z-40 bg-background">
                       <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
                     </TableHead>
-                    <TableHead className="min-w-[160px] sticky left-[40px] z-20 bg-background">Name</TableHead>
-                    <TableHead className="min-w-[280px] sticky left-[200px] z-20 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Contract Timeline</TableHead>
-                    <TableHead className="min-w-[120px]">Role</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>TruHeirs</TableHead>
-                    <TableHead>DFO</TableHead>
-                    <TableHead>Contract Value</TableHead>
-                    <TableHead>Cash Collected</TableHead>
-                    <TableHead>Remaining</TableHead>
-                    <TableHead>Program</TableHead>
-                    <TableHead>Satisfaction</TableHead>
-                    <TableHead className="min-w-[100px]">Name Selected</TableHead>
-                    <TableHead className="min-w-[100px]">Asset Inventory</TableHead>
-                    <TableHead className="min-w-[100px]">Family Trust</TableHead>
-                    <TableHead className="min-w-[100px]">Ministry Trust</TableHead>
-                    <TableHead className="min-w-[100px]">Business Trust</TableHead>
-                    <TableHead className="min-w-[100px]">Proof of Transfer</TableHead>
-                    <TableHead className="min-w-[100px]">Legacy Meeting</TableHead>
-                    <TableHead className="min-w-[160px]">Testimonials</TableHead>
-                    <TableHead className="min-w-[160px]">Trust Pilot Review</TableHead>
-                    <TableHead className="min-w-[120px]">Trust Access</TableHead>
-                    <TableHead>Forms</TableHead>
-                    <TableHead>Notes</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="min-w-[160px] sticky left-[40px] top-0 z-40 bg-background">Name</TableHead>
+                    <TableHead className="min-w-[280px] sticky left-[200px] top-0 z-40 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Contract Timeline</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Role</TableHead>
+                    <TableHead className="bg-background">Phone</TableHead>
+                    <TableHead className="bg-background">Email</TableHead>
+                    <TableHead className="bg-background">TruHeirs</TableHead>
+                    <TableHead className="bg-background">DFO</TableHead>
+                    <TableHead className="bg-background">Contract Value</TableHead>
+                    <TableHead className="bg-background">Cash Collected</TableHead>
+                    <TableHead className="bg-background">Remaining</TableHead>
+                    <TableHead className="bg-background">Program</TableHead>
+                    <TableHead className="bg-background">Satisfaction</TableHead>
+                    <TableHead className="min-w-[100px] bg-background">Name Selected</TableHead>
+                    <TableHead className="min-w-[100px] bg-background">Asset Inventory</TableHead>
+                    <TableHead className="min-w-[100px] bg-background">Family Trust</TableHead>
+                    <TableHead className="min-w-[100px] bg-background">Ministry Trust</TableHead>
+                    <TableHead className="min-w-[100px] bg-background">Business Trust</TableHead>
+                    <TableHead className="min-w-[100px] bg-background">Proof of Transfer</TableHead>
+                    <TableHead className="min-w-[100px] bg-background">Legacy Meeting</TableHead>
+                    <TableHead className="min-w-[160px] bg-background">Testimonials</TableHead>
+                    <TableHead className="min-w-[160px] bg-background">Trust Pilot Review</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Trust Access</TableHead>
+                    <TableHead className="bg-background">Forms</TableHead>
+                    <TableHead className="bg-background">Notes</TableHead>
+                    <TableHead className="text-right bg-background">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
               )
