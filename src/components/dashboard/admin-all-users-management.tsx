@@ -445,35 +445,36 @@ export function AdminAllUsersManagement() {
 
       console.log('Profile updated successfully:', updatedData)
 
-      // Auto-assign community group membership based on program
-      if (editingUser.program_name) {
-        const programToCommunityMap: Record<string, string> = {
-          'The Family Business University': 'fbu',
-          'The Family Vault': 'tfv',
-          'The Family Business Accelerator': 'tfba',
-          'The Family Fortune Mastermind': 'tffm',
+      // Sync community group memberships from the multi-select in the dialog
+      try {
+        const { data: existing } = await supabase
+          .from('group_memberships' as any)
+          .select('group_id')
+          .eq('user_id', editingUser.user_id)
+        const existingIds = new Set((existing || []).map((m: any) => m.group_id))
+        const desiredIds = editingUserCommunityIds
+
+        const toAdd = [...desiredIds].filter(id => !existingIds.has(id))
+        const toRemove = [...existingIds].filter(id => !desiredIds.has(id))
+
+        if (toAdd.length > 0) {
+          await supabase
+            .from('group_memberships' as any)
+            .upsert(
+              toAdd.map(group_id => ({ user_id: editingUser.user_id, group_id, role: 'member' })),
+              { onConflict: 'user_id,group_id' }
+            )
         }
-        const programId = programToCommunityMap[editingUser.program_name]
-        if (programId) {
-          // Find the community group for this program
-          const { data: groups } = await supabase
-            .from('community_groups')
-            .select('id')
-            .eq('program_id', programId)
-          
-          if (groups && groups.length > 0) {
-            for (const group of groups) {
-              await supabase
-                .from('group_memberships' as any)
-                .upsert({
-                  user_id: editingUser.user_id,
-                  group_id: group.id,
-                  role: 'member',
-                }, { onConflict: 'user_id,group_id' })
-            }
-          }
-          console.log(`Auto-assigned user to ${programId} community`)
+        if (toRemove.length > 0) {
+          await supabase
+            .from('group_memberships' as any)
+            .delete()
+            .eq('user_id', editingUser.user_id)
+            .in('group_id', toRemove)
         }
+        console.log(`Synced ${desiredIds.size} community memberships for user`)
+      } catch (commErr) {
+        console.error('Community membership sync error:', commErr)
       }
 
       // Update admin role
