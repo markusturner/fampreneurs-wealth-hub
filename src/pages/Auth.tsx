@@ -51,8 +51,8 @@ export default function Auth() {
 
       if (data.user) {
         toast({ title: "Welcome back!", description: "Successfully signed in to your family dashboard." })
-        // Let AppLayout determine the correct destination based on onboarding/agreement status
-        window.location.href = '/workspace-community'
+        // Land on AI Chat by default; AppLayout will still gate onboarding/agreement first if needed
+        window.location.href = '/ai-chat'
       }
     } catch (error) {
       toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" })

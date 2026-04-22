@@ -85,6 +85,9 @@ export function AdminAllUsersManagement() {
   const [fetchTrigger, setFetchTrigger] = useState(0)
   const debouncedFetchTrigger = useDebounce(fetchTrigger, 800)
   const [editingUser, setEditingUser] = useState<UserProfile | null>(null)
+  const [allCommunityGroups, setAllCommunityGroups] = useState<Array<{ id: string; name: string; program_id: string | null }>>([])
+  const [editingUserCommunityIds, setEditingUserCommunityIds] = useState<Set<string>>(new Set())
+  const [loadingCommunities, setLoadingCommunities] = useState(false)
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
   const [resendingCredentialsId, setResendingCredentialsId] = useState<string | null>(null)
@@ -377,6 +380,40 @@ export function AdminAllUsersManagement() {
     })
     setFilteredUsers(filtered)
   }, [searchQuery, users, filterRole, filterProgram, filterTruheirs])
+  // Load all community groups + this user's current memberships when opening edit dialog
+  useEffect(() => {
+    if (!editingUser) {
+      setEditingUserCommunityIds(new Set())
+      return
+    }
+    let cancelled = false
+    const load = async () => {
+      setLoadingCommunities(true)
+      try {
+        const [{ data: groups }, { data: memberships }] = await Promise.all([
+          supabase.from('community_groups').select('id, name, program_id').order('name'),
+          supabase.from('group_memberships' as any).select('group_id').eq('user_id', editingUser.user_id),
+        ])
+        if (cancelled) return
+        setAllCommunityGroups(groups || [])
+        setEditingUserCommunityIds(new Set((memberships || []).map((m: any) => m.group_id)))
+      } finally {
+        if (!cancelled) setLoadingCommunities(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [editingUser?.user_id])
+
+  const toggleEditingUserCommunity = (groupId: string) => {
+    setEditingUserCommunityIds(prev => {
+      const next = new Set(prev)
+      if (next.has(groupId)) next.delete(groupId)
+      else next.add(groupId)
+      return next
+    })
+  }
+
   const handleUpdateUser = async () => {
     if (!editingUser) return
 
@@ -408,35 +445,36 @@ export function AdminAllUsersManagement() {
 
       console.log('Profile updated successfully:', updatedData)
 
-      // Auto-assign community group membership based on program
-      if (editingUser.program_name) {
-        const programToCommunityMap: Record<string, string> = {
-          'The Family Business University': 'fbu',
-          'The Family Vault': 'tfv',
-          'The Family Business Accelerator': 'tfba',
-          'The Family Fortune Mastermind': 'tffm',
+      // Sync community group memberships from the multi-select in the dialog
+      try {
+        const { data: existing } = await supabase
+          .from('group_memberships' as any)
+          .select('group_id')
+          .eq('user_id', editingUser.user_id)
+        const existingIds = new Set((existing || []).map((m: any) => m.group_id))
+        const desiredIds = editingUserCommunityIds
+
+        const toAdd = [...desiredIds].filter(id => !existingIds.has(id))
+        const toRemove = [...existingIds].filter(id => !desiredIds.has(id))
+
+        if (toAdd.length > 0) {
+          await supabase
+            .from('group_memberships' as any)
+            .upsert(
+              toAdd.map(group_id => ({ user_id: editingUser.user_id, group_id, role: 'member' })),
+              { onConflict: 'user_id,group_id' }
+            )
         }
-        const programId = programToCommunityMap[editingUser.program_name]
-        if (programId) {
-          // Find the community group for this program
-          const { data: groups } = await supabase
-            .from('community_groups')
-            .select('id')
-            .eq('program_id', programId)
-          
-          if (groups && groups.length > 0) {
-            for (const group of groups) {
-              await supabase
-                .from('group_memberships' as any)
-                .upsert({
-                  user_id: editingUser.user_id,
-                  group_id: group.id,
-                  role: 'member',
-                }, { onConflict: 'user_id,group_id' })
-            }
-          }
-          console.log(`Auto-assigned user to ${programId} community`)
+        if (toRemove.length > 0) {
+          await supabase
+            .from('group_memberships' as any)
+            .delete()
+            .eq('user_id', editingUser.user_id)
+            .in('group_id', toRemove)
         }
+        console.log(`Synced ${desiredIds.size} community memberships for user`)
+      } catch (commErr) {
+        console.error('Community membership sync error:', commErr)
       }
 
       // Update admin role
@@ -1965,6 +2003,39 @@ export function AdminAllUsersManagement() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Communities</Label>
+                <p className="text-xs text-muted-foreground">
+                  Select all communities this user should be able to access. They'll be able to swap between them.
+                </p>
+                <div className="border rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
+                  {loadingCommunities ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading communities...
+                    </div>
+                  ) : allCommunityGroups.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No communities available.</p>
+                  ) : (
+                    allCommunityGroups.map((group) => (
+                      <div key={group.id} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`edit-community-${group.id}`}
+                          checked={editingUserCommunityIds.has(group.id)}
+                          onCheckedChange={() => toggleEditingUserCommunity(group.id)}
+                        />
+                        <Label
+                          htmlFor={`edit-community-${group.id}`}
+                          className="text-sm font-normal cursor-pointer flex-1"
+                        >
+                          {group.name}
+                        </Label>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
