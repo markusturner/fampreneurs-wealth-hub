@@ -380,6 +380,40 @@ export function AdminAllUsersManagement() {
     })
     setFilteredUsers(filtered)
   }, [searchQuery, users, filterRole, filterProgram, filterTruheirs])
+  // Load all community groups + this user's current memberships when opening edit dialog
+  useEffect(() => {
+    if (!editingUser) {
+      setEditingUserCommunityIds(new Set())
+      return
+    }
+    let cancelled = false
+    const load = async () => {
+      setLoadingCommunities(true)
+      try {
+        const [{ data: groups }, { data: memberships }] = await Promise.all([
+          supabase.from('community_groups').select('id, name, program_id').order('name'),
+          supabase.from('group_memberships' as any).select('group_id').eq('user_id', editingUser.user_id),
+        ])
+        if (cancelled) return
+        setAllCommunityGroups(groups || [])
+        setEditingUserCommunityIds(new Set((memberships || []).map((m: any) => m.group_id)))
+      } finally {
+        if (!cancelled) setLoadingCommunities(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [editingUser?.user_id])
+
+  const toggleEditingUserCommunity = (groupId: string) => {
+    setEditingUserCommunityIds(prev => {
+      const next = new Set(prev)
+      if (next.has(groupId)) next.delete(groupId)
+      else next.add(groupId)
+      return next
+    })
+  }
+
   const handleUpdateUser = async () => {
     if (!editingUser) return
 
