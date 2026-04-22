@@ -57,7 +57,7 @@ serve(async (req) => {
 
     const { data: profileData } = await supabaseClient
       .from("profiles")
-      .select("is_admin")
+      .select("is_admin, program_name")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -68,6 +68,24 @@ serve(async (req) => {
         has_access: true,
         unlocked_trusts: [...TRUST_ORDER],
         program: 'admin',
+        tfv_total_paid: 0,
+        tfba_total_paid: 0,
+        is_pif: true,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Manual program assignment via profile (admin-invited users without Stripe)
+    const programName = (profileData?.program_name || '').toLowerCase();
+    const hasManualTFBA = programName.includes('family business accelerator') || programName.includes('tfba');
+    const hasManualTFV = programName.includes('family vault') || programName.includes('tfv');
+
+    if (hasManualTFBA || hasManualTFV) {
+      return new Response(JSON.stringify({
+        has_access: true,
+        unlocked_trusts: [...TRUST_ORDER],
+        program: hasManualTFBA ? 'tfba' : 'tfv',
         tfv_total_paid: 0,
         tfba_total_paid: 0,
         is_pif: true,
