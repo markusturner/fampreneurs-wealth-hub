@@ -2006,6 +2006,39 @@ export function AdminAllUsersManagement() {
               </div>
 
               <div className="space-y-2">
+                <Label>Communities</Label>
+                <p className="text-xs text-muted-foreground">
+                  Select all communities this user should be able to access. They'll be able to swap between them.
+                </p>
+                <div className="border rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
+                  {loadingCommunities ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading communities...
+                    </div>
+                  ) : allCommunityGroups.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No communities available.</p>
+                  ) : (
+                    allCommunityGroups.map((group) => (
+                      <div key={group.id} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`edit-community-${group.id}`}
+                          checked={editingUserCommunityIds.has(group.id)}
+                          onCheckedChange={() => toggleEditingUserCommunity(group.id)}
+                        />
+                        <Label
+                          htmlFor={`edit-community-${group.id}`}
+                          className="text-sm font-normal cursor-pointer flex-1"
+                        >
+                          {group.name}
+                        </Label>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="edit-mailing-address">Mailing Address</Label>
                 <Input
                   id="edit-mailing-address"
