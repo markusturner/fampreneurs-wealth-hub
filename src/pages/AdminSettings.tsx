@@ -3,6 +3,7 @@ import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-o
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AdminUserManagement } from '@/components/dashboard/admin-user-management'
 import { AdminMassNotification } from '@/components/dashboard/admin-mass-notification'
+import { AdminPushTest } from '@/components/dashboard/admin-push-test'
 import { AdminAllUsersManagement } from '@/components/dashboard/admin-all-users-management'
 import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
 import { AdminTutorialVideoManager, AdminUpgradeVideoManager, AdminVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
@@ -124,6 +125,7 @@ export function AdminSettings() {
             <AdminAllUsersManagement />
             <AdminUserManagement />
             <AdminMassNotification />
+            <AdminPushTest />
           </TabsContent>
         )}
       </Tabs>
