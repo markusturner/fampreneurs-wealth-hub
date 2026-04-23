@@ -425,19 +425,36 @@ export default function TrustCreation() {
         )}
       </div>
 
-      {/* Trust Forms */}
+      {/* Step 1 - Trust Name Translator & Asset Inventory */}
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-3">Trust Forms</h2>
+        <div className="flex items-center gap-2 mb-3">
+          <Badge className="bg-accent text-accent-foreground">Step 1</Badge>
+          <h2 className="text-lg font-semibold text-foreground">Trust Name & Asset Inventory</h2>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {(['trust_name_translator', 'asset_inventory'] as SectionType[]).map(type => renderSectionCard(type))}
+        </div>
+      </div>
+
+      {/* Step 2 - Trust Forms */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Badge className="bg-accent text-accent-foreground">Step 2</Badge>
+          <h2 className="text-lg font-semibold text-foreground">Trust Forms</h2>
+        </div>
         <div className="grid gap-4 sm:grid-cols-3">
           {TRUST_TYPES.map(type => renderSectionCard(type))}
         </div>
       </div>
 
-      {/* Tools - Asset Inventory & Trust Checklist */}
+      {/* Step 3 - Schedule B & Legacy Meeting */}
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-3">Trust Tools</h2>
+        <div className="flex items-center gap-2 mb-3">
+          <Badge className="bg-accent text-accent-foreground">Step 3</Badge>
+          <h2 className="text-lg font-semibold text-foreground">Schedule B & Family Legacy Meeting</h2>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {TOOL_TYPES.map(type => renderSectionCard(type))}
+          {(['trust_asset_uploads', 'legacy_meeting'] as SectionType[]).map(type => renderSectionCard(type))}
         </div>
       </div>
 

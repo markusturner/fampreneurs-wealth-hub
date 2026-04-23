@@ -989,6 +989,8 @@ export function AdminAllUsersManagement() {
     { name: 'business', label: 'Business Trust' },
     { name: 'trust_name_translator', label: 'Trust Name Translator' },
     { name: 'asset_inventory', label: 'Asset Inventory' },
+    { name: 'trust_asset_uploads', label: 'Schedule B & Proof of Transfer' },
+    { name: 'legacy_meeting', label: 'First Family Legacy Meeting' },
   ]
 
   const handleOpenTrustAccess = async (userId: string) => {
