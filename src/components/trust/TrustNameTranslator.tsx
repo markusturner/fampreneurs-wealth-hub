@@ -185,14 +185,32 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
             })}
           </div>
 
+          <div className="space-y-3 rounded-lg border border-border/50 p-4">
+            <Label className="text-sm font-semibold">Select trust type(s) to submit</Label>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {TRUST_TYPE_OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className="flex items-center gap-2 cursor-pointer rounded-md border border-border/40 px-3 py-2 hover:border-primary/40 transition-colors"
+                >
+                  <Checkbox
+                    checked={selectedTrustTypes.includes(opt.value)}
+                    onCheckedChange={() => toggleTrustType(opt.value)}
+                  />
+                  <span className="text-sm font-medium">{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           <Button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || selectedTrustTypes.length === 0}
             className="gap-2 hover:!bg-[#2eb2ff] hover:!text-white"
             style={{ backgroundColor: "#ffb500", color: "#290a52" }}
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-            Save Translation
+            Submit Translation
           </Button>
         </div>
       )}
