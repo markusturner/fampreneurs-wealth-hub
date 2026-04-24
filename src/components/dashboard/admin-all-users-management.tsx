@@ -439,6 +439,11 @@ export function AdminAllUsersManagement() {
     console.log('Updating user with membership_type:', editingUser.membership_type)
 
     try {
+      // Derive program_name from the multi-select. Keep stored value as a comma-separated
+      // list so existing single-program lookups still match the first/primary program.
+      const programsArray = Array.from(selectedProgramNames)
+      const programNameValue = programsArray.length > 0 ? programsArray.join(', ') : ''
+
       // Update profile fields
       const { data: updatedData, error: profileError } = await supabase
         .from('profiles')
@@ -449,7 +454,7 @@ export function AdminAllUsersManagement() {
           phone: editingUser.phone,
           mailing_address: editingUser.mailing_address,
           truheirs_access: editingUser.truheirs_access,
-          program_name: editingUser.program_name,
+          program_name: programNameValue,
           membership_type: editingUser.membership_type,
           is_admin: editingUser.is_admin,
           is_moderator: editingUser.is_moderator,
@@ -464,17 +469,34 @@ export function AdminAllUsersManagement() {
 
       console.log('Profile updated successfully:', updatedData)
 
-      // Sync community group memberships from the multi-select in the dialog
+      // Auto-sync community memberships based on the selected programs.
+      // Each selected program grants access to its matching community group.
       try {
+        const desiredCommunityNames = programsArray.map(programToCommunityName)
+        const desiredGroupIds = new Set(
+          allCommunityGroups
+            .filter(g => desiredCommunityNames.includes(g.name))
+            .map(g => g.id)
+        )
+        // Identify which existing memberships are program-managed (i.e. correspond to
+        // any known program community). Only those will be removed when a program is
+        // unselected — leaves untouched any non-program groups (e.g. "Community").
+        const programManagedGroupIds = new Set(
+          allCommunityGroups
+            .filter(g => Object.values(PROGRAM_TO_COMMUNITY_NAME).includes(g.name))
+            .map(g => g.id)
+        )
+
         const { data: existing } = await supabase
           .from('group_memberships' as any)
           .select('group_id')
           .eq('user_id', editingUser.user_id)
         const existingIds = new Set((existing || []).map((m: any) => m.group_id))
-        const desiredIds = editingUserCommunityIds
 
-        const toAdd = [...desiredIds].filter(id => !existingIds.has(id))
-        const toRemove = [...existingIds].filter(id => !desiredIds.has(id))
+        const toAdd = [...desiredGroupIds].filter(id => !existingIds.has(id))
+        const toRemove = [...existingIds].filter(
+          id => programManagedGroupIds.has(id) && !desiredGroupIds.has(id)
+        )
 
         if (toAdd.length > 0) {
           await supabase
@@ -491,7 +513,7 @@ export function AdminAllUsersManagement() {
             .eq('user_id', editingUser.user_id)
             .in('group_id', toRemove)
         }
-        console.log(`Synced ${desiredIds.size} community memberships for user`)
+        console.log(`Synced ${desiredGroupIds.size} program-based community memberships`)
       } catch (commErr) {
         console.error('Community membership sync error:', commErr)
       }
