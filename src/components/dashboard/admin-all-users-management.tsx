@@ -47,7 +47,19 @@ import {
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { ChevronDown } from 'lucide-react'
 import { getAgreementTextByProgram } from '@/lib/agreement-texts'
+
+// Map program_name -> community_groups.name (matches DB trigger logic)
+const PROGRAM_TO_COMMUNITY_NAME: Record<string, string> = {
+  'The Family Business University': 'Family Business University',
+  'The Family Vault': 'The Family Vault',
+  'The Family Business Accelerator': 'The Family Business Accelerator',
+  'The Family Legacy: VIP Weekend': 'The Family Legacy: VIP Weekend',
+  'The Family Fortune Mastermind': 'The Family Fortune Mastermind',
+}
+const programToCommunityName = (p: string) => PROGRAM_TO_COMMUNITY_NAME[p] || p
 
 interface UserProfile {
   user_id: string
@@ -88,6 +100,7 @@ export function AdminAllUsersManagement() {
   const [allCommunityGroups, setAllCommunityGroups] = useState<Array<{ id: string; name: string; program_id: string | null }>>([])
   const [editingUserCommunityIds, setEditingUserCommunityIds] = useState<Set<string>>(new Set())
   const [loadingCommunities, setLoadingCommunities] = useState(false)
+  const [selectedProgramNames, setSelectedProgramNames] = useState<Set<string>>(new Set())
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
   const [resendingCredentialsId, setResendingCredentialsId] = useState<string | null>(null)
@@ -384,6 +397,7 @@ export function AdminAllUsersManagement() {
   useEffect(() => {
     if (!editingUser) {
       setEditingUserCommunityIds(new Set())
+      setSelectedProgramNames(new Set())
       return
     }
     let cancelled = false
@@ -397,6 +411,11 @@ export function AdminAllUsersManagement() {
         if (cancelled) return
         setAllCommunityGroups(groups || [])
         setEditingUserCommunityIds(new Set((memberships || []).map((m: any) => m.group_id)))
+        // Initialize selected programs from current program_name (supports legacy single value
+        // or comma-separated multi values)
+        const raw = (editingUser.program_name || '').trim()
+        const parts = raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : []
+        setSelectedProgramNames(new Set(parts))
       } finally {
         if (!cancelled) setLoadingCommunities(false)
       }
@@ -420,6 +439,11 @@ export function AdminAllUsersManagement() {
     console.log('Updating user with membership_type:', editingUser.membership_type)
 
     try {
+      // Derive program_name from the multi-select. Keep stored value as a comma-separated
+      // list so existing single-program lookups still match the first/primary program.
+      const programsArray = Array.from(selectedProgramNames)
+      const programNameValue = programsArray.length > 0 ? programsArray.join(', ') : ''
+
       // Update profile fields
       const { data: updatedData, error: profileError } = await supabase
         .from('profiles')
@@ -430,7 +454,7 @@ export function AdminAllUsersManagement() {
           phone: editingUser.phone,
           mailing_address: editingUser.mailing_address,
           truheirs_access: editingUser.truheirs_access,
-          program_name: editingUser.program_name,
+          program_name: programNameValue,
           membership_type: editingUser.membership_type,
           is_admin: editingUser.is_admin,
           is_moderator: editingUser.is_moderator,
@@ -445,17 +469,34 @@ export function AdminAllUsersManagement() {
 
       console.log('Profile updated successfully:', updatedData)
 
-      // Sync community group memberships from the multi-select in the dialog
+      // Auto-sync community memberships based on the selected programs.
+      // Each selected program grants access to its matching community group.
       try {
+        const desiredCommunityNames = programsArray.map(programToCommunityName)
+        const desiredGroupIds = new Set(
+          allCommunityGroups
+            .filter(g => desiredCommunityNames.includes(g.name))
+            .map(g => g.id)
+        )
+        // Identify which existing memberships are program-managed (i.e. correspond to
+        // any known program community). Only those will be removed when a program is
+        // unselected — leaves untouched any non-program groups (e.g. "Community").
+        const programManagedGroupIds = new Set(
+          allCommunityGroups
+            .filter(g => Object.values(PROGRAM_TO_COMMUNITY_NAME).includes(g.name))
+            .map(g => g.id)
+        )
+
         const { data: existing } = await supabase
           .from('group_memberships' as any)
           .select('group_id')
           .eq('user_id', editingUser.user_id)
         const existingIds = new Set((existing || []).map((m: any) => m.group_id))
-        const desiredIds = editingUserCommunityIds
 
-        const toAdd = [...desiredIds].filter(id => !existingIds.has(id))
-        const toRemove = [...existingIds].filter(id => !desiredIds.has(id))
+        const toAdd = [...desiredGroupIds].filter(id => !existingIds.has(id))
+        const toRemove = [...existingIds].filter(
+          id => programManagedGroupIds.has(id) && !desiredGroupIds.has(id)
+        )
 
         if (toAdd.length > 0) {
           await supabase
@@ -472,7 +513,7 @@ export function AdminAllUsersManagement() {
             .eq('user_id', editingUser.user_id)
             .in('group_id', toRemove)
         }
-        console.log(`Synced ${desiredIds.size} community memberships for user`)
+        console.log(`Synced ${desiredGroupIds.size} program-based community memberships`)
       } catch (commErr) {
         console.error('Community membership sync error:', commErr)
       }
@@ -1989,55 +2030,66 @@ export function AdminAllUsersManagement() {
                     Manage Programs
                   </Button>
                 </div>
-                <Select
-                  value={editingUser.program_name || '__none__'}
-                  onValueChange={(value) => setEditingUser({...editingUser, program_name: value === '__none__' ? '' : value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a program" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">None</SelectItem>
-                    {programOptions.map((program) => (
-                      <SelectItem key={program} value={program}>
-                        {program}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Communities</Label>
                 <p className="text-xs text-muted-foreground">
-                  Select all communities this user should be able to access. They'll be able to swap between them.
+                  Select one or more programs. Each selected program automatically grants access
+                  to its matching community.
                 </p>
-                <div className="border rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
-                  {loadingCommunities ? (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Loading communities...
-                    </div>
-                  ) : allCommunityGroups.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No communities available.</p>
-                  ) : (
-                    allCommunityGroups.map((group) => (
-                      <div key={group.id} className="flex items-center gap-2">
-                        <Checkbox
-                          id={`edit-community-${group.id}`}
-                          checked={editingUserCommunityIds.has(group.id)}
-                          onCheckedChange={() => toggleEditingUserCommunity(group.id)}
-                        />
-                        <Label
-                          htmlFor={`edit-community-${group.id}`}
-                          className="text-sm font-normal cursor-pointer flex-1"
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      id="edit-program"
+                      type="button"
+                      variant="outline"
+                      className="w-full justify-between font-normal"
+                    >
+                      <span className="truncate text-left">
+                        {selectedProgramNames.size === 0
+                          ? 'Select programs'
+                          : selectedProgramNames.size === 1
+                            ? Array.from(selectedProgramNames)[0]
+                            : `${selectedProgramNames.size} programs selected`}
+                      </span>
+                      <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-72 overflow-y-auto bg-popover z-[100]"
+                    align="start"
+                  >
+                    <DropdownMenuLabel>Programs</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {programOptions.length === 0 ? (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">No programs available.</div>
+                    ) : (
+                      programOptions.map((program) => (
+                        <DropdownMenuCheckboxItem
+                          key={program}
+                          checked={selectedProgramNames.has(program)}
+                          onCheckedChange={(checked) => {
+                            setSelectedProgramNames(prev => {
+                              const next = new Set(prev)
+                              if (checked) next.add(program)
+                              else next.delete(program)
+                              return next
+                            })
+                          }}
+                          onSelect={(e) => e.preventDefault()}
                         >
-                          {group.name}
-                        </Label>
-                      </div>
-                    ))
-                  )}
-                </div>
+                          {program}
+                        </DropdownMenuCheckboxItem>
+                      ))
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {selectedProgramNames.size > 0 && (
+                  <div className="flex flex-wrap gap-1 pt-1">
+                    {Array.from(selectedProgramNames).map((p) => (
+                      <Badge key={p} variant="secondary" className="text-xs">
+                        {p}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
