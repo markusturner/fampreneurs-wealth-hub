@@ -88,6 +88,7 @@ export function AdminAllUsersManagement() {
   const [allCommunityGroups, setAllCommunityGroups] = useState<Array<{ id: string; name: string; program_id: string | null }>>([])
   const [editingUserCommunityIds, setEditingUserCommunityIds] = useState<Set<string>>(new Set())
   const [loadingCommunities, setLoadingCommunities] = useState(false)
+  const [selectedProgramNames, setSelectedProgramNames] = useState<Set<string>>(new Set())
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
   const [resendingCredentialsId, setResendingCredentialsId] = useState<string | null>(null)
