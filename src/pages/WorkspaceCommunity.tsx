@@ -292,10 +292,11 @@ export default function WorkspaceCommunity() {
     if (!assignedProgramName) return []
 
     // Get users assigned to this program who have completed their profile (not just invited)
+    // program_name may be a comma-separated list, so use ilike to match within the string
     const { data: programProfiles } = await supabase
       .from('profiles')
       .select('user_id')
-      .eq('program_name', assignedProgramName)
+      .ilike('program_name', `%${assignedProgramName}%`)
       .not('display_name', 'is', null)
       .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
 
