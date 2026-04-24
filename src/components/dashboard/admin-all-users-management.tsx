@@ -2030,55 +2030,66 @@ export function AdminAllUsersManagement() {
                     Manage Programs
                   </Button>
                 </div>
-                <Select
-                  value={editingUser.program_name || '__none__'}
-                  onValueChange={(value) => setEditingUser({...editingUser, program_name: value === '__none__' ? '' : value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a program" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__">None</SelectItem>
-                    {programOptions.map((program) => (
-                      <SelectItem key={program} value={program}>
-                        {program}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Communities</Label>
                 <p className="text-xs text-muted-foreground">
-                  Select all communities this user should be able to access. They'll be able to swap between them.
+                  Select one or more programs. Each selected program automatically grants access
+                  to its matching community.
                 </p>
-                <div className="border rounded-md p-3 max-h-48 overflow-y-auto space-y-2">
-                  {loadingCommunities ? (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Loading communities...
-                    </div>
-                  ) : allCommunityGroups.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No communities available.</p>
-                  ) : (
-                    allCommunityGroups.map((group) => (
-                      <div key={group.id} className="flex items-center gap-2">
-                        <Checkbox
-                          id={`edit-community-${group.id}`}
-                          checked={editingUserCommunityIds.has(group.id)}
-                          onCheckedChange={() => toggleEditingUserCommunity(group.id)}
-                        />
-                        <Label
-                          htmlFor={`edit-community-${group.id}`}
-                          className="text-sm font-normal cursor-pointer flex-1"
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      id="edit-program"
+                      type="button"
+                      variant="outline"
+                      className="w-full justify-between font-normal"
+                    >
+                      <span className="truncate text-left">
+                        {selectedProgramNames.size === 0
+                          ? 'Select programs'
+                          : selectedProgramNames.size === 1
+                            ? Array.from(selectedProgramNames)[0]
+                            : `${selectedProgramNames.size} programs selected`}
+                      </span>
+                      <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-72 overflow-y-auto bg-popover z-[100]"
+                    align="start"
+                  >
+                    <DropdownMenuLabel>Programs</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {programOptions.length === 0 ? (
+                      <div className="px-2 py-1.5 text-sm text-muted-foreground">No programs available.</div>
+                    ) : (
+                      programOptions.map((program) => (
+                        <DropdownMenuCheckboxItem
+                          key={program}
+                          checked={selectedProgramNames.has(program)}
+                          onCheckedChange={(checked) => {
+                            setSelectedProgramNames(prev => {
+                              const next = new Set(prev)
+                              if (checked) next.add(program)
+                              else next.delete(program)
+                              return next
+                            })
+                          }}
+                          onSelect={(e) => e.preventDefault()}
                         >
-                          {group.name}
-                        </Label>
-                      </div>
-                    ))
-                  )}
-                </div>
+                          {program}
+                        </DropdownMenuCheckboxItem>
+                      ))
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {selectedProgramNames.size > 0 && (
+                  <div className="flex flex-wrap gap-1 pt-1">
+                    {Array.from(selectedProgramNames).map((p) => (
+                      <Badge key={p} variant="secondary" className="text-xs">
+                        {p}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
