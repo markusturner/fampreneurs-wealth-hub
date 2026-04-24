@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/AuthContext"
@@ -45,6 +46,19 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
+  const [selectedTrustTypes, setSelectedTrustTypes] = useState<string[]>([])
+
+  const TRUST_TYPE_OPTIONS = [
+    { value: "family", label: "Family Trust" },
+    { value: "business", label: "Business Trust" },
+    { value: "ministry", label: "Ministry Trust" },
+  ]
+
+  const toggleTrustType = (value: string) => {
+    setSelectedTrustTypes((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    )
+  }
 
   const handleTranslate = async () => {
     if (!name.trim()) {
@@ -71,21 +85,26 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
 
   const handleSave = async () => {
     if (!user?.id || !translations) return
+    if (selectedTrustTypes.length === 0) {
+      toast({ title: "Select at least one trust type", description: "Choose Family, Business, and/or Ministry.", variant: "destructive" })
+      return
+    }
     setSaving(true)
     try {
-      const { error } = await supabase
-        .from("trust_submissions")
-        .insert({
-          user_id: user.id,
-          trust_type: "trust_name_translator",
-          submitter_name: name.trim(),
-          form_data: {
-            original_name: name.trim(),
-            translations,
-          },
-        } as any)
+      const rows = selectedTrustTypes.map((tt) => ({
+        user_id: user.id,
+        trust_type: tt,
+        submitter_name: name.trim(),
+        form_data: {
+          source: "trust_name_translator",
+          original_name: name.trim(),
+          selected_trust_types: selectedTrustTypes,
+          translations,
+        },
+      }))
+      const { error } = await supabase.from("trust_submissions").insert(rows as any)
       if (error) throw error
-      toast({ title: "Saved!", description: "Your translated trust name has been recorded." })
+      toast({ title: "Submitted!", description: `Saved for: ${selectedTrustTypes.join(", ")}` })
       onSubmitted?.()
     } catch (err: any) {
       console.error("Save error:", err)
@@ -166,14 +185,32 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
             })}
           </div>
 
+          <div className="space-y-3 rounded-lg border border-border/50 p-4">
+            <Label className="text-sm font-semibold">Select trust type(s) to submit</Label>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {TRUST_TYPE_OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className="flex items-center gap-2 cursor-pointer rounded-md border border-border/40 px-3 py-2 hover:border-primary/40 transition-colors"
+                >
+                  <Checkbox
+                    checked={selectedTrustTypes.includes(opt.value)}
+                    onCheckedChange={() => toggleTrustType(opt.value)}
+                  />
+                  <span className="text-sm font-medium">{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
           <Button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || selectedTrustTypes.length === 0}
             className="gap-2 hover:!bg-[#2eb2ff] hover:!text-white"
             style={{ backgroundColor: "#ffb500", color: "#290a52" }}
           >
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-            Save Translation
+            Submit Translation
           </Button>
         </div>
       )}
