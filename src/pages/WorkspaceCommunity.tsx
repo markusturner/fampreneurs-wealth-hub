@@ -186,9 +186,12 @@ export default function WorkspaceCommunity() {
     'The Family Business Accelerator': 'tfba',
     'The Family Fortune Mastermind': 'tffm',
   }
-  const profileProgramKey = profile?.program_name ? PROGRAM_NAME_TO_KEY[profile.program_name] : null
+  // Support multi-program assignments stored as comma-separated strings
+  const profileProgramKeys = profile?.program_name
+    ? profile.program_name.split(',').map(p => PROGRAM_NAME_TO_KEY[p.trim()]).filter(Boolean)
+    : []
   // No program selected yet = loading state, don't block
-  const hasProgramAccess = !program || isAdmin || isOwner || subscriptionStatus.programs.includes(program) || profileProgramKey === program
+  const hasProgramAccess = !program || isAdmin || isOwner || subscriptionStatus.programs.includes(program) || profileProgramKeys.includes(program)
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -289,10 +292,11 @@ export default function WorkspaceCommunity() {
     if (!assignedProgramName) return []
 
     // Get users assigned to this program who have completed their profile (not just invited)
+    // program_name may be a comma-separated list, so use ilike to match within the string
     const { data: programProfiles } = await supabase
       .from('profiles')
       .select('user_id')
-      .eq('program_name', assignedProgramName)
+      .ilike('program_name', `%${assignedProgramName}%`)
       .not('display_name', 'is', null)
       .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
 
