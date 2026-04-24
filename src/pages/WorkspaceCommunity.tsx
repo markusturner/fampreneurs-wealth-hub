@@ -186,9 +186,12 @@ export default function WorkspaceCommunity() {
     'The Family Business Accelerator': 'tfba',
     'The Family Fortune Mastermind': 'tffm',
   }
-  const profileProgramKey = profile?.program_name ? PROGRAM_NAME_TO_KEY[profile.program_name] : null
+  // Support multi-program assignments stored as comma-separated strings
+  const profileProgramKeys = profile?.program_name
+    ? profile.program_name.split(',').map(p => PROGRAM_NAME_TO_KEY[p.trim()]).filter(Boolean)
+    : []
   // No program selected yet = loading state, don't block
-  const hasProgramAccess = !program || isAdmin || isOwner || subscriptionStatus.programs.includes(program) || profileProgramKey === program
+  const hasProgramAccess = !program || isAdmin || isOwner || subscriptionStatus.programs.includes(program) || profileProgramKeys.includes(program)
 
   const fetchPosts = useCallback(async () => {
     try {
