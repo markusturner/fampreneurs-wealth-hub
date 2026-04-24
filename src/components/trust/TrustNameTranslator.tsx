@@ -46,6 +46,19 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
+  const [selectedTrustTypes, setSelectedTrustTypes] = useState<string[]>([])
+
+  const TRUST_TYPE_OPTIONS = [
+    { value: "family", label: "Family Trust" },
+    { value: "business", label: "Business Trust" },
+    { value: "ministry", label: "Ministry Trust" },
+  ]
+
+  const toggleTrustType = (value: string) => {
+    setSelectedTrustTypes((prev) =>
+      prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+    )
+  }
 
   const handleTranslate = async () => {
     if (!name.trim()) {
