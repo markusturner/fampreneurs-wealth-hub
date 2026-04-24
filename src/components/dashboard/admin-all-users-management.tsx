@@ -397,6 +397,7 @@ export function AdminAllUsersManagement() {
   useEffect(() => {
     if (!editingUser) {
       setEditingUserCommunityIds(new Set())
+      setSelectedProgramNames(new Set())
       return
     }
     let cancelled = false
@@ -410,6 +411,11 @@ export function AdminAllUsersManagement() {
         if (cancelled) return
         setAllCommunityGroups(groups || [])
         setEditingUserCommunityIds(new Set((memberships || []).map((m: any) => m.group_id)))
+        // Initialize selected programs from current program_name (supports legacy single value
+        // or comma-separated multi values)
+        const raw = (editingUser.program_name || '').trim()
+        const parts = raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : []
+        setSelectedProgramNames(new Set(parts))
       } finally {
         if (!cancelled) setLoadingCommunities(false)
       }
