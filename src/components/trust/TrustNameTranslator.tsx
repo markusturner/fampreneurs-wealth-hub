@@ -85,21 +85,26 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
 
   const handleSave = async () => {
     if (!user?.id || !translations) return
+    if (selectedTrustTypes.length === 0) {
+      toast({ title: "Select at least one trust type", description: "Choose Family, Business, and/or Ministry.", variant: "destructive" })
+      return
+    }
     setSaving(true)
     try {
-      const { error } = await supabase
-        .from("trust_submissions")
-        .insert({
-          user_id: user.id,
-          trust_type: "trust_name_translator",
-          submitter_name: name.trim(),
-          form_data: {
-            original_name: name.trim(),
-            translations,
-          },
-        } as any)
+      const rows = selectedTrustTypes.map((tt) => ({
+        user_id: user.id,
+        trust_type: tt,
+        submitter_name: name.trim(),
+        form_data: {
+          source: "trust_name_translator",
+          original_name: name.trim(),
+          selected_trust_types: selectedTrustTypes,
+          translations,
+        },
+      }))
+      const { error } = await supabase.from("trust_submissions").insert(rows as any)
       if (error) throw error
-      toast({ title: "Saved!", description: "Your translated trust name has been recorded." })
+      toast({ title: "Submitted!", description: `Saved for: ${selectedTrustTypes.join(", ")}` })
       onSubmitted?.()
     } catch (err: any) {
       console.error("Save error:", err)
