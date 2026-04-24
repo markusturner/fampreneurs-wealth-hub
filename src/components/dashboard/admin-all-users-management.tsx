@@ -47,7 +47,19 @@ import {
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
+import { ChevronDown } from 'lucide-react'
 import { getAgreementTextByProgram } from '@/lib/agreement-texts'
+
+// Map program_name -> community_groups.name (matches DB trigger logic)
+const PROGRAM_TO_COMMUNITY_NAME: Record<string, string> = {
+  'The Family Business University': 'Family Business University',
+  'The Family Vault': 'The Family Vault',
+  'The Family Business Accelerator': 'The Family Business Accelerator',
+  'The Family Legacy: VIP Weekend': 'The Family Legacy: VIP Weekend',
+  'The Family Fortune Mastermind': 'The Family Fortune Mastermind',
+}
+const programToCommunityName = (p: string) => PROGRAM_TO_COMMUNITY_NAME[p] || p
 
 interface UserProfile {
   user_id: string
