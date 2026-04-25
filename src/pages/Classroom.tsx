@@ -167,19 +167,25 @@ export default function Classroom() {
 
       let userCommunityIds: string[] = []
       if (!isAdminOrOwner && profile?.program_name) {
-        // Map profile program_name to the community group name used in the DB
+        // Support multi-program assignments stored as comma-separated strings
         const programToGroup: Record<string, string> = {
           'The Family Business University': 'Family Business University',
           'The Family Vault': 'The Family Vault',
           'The Family Business Accelerator': 'The Family Business Accelerator',
           'The Family Fortune Mastermind': 'The Family Fortune Mastermind',
         }
-        const groupName = programToGroup[profile.program_name] || profile.program_name
-        const { data: groupData } = await supabase
-          .from('community_groups')
-          .select('id')
-          .eq('name', groupName)
-        userCommunityIds = (groupData || []).map((g: any) => g.id)
+        const programNames = profile.program_name
+          .split(',')
+          .map((p: string) => p.trim())
+          .filter(Boolean)
+        const groupNames = programNames.map((p: string) => programToGroup[p] || p)
+        if (groupNames.length > 0) {
+          const { data: groupData } = await supabase
+            .from('community_groups')
+            .select('id')
+            .in('name', groupNames)
+          userCommunityIds = (groupData || []).map((g: any) => g.id)
+        }
       }
 
       const allCourses = (data || []).map((course: any) => {
