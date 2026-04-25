@@ -197,23 +197,8 @@ export default function SignUp() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="street-address">Street Address</Label>
-              <Input id="street-address" type="text" placeholder="123 Main St" value={streetAddress} onChange={(e) => setStreetAddress(e.target.value)} required disabled={isLoading} />
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input id="city" type="text" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} required disabled={isLoading} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
-                <Input id="state" type="text" placeholder="State" value={state} onChange={(e) => setState(e.target.value)} required disabled={isLoading} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="zip-code">Zip Code</Label>
-                <Input id="zip-code" type="text" placeholder="12345" value={zipCode} onChange={(e) => setZipCode(e.target.value)} required disabled={isLoading} />
-              </div>
+              <Label htmlFor="zip-code">Zip Code</Label>
+              <Input id="zip-code" type="text" placeholder="12345" value={zipCode} onChange={(e) => setZipCode(e.target.value)} required disabled={isLoading} />
             </div>
 
             <div className="space-y-2">
