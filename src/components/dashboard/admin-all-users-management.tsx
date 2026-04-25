@@ -1557,8 +1557,23 @@ export function AdminAllUsersManagement() {
                 const name = (u.display_name || `${u.first_name || ''} ${u.last_name || ''}`.trim())
                 return !name || name.length === 0 || name === 'Invited User' || u.needs_profile_completion === true
               }
-              const activeUsers = filteredUsers.filter((u: any) => !isInvitedUser(u))
-              const pendingUsers = filteredUsers.filter((u: any) => isInvitedUser(u))
+              const activeUsers = sortUsers(filteredUsers.filter((u: any) => !isInvitedUser(u)))
+              const pendingUsers = sortUsers(filteredUsers.filter((u: any) => isInvitedUser(u)))
+
+              const SortableHead = ({ column, children, className }: { column: string; children: React.ReactNode; className?: string }) => (
+                <TableHead className={className}>
+                  <button
+                    type="button"
+                    onClick={() => handleSort(column)}
+                    className="flex items-center gap-1 hover:text-foreground transition-colors w-full text-left"
+                  >
+                    {children}
+                    <span className="text-xs opacity-60">
+                      {sortColumn === column ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}
+                    </span>
+                  </button>
+                </TableHead>
+              )
 
               const renderTableHeader = () => (
                 <TableHeader className="sticky top-0 z-30 bg-background">
