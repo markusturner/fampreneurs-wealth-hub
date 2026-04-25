@@ -107,6 +107,50 @@ export function AdminAllUsersManagement() {
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
   const [bulkResending, setBulkResending] = useState(false)
   const [bulkDeleting, setBulkDeleting] = useState(false)
+  const [sortColumn, setSortColumn] = useState<string | null>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortColumn(column)
+      setSortDirection('asc')
+    }
+  }
+
+  const getSortValue = (user: any, column: string): any => {
+    switch (column) {
+      case 'name':
+        return (user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || '').toLowerCase()
+      case 'role':
+        return (user.is_admin ? 'admin' : user.is_moderator ? 'moderator' : user.membership_type || '').toLowerCase()
+      case 'phone': return (user.phone || '').toLowerCase()
+      case 'email': return (user.email || '').toLowerCase()
+      case 'truheirs': return user.truheirs_access ? 1 : 0
+      case 'dfo': return (user as any).dfo_access ? 1 : 0
+      case 'contract_value': return Number(user.program_contract_value) || 0
+      case 'cash_collected': return Number(user.program_cash_collected) || 0
+      case 'remaining': return (Number(user.program_contract_value) || 0) - (Number(user.program_cash_collected) || 0)
+      case 'program': return (user.program_name || '').toLowerCase()
+      case 'satisfaction': return Number((user as any).satisfaction_score) || 0
+      case 'created_at': return new Date(user.created_at).getTime()
+      case 'trust_access': return (user as any).trust_access_granted ? 1 : 0
+      default: return ''
+    }
+  }
+
+  const sortUsers = (list: any[]) => {
+    if (!sortColumn) return list
+    const sorted = [...list].sort((a, b) => {
+      const av = getSortValue(a, sortColumn)
+      const bv = getSortValue(b, sortColumn)
+      if (av < bv) return sortDirection === 'asc' ? -1 : 1
+      if (av > bv) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
+    return sorted
+  }
   const [programOptions, setProgramOptions] = useState<string[]>([
     'The Family Business University',
     'The Family Vault',
