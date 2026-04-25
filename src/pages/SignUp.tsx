@@ -200,12 +200,6 @@ export default function SignUp() {
               <Label htmlFor="zip-code">Zip Code</Label>
               <Input id="zip-code" type="text" placeholder="12345" value={zipCode} onChange={(e) => setZipCode(e.target.value)} required disabled={isLoading} />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="date-of-birth">Date of Birth</Label>
-              <Input id="date-of-birth" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} required disabled={isLoading} />
-            </div>
-
             <div className="space-y-2">
               <Label>Program</Label>
               <Select value={selectedProgram} onValueChange={(val) => { setSelectedProgram(val as ProgramId); setSelectedPriceIndex(''); }}>
