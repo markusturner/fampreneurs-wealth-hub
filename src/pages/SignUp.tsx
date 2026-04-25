@@ -111,61 +111,53 @@ export default function SignUp() {
   const currentProgram = PROGRAMS.find(p => p.id === selectedProgram)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-3">
       <Card className="w-full max-w-md shadow-soft relative">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-4">
-            <img src="/lovable-uploads/cb7af8d2-0809-4d9d-8fa4-acfb507144de.png" alt="TruHeirs Logo" className="w-20 h-20 object-contain" />
+        <CardHeader className="text-center pb-2 pt-4">
+          <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-1">
+            <img src="/lovable-uploads/cb7af8d2-0809-4d9d-8fa4-acfb507144de.png" alt="TruHeirs Logo" className="w-12 h-12 object-contain" />
           </div>
-          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
-          <CardDescription>Sign up as a new Trustee</CardDescription>
+          <CardTitle className="text-xl font-bold">Create Trustee Account</CardTitle>
+          <CardDescription className="text-xs">A temporary password will be emailed after payment.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSignUp} className="space-y-4">
-            <div className="px-4 py-3 bg-destructive/10 border-2 border-destructive/50 rounded-lg">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-                <span className="text-sm font-medium text-destructive">Creating Account For</span>
+        <CardContent className="pb-4">
+          <form onSubmit={handleSignUp} className="space-y-2.5">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="first-name" className="text-xs">First Name</Label>
+                <Input id="first-name" type="text" placeholder="John" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={isLoading} className="h-9" />
               </div>
-              <div className="text-center"><span className="font-bold text-lg text-destructive">Trustee</span></div>
-              <p className="text-xs text-center mt-2 text-muted-foreground">After payment, a temporary password will be emailed to you.</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="first-name">First Name</Label>
-                <Input id="first-name" type="text" placeholder="John" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={isLoading} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="last-name">Last Name</Label>
-                <Input id="last-name" type="text" placeholder="Doe" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={isLoading} />
+              <div className="space-y-1">
+                <Label htmlFor="last-name" className="text-xs">Last Name</Label>
+                <Input id="last-name" type="text" placeholder="Doe" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={isLoading} className="h-9" />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="signup-email">Email</Label>
-              <Input id="signup-email" type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} />
+            <div className="grid grid-cols-[1fr_110px] gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="signup-email" className="text-xs">Email</Label>
+                <Input id="signup-email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} className="h-9" />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="zip-code" className="text-xs">Zip Code</Label>
+                <Input id="zip-code" type="text" placeholder="12345" value={zipCode} onChange={(e) => setZipCode(e.target.value)} required disabled={isLoading} className="h-9" />
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="zip-code">Zip Code</Label>
-              <Input id="zip-code" type="text" placeholder="12345" value={zipCode} onChange={(e) => setZipCode(e.target.value)} required disabled={isLoading} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Program</Label>
+            <div className="space-y-1">
+              <Label className="text-xs">Program</Label>
               <Select value={selectedProgram} onValueChange={(val) => { setSelectedProgram(val as ProgramId); setSelectedPriceIndex(''); }}>
-                <SelectTrigger><SelectValue placeholder="Select a program" /></SelectTrigger>
+                <SelectTrigger className="h-9"><SelectValue placeholder="Select a program" /></SelectTrigger>
                 <SelectContent>
                   {PROGRAMS.map(p => (<SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label>Payment Method</Label>
+            <div className="space-y-1">
+              <Label className="text-xs">Payment Method</Label>
               <Select value={paymentMethod} onValueChange={(val) => setPaymentMethod(val as 'credit_card' | 'other')}>
-                <SelectTrigger><SelectValue placeholder="Select payment method" /></SelectTrigger>
+                <SelectTrigger className="h-9"><SelectValue placeholder="Select payment method" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="credit_card">
                     <div className="flex items-center gap-2"><CreditCard className="h-4 w-4" />Credit Card</div>
@@ -176,10 +168,10 @@ export default function SignUp() {
             </div>
 
             {paymentMethod === 'credit_card' && currentProgram && (
-              <div className="space-y-2">
-                <Label>Pricing Plan</Label>
+              <div className="space-y-1">
+                <Label className="text-xs">Pricing Plan</Label>
                 <Select value={selectedPriceIndex} onValueChange={setSelectedPriceIndex}>
-                  <SelectTrigger><SelectValue placeholder="Select a plan" /></SelectTrigger>
+                  <SelectTrigger className="h-9"><SelectValue placeholder="Select a plan" /></SelectTrigger>
                   <SelectContent>
                     {currentProgram.pricing.map((p, i) => (
                       <SelectItem key={i} value={String(i)}>{p.label} ({p.interval})</SelectItem>
@@ -189,12 +181,12 @@ export default function SignUp() {
               </div>
             )}
 
-            <Button type="submit" className="w-full" style={{ backgroundColor: '#ffb500', color: '#290a52' }} disabled={isLoading}>
+            <Button type="submit" className="w-full h-9 mt-1" style={{ backgroundColor: '#ffb500', color: '#290a52' }} disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {paymentMethod === 'credit_card' ? 'Continue to Payment' : 'Create Trustee Account'}
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground mt-4">
+            <p className="text-center text-xs text-muted-foreground">
               Already have an account?{' '}
               <button type="button" onClick={() => navigate('/auth')} className="text-accent hover:underline font-medium">
                 Sign In
