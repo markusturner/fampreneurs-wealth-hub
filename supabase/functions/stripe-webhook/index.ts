@@ -87,6 +87,81 @@ serve(async (req) => {
     
     logStep(`Webhook received: ${event.type}`);
 
+    // Handle signup checkout completion - auto-create account with temp password
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const meta = session.metadata || {};
+      if (meta.signup_flow === 'true' && meta.email) {
+        const email = meta.email as string;
+        const firstName = (meta.first_name as string) || '';
+        const lastName = (meta.last_name as string) || '';
+        const zipCode = (meta.zip_code as string) || '';
+        const programName = (meta.program_name as string) || '';
+
+        try {
+          const { data: existingUsers } = await supabaseClient.auth.admin.listUsers();
+          const existing = existingUsers?.users?.find((u: any) => u.email === email);
+          const tempPassword = generateSecurePassword();
+
+          let userId: string | undefined;
+          if (existing) {
+            const { data: updated, error: updErr } = await supabaseClient.auth.admin.updateUserById(existing.id, {
+              password: tempPassword,
+              user_metadata: { first_name: firstName, last_name: lastName, role: 'trustee' },
+            });
+            if (updErr) logStep("Error updating existing user", { error: updErr.message });
+            userId = updated?.user?.id || existing.id;
+          } else {
+            const { data: newUser, error: createErr } = await supabaseClient.auth.admin.createUser({
+              email,
+              password: tempPassword,
+              email_confirm: true,
+              user_metadata: {
+                first_name: firstName,
+                last_name: lastName,
+                user_type: 'trustee',
+                program_name: programName,
+                zip_code: zipCode,
+              },
+            });
+            if (createErr) logStep("Error creating user", { error: createErr.message });
+            else {
+              userId = newUser.user?.id;
+              if (userId) await supabaseClient.from('user_roles').insert({ user_id: userId, role: 'trustee' });
+            }
+          }
+
+          if (userId) {
+            await supabaseClient.from('profiles').upsert({
+              user_id: userId,
+              first_name: firstName,
+              last_name: lastName,
+              email,
+              program_name: programName,
+              mailing_address: zipCode,
+            }, { onConflict: 'user_id' });
+          }
+
+          const resendKey = Deno.env.get("RESEND_API_KEY");
+          if (resendKey) {
+            const resend = new Resend(resendKey);
+            const { error: emailErr } = await resend.emails.send({
+              from: "TruHeirs <noreply@truheirs.app>",
+              to: [email],
+              subject: "Welcome to TruHeirs — Your Login Credentials",
+              html: buildCredentialsEmail(firstName || 'there', email, tempPassword, programName),
+            });
+            if (emailErr) logStep("Error sending credentials email", { error: emailErr.message });
+            else logStep("Credentials email sent", { email });
+          } else {
+            logStep("RESEND_API_KEY not set");
+          }
+        } catch (e) {
+          logStep("Signup auto-create failed", { error: e instanceof Error ? e.message : String(e) });
+        }
+      }
+    }
+
     // Handle subscription events
     if (event.type.startsWith('customer.subscription.')) {
       const subscription = event.data.object as Stripe.Subscription;
