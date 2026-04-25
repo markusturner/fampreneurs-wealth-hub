@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, AlertTriangle, Mail, CreditCard } from 'lucide-react'
+import { Loader2, AlertTriangle, CreditCard } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { PROGRAMS, type ProgramId } from '@/lib/stripe-programs'
 import { useAuth } from '@/contexts/AuthContext'
@@ -14,18 +14,12 @@ import { useAuth } from '@/contexts/AuthContext'
 export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword] = useState('') // kept for minimal diff
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [selectedProgram, setSelectedProgram] = useState<ProgramId | ''>('')
   const [selectedPriceIndex, setSelectedPriceIndex] = useState<string>('')
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'other' | ''>('')
-  const [streetAddress, setStreetAddress] = useState('')
-  const [city, setCity] = useState('')
-  const [state, setState] = useState('')
   const [zipCode, setZipCode] = useState('')
-  const [dateOfBirth, setDateOfBirth] = useState('')
 
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -37,11 +31,6 @@ export default function SignUp() {
     setIsLoading(true)
 
     try {
-      if (password.length < 6) {
-        toast({ title: "Password too short", description: "Password must be at least 6 characters long.", variant: "destructive" })
-        return
-      }
-
       if (!selectedProgram) {
         toast({ title: "Program required", description: "Please select a program.", variant: "destructive" })
         return
@@ -58,64 +47,60 @@ export default function SignUp() {
       }
 
       const program = PROGRAMS.find(p => p.id === selectedProgram)
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: {
-            first_name: firstName,
-            last_name: lastName,
-            user_type: 'trustee',
-            program_name: program?.name || '',
-            program_id: selectedProgram,
-            street_address: streetAddress,
-            city: city,
-            state: state,
-            zip_code: zipCode,
-            date_of_birth: dateOfBirth,
-          }
-        }
-      })
-
-      if (error) {
-        toast({ title: "Sign up failed", description: error.message, variant: "destructive" })
+      if (!program) {
+        toast({ title: "Invalid program", variant: "destructive" })
         return
       }
 
-      if (data.user && paymentMethod === 'credit_card' && program) {
-        const priceIdx = parseInt(selectedPriceIndex)
-        const pricing = program.pricing[priceIdx]
-
-        if (pricing) {
-          const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-            body: {
-              price_id: pricing.price_id,
-              mode: pricing.mode,
-              email: email,
-              program_name: program.name,
-            }
-          })
-
-          if (!checkoutError && checkoutData?.url) {
-            toast({ title: "Account created!", description: "Redirecting to payment..." })
-            window.location.href = checkoutData.url
-            return
-          }
+      // Admin-only "Other (Free)" path - create user immediately with temp password emailed
+      if (paymentMethod === 'other') {
+        const { data, error } = await supabase.functions.invoke('create-user-with-credentials', {
+          body: {
+            email,
+            firstName,
+            lastName,
+            role: 'trustee',
+            programName: program.name,
+            mailingAddress: zipCode,
+          },
+        })
+        if (error || !data?.success) {
+          toast({ title: "Sign up failed", description: error?.message || data?.error || "Try again later.", variant: "destructive" })
+          return
         }
+        toast({ title: "Account created!", description: "A temporary password has been emailed to the user." })
+        setEmail(''); setFirstName(''); setLastName('')
+        setSelectedProgram(''); setSelectedPriceIndex(''); setPaymentMethod(''); setZipCode('')
+        return
       }
 
-      toast({
-        title: "Account created!",
-        description: paymentMethod === 'other'
-          ? "Member added for free. They can check their email to verify."
-          : "Please check your email to verify your account.",
+      // Credit card path - go to Stripe checkout. Account is created by webhook after payment.
+      const priceIdx = parseInt(selectedPriceIndex)
+      const pricing = program.pricing[priceIdx]
+      if (!pricing) {
+        toast({ title: "Invalid pricing plan", variant: "destructive" })
+        return
+      }
+
+      const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('signup-create-checkout', {
+        body: {
+          price_id: pricing.price_id,
+          mode: pricing.mode,
+          email,
+          firstName,
+          lastName,
+          zipCode,
+          programName: program.name,
+          programId: selectedProgram,
+        },
       })
 
-      setEmail(''); setPassword(''); setFirstName(''); setLastName('')
-      setSelectedProgram(''); setSelectedPriceIndex(''); setPaymentMethod('')
-      setStreetAddress(''); setCity(''); setState(''); setZipCode(''); setDateOfBirth('')
+      if (checkoutError || !checkoutData?.url) {
+        toast({ title: "Checkout failed", description: checkoutError?.message || "Unable to start checkout.", variant: "destructive" })
+        return
+      }
+
+      window.location.href = checkoutData.url
     } catch (error) {
       toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" })
     } finally {
@@ -124,34 +109,6 @@ export default function SignUp() {
   }
 
   const currentProgram = PROGRAMS.find(p => p.id === selectedProgram)
-
-  const handleGoogleAuth = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/dashboard` } })
-      if (error) toast({ title: "Google sign up failed", description: error.message, variant: "destructive" })
-    } catch { toast({ title: "Something went wrong", variant: "destructive" }) }
-  }
-
-  const handleAppleAuth = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({ provider: 'apple', options: { redirectTo: `${window.location.origin}/dashboard` } })
-      if (error) toast({ title: "Apple sign up failed", description: error.message, variant: "destructive" })
-    } catch { toast({ title: "Something went wrong", variant: "destructive" }) }
-  }
-
-  const handleMicrosoftAuth = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({ provider: 'azure', options: { redirectTo: `${window.location.origin}/dashboard`, scopes: 'email' } })
-      if (error) toast({ title: "Microsoft sign up failed", description: error.message, variant: "destructive" })
-    } catch { toast({ title: "Something went wrong", variant: "destructive" }) }
-  }
-
-  const handleLinkedInAuth = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({ provider: 'linkedin_oidc', options: { redirectTo: `${window.location.origin}/dashboard` } })
-      if (error) toast({ title: "LinkedIn sign up failed", description: error.message, variant: "destructive" })
-    } catch { toast({ title: "Something went wrong", variant: "destructive" }) }
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
@@ -171,7 +128,7 @@ export default function SignUp() {
                 <span className="text-sm font-medium text-destructive">Creating Account For</span>
               </div>
               <div className="text-center"><span className="font-bold text-lg text-destructive">Trustee</span></div>
-              <p className="text-xs text-center mt-2 text-muted-foreground">Create your trustee account to manage your family office.</p>
+              <p className="text-xs text-center mt-2 text-muted-foreground">After payment, a temporary password will be emailed to you.</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -191,15 +148,10 @@ export default function SignUp() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="signup-password">Password</Label>
-              <Input id="signup-password" type="password" placeholder="Create a password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} />
-              <p className="text-xs text-muted-foreground">Must be at least 6 characters long</p>
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="zip-code">Zip Code</Label>
               <Input id="zip-code" type="text" placeholder="12345" value={zipCode} onChange={(e) => setZipCode(e.target.value)} required disabled={isLoading} />
             </div>
+
             <div className="space-y-2">
               <Label>Program</Label>
               <Select value={selectedProgram} onValueChange={(val) => { setSelectedProgram(val as ProgramId); setSelectedPriceIndex(''); }}>
@@ -239,10 +191,8 @@ export default function SignUp() {
 
             <Button type="submit" className="w-full" style={{ backgroundColor: '#ffb500', color: '#290a52' }} disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {paymentMethod === 'credit_card' ? 'Create Account & Pay' : 'Create Trustee Account'}
+              {paymentMethod === 'credit_card' ? 'Continue to Payment' : 'Create Trustee Account'}
             </Button>
-
-
 
             <p className="text-center text-sm text-muted-foreground mt-4">
               Already have an account?{' '}

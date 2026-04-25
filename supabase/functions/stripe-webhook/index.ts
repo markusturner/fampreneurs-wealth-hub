@@ -1,6 +1,58 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { Resend } from "npm:resend@2.0.0";
+
+const generateSecurePassword = (): string => {
+  const length = 14;
+  const lower = "abcdefghjkmnpqrstuvwxyz";
+  const upper = "ABCDEFGHJKMNPQRSTUVWXYZ";
+  const digits = "23456789";
+  const charset = lower + upper + digits;
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  let password =
+    lower[array[0] % lower.length] +
+    upper[array[1] % upper.length] +
+    digits[array[2] % digits.length];
+  for (let i = 3; i < length; i++) password += charset[array[i] % charset.length];
+  const shuffled = password.split("");
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = array[i] % (i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.join("");
+};
+
+const buildCredentialsEmail = (firstName: string, email: string, tempPassword: string, programName: string) => `
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>
+body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+.container { max-width: 600px; margin: 0 auto; padding: 20px; }
+.header { background-color: #290a52; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+.content { background-color: #f5f5f5; padding: 30px; border-radius: 0 0 8px 8px; }
+.credentials { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+.credential-item { margin: 15px 0; }
+.label { font-weight: bold; color: #6B7280; }
+.value { font-family: monospace; background-color: #F3F4F6; padding: 10px 15px; border-radius: 4px; display: block; margin-top: 5px; word-break: break-all; }
+.button-container { text-align: center; margin: 30px 0; }
+.button { display: inline-block; background-color: #ffb500; color: #290a52; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px; }
+.footer { text-align: center; color: #6B7280; font-size: 12px; margin-top: 30px; }
+</style></head><body><div class="container">
+<div class="header"><h1 style="margin:0;font-size:28px;">Welcome to TruHeirs!</h1><p style="margin:10px 0 0;opacity:0.9;">Your account is ready</p></div>
+<div class="content">
+<p style="font-size:16px;">Hi ${firstName},</p>
+<p style="font-size:16px;">Thank you for your purchase${programName ? ` of <strong>${programName}</strong>` : ""}! Your account has been created. Use the temporary credentials below to log in.</p>
+<div class="credentials">
+<div class="credential-item"><div class="label">Email:</div><div class="value">${email}</div></div>
+<div class="credential-item"><div class="label">Temporary Password:</div><div class="value">${tempPassword}</div></div>
+</div>
+<p style="font-size:16px;"><strong style="color:#e53e3e;">⚠️ Important:</strong> Please change your password immediately after your first login from Profile Settings.</p>
+<div class="button-container"><a href="https://truheirs.app/auth" class="button">Log In to Your Account</a></div>
+<p style="font-size:16px;">If you have any questions, please reach out to our support team.</p>
+</div>
+<div class="footer"><p>This is an automated message. Please do not reply.</p></div>
+</div></body></html>`;
+
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -34,6 +86,81 @@ serve(async (req) => {
     const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     
     logStep(`Webhook received: ${event.type}`);
+
+    // Handle signup checkout completion - auto-create account with temp password
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const meta = session.metadata || {};
+      if (meta.signup_flow === 'true' && meta.email) {
+        const email = meta.email as string;
+        const firstName = (meta.first_name as string) || '';
+        const lastName = (meta.last_name as string) || '';
+        const zipCode = (meta.zip_code as string) || '';
+        const programName = (meta.program_name as string) || '';
+
+        try {
+          const { data: existingUsers } = await supabaseClient.auth.admin.listUsers();
+          const existing = existingUsers?.users?.find((u: any) => u.email === email);
+          const tempPassword = generateSecurePassword();
+
+          let userId: string | undefined;
+          if (existing) {
+            const { data: updated, error: updErr } = await supabaseClient.auth.admin.updateUserById(existing.id, {
+              password: tempPassword,
+              user_metadata: { first_name: firstName, last_name: lastName, role: 'trustee' },
+            });
+            if (updErr) logStep("Error updating existing user", { error: updErr.message });
+            userId = updated?.user?.id || existing.id;
+          } else {
+            const { data: newUser, error: createErr } = await supabaseClient.auth.admin.createUser({
+              email,
+              password: tempPassword,
+              email_confirm: true,
+              user_metadata: {
+                first_name: firstName,
+                last_name: lastName,
+                user_type: 'trustee',
+                program_name: programName,
+                zip_code: zipCode,
+              },
+            });
+            if (createErr) logStep("Error creating user", { error: createErr.message });
+            else {
+              userId = newUser.user?.id;
+              if (userId) await supabaseClient.from('user_roles').insert({ user_id: userId, role: 'trustee' });
+            }
+          }
+
+          if (userId) {
+            await supabaseClient.from('profiles').upsert({
+              user_id: userId,
+              first_name: firstName,
+              last_name: lastName,
+              email,
+              program_name: programName,
+              mailing_address: zipCode,
+            }, { onConflict: 'user_id' });
+          }
+
+          const resendKey = Deno.env.get("RESEND_API_KEY");
+          if (resendKey) {
+            const resend = new Resend(resendKey);
+            const { error: emailErr } = await resend.emails.send({
+              from: "TruHeirs <noreply@truheirs.app>",
+              to: [email],
+              subject: "Welcome to TruHeirs — Your Login Credentials",
+              html: buildCredentialsEmail(firstName || 'there', email, tempPassword, programName),
+            });
+            if (emailErr) logStep("Error sending credentials email", { error: emailErr.message });
+            else logStep("Credentials email sent", { email });
+          } else {
+            logStep("RESEND_API_KEY not set");
+          }
+        } catch (e) {
+          logStep("Signup auto-create failed", { error: e instanceof Error ? e.message : String(e) });
+        }
+      }
+    }
 
     // Handle subscription events
     if (event.type.startsWith('customer.subscription.')) {

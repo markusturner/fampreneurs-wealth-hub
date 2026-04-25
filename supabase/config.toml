@@ -65,3 +65,9 @@ verify_jwt = false
 
 [functions.notify-admin-submission]
 verify_jwt = false
+
+[functions.signup-create-checkout]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
