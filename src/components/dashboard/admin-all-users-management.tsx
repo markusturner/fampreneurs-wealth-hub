@@ -107,6 +107,50 @@ export function AdminAllUsersManagement() {
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
   const [bulkResending, setBulkResending] = useState(false)
   const [bulkDeleting, setBulkDeleting] = useState(false)
+  const [sortColumn, setSortColumn] = useState<string | null>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortColumn(column)
+      setSortDirection('asc')
+    }
+  }
+
+  const getSortValue = (user: any, column: string): any => {
+    switch (column) {
+      case 'name':
+        return (user.display_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || '').toLowerCase()
+      case 'role':
+        return (user.is_admin ? 'admin' : user.is_moderator ? 'moderator' : user.membership_type || '').toLowerCase()
+      case 'phone': return (user.phone || '').toLowerCase()
+      case 'email': return (user.email || '').toLowerCase()
+      case 'truheirs': return user.truheirs_access ? 1 : 0
+      case 'dfo': return (user as any).dfo_access ? 1 : 0
+      case 'contract_value': return Number(user.program_contract_value) || 0
+      case 'cash_collected': return Number(user.program_cash_collected) || 0
+      case 'remaining': return (Number(user.program_contract_value) || 0) - (Number(user.program_cash_collected) || 0)
+      case 'program': return (user.program_name || '').toLowerCase()
+      case 'satisfaction': return Number((user as any).satisfaction_score) || 0
+      case 'created_at': return new Date(user.created_at).getTime()
+      case 'trust_access': return (user as any).trust_access_granted ? 1 : 0
+      default: return ''
+    }
+  }
+
+  const sortUsers = (list: any[]) => {
+    if (!sortColumn) return list
+    const sorted = [...list].sort((a, b) => {
+      const av = getSortValue(a, sortColumn)
+      const bv = getSortValue(b, sortColumn)
+      if (av < bv) return sortDirection === 'asc' ? -1 : 1
+      if (av > bv) return sortDirection === 'asc' ? 1 : -1
+      return 0
+    })
+    return sorted
+  }
   const [programOptions, setProgramOptions] = useState<string[]>([
     'The Family Business University',
     'The Family Vault',
@@ -1513,8 +1557,23 @@ export function AdminAllUsersManagement() {
                 const name = (u.display_name || `${u.first_name || ''} ${u.last_name || ''}`.trim())
                 return !name || name.length === 0 || name === 'Invited User' || u.needs_profile_completion === true
               }
-              const activeUsers = filteredUsers.filter((u: any) => !isInvitedUser(u))
-              const pendingUsers = filteredUsers.filter((u: any) => isInvitedUser(u))
+              const activeUsers = sortUsers(filteredUsers.filter((u: any) => !isInvitedUser(u)))
+              const pendingUsers = sortUsers(filteredUsers.filter((u: any) => isInvitedUser(u)))
+
+              const SortableHead = ({ column, children, className }: { column: string; children: React.ReactNode; className?: string }) => (
+                <TableHead className={className}>
+                  <button
+                    type="button"
+                    onClick={() => handleSort(column)}
+                    className="flex items-center gap-1 hover:text-foreground transition-colors w-full text-left"
+                  >
+                    {children}
+                    <span className="text-xs opacity-60">
+                      {sortColumn === column ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}
+                    </span>
+                  </button>
+                </TableHead>
+              )
 
               const renderTableHeader = () => (
                 <TableHeader className="sticky top-0 z-30 bg-background">
@@ -1522,18 +1581,30 @@ export function AdminAllUsersManagement() {
                     <TableHead className="w-[40px] min-w-[40px] max-w-[40px] sticky left-0 top-0 z-40 bg-background">
                       <Checkbox checked={selectedUserIds.size === filteredUsers.length && filteredUsers.length > 0} onCheckedChange={toggleSelectAll} />
                     </TableHead>
-                    <TableHead className="min-w-[160px] sticky left-[40px] top-0 z-40 bg-background">Name</TableHead>
-                    <TableHead className="min-w-[280px] sticky left-[200px] top-0 z-40 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">Contract Timeline</TableHead>
-                    <TableHead className="min-w-[120px] bg-background">Role</TableHead>
-                    <TableHead className="bg-background">Phone</TableHead>
-                    <TableHead className="bg-background">Email</TableHead>
-                    <TableHead className="bg-background">TruHeirs</TableHead>
-                    <TableHead className="bg-background">DFO</TableHead>
-                    <TableHead className="bg-background">Contract Value</TableHead>
-                    <TableHead className="bg-background">Cash Collected</TableHead>
-                    <TableHead className="bg-background">Remaining</TableHead>
-                    <TableHead className="bg-background">Program</TableHead>
-                    <TableHead className="bg-background">Satisfaction</TableHead>
+                    <TableHead className="min-w-[160px] sticky left-[40px] top-0 z-40 bg-background">
+                      <button type="button" onClick={() => handleSort('name')} className="flex items-center gap-1 hover:text-foreground w-full text-left">
+                        Name <span className="text-xs opacity-60">{sortColumn === 'name' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span>
+                      </button>
+                    </TableHead>
+                    <TableHead className="min-w-[280px] sticky left-[200px] top-0 z-40 bg-background shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
+                      <button type="button" onClick={() => handleSort('created_at')} className="flex items-center gap-1 hover:text-foreground w-full text-left">
+                        Contract Timeline <span className="text-xs opacity-60">{sortColumn === 'created_at' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span>
+                      </button>
+                    </TableHead>
+                    <TableHead className="min-w-[120px] bg-background">
+                      <button type="button" onClick={() => handleSort('role')} className="flex items-center gap-1 hover:text-foreground w-full text-left">
+                        Role <span className="text-xs opacity-60">{sortColumn === 'role' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span>
+                      </button>
+                    </TableHead>
+                    <TableHead className="bg-background"><button type="button" onClick={() => handleSort('phone')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Phone <span className="text-xs opacity-60">{sortColumn === 'phone' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
+                    <TableHead className="bg-background"><button type="button" onClick={() => handleSort('email')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Email <span className="text-xs opacity-60">{sortColumn === 'email' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
+                    <TableHead className="bg-background"><button type="button" onClick={() => handleSort('truheirs')} className="flex items-center gap-1 hover:text-foreground w-full text-left">TruHeirs <span className="text-xs opacity-60">{sortColumn === 'truheirs' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
+                    <TableHead className="bg-background"><button type="button" onClick={() => handleSort('dfo')} className="flex items-center gap-1 hover:text-foreground w-full text-left">DFO <span className="text-xs opacity-60">{sortColumn === 'dfo' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
+                    <TableHead className="bg-background"><button type="button" onClick={() => handleSort('contract_value')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Contract Value <span className="text-xs opacity-60">{sortColumn === 'contract_value' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
+                    <TableHead className="bg-background"><button type="button" onClick={() => handleSort('cash_collected')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Cash Collected <span className="text-xs opacity-60">{sortColumn === 'cash_collected' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
+                    <TableHead className="bg-background"><button type="button" onClick={() => handleSort('remaining')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Remaining <span className="text-xs opacity-60">{sortColumn === 'remaining' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
+                    <TableHead className="bg-background"><button type="button" onClick={() => handleSort('program')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Program <span className="text-xs opacity-60">{sortColumn === 'program' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
+                    <TableHead className="bg-background"><button type="button" onClick={() => handleSort('satisfaction')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Satisfaction <span className="text-xs opacity-60">{sortColumn === 'satisfaction' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
                     <TableHead className="min-w-[100px] bg-background">Name Selected</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Asset Inventory</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Family Trust</TableHead>
@@ -1543,7 +1614,7 @@ export function AdminAllUsersManagement() {
                     <TableHead className="min-w-[100px] bg-background">Legacy Meeting</TableHead>
                     <TableHead className="min-w-[160px] bg-background">Testimonials</TableHead>
                     <TableHead className="min-w-[160px] bg-background">Trust Pilot Review</TableHead>
-                    <TableHead className="min-w-[120px] bg-background">Trust Access</TableHead>
+                    <TableHead className="min-w-[120px] bg-background"><button type="button" onClick={() => handleSort('trust_access')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Trust Access <span className="text-xs opacity-60">{sortColumn === 'trust_access' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
                     <TableHead className="bg-background">Forms</TableHead>
                     <TableHead className="bg-background">Notes</TableHead>
                     <TableHead className="text-right bg-background">Actions</TableHead>
