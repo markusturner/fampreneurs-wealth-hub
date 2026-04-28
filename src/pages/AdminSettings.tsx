@@ -6,6 +6,7 @@ import { AdminMassNotification } from '@/components/dashboard/admin-mass-notific
 import { AdminPushTest } from '@/components/dashboard/admin-push-test'
 import { AdminAllUsersManagement } from '@/components/dashboard/admin-all-users-management'
 import { ZapierIntegration } from '@/components/dashboard/zapier-integration'
+import { ApiKeyManager } from '@/components/dashboard/api-key-manager'
 import { AdminTutorialVideoManager, AdminUpgradeVideoManager, AdminVideoManager } from '@/components/dashboard/admin-tutorial-video-manager'
 
 import { RolePermissionsManager } from '@/components/dashboard/role-permissions-manager'
@@ -99,7 +100,10 @@ export function AdminSettings() {
         </div>
 
         {isOwner && user?.id && (
-          <TabsContent value="zapier"><ZapierIntegration userId={user.id} /></TabsContent>
+          <TabsContent value="zapier" className="space-y-6">
+            <ZapierIntegration userId={user.id} />
+            <ApiKeyManager userId={user.id} />
+          </TabsContent>
         )}
         {(isAdmin || isOwner) && (
           <TabsContent value="tutorial" className="space-y-6">
