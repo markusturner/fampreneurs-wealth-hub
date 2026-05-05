@@ -1041,6 +1041,8 @@ export type Database = {
           id: string
           image_url: string | null
           parent_id: string | null
+          pinned: boolean
+          pinned_at: string | null
           program: string | null
           updated_at: string
           user_id: string
@@ -1055,6 +1057,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           parent_id?: string | null
+          pinned?: boolean
+          pinned_at?: string | null
           program?: string | null
           updated_at?: string
           user_id: string
@@ -1069,6 +1073,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           parent_id?: string | null
+          pinned?: boolean
+          pinned_at?: string | null
           program?: string | null
           updated_at?: string
           user_id?: string
