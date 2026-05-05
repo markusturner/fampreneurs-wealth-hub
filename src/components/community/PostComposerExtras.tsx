@@ -43,25 +43,17 @@ export function GifButton({ onPick, className = '' }: { onPick: (url: string) =>
   const search = async (term: string) => {
     setLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke('giphy-search', {
-        body: undefined,
-        method: 'GET',
-        headers: {},
-        // @ts-expect-error - supabase-js v2 supports query via fetch path
-        query: { q: term, limit: '24' },
-      } as any)
-      if (error) throw error
-      setItems((data?.items || []) as GifItem[])
-    } catch {
-      // Fallback: use direct URL with query string
-      try {
-        const url = `${import.meta.env.VITE_SUPABASE_URL || ''}/functions/v1/giphy-search?q=${encodeURIComponent(term)}&limit=24`
-        const session = (await supabase.auth.getSession()).data.session
-        const res = await fetch(url, { headers: { Authorization: `Bearer ${session?.access_token || ''}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '' } })
-        const json = await res.json()
-        setItems(json.items || [])
-      } catch { setItems([]) }
-    } finally { setLoading(false) }
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/giphy-search?q=${encodeURIComponent(term)}&limit=24`
+      const session = (await supabase.auth.getSession()).data.session
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${session?.access_token || ''}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+      })
+      const json = await res.json()
+      setItems(json.items || [])
+    } catch { setItems([]) } finally { setLoading(false) }
   }
 
   useEffect(() => {
