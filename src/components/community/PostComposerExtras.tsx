@@ -11,23 +11,26 @@ import EmojiPicker, { EmojiStyle, Theme } from 'emoji-picker-react'
 interface GifItem { id: string; title: string; url: string; preview: string }
 
 export function EmojiButton({ onPick, className = '' }: { onPick: (emoji: string) => void; className?: string }) {
+  const [open, setOpen] = useState(false)
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button type="button" className={`w-9 h-9 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors ${className}`} aria-label="Insert emoji">
           <Smile className="h-5 w-5" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" sideOffset={8} className="p-0 w-auto border-0 shadow-xl">
-        <EmojiPicker
-          onEmojiClick={(d) => onPick(d.emoji)}
-          emojiStyle={EmojiStyle.NATIVE}
-          theme={Theme.LIGHT}
-          width={320}
-          height={380}
-          searchPlaceholder="Search emojis"
-          previewConfig={{ showPreview: false }}
-        />
+        {open && (
+          <EmojiPicker
+            onEmojiClick={(d) => onPick(d.emoji)}
+            emojiStyle={EmojiStyle.NATIVE}
+            theme={Theme.LIGHT}
+            width={320}
+            height={380}
+            searchPlaceholder="Search emojis"
+            previewConfig={{ showPreview: false }}
+          />
+        )}
       </PopoverContent>
     </Popover>
   )
