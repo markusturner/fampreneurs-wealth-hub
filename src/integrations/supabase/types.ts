@@ -1842,7 +1842,6 @@ export type Database = {
           id: string
           is_active: boolean
           last_login: string | null
-          password_hash: string
           role: Database["public"]["Enums"]["family_member_role"]
           updated_at: string
         }
@@ -1853,7 +1852,6 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_login?: string | null
-          password_hash: string
           role?: Database["public"]["Enums"]["family_member_role"]
           updated_at?: string
         }
@@ -1864,7 +1862,6 @@ export type Database = {
           id?: string
           is_active?: boolean
           last_login?: string | null
-          password_hash?: string
           role?: Database["public"]["Enums"]["family_member_role"]
           updated_at?: string
         }
