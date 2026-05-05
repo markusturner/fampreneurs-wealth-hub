@@ -1191,6 +1191,12 @@ export default function WorkspaceCommunity() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 space-y-2">
+                    <Input
+                      placeholder="Title (optional)"
+                      value={newPostTitle}
+                      onChange={(e) => setNewPostTitle(e.target.value)}
+                      className="h-9 border-0 bg-muted/50 rounded-lg px-4 text-sm font-semibold placeholder:text-muted-foreground/60 focus-visible:ring-1"
+                    />
                     <Textarea
                       placeholder="Write something..."
                       value={newPost}
@@ -1206,6 +1212,22 @@ export default function WorkspaceCommunity() {
                       className="post-composer-textarea min-h-[44px] resize-none border-0 bg-muted/50 rounded-lg px-4 py-2.5 focus-visible:ring-1 text-sm overflow-hidden"
                       rows={1}
                     />
+                    {pollEnabled && (
+                      <PollDraftEditor
+                        question={pollQuestion}
+                        options={pollOptions}
+                        onChange={(q, o) => { setPollQuestion(q); setPollOptions(o) }}
+                        onRemove={() => { setPollEnabled(false); setPollQuestion(''); setPollOptions(['', '']) }}
+                      />
+                    )}
+                    {postGifUrl && (
+                      <div className="relative inline-block">
+                        <img src={postGifUrl} alt="GIF" className="max-h-40 rounded-lg" />
+                        <button onClick={() => setPostGifUrl(null)} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
                     {/* Preview attachments */}
                     <div className="flex flex-wrap gap-2">
                       {postImagePreview && (
