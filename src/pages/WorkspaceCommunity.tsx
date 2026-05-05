@@ -1190,7 +1190,7 @@ export default function WorkspaceCommunity() {
                       {getInitials(profile?.display_name || 'U')}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 space-y-2">
+                  <div className="flex-1 min-w-0 space-y-2">
                     <Input
                       placeholder="Title (optional)"
                       value={newPostTitle}
