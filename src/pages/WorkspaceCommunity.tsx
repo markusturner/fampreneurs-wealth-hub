@@ -1710,6 +1710,7 @@ export default function WorkspaceCommunity() {
                                 <DropdownMenuItem onClick={() => {
                                   setEditingPostId(post.id);
                                   setEditingPostContent(post.content);
+                                  setEditingPostTitle(post.title || '');
                                   setEditingPostCategory(post.category || 'discussion');
                                   const postDate = new Date(post.created_at);
                                   setEditingPostDate(postDate.toISOString().split('T')[0]);
