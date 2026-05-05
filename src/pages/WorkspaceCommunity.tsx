@@ -1256,39 +1256,42 @@ export default function WorkspaceCommunity() {
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 flex-nowrap overflow-x-auto scrollbar-none">
-                      <div className="flex items-center gap-1 flex-nowrap">
+                    <div className="flex items-center gap-2 flex-nowrap">
+                      <div className="flex items-center gap-1 flex-nowrap min-w-0 flex-1">
                         <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                         <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
                         <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
-                        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => imageInputRef.current?.click()}>
-                          <Image className="h-3.5 w-3.5" /> Photo
+                        <Button variant="ghost" size="icon" title="Photo" className="h-8 w-8" onClick={() => imageInputRef.current?.click()}>
+                          <Image className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={() => videoInputRef.current?.click()}>
-                          <Video className="h-3.5 w-3.5" /> Video
+                        <Button variant="ghost" size="icon" title="Video" className="h-8 w-8" onClick={() => videoInputRef.current?.click()}>
+                          <Video className="h-4 w-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className={`h-8 gap-1.5 text-xs ${isRecording ? 'text-destructive' : ''}`}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title={isRecording ? 'Stop recording' : 'Audio'}
+                          className={`h-8 w-8 ${isRecording ? 'text-destructive' : ''}`}
                           onClick={isRecording ? stopRecording : startRecording}
                         >
-                          {isRecording ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
-                          {isRecording ? 'Stop' : 'Audio'}
+                          {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                         </Button>
                         <EmojiButton onPick={(e) => setNewPost(prev => prev + e)} className="!h-8 !w-8" />
                         <GifButton onPick={(url) => setPostGifUrl(url)} className="!h-8 !w-8" />
                         <Button
                           variant="ghost"
-                          size="sm"
-                          className={`h-8 gap-1.5 text-xs ${pollEnabled ? 'text-[#ffb500]' : ''}`}
+                          size="icon"
+                          title="Poll"
+                          className={`h-8 w-8 ${pollEnabled ? 'text-[#ffb500]' : ''}`}
                           onClick={() => setPollEnabled(v => !v)}
                         >
-                          <ListChecks className="h-3.5 w-3.5" /> Poll
+                          <ListChecks className="h-4 w-4" />
                         </Button>
                         <Select value={postCategory} onValueChange={setPostCategory}>
-                          <SelectTrigger className="h-8 w-auto text-xs border-0 bg-muted/50">
-                            <SelectValue />
+                          <SelectTrigger className="h-8 w-10 text-xs border-0 bg-muted/50 px-2 [&>svg]:hidden justify-center" title="Category">
+                            <SelectValue>
+                              {CATEGORIES.find(c => c.value === postCategory)?.emoji || '💬'}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             {CATEGORIES.filter(c => c.value !== 'all').map(c => (
@@ -1299,23 +1302,23 @@ export default function WorkspaceCommunity() {
                         {(isAdmin || isOwner) && (
                           <Button
                             variant={postToAll ? 'default' : 'ghost'}
-                            size="sm"
-                            className={`h-8 gap-1.5 text-xs ${postToAll ? 'bg-[#ffb500] text-[#290a52] hover:bg-[#ffb500]/90' : ''}`}
+                            size="icon"
+                            title="Post to all communities"
+                            className={`h-8 w-8 ${postToAll ? 'bg-[#ffb500] text-[#290a52] hover:bg-[#ffb500]/90' : ''}`}
                             onClick={() => setPostToAll(!postToAll)}
                           >
-                            <Users className="h-3.5 w-3.5" />
-                            All
+                            <Users className="h-4 w-4" />
                           </Button>
                         )}
                         {isOwner && (
                           <Button
                             variant={useCustomDateTime ? 'default' : 'ghost'}
-                            size="sm"
-                            className={`h-8 gap-1.5 text-xs ${useCustomDateTime ? 'bg-[#ffb500] text-[#290a52] hover:bg-[#ffb500]/90' : ''}`}
+                            size="icon"
+                            title="Custom date"
+                            className={`h-8 w-8 ${useCustomDateTime ? 'bg-[#ffb500] text-[#290a52] hover:bg-[#ffb500]/90' : ''}`}
                             onClick={() => setUseCustomDateTime(!useCustomDateTime)}
                           >
-                            <Calendar className="h-3.5 w-3.5" />
-                            Date
+                            <Calendar className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
