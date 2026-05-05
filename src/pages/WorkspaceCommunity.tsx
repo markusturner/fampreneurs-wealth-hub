@@ -1494,10 +1494,15 @@ export default function WorkspaceCommunity() {
                               const shouldClamp = !isExpanded && (lineCount > 3 || post.content.length > 280)
                               return (
                                 <div className="mt-2">
-                                  <p className={`text-sm whitespace-pre-wrap leading-relaxed ${shouldClamp ? 'line-clamp-3' : ''}`}>
-                                    {renderContentWithMentions(post.content)}
-                                  </p>
-                                  {(lineCount > 3 || post.content.length > 280) && (
+                                  {post.title && (
+                                    <h3 className="text-base font-semibold leading-snug mb-1">{post.title}</h3>
+                                  )}
+                                  {post.content && (
+                                    <p className={`text-sm whitespace-pre-wrap leading-relaxed ${shouldClamp ? 'line-clamp-3' : ''}`}>
+                                      {renderContentWithMentions(post.content)}
+                                    </p>
+                                  )}
+                                  {post.content && (lineCount > 3 || post.content.length > 280) && (
                                     <button
                                       type="button"
                                       onClick={() => setExpandedPosts(prev => {
@@ -1518,12 +1523,16 @@ export default function WorkspaceCommunity() {
                           {post.image_url && (
                             <img src={post.image_url} alt="" className="rounded-lg mt-3 max-h-80 object-cover w-full" />
                           )}
+                          {post.gif_url && (
+                            <img src={post.gif_url} alt="GIF" className="rounded-lg mt-3 max-h-80 object-contain" />
+                          )}
                           {post.video_url && (
                             <video src={post.video_url} controls className="rounded-lg mt-3 max-h-80 w-full" />
                           )}
                           {post.audio_url && (
                             <audio src={post.audio_url} controls className="mt-3 w-full" />
                           )}
+                          <PollDisplay postId={post.id} />
 
                           <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/50">
                              <button
