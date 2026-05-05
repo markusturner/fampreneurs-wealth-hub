@@ -1010,7 +1010,7 @@ export default function WorkspaceCommunity() {
                     <Button
                       size="sm"
                       onClick={handleMobilePost}
-                      disabled={!newPost.trim()}
+                      disabled={!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim())}
                       className="rounded-full px-5 h-8 text-xs font-bold hover:bg-[hsl(43,100%,50%)] hover:text-[hsl(270,80%,15%)] transition-colors"
                     >
                       POST
@@ -1320,7 +1320,7 @@ export default function WorkspaceCommunity() {
                         )}
                       </div>
                       <div className="ml-auto">
-                        <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim()} className="gap-1.5 bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
+                        <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim())} className="gap-1.5 bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
                           <Send className="h-4 w-4" />
                           {postToAll ? 'Post to All' : 'Post'}
                         </Button>
