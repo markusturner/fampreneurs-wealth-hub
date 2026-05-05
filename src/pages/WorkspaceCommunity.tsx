@@ -787,6 +787,18 @@ export default function WorkspaceCommunity() {
     }
   }
 
+  const isEmbeddableVideoUrl = (url: string): boolean => {
+    if (!url) return false
+    return /youtube\.com|youtu\.be|loom\.com|vimeo\.com|tella\.tv/.test(url)
+  }
+
+  const extractFirstVideoUrl = (text: string): string | null => {
+    if (!text) return null
+    const match = text.match(/https?:\/\/[^\s<]+/g)
+    if (!match) return null
+    return match.find(u => isEmbeddableVideoUrl(u)) || null
+  }
+
   const getEmbedUrl = (url: string): string => {
     if (url.includes("youtube.com") || url.includes("youtu.be")) {
       const videoId = url.includes("youtu.be")
@@ -1538,8 +1550,33 @@ export default function WorkspaceCommunity() {
                             <img src={post.gif_url} alt="GIF" className="rounded-lg mt-3 max-h-80 object-contain" />
                           )}
                           {post.video_url && (
-                            <video src={post.video_url} controls className="rounded-lg mt-3 max-h-80 w-full" />
+                            isEmbeddableVideoUrl(post.video_url) ? (
+                              <div className="aspect-video w-full mt-3 rounded-lg overflow-hidden border">
+                                <iframe
+                                  src={getEmbedUrl(post.video_url)}
+                                  className="w-full h-full"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                />
+                              </div>
+                            ) : (
+                              <video src={post.video_url} controls className="rounded-lg mt-3 max-h-80 w-full" />
+                            )
                           )}
+                          {!post.video_url && post.content && (() => {
+                            const videoLink = extractFirstVideoUrl(post.content)
+                            if (!videoLink) return null
+                            return (
+                              <div className="aspect-video w-full mt-3 rounded-lg overflow-hidden border">
+                                <iframe
+                                  src={getEmbedUrl(videoLink)}
+                                  className="w-full h-full"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                />
+                              </div>
+                            )
+                          })()}
                           {post.audio_url && (
                             <audio src={post.audio_url} controls className="mt-3 w-full" />
                           )}
