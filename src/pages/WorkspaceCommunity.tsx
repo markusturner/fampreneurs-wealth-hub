@@ -1276,6 +1276,16 @@ export default function WorkspaceCommunity() {
                           {isRecording ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
                           {isRecording ? 'Stop' : 'Audio'}
                         </Button>
+                        <EmojiButton onPick={(e) => setNewPost(prev => prev + e)} className="!h-8 !w-8" />
+                        <GifButton onPick={(url) => setPostGifUrl(url)} className="!h-8 !w-8" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-8 gap-1.5 text-xs ${pollEnabled ? 'text-[#ffb500]' : ''}`}
+                          onClick={() => setPollEnabled(v => !v)}
+                        >
+                          <ListChecks className="h-3.5 w-3.5" /> Poll
+                        </Button>
                         <Select value={postCategory} onValueChange={setPostCategory}>
                           <SelectTrigger className="h-8 w-auto text-xs border-0 bg-muted/50">
                             <SelectValue />
