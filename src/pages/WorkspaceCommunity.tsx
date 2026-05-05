@@ -393,7 +393,8 @@ export default function WorkspaceCommunity() {
   }
 
   const handleCreatePost = async () => {
-    if (!newPost.trim() || !user?.id) return
+    const hasContent = newPost.trim() || newPostTitle.trim() || postGifUrl || postImageFile || postVideoFile || postAudioFile || (pollEnabled && pollQuestion.trim())
+    if (!hasContent || !user?.id) return
     try {
       let imageUrl: string | null = null
       let videoUrl: string | null = null
@@ -410,40 +411,58 @@ export default function WorkspaceCommunity() {
         customCreatedAt = new Date(dateStr).toISOString()
       }
 
-      // Post content WITHOUT hashtag prefix - category stored separately
-      if (postToAll && (isAdmin || isOwner)) {
-        // Post to all communities
-        const allPrograms = Object.keys(PROGRAM_NAMES)
-        const inserts = allPrograms.map(prog => ({
-          content: newPost.trim(),
-          user_id: user.id,
-          image_url: imageUrl,
-          video_url: videoUrl,
-          audio_url: audioUrl,
-          category: postCategory,
-          program: prog,
-          ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
-        }))
-        const { error } = await supabase.from('community_posts').insert(inserts as any)
-        if (error) throw error
-      } else {
-        const { error } = await supabase
-          .from('community_posts')
-          .insert({ 
-            content: newPost.trim(), 
-            user_id: user.id,
-            image_url: imageUrl,
-            video_url: videoUrl,
-            audio_url: audioUrl,
-            category: postCategory,
-            program,
-            ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
-          } as any)
-        if (error) throw error
+      // Validate poll
+      const cleanedPollOptions = pollOptions.map(o => o.trim()).filter(Boolean)
+      const validPoll = pollEnabled && pollQuestion.trim() && cleanedPollOptions.length >= 2
+
+      const basePayload = {
+        title: newPostTitle.trim() || null,
+        content: newPost.trim(),
+        user_id: user.id,
+        image_url: imageUrl,
+        video_url: videoUrl,
+        audio_url: audioUrl,
+        gif_url: postGifUrl,
+        category: postCategory,
+        ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
       }
+
+      const insertedPostIds: string[] = []
+      if (postToAll && (isAdmin || isOwner)) {
+        const allPrograms = Object.keys(PROGRAM_NAMES)
+        const inserts = allPrograms.map(prog => ({ ...basePayload, program: prog }))
+        const { data, error } = await supabase.from('community_posts').insert(inserts as any).select('id')
+        if (error) throw error
+        ;(data || []).forEach(p => insertedPostIds.push(p.id))
+      } else {
+        const { data, error } = await supabase
+          .from('community_posts')
+          .insert({ ...basePayload, program } as any)
+          .select('id')
+          .single()
+        if (error) throw error
+        if (data?.id) insertedPostIds.push(data.id)
+      }
+
+      // Insert polls (one per inserted post)
+      if (validPoll && insertedPostIds.length > 0) {
+        const pollRows = insertedPostIds.map(pid => ({
+          post_id: pid,
+          user_id: user.id,
+          question: pollQuestion.trim(),
+          options: cleanedPollOptions,
+        }))
+        await supabase.from('community_polls').insert(pollRows as any)
+      }
+
       // Notify mentioned users (fire and forget)
       notifyMentionedUsers(newPost.trim(), 'post', 'post')
       setNewPost('')
+      setNewPostTitle('')
+      setPostGifUrl(null)
+      setPollEnabled(false)
+      setPollQuestion('')
+      setPollOptions(['', ''])
       // Reset textarea height
       const textarea = document.querySelector<HTMLTextAreaElement>('.post-composer-textarea');
       if (textarea) textarea.style.height = '';
