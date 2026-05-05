@@ -43,12 +43,14 @@ import {
 
 interface Post {
   id: string
+  title: string | null
   content: string
   user_id: string
   created_at: string
   image_url: string | null
   video_url: string | null
   audio_url: string | null
+  gif_url: string | null
   author_name: string
   author_avatar: string | null
   likes_count: number
