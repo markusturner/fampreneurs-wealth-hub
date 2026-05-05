@@ -1409,6 +1409,12 @@ export default function WorkspaceCommunity() {
                           </div>
                           {editingPostId === post.id ? (
                             <div className="mt-2 space-y-2">
+                              <Input
+                                placeholder="Title (optional)"
+                                value={editingPostTitle}
+                                onChange={(e) => setEditingPostTitle(e.target.value)}
+                                className="h-9 bg-muted/50 rounded-lg px-3 text-sm font-semibold focus-visible:ring-1"
+                              />
                               <Textarea
                                 value={editingPostContent}
                                 onChange={(e) => {
