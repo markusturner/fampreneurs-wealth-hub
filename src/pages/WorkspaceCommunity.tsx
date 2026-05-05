@@ -135,6 +135,7 @@ export default function WorkspaceCommunity() {
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('all')
+  const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set())
   const [memberCount, setMemberCount] = useState(0)
   const [onlineCount, setOnlineCount] = useState(0)
   const [settingsOpen, setSettingsOpen] = useState(false)
