@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { StripePaymentModal } from '@/components/dashboard/StripePaymentModal'
 import { CommunityMembersList } from '@/components/community/CommunityMembersList'
+import { EmojiButton, GifButton, PollDraftEditor } from '@/components/community/PostComposerExtras'
+import { PollDisplay } from '@/components/community/PollDisplay'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -17,7 +19,7 @@ import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { 
   Image, Video, ThumbsUp, MessageCircle, Send, 
   MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X,
-  Mic, MicOff, Lock, Calendar, CreditCard, Play, Pencil, Check, Pin, PinOff
+  Mic, MicOff, Lock, Calendar, CreditCard, Play, Pencil, Check, Pin, PinOff, ListChecks
 } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import {
@@ -43,12 +45,14 @@ import {
 
 interface Post {
   id: string
+  title: string | null
   content: string
   user_id: string
   created_at: string
   image_url: string | null
   video_url: string | null
   audio_url: string | null
+  gif_url: string | null
   author_name: string
   author_avatar: string | null
   likes_count: number
@@ -130,6 +134,11 @@ export default function WorkspaceCommunity() {
     }
   }, [postParam, program])
   const [newPost, setNewPost] = useState('')
+  const [newPostTitle, setNewPostTitle] = useState('')
+  const [postGifUrl, setPostGifUrl] = useState<string | null>(null)
+  const [pollEnabled, setPollEnabled] = useState(false)
+  const [pollQuestion, setPollQuestion] = useState('')
+  const [pollOptions, setPollOptions] = useState<string[]>(['', ''])
   const [postToAll, setPostToAll] = useState(false)
   const [postCategory, setPostCategory] = useState('discussion')
   const [posts, setPosts] = useState<Post[]>([])
@@ -239,12 +248,14 @@ export default function WorkspaceCommunity() {
 
         return {
           id: post.id,
+          title: (post as any).title || null,
           content: post.content,
           user_id: post.user_id,
           created_at: post.created_at,
           image_url: post.image_url,
           video_url: post.video_url,
           audio_url: post.audio_url,
+          gif_url: (post as any).gif_url || null,
           author_name: authorProfile?.display_name || 'Member',
           author_avatar: authorProfile?.avatar_url || null,
           likes_count: postLikes.length,
@@ -382,7 +393,8 @@ export default function WorkspaceCommunity() {
   }
 
   const handleCreatePost = async () => {
-    if (!newPost.trim() || !user?.id) return
+    const hasContent = newPost.trim() || newPostTitle.trim() || postGifUrl || postImageFile || postVideoFile || postAudioFile || (pollEnabled && pollQuestion.trim())
+    if (!hasContent || !user?.id) return
     try {
       let imageUrl: string | null = null
       let videoUrl: string | null = null
@@ -399,40 +411,58 @@ export default function WorkspaceCommunity() {
         customCreatedAt = new Date(dateStr).toISOString()
       }
 
-      // Post content WITHOUT hashtag prefix - category stored separately
-      if (postToAll && (isAdmin || isOwner)) {
-        // Post to all communities
-        const allPrograms = Object.keys(PROGRAM_NAMES)
-        const inserts = allPrograms.map(prog => ({
-          content: newPost.trim(),
-          user_id: user.id,
-          image_url: imageUrl,
-          video_url: videoUrl,
-          audio_url: audioUrl,
-          category: postCategory,
-          program: prog,
-          ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
-        }))
-        const { error } = await supabase.from('community_posts').insert(inserts as any)
-        if (error) throw error
-      } else {
-        const { error } = await supabase
-          .from('community_posts')
-          .insert({ 
-            content: newPost.trim(), 
-            user_id: user.id,
-            image_url: imageUrl,
-            video_url: videoUrl,
-            audio_url: audioUrl,
-            category: postCategory,
-            program,
-            ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
-          } as any)
-        if (error) throw error
+      // Validate poll
+      const cleanedPollOptions = pollOptions.map(o => o.trim()).filter(Boolean)
+      const validPoll = pollEnabled && pollQuestion.trim() && cleanedPollOptions.length >= 2
+
+      const basePayload = {
+        title: newPostTitle.trim() || null,
+        content: newPost.trim(),
+        user_id: user.id,
+        image_url: imageUrl,
+        video_url: videoUrl,
+        audio_url: audioUrl,
+        gif_url: postGifUrl,
+        category: postCategory,
+        ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
       }
+
+      const insertedPostIds: string[] = []
+      if (postToAll && (isAdmin || isOwner)) {
+        const allPrograms = Object.keys(PROGRAM_NAMES)
+        const inserts = allPrograms.map(prog => ({ ...basePayload, program: prog }))
+        const { data, error } = await supabase.from('community_posts').insert(inserts as any).select('id')
+        if (error) throw error
+        ;(data || []).forEach(p => insertedPostIds.push(p.id))
+      } else {
+        const { data, error } = await supabase
+          .from('community_posts')
+          .insert({ ...basePayload, program } as any)
+          .select('id')
+          .single()
+        if (error) throw error
+        if (data?.id) insertedPostIds.push(data.id)
+      }
+
+      // Insert polls (one per inserted post)
+      if (validPoll && insertedPostIds.length > 0) {
+        const pollRows = insertedPostIds.map(pid => ({
+          post_id: pid,
+          user_id: user.id,
+          question: pollQuestion.trim(),
+          options: cleanedPollOptions,
+        }))
+        await supabase.from('community_polls').insert(pollRows as any)
+      }
+
       // Notify mentioned users (fire and forget)
       notifyMentionedUsers(newPost.trim(), 'post', 'post')
       setNewPost('')
+      setNewPostTitle('')
+      setPostGifUrl(null)
+      setPollEnabled(false)
+      setPollQuestion('')
+      setPollOptions(['', ''])
       // Reset textarea height
       const textarea = document.querySelector<HTMLTextAreaElement>('.post-composer-textarea');
       if (textarea) textarea.style.height = '';
@@ -980,7 +1010,7 @@ export default function WorkspaceCommunity() {
                     <Button
                       size="sm"
                       onClick={handleMobilePost}
-                      disabled={!newPost.trim()}
+                      disabled={!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim())}
                       className="rounded-full px-5 h-8 text-xs font-bold hover:bg-[hsl(43,100%,50%)] hover:text-[hsl(270,80%,15%)] transition-colors"
                     >
                       POST
@@ -1042,6 +1072,8 @@ export default function WorkspaceCommunity() {
                 <div className="flex-1 px-4 overflow-y-auto">
                   <Input
                     placeholder="Title (optional)"
+                    value={newPostTitle}
+                    onChange={(e) => setNewPostTitle(e.target.value)}
                     className="border-0 px-0 text-base font-semibold placeholder:text-muted-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto py-2 mb-1"
                   />
                   <Textarea
@@ -1051,6 +1083,28 @@ export default function WorkspaceCommunity() {
                     className="border-0 px-0 resize-none min-h-[180px] focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground/40"
                     autoFocus
                   />
+
+                  {/* Poll editor */}
+                  {pollEnabled && (
+                    <div className="mt-2">
+                      <PollDraftEditor
+                        question={pollQuestion}
+                        options={pollOptions}
+                        onChange={(q, o) => { setPollQuestion(q); setPollOptions(o) }}
+                        onRemove={() => { setPollEnabled(false); setPollQuestion(''); setPollOptions(['', '']) }}
+                      />
+                    </div>
+                  )}
+
+                  {/* GIF preview */}
+                  {postGifUrl && (
+                    <div className="relative inline-block mt-3">
+                      <img src={postGifUrl} alt="GIF" className="max-h-48 rounded-xl" />
+                      <button onClick={() => setPostGifUrl(null)} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
 
                   {/* Attachment previews */}
                   {(postImagePreview || postVideoPreview || postAudioFile) && (
@@ -1085,7 +1139,7 @@ export default function WorkspaceCommunity() {
                 </div>
 
                 {/* Bottom toolbar */}
-                <div className="border-t border-border/50 px-4 py-3 pb-6 flex items-center gap-2 bg-muted/30 mb-[env(safe-area-inset-bottom)]">
+                <div className="border-t border-border/50 px-4 py-3 pb-6 flex items-center gap-2 bg-muted/30 mb-[env(safe-area-inset-bottom)] flex-wrap">
                   <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                   <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
                   <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
@@ -1100,6 +1154,15 @@ export default function WorkspaceCommunity() {
                     onClick={isRecording ? stopRecording : startRecording}
                   >
                     {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                  </button>
+                  <EmojiButton onPick={(e) => setNewPost(prev => prev + e)} />
+                  <GifButton onPick={(url) => setPostGifUrl(url)} />
+                  <button
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${pollEnabled ? 'text-[#ffb500] bg-[#ffb500]/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
+                    onClick={() => setPollEnabled(v => !v)}
+                    aria-label="Add poll"
+                  >
+                    <ListChecks className="h-5 w-5" />
                   </button>
                   <div className="ml-auto">
                     <Select value={postCategory} onValueChange={setPostCategory}>
@@ -1128,6 +1191,12 @@ export default function WorkspaceCommunity() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 space-y-2">
+                    <Input
+                      placeholder="Title (optional)"
+                      value={newPostTitle}
+                      onChange={(e) => setNewPostTitle(e.target.value)}
+                      className="h-9 border-0 bg-muted/50 rounded-lg px-4 text-sm font-semibold placeholder:text-muted-foreground/60 focus-visible:ring-1"
+                    />
                     <Textarea
                       placeholder="Write something..."
                       value={newPost}
@@ -1143,6 +1212,22 @@ export default function WorkspaceCommunity() {
                       className="post-composer-textarea min-h-[44px] resize-none border-0 bg-muted/50 rounded-lg px-4 py-2.5 focus-visible:ring-1 text-sm overflow-hidden"
                       rows={1}
                     />
+                    {pollEnabled && (
+                      <PollDraftEditor
+                        question={pollQuestion}
+                        options={pollOptions}
+                        onChange={(q, o) => { setPollQuestion(q); setPollOptions(o) }}
+                        onRemove={() => { setPollEnabled(false); setPollQuestion(''); setPollOptions(['', '']) }}
+                      />
+                    )}
+                    {postGifUrl && (
+                      <div className="relative inline-block">
+                        <img src={postGifUrl} alt="GIF" className="max-h-40 rounded-lg" />
+                        <button onClick={() => setPostGifUrl(null)} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
                     {/* Preview attachments */}
                     <div className="flex flex-wrap gap-2">
                       {postImagePreview && (
@@ -1191,6 +1276,16 @@ export default function WorkspaceCommunity() {
                           {isRecording ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
                           {isRecording ? 'Stop' : 'Audio'}
                         </Button>
+                        <EmojiButton onPick={(e) => setNewPost(prev => prev + e)} className="!h-8 !w-8" />
+                        <GifButton onPick={(url) => setPostGifUrl(url)} className="!h-8 !w-8" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-8 gap-1.5 text-xs ${pollEnabled ? 'text-[#ffb500]' : ''}`}
+                          onClick={() => setPollEnabled(v => !v)}
+                        >
+                          <ListChecks className="h-3.5 w-3.5" /> Poll
+                        </Button>
                         <Select value={postCategory} onValueChange={setPostCategory}>
                           <SelectTrigger className="h-8 w-auto text-xs border-0 bg-muted/50">
                             <SelectValue />
@@ -1225,7 +1320,7 @@ export default function WorkspaceCommunity() {
                         )}
                       </div>
                       <div className="ml-auto">
-                        <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim()} className="gap-1.5 bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
+                        <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim())} className="gap-1.5 bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
                           <Send className="h-4 w-4" />
                           {postToAll ? 'Post to All' : 'Post'}
                         </Button>
@@ -1399,10 +1494,15 @@ export default function WorkspaceCommunity() {
                               const shouldClamp = !isExpanded && (lineCount > 3 || post.content.length > 280)
                               return (
                                 <div className="mt-2">
-                                  <p className={`text-sm whitespace-pre-wrap leading-relaxed ${shouldClamp ? 'line-clamp-3' : ''}`}>
-                                    {renderContentWithMentions(post.content)}
-                                  </p>
-                                  {(lineCount > 3 || post.content.length > 280) && (
+                                  {post.title && (
+                                    <h3 className="text-base font-semibold leading-snug mb-1">{post.title}</h3>
+                                  )}
+                                  {post.content && (
+                                    <p className={`text-sm whitespace-pre-wrap leading-relaxed ${shouldClamp ? 'line-clamp-3' : ''}`}>
+                                      {renderContentWithMentions(post.content)}
+                                    </p>
+                                  )}
+                                  {post.content && (lineCount > 3 || post.content.length > 280) && (
                                     <button
                                       type="button"
                                       onClick={() => setExpandedPosts(prev => {
@@ -1423,12 +1523,16 @@ export default function WorkspaceCommunity() {
                           {post.image_url && (
                             <img src={post.image_url} alt="" className="rounded-lg mt-3 max-h-80 object-cover w-full" />
                           )}
+                          {post.gif_url && (
+                            <img src={post.gif_url} alt="GIF" className="rounded-lg mt-3 max-h-80 object-contain" />
+                          )}
                           {post.video_url && (
                             <video src={post.video_url} controls className="rounded-lg mt-3 max-h-80 w-full" />
                           )}
                           {post.audio_url && (
                             <audio src={post.audio_url} controls className="mt-3 w-full" />
                           )}
+                          <PollDisplay postId={post.id} />
 
                           <div className="flex items-center gap-4 mt-3 pt-3 border-t border-border/50">
                              <button
