@@ -241,12 +241,14 @@ export default function WorkspaceCommunity() {
 
         return {
           id: post.id,
+          title: (post as any).title || null,
           content: post.content,
           user_id: post.user_id,
           created_at: post.created_at,
           image_url: post.image_url,
           video_url: post.video_url,
           audio_url: post.audio_url,
+          gif_url: (post as any).gif_url || null,
           author_name: authorProfile?.display_name || 'Member',
           author_avatar: authorProfile?.avatar_url || null,
           likes_count: postLikes.length,
