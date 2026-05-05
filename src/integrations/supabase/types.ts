@@ -1031,6 +1031,73 @@ export type Database = {
           },
         ]
       }
+      community_poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_index?: number
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "community_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_polls: {
+        Row: {
+          created_at: string
+          id: string
+          options: Json
+          post_id: string
+          question: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          options: Json
+          post_id: string
+          question: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          options?: Json
+          post_id?: string
+          question?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_polls_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       community_posts: {
         Row: {
           audio_url: string | null
@@ -1038,12 +1105,14 @@ export type Database = {
           channel_id: string | null
           content: string
           created_at: string
+          gif_url: string | null
           id: string
           image_url: string | null
           parent_id: string | null
           pinned: boolean
           pinned_at: string | null
           program: string | null
+          title: string | null
           updated_at: string
           user_id: string
           video_url: string | null
@@ -1054,12 +1123,14 @@ export type Database = {
           channel_id?: string | null
           content: string
           created_at?: string
+          gif_url?: string | null
           id?: string
           image_url?: string | null
           parent_id?: string | null
           pinned?: boolean
           pinned_at?: string | null
           program?: string | null
+          title?: string | null
           updated_at?: string
           user_id: string
           video_url?: string | null
@@ -1070,12 +1141,14 @@ export type Database = {
           channel_id?: string | null
           content?: string
           created_at?: string
+          gif_url?: string | null
           id?: string
           image_url?: string | null
           parent_id?: string | null
           pinned?: boolean
           pinned_at?: string | null
           program?: string | null
+          title?: string | null
           updated_at?: string
           user_id?: string
           video_url?: string | null
