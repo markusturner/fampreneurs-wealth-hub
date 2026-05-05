@@ -41,7 +41,19 @@ export function CommunityMembersList({ program }: { program: string }) {
         .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
         .order('display_name')
 
-      setMembers(programProfiles || [])
+      if (!programProfiles || programProfiles.length === 0) {
+        setMembers([])
+        return
+      }
+
+      // Only include users who have completed onboarding
+      const { data: onboarded } = await supabase
+        .from('onboarding_responses')
+        .select('user_id')
+        .in('user_id', programProfiles.map(p => p.user_id))
+
+      const onboardedIds = new Set((onboarded || []).map(o => o.user_id))
+      setMembers(programProfiles.filter(p => onboardedIds.has(p.user_id)))
     }
 
     fetchMembers()
