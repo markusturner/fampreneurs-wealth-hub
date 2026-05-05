@@ -1547,6 +1547,15 @@ export default function WorkspaceCommunity() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              {(isAdmin || isOwner) && (
+                                <DropdownMenuItem onClick={() => handleTogglePin(post)}>
+                                  {post.pinned ? (
+                                    <><PinOff className="h-3.5 w-3.5 mr-2" /> Unpin Post</>
+                                  ) : (
+                                    <><Pin className="h-3.5 w-3.5 mr-2" /> Pin Post</>
+                                  )}
+                                </DropdownMenuItem>
+                              )}
                               {(post.user_id === user?.id || isAdmin || isOwner) && (
                                 <DropdownMenuItem onClick={() => {
                                   setEditingPostId(post.id);
