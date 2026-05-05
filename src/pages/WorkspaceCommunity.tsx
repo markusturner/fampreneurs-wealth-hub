@@ -174,6 +174,7 @@ export default function WorkspaceCommunity() {
   const [editingPostContent, setEditingPostContent] = useState('')
   const [editingPostCategory, setEditingPostCategory] = useState('discussion')
   const [editingPostDate, setEditingPostDate] = useState('')
+  const [editingPostTitle, setEditingPostTitle] = useState('')
 
   // Comments state
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
@@ -1408,6 +1409,12 @@ export default function WorkspaceCommunity() {
                           </div>
                           {editingPostId === post.id ? (
                             <div className="mt-2 space-y-2">
+                              <Input
+                                placeholder="Title (optional)"
+                                value={editingPostTitle}
+                                onChange={(e) => setEditingPostTitle(e.target.value)}
+                                className="h-9 bg-muted/50 rounded-lg px-3 text-sm font-semibold focus-visible:ring-1"
+                              />
                               <Textarea
                                 value={editingPostContent}
                                 onChange={(e) => {
@@ -1459,6 +1466,7 @@ export default function WorkspaceCommunity() {
                                     const updateData: Record<string, unknown> = {
                                       content: editingPostContent.trim(),
                                       category: editingPostCategory,
+                                      title: editingPostTitle.trim() || null,
                                     };
                                     if (isOwner && editingPostDate) {
                                       const originalTime = new Date(post.created_at);
@@ -1472,7 +1480,7 @@ export default function WorkspaceCommunity() {
                                     if (error) {
                                       toast({ title: 'Error', description: 'Failed to update post', variant: 'destructive' });
                                     } else {
-                                      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, content: editingPostContent.trim(), category: editingPostCategory, ...(updateData.created_at ? { created_at: updateData.created_at as string } : {}) } : p));
+                                      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, content: editingPostContent.trim(), category: editingPostCategory, title: editingPostTitle.trim() || null, ...(updateData.created_at ? { created_at: updateData.created_at as string } : {}) } : p));
                                       setEditingPostId(null);
                                       toast({ title: 'Post updated' });
                                     }
@@ -1702,6 +1710,7 @@ export default function WorkspaceCommunity() {
                                 <DropdownMenuItem onClick={() => {
                                   setEditingPostId(post.id);
                                   setEditingPostContent(post.content);
+                                  setEditingPostTitle(post.title || '');
                                   setEditingPostCategory(post.category || 'discussion');
                                   const postDate = new Date(post.created_at);
                                   setEditingPostDate(postDate.toISOString().split('T')[0]);
