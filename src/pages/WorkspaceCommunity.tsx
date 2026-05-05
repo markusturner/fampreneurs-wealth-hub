@@ -56,6 +56,8 @@ interface Post {
   is_liked: boolean
   channel_id: string | null
   category: string
+  pinned: boolean
+  pinned_at: string | null
 }
 
 interface Comment {
