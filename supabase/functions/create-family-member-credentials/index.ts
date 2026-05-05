@@ -85,7 +85,6 @@ const handler = async (req: Request): Promise<Response> => {
       .insert({
         family_member_id: familyMemberId,
         email: email,
-        password_hash: 'managed_by_auth' // We let Supabase Auth handle the actual password
       });
 
     if (credentialsError) {
