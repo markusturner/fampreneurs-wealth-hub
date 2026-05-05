@@ -1256,8 +1256,8 @@ export default function WorkspaceCommunity() {
                         </div>
                       )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="flex items-center gap-1 flex-wrap">
+                    <div className="flex items-center gap-2 flex-nowrap overflow-x-auto scrollbar-none">
+                      <div className="flex items-center gap-1 flex-nowrap">
                         <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                         <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
                         <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
@@ -1319,7 +1319,7 @@ export default function WorkspaceCommunity() {
                           </Button>
                         )}
                       </div>
-                      <div className="ml-auto">
+                      <div className="ml-auto flex-shrink-0">
                         <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim())} className="gap-1.5 bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
                           <Send className="h-4 w-4" />
                           {postToAll ? 'Post to All' : 'Post'}
