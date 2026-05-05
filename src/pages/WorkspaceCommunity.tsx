@@ -1256,8 +1256,8 @@ export default function WorkspaceCommunity() {
                         </div>
                       )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="flex items-center gap-1 flex-wrap">
+                    <div className="flex items-center gap-2 flex-nowrap overflow-x-auto scrollbar-none">
+                      <div className="flex items-center gap-1 flex-nowrap">
                         <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                         <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
                         <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
