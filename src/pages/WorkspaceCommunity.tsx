@@ -1466,6 +1466,7 @@ export default function WorkspaceCommunity() {
                                     const updateData: Record<string, unknown> = {
                                       content: editingPostContent.trim(),
                                       category: editingPostCategory,
+                                      title: editingPostTitle.trim() || null,
                                     };
                                     if (isOwner && editingPostDate) {
                                       const originalTime = new Date(post.created_at);
@@ -1479,7 +1480,7 @@ export default function WorkspaceCommunity() {
                                     if (error) {
                                       toast({ title: 'Error', description: 'Failed to update post', variant: 'destructive' });
                                     } else {
-                                      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, content: editingPostContent.trim(), category: editingPostCategory, ...(updateData.created_at ? { created_at: updateData.created_at as string } : {}) } : p));
+                                      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, content: editingPostContent.trim(), category: editingPostCategory, title: editingPostTitle.trim() || null, ...(updateData.created_at ? { created_at: updateData.created_at as string } : {}) } : p));
                                       setEditingPostId(null);
                                       toast({ title: 'Post updated' });
                                     }
