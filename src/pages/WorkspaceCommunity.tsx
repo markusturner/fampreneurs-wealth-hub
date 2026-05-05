@@ -17,7 +17,7 @@ import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { 
   Image, Video, ThumbsUp, MessageCircle, Send, 
   MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X,
-  Mic, MicOff, Lock, Calendar, CreditCard, Play, Pencil, Check
+  Mic, MicOff, Lock, Calendar, CreditCard, Play, Pencil, Check, Pin, PinOff
 } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import {
@@ -56,6 +56,8 @@ interface Post {
   is_liked: boolean
   channel_id: string | null
   category: string
+  pinned: boolean
+  pinned_at: string | null
 }
 
 interface Comment {
@@ -249,6 +251,8 @@ export default function WorkspaceCommunity() {
           is_liked: postLikes.some(l => l.user_id === user?.id),
           channel_id: post.channel_id,
           category,
+          pinned: (post as any).pinned || false,
+          pinned_at: (post as any).pinned_at || null,
         }
       }))
     } catch (error) {
@@ -784,10 +788,32 @@ export default function WorkspaceCommunity() {
     }
   }
 
-  // Filter posts by active category
-  const filteredPosts = activeCategory === 'all' 
-    ? posts 
+  // Filter posts by active category, then sort with pinned first
+  const filteredPosts = (activeCategory === 'all'
+    ? posts
     : posts.filter(p => p.category === activeCategory)
+  ).slice().sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1
+    if (!a.pinned && b.pinned) return 1
+    if (a.pinned && b.pinned) {
+      return new Date(b.pinned_at || b.created_at).getTime() - new Date(a.pinned_at || a.created_at).getTime()
+    }
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  })
+
+  const handleTogglePin = async (post: Post) => {
+    const newPinned = !post.pinned
+    const { error } = await supabase
+      .from('community_posts')
+      .update({ pinned: newPinned, pinned_at: newPinned ? new Date().toISOString() : null } as any)
+      .eq('id', post.id)
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to update pin', variant: 'destructive' })
+      return
+    }
+    setPosts(prev => prev.map(p => p.id === post.id ? { ...p, pinned: newPinned, pinned_at: newPinned ? new Date().toISOString() : null } : p))
+    toast({ title: newPinned ? 'Post pinned' : 'Post unpinned' })
+  }
 
   const categoryLabel = CATEGORIES.find(c => c.value === postCategory)
 
@@ -1265,6 +1291,11 @@ export default function WorkspaceCommunity() {
                             <span className="font-semibold text-sm">{post.author_name}</span>
                             <span className="text-xs text-muted-foreground">{formatPostDate(post.created_at)}</span>
                             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">{post.category}</Badge>
+                            {post.pinned && (
+                              <Badge className="text-[10px] px-1.5 py-0 bg-[#ffb500] text-foreground hover:bg-[#ffb500] gap-1">
+                                <Pin className="h-2.5 w-2.5" /> Pinned
+                              </Badge>
+                            )}
                           </div>
                           {editingPostId === post.id ? (
                             <div className="mt-2 space-y-2">
@@ -1516,6 +1547,15 @@ export default function WorkspaceCommunity() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              {(isAdmin || isOwner) && (
+                                <DropdownMenuItem onClick={() => handleTogglePin(post)}>
+                                  {post.pinned ? (
+                                    <><PinOff className="h-3.5 w-3.5 mr-2" /> Unpin Post</>
+                                  ) : (
+                                    <><Pin className="h-3.5 w-3.5 mr-2" /> Pin Post</>
+                                  )}
+                                </DropdownMenuItem>
+                              )}
                               {(post.user_id === user?.id || isAdmin || isOwner) && (
                                 <DropdownMenuItem onClick={() => {
                                   setEditingPostId(post.id);
