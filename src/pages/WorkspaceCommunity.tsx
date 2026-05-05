@@ -1291,6 +1291,11 @@ export default function WorkspaceCommunity() {
                             <span className="font-semibold text-sm">{post.author_name}</span>
                             <span className="text-xs text-muted-foreground">{formatPostDate(post.created_at)}</span>
                             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">{post.category}</Badge>
+                            {post.pinned && (
+                              <Badge className="text-[10px] px-1.5 py-0 bg-[#ffb500] text-foreground hover:bg-[#ffb500] gap-1">
+                                <Pin className="h-2.5 w-2.5" /> Pinned
+                              </Badge>
+                            )}
                           </div>
                           {editingPostId === post.id ? (
                             <div className="mt-2 space-y-2">
