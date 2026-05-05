@@ -788,10 +788,32 @@ export default function WorkspaceCommunity() {
     }
   }
 
-  // Filter posts by active category
-  const filteredPosts = activeCategory === 'all' 
-    ? posts 
+  // Filter posts by active category, then sort with pinned first
+  const filteredPosts = (activeCategory === 'all'
+    ? posts
     : posts.filter(p => p.category === activeCategory)
+  ).slice().sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1
+    if (!a.pinned && b.pinned) return 1
+    if (a.pinned && b.pinned) {
+      return new Date(b.pinned_at || b.created_at).getTime() - new Date(a.pinned_at || a.created_at).getTime()
+    }
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  })
+
+  const handleTogglePin = async (post: Post) => {
+    const newPinned = !post.pinned
+    const { error } = await supabase
+      .from('community_posts')
+      .update({ pinned: newPinned, pinned_at: newPinned ? new Date().toISOString() : null } as any)
+      .eq('id', post.id)
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to update pin', variant: 'destructive' })
+      return
+    }
+    setPosts(prev => prev.map(p => p.id === post.id ? { ...p, pinned: newPinned, pinned_at: newPinned ? new Date().toISOString() : null } : p))
+    toast({ title: newPinned ? 'Post pinned' : 'Post unpinned' })
+  }
 
   const categoryLabel = CATEGORIES.find(c => c.value === postCategory)
 
