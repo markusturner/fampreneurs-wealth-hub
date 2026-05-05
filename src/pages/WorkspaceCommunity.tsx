@@ -134,6 +134,11 @@ export default function WorkspaceCommunity() {
     }
   }, [postParam, program])
   const [newPost, setNewPost] = useState('')
+  const [newPostTitle, setNewPostTitle] = useState('')
+  const [postGifUrl, setPostGifUrl] = useState<string | null>(null)
+  const [pollEnabled, setPollEnabled] = useState(false)
+  const [pollQuestion, setPollQuestion] = useState('')
+  const [pollOptions, setPollOptions] = useState<string[]>(['', ''])
   const [postToAll, setPostToAll] = useState(false)
   const [postCategory, setPostCategory] = useState('discussion')
   const [posts, setPosts] = useState<Post[]>([])
