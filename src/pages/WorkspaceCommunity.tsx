@@ -1072,6 +1072,8 @@ export default function WorkspaceCommunity() {
                 <div className="flex-1 px-4 overflow-y-auto">
                   <Input
                     placeholder="Title (optional)"
+                    value={newPostTitle}
+                    onChange={(e) => setNewPostTitle(e.target.value)}
                     className="border-0 px-0 text-base font-semibold placeholder:text-muted-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto py-2 mb-1"
                   />
                   <Textarea
@@ -1081,6 +1083,28 @@ export default function WorkspaceCommunity() {
                     className="border-0 px-0 resize-none min-h-[180px] focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground/40"
                     autoFocus
                   />
+
+                  {/* Poll editor */}
+                  {pollEnabled && (
+                    <div className="mt-2">
+                      <PollDraftEditor
+                        question={pollQuestion}
+                        options={pollOptions}
+                        onChange={(q, o) => { setPollQuestion(q); setPollOptions(o) }}
+                        onRemove={() => { setPollEnabled(false); setPollQuestion(''); setPollOptions(['', '']) }}
+                      />
+                    </div>
+                  )}
+
+                  {/* GIF preview */}
+                  {postGifUrl && (
+                    <div className="relative inline-block mt-3">
+                      <img src={postGifUrl} alt="GIF" className="max-h-48 rounded-xl" />
+                      <button onClick={() => setPostGifUrl(null)} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
 
                   {/* Attachment previews */}
                   {(postImagePreview || postVideoPreview || postAudioFile) && (
@@ -1115,7 +1139,7 @@ export default function WorkspaceCommunity() {
                 </div>
 
                 {/* Bottom toolbar */}
-                <div className="border-t border-border/50 px-4 py-3 pb-6 flex items-center gap-2 bg-muted/30 mb-[env(safe-area-inset-bottom)]">
+                <div className="border-t border-border/50 px-4 py-3 pb-6 flex items-center gap-2 bg-muted/30 mb-[env(safe-area-inset-bottom)] flex-wrap">
                   <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                   <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={handleVideoSelect} />
                   <input ref={audioInputRef} type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
@@ -1130,6 +1154,15 @@ export default function WorkspaceCommunity() {
                     onClick={isRecording ? stopRecording : startRecording}
                   >
                     {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                  </button>
+                  <EmojiButton onPick={(e) => setNewPost(prev => prev + e)} />
+                  <GifButton onPick={(url) => setPostGifUrl(url)} />
+                  <button
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${pollEnabled ? 'text-[#ffb500] bg-[#ffb500]/10' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}`}
+                    onClick={() => setPollEnabled(v => !v)}
+                    aria-label="Add poll"
+                  >
+                    <ListChecks className="h-5 w-5" />
                   </button>
                   <div className="ml-auto">
                     <Select value={postCategory} onValueChange={setPostCategory}>
