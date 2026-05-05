@@ -787,6 +787,18 @@ export default function WorkspaceCommunity() {
     }
   }
 
+  const isEmbeddableVideoUrl = (url: string): boolean => {
+    if (!url) return false
+    return /youtube\.com|youtu\.be|loom\.com|vimeo\.com|tella\.tv/.test(url)
+  }
+
+  const extractFirstVideoUrl = (text: string): string | null => {
+    if (!text) return null
+    const match = text.match(/https?:\/\/[^\s<]+/g)
+    if (!match) return null
+    return match.find(u => isEmbeddableVideoUrl(u)) || null
+  }
+
   const getEmbedUrl = (url: string): string => {
     if (url.includes("youtube.com") || url.includes("youtu.be")) {
       const videoId = url.includes("youtu.be")
