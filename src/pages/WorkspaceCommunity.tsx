@@ -1383,7 +1383,31 @@ export default function WorkspaceCommunity() {
                               </div>
                             </div>
                           ) : (
-                            <p className="text-sm mt-2 whitespace-pre-wrap leading-relaxed">{renderContentWithMentions(post.content)}</p>
+                            (() => {
+                              const isExpanded = expandedPosts.has(post.id)
+                              const lineCount = (post.content.match(/\n/g) || []).length + 1
+                              const shouldClamp = !isExpanded && (lineCount > 3 || post.content.length > 280)
+                              return (
+                                <div className="mt-2">
+                                  <p className={`text-sm whitespace-pre-wrap leading-relaxed ${shouldClamp ? 'line-clamp-3' : ''}`}>
+                                    {renderContentWithMentions(post.content)}
+                                  </p>
+                                  {(lineCount > 3 || post.content.length > 280) && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setExpandedPosts(prev => {
+                                        const next = new Set(prev)
+                                        if (next.has(post.id)) next.delete(post.id); else next.add(post.id)
+                                        return next
+                                      })}
+                                      className="text-xs font-medium text-[#2eb2ff] hover:underline mt-1"
+                                    >
+                                      {isExpanded ? 'Show less' : 'Show more'}
+                                    </button>
+                                  )}
+                                </div>
+                              )
+                            })()
                           )}
                           
                           {post.image_url && (
