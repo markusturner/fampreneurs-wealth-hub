@@ -305,7 +305,17 @@ export default function WorkspaceCommunity() {
       .not('display_name', 'is', null)
       .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
 
-    return (programProfiles || []).map(profile => profile.user_id)
+    const ids = (programProfiles || []).map(profile => profile.user_id)
+    if (ids.length === 0) return []
+
+    // Only include users who have completed onboarding
+    const { data: onboarded } = await supabase
+      .from('onboarding_responses')
+      .select('user_id')
+      .in('user_id', ids)
+
+    const onboardedIds = new Set((onboarded || []).map(o => o.user_id))
+    return ids.filter(id => onboardedIds.has(id))
   }, [program])
 
   useEffect(() => {
