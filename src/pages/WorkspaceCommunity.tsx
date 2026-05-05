@@ -251,6 +251,8 @@ export default function WorkspaceCommunity() {
           is_liked: postLikes.some(l => l.user_id === user?.id),
           channel_id: post.channel_id,
           category,
+          pinned: (post as any).pinned || false,
+          pinned_at: (post as any).pinned_at || null,
         }
       }))
     } catch (error) {
