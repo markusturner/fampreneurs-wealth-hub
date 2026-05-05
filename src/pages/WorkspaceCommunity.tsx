@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { StripePaymentModal } from '@/components/dashboard/StripePaymentModal'
 import { CommunityMembersList } from '@/components/community/CommunityMembersList'
+import { EmojiButton, GifButton, PollDraftEditor } from '@/components/community/PostComposerExtras'
+import { PollDisplay } from '@/components/community/PollDisplay'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
