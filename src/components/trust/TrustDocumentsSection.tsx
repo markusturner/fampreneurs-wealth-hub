@@ -86,14 +86,18 @@ export function TrustDocumentsSection() {
   }
 
   const handleDownload = async (doc: TrustDocument) => {
-    const { data } = supabase.storage.from('trust-documents').getPublicUrl(doc.file_path)
-    if (data?.publicUrl) {
-      const link = document.createElement('a')
-      link.href = data.publicUrl
-      link.download = doc.file_name
-      link.target = '_blank'
-      link.click()
+    const { data, error } = await supabase.storage
+      .from('trust-documents')
+      .createSignedUrl(doc.file_path, 60)
+    if (error || !data?.signedUrl) {
+      toast({ title: "Download failed", description: error?.message || "Could not generate link", variant: "destructive" })
+      return
     }
+    const link = document.createElement('a')
+    link.href = data.signedUrl
+    link.download = doc.file_name
+    link.target = '_blank'
+    link.click()
   }
 
   const handleDelete = async (doc: TrustDocument) => {
