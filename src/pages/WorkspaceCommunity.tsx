@@ -1147,6 +1147,22 @@ export default function WorkspaceCommunity() {
                     </div>
                   )}
 
+                  {/* Live video link preview */}
+                  {(() => {
+                    const link = extractFirstVideoUrl(newPost)
+                    if (!link) return null
+                    return (
+                      <div className="aspect-video w-full mt-3 rounded-lg overflow-hidden border">
+                        <iframe
+                          src={getEmbedUrl(link)}
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    )
+                  })()}
+
                   {/* Attachment previews */}
                   {(postImagePreview || postVideoPreview || postAudioFile) && (
                     <div className="flex flex-wrap gap-2 mt-3 pb-2">
