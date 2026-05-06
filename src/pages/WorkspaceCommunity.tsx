@@ -499,12 +499,20 @@ export default function WorkspaceCommunity() {
 
   const handleDeletePost = async (postId: string) => {
     try {
-      const { error } = await supabase.from('community_posts').delete().eq('id', postId)
+      const { data, error } = await supabase
+        .from('community_posts')
+        .delete()
+        .eq('id', postId)
+        .select('id')
       if (error) throw error
-      fetchPosts()
+      if (!data || data.length === 0) {
+        toast({ title: 'Not allowed', description: 'You do not have permission to delete this post.', variant: 'destructive' })
+        return
+      }
+      setPosts(prev => prev.filter(p => p.id !== postId))
       toast({ title: 'Post deleted' })
-    } catch (error) {
-      toast({ title: 'Error', description: 'Failed to delete post.', variant: 'destructive' })
+    } catch (error: any) {
+      toast({ title: 'Error', description: error?.message || 'Failed to delete post.', variant: 'destructive' })
     }
   }
 
