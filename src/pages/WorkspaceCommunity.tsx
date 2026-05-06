@@ -419,35 +419,66 @@ export default function WorkspaceCommunity() {
     folder: string,
     onProgress: (percent: number) => void,
   ): Promise<string | null> => {
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, reject) => {
       try {
         const ext = file.name.split('.').pop()
         const path = `${user!.id}/${folder}/${Date.now()}.${ext}`
         const { data: { session } } = await supabase.auth.getSession()
         const token = session?.access_token
+        if (!token) {
+          reject(new Error('Please sign in again before uploading videos.'))
+          return
+        }
         const url = `https://tbofkvyezmpovoezjyyl.supabase.co/storage/v1/object/community-images/${path}`
         const xhr = new XMLHttpRequest()
+        let settled = false
+        const startedAt = Date.now()
+        const timeoutId = window.setTimeout(() => {
+          if (settled) return
+          settled = true
+          xhr.abort()
+          reject(new Error('Video upload took longer than 3 minutes. Try a shorter or compressed video.'))
+        }, MAX_VIDEO_UPLOAD_MS)
+        const settle = (value: string | null, error?: Error) => {
+          if (settled) return
+          settled = true
+          window.clearTimeout(timeoutId)
+          if (error) reject(error)
+          else resolve(value)
+        }
         xhr.open('POST', url, true)
         xhr.setRequestHeader('Authorization', `Bearer ${token}`)
         xhr.setRequestHeader('x-upsert', 'false')
         if (file.type) xhr.setRequestHeader('Content-Type', file.type)
         xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
+          if (e.lengthComputable) {
+            const elapsedSeconds = Math.max((Date.now() - startedAt) / 1000, 0.5)
+            const speedBps = e.loaded / elapsedSeconds
+            const etaSeconds = speedBps > 0 ? Math.max(0, (e.total - e.loaded) / speedBps) : null
+            onProgress(Math.max(1, Math.min(99, Math.round((e.loaded / e.total) * 100))))
+            uploadProgressStore.update(postVideoUploadRef.current?.jobId || '', Math.max(1, Math.min(99, Math.round((e.loaded / e.total) * 100))), {
+              loadedBytes: e.loaded,
+              speedBps,
+              etaSeconds,
+              message: 'Uploading video...',
+            })
+          }
         }
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
             const { data: urlData } = supabase.storage.from('community-images').getPublicUrl(path)
-            resolve(urlData.publicUrl)
+            settle(urlData.publicUrl)
           } else {
             console.error('Upload failed:', xhr.status, xhr.responseText)
-            resolve(null)
+            settle(null, new Error(xhr.responseText || `Video upload failed (${xhr.status}).`))
           }
         }
-        xhr.onerror = () => resolve(null)
+        xhr.onerror = () => settle(null, new Error('Network error while uploading video.'))
+        xhr.onabort = () => settle(null, new Error('Video upload was cancelled.'))
         xhr.send(file)
       } catch (e) {
         console.error('Upload init error:', e)
-        resolve(null)
+        reject(e instanceof Error ? e : new Error('Could not start video upload.'))
       }
     })
   }
