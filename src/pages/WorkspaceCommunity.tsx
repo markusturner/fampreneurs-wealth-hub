@@ -1595,11 +1595,9 @@ export default function WorkspaceCommunity() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="discussion">💬 Discussion</SelectItem>
-                                    <SelectItem value="question">❓ Question</SelectItem>
-                                    <SelectItem value="win">🏆 Win</SelectItem>
-                                    <SelectItem value="resource">📚 Resource</SelectItem>
-                                    <SelectItem value="introduction">👋 Introduction</SelectItem>
+                                    {CATEGORIES.filter(c => c.value !== 'all').map(c => (
+                                      <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                                 {(isOwner) && (
