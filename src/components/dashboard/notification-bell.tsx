@@ -23,6 +23,11 @@ export function NotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [uploadJobs, setUploadJobs] = useState<UploadJob[]>([])
+
+  useEffect(() => uploadProgressStore.subscribe(setUploadJobs), [])
+  const activeUploads = uploadJobs.filter(j => j.status === 'uploading').length
+  const totalIndicator = unreadCount + activeUploads
 
   const handleNotificationClick = async (notification: any) => {
     if (!notification.is_read) {
