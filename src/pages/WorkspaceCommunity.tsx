@@ -156,6 +156,7 @@ export default function WorkspaceCommunity() {
   const [postAudioFile, setPostAudioFile] = useState<File | null>(null)
   const [postVideoFile, setPostVideoFile] = useState<File | null>(null)
   const [postVideoPreview, setPostVideoPreview] = useState<string | null>(null)
+  const [isPosting, setIsPosting] = useState(false)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
@@ -398,25 +399,29 @@ export default function WorkspaceCommunity() {
     return urlData.publicUrl
   }
 
-  const handleCreatePost = async () => {
+  const handleCreatePost = async (): Promise<boolean> => {
     const hasContent = newPost.trim() || newPostTitle.trim() || postGifUrl || postImageFile || postVideoFile || postAudioFile || (pollEnabled && pollQuestion.trim())
-    if (!hasContent || !user?.id) return
+    if (!hasContent || !user?.id || isPosting) return false
+    setIsPosting(true)
     try {
       let imageUrl: string | null = null
       let videoUrl: string | null = null
       let audioUrl: string | null = null
+      const linkedVideoUrl = extractFirstVideoUrl(newPost.trim())
 
       if (postImageFile) {
         imageUrl = await uploadFile(postImageFile, 'community')
-        if (!imageUrl) return
+        if (!imageUrl) return false
       }
       if (postVideoFile) {
         videoUrl = await uploadFile(postVideoFile, 'community-videos')
-        if (!videoUrl) return
+        if (!videoUrl) return false
+      } else if (linkedVideoUrl) {
+        videoUrl = linkedVideoUrl
       }
       if (postAudioFile) {
         audioUrl = await uploadFile(postAudioFile, 'community-audio')
-        if (!audioUrl) return
+        if (!audioUrl) return false
       }
 
       // Build custom created_at if owner set one
@@ -438,7 +443,7 @@ export default function WorkspaceCommunity() {
         video_url: videoUrl,
         audio_url: audioUrl,
         gif_url: postGifUrl,
-        category: postCategory,
+        category: videoUrl ? 'recordings' : postCategory,
         ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
       }
 
@@ -493,9 +498,13 @@ export default function WorkspaceCommunity() {
       setCustomTime('')
       fetchPosts()
       toast({ title: 'Posted!' })
+      return true
     } catch (error) {
       console.error('Error creating post:', error)
-      toast({ title: 'Error', description: 'Failed to create post.', variant: 'destructive' })
+      toast({ title: 'Error', description: error instanceof Error ? error.message : 'Failed to create post.', variant: 'destructive' })
+      return false
+    } finally {
+      setIsPosting(false)
     }
   }
 
@@ -811,7 +820,7 @@ export default function WorkspaceCommunity() {
 
   const isEmbeddableVideoUrl = (url: string): boolean => {
     if (!url) return false
-    return /youtube\.com|youtu\.be|loom\.com|vimeo\.com|tella\.tv|fathom\.video|fathom\.fm/.test(url)
+    return /youtube\.com|youtu\.be|loom\.com|vimeo\.com|tella\.tv|fathom\.video|fathom\.fm|fathom\.video\/share|fathom\.video\/calls|fathom\.video\/embed|fathom\.fm\/share|fathom\.fm\/calls|fathom\.fm\/embed/.test(url)
   }
 
   const extractFirstVideoUrl = (text: string): string | null => {
@@ -850,6 +859,18 @@ export default function WorkspaceCommunity() {
     }
     return url
   }
+
+  const renderVideoEmbed = (url: string, className = 'aspect-video w-full mt-3 rounded-lg overflow-hidden border') => (
+    <div className={className}>
+      <iframe
+        src={getEmbedUrl(url)}
+        className="w-full h-full"
+        title="Video preview"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    </div>
+  )
 
   // Get the next program for upgrade
   const getUpgradeProgram = () => {
@@ -903,8 +924,8 @@ export default function WorkspaceCommunity() {
   const [mobilePostOpen, setMobilePostOpen] = useState(false)
 
   const handleMobilePost = async () => {
-    await handleCreatePost()
-    setMobilePostOpen(false)
+    const posted = await handleCreatePost()
+    if (posted) setMobilePostOpen(false)
   }
 
   // If no program selected, show loading if resolving from post param, otherwise prompt
@@ -1051,10 +1072,10 @@ export default function WorkspaceCommunity() {
                     <Button
                       size="sm"
                       onClick={handleMobilePost}
-                      disabled={!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim())}
+                      disabled={isPosting || (!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim()))}
                       className="rounded-full px-5 h-8 text-xs font-bold hover:bg-[hsl(43,100%,50%)] hover:text-[hsl(270,80%,15%)] transition-colors"
                     >
-                      POST
+                      {isPosting ? 'POSTING...' : 'POST'}
                     </Button>
                   </div>
                 </div>
@@ -1151,16 +1172,7 @@ export default function WorkspaceCommunity() {
                   {(() => {
                     const link = extractFirstVideoUrl(newPost)
                     if (!link) return null
-                    return (
-                      <div className="aspect-video w-full mt-3 rounded-lg overflow-hidden border">
-                        <iframe
-                          src={getEmbedUrl(link)}
-                          className="w-full h-full"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
-                    )
+                    return renderVideoEmbed(link)
                   })()}
 
                   {/* Attachment previews */}
@@ -1380,9 +1392,9 @@ export default function WorkspaceCommunity() {
                         )}
                       </div>
                       <div className="ml-auto flex-shrink-0">
-                        <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim())} className="gap-1.5 bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
+                        <Button size="sm" onClick={handleCreatePost} disabled={isPosting || (!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim()))} className="gap-1.5 bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
                           <Send className="h-4 w-4" />
-                          {postToAll ? 'Post to All' : 'Post'}
+                          {isPosting ? 'Posting...' : postToAll ? 'Post to All' : 'Post'}
                         </Button>
                       </div>
                     </div>
@@ -1595,14 +1607,7 @@ export default function WorkspaceCommunity() {
                           )}
                           {post.video_url && (
                             isEmbeddableVideoUrl(post.video_url) ? (
-                              <div className="aspect-video w-full mt-3 rounded-lg overflow-hidden border">
-                                <iframe
-                                  src={getEmbedUrl(post.video_url)}
-                                  className="w-full h-full"
-                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                  allowFullScreen
-                                />
-                              </div>
+                              renderVideoEmbed(post.video_url)
                             ) : (
                               <video src={post.video_url} controls className="rounded-lg mt-3 max-h-80 w-full" />
                             )
@@ -1610,16 +1615,7 @@ export default function WorkspaceCommunity() {
                           {!post.video_url && post.content && (() => {
                             const videoLink = extractFirstVideoUrl(post.content)
                             if (!videoLink) return null
-                            return (
-                              <div className="aspect-video w-full mt-3 rounded-lg overflow-hidden border">
-                                <iframe
-                                  src={getEmbedUrl(videoLink)}
-                                  className="w-full h-full"
-                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                  allowFullScreen
-                                />
-                              </div>
-                            )
+                            return renderVideoEmbed(videoLink)
                           })()}
                           {post.audio_url && (
                             <audio src={post.audio_url} controls className="mt-3 w-full" />
