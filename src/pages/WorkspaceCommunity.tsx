@@ -77,6 +77,14 @@ interface Comment {
   author_avatar: string | null
 }
 
+type PendingVideoUpload = {
+  file: File
+  promise: Promise<string | null>
+  uploadedUrl: string | null
+  status: 'uploading' | 'done' | 'error'
+  jobId: string
+}
+
 const PROGRAM_NAMES: Record<string, string> = {
   fbu: 'Family Business University',
   tfv: 'The Family Vault',
@@ -163,6 +171,7 @@ export default function WorkspaceCommunity() {
   const videoInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
   const communityPhotoRef = useRef<HTMLInputElement>(null)
+  const postVideoUploadRef = useRef<PendingVideoUpload | null>(null)
   const [isRecording, setIsRecording] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
@@ -455,10 +464,12 @@ export default function WorkspaceCommunity() {
         if (!imageUrl) return false
       }
       // For pasted video URLs (YouTube, Fathom, etc.), use immediately.
-      // For uploaded video FILES, defer the upload to the background so posting feels instant.
-      const deferredVideoFile = postVideoFile
+      // For uploaded video FILES, upload begins when selected; posting only attaches the result if ready.
+      const pendingVideoUpload = postVideoUploadRef.current
       if (linkedVideoUrl && !postVideoFile) {
         videoUrl = linkedVideoUrl
+      } else if (pendingVideoUpload?.uploadedUrl) {
+        videoUrl = pendingVideoUpload.uploadedUrl
       }
       if (postAudioFile) {
         audioUrl = await uploadFile(postAudioFile, 'community-audio')
@@ -484,7 +495,7 @@ export default function WorkspaceCommunity() {
         video_url: videoUrl,
         audio_url: audioUrl,
         gif_url: postGifUrl,
-        category: videoUrl ? 'recordings' : postCategory,
+        category: (videoUrl || pendingVideoUpload) ? 'recordings' : postCategory,
         ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
       }
 
@@ -519,27 +530,23 @@ export default function WorkspaceCommunity() {
       // Notify mentioned users (fire and forget)
       notifyMentionedUsers(newPost.trim(), 'post', 'post')
 
-      // Background upload for video files — post appears immediately, video fills in once uploaded
-      if (deferredVideoFile && insertedPostIds.length > 0) {
-        const jobId = uploadProgressStore.start(deferredVideoFile.name)
+      // Background attach for video files — upload already started when the file was selected
+      if (pendingVideoUpload && insertedPostIds.length > 0 && !videoUrl) {
         ;(async () => {
           try {
-            const uploaded = await uploadFileWithProgress(deferredVideoFile, 'community-videos', (p) => {
-              uploadProgressStore.update(jobId, p)
-            })
+            const uploaded = pendingVideoUpload.uploadedUrl || await pendingVideoUpload.promise
             if (uploaded) {
               await supabase
                 .from('community_posts')
                 .update({ video_url: uploaded, category: 'recordings' } as any)
                 .in('id', insertedPostIds)
-              uploadProgressStore.finish(jobId, 'done')
               fetchPosts()
             } else {
-              uploadProgressStore.finish(jobId, 'error')
+              uploadProgressStore.finish(pendingVideoUpload.jobId, 'error')
             }
           } catch (e) {
             console.error('Background video upload failed:', e)
-            uploadProgressStore.finish(jobId, 'error')
+            uploadProgressStore.finish(pendingVideoUpload.jobId, 'error')
           }
         })()
       }
@@ -556,6 +563,7 @@ export default function WorkspaceCommunity() {
       setPostImagePreview(null)
       setPostVideoFile(null)
       setPostVideoPreview(null)
+      postVideoUploadRef.current = null
       setPostAudioFile(null)
       setPostCategory('discussion')
       setPostToAll(false)
@@ -616,8 +624,26 @@ export default function WorkspaceCommunity() {
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      const jobId = uploadProgressStore.start(file.name)
+      const pending: PendingVideoUpload = {
+        file,
+        promise: Promise.resolve(null),
+        uploadedUrl: null,
+        status: 'uploading',
+        jobId,
+      }
       setPostVideoFile(file)
       setPostVideoPreview(URL.createObjectURL(file))
+      postVideoUploadRef.current = pending
+
+      pending.promise = uploadFileWithProgress(file, 'community-videos', (p) => {
+        uploadProgressStore.update(jobId, p)
+      }).then((url) => {
+        pending.uploadedUrl = url
+        pending.status = url ? 'done' : 'error'
+        uploadProgressStore.finish(jobId, url ? 'done' : 'error')
+        return url
+      })
     }
   }
 
@@ -1255,7 +1281,7 @@ export default function WorkspaceCommunity() {
                       {postVideoPreview && (
                         <div className="relative inline-block">
                           <video src={postVideoPreview} className="h-24 rounded-xl object-cover" />
-                          <button onClick={() => { setPostVideoFile(null); setPostVideoPreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow">
+                          <button onClick={() => { setPostVideoFile(null); setPostVideoPreview(null); postVideoUploadRef.current = null }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow">
                             <X className="h-3 w-3" />
                           </button>
                         </div>
@@ -1376,7 +1402,7 @@ export default function WorkspaceCommunity() {
                       {postVideoPreview && (
                         <div className="relative inline-block">
                           <video src={postVideoPreview} className="h-20 rounded-lg object-cover" />
-                          <button onClick={() => { setPostVideoFile(null); setPostVideoPreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                          <button onClick={() => { setPostVideoFile(null); setPostVideoPreview(null); postVideoUploadRef.current = null }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
                             <X className="h-3 w-3" />
                           </button>
                         </div>
