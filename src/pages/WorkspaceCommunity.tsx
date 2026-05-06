@@ -156,6 +156,7 @@ export default function WorkspaceCommunity() {
   const [postAudioFile, setPostAudioFile] = useState<File | null>(null)
   const [postVideoFile, setPostVideoFile] = useState<File | null>(null)
   const [postVideoPreview, setPostVideoPreview] = useState<string | null>(null)
+  const [isPosting, setIsPosting] = useState(false)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
@@ -398,25 +399,29 @@ export default function WorkspaceCommunity() {
     return urlData.publicUrl
   }
 
-  const handleCreatePost = async () => {
+  const handleCreatePost = async (): Promise<boolean> => {
     const hasContent = newPost.trim() || newPostTitle.trim() || postGifUrl || postImageFile || postVideoFile || postAudioFile || (pollEnabled && pollQuestion.trim())
-    if (!hasContent || !user?.id) return
+    if (!hasContent || !user?.id || isPosting) return false
+    setIsPosting(true)
     try {
       let imageUrl: string | null = null
       let videoUrl: string | null = null
       let audioUrl: string | null = null
+      const linkedVideoUrl = extractFirstVideoUrl(newPost.trim())
 
       if (postImageFile) {
         imageUrl = await uploadFile(postImageFile, 'community')
-        if (!imageUrl) return
+        if (!imageUrl) return false
       }
       if (postVideoFile) {
         videoUrl = await uploadFile(postVideoFile, 'community-videos')
-        if (!videoUrl) return
+        if (!videoUrl) return false
+      } else if (linkedVideoUrl) {
+        videoUrl = linkedVideoUrl
       }
       if (postAudioFile) {
         audioUrl = await uploadFile(postAudioFile, 'community-audio')
-        if (!audioUrl) return
+        if (!audioUrl) return false
       }
 
       // Build custom created_at if owner set one
@@ -438,7 +443,7 @@ export default function WorkspaceCommunity() {
         video_url: videoUrl,
         audio_url: audioUrl,
         gif_url: postGifUrl,
-        category: postCategory,
+        category: videoUrl ? 'recordings' : postCategory,
         ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
       }
 
@@ -493,9 +498,13 @@ export default function WorkspaceCommunity() {
       setCustomTime('')
       fetchPosts()
       toast({ title: 'Posted!' })
-    } catch (error) {
+      return true
+    } catch (error: any) {
       console.error('Error creating post:', error)
-      toast({ title: 'Error', description: 'Failed to create post.', variant: 'destructive' })
+      toast({ title: 'Error', description: error?.message || 'Failed to create post.', variant: 'destructive' })
+      return false
+    } finally {
+      setIsPosting(false)
     }
   }
 
