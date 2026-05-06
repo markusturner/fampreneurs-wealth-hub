@@ -477,6 +477,24 @@ export default function WorkspaceCommunity() {
 
       // Notify mentioned users (fire and forget)
       notifyMentionedUsers(newPost.trim(), 'post', 'post')
+
+      // Background upload for video files — post appears immediately, video fills in once uploaded
+      if (deferredVideoFile && insertedPostIds.length > 0) {
+        ;(async () => {
+          try {
+            const uploaded = await uploadFile(deferredVideoFile, 'community-videos')
+            if (uploaded) {
+              await supabase
+                .from('community_posts')
+                .update({ video_url: uploaded, category: 'recordings' } as any)
+                .in('id', insertedPostIds)
+              fetchPosts()
+            }
+          } catch (e) {
+            console.error('Background video upload failed:', e)
+          }
+        })()
+      }
       setNewPost('')
       setNewPostTitle('')
       setPostGifUrl(null)
