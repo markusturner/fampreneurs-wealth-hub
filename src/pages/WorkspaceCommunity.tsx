@@ -658,7 +658,7 @@ export default function WorkspaceCommunity() {
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      const jobId = uploadProgressStore.start(file.name)
+      const jobId = uploadProgressStore.start(file.name, file.size)
       const pending: PendingVideoUpload = {
         file,
         promise: Promise.resolve(null),
@@ -670,13 +670,23 @@ export default function WorkspaceCommunity() {
       setPostVideoPreview(URL.createObjectURL(file))
       postVideoUploadRef.current = pending
 
-      pending.promise = uploadFileWithProgress(file, 'community-videos', (p) => {
-        uploadProgressStore.update(jobId, p)
+      uploadProgressStore.update(jobId, 1, { message: 'Starting video upload...', etaSeconds: null })
+      pending.promise = uploadFileWithProgress(file, 'community-videos', (p, details) => {
+        uploadProgressStore.update(jobId, p, details)
       }).then((url) => {
         pending.uploadedUrl = url
         pending.status = url ? 'done' : 'error'
-        uploadProgressStore.finish(jobId, url ? 'done' : 'error')
+        if (url) {
+          uploadProgressStore.update(jobId, 100, { status: 'processing', message: 'Uploaded — finalizing when you post...', etaSeconds: null })
+        } else {
+          uploadProgressStore.finish(jobId, 'error', 'Video upload failed')
+        }
         return url
+      }).catch((error) => {
+        pending.status = 'error'
+        uploadProgressStore.finish(jobId, 'error', error instanceof Error ? error.message : 'Video upload failed')
+        toast({ title: 'Video upload failed', description: error instanceof Error ? error.message : 'Please try a shorter video.', variant: 'destructive' })
+        return null
       })
     }
   }
