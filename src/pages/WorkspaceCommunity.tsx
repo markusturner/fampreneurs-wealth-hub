@@ -85,6 +85,7 @@ type PendingVideoUpload = {
   status: 'uploading' | 'done' | 'error'
   jobId: string
   attachInProgress?: boolean
+  cancel?: () => void
 }
 
 const PROGRAM_NAMES: Record<string, string> = {
@@ -432,9 +433,11 @@ export default function WorkspaceCommunity() {
         }
         const startedAt = Date.now()
         let settled = false
+        let activeUpload: tus.Upload | null = null
         const timeoutId = window.setTimeout(() => {
           if (settled) return
           settled = true
+          activeUpload?.abort(true)
           reject(new Error('Video upload took longer than 3 minutes. Try a shorter or compressed video.'))
         }, MAX_VIDEO_UPLOAD_MS)
         const settle = (value: string | null, error?: Error) => {
@@ -473,6 +476,7 @@ export default function WorkspaceCommunity() {
             settle(urlData.publicUrl)
           },
         })
+        activeUpload = upload
         upload.start()
       } catch (e) {
         console.error('Upload init error:', e)
