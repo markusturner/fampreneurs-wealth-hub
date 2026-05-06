@@ -3,8 +3,13 @@ export type UploadJob = {
   id: string
   name: string
   percent: number
-  status: 'uploading' | 'done' | 'error'
+  status: 'uploading' | 'processing' | 'done' | 'error'
   startedAt: number
+  sizeBytes?: number
+  loadedBytes?: number
+  speedBps?: number
+  etaSeconds?: number | null
+  message?: string
 }
 
 let jobs: UploadJob[] = []
@@ -19,18 +24,18 @@ export const uploadProgressStore = {
     listener([...jobs])
     return () => { listeners.delete(listener) }
   },
-  start(name: string): string {
+  start(name: string, sizeBytes?: number): string {
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-    jobs = [...jobs, { id, name, percent: 0, status: 'uploading', startedAt: Date.now() }]
+    jobs = [...jobs, { id, name, percent: 0, status: 'uploading', startedAt: Date.now(), sizeBytes, etaSeconds: null }]
     emit()
     return id
   },
-  update(id: string, percent: number) {
-    jobs = jobs.map(j => j.id === id ? { ...j, percent } : j)
+  update(id: string, percent: number, details: Partial<Pick<UploadJob, 'loadedBytes' | 'speedBps' | 'etaSeconds' | 'message' | 'status'>> = {}) {
+    jobs = jobs.map(j => j.id === id ? { ...j, percent, ...details } : j)
     emit()
   },
-  finish(id: string, status: 'done' | 'error') {
-    jobs = jobs.map(j => j.id === id ? { ...j, status, percent: status === 'done' ? 100 : j.percent } : j)
+  finish(id: string, status: 'done' | 'error', message?: string) {
+    jobs = jobs.map(j => j.id === id ? { ...j, status, message, etaSeconds: null, percent: status === 'done' ? 100 : j.percent } : j)
     emit()
     // auto-clear completed jobs after a delay
     setTimeout(() => {
