@@ -29,6 +29,15 @@ export function NotificationBell() {
   const activeUploads = uploadJobs.filter(j => j.status === 'uploading').length
   const totalIndicator = unreadCount + activeUploads
 
+  const formatEta = (seconds?: number | null) => {
+    if (seconds == null || !Number.isFinite(seconds)) return 'Calculating time left'
+    if (seconds <= 5) return 'Less than 5 sec left'
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = Math.ceil(seconds % 60)
+    if (minutes <= 0) return `${remainingSeconds} sec left`
+    return `${minutes} min ${remainingSeconds.toString().padStart(2, '0')} sec left`
+  }
+
   const handleNotificationClick = async (notification: any) => {
     if (!notification.is_read) {
       await markAsRead(notification.id)
@@ -121,8 +130,11 @@ export function NotificationBell() {
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs font-medium truncate flex-1">{job.name}</span>
                   <span className="text-[11px] text-muted-foreground shrink-0">
-                    {job.status === 'done' ? 'Done' : job.status === 'error' ? 'Failed' : `${job.percent}%`}
+                    {job.status === 'done' ? 'Done' : job.status === 'error' ? 'Failed' : job.status === 'processing' ? 'Processing' : `${job.percent}%`}
                   </span>
+                </div>
+                <div className="text-[11px] text-muted-foreground">
+                  {job.status === 'uploading' ? formatEta(job.etaSeconds) : job.message || (job.status === 'processing' ? 'Processing video...' : '')}
                 </div>
                 <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                   <div
