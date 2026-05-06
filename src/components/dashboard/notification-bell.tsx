@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Bell, Video } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -11,6 +11,7 @@ import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { useAuth } from "@/contexts/AuthContext"
 import { cn } from "@/lib/utils"
 import { useNavigate } from "react-router-dom"
+import { uploadProgressStore, type UploadJob } from "@/lib/uploadProgress"
 
 const DIALOG_TYPES = new Set(['satisfaction_survey', 'weekly_checkin', 'tutorial_reminder'])
 
@@ -22,6 +23,11 @@ export function NotificationBell() {
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const [uploadJobs, setUploadJobs] = useState<UploadJob[]>([])
+
+  useEffect(() => uploadProgressStore.subscribe(setUploadJobs), [])
+  const activeUploads = uploadJobs.filter(j => j.status === 'uploading').length
+  const totalIndicator = unreadCount + activeUploads
 
   const handleNotificationClick = async (notification: any) => {
     if (!notification.is_read) {
@@ -77,16 +83,16 @@ export function NotificationBell() {
           size="icon"
           className={cn(
             "relative h-8 w-8 hover:bg-sidebar-accent/60 rounded-lg",
-            unreadCount > 0 && "animate-pulse ring-2 ring-primary/20"
+            totalIndicator > 0 && "animate-pulse ring-2 ring-primary/20"
           )}
         >
           <Bell className="h-4 w-4" />
-          {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
+          {totalIndicator > 0 && (
+            <Badge
+              variant="destructive"
               className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs animate-scale-in"
             >
-              {unreadCount > 9 ? '9+' : unreadCount}
+              {totalIndicator > 9 ? '9+' : totalIndicator}
             </Badge>
           )}
         </Button>
@@ -107,6 +113,30 @@ export function NotificationBell() {
             )}
           </div>
         </div>
+        {uploadJobs.length > 0 && (
+          <div className="p-3 border-b bg-muted/30 space-y-2">
+            <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Uploads</div>
+            {uploadJobs.map(job => (
+              <div key={job.id} className="space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-medium truncate flex-1">{job.name}</span>
+                  <span className="text-[11px] text-muted-foreground shrink-0">
+                    {job.status === 'done' ? 'Done' : job.status === 'error' ? 'Failed' : `${job.percent}%`}
+                  </span>
+                </div>
+                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={cn(
+                      "h-full transition-all duration-200",
+                      job.status === 'error' ? 'bg-destructive' : job.status === 'done' ? 'bg-emerald-500' : 'bg-[#ffb500]'
+                    )}
+                    style={{ width: `${job.percent}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         <ScrollArea className="h-80">
           {notifications.length === 0 ? (
             <div className="p-4 text-center text-sm text-muted-foreground">

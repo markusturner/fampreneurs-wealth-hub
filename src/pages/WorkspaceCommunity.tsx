@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
+import { uploadProgressStore } from '@/lib/uploadProgress'
 import { useToast } from '@/hooks/use-toast'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useUserRole } from '@/hooks/useUserRole'
@@ -157,7 +158,7 @@ export default function WorkspaceCommunity() {
   const [postVideoFile, setPostVideoFile] = useState<File | null>(null)
   const [postVideoPreview, setPostVideoPreview] = useState<string | null>(null)
   const [isPosting, setIsPosting] = useState(false)
-  const [videoUploadProgress, setVideoUploadProgress] = useState<{ name: string; percent: number; status: 'uploading' | 'done' | 'error' } | null>(null)
+  
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
@@ -520,29 +521,25 @@ export default function WorkspaceCommunity() {
 
       // Background upload for video files — post appears immediately, video fills in once uploaded
       if (deferredVideoFile && insertedPostIds.length > 0) {
-        const fileName = deferredVideoFile.name
-        setVideoUploadProgress({ name: fileName, percent: 0, status: 'uploading' })
+        const jobId = uploadProgressStore.start(deferredVideoFile.name)
         ;(async () => {
           try {
             const uploaded = await uploadFileWithProgress(deferredVideoFile, 'community-videos', (p) => {
-              setVideoUploadProgress({ name: fileName, percent: p, status: 'uploading' })
+              uploadProgressStore.update(jobId, p)
             })
             if (uploaded) {
               await supabase
                 .from('community_posts')
                 .update({ video_url: uploaded, category: 'recordings' } as any)
                 .in('id', insertedPostIds)
-              setVideoUploadProgress({ name: fileName, percent: 100, status: 'done' })
+              uploadProgressStore.finish(jobId, 'done')
               fetchPosts()
-              setTimeout(() => setVideoUploadProgress(null), 2500)
             } else {
-              setVideoUploadProgress({ name: fileName, percent: 0, status: 'error' })
-              setTimeout(() => setVideoUploadProgress(null), 4000)
+              uploadProgressStore.finish(jobId, 'error')
             }
           } catch (e) {
             console.error('Background video upload failed:', e)
-            setVideoUploadProgress({ name: fileName, percent: 0, status: 'error' })
-            setTimeout(() => setVideoUploadProgress(null), 4000)
+            uploadProgressStore.finish(jobId, 'error')
           }
         })()
       }
@@ -1101,23 +1098,6 @@ export default function WorkspaceCommunity() {
 
   return (
     <div className="min-h-screen bg-background">
-      {videoUploadProgress && (
-        <div className="fixed bottom-20 right-4 z-50 w-[280px] rounded-lg border border-border bg-card shadow-lg p-3">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-medium text-foreground truncate pr-2">
-              {videoUploadProgress.status === 'done' ? 'Video uploaded' : videoUploadProgress.status === 'error' ? 'Upload failed' : 'Uploading video...'}
-            </span>
-            <span className="text-xs text-muted-foreground">{videoUploadProgress.percent}%</span>
-          </div>
-          <div className="text-[11px] text-muted-foreground truncate mb-1.5">{videoUploadProgress.name}</div>
-          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-            <div
-              className={`h-full transition-all duration-200 ${videoUploadProgress.status === 'error' ? 'bg-destructive' : 'bg-[#ffb500]'}`}
-              style={{ width: `${videoUploadProgress.percent}%` }}
-            />
-          </div>
-        </div>
-      )}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Main Feed */}
@@ -1595,11 +1575,9 @@ export default function WorkspaceCommunity() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="discussion">💬 Discussion</SelectItem>
-                                    <SelectItem value="question">❓ Question</SelectItem>
-                                    <SelectItem value="win">🏆 Win</SelectItem>
-                                    <SelectItem value="resource">📚 Resource</SelectItem>
-                                    <SelectItem value="introduction">👋 Introduction</SelectItem>
+                                    {CATEGORIES.filter(c => c.value !== 'all').map(c => (
+                                      <SelectItem key={c.value} value={c.value}>{c.emoji} {c.label}</SelectItem>
+                                    ))}
                                   </SelectContent>
                                 </Select>
                                 {(isOwner) && (
