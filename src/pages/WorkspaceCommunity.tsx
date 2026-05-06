@@ -574,9 +574,9 @@ export default function WorkspaceCommunity() {
       if (pendingVideoUpload && insertedPostIds.length > 0 && !videoUrl) {
         ;(async () => {
           try {
-            uploadProgressStore.update(pendingVideoUpload.jobId, 100, { status: 'processing', message: 'Processing video...', etaSeconds: null })
             const uploaded = pendingVideoUpload.uploadedUrl || await pendingVideoUpload.promise
             if (uploaded) {
+              uploadProgressStore.update(pendingVideoUpload.jobId, 100, { status: 'processing', message: 'Processing video...', etaSeconds: null })
               await supabase
                 .from('community_posts')
                 .update({ video_url: uploaded, category: 'recordings' } as any)
