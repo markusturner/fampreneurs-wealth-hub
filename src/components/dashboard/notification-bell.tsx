@@ -31,10 +31,8 @@ export function NotificationBell() {
 
   const formatEta = (seconds?: number | null) => {
     if (seconds == null || !Number.isFinite(seconds)) return 'Calculating time left'
-    if (seconds <= 5) return 'Less than 5 sec left'
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = Math.ceil(seconds % 60)
-    if (minutes <= 0) return `${remainingSeconds} sec left`
     return `${minutes} min ${remainingSeconds.toString().padStart(2, '0')} sec left`
   }
 
