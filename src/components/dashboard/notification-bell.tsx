@@ -83,16 +83,16 @@ export function NotificationBell() {
           size="icon"
           className={cn(
             "relative h-8 w-8 hover:bg-sidebar-accent/60 rounded-lg",
-            unreadCount > 0 && "animate-pulse ring-2 ring-primary/20"
+            totalIndicator > 0 && "animate-pulse ring-2 ring-primary/20"
           )}
         >
           <Bell className="h-4 w-4" />
-          {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
+          {totalIndicator > 0 && (
+            <Badge
+              variant="destructive"
               className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs animate-scale-in"
             >
-              {unreadCount > 9 ? '9+' : unreadCount}
+              {totalIndicator > 9 ? '9+' : totalIndicator}
             </Badge>
           )}
         </Button>
