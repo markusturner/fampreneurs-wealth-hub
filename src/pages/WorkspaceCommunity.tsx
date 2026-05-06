@@ -157,7 +157,7 @@ export default function WorkspaceCommunity() {
   const [postVideoFile, setPostVideoFile] = useState<File | null>(null)
   const [postVideoPreview, setPostVideoPreview] = useState<string | null>(null)
   const [isPosting, setIsPosting] = useState(false)
-  const [videoUploadProgress, setVideoUploadProgress] = useState<{ name: string; percent: number; status: 'uploading' | 'done' | 'error' } | null>(null)
+  
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
