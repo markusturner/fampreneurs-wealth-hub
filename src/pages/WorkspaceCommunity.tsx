@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
+import * as tus from 'tus-js-client'
 import { 
   Image, Video, ThumbsUp, MessageCircle, Send, 
   MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X,
