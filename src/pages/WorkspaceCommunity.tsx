@@ -157,6 +157,7 @@ export default function WorkspaceCommunity() {
   const [postVideoFile, setPostVideoFile] = useState<File | null>(null)
   const [postVideoPreview, setPostVideoPreview] = useState<string | null>(null)
   const [isPosting, setIsPosting] = useState(false)
+  const [videoUploadProgress, setVideoUploadProgress] = useState<{ name: string; percent: number; status: 'uploading' | 'done' | 'error' } | null>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
@@ -399,6 +400,45 @@ export default function WorkspaceCommunity() {
     return urlData.publicUrl
   }
 
+  // Upload with real-time progress via XHR (Supabase JS doesn't expose progress events)
+  const uploadFileWithProgress = (
+    file: File,
+    folder: string,
+    onProgress: (percent: number) => void,
+  ): Promise<string | null> => {
+    return new Promise(async (resolve) => {
+      try {
+        const ext = file.name.split('.').pop()
+        const path = `${user!.id}/${folder}/${Date.now()}.${ext}`
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token
+        const url = `https://tbofkvyezmpovoezjyyl.supabase.co/storage/v1/object/community-images/${path}`
+        const xhr = new XMLHttpRequest()
+        xhr.open('POST', url, true)
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+        xhr.setRequestHeader('x-upsert', 'false')
+        if (file.type) xhr.setRequestHeader('Content-Type', file.type)
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
+        }
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const { data: urlData } = supabase.storage.from('community-images').getPublicUrl(path)
+            resolve(urlData.publicUrl)
+          } else {
+            console.error('Upload failed:', xhr.status, xhr.responseText)
+            resolve(null)
+          }
+        }
+        xhr.onerror = () => resolve(null)
+        xhr.send(file)
+      } catch (e) {
+        console.error('Upload init error:', e)
+        resolve(null)
+      }
+    })
+  }
+
   const handleCreatePost = async (): Promise<boolean> => {
     const hasContent = newPost.trim() || newPostTitle.trim() || postGifUrl || postImageFile || postVideoFile || postAudioFile || (pollEnabled && pollQuestion.trim())
     if (!hasContent || !user?.id || isPosting) return false
@@ -480,18 +520,29 @@ export default function WorkspaceCommunity() {
 
       // Background upload for video files — post appears immediately, video fills in once uploaded
       if (deferredVideoFile && insertedPostIds.length > 0) {
+        const fileName = deferredVideoFile.name
+        setVideoUploadProgress({ name: fileName, percent: 0, status: 'uploading' })
         ;(async () => {
           try {
-            const uploaded = await uploadFile(deferredVideoFile, 'community-videos')
+            const uploaded = await uploadFileWithProgress(deferredVideoFile, 'community-videos', (p) => {
+              setVideoUploadProgress({ name: fileName, percent: p, status: 'uploading' })
+            })
             if (uploaded) {
               await supabase
                 .from('community_posts')
                 .update({ video_url: uploaded, category: 'recordings' } as any)
                 .in('id', insertedPostIds)
+              setVideoUploadProgress({ name: fileName, percent: 100, status: 'done' })
               fetchPosts()
+              setTimeout(() => setVideoUploadProgress(null), 2500)
+            } else {
+              setVideoUploadProgress({ name: fileName, percent: 0, status: 'error' })
+              setTimeout(() => setVideoUploadProgress(null), 4000)
             }
           } catch (e) {
             console.error('Background video upload failed:', e)
+            setVideoUploadProgress({ name: fileName, percent: 0, status: 'error' })
+            setTimeout(() => setVideoUploadProgress(null), 4000)
           }
         })()
       }
@@ -1050,6 +1101,23 @@ export default function WorkspaceCommunity() {
 
   return (
     <div className="min-h-screen bg-background">
+      {videoUploadProgress && (
+        <div className="fixed bottom-20 right-4 z-50 w-[280px] rounded-lg border border-border bg-card shadow-lg p-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-medium text-foreground truncate pr-2">
+              {videoUploadProgress.status === 'done' ? 'Video uploaded' : videoUploadProgress.status === 'error' ? 'Upload failed' : 'Uploading video...'}
+            </span>
+            <span className="text-xs text-muted-foreground">{videoUploadProgress.percent}%</span>
+          </div>
+          <div className="text-[11px] text-muted-foreground truncate mb-1.5">{videoUploadProgress.name}</div>
+          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all duration-200 ${videoUploadProgress.status === 'error' ? 'bg-destructive' : 'bg-[#ffb500]'}`}
+              style={{ width: `${videoUploadProgress.percent}%` }}
+            />
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Main Feed */}
