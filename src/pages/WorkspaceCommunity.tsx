@@ -400,6 +400,45 @@ export default function WorkspaceCommunity() {
     return urlData.publicUrl
   }
 
+  // Upload with real-time progress via XHR (Supabase JS doesn't expose progress events)
+  const uploadFileWithProgress = (
+    file: File,
+    folder: string,
+    onProgress: (percent: number) => void,
+  ): Promise<string | null> => {
+    return new Promise(async (resolve) => {
+      try {
+        const ext = file.name.split('.').pop()
+        const path = `${user!.id}/${folder}/${Date.now()}.${ext}`
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token
+        const url = `https://tbofkvyezmpovoezjyyl.supabase.co/storage/v1/object/community-images/${path}`
+        const xhr = new XMLHttpRequest()
+        xhr.open('POST', url, true)
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+        xhr.setRequestHeader('x-upsert', 'false')
+        if (file.type) xhr.setRequestHeader('Content-Type', file.type)
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
+        }
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const { data: urlData } = supabase.storage.from('community-images').getPublicUrl(path)
+            resolve(urlData.publicUrl)
+          } else {
+            console.error('Upload failed:', xhr.status, xhr.responseText)
+            resolve(null)
+          }
+        }
+        xhr.onerror = () => resolve(null)
+        xhr.send(file)
+      } catch (e) {
+        console.error('Upload init error:', e)
+        resolve(null)
+      }
+    })
+  }
+
   const handleCreatePost = async (): Promise<boolean> => {
     const hasContent = newPost.trim() || newPostTitle.trim() || postGifUrl || postImageFile || postVideoFile || postAudioFile || (pollEnabled && pollQuestion.trim())
     if (!hasContent || !user?.id || isPosting) return false
