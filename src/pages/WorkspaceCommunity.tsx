@@ -417,7 +417,7 @@ export default function WorkspaceCommunity() {
   const uploadFileWithProgress = (
     file: File,
     folder: string,
-    onProgress: (percent: number) => void,
+    onProgress: (percent: number, details?: { loadedBytes?: number; speedBps?: number; etaSeconds?: number | null; message?: string }) => void,
   ): Promise<string | null> => {
     return new Promise(async (resolve, reject) => {
       try {
@@ -455,8 +455,8 @@ export default function WorkspaceCommunity() {
             const elapsedSeconds = Math.max((Date.now() - startedAt) / 1000, 0.5)
             const speedBps = e.loaded / elapsedSeconds
             const etaSeconds = speedBps > 0 ? Math.max(0, (e.total - e.loaded) / speedBps) : null
-            onProgress(Math.max(1, Math.min(99, Math.round((e.loaded / e.total) * 100))))
-            uploadProgressStore.update(postVideoUploadRef.current?.jobId || '', Math.max(1, Math.min(99, Math.round((e.loaded / e.total) * 100))), {
+            const percent = Math.max(1, Math.min(99, Math.round((e.loaded / e.total) * 100)))
+            onProgress(percent, {
               loadedBytes: e.loaded,
               speedBps,
               etaSeconds,
