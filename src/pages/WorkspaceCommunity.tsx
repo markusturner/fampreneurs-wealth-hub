@@ -624,8 +624,26 @@ export default function WorkspaceCommunity() {
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      const jobId = uploadProgressStore.start(file.name)
+      const pending: PendingVideoUpload = {
+        file,
+        promise: Promise.resolve(null),
+        uploadedUrl: null,
+        status: 'uploading',
+        jobId,
+      }
       setPostVideoFile(file)
       setPostVideoPreview(URL.createObjectURL(file))
+      postVideoUploadRef.current = pending
+
+      pending.promise = uploadFileWithProgress(file, 'community-videos', (p) => {
+        uploadProgressStore.update(jobId, p)
+      }).then((url) => {
+        pending.uploadedUrl = url
+        pending.status = url ? 'done' : 'error'
+        uploadProgressStore.finish(jobId, url ? 'done' : 'error')
+        return url
+      })
     }
   }
 
