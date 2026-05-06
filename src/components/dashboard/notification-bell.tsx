@@ -26,7 +26,7 @@ export function NotificationBell() {
   const [uploadJobs, setUploadJobs] = useState<UploadJob[]>([])
 
   useEffect(() => uploadProgressStore.subscribe(setUploadJobs), [])
-  const activeUploads = uploadJobs.filter(j => j.status === 'uploading').length
+  const activeUploads = uploadJobs.filter(j => j.status === 'uploading' || j.status === 'processing').length
   const totalIndicator = unreadCount + activeUploads
 
   const formatEta = (seconds?: number | null) => {
@@ -140,7 +140,7 @@ export function NotificationBell() {
                   <div
                     className={cn(
                       "h-full transition-all duration-200",
-                      job.status === 'error' ? 'bg-destructive' : job.status === 'done' ? 'bg-emerald-500' : 'bg-[#ffb500]'
+                      job.status === 'error' ? 'bg-destructive' : job.status === 'done' ? 'bg-primary' : 'bg-primary'
                     )}
                     style={{ width: `${job.percent}%` }}
                   />
