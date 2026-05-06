@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Bell, Video } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -11,6 +11,7 @@ import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { useAuth } from "@/contexts/AuthContext"
 import { cn } from "@/lib/utils"
 import { useNavigate } from "react-router-dom"
+import { uploadProgressStore, type UploadJob } from "@/lib/uploadProgress"
 
 const DIALOG_TYPES = new Set(['satisfaction_survey', 'weekly_checkin', 'tutorial_reminder'])
 
