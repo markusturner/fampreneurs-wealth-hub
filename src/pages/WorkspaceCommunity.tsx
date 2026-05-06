@@ -820,7 +820,7 @@ export default function WorkspaceCommunity() {
 
   const isEmbeddableVideoUrl = (url: string): boolean => {
     if (!url) return false
-    return /youtube\.com|youtu\.be|loom\.com|vimeo\.com|tella\.tv|fathom\.video|fathom\.fm/.test(url)
+    return /youtube\.com|youtu\.be|loom\.com|vimeo\.com|tella\.tv|fathom\.video|fathom\.fm|fathom\.video\/share|fathom\.video\/calls|fathom\.video\/embed|fathom\.fm\/share|fathom\.fm\/calls|fathom\.fm\/embed/.test(url)
   }
 
   const extractFirstVideoUrl = (text: string): string | null => {
@@ -859,6 +859,18 @@ export default function WorkspaceCommunity() {
     }
     return url
   }
+
+  const renderVideoEmbed = (url: string, className = 'aspect-video w-full mt-3 rounded-lg overflow-hidden border') => (
+    <div className={className}>
+      <iframe
+        src={getEmbedUrl(url)}
+        className="w-full h-full"
+        title="Video preview"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    </div>
+  )
 
   // Get the next program for upgrade
   const getUpgradeProgram = () => {
@@ -912,8 +924,8 @@ export default function WorkspaceCommunity() {
   const [mobilePostOpen, setMobilePostOpen] = useState(false)
 
   const handleMobilePost = async () => {
-    await handleCreatePost()
-    setMobilePostOpen(false)
+    const posted = await handleCreatePost()
+    if (posted) setMobilePostOpen(false)
   }
 
   // If no program selected, show loading if resolving from post param, otherwise prompt
