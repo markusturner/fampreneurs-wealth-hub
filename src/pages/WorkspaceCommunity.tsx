@@ -436,9 +436,8 @@ export default function WorkspaceCommunity() {
         let activeUpload: tus.Upload | null = null
         const timeoutId = window.setTimeout(() => {
           if (settled) return
-          settled = true
           activeUpload?.abort(true)
-          reject(new Error('Video upload took longer than 3 minutes. Try a shorter or compressed video.'))
+          settle(null, new Error('Video upload took longer than 3 minutes. Try a shorter or compressed video.'))
         }, MAX_VIDEO_UPLOAD_MS)
         const settle = (value: string | null, error?: Error) => {
           if (settled) return
