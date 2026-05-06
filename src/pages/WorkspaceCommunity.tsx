@@ -520,29 +520,25 @@ export default function WorkspaceCommunity() {
 
       // Background upload for video files — post appears immediately, video fills in once uploaded
       if (deferredVideoFile && insertedPostIds.length > 0) {
-        const fileName = deferredVideoFile.name
-        setVideoUploadProgress({ name: fileName, percent: 0, status: 'uploading' })
+        const jobId = uploadProgressStore.start(deferredVideoFile.name)
         ;(async () => {
           try {
             const uploaded = await uploadFileWithProgress(deferredVideoFile, 'community-videos', (p) => {
-              setVideoUploadProgress({ name: fileName, percent: p, status: 'uploading' })
+              uploadProgressStore.update(jobId, p)
             })
             if (uploaded) {
               await supabase
                 .from('community_posts')
                 .update({ video_url: uploaded, category: 'recordings' } as any)
                 .in('id', insertedPostIds)
-              setVideoUploadProgress({ name: fileName, percent: 100, status: 'done' })
+              uploadProgressStore.finish(jobId, 'done')
               fetchPosts()
-              setTimeout(() => setVideoUploadProgress(null), 2500)
             } else {
-              setVideoUploadProgress({ name: fileName, percent: 0, status: 'error' })
-              setTimeout(() => setVideoUploadProgress(null), 4000)
+              uploadProgressStore.finish(jobId, 'error')
             }
           } catch (e) {
             console.error('Background video upload failed:', e)
-            setVideoUploadProgress({ name: fileName, percent: 0, status: 'error' })
-            setTimeout(() => setVideoUploadProgress(null), 4000)
+            uploadProgressStore.finish(jobId, 'error')
           }
         })()
       }
