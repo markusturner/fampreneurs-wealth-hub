@@ -406,9 +406,18 @@ export default function WorkspaceCommunity() {
       let videoUrl: string | null = null
       let audioUrl: string | null = null
 
-      if (postImageFile) imageUrl = await uploadFile(postImageFile, 'community')
-      if (postVideoFile) videoUrl = await uploadFile(postVideoFile, 'community-videos')
-      if (postAudioFile) audioUrl = await uploadFile(postAudioFile, 'community-audio')
+      if (postImageFile) {
+        imageUrl = await uploadFile(postImageFile, 'community')
+        if (!imageUrl) return
+      }
+      if (postVideoFile) {
+        videoUrl = await uploadFile(postVideoFile, 'community-videos')
+        if (!videoUrl) return
+      }
+      if (postAudioFile) {
+        audioUrl = await uploadFile(postAudioFile, 'community-audio')
+        if (!audioUrl) return
+      }
 
       // Build custom created_at if owner set one
       let customCreatedAt: string | undefined = undefined
