@@ -413,10 +413,10 @@ export default function WorkspaceCommunity() {
         imageUrl = await uploadFile(postImageFile, 'community')
         if (!imageUrl) return false
       }
-      if (postVideoFile) {
-        videoUrl = await uploadFile(postVideoFile, 'community-videos')
-        if (!videoUrl) return false
-      } else if (linkedVideoUrl) {
+      // For pasted video URLs (YouTube, Fathom, etc.), use immediately.
+      // For uploaded video FILES, defer the upload to the background so posting feels instant.
+      const deferredVideoFile = postVideoFile
+      if (linkedVideoUrl && !postVideoFile) {
         videoUrl = linkedVideoUrl
       }
       if (postAudioFile) {
