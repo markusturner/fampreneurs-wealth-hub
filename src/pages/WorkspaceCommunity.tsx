@@ -383,10 +383,15 @@ export default function WorkspaceCommunity() {
 
   const uploadFile = async (file: File, folder: string): Promise<string | null> => {
     const ext = file.name.split('.').pop()
-    const path = `${folder}/${user!.id}/${Date.now()}.${ext}`
-    const { error } = await supabase.storage.from('community-images').upload(path, file)
+    // RLS on community-images requires the first path segment to be the user id
+    const path = `${user!.id}/${folder}/${Date.now()}.${ext}`
+    const { error } = await supabase.storage.from('community-images').upload(path, file, {
+      contentType: file.type || undefined,
+      upsert: false,
+    })
     if (error) {
       console.error('Upload error:', error)
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' })
       return null
     }
     const { data: urlData } = supabase.storage.from('community-images').getPublicUrl(path)
@@ -401,9 +406,18 @@ export default function WorkspaceCommunity() {
       let videoUrl: string | null = null
       let audioUrl: string | null = null
 
-      if (postImageFile) imageUrl = await uploadFile(postImageFile, 'community')
-      if (postVideoFile) videoUrl = await uploadFile(postVideoFile, 'community-videos')
-      if (postAudioFile) audioUrl = await uploadFile(postAudioFile, 'community-audio')
+      if (postImageFile) {
+        imageUrl = await uploadFile(postImageFile, 'community')
+        if (!imageUrl) return
+      }
+      if (postVideoFile) {
+        videoUrl = await uploadFile(postVideoFile, 'community-videos')
+        if (!videoUrl) return
+      }
+      if (postAudioFile) {
+        audioUrl = await uploadFile(postAudioFile, 'community-audio')
+        if (!audioUrl) return
+      }
 
       // Build custom created_at if owner set one
       let customCreatedAt: string | undefined = undefined
@@ -797,7 +811,7 @@ export default function WorkspaceCommunity() {
 
   const isEmbeddableVideoUrl = (url: string): boolean => {
     if (!url) return false
-    return /youtube\.com|youtu\.be|loom\.com|vimeo\.com|tella\.tv/.test(url)
+    return /youtube\.com|youtu\.be|loom\.com|vimeo\.com|tella\.tv|fathom\.video|fathom\.fm/.test(url)
   }
 
   const extractFirstVideoUrl = (text: string): string | null => {
@@ -827,6 +841,12 @@ export default function WorkspaceCommunity() {
       if (url.includes("/embed")) return url
       const tellaMatch = url.match(/tella\.tv\/(?:video|share)\/([a-zA-Z0-9_-]+)/)
       if (tellaMatch) return `https://www.tella.tv/video/${tellaMatch[1]}/embed`
+    }
+    // Fathom recordings (fathom.video / fathom.fm)
+    if (url.includes("fathom.video") || url.includes("fathom.fm")) {
+      const fathomMatch = url.match(/fathom\.(?:video|fm)\/(?:share|calls|embed)\/([a-zA-Z0-9_-]+)/)
+      if (fathomMatch) return `https://fathom.video/embed/${fathomMatch[1]}`
+      return url
     }
     return url
   }
@@ -1126,6 +1146,22 @@ export default function WorkspaceCommunity() {
                       </button>
                     </div>
                   )}
+
+                  {/* Live video link preview */}
+                  {(() => {
+                    const link = extractFirstVideoUrl(newPost)
+                    if (!link) return null
+                    return (
+                      <div className="aspect-video w-full mt-3 rounded-lg overflow-hidden border">
+                        <iframe
+                          src={getEmbedUrl(link)}
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    )
+                  })()}
 
                   {/* Attachment previews */}
                   {(postImagePreview || postVideoPreview || postAudioFile) && (
