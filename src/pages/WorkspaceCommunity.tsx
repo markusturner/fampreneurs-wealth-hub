@@ -564,10 +564,15 @@ export default function WorkspaceCommunity() {
       // Notify mentioned users (fire and forget)
       notifyMentionedUsers(newPost.trim(), 'post', 'post')
 
+      if (pendingVideoUpload && videoUrl) {
+        uploadProgressStore.finish(pendingVideoUpload.jobId, 'done', 'Video uploaded and attached')
+      }
+
       // Background attach for video files — upload already started when the file was selected
       if (pendingVideoUpload && insertedPostIds.length > 0 && !videoUrl) {
         ;(async () => {
           try {
+            uploadProgressStore.update(pendingVideoUpload.jobId, 100, { status: 'processing', message: 'Processing video...', etaSeconds: null })
             const uploaded = pendingVideoUpload.uploadedUrl || await pendingVideoUpload.promise
             if (uploaded) {
               await supabase
@@ -575,12 +580,13 @@ export default function WorkspaceCommunity() {
                 .update({ video_url: uploaded, category: 'recordings' } as any)
                 .in('id', insertedPostIds)
               fetchPosts()
+              uploadProgressStore.finish(pendingVideoUpload.jobId, 'done', 'Video uploaded and attached')
             } else {
-              uploadProgressStore.finish(pendingVideoUpload.jobId, 'error')
+              uploadProgressStore.finish(pendingVideoUpload.jobId, 'error', 'Video upload failed')
             }
           } catch (e) {
             console.error('Background video upload failed:', e)
-            uploadProgressStore.finish(pendingVideoUpload.jobId, 'error')
+            uploadProgressStore.finish(pendingVideoUpload.jobId, 'error', e instanceof Error ? e.message : 'Video upload failed')
           }
         })()
       }
