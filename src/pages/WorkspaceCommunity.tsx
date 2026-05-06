@@ -383,10 +383,15 @@ export default function WorkspaceCommunity() {
 
   const uploadFile = async (file: File, folder: string): Promise<string | null> => {
     const ext = file.name.split('.').pop()
-    const path = `${folder}/${user!.id}/${Date.now()}.${ext}`
-    const { error } = await supabase.storage.from('community-images').upload(path, file)
+    // RLS on community-images requires the first path segment to be the user id
+    const path = `${user!.id}/${folder}/${Date.now()}.${ext}`
+    const { error } = await supabase.storage.from('community-images').upload(path, file, {
+      contentType: file.type || undefined,
+      upsert: false,
+    })
     if (error) {
       console.error('Upload error:', error)
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' })
       return null
     }
     const { data: urlData } = supabase.storage.from('community-images').getPublicUrl(path)
