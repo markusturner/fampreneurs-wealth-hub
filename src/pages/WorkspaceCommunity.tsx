@@ -811,7 +811,7 @@ export default function WorkspaceCommunity() {
 
   const isEmbeddableVideoUrl = (url: string): boolean => {
     if (!url) return false
-    return /youtube\.com|youtu\.be|loom\.com|vimeo\.com|tella\.tv/.test(url)
+    return /youtube\.com|youtu\.be|loom\.com|vimeo\.com|tella\.tv|fathom\.video|fathom\.fm/.test(url)
   }
 
   const extractFirstVideoUrl = (text: string): string | null => {
@@ -841,6 +841,12 @@ export default function WorkspaceCommunity() {
       if (url.includes("/embed")) return url
       const tellaMatch = url.match(/tella\.tv\/(?:video|share)\/([a-zA-Z0-9_-]+)/)
       if (tellaMatch) return `https://www.tella.tv/video/${tellaMatch[1]}/embed`
+    }
+    // Fathom recordings (fathom.video / fathom.fm)
+    if (url.includes("fathom.video") || url.includes("fathom.fm")) {
+      const fathomMatch = url.match(/fathom\.(?:video|fm)\/(?:share|calls|embed)\/([a-zA-Z0-9_-]+)/)
+      if (fathomMatch) return `https://fathom.video/embed/${fathomMatch[1]}`
+      return url
     }
     return url
   }
