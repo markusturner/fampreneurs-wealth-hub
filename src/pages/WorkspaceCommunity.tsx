@@ -83,6 +83,7 @@ type PendingVideoUpload = {
   uploadedUrl: string | null
   status: 'uploading' | 'done' | 'error'
   jobId: string
+  attachInProgress?: boolean
 }
 
 const PROGRAM_NAMES: Record<string, string> = {
@@ -114,6 +115,8 @@ const CATEGORIES = [
   { label: 'Gems', value: 'gems', emoji: '💎' },
   { label: 'Recordings', value: 'recordings', emoji: '🎥' },
 ]
+
+const MAX_VIDEO_UPLOAD_MS = 3 * 60 * 1000
 
 export default function WorkspaceCommunity() {
   const { user, profile } = useAuth()
