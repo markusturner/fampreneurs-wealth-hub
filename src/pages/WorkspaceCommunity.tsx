@@ -499,9 +499,9 @@ export default function WorkspaceCommunity() {
       fetchPosts()
       toast({ title: 'Posted!' })
       return true
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating post:', error)
-      toast({ title: 'Error', description: error?.message || 'Failed to create post.', variant: 'destructive' })
+      toast({ title: 'Error', description: error instanceof Error ? error.message : 'Failed to create post.', variant: 'destructive' })
       return false
     } finally {
       setIsPosting(false)
