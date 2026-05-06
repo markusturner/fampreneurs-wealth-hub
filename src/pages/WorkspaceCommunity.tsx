@@ -1281,7 +1281,7 @@ export default function WorkspaceCommunity() {
                       {postVideoPreview && (
                         <div className="relative inline-block">
                           <video src={postVideoPreview} className="h-24 rounded-xl object-cover" />
-                          <button onClick={() => { setPostVideoFile(null); setPostVideoPreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow">
+                          <button onClick={() => { setPostVideoFile(null); setPostVideoPreview(null); postVideoUploadRef.current = null }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow">
                             <X className="h-3 w-3" />
                           </button>
                         </div>
@@ -1402,7 +1402,7 @@ export default function WorkspaceCommunity() {
                       {postVideoPreview && (
                         <div className="relative inline-block">
                           <video src={postVideoPreview} className="h-20 rounded-lg object-cover" />
-                          <button onClick={() => { setPostVideoFile(null); setPostVideoPreview(null) }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
+                          <button onClick={() => { setPostVideoFile(null); setPostVideoPreview(null); postVideoUploadRef.current = null }} className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5">
                             <X className="h-3 w-3" />
                           </button>
                         </div>
