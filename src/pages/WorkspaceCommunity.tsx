@@ -495,7 +495,7 @@ export default function WorkspaceCommunity() {
         video_url: videoUrl,
         audio_url: audioUrl,
         gif_url: postGifUrl,
-        category: videoUrl ? 'recordings' : postCategory,
+        category: (videoUrl || pendingVideoUpload) ? 'recordings' : postCategory,
         ...(customCreatedAt ? { created_at: customCreatedAt } : {}),
       }
 
