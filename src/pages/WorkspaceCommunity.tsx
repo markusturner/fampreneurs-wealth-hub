@@ -77,6 +77,14 @@ interface Comment {
   author_avatar: string | null
 }
 
+type PendingVideoUpload = {
+  file: File
+  promise: Promise<string | null>
+  uploadedUrl: string | null
+  status: 'uploading' | 'done' | 'error'
+  jobId: string
+}
+
 const PROGRAM_NAMES: Record<string, string> = {
   fbu: 'Family Business University',
   tfv: 'The Family Vault',
@@ -163,6 +171,7 @@ export default function WorkspaceCommunity() {
   const videoInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
   const communityPhotoRef = useRef<HTMLInputElement>(null)
+  const postVideoUploadRef = useRef<PendingVideoUpload | null>(null)
   const [isRecording, setIsRecording] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
