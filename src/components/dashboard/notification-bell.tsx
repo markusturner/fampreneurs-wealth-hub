@@ -113,6 +113,30 @@ export function NotificationBell() {
             )}
           </div>
         </div>
+        {uploadJobs.length > 0 && (
+          <div className="p-3 border-b bg-muted/30 space-y-2">
+            <div className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">Uploads</div>
+            {uploadJobs.map(job => (
+              <div key={job.id} className="space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-medium truncate flex-1">{job.name}</span>
+                  <span className="text-[11px] text-muted-foreground shrink-0">
+                    {job.status === 'done' ? 'Done' : job.status === 'error' ? 'Failed' : `${job.percent}%`}
+                  </span>
+                </div>
+                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={cn(
+                      "h-full transition-all duration-200",
+                      job.status === 'error' ? 'bg-destructive' : job.status === 'done' ? 'bg-emerald-500' : 'bg-[#ffb500]'
+                    )}
+                    style={{ width: `${job.percent}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
         <ScrollArea className="h-80">
           {notifications.length === 0 ? (
             <div className="p-4 text-center text-sm text-muted-foreground">
