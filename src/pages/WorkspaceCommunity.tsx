@@ -464,10 +464,12 @@ export default function WorkspaceCommunity() {
         if (!imageUrl) return false
       }
       // For pasted video URLs (YouTube, Fathom, etc.), use immediately.
-      // For uploaded video FILES, defer the upload to the background so posting feels instant.
-      const deferredVideoFile = postVideoFile
+      // For uploaded video FILES, upload begins when selected; posting only attaches the result if ready.
+      const pendingVideoUpload = postVideoUploadRef.current
       if (linkedVideoUrl && !postVideoFile) {
         videoUrl = linkedVideoUrl
+      } else if (pendingVideoUpload?.uploadedUrl) {
+        videoUrl = pendingVideoUpload.uploadedUrl
       }
       if (postAudioFile) {
         audioUrl = await uploadFile(postAudioFile, 'community-audio')
@@ -528,27 +530,23 @@ export default function WorkspaceCommunity() {
       // Notify mentioned users (fire and forget)
       notifyMentionedUsers(newPost.trim(), 'post', 'post')
 
-      // Background upload for video files — post appears immediately, video fills in once uploaded
-      if (deferredVideoFile && insertedPostIds.length > 0) {
-        const jobId = uploadProgressStore.start(deferredVideoFile.name)
+      // Background attach for video files — upload already started when the file was selected
+      if (pendingVideoUpload && insertedPostIds.length > 0 && !videoUrl) {
         ;(async () => {
           try {
-            const uploaded = await uploadFileWithProgress(deferredVideoFile, 'community-videos', (p) => {
-              uploadProgressStore.update(jobId, p)
-            })
+            const uploaded = pendingVideoUpload.uploadedUrl || await pendingVideoUpload.promise
             if (uploaded) {
               await supabase
                 .from('community_posts')
                 .update({ video_url: uploaded, category: 'recordings' } as any)
                 .in('id', insertedPostIds)
-              uploadProgressStore.finish(jobId, 'done')
               fetchPosts()
             } else {
-              uploadProgressStore.finish(jobId, 'error')
+              uploadProgressStore.finish(pendingVideoUpload.jobId, 'error')
             }
           } catch (e) {
             console.error('Background video upload failed:', e)
-            uploadProgressStore.finish(jobId, 'error')
+            uploadProgressStore.finish(pendingVideoUpload.jobId, 'error')
           }
         })()
       }
@@ -565,6 +563,7 @@ export default function WorkspaceCommunity() {
       setPostImagePreview(null)
       setPostVideoFile(null)
       setPostVideoPreview(null)
+      postVideoUploadRef.current = null
       setPostAudioFile(null)
       setPostCategory('discussion')
       setPostToAll(false)
