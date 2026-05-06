@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
+import * as tus from 'tus-js-client'
 import { 
   Image, Video, ThumbsUp, MessageCircle, Send, 
   MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X,
@@ -83,6 +84,8 @@ type PendingVideoUpload = {
   uploadedUrl: string | null
   status: 'uploading' | 'done' | 'error'
   jobId: string
+  attachInProgress?: boolean
+  cancel?: () => void
 }
 
 const PROGRAM_NAMES: Record<string, string> = {
@@ -114,6 +117,8 @@ const CATEGORIES = [
   { label: 'Gems', value: 'gems', emoji: '💎' },
   { label: 'Recordings', value: 'recordings', emoji: '🎥' },
 ]
+
+const MAX_VIDEO_UPLOAD_MS = 3 * 60 * 1000
 
 export default function WorkspaceCommunity() {
   const { user, profile } = useAuth()
@@ -414,37 +419,67 @@ export default function WorkspaceCommunity() {
   const uploadFileWithProgress = (
     file: File,
     folder: string,
-    onProgress: (percent: number) => void,
+    onProgress: (percent: number, details?: { loadedBytes?: number; speedBps?: number; etaSeconds?: number | null; message?: string }) => void,
   ): Promise<string | null> => {
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, reject) => {
       try {
         const ext = file.name.split('.').pop()
         const path = `${user!.id}/${folder}/${Date.now()}.${ext}`
         const { data: { session } } = await supabase.auth.getSession()
         const token = session?.access_token
-        const url = `https://tbofkvyezmpovoezjyyl.supabase.co/storage/v1/object/community-images/${path}`
-        const xhr = new XMLHttpRequest()
-        xhr.open('POST', url, true)
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
-        xhr.setRequestHeader('x-upsert', 'false')
-        if (file.type) xhr.setRequestHeader('Content-Type', file.type)
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
+        if (!token) {
+          reject(new Error('Please sign in again before uploading videos.'))
+          return
         }
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
+        const startedAt = Date.now()
+        let settled = false
+        let activeUpload: tus.Upload | null = null
+        const timeoutId = window.setTimeout(() => {
+          if (settled) return
+          activeUpload?.abort(true)
+          settle(null, new Error('Video upload took longer than 3 minutes. Try a shorter or compressed video.'))
+        }, MAX_VIDEO_UPLOAD_MS)
+        const settle = (value: string | null, error?: Error) => {
+          if (settled) return
+          settled = true
+          window.clearTimeout(timeoutId)
+          if (error) reject(error)
+          else resolve(value)
+        }
+        const upload = new tus.Upload(file, {
+          endpoint: 'https://tbofkvyezmpovoezjyyl.supabase.co/storage/v1/upload/resumable',
+          retryDelays: [0, 1000, 3000, 5000],
+          chunkSize: 6 * 1024 * 1024,
+          headers: {
+            authorization: `Bearer ${token}`,
+            'x-upsert': 'false',
+          },
+          uploadDataDuringCreation: true,
+          removeFingerprintOnSuccess: true,
+          metadata: {
+            bucketName: 'community-images',
+            objectName: path,
+            contentType: file.type || 'video/mp4',
+            cacheControl: '3600',
+          },
+          onProgress: (bytesUploaded, bytesTotal) => {
+            const elapsedSeconds = Math.max((Date.now() - startedAt) / 1000, 0.5)
+            const speedBps = bytesUploaded / elapsedSeconds
+            const etaSeconds = speedBps > 0 ? Math.max(0, (bytesTotal - bytesUploaded) / speedBps) : null
+            const percent = Math.max(1, Math.min(99, Math.round((bytesUploaded / bytesTotal) * 100)))
+            onProgress(percent, { loadedBytes: bytesUploaded, speedBps, etaSeconds, message: 'Uploading video...' })
+          },
+          onError: (error) => settle(null, error instanceof Error ? error : new Error(String(error))),
+          onSuccess: () => {
             const { data: urlData } = supabase.storage.from('community-images').getPublicUrl(path)
-            resolve(urlData.publicUrl)
-          } else {
-            console.error('Upload failed:', xhr.status, xhr.responseText)
-            resolve(null)
-          }
-        }
-        xhr.onerror = () => resolve(null)
-        xhr.send(file)
+            settle(urlData.publicUrl)
+          },
+        })
+        activeUpload = upload
+        upload.start()
       } catch (e) {
         console.error('Upload init error:', e)
-        resolve(null)
+        reject(e instanceof Error ? e : new Error('Could not start video upload.'))
       }
     })
   }
@@ -530,23 +565,29 @@ export default function WorkspaceCommunity() {
       // Notify mentioned users (fire and forget)
       notifyMentionedUsers(newPost.trim(), 'post', 'post')
 
+      if (pendingVideoUpload && videoUrl) {
+        uploadProgressStore.finish(pendingVideoUpload.jobId, 'done', 'Video uploaded and attached')
+      }
+
       // Background attach for video files — upload already started when the file was selected
       if (pendingVideoUpload && insertedPostIds.length > 0 && !videoUrl) {
         ;(async () => {
           try {
             const uploaded = pendingVideoUpload.uploadedUrl || await pendingVideoUpload.promise
             if (uploaded) {
+              uploadProgressStore.update(pendingVideoUpload.jobId, 100, { status: 'processing', message: 'Processing video...', etaSeconds: null })
               await supabase
                 .from('community_posts')
                 .update({ video_url: uploaded, category: 'recordings' } as any)
                 .in('id', insertedPostIds)
               fetchPosts()
+              uploadProgressStore.finish(pendingVideoUpload.jobId, 'done', 'Video uploaded and attached')
             } else {
-              uploadProgressStore.finish(pendingVideoUpload.jobId, 'error')
+              uploadProgressStore.finish(pendingVideoUpload.jobId, 'error', 'Video upload failed')
             }
           } catch (e) {
             console.error('Background video upload failed:', e)
-            uploadProgressStore.finish(pendingVideoUpload.jobId, 'error')
+            uploadProgressStore.finish(pendingVideoUpload.jobId, 'error', e instanceof Error ? e.message : 'Video upload failed')
           }
         })()
       }
@@ -624,7 +665,7 @@ export default function WorkspaceCommunity() {
   const handleVideoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      const jobId = uploadProgressStore.start(file.name)
+      const jobId = uploadProgressStore.start(file.name, file.size)
       const pending: PendingVideoUpload = {
         file,
         promise: Promise.resolve(null),
@@ -636,13 +677,23 @@ export default function WorkspaceCommunity() {
       setPostVideoPreview(URL.createObjectURL(file))
       postVideoUploadRef.current = pending
 
-      pending.promise = uploadFileWithProgress(file, 'community-videos', (p) => {
-        uploadProgressStore.update(jobId, p)
+      uploadProgressStore.update(jobId, 1, { message: 'Starting video upload...', etaSeconds: null })
+      pending.promise = uploadFileWithProgress(file, 'community-videos', (p, details) => {
+        uploadProgressStore.update(jobId, p, details)
       }).then((url) => {
         pending.uploadedUrl = url
         pending.status = url ? 'done' : 'error'
-        uploadProgressStore.finish(jobId, url ? 'done' : 'error')
+        if (url) {
+          uploadProgressStore.update(jobId, 100, { status: 'processing', message: 'Uploaded — finalizing when you post...', etaSeconds: null })
+        } else {
+          uploadProgressStore.finish(jobId, 'error', 'Video upload failed')
+        }
         return url
+      }).catch((error) => {
+        pending.status = 'error'
+        uploadProgressStore.finish(jobId, 'error', error instanceof Error ? error.message : 'Video upload failed')
+        toast({ title: 'Video upload failed', description: error instanceof Error ? error.message : 'Please try a shorter video.', variant: 'destructive' })
+        return null
       })
     }
   }

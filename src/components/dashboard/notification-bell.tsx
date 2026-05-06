@@ -26,8 +26,15 @@ export function NotificationBell() {
   const [uploadJobs, setUploadJobs] = useState<UploadJob[]>([])
 
   useEffect(() => uploadProgressStore.subscribe(setUploadJobs), [])
-  const activeUploads = uploadJobs.filter(j => j.status === 'uploading').length
+  const activeUploads = uploadJobs.filter(j => j.status === 'uploading' || j.status === 'processing').length
   const totalIndicator = unreadCount + activeUploads
+
+  const formatEta = (seconds?: number | null) => {
+    if (seconds == null || !Number.isFinite(seconds)) return 'Calculating time left'
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = Math.ceil(seconds % 60)
+    return `${minutes} min ${remainingSeconds.toString().padStart(2, '0')} sec left`
+  }
 
   const handleNotificationClick = async (notification: any) => {
     if (!notification.is_read) {
@@ -121,14 +128,17 @@ export function NotificationBell() {
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs font-medium truncate flex-1">{job.name}</span>
                   <span className="text-[11px] text-muted-foreground shrink-0">
-                    {job.status === 'done' ? 'Done' : job.status === 'error' ? 'Failed' : `${job.percent}%`}
+                    {job.status === 'done' ? 'Done' : job.status === 'error' ? 'Failed' : job.status === 'processing' ? 'Processing' : `${job.percent}%`}
                   </span>
+                </div>
+                <div className="text-[11px] text-muted-foreground">
+                  {job.status === 'uploading' ? formatEta(job.etaSeconds) : job.message || (job.status === 'processing' ? 'Processing video...' : '')}
                 </div>
                 <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                   <div
                     className={cn(
                       "h-full transition-all duration-200",
-                      job.status === 'error' ? 'bg-destructive' : job.status === 'done' ? 'bg-emerald-500' : 'bg-[#ffb500]'
+                      job.status === 'error' ? 'bg-destructive' : job.status === 'done' ? 'bg-primary' : 'bg-primary'
                     )}
                     style={{ width: `${job.percent}%` }}
                   />
