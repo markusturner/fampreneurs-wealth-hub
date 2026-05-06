@@ -1072,10 +1072,10 @@ export default function WorkspaceCommunity() {
                     <Button
                       size="sm"
                       onClick={handleMobilePost}
-                      disabled={!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim())}
+                      disabled={isPosting || (!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim()))}
                       className="rounded-full px-5 h-8 text-xs font-bold hover:bg-[hsl(43,100%,50%)] hover:text-[hsl(270,80%,15%)] transition-colors"
                     >
-                      POST
+                      {isPosting ? 'POSTING...' : 'POST'}
                     </Button>
                   </div>
                 </div>
@@ -1172,16 +1172,7 @@ export default function WorkspaceCommunity() {
                   {(() => {
                     const link = extractFirstVideoUrl(newPost)
                     if (!link) return null
-                    return (
-                      <div className="aspect-video w-full mt-3 rounded-lg overflow-hidden border">
-                        <iframe
-                          src={getEmbedUrl(link)}
-                          className="w-full h-full"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
-                    )
+                    return renderVideoEmbed(link)
                   })()}
 
                   {/* Attachment previews */}
@@ -1401,9 +1392,9 @@ export default function WorkspaceCommunity() {
                         )}
                       </div>
                       <div className="ml-auto flex-shrink-0">
-                        <Button size="sm" onClick={handleCreatePost} disabled={!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim())} className="gap-1.5 bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
+                        <Button size="sm" onClick={handleCreatePost} disabled={isPosting || (!newPost.trim() && !newPostTitle.trim() && !postGifUrl && !postImageFile && !postVideoFile && !postAudioFile && !(pollEnabled && pollQuestion.trim()))} className="gap-1.5 bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
                           <Send className="h-4 w-4" />
-                          {postToAll ? 'Post to All' : 'Post'}
+                          {isPosting ? 'Posting...' : postToAll ? 'Post to All' : 'Post'}
                         </Button>
                       </div>
                     </div>
