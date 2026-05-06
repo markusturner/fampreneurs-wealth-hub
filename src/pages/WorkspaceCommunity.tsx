@@ -1101,6 +1101,23 @@ export default function WorkspaceCommunity() {
 
   return (
     <div className="min-h-screen bg-background">
+      {videoUploadProgress && (
+        <div className="fixed bottom-20 right-4 z-50 w-[280px] rounded-lg border border-border bg-card shadow-lg p-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-medium text-foreground truncate pr-2">
+              {videoUploadProgress.status === 'done' ? 'Video uploaded' : videoUploadProgress.status === 'error' ? 'Upload failed' : 'Uploading video...'}
+            </span>
+            <span className="text-xs text-muted-foreground">{videoUploadProgress.percent}%</span>
+          </div>
+          <div className="text-[11px] text-muted-foreground truncate mb-1.5">{videoUploadProgress.name}</div>
+          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+            <div
+              className={`h-full transition-all duration-200 ${videoUploadProgress.status === 'error' ? 'bg-destructive' : 'bg-[#ffb500]'}`}
+              style={{ width: `${videoUploadProgress.percent}%` }}
+            />
+          </div>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Main Feed */}
