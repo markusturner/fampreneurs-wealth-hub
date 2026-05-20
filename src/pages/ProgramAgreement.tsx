@@ -750,20 +750,48 @@ export default function ProgramAgreement() {
   const handleIdUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !user) return
-    
+
+    // Guard: 25MB max keeps mobile photos from timing out
+    const MAX_BYTES = 25 * 1024 * 1024
+    if (file.size > MAX_BYTES) {
+      toast({ title: 'File too large', description: 'Please upload an ID under 25MB.', variant: 'destructive' })
+      return
+    }
+
+    // Sanitize filename: strip path, spaces, parens, and any character that
+    // breaks Supabase storage object keys. HEIC is kept but renamed to .heic.
+    const rawName = file.name.split(/[\\/]/).pop() || 'id'
+    const dot = rawName.lastIndexOf('.')
+    const base = (dot > 0 ? rawName.slice(0, dot) : rawName)
+      .replace(/[^a-zA-Z0-9-_]+/g, '_')
+      .replace(/_+/g, '_')
+      .slice(0, 60) || 'id'
+    const ext = (dot > 0 ? rawName.slice(dot + 1) : 'jpg')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '') || 'jpg'
+    const safeName = `${base}.${ext}`
+
     setIdUploading(true)
     try {
-      const filePath = `${user.id}/id-verification/${Date.now()}-${file.name}`
+      const filePath = `${user.id}/id-verification/${Date.now()}-${safeName}`
       const { error } = await supabase.storage
         .from('documents')
-        .upload(filePath, file)
-      
+        .upload(filePath, file, {
+          upsert: true,
+          contentType: file.type || 'application/octet-stream',
+        })
+
       if (error) throw error
       setIdUploaded(true)
       setIdFileName(file.name)
       toast({ title: 'ID Uploaded', description: 'Your identification has been uploaded for verification.' })
     } catch (err: any) {
-      toast({ title: 'Upload Failed', description: err.message || 'Failed to upload ID.', variant: 'destructive' })
+      console.error('ID upload failed:', err)
+      toast({
+        title: 'Upload Failed',
+        description: err?.message || err?.error || 'Failed to upload ID. Try a smaller JPG or PNG.',
+        variant: 'destructive',
+      })
     } finally {
       setIdUploading(false)
     }
