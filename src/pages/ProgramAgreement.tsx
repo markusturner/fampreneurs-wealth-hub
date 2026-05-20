@@ -582,6 +582,24 @@ export default function ProgramAgreement() {
       try { localStorage.removeItem(progressKey) } catch {}
     }
   }, [codeVerified, progressKey])
+
+  // If an ID was already uploaded, keep the user moving forward even after refresh or device changes.
+  useEffect(() => {
+    if (!user || idUploaded) return
+
+    let isActive = true
+    supabase.storage
+      .from('documents')
+      .list(`${user.id}/id-verification`, { limit: 1, sortBy: { column: 'created_at', order: 'desc' } })
+      .then(({ data, error }) => {
+        if (!isActive || error || !data?.length) return
+        setHumanVerified(true)
+        setIdUploaded(true)
+        setIdFileName(data[0].name || 'ID uploaded')
+      })
+
+    return () => { isActive = false }
+  }, [user, idUploaded])
   
   // Generate Sign ID
   const signId = user ? `SID-${user.id.slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}` : ''
