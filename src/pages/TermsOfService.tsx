@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, FileText, Scale, Shield, AlertTriangle, Users, CreditCard } from 'lucide-react';
@@ -6,6 +7,14 @@ import { navigateToRoute } from '@/utils/navigation';
 const TermsOfService = () => {
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Terms of Service — TruHeirs</title>
+        <meta name="description" content="The terms governing your use of the TruHeirs digital family office platform, including subscriptions, conduct, and limitations." />
+        <link rel="canonical" href="https://truheirs.app/terms-of-service" />
+        <meta property="og:title" content="Terms of Service — TruHeirs" />
+        <meta property="og:description" content="The terms governing your use of the TruHeirs digital family office platform." />
+        <meta property="og:url" content="https://truheirs.app/terms-of-service" />
+      </Helmet>
       {/* Header */}
       <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4 md:px-6 py-4">

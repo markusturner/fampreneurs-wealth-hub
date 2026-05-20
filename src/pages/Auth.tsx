@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Helmet } from 'react-helmet-async'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -102,7 +103,15 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+    <main className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+      <Helmet>
+        <title>Sign In — TruHeirs Trustee Portal</title>
+        <meta name="description" content="Sign in to TruHeirs, the digital family office platform for trustees managing family wealth, governance, and legacy." />
+        <link rel="canonical" href="https://truheirs.app/auth" />
+        <meta property="og:title" content="Sign In — TruHeirs Trustee Portal" />
+        <meta property="og:description" content="Sign in to TruHeirs, the digital family office platform for trustees managing family wealth, governance, and legacy." />
+        <meta property="og:url" content="https://truheirs.app/auth" />
+      </Helmet>
       <Card className="w-full max-w-md shadow-soft relative">
         <CardHeader className="text-center">
           <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-4">
@@ -137,6 +146,6 @@ export default function Auth() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </main>
   )
 }

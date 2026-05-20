@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { NavHeader } from "@/components/dashboard/nav-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,16 @@ const Contact = () => {
   const navigate = useNavigate();
   const [isChatOpen, setIsChatOpen] = useState(false);
   return <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Contact TruHeirs — Talk to Our Family Office Team</title>
+        <meta name="description" content="Get in touch with the TruHeirs team for billing, technical support, partnerships, or questions about our digital family office platform." />
+        <link rel="canonical" href="https://truheirs.app/contact" />
+        <meta property="og:title" content="Contact TruHeirs" />
+        <meta property="og:description" content="Get in touch with the TruHeirs team for support, partnerships, or platform questions." />
+        <meta property="og:url" content="https://truheirs.app/contact" />
+      </Helmet>
       <NavHeader />
+      
       
       <main className="container max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-16 md:pb-8">
         <div className="mb-8">
