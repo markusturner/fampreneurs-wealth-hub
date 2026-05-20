@@ -531,17 +531,39 @@ export default function ProgramAgreement() {
   const allowManualAgreementAccess = allowPreviewAccess || isAdminOrOwner
   
   // Post-signing verification states
-  const [agreementStep, setAgreementStep] = useState<'signing' | 'verification'>('signing')
-  const [humanVerified, setHumanVerified] = useState(false)
+  const progressKey = user ? `agreement_progress_${user.id}` : ''
+  const savedProgress = (() => {
+    if (!progressKey || typeof window === 'undefined') return null
+    try { return JSON.parse(localStorage.getItem(progressKey) || 'null') } catch { return null }
+  })()
+  const [agreementStep, setAgreementStep] = useState<'signing' | 'verification'>(savedProgress?.agreementStep || 'signing')
+  const [humanVerified, setHumanVerified] = useState<boolean>(!!savedProgress?.humanVerified)
   const [idUploading, setIdUploading] = useState(false)
-  const [idUploaded, setIdUploaded] = useState(false)
-  const [idFileName, setIdFileName] = useState('')
+  const [idUploaded, setIdUploaded] = useState<boolean>(!!savedProgress?.idUploaded)
+  const [idFileName, setIdFileName] = useState<string>(savedProgress?.idFileName || '')
   const [verificationCode, setVerificationCode] = useState('')
-  const [codeSent, setCodeSent] = useState(false)
+  const [codeSent, setCodeSent] = useState<boolean>(!!savedProgress?.codeSent)
   const [codeVerified, setCodeVerified] = useState(false)
   const [sendingCode, setSendingCode] = useState(false)
   const [verifyingCode, setVerifyingCode] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Persist verification progress so users don't have to redo steps after refresh
+  useEffect(() => {
+    if (!progressKey) return
+    try {
+      localStorage.setItem(progressKey, JSON.stringify({
+        agreementStep, humanVerified, idUploaded, idFileName, codeSent,
+      }))
+    } catch {}
+  }, [progressKey, agreementStep, humanVerified, idUploaded, idFileName, codeSent])
+
+  // Clear saved progress once fully verified
+  useEffect(() => {
+    if (codeVerified && progressKey) {
+      try { localStorage.removeItem(progressKey) } catch {}
+    }
+  }, [codeVerified, progressKey])
   
   // Generate Sign ID
   const signId = user ? `SID-${user.id.slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}` : ''
