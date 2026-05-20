@@ -532,31 +532,49 @@ export default function ProgramAgreement() {
   
   // Post-signing verification states
   const progressKey = user ? `agreement_progress_${user.id}` : ''
-  const savedProgress = (() => {
-    if (!progressKey || typeof window === 'undefined') return null
-    try { return JSON.parse(localStorage.getItem(progressKey) || 'null') } catch { return null }
-  })()
-  const [agreementStep, setAgreementStep] = useState<'signing' | 'verification'>(savedProgress?.agreementStep || 'signing')
-  const [humanVerified, setHumanVerified] = useState<boolean>(!!savedProgress?.humanVerified)
+  const [progressLoaded, setProgressLoaded] = useState(false)
+  const [agreementStep, setAgreementStep] = useState<'signing' | 'verification'>('signing')
+  const [humanVerified, setHumanVerified] = useState<boolean>(false)
   const [idUploading, setIdUploading] = useState(false)
-  const [idUploaded, setIdUploaded] = useState<boolean>(!!savedProgress?.idUploaded)
-  const [idFileName, setIdFileName] = useState<string>(savedProgress?.idFileName || '')
+  const [idUploaded, setIdUploaded] = useState<boolean>(false)
+  const [idFileName, setIdFileName] = useState<string>('')
   const [verificationCode, setVerificationCode] = useState('')
-  const [codeSent, setCodeSent] = useState<boolean>(!!savedProgress?.codeSent)
+  const [codeSent, setCodeSent] = useState<boolean>(false)
   const [codeVerified, setCodeVerified] = useState(false)
   const [sendingCode, setSendingCode] = useState(false)
   const [verifyingCode, setVerifyingCode] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Restore saved progress after auth finishes. useState cannot read the key on the first render because user loads async.
+  useEffect(() => {
+    if (!progressKey) {
+      setProgressLoaded(false)
+      return
+    }
+
+    try {
+      const savedProgress = JSON.parse(localStorage.getItem(progressKey) || 'null')
+      if (savedProgress) {
+        setAgreementStep(savedProgress.agreementStep || 'signing')
+        setHumanVerified(!!savedProgress.humanVerified)
+        setIdUploaded(!!savedProgress.idUploaded)
+        setIdFileName(savedProgress.idFileName || '')
+        setCodeSent(!!savedProgress.codeSent)
+      }
+    } catch {}
+
+    setProgressLoaded(true)
+  }, [progressKey])
+
   // Persist verification progress so users don't have to redo steps after refresh
   useEffect(() => {
-    if (!progressKey) return
+    if (!progressKey || !progressLoaded) return
     try {
       localStorage.setItem(progressKey, JSON.stringify({
         agreementStep, humanVerified, idUploaded, idFileName, codeSent,
       }))
     } catch {}
-  }, [progressKey, agreementStep, humanVerified, idUploaded, idFileName, codeSent])
+  }, [progressKey, progressLoaded, agreementStep, humanVerified, idUploaded, idFileName, codeSent])
 
   // Clear saved progress once fully verified
   useEffect(() => {
@@ -564,6 +582,24 @@ export default function ProgramAgreement() {
       try { localStorage.removeItem(progressKey) } catch {}
     }
   }, [codeVerified, progressKey])
+
+  // If an ID was already uploaded, keep the user moving forward even after refresh or device changes.
+  useEffect(() => {
+    if (!user || idUploaded) return
+
+    let isActive = true
+    supabase.storage
+      .from('documents')
+      .list(`${user.id}/id-verification`, { limit: 1, sortBy: { column: 'created_at', order: 'desc' } })
+      .then(({ data, error }) => {
+        if (!isActive || error || !data?.length) return
+        setHumanVerified(true)
+        setIdUploaded(true)
+        setIdFileName(data[0].name || 'ID uploaded')
+      })
+
+    return () => { isActive = false }
+  }, [user, idUploaded])
   
   // Generate Sign ID
   const signId = user ? `SID-${user.id.slice(0, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}` : ''
@@ -777,6 +813,7 @@ export default function ProgramAgreement() {
     const MAX_BYTES = 25 * 1024 * 1024
     if (file.size > MAX_BYTES) {
       toast({ title: 'File too large', description: 'Please upload an ID under 25MB.', variant: 'destructive' })
+      e.currentTarget.value = ''
       return
     }
 
@@ -816,6 +853,7 @@ export default function ProgramAgreement() {
       })
     } finally {
       setIdUploading(false)
+      e.currentTarget.value = ''
     }
   }
 
