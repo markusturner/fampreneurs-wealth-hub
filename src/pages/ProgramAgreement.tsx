@@ -813,6 +813,7 @@ export default function ProgramAgreement() {
     const MAX_BYTES = 25 * 1024 * 1024
     if (file.size > MAX_BYTES) {
       toast({ title: 'File too large', description: 'Please upload an ID under 25MB.', variant: 'destructive' })
+      e.currentTarget.value = ''
       return
     }
 
@@ -852,6 +853,7 @@ export default function ProgramAgreement() {
       })
     } finally {
       setIdUploading(false)
+      e.currentTarget.value = ''
     }
   }
 
