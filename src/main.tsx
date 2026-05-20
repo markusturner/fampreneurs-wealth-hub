@@ -155,18 +155,20 @@ function AppWithNotifications() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <ThemeProvider defaultTheme="light" storageKey="family-dashboard-theme">
-          <AuthProvider>
-            <MeetingsProvider>
-              <AppWithNotifications />
-              
-              <Toaster />
-            </MeetingsProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <ThemeProvider defaultTheme="light" storageKey="family-dashboard-theme">
+            <AuthProvider>
+              <MeetingsProvider>
+                <AppWithNotifications />
+
+                <Toaster />
+              </MeetingsProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </HelmetProvider>
   </StrictMode>
 );
