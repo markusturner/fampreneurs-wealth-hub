@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Shield, Eye, Lock, Users, FileText, Mail } from 'lucide-react';
@@ -6,6 +7,14 @@ import { navigateToRoute } from '@/utils/navigation';
 const PrivacyPolicy = () => {
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Privacy Policy — TruHeirs</title>
+        <meta name="description" content="How TruHeirs collects, protects, and uses your family's personal and financial data across our digital family office platform." />
+        <link rel="canonical" href="https://truheirs.app/privacy-policy" />
+        <meta property="og:title" content="Privacy Policy — TruHeirs" />
+        <meta property="og:description" content="How TruHeirs collects, protects, and uses your family's personal and financial data." />
+        <meta property="og:url" content="https://truheirs.app/privacy-policy" />
+      </Helmet>
       {/* Header */}
       <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="container mx-auto px-4 md:px-6 py-4">
