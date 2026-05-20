@@ -75,7 +75,25 @@ const Help = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Help Center — TruHeirs FAQ &amp; Support</title>
+        <meta name="description" content="Answers to frequently asked questions about TruHeirs billing, features, courses, coaching, community, and investments." />
+        <link rel="canonical" href="https://truheirs.app/help" />
+        <meta property="og:title" content="Help Center — TruHeirs FAQ &amp; Support" />
+        <meta property="og:description" content="Answers to frequently asked questions about TruHeirs billing, features, courses, coaching, and more." />
+        <meta property="og:url" content="https://truheirs.app/help" />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": faqs.map(f => ({
+            "@type": "Question",
+            "name": f.question,
+            "acceptedAnswer": { "@type": "Answer", "text": f.answer }
+          }))
+        })}</script>
+      </Helmet>
       <NavHeader />
+      
       
       <main className="container max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <div className="mb-8">
