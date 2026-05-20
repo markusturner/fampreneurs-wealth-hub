@@ -1,0 +1,15 @@
+# TruHeirs
+
+> TruHeirs is a premium digital family office platform that helps families build, protect, and pass on wealth across generations through trust creation, governance, education, and coaching.
+
+## Pages
+
+- [Sign In](/auth): Trustee sign-in portal for the TruHeirs platform.
+- [Help Center](/help): Frequently asked questions about billing, features, courses, coaching, community, and investments.
+- [Contact](/contact): Get in touch with the TruHeirs team for support and partnerships.
+
+## Optional
+
+- [Privacy Policy](/privacy-policy): How TruHeirs collects, protects, and uses personal and financial data.
+- [Terms of Service](/terms-of-service): Terms governing use of the TruHeirs platform.
+- [Cookie Policy](/cookie-policy): How TruHeirs uses cookies and similar technologies.
