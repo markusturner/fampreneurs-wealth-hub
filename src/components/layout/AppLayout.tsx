@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { useOnboardingStatus } from "@/hooks/useOnboardingStatus"
@@ -9,7 +9,6 @@ import { useSubscription } from "@/hooks/useSubscription"
 import { AppSidebar } from "./AppSidebar"
 import { LockedPageOverlay } from "@/components/dashboard/LockedPageOverlay"
 import { Loader2 } from "lucide-react"
-import { useState } from "react"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 
 // Routes that require TruHeirs subscription (not accessible without it)
@@ -97,7 +96,13 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementCompleted, needsAgreement, isAdminOrOwner, profile, navigate, location.pathname])
 
-  if (loading || onboardingLoading || agreementLoading || roleLoading) {
+  // Only block the WHOLE app on the very first auth load. After that, let pages
+  // render while background hooks (subscription, roles, onboarding) refetch.
+  // This prevents the "page refreshes on navigation / after a moment" feeling.
+  const initializedRef = useRef(false)
+  if (!loading && user) initializedRef.current = true
+
+  if (!initializedRef.current && (loading || (user && (onboardingLoading || agreementLoading || roleLoading)))) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">

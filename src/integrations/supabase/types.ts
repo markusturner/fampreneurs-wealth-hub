@@ -4364,6 +4364,89 @@ export type Database = {
           },
         ]
       }
+      sop_views: {
+        Row: {
+          first_viewed_at: string
+          id: string
+          last_viewed_at: string
+          max_scroll_pct: number
+          sop_id: string
+          total_time_seconds: number
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          first_viewed_at?: string
+          id?: string
+          last_viewed_at?: string
+          max_scroll_pct?: number
+          sop_id: string
+          total_time_seconds?: number
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          first_viewed_at?: string
+          id?: string
+          last_viewed_at?: string
+          max_scroll_pct?: number
+          sop_id?: string
+          total_time_seconds?: number
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sop_views_sop_id_fkey"
+            columns: ["sop_id"]
+            isOneToOne: false
+            referencedRelation: "sops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sops: {
+        Row: {
+          content: string
+          cover_image_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          icon: string | null
+          id: string
+          order_index: number
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          order_index?: number
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          order_index?: number
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       stories: {
         Row: {
           caption: string | null

@@ -25,6 +25,8 @@ import Investments from "./pages/Investments";
 import WorkspaceCommunity from "./pages/WorkspaceCommunity";
 import Classroom from "./pages/Classroom";
 import CourseDetail from "./pages/CourseDetail";
+import SOPs from "./pages/SOPs";
+import SOPDetail from "./pages/SOPDetail";
 import WorkspaceMembers from "./pages/WorkspaceMembers";
 import WorkspaceCalendar from "./pages/WorkspaceCalendar";
 import Messenger from "./pages/Messenger";
@@ -121,6 +123,8 @@ function AppWithNotifications() {
         <Route path="/workspace-community" element={<WithLayout><WorkspaceCommunity /></WithLayout>} />
         <Route path="/classroom" element={<WithLayout><Classroom /></WithLayout>} />
         <Route path="/classroom/:courseId" element={<WithLayout><CourseDetail /></WithLayout>} />
+        <Route path="/sops" element={<WithLayout><SOPs /></WithLayout>} />
+        <Route path="/sops/:sopId" element={<WithLayout><SOPDetail /></WithLayout>} />
         <Route path="/workspace-members" element={<WithLayout><WorkspaceMembers /></WithLayout>} />
         <Route path="/workspace-calendar" element={<WithLayout><WorkspaceCalendar /></WithLayout>} />
         <Route path="/messenger" element={<WithLayout><Messenger /></WithLayout>} />
