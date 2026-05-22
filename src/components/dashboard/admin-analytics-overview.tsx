@@ -5,6 +5,7 @@ import { Loader2, TrendingUp, DollarSign, Users, BarChart3 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AdminGrowthCharts } from './admin-growth-charts'
 import { AdminCourseCompletion } from './admin-course-completion'
+import { AdminSopHeatmap } from './admin-sop-heatmap'
 
 interface MetricCardProps {
   title: string
@@ -304,6 +305,9 @@ export function AdminAnalyticsOverview() {
               </div>
             </CardContent>
           </Card>
+
+          <AdminCourseCompletion />
+          <AdminSopHeatmap />
         </TabsContent>
 
         {/* TRUHEIRS TAB */}

@@ -31,58 +31,62 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
     try {
       setLoading(true)
 
-      // If programOnly or truheirsOnly, get filtered user IDs first
-      let programUserIds: Set<string> | null = null
+      // Build optional user filter for tabs
+      let filterUserIds: Set<string> | null = null
       if (programOnly) {
-        const { data: programProfiles } = await supabase
-          .from('profiles')
-          .select('user_id')
-          .not('program_name', 'is', null)
-        programUserIds = new Set(programProfiles?.map(p => p.user_id) || [])
+        const { data: pp } = await supabase
+          .from('profiles').select('user_id').not('program_name', 'is', null)
+        filterUserIds = new Set((pp || []).map((p: any) => p.user_id))
       } else if (truheirsOnly) {
-        const { data: truheirsProfiles } = await supabase
-          .from('profiles')
-          .select('user_id')
-          .eq('truheirs_access', true)
-        programUserIds = new Set(truheirsProfiles?.map(p => p.user_id) || [])
+        const { data: tp } = await supabase
+          .from('profiles').select('user_id').eq('truheirs_access', true)
+        filterUserIds = new Set((tp || []).map((p: any) => p.user_id))
       }
 
-      const [{ data: allCourses }, { data: enrollments }] = await Promise.all([
+      // Live data: derive progress from lesson_completions (course_videos = lessons)
+      const [{ data: allCourses }, { data: videos }, { data: completions }] = await Promise.all([
         supabase.from('courses').select('id, title').order('title'),
-        supabase.from('course_enrollments').select('course_id, progress, completed_at, user_id'),
+        supabase.from('course_videos').select('id, course_id'),
+        supabase.from('lesson_completions').select('user_id, lesson_id, course_id'),
       ])
 
-      if (!allCourses) return
+      if (!allCourses) { setLoading(false); return }
 
-      const courseMap: CourseCompletion[] = allCourses.map((course) => {
-        let courseEnrollments = enrollments?.filter((e) => e.course_id === course.id) || []
-        if (programUserIds) {
-          courseEnrollments = courseEnrollments.filter((e) => e.user_id && programUserIds.has(e.user_id))
-        }
-        const enrolledCount = courseEnrollments.length
-        const avgProgress =
-          enrolledCount > 0
-            ? courseEnrollments.reduce((sum, e) => sum + (e.progress || 0), 0) / enrolledCount
-            : 0
-        const completedCount = courseEnrollments.filter((e) => e.completed_at !== null).length
-
-        return {
-          courseId: course.id,
-          courseTitle: course.title,
-          enrolledCount,
-          avgProgress: Math.round(avgProgress),
-          completedCount,
-        }
+      // total lessons per course
+      const lessonCountByCourse = new Map<string, number>()
+      ;(videos || []).forEach((v: any) => {
+        lessonCountByCourse.set(v.course_id, (lessonCountByCourse.get(v.course_id) || 0) + 1)
       })
 
-      // Only show courses that have at least 1 enrollment
+      // completions per (user,course)
+      const compsByCourseUser = new Map<string, Map<string, number>>()
+      ;(completions || []).forEach((c: any) => {
+        if (filterUserIds && !filterUserIds.has(c.user_id)) return
+        if (!compsByCourseUser.has(c.course_id)) compsByCourseUser.set(c.course_id, new Map())
+        const m = compsByCourseUser.get(c.course_id)!
+        m.set(c.user_id, (m.get(c.user_id) || 0) + 1)
+      })
+
+      const courseMap: CourseCompletion[] = allCourses.map((course: any) => {
+        const total = lessonCountByCourse.get(course.id) || 0
+        const userMap = compsByCourseUser.get(course.id) || new Map<string, number>()
+        const enrolledCount = userMap.size
+        let sumPct = 0, completedCount = 0
+        userMap.forEach((done) => {
+          const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0
+          sumPct += pct
+          if (total > 0 && done >= total) completedCount += 1
+        })
+        const avgProgress = enrolledCount > 0 ? Math.round(sumPct / enrolledCount) : 0
+        return { courseId: course.id, courseTitle: course.title, enrolledCount, avgProgress, completedCount }
+      })
+
       const activeCourses = courseMap.filter((c) => c.enrolledCount > 0)
       setCourses(activeCourses)
 
-      const totalAvg =
-        activeCourses.length > 0
-          ? activeCourses.reduce((sum, c) => sum + c.avgProgress, 0) / activeCourses.length
-          : 0
+      const totalAvg = activeCourses.length > 0
+        ? activeCourses.reduce((sum, c) => sum + c.avgProgress, 0) / activeCourses.length
+        : 0
       setOverallAvg(Math.round(totalAvg))
     } catch (error) {
       console.error('Error fetching course completion:', error)
@@ -116,7 +120,7 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
           <CardContent className="pt-6">
             <div className="text-center space-y-2">
               <div className="text-4xl md:text-5xl font-bold">{courses.length}</div>
-              <div className="text-sm text-muted-foreground">Courses with enrollments</div>
+              <div className="text-sm text-muted-foreground">Courses with active learners</div>
             </div>
           </CardContent>
         </Card>
@@ -135,7 +139,7 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
               <TableHeader>
                 <TableRow>
                   <TableHead>Course</TableHead>
-                  <TableHead className="w-[100px] text-center">Enrolled</TableHead>
+                  <TableHead className="w-[100px] text-center">Learners</TableHead>
                   <TableHead className="w-[100px] text-center">Completed</TableHead>
                   <TableHead className="w-[200px]">Avg Progress</TableHead>
                 </TableRow>
@@ -168,7 +172,7 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
       ) : (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
-            No course enrollments found yet.
+            No lesson completions recorded yet.
           </CardContent>
         </Card>
       )}
