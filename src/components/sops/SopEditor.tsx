@@ -11,9 +11,9 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
-  List, ListOrdered, Quote, Code, Link as LinkIcon,
+  List, ListOrdered, Quote, Link as LinkIcon,
   Image as ImageIcon, Minus, Youtube as YoutubeIcon, Heading1, Heading2,
-  Heading3, Code2, Sparkles,
+  Heading3, Code2, Sparkles, Paperclip,
 } from 'lucide-react'
 
 interface Props {
@@ -51,6 +51,7 @@ function urlToEmbedHtml(rawUrl: string): string | null {
 export function SopEditor({ content, onChange, editable = true }: Props) {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const docInputRef = useRef<HTMLInputElement>(null)
 
   const editor = useEditor({
     extensions: [
@@ -102,6 +103,49 @@ export function SopEditor({ content, onChange, editable = true }: Props) {
       if (error) throw error
       const { data } = supabase.storage.from('sop-assets').getPublicUrl(path)
       editor.chain().focus().setImage({ src: data.publicUrl }).run()
+    } catch (e: any) {
+      toast({ title: 'Upload failed', description: e.message, variant: 'destructive' })
+    }
+  }
+
+  const uploadDocument = async (file: File) => {
+    try {
+      const ext = (file.name.split('.').pop() || 'bin').toLowerCase()
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+      const path = `sops/docs/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`
+      const { error } = await supabase.storage.from('sop-assets').upload(path, file, { upsert: false, contentType: file.type })
+      if (error) throw error
+      const { data } = supabase.storage.from('sop-assets').getPublicUrl(path)
+      const url = data.publicUrl
+      const sizeKb = Math.max(1, Math.round(file.size / 1024))
+      const sizeLabel = sizeKb > 1024 ? `${(sizeKb / 1024).toFixed(1)} MB` : `${sizeKb} KB`
+
+      let html = ''
+      if (ext === 'pdf') {
+        // Inline PDF preview + download link
+        html =
+          `<div class="my-4 rounded-lg border border-border overflow-hidden bg-muted/30">` +
+            `<div class="aspect-[4/5] w-full"><iframe src="${url}#toolbar=1" loading="lazy" class="w-full h-full" title="${safeName}"></iframe></div>` +
+            `<div class="flex items-center justify-between gap-2 px-3 py-2 text-xs border-t border-border">` +
+              `<span class="truncate">📄 ${safeName} · ${sizeLabel}</span>` +
+              `<a href="${url}" target="_blank" rel="noopener" class="text-[#2eb2ff] underline">Open</a>` +
+            `</div>` +
+          `</div>`
+      } else {
+        // Generic document card
+        const icon = ['doc','docx'].includes(ext) ? '📝' : ['xls','xlsx','csv'].includes(ext) ? '📊' : ['ppt','pptx','key'].includes(ext) ? '📽️' : '📎'
+        html =
+          `<div class="my-3 not-prose">` +
+            `<a href="${url}" target="_blank" rel="noopener" class="flex items-center gap-3 rounded-lg border border-border bg-muted/30 hover:bg-muted px-3 py-3 no-underline">` +
+              `<span class="text-2xl">${icon}</span>` +
+              `<span class="flex-1 min-w-0">` +
+                `<span class="block font-medium text-foreground truncate">${safeName}</span>` +
+                `<span class="block text-xs text-muted-foreground">${ext.toUpperCase()} · ${sizeLabel} · Open document</span>` +
+              `</span>` +
+            `</a>` +
+          `</div>`
+      }
+      editor.chain().focus().insertContent(html).run()
     } catch (e: any) {
       toast({ title: 'Upload failed', description: e.message, variant: 'destructive' })
     }
@@ -159,6 +203,7 @@ export function SopEditor({ content, onChange, editable = true }: Props) {
         <div className="w-px h-5 bg-border mx-1" />
         <Btn onClick={setLink} active={editor.isActive('link')} title="Link"><LinkIcon className="h-4 w-4" /></Btn>
         <Btn onClick={() => fileInputRef.current?.click()} title="Upload image"><ImageIcon className="h-4 w-4" /></Btn>
+        <Btn onClick={() => docInputRef.current?.click()} title="Upload document (PDF, Word, Excel, etc.)"><Paperclip className="h-4 w-4" /></Btn>
         <Btn onClick={insertEmbed} title="Embed video / doc by URL"><YoutubeIcon className="h-4 w-4" /></Btn>
         <Btn onClick={insertCustomEmbed} title="Insert custom embed HTML"><Sparkles className="h-4 w-4" /></Btn>
         <input
@@ -169,6 +214,17 @@ export function SopEditor({ content, onChange, editable = true }: Props) {
           onChange={(e) => {
             const f = e.target.files?.[0]
             if (f) uploadImage(f)
+            e.currentTarget.value = ''
+          }}
+        />
+        <input
+          ref={docInputRef}
+          type="file"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.key,.txt,.md,.zip,.rtf,application/pdf"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0]
+            if (f) uploadDocument(f)
             e.currentTarget.value = ''
           }}
         />
