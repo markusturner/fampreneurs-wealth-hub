@@ -11,9 +11,9 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
-  List, ListOrdered, Quote, Code, Link as LinkIcon,
+  List, ListOrdered, Quote, Link as LinkIcon,
   Image as ImageIcon, Minus, Youtube as YoutubeIcon, Heading1, Heading2,
-  Heading3, Code2, Sparkles,
+  Heading3, Code2, Sparkles, Paperclip,
 } from 'lucide-react'
 
 interface Props {
@@ -51,6 +51,7 @@ function urlToEmbedHtml(rawUrl: string): string | null {
 export function SopEditor({ content, onChange, editable = true }: Props) {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const docInputRef = useRef<HTMLInputElement>(null)
 
   const editor = useEditor({
     extensions: [
