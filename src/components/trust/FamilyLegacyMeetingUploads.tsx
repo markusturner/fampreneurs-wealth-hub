@@ -13,7 +13,7 @@ type UploadCategory =
   | "meeting_recording"
   | "signed_agreement"
   | "family_structure"
-  | "family_constitution"
+
 
 interface LegacyMeetingUpload {
   id: string
@@ -50,10 +50,6 @@ const CATEGORY_INFO: Record<UploadCategory, { title: string; description: string
     title: "Updated Family Structure / Roles Doc",
     description: "Upload documents outlining updated family roles, responsibilities, and organizational structure.",
   },
-  family_constitution: {
-    title: "Family Constitution Document",
-    description: "Upload your family constitution or governing document.",
-  },
 }
 
 const CATEGORIES: UploadCategory[] = [
@@ -63,7 +59,6 @@ const CATEGORIES: UploadCategory[] = [
   "meeting_recording",
   "signed_agreement",
   "family_structure",
-  "family_constitution",
 ]
 
 function formatSize(bytes: number | null) {
@@ -276,7 +271,7 @@ export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingU
           First Family Legacy Meeting
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          Upload all documentation from your first family legacy meeting. This includes meeting notes, attendance records, action items, recordings, signed agreements, family structure documents, and your family constitution.
+          Upload all documentation from your first family legacy meeting. This includes meeting notes, attendance records, action items, recordings, signed agreements, and family structure documents.
         </p>
       </div>
 
