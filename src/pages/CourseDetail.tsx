@@ -691,6 +691,13 @@ export default function CourseDetail() {
   }
 
   const handleSelectLesson = (lesson: Lesson) => {
+    if (isProgramLocked(lesson.required_programs)) {
+      toast({
+        title: 'Locked',
+        description: `Available to: ${lockLabel(lesson.required_programs)}`,
+      })
+      return
+    }
     selectLesson(lesson)
     setMobileView('lesson')
   }
