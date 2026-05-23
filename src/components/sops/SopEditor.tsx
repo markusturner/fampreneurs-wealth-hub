@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { useEditor, EditorContent, Extension } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
@@ -165,6 +165,20 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
       },
     },
   })
+
+  // Sync external content into editor when it changes (e.g. after async load)
+  useEffect(() => {
+    if (!editor) return
+    const incoming = content || ''
+    if (incoming !== editor.getHTML()) {
+      editor.commands.setContent(incoming, { emitUpdate: false })
+    }
+  }, [content, editor])
+
+  // Keep editable flag in sync
+  useEffect(() => {
+    if (editor && editor.isEditable !== editable) editor.setEditable(editable)
+  }, [editable, editor])
 
   if (!editor) return null
 
