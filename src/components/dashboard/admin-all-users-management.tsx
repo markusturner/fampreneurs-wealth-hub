@@ -1878,6 +1878,8 @@ export function AdminAllUsersManagement() {
                         </SelectContent>
                       </Select>
                     </TableCell>
+                    {/* Trust Creation Divider */}
+                    <TableCell className="bg-[#290a52]/5 border-l-2 border-[#290a52]/40" />
                     {/* Trust Submission Date Columns */}
                     {['trust_name_translator', 'asset_inventory', 'family', 'ministry', 'business'].map(trustType => {
                       const dateStr = (user as any).trust_sub_dates?.[trustType]
@@ -1899,7 +1901,7 @@ export function AdminAllUsersManagement() {
                         <span className="text-xs text-muted-foreground/50">—</span>
                       )}
                     </TableCell>
-                    {/* Legacy Meeting Date */}
+                    {/* Legacy Meeting Date (Trust) */}
                     <TableCell>
                       {(user as any).legacy_meeting_date ? (
                         <span className="text-xs text-muted-foreground">{new Date((user as any).legacy_meeting_date).toLocaleDateString()}</span>
@@ -1907,6 +1909,41 @@ export function AdminAllUsersManagement() {
                         <span className="text-xs text-muted-foreground/50">—</span>
                       )}
                     </TableCell>
+                    {/* Succession Planning Divider */}
+                    <TableCell className="bg-[#ffb500]/5 border-l-2 border-[#ffb500]/60" />
+                    {/* Succession Planning Status Columns */}
+                    {[
+                      'constellation_session','legacy_videos','family_tree','legacy_meeting','identity_manual',
+                      'family_crest','family_bible','annual_retreat','trust_stewardship','file_trust_taxes',
+                      'tax_strategy','trademark_ip'
+                    ].map(itemKey => {
+                      const prog = (user as any).succession_progress?.[itemKey]
+                      const isAnnualRetreat = itemKey === 'annual_retreat'
+                      const uploadDate = isAnnualRetreat ? (user as any).annual_retreat_date : null
+                      const statusMeta: Record<string, { label: string; cls: string }> = {
+                        not_started: { label: 'Not Started', cls: 'border-muted-foreground/40 text-muted-foreground' },
+                        in_progress: { label: 'In Progress', cls: 'border-[#ffb500]/60 text-[#ffb500]' },
+                        complete: { label: 'Complete', cls: 'border-emerald-500/60 text-emerald-600' },
+                      }
+                      const meta = prog ? statusMeta[prog.status] : null
+                      return (
+                        <TableCell key={itemKey}>
+                          <div className="flex flex-col gap-0.5">
+                            {meta ? (
+                              <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${meta.cls}`}>{meta.label}</Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground/50">—</span>
+                            )}
+                            {uploadDate && (
+                              <span className="text-[10px] text-muted-foreground">Files: {new Date(uploadDate).toLocaleDateString()}</span>
+                            )}
+                            {prog?.updated_at && (
+                              <span className="text-[10px] text-muted-foreground">{new Date(prog.updated_at).toLocaleDateString()}</span>
+                            )}
+                          </div>
+                        </TableCell>
+                      )
+                    })}
                     {/* Testimonials URL */}
                     <TableCell>
                       <Input
