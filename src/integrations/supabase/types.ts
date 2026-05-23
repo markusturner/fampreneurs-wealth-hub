@@ -1464,6 +1464,7 @@ export type Database = {
           description: string | null
           id: string
           order_index: number
+          required_programs: string[]
           title: string
           updated_at: string
         }
@@ -1474,6 +1475,7 @@ export type Database = {
           description?: string | null
           id?: string
           order_index?: number
+          required_programs?: string[]
           title: string
           updated_at?: string
         }
@@ -1484,6 +1486,7 @@ export type Database = {
           description?: string | null
           id?: string
           order_index?: number
+          required_programs?: string[]
           title?: string
           updated_at?: string
         }
@@ -1566,6 +1569,7 @@ export type Database = {
           id: string
           module_id: string | null
           order_index: number | null
+          required_programs: string[]
           title: string
           updated_at: string
           video_type: string
@@ -1582,6 +1586,7 @@ export type Database = {
           id?: string
           module_id?: string | null
           order_index?: number | null
+          required_programs?: string[]
           title: string
           updated_at?: string
           video_type: string
@@ -1598,6 +1603,7 @@ export type Database = {
           id?: string
           module_id?: string | null
           order_index?: number | null
+          required_programs?: string[]
           title?: string
           updated_at?: string
           video_type?: string
@@ -4364,6 +4370,45 @@ export type Database = {
           },
         ]
       }
+      sop_lesson_links: {
+        Row: {
+          created_at: string
+          id: string
+          lesson_id: string
+          link_type: string
+          sop_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lesson_id: string
+          link_type?: string
+          sop_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          link_type?: string
+          sop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sop_lesson_links_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "course_videos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sop_lesson_links_sop_id_fkey"
+            columns: ["sop_id"]
+            isOneToOne: false
+            referencedRelation: "sops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sop_views: {
         Row: {
           first_viewed_at: string
@@ -4415,6 +4460,7 @@ export type Database = {
           icon: string | null
           id: string
           order_index: number
+          program_tags: string[]
           status: string
           title: string
           updated_at: string
@@ -4428,6 +4474,7 @@ export type Database = {
           icon?: string | null
           id?: string
           order_index?: number
+          program_tags?: string[]
           status?: string
           title: string
           updated_at?: string
@@ -4441,6 +4488,7 @@ export type Database = {
           icon?: string | null
           id?: string
           order_index?: number
+          program_tags?: string[]
           status?: string
           title?: string
           updated_at?: string
