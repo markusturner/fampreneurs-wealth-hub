@@ -94,6 +94,7 @@ export default function SuccessionPlanning() {
             icon={item.icon}
             status={getStatus(item.key)}
             badge={item.badge}
+            doneForYou={item.doneForYou}
             onClick={() => setSelected(item.key)}
           />
         ))}
