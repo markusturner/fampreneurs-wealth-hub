@@ -20,6 +20,8 @@ interface Props {
   content: string
   onChange: (html: string) => void
   editable?: boolean
+  /** Notion-style: no outer card border, transparent background, minimal toolbar */
+  bare?: boolean
 }
 
 // Convert embed-like URLs (Loom, Vimeo, Tella, Figma, Google Docs, generic) → iframe HTML
