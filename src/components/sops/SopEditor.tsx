@@ -69,7 +69,7 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: {
-        class: 'min-h-[400px] px-4 py-4 focus:outline-none prose prose-sm md:prose-base max-w-none w-full prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-a:text-[#2eb2ff] prose-strong:text-foreground prose-img:rounded-lg prose-img:my-4',
+        class: `${bare ? 'min-h-[300px] px-0 py-2' : 'min-h-[400px] px-4 py-4'} focus:outline-none prose prose-sm md:prose-base max-w-none w-full prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-a:text-[#2eb2ff] prose-strong:text-foreground prose-img:rounded-lg prose-img:my-4`,
       },
       handlePaste: (_view, event) => {
         const text = event.clipboardData?.getData('text/plain')?.trim()
