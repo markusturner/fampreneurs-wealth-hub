@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast'
 import { AddCourseDialog } from '@/components/classroom/AddCourseDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
+import { SOP_PROGRAM_CODES, profileProgramCodes } from '@/lib/programs'
 import {
   DndContext,
   closestCenter,
@@ -172,7 +173,7 @@ export default function Classroom() {
           'The Family Business University': 'Family Business University',
           'The Family Vault': 'The Family Vault',
           'The Family Business Accelerator': 'The Family Business Accelerator',
-          'The Family Fortune Mastermind': 'The Family Fortune Mastermind',
+          'The Family Fortune Mastermind': 'The Succession Society',
         }
         const programNames = profile.program_name
           .split(',')
@@ -247,21 +248,23 @@ export default function Classroom() {
         <p className="text-muted-foreground text-xs sm:text-sm">Access your courses and track your progress</p>
       </div>
 
-      {/* SOPs entry */}
-      <button
-        onClick={() => navigate('/sops')}
-        className="w-full group flex items-center gap-4 rounded-xl border border-border bg-gradient-to-r from-[#290a52] to-[#1a0633] hover:from-[#34106a] hover:to-[#220843] transition-all p-4 sm:p-5 text-left"
-      >
-        <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-[#ffb500] flex items-center justify-center shrink-0">
-          <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-[#290a52]" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] uppercase tracking-wider text-[#ffb500]/80">Library</p>
-          <h3 className="text-white font-semibold text-sm sm:text-base">SOPs &amp; Playbooks</h3>
-          <p className="text-white/60 text-xs sm:text-sm line-clamp-1">Standard operating procedures and reference docs.</p>
-        </div>
-        <ArrowRight className="h-5 w-5 text-white/40 group-hover:text-[#ffb500] group-hover:translate-x-1 transition-all shrink-0" />
-      </button>
+      {/* SOPs entry — gated to TFV / TFBA / Succession Society + admins */}
+      {(isAdminOrOwner || profileProgramCodes(profile?.program_name).some(p => SOP_PROGRAM_CODES.includes(p))) && (
+        <button
+          onClick={() => navigate('/sops')}
+          className="w-full group flex items-center gap-4 rounded-xl border border-border bg-gradient-to-r from-[#290a52] to-[#1a0633] hover:from-[#34106a] hover:to-[#220843] transition-all p-4 sm:p-5 text-left"
+        >
+          <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl bg-[#ffb500] flex items-center justify-center shrink-0">
+            <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-[#290a52]" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] uppercase tracking-wider text-[#ffb500]/80">Library</p>
+            <h3 className="text-white font-semibold text-sm sm:text-base">SOPs &amp; Playbooks</h3>
+            <p className="text-white/60 text-xs sm:text-sm line-clamp-1">Standard operating procedures and reference docs.</p>
+          </div>
+          <ArrowRight className="h-5 w-5 text-white/40 group-hover:text-[#ffb500] group-hover:translate-x-1 transition-all shrink-0" />
+        </button>
+      )}
 
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
