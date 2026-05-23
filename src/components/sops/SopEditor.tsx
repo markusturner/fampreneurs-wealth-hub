@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, Extension } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
@@ -11,6 +11,14 @@ import { Table } from '@tiptap/extension-table'
 import { TableRow } from '@tiptap/extension-table-row'
 import { TableHeader } from '@tiptap/extension-table-header'
 import { TableCell } from '@tiptap/extension-table-cell'
+import TextAlign from '@tiptap/extension-text-align'
+import TextStyle from '@tiptap/extension-text-style'
+import { Color } from '@tiptap/extension-color'
+import FontFamily from '@tiptap/extension-font-family'
+import TaskList from '@tiptap/extension-task-list'
+import TaskItem from '@tiptap/extension-task-item'
+import Subscript from '@tiptap/extension-subscript'
+import Superscript from '@tiptap/extension-superscript'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import {
@@ -18,8 +26,58 @@ import {
   List, ListOrdered, Quote, Link as LinkIcon,
   Image as ImageIcon, Minus, Youtube as YoutubeIcon, Heading1, Heading2,
   Heading3, Code2, Sparkles, Paperclip, Highlighter, Table as TableIcon,
-  Lightbulb,
+  Lightbulb, AlignLeft, AlignCenter, AlignRight, AlignJustify,
+  IndentIncrease, IndentDecrease, ListChecks, Subscript as SubIcon,
+  Superscript as SupIcon, Undo2, Redo2, RemoveFormatting, Palette,
 } from 'lucide-react'
+
+// Custom indent extension: margin-left in 24px steps on paragraphs and headings.
+const Indent = Extension.create({
+  name: 'indent',
+  addGlobalAttributes() {
+    return [{
+      types: ['paragraph', 'heading'],
+      attributes: {
+        indent: {
+          default: 0,
+          renderHTML: (attrs: any) => attrs.indent ? { style: `margin-left: ${attrs.indent * 24}px` } : {},
+          parseHTML: (el: HTMLElement) => {
+            const ml = parseInt(el.style.marginLeft || '0', 10)
+            return ml ? Math.round(ml / 24) : 0
+          },
+        },
+      },
+    }]
+  },
+  addCommands() {
+    const update = (delta: number) => ({ tr, state, dispatch }: any) => {
+      const { from, to } = state.selection
+      let changed = false
+      state.doc.nodesBetween(from, to, (node: any, pos: number) => {
+        if (['paragraph', 'heading'].includes(node.type.name)) {
+          const cur = node.attrs.indent || 0
+          const next = Math.max(0, Math.min(8, cur + delta))
+          if (next !== cur) {
+            tr.setNodeMarkup(pos, undefined, { ...node.attrs, indent: next })
+            changed = true
+          }
+        }
+      })
+      if (changed && dispatch) dispatch(tr)
+      return changed
+    }
+    return {
+      indent: () => update(1) as any,
+      outdent: () => update(-1) as any,
+    } as any
+  },
+  addKeyboardShortcuts() {
+    return {
+      Tab: () => (this.editor.isActive('listItem') || this.editor.isActive('taskItem')) ? false : (this.editor.commands as any).indent(),
+      'Shift-Tab': () => (this.editor.isActive('listItem') || this.editor.isActive('taskItem')) ? false : (this.editor.commands as any).outdent(),
+    }
+  },
+})
 
 interface Props {
   content: string
