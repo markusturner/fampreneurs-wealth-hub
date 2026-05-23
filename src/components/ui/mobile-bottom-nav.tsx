@@ -99,7 +99,7 @@ export function MobileBottomNav() {
     { name: 'Classroom', href: classroomHref, icon: BookOpen },
   ]
 
-  const isFamilyMember = !!profile?.membership_type
+  
 
   const workspaceItems = [
     { name: 'AI Chat', href: '/ai-chat', icon: Bot },
