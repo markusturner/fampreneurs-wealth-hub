@@ -255,10 +255,19 @@ function SortableModuleWrapper({ moduleId, disabled, isDragging, children }: { m
 
 export default function CourseDetail() {
   const { courseId } = useParams<{ courseId: string }>()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
   const { isAdminOrOwner } = useIsAdminOrOwner()
+
+  const userPrograms = useMemo<ProgramCode[]>(() => profileProgramCodes(profile?.program_name), [profile?.program_name])
+  const isProgramLocked = useCallback((required?: string[] | null) => {
+    if (isAdminOrOwner) return false
+    if (!required || required.length === 0) return false
+    return !required.some(r => userPrograms.includes(r as ProgramCode))
+  }, [isAdminOrOwner, userPrograms])
+  const lockLabel = (required?: string[] | null) =>
+    (required || []).map(r => programLabel(r)).join(', ')
 
   const [course, setCourse] = useState<Course | null>(null)
   const [modules, setModules] = useState<Module[]>([])
