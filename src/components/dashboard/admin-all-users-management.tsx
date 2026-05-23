@@ -242,12 +242,13 @@ export function AdminAllUsersManagement() {
       if (error) throw error
 
       // Fetch subscription data and trust submission dates for all users
-      const [{ data: subscribersData }, { data: allTrustSubs }, { data: assetUploads }, { data: legacyUploads }, { data: familyMembersData }] = await Promise.all([
+      const [{ data: subscribersData }, { data: allTrustSubs }, { data: assetUploads }, { data: legacyUploads }, { data: familyMembersData }, { data: successionProgressData }] = await Promise.all([
         supabase.from('subscribers').select('user_id, subscription_tier, subscription_period, subscribed'),
         supabase.from('trust_submissions' as any).select('user_id, trust_type, submitted_at').order('submitted_at', { ascending: true }),
         supabase.from('trust_asset_uploads' as any).select('user_id, created_at').order('created_at', { ascending: true }),
-        supabase.from('legacy_meeting_uploads' as any).select('user_id, created_at').order('created_at', { ascending: true }),
+        supabase.from('legacy_meeting_uploads' as any).select('user_id, created_at, meeting_type').order('created_at', { ascending: true }),
         supabase.from('family_members').select('email, added_by'),
+        supabase.from('succession_progress' as any).select('user_id, item_key, status, updated_at'),
       ])
 
       // Build a map of user_id -> { trust_type -> earliest submitted_at }
@@ -269,9 +270,23 @@ export function AdminAllUsersManagement() {
         }
       }
       const legacyMeetingMap: Record<string, string> = {}
+      const annualRetreatMap: Record<string, string> = {}
       if (legacyUploads) {
         for (const u of legacyUploads as any[]) {
-          if (!legacyMeetingMap[u.user_id]) legacyMeetingMap[u.user_id] = u.created_at
+          if ((u.meeting_type || 'family_legacy') === 'annual_retreat') {
+            if (!annualRetreatMap[u.user_id]) annualRetreatMap[u.user_id] = u.created_at
+          } else {
+            if (!legacyMeetingMap[u.user_id]) legacyMeetingMap[u.user_id] = u.created_at
+          }
+        }
+      }
+
+      // Build a map of user_id -> { item_key -> { status, updated_at } } for succession planning
+      const successionMap: Record<string, Record<string, { status: string; updated_at: string }>> = {}
+      if (successionProgressData) {
+        for (const row of successionProgressData as any[]) {
+          if (!successionMap[row.user_id]) successionMap[row.user_id] = {}
+          successionMap[row.user_id][row.item_key] = { status: row.status, updated_at: row.updated_at }
         }
       }
 
@@ -300,6 +315,8 @@ export function AdminAllUsersManagement() {
           trust_sub_dates: trustSubMap[profile.user_id] || {},
           proof_of_transfer_date: proofOfTransferMap[profile.user_id] || null,
           legacy_meeting_date: legacyMeetingMap[profile.user_id] || null,
+          annual_retreat_date: annualRetreatMap[profile.user_id] || null,
+          succession_progress: successionMap[profile.user_id] || {},
           trustee_user_id: trusteeUserId,
         }
       })
@@ -1605,6 +1622,7 @@ export function AdminAllUsersManagement() {
                     <TableHead className="bg-background"><button type="button" onClick={() => handleSort('remaining')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Remaining <span className="text-xs opacity-60">{sortColumn === 'remaining' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
                     <TableHead className="bg-background"><button type="button" onClick={() => handleSort('program')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Program <span className="text-xs opacity-60">{sortColumn === 'program' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
                     <TableHead className="bg-background"><button type="button" onClick={() => handleSort('satisfaction')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Satisfaction <span className="text-xs opacity-60">{sortColumn === 'satisfaction' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
+                    <TableHead className="min-w-[140px] bg-[#290a52]/10 text-[#290a52] font-semibold border-l-2 border-[#290a52]/40">Trust Creation</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Name Selected</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Asset Inventory</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Family Trust</TableHead>
@@ -1612,6 +1630,19 @@ export function AdminAllUsersManagement() {
                     <TableHead className="min-w-[100px] bg-background">Business Trust</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Proof of Transfer</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Legacy Meeting</TableHead>
+                    <TableHead className="min-w-[160px] bg-[#ffb500]/10 text-[#290a52] font-semibold border-l-2 border-[#ffb500]/60">Succession Planning</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Constellation Session</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Legacy Videos</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Family Tree</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Legacy Meeting (Succession)</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Identity Manual</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Family Crest</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Family Bible</TableHead>
+                    <TableHead className="min-w-[140px] bg-background">Annual Retreat</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Trust Stewardship</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">File Trust Taxes</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Tax Strategy</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Trademark / IP</TableHead>
                     <TableHead className="min-w-[160px] bg-background">Testimonials</TableHead>
                     <TableHead className="min-w-[160px] bg-background">Trust Pilot Review</TableHead>
                     <TableHead className="min-w-[120px] bg-background"><button type="button" onClick={() => handleSort('trust_access')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Trust Access <span className="text-xs opacity-60">{sortColumn === 'trust_access' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
@@ -1847,6 +1878,8 @@ export function AdminAllUsersManagement() {
                         </SelectContent>
                       </Select>
                     </TableCell>
+                    {/* Trust Creation Divider */}
+                    <TableCell className="bg-[#290a52]/5 border-l-2 border-[#290a52]/40" />
                     {/* Trust Submission Date Columns */}
                     {['trust_name_translator', 'asset_inventory', 'family', 'ministry', 'business'].map(trustType => {
                       const dateStr = (user as any).trust_sub_dates?.[trustType]
@@ -1868,7 +1901,7 @@ export function AdminAllUsersManagement() {
                         <span className="text-xs text-muted-foreground/50">—</span>
                       )}
                     </TableCell>
-                    {/* Legacy Meeting Date */}
+                    {/* Legacy Meeting Date (Trust) */}
                     <TableCell>
                       {(user as any).legacy_meeting_date ? (
                         <span className="text-xs text-muted-foreground">{new Date((user as any).legacy_meeting_date).toLocaleDateString()}</span>
@@ -1876,6 +1909,41 @@ export function AdminAllUsersManagement() {
                         <span className="text-xs text-muted-foreground/50">—</span>
                       )}
                     </TableCell>
+                    {/* Succession Planning Divider */}
+                    <TableCell className="bg-[#ffb500]/5 border-l-2 border-[#ffb500]/60" />
+                    {/* Succession Planning Status Columns */}
+                    {[
+                      'constellation_session','legacy_videos','family_tree','legacy_meeting','identity_manual',
+                      'family_crest','family_bible','annual_retreat','trust_stewardship','file_trust_taxes',
+                      'tax_strategy','trademark_ip'
+                    ].map(itemKey => {
+                      const prog = (user as any).succession_progress?.[itemKey]
+                      const isAnnualRetreat = itemKey === 'annual_retreat'
+                      const uploadDate = isAnnualRetreat ? (user as any).annual_retreat_date : null
+                      const statusMeta: Record<string, { label: string; cls: string }> = {
+                        not_started: { label: 'Not Started', cls: 'border-muted-foreground/40 text-muted-foreground' },
+                        in_progress: { label: 'In Progress', cls: 'border-[#ffb500]/60 text-[#ffb500]' },
+                        complete: { label: 'Complete', cls: 'border-emerald-500/60 text-emerald-600' },
+                      }
+                      const meta = prog ? statusMeta[prog.status] : null
+                      return (
+                        <TableCell key={itemKey}>
+                          <div className="flex flex-col gap-0.5">
+                            {meta ? (
+                              <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${meta.cls}`}>{meta.label}</Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground/50">—</span>
+                            )}
+                            {uploadDate && (
+                              <span className="text-[10px] text-muted-foreground">Files: {new Date(uploadDate).toLocaleDateString()}</span>
+                            )}
+                            {prog?.updated_at && (
+                              <span className="text-[10px] text-muted-foreground">{new Date(prog.updated_at).toLocaleDateString()}</span>
+                            )}
+                          </div>
+                        </TableCell>
+                      )
+                    })}
                     {/* Testimonials URL */}
                     <TableCell>
                       <Input

@@ -126,7 +126,22 @@ export default function SuccessionPlanning() {
           doneForYou={item.doneForYou}
           onChanged={fetchProgress}
         >
-          {item.key === 'legacy_meeting' && <FamilyLegacyMeetingUploads onSubmitted={() => {}} />}
+          {item.key === 'legacy_meeting' && (
+            <FamilyLegacyMeetingUploads
+              meetingType="family_legacy"
+              title="First Family Legacy Meeting"
+              description="Upload all documentation from your first family legacy meeting. This includes meeting notes, attendance records, action items, recordings, signed agreements, and family structure documents."
+              onSubmitted={() => {}}
+            />
+          )}
+          {item.key === 'annual_retreat' && (
+            <FamilyLegacyMeetingUploads
+              meetingType="annual_retreat"
+              title="Annual Family Retreat"
+              description="Upload all documentation from your annual family retreat. This includes meeting notes, attendance records, action items, recordings, signed agreements, and family structure documents."
+              onSubmitted={() => {}}
+            />
+          )}
         </SuccessionItemDetail>
       </div>
     )

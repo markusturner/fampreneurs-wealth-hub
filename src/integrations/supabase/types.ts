@@ -3145,6 +3145,7 @@ export type Database = {
           file_path: string
           file_size: number | null
           id: string
+          meeting_type: string
           mime_type: string | null
           submitter_name: string | null
           user_id: string
@@ -3156,6 +3157,7 @@ export type Database = {
           file_path: string
           file_size?: number | null
           id?: string
+          meeting_type?: string
           mime_type?: string | null
           submitter_name?: string | null
           user_id: string
@@ -3167,6 +3169,7 @@ export type Database = {
           file_path?: string
           file_size?: number | null
           id?: string
+          meeting_type?: string
           mime_type?: string | null
           submitter_name?: string | null
           user_id?: string

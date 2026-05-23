@@ -167,9 +167,17 @@ function CategorySection({ category, uploads, onUpload, onDelete, uploading, upl
 
 interface FamilyLegacyMeetingUploadsProps {
   onSubmitted?: () => void
+  meetingType?: string
+  title?: string
+  description?: string
 }
 
-export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingUploadsProps) {
+export function FamilyLegacyMeetingUploads({
+  onSubmitted,
+  meetingType = "family_legacy",
+  title = "First Family Legacy Meeting",
+  description = "Upload all documentation from your first family legacy meeting. This includes meeting notes, attendance records, action items, recordings, signed agreements, and family structure documents.",
+}: FamilyLegacyMeetingUploadsProps) {
   const { user } = useAuth()
   const { toast } = useToast()
   const [uploads, setUploads] = useState<LegacyMeetingUpload[]>([])
@@ -180,7 +188,7 @@ export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingU
 
   useEffect(() => {
     fetchUploads()
-  }, [])
+  }, [meetingType])
 
   const fetchUploads = async () => {
     if (!user?.id) return
@@ -188,6 +196,7 @@ export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingU
       .from("legacy_meeting_uploads" as any)
       .select("*")
       .eq("user_id", user.id)
+      .eq("meeting_type", meetingType)
       .order("created_at", { ascending: false })
     if (data) setUploads(data as any as LegacyMeetingUpload[])
     if (error) console.error("Error fetching uploads:", error)
@@ -205,7 +214,7 @@ export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingU
 
     try {
       for (const file of Array.from(files)) {
-        const filePath = `${user.id}/${category}/${Date.now()}_${file.name.replace(/\s+/g, "_")}`
+        const filePath = `${user.id}/${meetingType}/${category}/${Date.now()}_${file.name.replace(/\s+/g, "_")}`
 
         const { error: storageError } = await supabase.storage
           .from("legacy-meeting-uploads")
@@ -217,6 +226,7 @@ export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingU
           .insert({
             user_id: user.id,
             category,
+            meeting_type: meetingType,
             file_name: file.name,
             file_path: filePath,
             file_size: file.size,
@@ -268,10 +278,10 @@ export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingU
       <div className="p-3 rounded-lg border border-accent/30 bg-accent/5">
         <p className="text-sm font-medium text-foreground flex items-center gap-2">
           <Users className="h-4 w-4 text-accent" />
-          First Family Legacy Meeting
+          {title}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          Upload all documentation from your first family legacy meeting. This includes meeting notes, attendance records, action items, recordings, signed agreements, and family structure documents.
+          {description}
         </p>
       </div>
 
