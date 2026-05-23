@@ -64,15 +64,10 @@ const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2;
     icon: ClipboardList,
     description: "Upload your Schedule B asset lists and proof of transfer documents for your trust.",
   },
-  legacy_meeting: {
-    label: "First Family Legacy Meeting",
-    icon: Users,
-    description: "Schedule and document your first family legacy meeting with notes, recordings, and agreements.",
-  },
 }
 
 const TRUST_TYPES: SectionType[] = ['family', 'ministry', 'business']
-const TOOL_TYPES: SectionType[] = ['trust_name_translator', 'asset_inventory', 'trust_asset_uploads', 'legacy_meeting']
+const TOOL_TYPES: SectionType[] = ['trust_name_translator', 'asset_inventory', 'trust_asset_uploads']
 
 // Submission limits: trust_name_translator = 3, everything else = 1
 const getSubmissionLimit = (type: SectionType): number => {
