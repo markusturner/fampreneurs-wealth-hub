@@ -167,9 +167,17 @@ function CategorySection({ category, uploads, onUpload, onDelete, uploading, upl
 
 interface FamilyLegacyMeetingUploadsProps {
   onSubmitted?: () => void
+  meetingType?: string
+  title?: string
+  description?: string
 }
 
-export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingUploadsProps) {
+export function FamilyLegacyMeetingUploads({
+  onSubmitted,
+  meetingType = "family_legacy",
+  title = "First Family Legacy Meeting",
+  description = "Upload all documentation from your first family legacy meeting. This includes meeting notes, attendance records, action items, recordings, signed agreements, and family structure documents.",
+}: FamilyLegacyMeetingUploadsProps) {
   const { user } = useAuth()
   const { toast } = useToast()
   const [uploads, setUploads] = useState<LegacyMeetingUpload[]>([])
@@ -180,7 +188,7 @@ export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingU
 
   useEffect(() => {
     fetchUploads()
-  }, [])
+  }, [meetingType])
 
   const fetchUploads = async () => {
     if (!user?.id) return
@@ -188,6 +196,7 @@ export function FamilyLegacyMeetingUploads({ onSubmitted }: FamilyLegacyMeetingU
       .from("legacy_meeting_uploads" as any)
       .select("*")
       .eq("user_id", user.id)
+      .eq("meeting_type", meetingType)
       .order("created_at", { ascending: false })
     if (data) setUploads(data as any as LegacyMeetingUpload[])
     if (error) console.error("Error fetching uploads:", error)
