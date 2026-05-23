@@ -1,69 +1,65 @@
-# Build Plan
 
-Five separate changes. I'll confirm a couple of decisions first so I don't go the wrong way.
+## Goal
 
----
+Rebuild `/succession-planning` to mirror the Trust Creation page: header, badge-labeled steps, and clickable cards. Every item is an "info-only" card with a status tracker (Not Started → In Progress → Complete) that admins update and members view.
 
-## 1) Admin Metrics — "#1 Reason People Joined"
+## Layout
 
-Add a new card above the Course Completion section on the Metrics tab that analyzes all `onboarding_responses` and surfaces the top reason people decided to work with us.
+```
+Succession Planning
+Plan your family's next chapter.
 
-- Pull from fields: `decision_reason`, `investment_reason`, `why_markus`, `why_choose_me`, `final_push`, `join_elaboration`.
-- Group similar themes using simple keyword clustering (family, legacy, trust, protection, taxes, business, kids/children, freedom, generational, mentorship, community, Markus, results, etc.).
-- Show: #1 reason (theme + sample quotes), then runner-ups #2 and #3, and total responses analyzed.
-- Live data — re-queries on tab open.
+[Step 1] Family Constellation & Legacy Foundation
+  ┌──────────────────────┐  ┌──────────────────────┐  ┌──────────────────────┐
+  │ Family Constellation │  │ Legacy Videos        │  │ Course Creation      │
+  │ Session w/ Ginger    │  │ (Done for you)       │  │ (Done for you)       │
+  │ [Book — coming soon] │  │ Status: In Progress  │  │ Status: Not Started  │
+  └──────────────────────┘  └──────────────────────┘  └──────────────────────┘
 
----
+[Step 2] First Family Legacy Meeting & Identity
+  ┌─────────────────────┐ ┌──────────────────┐ ┌────────────┐ ┌──────────────┐
+  │ Legacy Meeting      │ │ Identity Manual  │ │ Family     │ │ Family Bible │
+  │ Uploads (existing)  │ │ (Done for you)   │ │ Crest (DFY)│ │ (Done for you)│
+  └─────────────────────┘ └──────────────────┘ └────────────┘ └──────────────┘
 
-## 2) Auto-link SOPs ↔ Course Lessons by Name
+[Step 3] Annual Family Retreat & Stewardship
+  Annual Retreat · Trust Stewardship · Annual Trust Meeting · File Trust Taxes (upsell) ·
+  Tax Strategy w/ Toni Simons (booking coming soon) · IP / Trademark (1 free, $1,297/class extra)
+```
 
-Add a lightweight name-match link so an SOP and a lesson with the same / very similar title surface each other.
+## Behavior
 
-- New table `sop_lesson_links` (sop_id, lesson_id, link_type: 'auto'|'manual').
-- Background match on save (both sides): normalize titles (lowercase, strip punctuation) and link when titles match or one contains the other.
-- On the **SOP page**: show a "Linked Lessons" section listing matched lessons with a link to open them.
-- On the **Lesson page Resources section**: show linked SOPs as clickable resource cards.
-- Admins/Owners can manually link/unlink from either side.
+- **Access gate**: same `check-trust-access` pattern OR a new `succession_society` program check (confirm later — for now reuse current gating; admin can grant via existing unlock system).
+- **Cards** open a detail view (like Trust Creation's selected section) that shows:
+  - Description
+  - Booking link if available (Ginger, Toni Simons — placeholder "Coming Soon" button)
+  - Status badge: `Not Started` (gray), `In Progress` (gold), `Complete` (green)
+  - Upsell CTA where relevant (file trust taxes, additional trademarks at $1,297/class) → button posts a request notification to admin
+- **Legacy Meeting card** keeps the existing `FamilyLegacyMeetingUploads` component as its detail view.
+- **Status tracker**: read-only for members, editable for admins/owners via inline select on each card.
 
-**Decision needed:** Should match be exact-title only, or fuzzy (e.g. "Trust Funding" ↔ "How to Fund Your Trust")? I'd default to **fuzzy + normalized contains**, with a manual override.
+## Data
 
----
+New table `succession_progress`:
+- `user_id` (uuid)
+- `item_key` (text) — e.g. `legacy_videos`, `course_creation`, `identity_manual`, `family_crest`, `family_bible`, `annual_retreat`, `tax_strategy`, `trademark`, etc.
+- `status` ('not_started' | 'in_progress' | 'complete')
+- `notes` (text, optional admin note)
+- timestamps
+- Unique(user_id, item_key)
 
-## 3) Restrict SOPs to TFV, TFBA, TFFM (program-gated visibility)
+RLS: user can SELECT their own rows; admins/owners can SELECT/INSERT/UPDATE all (via `has_role`).
 
-- Add `program_tags text[]` to `sops` (values: 'tfv', 'tfba', 'tffm').
-- Sidebar "SOPs & Playbooks" link only shows for users in at least one of those 3 programs (or admin/owner).
-- `/sops` list filters to SOPs tagged with a program the user belongs to.
-- `/sops/:id` view: blocked if user is not in any of the SOP's tagged programs (admin/owner bypass).
-- Editor (admin/owner) gets a multi-select for which programs see each SOP.
+Upsell requests reuse existing admin notification edge function (`notify-admin-submission`) with a new `request_type`.
 
----
+## Files
 
-## 4) Succession Planning page + sidebar button
+- Rewrite `src/pages/SuccessionPlanning.tsx` — new step-based layout, card grid, detail view, status badges.
+- New `src/components/succession/SuccessionItemCard.tsx` — card with icon, title, status badge, lock/CTA.
+- New `src/components/succession/SuccessionItemDetail.tsx` — detail view with description, booking link, upsell button, admin status editor.
+- New migration for `succession_progress` table + RLS.
+- Reuse `FamilyLegacyMeetingUploads` inside Step 2's Legacy Meeting detail.
 
-- Add new sidebar item **"Succession Planning"** styled like Trust Creation but using a distinct on-brand color (proposing a deep emerald/teal `hsl(160 60% 35%)` so it's clearly different from AI Chat blue and Trust Creation gold).
-- New page `/succession-planning`.
-- **Move** the Family Legacy Meeting section (component `FamilyLegacyMeetingUploads`) off the Trust Creation page and onto the new Succession Planning page. (Trust Creation will no longer show it.)
+## Open question I'll handle later
 
----
-
-## 5) Per-program lesson/module locking + rename FFM → "The Succession Society"
-
-**Rename FFM group:**
-- In `community_groups`, rename "The Family Fortune Mastermind" → "The Succession Society".
-- Update all program-name mappings, admin settings labels, signup labels, triggers, and any hardcoded strings to display "The Succession Society" for `tffm`. Underlying program code stays `tffm` so existing data still works.
-
-**Per-program locking on courses (Legacy Launchpad / Team course):**
-- Add `required_programs text[]` to `course_modules` and `course_lessons`.
-- If set, only members of one of those programs (or admin/owner) can open it — others see it greyed out with a 🔒 and an "Available to {Program Name} members" message.
-- Admin UI: on the module/lesson edit dialogs add a "Restrict to programs" multi-select (FBU, TFV, TFBA, TFFM/Succession Society).
-- Pre-assign: Legacy Launchpad **modules 7, 8, 9, 10** → restricted to `tffm` (Succession Society) only.
-
----
-
-## Questions before I build (please answer):
-
-1. **SOP↔Lesson matching:** fuzzy contains-match (recommended) or exact title only?
-2. **Succession Planning page color:** emerald/teal as I proposed, or pick another (e.g. burgundy, copper, forest)?
-3. **FFM rename:** rename everywhere user-facing (community channel, badges, dropdowns, admin tabs) — confirm you want the program code to stay `tffm` internally so we don't break Stripe/onboarding mappings?
-4. **Legacy Launchpad locking:** confirm modules 7–10 lock means **the entire module and all its lessons** are locked to non-TFFM members.
+The two booking links (Ginger Gentile, Toni Simons) will render a disabled "Booking link coming soon" button until you provide the URLs.
