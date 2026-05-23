@@ -309,6 +309,9 @@ export default function CourseDetail() {
   const [editContent, setEditContent] = useState('')
   const [editSaving, setEditSaving] = useState(false)
   const [editDeleting, setEditDeleting] = useState(false)
+  const [editRequiredPrograms, setEditRequiredPrograms] = useState<string[]>([])
+  const [restrictModule, setRestrictModule] = useState<Module | null>(null)
+  const [linkedSops, setLinkedSops] = useState<LinkedSop[]>([])
   const [videoUploading, setVideoUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const uploadXhrRef = useRef<XMLHttpRequest | null>(null)
@@ -323,6 +326,7 @@ export default function CourseDetail() {
     setEditTitle(selectedLesson.title)
     setEditVideoUrl(selectedLesson.video_url || '')
     setEditContent(selectedLesson.content || selectedLesson.description || '')
+    setEditRequiredPrograms((selectedLesson as any).required_programs || [])
     setIsEditingLesson(true)
   }
 
