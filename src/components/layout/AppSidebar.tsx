@@ -215,7 +215,7 @@ export function AppSidebar({ className }: { className?: string }) {
               "w-full justify-start gap-2 rounded-xl font-semibold border-0",
               currentPath.includes("/succession-planning")
                 ? "bg-[#290a52] text-white hover:bg-[#34106a] shadow-md shadow-[#290a52]/30"
-                : "bg-[#290a52]/10 text-[#290a52] hover:bg-[#290a52]/20"
+                : "bg-white text-[#290a52] hover:bg-[#290a52]/10"
             )}
             variant="ghost"
             onClick={() => navigate('/succession-planning')}
