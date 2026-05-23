@@ -143,11 +143,13 @@ interface SortableLessonItemProps {
   isAdminOrOwner: boolean
   showDropBefore: boolean
   showDropAfter: boolean
+  isLocked?: boolean
+  lockTooltip?: string
   onSelect: (lesson: Lesson) => void
   onEdit: (lesson: Lesson) => void
 }
 
-function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, showDropBefore, showDropAfter, onSelect, onEdit }: SortableLessonItemProps) {
+function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, showDropBefore, showDropAfter, isLocked, lockTooltip, onSelect, onEdit }: SortableLessonItemProps) {
   const {
     attributes,
     listeners,
