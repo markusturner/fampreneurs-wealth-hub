@@ -22,6 +22,7 @@ import {
   Search,
   Mail,
   ScrollText,
+  Sprout,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -206,6 +207,25 @@ export function AppSidebar({ className }: { className?: string }) {
         </div>
       )}
 
+      {/* Succession Planning - distinct emerald accent */}
+      {!isFamilyMember && (
+        <div className="px-3 pb-3">
+          <Button
+            className={cn(
+              "w-full justify-start gap-2 rounded-xl font-semibold border-0",
+              currentPath.includes("/succession-planning")
+                ? "bg-[hsl(160,60%,35%)] text-white hover:bg-[hsl(160,60%,30%)] shadow-md shadow-[hsl(160,60%,35%)]/30"
+                : "bg-[hsl(160,60%,35%)]/15 text-[hsl(160,60%,30%)] hover:bg-[hsl(160,60%,35%)]/25"
+            )}
+            variant="ghost"
+            onClick={() => navigate('/succession-planning')}
+          >
+            <Sprout className="h-4 w-4" />
+            Succession Planning
+          </Button>
+        </div>
+      )}
+
       <ScrollArea className="flex-1 px-3 py-1">
         {/* WORKSPACE - show if not family-office-only, OR if user has a program assigned (admin-invited users) */}
         {(!isFamilyOfficeOnly || isAdmin || isOwner || isFamilyMember || !!profile?.program_name) && (
@@ -218,7 +238,7 @@ export function AppSidebar({ className }: { className?: string }) {
                 <SubNavItem label="Family Business University" href="/workspace-community?program=fbu" active={currentPath === "/workspace-community" && location.search.includes("program=fbu")} />
                 <SubNavItem label="The Family Vault" href="/workspace-community?program=tfv" active={currentPath === "/workspace-community" && location.search.includes("program=tfv")} />
                 <SubNavItem label="The Family Business Accelerator" href="/workspace-community?program=tfba" active={currentPath === "/workspace-community" && location.search.includes("program=tfba")} />
-                <SubNavItem label="The Family Fortune Mastermind" href="/workspace-community?program=tffm" active={currentPath === "/workspace-community" && location.search.includes("program=tffm")} />
+                <SubNavItem label="The Succession Society" href="/workspace-community?program=tffm" active={currentPath === "/workspace-community" && location.search.includes("program=tffm")} />
               </NavItem>
               <NavItem label="Classroom" icon={BookOpen} href="/classroom" active={isActive("/classroom")} />
               <NavItem label="Members" icon={Users} href="/workspace-members" active={isActive("/workspace-members")} />
