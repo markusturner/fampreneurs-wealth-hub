@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   ArrowLeft, Users, Video, BookOpen, Heart, FileText, Shield, Award,
-  Calendar, ClipboardCheck, Receipt, Calculator, Stamp, Loader2
+  Calendar, ClipboardCheck, Receipt, Calculator, Stamp, Loader2, TreePine
 } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
@@ -13,9 +13,9 @@ import { SuccessionItemDetail } from "@/components/succession/SuccessionItemDeta
 import { FamilyLegacyMeetingUploads } from "@/components/trust/FamilyLegacyMeetingUploads"
 
 type ItemKey =
-  | 'constellation_session' | 'legacy_videos' | 'course_creation'
-  | 'legacy_meeting' | 'identity_manual' | 'family_crest' | 'family_bible'
-  | 'annual_retreat' | 'trust_stewardship' | 'annual_trust_meeting'
+  | 'constellation_session' | 'legacy_videos'
+  | 'family_tree' | 'legacy_meeting' | 'identity_manual' | 'family_crest' | 'family_bible'
+  | 'annual_retreat' | 'trust_stewardship'
   | 'file_trust_taxes' | 'tax_strategy' | 'trademark_ip'
 
 interface ItemDef {
@@ -32,11 +32,11 @@ interface ItemDef {
 
 const STEP_1: ItemDef[] = [
   { key: 'constellation_session', label: 'Family Constellation Session', description: 'Complimentary session with Ginger Gentile to ground your family vision.', icon: Users, bookingComingSoon: true, badge: 'Complimentary' },
-  { key: 'legacy_videos', label: 'Legacy Videos', description: 'Capture your family stories on video. Our team produces and edits for you.', icon: Video, doneForYou: true },
-  { key: 'course_creation', label: 'Course Creation', description: 'Turn your wisdom into a signature course. Fully done-for-you.', icon: BookOpen, doneForYou: true },
+  { key: 'legacy_videos', label: 'Legacy Videos', description: 'Capture your family stories on video and turn your wisdom into a signature course. Fully done-for-you.', icon: Video, doneForYou: true },
 ]
 
 const STEP_2: ItemDef[] = [
+  { key: 'family_tree', label: 'Family Tree', description: 'Build your family tree on Ancestry to map your lineage.', icon: TreePine, bookingUrl: 'https://refer.ancestry.com/markusturner94!9c176c414f!a' },
   { key: 'legacy_meeting', label: 'First Family Legacy Meeting', description: 'Schedule and document your first family legacy meeting.', icon: Heart },
   { key: 'identity_manual', label: 'Family Identity Manual', description: 'Your written family identity, values, and mission. Done-for-you.', icon: FileText, doneForYou: true },
   { key: 'family_crest', label: 'Family Crest', description: 'A custom crest designed for your family heritage. Done-for-you.', icon: Shield, doneForYou: true },
@@ -46,7 +46,6 @@ const STEP_2: ItemDef[] = [
 const STEP_3: ItemDef[] = [
   { key: 'annual_retreat', label: 'Annual Family Retreat', description: 'Schedule your first annual family retreat to align and celebrate.', icon: Calendar },
   { key: 'trust_stewardship', label: 'Trust Stewardship', description: 'Record keeping, holding trust meetings, and ongoing stewardship.', icon: ClipboardCheck },
-  { key: 'annual_trust_meeting', label: 'Annual Trust Meeting', description: 'Review your trust each year to keep it current and effective.', icon: Users },
   { key: 'file_trust_taxes', label: 'File Trust Taxes', description: 'Annual trust tax filing handled by our partners.', icon: Receipt, upsell: { label: 'Trust Tax Filing', detail: 'Have our tax team file your trust returns. Request pricing details.' } },
   { key: 'tax_strategy', label: 'Tax Strategy with Toni Simons', description: 'Schedule a tax strategy call with our tax professional Toni Simons.', icon: Calculator, bookingComingSoon: true },
   { key: 'trademark_ip', label: 'Intellectual Property (Trademark)', description: 'Protect your family brand with trademarking and copyrighting.', icon: Stamp, badge: '1 Free Included', upsell: { label: 'Additional Trademark Classes', detail: 'Your first trademark is complimentary. Each additional class is $1,297.' } },
@@ -150,9 +149,9 @@ export default function SuccessionPlanning() {
         </p>
       </div>
 
-      {renderStep('Family Constellation & Legacy Foundation', 1, STEP_1, 'sm:grid-cols-3')}
-      {renderStep('First Family Legacy Meeting & Identity', 2, STEP_2, 'sm:grid-cols-2 lg:grid-cols-4')}
-      {renderStep('Annual Retreat & Stewardship', 3, STEP_3, 'sm:grid-cols-2 lg:grid-cols-3')}
+      {renderStep('Origin Story', 1, STEP_1, 'sm:grid-cols-2')}
+      {renderStep('Structure', 2, STEP_2, 'sm:grid-cols-2 lg:grid-cols-3')}
+      {renderStep('Stewardship', 3, STEP_3, 'sm:grid-cols-2 lg:grid-cols-3')}
     </div>
   )
 }
