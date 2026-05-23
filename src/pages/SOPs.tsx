@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { supabase } from '@/integrations/supabase/client'
@@ -8,11 +8,14 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Badge } from '@/components/ui/badge'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, FileText, ArrowLeft, BookOpen, Pencil, Trash2 } from 'lucide-react'
+import { Plus, FileText, ArrowLeft, BookOpen, Pencil, Trash2, Lock } from 'lucide-react'
+import { SOP_PROGRAM_CODES, programLabel, profileProgramCodes } from '@/lib/programs'
 
 interface Sop {
   id: string
@@ -20,11 +23,12 @@ interface Sop {
   description: string | null
   icon: string | null
   cover_image_url: string | null
+  program_tags: string[]
 }
 
 export default function SOPs() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { isAdminOrOwner } = useIsAdminOrOwner()
   const { toast } = useToast()
   const [sops, setSops] = useState<Sop[]>([])
@@ -32,12 +36,16 @@ export default function SOPs() {
   const [addOpen, setAddOpen] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newDescription, setNewDescription] = useState('')
+  const [newPrograms, setNewPrograms] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
+
+  const userPrograms = useMemo(() => profileProgramCodes(profile?.program_name), [profile?.program_name])
+  const canAccessSops = isAdminOrOwner || userPrograms.some(p => SOP_PROGRAM_CODES.includes(p))
 
   const fetchSops = async () => {
     const { data, error } = await supabase
       .from('sops' as any)
-      .select('id, title, description, icon, cover_image_url')
+      .select('id, title, description, icon, cover_image_url, program_tags')
       .order('order_index', { ascending: true })
       .order('created_at', { ascending: true })
     if (!error) setSops((data as unknown as Sop[]) || [])
@@ -45,6 +53,19 @@ export default function SOPs() {
   }
 
   useEffect(() => { fetchSops() }, [])
+
+  const visibleSops = useMemo(() => {
+    if (isAdminOrOwner) return sops
+    return sops.filter(s => {
+      const tags = s.program_tags || []
+      if (tags.length === 0) return false // gated — must be tagged
+      return tags.some(t => userPrograms.includes(t as any))
+    })
+  }, [sops, isAdminOrOwner, userPrograms])
+
+  const togglePrgm = (p: string) => {
+    setNewPrograms(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])
+  }
 
   const handleCreate = async () => {
     if (!user?.id) return
@@ -60,14 +81,14 @@ export default function SOPs() {
         description: newDescription.trim() || null,
         content: '',
         created_by: user.id,
+        program_tags: newPrograms,
       } as any)
       .select('id')
       .single()
     setCreating(false)
     if (error) { toast({ title: 'Error', description: error.message, variant: 'destructive' }); return }
     setAddOpen(false)
-    setNewTitle('')
-    setNewDescription('')
+    setNewTitle(''); setNewDescription(''); setNewPrograms([])
     navigate(`/sops/${(data as any).id}?edit=1`)
   }
 
@@ -76,6 +97,23 @@ export default function SOPs() {
     const { error } = await supabase.from('sops' as any).delete().eq('id', id)
     if (error) toast({ title: 'Error', description: error.message, variant: 'destructive' })
     else { toast({ title: 'Deleted' }); fetchSops() }
+  }
+
+  if (!canAccessSops && !loading) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="container mx-auto max-w-2xl px-4 py-16 text-center">
+          <Lock className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
+          <h1 className="text-2xl font-bold mb-2">SOPs Library Locked</h1>
+          <p className="text-muted-foreground text-sm">
+            Standard Operating Procedures are available for members of <strong>The Family Vault</strong>, <strong>The Family Business Accelerator</strong>, and <strong>The Succession Society</strong>.
+          </p>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/classroom')} className="mt-6">
+            <ArrowLeft className="h-4 w-4 mr-1.5" /> Back to Classroom
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -114,14 +152,14 @@ export default function SOPs() {
               <div key={i} className="h-36 rounded-xl bg-muted animate-pulse" />
             ))}
           </div>
-        ) : sops.length === 0 ? (
+        ) : visibleSops.length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
             <FileText className="h-10 w-10 mx-auto mb-3 opacity-40" />
             <p className="text-sm">No SOPs yet{isAdminOrOwner ? ' — click "Add Document" to create one.' : '.'}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {sops.map((sop) => (
+            {visibleSops.map((sop) => (
               <button
                 key={sop.id}
                 onClick={() => navigate(`/sops/${sop.id}`)}
@@ -129,18 +167,10 @@ export default function SOPs() {
               >
                 {isAdminOrOwner && (
                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition flex gap-1">
-                    <span
-                      role="button"
-                      onClick={(e) => { e.stopPropagation(); navigate(`/sops/${sop.id}?edit=1`) }}
-                      className="h-7 w-7 rounded-md bg-muted hover:bg-muted-foreground/20 flex items-center justify-center"
-                    >
+                    <span role="button" onClick={(e) => { e.stopPropagation(); navigate(`/sops/${sop.id}?edit=1`) }} className="h-7 w-7 rounded-md bg-muted hover:bg-muted-foreground/20 flex items-center justify-center">
                       <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                     </span>
-                    <span
-                      role="button"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(sop.id) }}
-                      className="h-7 w-7 rounded-md bg-muted hover:bg-red-500/20 flex items-center justify-center"
-                    >
+                    <span role="button" onClick={(e) => { e.stopPropagation(); handleDelete(sop.id) }} className="h-7 w-7 rounded-md bg-muted hover:bg-red-500/20 flex items-center justify-center">
                       <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
                     </span>
                   </div>
@@ -153,6 +183,13 @@ export default function SOPs() {
                 {sop.description && (
                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{sop.description}</p>
                 )}
+                {sop.program_tags && sop.program_tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {sop.program_tags.map(t => (
+                      <Badge key={t} variant="secondary" className="text-[9px] py-0 px-1.5">{programLabel(t)}</Badge>
+                    ))}
+                  </div>
+                )}
               </button>
             ))}
           </div>
@@ -163,7 +200,7 @@ export default function SOPs() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>New SOP Document</DialogTitle>
-            <DialogDescription>Give your document a name. You'll add the content (text, images, files, embeds) on the next screen.</DialogDescription>
+            <DialogDescription>Give your document a name and choose who can see it. You'll add the content (text, images, files, embeds) on the next screen.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
@@ -186,6 +223,18 @@ export default function SOPs() {
                 placeholder="What is this document about?"
                 rows={2}
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Visible to programs</Label>
+              <div className="rounded-md border border-border divide-y divide-border">
+                {SOP_PROGRAM_CODES.map(p => (
+                  <label key={p} className="flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-muted/40">
+                    <Checkbox checked={newPrograms.includes(p)} onCheckedChange={() => togglePrgm(p)} />
+                    <span className="text-sm">{programLabel(p)}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted-foreground">Members not in any selected program will not see this SOP.</p>
             </div>
           </div>
           <DialogFooter>
