@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
+import { ProgramRestrictPicker } from './ProgramRestrictPicker'
 
 interface Props {
   courseId: string
@@ -20,6 +21,7 @@ export function AddModuleDialog({ courseId, open, onOpenChange, onCreated }: Pro
   const { toast } = useToast()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [requiredPrograms, setRequiredPrograms] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async () => {
@@ -42,7 +44,8 @@ export function AddModuleDialog({ courseId, open, onOpenChange, onCreated }: Pro
       description: description.trim() || null,
       order_index: nextOrder,
       created_by: user?.id,
-    })
+      required_programs: requiredPrograms,
+    } as any)
 
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' })
@@ -50,6 +53,7 @@ export function AddModuleDialog({ courseId, open, onOpenChange, onCreated }: Pro
       toast({ title: 'Module added' })
       setTitle('')
       setDescription('')
+      setRequiredPrograms([])
       onOpenChange(false)
       onCreated()
     }
@@ -71,6 +75,7 @@ export function AddModuleDialog({ courseId, open, onOpenChange, onCreated }: Pro
             <Label>Description (optional)</Label>
             <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Module description..." />
           </div>
+          <ProgramRestrictPicker value={requiredPrograms} onChange={setRequiredPrograms} />
           <Button onClick={handleSubmit} disabled={loading || !title.trim()} className="w-full bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground">
             {loading ? 'Adding...' : 'Add Module'}
           </Button>

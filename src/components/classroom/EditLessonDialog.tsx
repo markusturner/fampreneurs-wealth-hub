@@ -12,6 +12,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { LessonRichTextEditor } from './LessonRichTextEditor'
+import { ProgramRestrictPicker } from './ProgramRestrictPicker'
 
 interface CommunityGroup {
   id: string
@@ -34,6 +35,7 @@ interface Lesson {
   video_type: string
   duration_seconds: number | null
   community_ids: string[]
+  required_programs?: string[]
 }
 
 interface Props {
@@ -52,6 +54,7 @@ export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Prop
   const [deleting, setDeleting] = useState(false)
   const [communities, setCommunities] = useState<CommunityGroup[]>([])
   const [selectedCommunityIds, setSelectedCommunityIds] = useState<string[]>([])
+  const [requiredPrograms, setRequiredPrograms] = useState<string[]>([])
 
   useEffect(() => {
     if (open) {
@@ -73,6 +76,7 @@ export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Prop
       setDescription(lesson.content || lesson.description || '')
       setVideoUrl(lesson.video_url || '')
       setSelectedCommunityIds(lesson.community_ids || [])
+      setRequiredPrograms((lesson as any).required_programs || [])
     }
   }, [lesson])
 
@@ -85,6 +89,7 @@ export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Prop
       content: description.trim() || null,
       video_url: videoUrl.trim() || null,
       community_ids: selectedCommunityIds,
+      required_programs: requiredPrograms,
     } as any).eq('id', lesson.id)
 
     if (error) {
@@ -154,6 +159,7 @@ export function EditLessonDialog({ lesson, open, onOpenChange, onUpdated }: Prop
               </p>
             )}
           </div>
+          <ProgramRestrictPicker value={requiredPrograms} onChange={setRequiredPrograms} />
           <div className="flex gap-3">
             <Button onClick={handleSave} disabled={loading || !title.trim()} className="flex-1">
               {loading ? 'Saving...' : 'Save Changes'}
