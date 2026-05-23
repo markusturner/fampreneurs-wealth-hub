@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { Upload, Loader2, Plus, X } from 'lucide-react'
+import { ProgramRestrictPicker } from './ProgramRestrictPicker'
 
 interface CommunityGroup {
   id: string
@@ -49,6 +50,7 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
   const [uploading, setUploading] = useState(false)
   const [communities, setCommunities] = useState<CommunityGroup[]>([])
   const [selectedCommunityIds, setSelectedCommunityIds] = useState<string[]>([])
+  const [requiredPrograms, setRequiredPrograms] = useState<string[]>([])
   const [resources, setResources] = useState<ResourceEntry[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -150,6 +152,7 @@ export function AddLessonDialog({ courseId, moduleId, open, onOpenChange, onCrea
       order_index: nextOrder,
       created_by: user?.id,
       community_ids: selectedCommunityIds,
+      required_programs: requiredPrograms,
     } as any).select().single()
 
     if (error) {
