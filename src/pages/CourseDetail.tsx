@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
@@ -37,9 +37,15 @@ import {
   X,
   RefreshCw,
   GripVertical,
+  Lock,
+  Shield,
+  FileBox,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AddModuleDialog } from '@/components/classroom/AddModuleDialog'
+import { ModuleRestrictDialog } from '@/components/classroom/ModuleRestrictDialog'
+import { ProgramRestrictPicker } from '@/components/classroom/ProgramRestrictPicker'
+import { profileProgramCodes, programLabel, ProgramCode } from '@/lib/programs'
 import { AddResourceDialog } from '@/components/classroom/AddResourceDialog'
 import { EditResourceDialog } from '@/components/classroom/EditResourceDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
@@ -87,6 +93,7 @@ interface Module {
   title: string
   description: string | null
   order_index: number
+  required_programs?: string[] | null
   lessons: Lesson[]
 }
 
@@ -102,6 +109,7 @@ interface Lesson {
   duration_seconds: number | null
   completed: boolean
   community_ids: string[]
+  required_programs?: string[] | null
 }
 
 interface Resource {
@@ -110,6 +118,12 @@ interface Resource {
   resource_type: string
   url: string | null
   file_path: string | null
+}
+
+interface LinkedSop {
+  id: string
+  title: string
+  link_type: string
 }
 
 interface Course {
@@ -129,11 +143,13 @@ interface SortableLessonItemProps {
   isAdminOrOwner: boolean
   showDropBefore: boolean
   showDropAfter: boolean
+  isLocked?: boolean
+  lockTooltip?: string
   onSelect: (lesson: Lesson) => void
   onEdit: (lesson: Lesson) => void
 }
 
-function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, showDropBefore, showDropAfter, onSelect, onEdit }: SortableLessonItemProps) {
+function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, showDropBefore, showDropAfter, isLocked, lockTooltip, onSelect, onEdit }: SortableLessonItemProps) {
   const {
     attributes,
     listeners,
@@ -192,10 +208,15 @@ function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, sho
             }
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ display: 'block', color: '#290a52', fontSize: '12px', fontWeight: 500, lineHeight: '1.4', wordBreak: 'break-word' }}>
+            <span style={{ display: 'block', color: '#290a52', fontSize: '12px', fontWeight: 500, lineHeight: '1.4', wordBreak: 'break-word', opacity: isLocked ? 0.55 : 1 }}>
               {lesson.title}
             </span>
-            {lesson.duration_seconds && (
+            {isLocked && (
+              <p className="text-[10px] mt-0.5 flex items-center gap-1" style={{ color: '#290a52' }}>
+                <Lock className="h-2.5 w-2.5" /> {lockTooltip || 'Locked'}
+              </p>
+            )}
+            {!isLocked && lesson.duration_seconds && (
               <p className="text-[10px] text-muted-foreground mt-0.5">
                 {Math.floor(lesson.duration_seconds / 60)} min
               </p>
@@ -241,10 +262,19 @@ function SortableModuleWrapper({ moduleId, disabled, isDragging, children }: { m
 
 export default function CourseDetail() {
   const { courseId } = useParams<{ courseId: string }>()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
   const { isAdminOrOwner } = useIsAdminOrOwner()
+
+  const userPrograms = useMemo<ProgramCode[]>(() => profileProgramCodes(profile?.program_name), [profile?.program_name])
+  const isProgramLocked = useCallback((required?: string[] | null) => {
+    if (isAdminOrOwner) return false
+    if (!required || required.length === 0) return false
+    return !required.some(r => userPrograms.includes(r as ProgramCode))
+  }, [isAdminOrOwner, userPrograms])
+  const lockLabel = (required?: string[] | null) =>
+    (required || []).map(r => programLabel(r)).join(', ')
 
   const [course, setCourse] = useState<Course | null>(null)
   const [modules, setModules] = useState<Module[]>([])
@@ -286,6 +316,9 @@ export default function CourseDetail() {
   const [editContent, setEditContent] = useState('')
   const [editSaving, setEditSaving] = useState(false)
   const [editDeleting, setEditDeleting] = useState(false)
+  const [editRequiredPrograms, setEditRequiredPrograms] = useState<string[]>([])
+  const [restrictModule, setRestrictModule] = useState<Module | null>(null)
+  const [linkedSops, setLinkedSops] = useState<LinkedSop[]>([])
   const [videoUploading, setVideoUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const uploadXhrRef = useRef<XMLHttpRequest | null>(null)
@@ -300,6 +333,7 @@ export default function CourseDetail() {
     setEditTitle(selectedLesson.title)
     setEditVideoUrl(selectedLesson.video_url || '')
     setEditContent(selectedLesson.content || selectedLesson.description || '')
+    setEditRequiredPrograms((selectedLesson as any).required_programs || [])
     setIsEditingLesson(true)
   }
 
@@ -435,6 +469,7 @@ export default function CourseDetail() {
       description: editContent.trim() || null,
       content: editContent.trim() || null,
       video_url: editVideoUrl.trim() || null,
+      required_programs: editRequiredPrograms,
     } as any).eq('id', selectedLesson.id)
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' })
@@ -540,14 +575,32 @@ export default function CourseDetail() {
   useEffect(() => { fetchData() }, [fetchData])
 
   useEffect(() => {
-    if (!selectedLesson) return
+    if (!selectedLesson) { setLinkedSops([]); return }
     supabase
       .from('course_resources')
       .select('*')
       .eq('lesson_id', selectedLesson.id)
       .order('order_index')
       .then(({ data }) => setResources(data || []))
-  }, [selectedLesson?.id])
+
+    // Fetch linked SOPs, filtered by user program access
+    ;(async () => {
+      const { data } = await supabase
+        .from('sop_lesson_links' as any)
+        .select('sop_id, link_type, sops(id, title, program_tags)')
+        .eq('lesson_id', selectedLesson.id)
+      const rows = (data || []) as any[]
+      const accessible = rows
+        .filter(r => r.sops)
+        .filter(r => {
+          if (isAdminOrOwner) return true
+          const tags: string[] = r.sops.program_tags || []
+          return tags.length === 0 || tags.some((t: string) => userPrograms.includes(t as ProgramCode))
+        })
+        .map(r => ({ id: r.sops.id, title: r.sops.title, link_type: r.link_type }))
+      setLinkedSops(accessible)
+    })()
+  }, [selectedLesson?.id, isAdminOrOwner, userPrograms.join(',')])
 
   const toggleModule = (id: string) => {
     setOpenModules(prev => {
@@ -645,6 +698,13 @@ export default function CourseDetail() {
   }
 
   const handleSelectLesson = (lesson: Lesson) => {
+    if (isProgramLocked(lesson.required_programs)) {
+      toast({
+        title: 'Locked',
+        description: `Available to: ${lockLabel(lesson.required_programs)}`,
+      })
+      return
+    }
     selectLesson(lesson)
     setMobileView('lesson')
   }
@@ -768,6 +828,9 @@ export default function CourseDetail() {
             const isModuleDragging = activeDragModuleId === mod.id
             const showModuleDropBefore = dragType === 'module' && overModuleId === mod.id && mod.id !== '__uncategorized' && activeDragModuleId !== mod.id
             const isDraggableModule = isAdminOrOwner && mod.id !== '__uncategorized'
+            const moduleLocked = isProgramLocked(mod.required_programs)
+            const moduleLockText = lockLabel(mod.required_programs)
+
 
             return (
               <SortableModuleWrapper key={mod.id} moduleId={mod.id} disabled={!isDraggableModule} isDragging={isModuleDragging}>
@@ -809,15 +872,33 @@ export default function CourseDetail() {
                         <GripVertical className="h-3 w-3 text-muted-foreground" />
                       </div>
                     )}
-                    <span style={{ color: '#290a52' }}>{mod.title}</span>
+                    <span style={{ color: '#290a52', opacity: moduleLocked ? 0.7 : 1 }} className="flex items-center gap-1.5">
+                      {moduleLocked && <Lock className="h-3 w-3" />}
+                      {mod.title}
+                      {(mod.required_programs?.length ?? 0) > 0 && (
+                        <span className="ml-1 rounded-full px-1.5 py-0.5 text-[9px] font-medium normal-case tracking-normal" style={{ backgroundColor: '#290a52', color: '#ffb500' }}>
+                          {moduleLockText}
+                        </span>
+                      )}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     {isAdminOrOwner && mod.id !== '__uncategorized' && (
                       <button
                         onClick={e => { e.stopPropagation(); setRenamingModuleId(mod.id); setRenameModuleTitle(mod.title) }}
                         className="opacity-0 group-hover/mod:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
+                        title="Rename"
                       >
                         <Pencil className="h-3 w-3 text-muted-foreground" />
+                      </button>
+                    )}
+                    {isAdminOrOwner && mod.id !== '__uncategorized' && (
+                      <button
+                        onClick={e => { e.stopPropagation(); setRestrictModule(mod) }}
+                        className="opacity-0 group-hover/mod:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
+                        title="Restrict to programs"
+                      >
+                        <Shield className="h-3 w-3 text-muted-foreground" />
                       </button>
                     )}
                     <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform text-muted-foreground', openModules.has(mod.id) && 'rotate-180')} />
@@ -829,6 +910,8 @@ export default function CourseDetail() {
                     {mod.lessons.map((lesson, idx) => {
                       const globalIdx = lessonCounter + idx + 1
                       const isOver = overLessonId === lesson.id && activeDragLessonId !== lesson.id && dragType === 'lesson'
+                      const lessonLocked = moduleLocked || isProgramLocked(lesson.required_programs)
+                      const lockText = moduleLocked ? moduleLockText : lockLabel(lesson.required_programs)
                       return (
                         <SortableLessonItem
                           key={lesson.id}
@@ -838,6 +921,8 @@ export default function CourseDetail() {
                           isAdminOrOwner={isAdminOrOwner}
                           showDropBefore={isOver}
                           showDropAfter={false}
+                          isLocked={lessonLocked}
+                          lockTooltip={lockText ? `Available to ${lockText}` : undefined}
                           onSelect={handleSelectLesson}
                           onEdit={(l) => { handleSelectLesson(l); setTimeout(startEditingLesson, 50) }}
                         />
@@ -1164,6 +1249,41 @@ export default function CourseDetail() {
               {/* Rich text editor with toolbar for content/description */}
               <LessonRichTextEditor content={editContent} onChange={setEditContent} />
 
+              <div className="pt-2 border-t border-border">
+                <ProgramRestrictPicker
+                  value={editRequiredPrograms}
+                  onChange={setEditRequiredPrograms}
+                  helper="Selected programs will be the only ones who can open this lesson. Leave empty to inherit from the module."
+                />
+              </div>
+
+              {/* Linked SOPs */}
+              {linkedSops.length > 0 && (
+                <div className="space-y-3 pt-2">
+                  <h3 className="font-semibold text-xs uppercase tracking-widest text-muted-foreground">Linked SOPs</h3>
+                  <div className="space-y-1.5">
+                    {linkedSops.map(s => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => navigate(`/sops/${s.id}`)}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-transparent hover:border-border transition-all text-left"
+                      >
+                        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-background shadow-sm border border-border shrink-0">
+                          <FileBox className="h-4 w-4" style={{ color: '#290a52' }} />
+                        </div>
+                        <span className="text-sm font-medium text-foreground flex-1 truncate">{s.title}</span>
+                        {s.link_type === 'auto' && (
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Auto</span>
+                        )}
+                        <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+
               {/* Resources */}
               {resources.length > 0 && (
                 <div className="space-y-3 pt-2">
@@ -1381,6 +1501,32 @@ export default function CourseDetail() {
           </div>
         )}
 
+        {/* Linked SOPs */}
+        {linkedSops.length > 0 && (
+          <div className="space-y-3 pt-2">
+            <h3 className="font-semibold text-xs uppercase tracking-widest text-muted-foreground">Linked SOPs</h3>
+            <div className="space-y-1.5">
+              {linkedSops.map(s => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => navigate(`/sops/${s.id}`)}
+                  className="w-full group flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-transparent hover:border-border transition-all text-left"
+                >
+                  <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-background shadow-sm border border-border shrink-0">
+                    <FileBox className="h-4 w-4" style={{ color: '#290a52' }} />
+                  </div>
+                  <span className="text-sm font-medium text-foreground flex-1 truncate">{s.title}</span>
+                  {s.link_type === 'auto' && (
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Auto</span>
+                  )}
+                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {isAdminOrOwner && (
           <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => setShowAddResource(true)}>
             + Add Resource
@@ -1560,6 +1706,13 @@ export default function CourseDetail() {
       {courseId && (
         <>
           <AddModuleDialog courseId={courseId} open={showAddModule} onOpenChange={setShowAddModule} onCreated={fetchData} />
+          <ModuleRestrictDialog
+            moduleId={restrictModule?.id ?? null}
+            initial={(restrictModule?.required_programs as string[]) || []}
+            open={!!restrictModule}
+            onOpenChange={(o) => !o && setRestrictModule(null)}
+            onSaved={fetchData}
+          />
           <AddResourceDialog
             courseId={courseId}
             lessonId={selectedLesson?.id || null}
