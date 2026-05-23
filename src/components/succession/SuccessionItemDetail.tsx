@@ -136,6 +136,7 @@ export function SuccessionItemDetail({
 
         {children}
 
+        {doneForYou && (
         <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold">Progress Tracker</h4>
@@ -167,6 +168,7 @@ export function SuccessionItemDetail({
             </>
           )}
         </div>
+        )}
       </CardContent>
     </Card>
   )

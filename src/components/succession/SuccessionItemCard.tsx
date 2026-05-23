@@ -10,6 +10,7 @@ interface Props {
   icon: LucideIcon
   status: ProgressStatus
   badge?: string
+  doneForYou?: boolean
   onClick: () => void
 }
 
@@ -19,7 +20,7 @@ const STATUS_META: Record<ProgressStatus, { label: string; icon: LucideIcon; cla
   complete: { label: 'Complete', icon: CheckCircle2, className: 'border-emerald-500/60 text-emerald-600' },
 }
 
-export function SuccessionItemCard({ label, description, icon: Icon, status, badge, onClick }: Props) {
+export function SuccessionItemCard({ label, description, icon: Icon, status, badge, doneForYou, onClick }: Props) {
   const meta = STATUS_META[status]
   const StatusIcon = meta.icon
   return (
@@ -38,9 +39,11 @@ export function SuccessionItemCard({ label, description, icon: Icon, status, bad
       </CardHeader>
       <CardContent>
         <p className="text-xs text-muted-foreground text-center min-h-[2.5rem]">{description}</p>
-        <Badge variant="outline" className={`w-full justify-center mt-3 ${meta.className}`}>
-          <StatusIcon className="h-3 w-3 mr-1" /> {meta.label}
-        </Badge>
+        {doneForYou && (
+          <Badge variant="outline" className={`w-full justify-center mt-3 ${meta.className}`}>
+            <StatusIcon className="h-3 w-3 mr-1" /> {meta.label}
+          </Badge>
+        )}
       </CardContent>
     </Card>
   )
