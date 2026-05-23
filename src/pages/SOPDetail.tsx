@@ -61,19 +61,16 @@ export default function SOPDetail() {
     const load = async () => {
       if (!sopId) return
       const { data, error } = await supabase.from('sops' as any).select('*').eq('id', sopId).maybeSingle()
-      if (error || !data) { toast({ title: 'Not found', variant: 'destructive' }); navigate('/sops'); return }
+      if (error || !data) { toast({ title: 'Not found', variant: 'destructive' }); navigate('/classroom'); return }
       const d = data as any
-      // Access check
       const tags: string[] = d.program_tags || []
-      if (!isAdminOrOwner && (tags.length === 0 || !tags.some(t => userPrograms.includes(t as any)))) {
-        setAccessDenied(true); setLoading(false); return
-      }
+      setAccessDenied(false)
       setTitle(d.title); setDescription(d.description || ''); setContent(d.content || ''); setProgramTags(tags)
       setLoading(false)
       loadLinks(sopId)
     }
     load()
-  }, [sopId, isAdminOrOwner, userPrograms.join(',')])
+  }, [sopId])
 
   // Scroll tracking (unchanged)
   useEffect(() => {
