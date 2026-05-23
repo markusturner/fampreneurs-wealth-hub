@@ -238,3 +238,34 @@ Brand: #290A52, #2EB2FF, #FFB500, #6215C8, #3031CB
 .prose a:hover {
   color: #1d4ed8;
 }
+
+/* SOP editor checklist (TipTap TaskList/TaskItem) */
+ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.25rem 0;
+}
+ul[data-type="taskList"] li > label {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.25rem;
+  user-select: none;
+}
+ul[data-type="taskList"] li > label > input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #290a52;
+  cursor: pointer;
+}
+ul[data-type="taskList"] li > div {
+  flex: 1 1 auto;
+}
+ul[data-type="taskList"] li[data-checked="true"] > div {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
