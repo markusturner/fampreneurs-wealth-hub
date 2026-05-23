@@ -190,7 +190,7 @@ export function AppSidebar({ className }: { className?: string }) {
 
       {/* Trust Creation - hidden for invited family members */}
       {!isFamilyMember && (
-        <div className="px-3 pb-3">
+        <div className="px-3 pb-2">
           <Button
             className={cn(
               "w-full justify-start gap-2 rounded-xl font-semibold border-0",
@@ -207,15 +207,15 @@ export function AppSidebar({ className }: { className?: string }) {
         </div>
       )}
 
-      {/* Succession Planning - distinct emerald accent */}
+      {/* Succession Planning - brand purple */}
       {!isFamilyMember && (
         <div className="px-3 pb-3">
           <Button
             className={cn(
               "w-full justify-start gap-2 rounded-xl font-semibold border-0",
               currentPath.includes("/succession-planning")
-                ? "bg-[hsl(160,60%,35%)] text-white hover:bg-[hsl(160,60%,30%)] shadow-md shadow-[hsl(160,60%,35%)]/30"
-                : "bg-[hsl(160,60%,35%)]/15 text-[hsl(160,60%,30%)] hover:bg-[hsl(160,60%,35%)]/25"
+                ? "bg-[#290a52] text-white hover:bg-[#34106a] shadow-md shadow-[#290a52]/30"
+                : "bg-[#290a52]/10 text-[#290a52] hover:bg-[#290a52]/20"
             )}
             variant="ghost"
             onClick={() => navigate('/succession-planning')}

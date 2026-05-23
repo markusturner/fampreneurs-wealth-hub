@@ -73,10 +73,22 @@ export default function WorkspaceMembers() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, display_name, avatar_url, bio, created_at')
+        .select('user_id, display_name, avatar_url, bio, created_at, needs_profile_completion')
+        .or('needs_profile_completion.is.null,needs_profile_completion.eq.false')
+        .not('display_name', 'is', null)
         .order('created_at', { ascending: false })
       if (error) throw error
-      setMembers((data || []).map(m => ({ ...m, status: 'active' })))
+      // Only include users who have completed onboarding
+      const userIds = (data || []).map((m: any) => m.user_id)
+      let onboardedIds = new Set<string>()
+      if (userIds.length > 0) {
+        const { data: onboarded } = await supabase
+          .from('onboarding_responses')
+          .select('user_id')
+          .in('user_id', userIds)
+        onboardedIds = new Set((onboarded || []).map((o: any) => o.user_id))
+      }
+      setMembers((data || []).filter((m: any) => onboardedIds.has(m.user_id)).map(m => ({ ...m, status: 'active' })))
     } catch (error) {
       console.error('Error fetching members:', error)
     } finally {
