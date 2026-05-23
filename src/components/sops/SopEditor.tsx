@@ -6,14 +6,19 @@ import Link from '@tiptap/extension-link'
 import Underline from '@tiptap/extension-underline'
 import Youtube from '@tiptap/extension-youtube'
 import Placeholder from '@tiptap/extension-placeholder'
+import Highlight from '@tiptap/extension-highlight'
+import { Table } from '@tiptap/extension-table'
+import { TableRow } from '@tiptap/extension-table-row'
+import { TableHeader } from '@tiptap/extension-table-header'
+import { TableCell } from '@tiptap/extension-table-cell'
 import { supabase } from '@/integrations/supabase/client'
-import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   List, ListOrdered, Quote, Link as LinkIcon,
   Image as ImageIcon, Minus, Youtube as YoutubeIcon, Heading1, Heading2,
-  Heading3, Code2, Sparkles, Paperclip,
+  Heading3, Code2, Sparkles, Paperclip, Highlighter, Table as TableIcon,
+  Lightbulb,
 } from 'lucide-react'
 
 interface Props {
@@ -31,22 +36,16 @@ function urlToEmbedHtml(rawUrl: string): string | null {
   const wrap = (src: string) =>
     `<div class="my-4 aspect-video w-full overflow-hidden rounded-lg border border-border"><iframe src="${src}" loading="lazy" allow="autoplay; fullscreen; clipboard-write" allowfullscreen class="w-full h-full"></iframe></div>`
 
-  // Loom
   let m = url.match(/loom\.com\/share\/([a-z0-9]+)/i)
   if (m) return wrap(`https://www.loom.com/embed/${m[1]}`)
-  // Vimeo
   m = url.match(/vimeo\.com\/(\d+)/i)
   if (m) return wrap(`https://player.vimeo.com/video/${m[1]}`)
-  // Tella
   m = url.match(/tella\.tv\/video\/([a-z0-9-]+)/i)
   if (m) return wrap(`https://www.tella.tv/video/${m[1]}/embed`)
-  // Figma
   if (/figma\.com\/(file|proto|design)\//i.test(url))
     return wrap(`https://www.figma.com/embed?embed_host=truheirs&url=${encodeURIComponent(url)}`)
-  // Google Docs / Sheets / Slides — switch /edit → /preview
   if (/docs\.google\.com\//i.test(url))
     return wrap(url.replace(/\/edit.*$/, '/preview'))
-  // Default → just iframe whatever (works for most embeds)
   return wrap(url)
 }
 
@@ -56,15 +55,21 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
   const docInputRef = useRef<HTMLInputElement>(null)
 
   const editor = useEditor({
+    immediatelyRender: true,
+    editable,
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
       Image.configure({ inline: false, allowBase64: false }),
       Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { class: 'text-[#2eb2ff] underline' } }),
       Underline,
+      Highlight.configure({ multicolor: false, HTMLAttributes: { class: 'bg-[#ffb500]/40 px-1 rounded' } }),
+      Table.configure({ resizable: true, HTMLAttributes: { class: 'sop-table w-full border-collapse my-4' } }),
+      TableRow,
+      TableHeader.configure({ HTMLAttributes: { class: 'border border-border bg-muted/60 px-3 py-2 text-left font-semibold' } }),
+      TableCell.configure({ HTMLAttributes: { class: 'border border-border px-3 py-2 align-top' } }),
       Youtube.configure({ width: 720, height: 405, nocookie: true, HTMLAttributes: { class: 'w-full aspect-video rounded-lg my-4' } }),
       Placeholder.configure({ placeholder: editable ? "Write your SOP. Type '/' for ideas, or paste any link to embed it." : '' }),
     ],
-    editable,
     content: content || '',
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
@@ -72,17 +77,22 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
         class: `${bare ? 'min-h-[300px] px-0 py-2' : 'min-h-[400px] px-4 py-4'} focus:outline-none prose prose-sm md:prose-base max-w-none w-full prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-a:text-[#2eb2ff] prose-strong:text-foreground prose-img:rounded-lg prose-img:my-4`,
       },
       handlePaste: (_view, event) => {
-        const text = event.clipboardData?.getData('text/plain')?.trim()
-        if (!text || !/^https?:\/\//.test(text)) return false
-        // YouTube → native extension
-        if (/(youtube\.com|youtu\.be)/i.test(text)) {
-          editor?.commands.setYoutubeVideo({ src: text })
-          return true
-        }
-        const html = urlToEmbedHtml(text)
-        if (html) {
-          editor?.commands.insertContent(html)
-          return true
+        const text = event.clipboardData?.getData('text/plain')?.trim() || ''
+        const html = event.clipboardData?.getData('text/html') || ''
+        // If clipboard contains HTML (e.g. Word, Google Docs, Notion), let tiptap parse it natively
+        // to keep formatting, tables, lists, etc.
+        if (html) return false
+        // URL-only paste → convert to embed
+        if (text && /^https?:\/\/\S+$/.test(text)) {
+          if (/(youtube\.com|youtu\.be)/i.test(text)) {
+            editor?.commands.setYoutubeVideo({ src: text })
+            return true
+          }
+          const out = urlToEmbedHtml(text)
+          if (out) {
+            editor?.commands.insertContent(out)
+            return true
+          }
         }
         return false
       },
@@ -95,6 +105,15 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
     const url = window.prompt('Enter URL')
     if (!url) return
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+  }
+
+  const insertCallout = () => {
+    const html = `<div class="sop-callout my-4 rounded-lg border-l-4 border-[#ffb500] bg-[#ffb500]/10 px-4 py-3"><p><strong>💡 Highlight:</strong> Type your important note here.</p></div>`
+    editor.chain().focus().insertContent(html).run()
+  }
+
+  const insertTable = () => {
+    editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
   }
 
   const uploadImage = async (file: File) => {
@@ -124,7 +143,6 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
 
       let html = ''
       if (ext === 'pdf') {
-        // Inline PDF preview + download link
         html =
           `<div class="my-4 rounded-lg border border-border overflow-hidden bg-muted/30">` +
             `<div class="aspect-[4/5] w-full"><iframe src="${url}#toolbar=1" loading="lazy" class="w-full h-full" title="${safeName}"></iframe></div>` +
@@ -134,7 +152,6 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
             `</div>` +
           `</div>`
       } else {
-        // Generic document card
         const icon = ['doc','docx'].includes(ext) ? '📝' : ['xls','xlsx','csv'].includes(ext) ? '📊' : ['ppt','pptx','key'].includes(ext) ? '📽️' : '📎'
         html =
           `<div class="my-3 not-prose">` +
@@ -177,6 +194,7 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
   const Btn = ({ onClick, active, children, title }: any) => (
     <button
       type="button"
+      onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       title={title}
       className={`p-2 rounded hover:bg-muted transition ${active ? 'bg-muted text-[#ffb500]' : 'text-foreground'}`}
@@ -197,12 +215,15 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
         <Btn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic"><Italic className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')} title="Underline"><UnderlineIcon className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough"><Strikethrough className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')} title="Highlight"><Highlighter className="h-4 w-4" /></Btn>
         <div className="w-px h-5 bg-border mx-1" />
         <Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="Bullet list"><List className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="Numbered list"><ListOrdered className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="Quote"><Quote className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} title="Code block"><Code2 className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Divider"><Minus className="h-4 w-4" /></Btn>
+        <Btn onClick={insertTable} active={editor.isActive('table')} title="Insert table"><TableIcon className="h-4 w-4" /></Btn>
+        <Btn onClick={insertCallout} title="Insert highlight box"><Lightbulb className="h-4 w-4" /></Btn>
         <div className="w-px h-5 bg-border mx-1" />
         <Btn onClick={setLink} active={editor.isActive('link')} title="Link"><LinkIcon className="h-4 w-4" /></Btn>
         <Btn onClick={() => fileInputRef.current?.click()} title="Upload image"><ImageIcon className="h-4 w-4" /></Btn>
@@ -231,6 +252,18 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
             e.currentTarget.value = ''
           }}
         />
+
+        {/* Contextual table controls */}
+        {editor.isActive('table') && (
+          <>
+            <div className="w-px h-5 bg-border mx-1" />
+            <Btn onClick={() => editor.chain().focus().addRowAfter().run()} title="Add row">+Row</Btn>
+            <Btn onClick={() => editor.chain().focus().addColumnAfter().run()} title="Add column">+Col</Btn>
+            <Btn onClick={() => editor.chain().focus().deleteRow().run()} title="Delete row">−Row</Btn>
+            <Btn onClick={() => editor.chain().focus().deleteColumn().run()} title="Delete column">−Col</Btn>
+            <Btn onClick={() => editor.chain().focus().deleteTable().run()} title="Delete table">×</Btn>
+          </>
+        )}
       </div>
       <EditorContent editor={editor} />
     </div>
