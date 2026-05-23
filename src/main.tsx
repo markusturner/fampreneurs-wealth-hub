@@ -50,6 +50,7 @@ import CookiePolicy from "./pages/CookiePolicy";
 import { MobileBottomNav } from "@/components/ui/mobile-bottom-nav";
 import AIChat from "./pages/AIChat";
 import TrustCreation from "./pages/TrustCreation";
+import SuccessionPlanning from "./pages/SuccessionPlanning";
 import TrustFormSubmissions from "./pages/TrustFormSubmissions";
 import ProgramAgreement from "./pages/ProgramAgreement";
 import ProgramAgreements from "./pages/ProgramAgreements";
@@ -146,6 +147,7 @@ function AppWithNotifications() {
         <Route path="/search" element={<WithLayout><Search /></WithLayout>} />
         <Route path="/ai-chat" element={<WithLayout><AIChat /></WithLayout>} />
         <Route path="/trust-creation" element={<WithLayout><TrustCreation /></WithLayout>} />
+        <Route path="/succession-planning" element={<WithLayout><SuccessionPlanning /></WithLayout>} />
         <Route path="/trust-form-submissions" element={<WithLayout><TrustFormSubmissions /></WithLayout>} />
         <Route path="/program-agreements" element={<WithLayout><ProgramAgreements /></WithLayout>} />
         <Route path="/onboarding-submissions" element={<WithLayout><OnboardingSubmissions /></WithLayout>} />
