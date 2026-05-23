@@ -142,6 +142,15 @@ export function SuccessionItemDetail({
             <h4 className="text-sm font-semibold">Progress Tracker</h4>
             <Badge variant="outline">{STATUS_OPTIONS.find(o => o.value === status)?.label}</Badge>
           </div>
+          <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full transition-all duration-500"
+              style={{
+                width: status === 'complete' ? '100%' : status === 'in_progress' ? '50%' : '6%',
+                background: status === 'complete' ? '#10b981' : status === 'in_progress' ? '#ffb500' : '#290a52',
+              }}
+            />
+          </div>
           {isAdminOrOwner ? (
             <>
               <Select value={editStatus} onValueChange={(v) => setEditStatus(v as ProgressStatus)}>
