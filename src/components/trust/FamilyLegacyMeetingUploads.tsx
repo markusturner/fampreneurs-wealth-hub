@@ -278,10 +278,10 @@ export function FamilyLegacyMeetingUploads({
       <div className="p-3 rounded-lg border border-accent/30 bg-accent/5">
         <p className="text-sm font-medium text-foreground flex items-center gap-2">
           <Users className="h-4 w-4 text-accent" />
-          First Family Legacy Meeting
+          {title}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          Upload all documentation from your first family legacy meeting. This includes meeting notes, attendance records, action items, recordings, signed agreements, and family structure documents.
+          {description}
         </p>
       </div>
 
