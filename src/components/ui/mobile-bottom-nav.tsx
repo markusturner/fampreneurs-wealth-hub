@@ -99,13 +99,12 @@ export function MobileBottomNav() {
     { name: 'Classroom', href: classroomHref, icon: BookOpen },
   ]
 
-  const hasSuccessionAccess = isAdmin || isOwner || subscriptionStatus.programs.includes('tffm') || 
-    (profile?.program_name && (profile.program_name.toLowerCase().includes('mastermind') || profile.program_name.toLowerCase().includes('succession')))
+  const isFamilyMember = !!profile?.membership_type
 
   const workspaceItems = [
     { name: 'AI Chat', href: '/ai-chat', icon: Bot },
-    { name: 'Trust Creation', href: '/trust-creation', icon: ScrollText },
-    ...(hasSuccessionAccess && !profile?.membership_type ? [{ name: 'Succession Planning', href: '/succession-planning', icon: Sprout }] : []),
+    ...(!isFamilyMember ? [{ name: 'Trust Creation', href: '/trust-creation', icon: ScrollText }] : []),
+    ...(!isFamilyMember ? [{ name: 'Succession Planning', href: '/succession-planning', icon: Sprout }] : []),
     { name: 'Members', href: '/workspace-members', icon: Users },
   ]
 
