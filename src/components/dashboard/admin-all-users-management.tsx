@@ -1622,6 +1622,7 @@ export function AdminAllUsersManagement() {
                     <TableHead className="bg-background"><button type="button" onClick={() => handleSort('remaining')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Remaining <span className="text-xs opacity-60">{sortColumn === 'remaining' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
                     <TableHead className="bg-background"><button type="button" onClick={() => handleSort('program')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Program <span className="text-xs opacity-60">{sortColumn === 'program' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
                     <TableHead className="bg-background"><button type="button" onClick={() => handleSort('satisfaction')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Satisfaction <span className="text-xs opacity-60">{sortColumn === 'satisfaction' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
+                    <TableHead className="min-w-[140px] bg-[#290a52]/10 text-[#290a52] font-semibold border-l-2 border-[#290a52]/40">Trust Creation</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Name Selected</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Asset Inventory</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Family Trust</TableHead>
@@ -1629,6 +1630,19 @@ export function AdminAllUsersManagement() {
                     <TableHead className="min-w-[100px] bg-background">Business Trust</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Proof of Transfer</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Legacy Meeting</TableHead>
+                    <TableHead className="min-w-[160px] bg-[#ffb500]/10 text-[#290a52] font-semibold border-l-2 border-[#ffb500]/60">Succession Planning</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Constellation Session</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Legacy Videos</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Family Tree</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Legacy Meeting (Succession)</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Identity Manual</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Family Crest</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Family Bible</TableHead>
+                    <TableHead className="min-w-[140px] bg-background">Annual Retreat</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Trust Stewardship</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">File Trust Taxes</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Tax Strategy</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Trademark / IP</TableHead>
                     <TableHead className="min-w-[160px] bg-background">Testimonials</TableHead>
                     <TableHead className="min-w-[160px] bg-background">Trust Pilot Review</TableHead>
                     <TableHead className="min-w-[120px] bg-background"><button type="button" onClick={() => handleSort('trust_access')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Trust Access <span className="text-xs opacity-60">{sortColumn === 'trust_access' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
