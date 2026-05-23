@@ -13,9 +13,9 @@ import { SuccessionItemDetail } from "@/components/succession/SuccessionItemDeta
 import { FamilyLegacyMeetingUploads } from "@/components/trust/FamilyLegacyMeetingUploads"
 
 type ItemKey =
-  | 'constellation_session' | 'legacy_videos' | 'course_creation'
-  | 'legacy_meeting' | 'identity_manual' | 'family_crest' | 'family_bible'
-  | 'annual_retreat' | 'trust_stewardship' | 'annual_trust_meeting'
+  | 'constellation_session' | 'legacy_videos'
+  | 'family_tree' | 'legacy_meeting' | 'identity_manual' | 'family_crest' | 'family_bible'
+  | 'annual_retreat' | 'trust_stewardship'
   | 'file_trust_taxes' | 'tax_strategy' | 'trademark_ip'
 
 interface ItemDef {
