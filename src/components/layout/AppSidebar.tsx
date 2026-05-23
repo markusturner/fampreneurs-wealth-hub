@@ -214,8 +214,8 @@ export function AppSidebar({ className }: { className?: string }) {
             className={cn(
               "w-full justify-start gap-2 rounded-xl font-semibold border-0",
               currentPath.includes("/succession-planning")
-                ? "bg-[#290a52] text-white hover:bg-[#34106a] shadow-md shadow-[#290a52]/30"
-                : "bg-white text-[#290a52] hover:bg-[#290a52]/10"
+                ? "bg-[hsl(270,80%,18%)] text-white hover:bg-[hsl(270,80%,25%)] shadow-md shadow-[hsl(270,80%,18%)]/30"
+                : "bg-[hsl(270,80%,18%)]/15 text-[hsl(270,80%,55%)] hover:bg-[hsl(270,80%,18%)]/30 hover:text-white"
             )}
             variant="ghost"
             onClick={() => navigate('/succession-planning')}
