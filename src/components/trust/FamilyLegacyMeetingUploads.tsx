@@ -214,7 +214,7 @@ export function FamilyLegacyMeetingUploads({
 
     try {
       for (const file of Array.from(files)) {
-        const filePath = `${user.id}/${category}/${Date.now()}_${file.name.replace(/\s+/g, "_")}`
+        const filePath = `${user.id}/${meetingType}/${category}/${Date.now()}_${file.name.replace(/\s+/g, "_")}`
 
         const { error: storageError } = await supabase.storage
           .from("legacy-meeting-uploads")
@@ -226,6 +226,7 @@ export function FamilyLegacyMeetingUploads({
           .insert({
             user_id: user.id,
             category,
+            meeting_type: meetingType,
             file_name: file.name,
             file_path: filePath,
             file_size: file.size,
