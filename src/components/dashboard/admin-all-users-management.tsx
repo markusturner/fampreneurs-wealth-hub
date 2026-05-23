@@ -242,12 +242,13 @@ export function AdminAllUsersManagement() {
       if (error) throw error
 
       // Fetch subscription data and trust submission dates for all users
-      const [{ data: subscribersData }, { data: allTrustSubs }, { data: assetUploads }, { data: legacyUploads }, { data: familyMembersData }] = await Promise.all([
+      const [{ data: subscribersData }, { data: allTrustSubs }, { data: assetUploads }, { data: legacyUploads }, { data: familyMembersData }, { data: successionProgressData }] = await Promise.all([
         supabase.from('subscribers').select('user_id, subscription_tier, subscription_period, subscribed'),
         supabase.from('trust_submissions' as any).select('user_id, trust_type, submitted_at').order('submitted_at', { ascending: true }),
         supabase.from('trust_asset_uploads' as any).select('user_id, created_at').order('created_at', { ascending: true }),
-        supabase.from('legacy_meeting_uploads' as any).select('user_id, created_at').order('created_at', { ascending: true }),
+        supabase.from('legacy_meeting_uploads' as any).select('user_id, created_at, meeting_type').order('created_at', { ascending: true }),
         supabase.from('family_members').select('email, added_by'),
+        supabase.from('succession_progress' as any).select('user_id, item_key, status, updated_at'),
       ])
 
       // Build a map of user_id -> { trust_type -> earliest submitted_at }
@@ -269,9 +270,23 @@ export function AdminAllUsersManagement() {
         }
       }
       const legacyMeetingMap: Record<string, string> = {}
+      const annualRetreatMap: Record<string, string> = {}
       if (legacyUploads) {
         for (const u of legacyUploads as any[]) {
-          if (!legacyMeetingMap[u.user_id]) legacyMeetingMap[u.user_id] = u.created_at
+          if ((u.meeting_type || 'family_legacy') === 'annual_retreat') {
+            if (!annualRetreatMap[u.user_id]) annualRetreatMap[u.user_id] = u.created_at
+          } else {
+            if (!legacyMeetingMap[u.user_id]) legacyMeetingMap[u.user_id] = u.created_at
+          }
+        }
+      }
+
+      // Build a map of user_id -> { item_key -> { status, updated_at } } for succession planning
+      const successionMap: Record<string, Record<string, { status: string; updated_at: string }>> = {}
+      if (successionProgressData) {
+        for (const row of successionProgressData as any[]) {
+          if (!successionMap[row.user_id]) successionMap[row.user_id] = {}
+          successionMap[row.user_id][row.item_key] = { status: row.status, updated_at: row.updated_at }
         }
       }
 
@@ -300,6 +315,8 @@ export function AdminAllUsersManagement() {
           trust_sub_dates: trustSubMap[profile.user_id] || {},
           proof_of_transfer_date: proofOfTransferMap[profile.user_id] || null,
           legacy_meeting_date: legacyMeetingMap[profile.user_id] || null,
+          annual_retreat_date: annualRetreatMap[profile.user_id] || null,
+          succession_progress: successionMap[profile.user_id] || {},
           trustee_user_id: trusteeUserId,
         }
       })
