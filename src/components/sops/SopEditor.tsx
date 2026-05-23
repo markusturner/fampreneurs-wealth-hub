@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { useEditor, EditorContent } from '@tiptap/react'
+import { useEditor, EditorContent, Extension } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
@@ -11,6 +11,14 @@ import { Table } from '@tiptap/extension-table'
 import { TableRow } from '@tiptap/extension-table-row'
 import { TableHeader } from '@tiptap/extension-table-header'
 import { TableCell } from '@tiptap/extension-table-cell'
+import TextAlign from '@tiptap/extension-text-align'
+import { TextStyle } from '@tiptap/extension-text-style'
+import { Color } from '@tiptap/extension-color'
+import FontFamily from '@tiptap/extension-font-family'
+import TaskList from '@tiptap/extension-task-list'
+import TaskItem from '@tiptap/extension-task-item'
+import Subscript from '@tiptap/extension-subscript'
+import Superscript from '@tiptap/extension-superscript'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import {
@@ -18,8 +26,58 @@ import {
   List, ListOrdered, Quote, Link as LinkIcon,
   Image as ImageIcon, Minus, Youtube as YoutubeIcon, Heading1, Heading2,
   Heading3, Code2, Sparkles, Paperclip, Highlighter, Table as TableIcon,
-  Lightbulb,
+  Lightbulb, AlignLeft, AlignCenter, AlignRight, AlignJustify,
+  IndentIncrease, IndentDecrease, ListChecks, Subscript as SubIcon,
+  Superscript as SupIcon, Undo2, Redo2, RemoveFormatting, Palette,
 } from 'lucide-react'
+
+// Custom indent extension: margin-left in 24px steps on paragraphs and headings.
+const Indent = Extension.create({
+  name: 'indent',
+  addGlobalAttributes() {
+    return [{
+      types: ['paragraph', 'heading'],
+      attributes: {
+        indent: {
+          default: 0,
+          renderHTML: (attrs: any) => attrs.indent ? { style: `margin-left: ${attrs.indent * 24}px` } : {},
+          parseHTML: (el: HTMLElement) => {
+            const ml = parseInt(el.style.marginLeft || '0', 10)
+            return ml ? Math.round(ml / 24) : 0
+          },
+        },
+      },
+    }]
+  },
+  addCommands() {
+    const update = (delta: number) => ({ tr, state, dispatch }: any) => {
+      const { from, to } = state.selection
+      let changed = false
+      state.doc.nodesBetween(from, to, (node: any, pos: number) => {
+        if (['paragraph', 'heading'].includes(node.type.name)) {
+          const cur = node.attrs.indent || 0
+          const next = Math.max(0, Math.min(8, cur + delta))
+          if (next !== cur) {
+            tr.setNodeMarkup(pos, undefined, { ...node.attrs, indent: next })
+            changed = true
+          }
+        }
+      })
+      if (changed && dispatch) dispatch(tr)
+      return changed
+    }
+    return {
+      indent: () => update(1) as any,
+      outdent: () => update(-1) as any,
+    } as any
+  },
+  addKeyboardShortcuts() {
+    return {
+      Tab: () => (this.editor.isActive('listItem') || this.editor.isActive('taskItem')) ? false : (this.editor.commands as any).indent(),
+      'Shift-Tab': () => (this.editor.isActive('listItem') || this.editor.isActive('taskItem')) ? false : (this.editor.commands as any).outdent(),
+    }
+  },
+})
 
 interface Props {
   content: string
@@ -68,6 +126,15 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
       TableHeader.configure({ HTMLAttributes: { class: 'border border-border bg-muted/60 px-3 py-2 text-left font-semibold' } }),
       TableCell.configure({ HTMLAttributes: { class: 'border border-border px-3 py-2 align-top' } }),
       Youtube.configure({ width: 720, height: 405, nocookie: true, HTMLAttributes: { class: 'w-full aspect-video rounded-lg my-4' } }),
+      TextStyle,
+      Color,
+      FontFamily,
+      Subscript,
+      Superscript,
+      TaskList.configure({ HTMLAttributes: { class: 'not-prose space-y-1 my-2' } }),
+      TaskItem.configure({ nested: true, HTMLAttributes: { class: 'flex gap-2 items-start' } }),
+      TextAlign.configure({ types: ['heading', 'paragraph'], alignments: ['left', 'center', 'right', 'justify'] }),
+      Indent,
       Placeholder.configure({ placeholder: editable ? "Write your SOP. Type '/' for ideas, or paste any link to embed it." : '' }),
     ],
     content: content || '',
@@ -216,14 +283,36 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
         <Btn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')} title="Underline"><UnderlineIcon className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough"><Strikethrough className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')} title="Highlight"><Highlighter className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().toggleSubscript().run()} active={editor.isActive('subscript')} title="Subscript"><SubIcon className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().toggleSuperscript().run()} active={editor.isActive('superscript')} title="Superscript"><SupIcon className="h-4 w-4" /></Btn>
+        <label className="relative p-2 rounded hover:bg-muted transition cursor-pointer text-foreground" title="Text color" onMouseDown={(e) => e.preventDefault()}>
+          <Palette className="h-4 w-4" />
+          <input
+            type="color"
+            className="absolute inset-0 opacity-0 cursor-pointer"
+            onInput={(e) => editor.chain().focus().setColor((e.target as HTMLInputElement).value).run()}
+          />
+        </label>
+        <Btn onClick={() => editor.chain().focus().unsetColor().unsetMark('highlight').unsetAllMarks().run()} title="Clear formatting"><RemoveFormatting className="h-4 w-4" /></Btn>
+        <div className="w-px h-5 bg-border mx-1" />
+        <Btn onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editor.isActive({ textAlign: 'left' })} title="Align left"><AlignLeft className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })} title="Align center"><AlignCenter className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editor.isActive({ textAlign: 'right' })} title="Align right"><AlignRight className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().setTextAlign('justify').run()} active={editor.isActive({ textAlign: 'justify' })} title="Justify"><AlignJustify className="h-4 w-4" /></Btn>
+        <Btn onClick={() => (editor.chain().focus() as any).outdent().run()} title="Decrease indent (Shift+Tab)"><IndentDecrease className="h-4 w-4" /></Btn>
+        <Btn onClick={() => (editor.chain().focus() as any).indent().run()} title="Increase indent (Tab)"><IndentIncrease className="h-4 w-4" /></Btn>
         <div className="w-px h-5 bg-border mx-1" />
         <Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="Bullet list"><List className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="Numbered list"><ListOrdered className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().toggleTaskList().run()} active={editor.isActive('taskList')} title="Checklist"><ListChecks className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="Quote"><Quote className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} title="Code block"><Code2 className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Divider"><Minus className="h-4 w-4" /></Btn>
         <Btn onClick={insertTable} active={editor.isActive('table')} title="Insert table"><TableIcon className="h-4 w-4" /></Btn>
         <Btn onClick={insertCallout} title="Insert highlight box"><Lightbulb className="h-4 w-4" /></Btn>
+        <div className="w-px h-5 bg-border mx-1" />
+        <Btn onClick={() => editor.chain().focus().undo().run()} title="Undo"><Undo2 className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().redo().run()} title="Redo"><Redo2 className="h-4 w-4" /></Btn>
         <div className="w-px h-5 bg-border mx-1" />
         <Btn onClick={setLink} active={editor.isActive('link')} title="Link"><LinkIcon className="h-4 w-4" /></Btn>
         <Btn onClick={() => fileInputRef.current?.click()} title="Upload image"><ImageIcon className="h-4 w-4" /></Btn>
