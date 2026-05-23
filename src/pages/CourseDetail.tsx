@@ -1501,6 +1501,32 @@ export default function CourseDetail() {
           </div>
         )}
 
+        {/* Linked SOPs */}
+        {linkedSops.length > 0 && (
+          <div className="space-y-3 pt-2">
+            <h3 className="font-semibold text-xs uppercase tracking-widest text-muted-foreground">Linked SOPs</h3>
+            <div className="space-y-1.5">
+              {linkedSops.map(s => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => navigate(`/sops/${s.id}`)}
+                  className="w-full group flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/40 hover:bg-muted/70 border border-transparent hover:border-border transition-all text-left"
+                >
+                  <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-background shadow-sm border border-border shrink-0">
+                    <FileBox className="h-4 w-4" style={{ color: '#290a52' }} />
+                  </div>
+                  <span className="text-sm font-medium text-foreground flex-1 truncate">{s.title}</span>
+                  {s.link_type === 'auto' && (
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Auto</span>
+                  )}
+                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {isAdminOrOwner && (
           <Button variant="outline" size="sm" className="text-xs gap-1" onClick={() => setShowAddResource(true)}>
             + Add Resource
