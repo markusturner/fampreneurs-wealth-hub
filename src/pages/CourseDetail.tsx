@@ -462,6 +462,7 @@ export default function CourseDetail() {
       description: editContent.trim() || null,
       content: editContent.trim() || null,
       video_url: editVideoUrl.trim() || null,
+      required_programs: editRequiredPrograms,
     } as any).eq('id', selectedLesson.id)
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' })
@@ -567,14 +568,32 @@ export default function CourseDetail() {
   useEffect(() => { fetchData() }, [fetchData])
 
   useEffect(() => {
-    if (!selectedLesson) return
+    if (!selectedLesson) { setLinkedSops([]); return }
     supabase
       .from('course_resources')
       .select('*')
       .eq('lesson_id', selectedLesson.id)
       .order('order_index')
       .then(({ data }) => setResources(data || []))
-  }, [selectedLesson?.id])
+
+    // Fetch linked SOPs, filtered by user program access
+    ;(async () => {
+      const { data } = await supabase
+        .from('sop_lesson_links' as any)
+        .select('sop_id, link_type, sops(id, title, program_tags)')
+        .eq('lesson_id', selectedLesson.id)
+      const rows = (data || []) as any[]
+      const accessible = rows
+        .filter(r => r.sops)
+        .filter(r => {
+          if (isAdminOrOwner) return true
+          const tags: string[] = r.sops.program_tags || []
+          return tags.length === 0 || tags.some((t: string) => userPrograms.includes(t as ProgramCode))
+        })
+        .map(r => ({ id: r.sops.id, title: r.sops.title, link_type: r.link_type }))
+      setLinkedSops(accessible)
+    })()
+  }, [selectedLesson?.id, isAdminOrOwner, userPrograms.join(',')])
 
   const toggleModule = (id: string) => {
     setOpenModules(prev => {
