@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
@@ -37,9 +37,15 @@ import {
   X,
   RefreshCw,
   GripVertical,
+  Lock,
+  Shield,
+  FileBox,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AddModuleDialog } from '@/components/classroom/AddModuleDialog'
+import { ModuleRestrictDialog } from '@/components/classroom/ModuleRestrictDialog'
+import { ProgramRestrictPicker } from '@/components/classroom/ProgramRestrictPicker'
+import { profileProgramCodes, programLabel, ProgramCode } from '@/lib/programs'
 import { AddResourceDialog } from '@/components/classroom/AddResourceDialog'
 import { EditResourceDialog } from '@/components/classroom/EditResourceDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
@@ -87,6 +93,7 @@ interface Module {
   title: string
   description: string | null
   order_index: number
+  required_programs?: string[] | null
   lessons: Lesson[]
 }
 
@@ -102,6 +109,7 @@ interface Lesson {
   duration_seconds: number | null
   completed: boolean
   community_ids: string[]
+  required_programs?: string[] | null
 }
 
 interface Resource {
@@ -110,6 +118,12 @@ interface Resource {
   resource_type: string
   url: string | null
   file_path: string | null
+}
+
+interface LinkedSop {
+  id: string
+  title: string
+  link_type: string
 }
 
 interface Course {
