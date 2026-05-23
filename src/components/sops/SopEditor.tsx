@@ -50,7 +50,7 @@ function urlToEmbedHtml(rawUrl: string): string | null {
   return wrap(url)
 }
 
-export function SopEditor({ content, onChange, editable = true }: Props) {
+export function SopEditor({ content, onChange, editable = true, bare = false }: Props) {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const docInputRef = useRef<HTMLInputElement>(null)
