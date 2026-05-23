@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   ArrowLeft, Users, Video, BookOpen, Heart, FileText, Shield, Award,
-  Calendar, ClipboardCheck, Receipt, Calculator, Stamp, Loader2
+  Calendar, ClipboardCheck, Receipt, Calculator, Stamp, Loader2, TreePine
 } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
