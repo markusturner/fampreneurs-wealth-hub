@@ -117,7 +117,7 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
     editable,
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: false, underline: false }),
-      Image.configure({ inline: false, allowBase64: false }),
+      Image.configure({ inline: false, allowBase64: true }),
       Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { class: 'text-[#2eb2ff] underline' } }),
       Underline,
       Highlight.configure({ multicolor: false, HTMLAttributes: { class: 'bg-[#ffb500]/40 px-1 rounded' } }),
