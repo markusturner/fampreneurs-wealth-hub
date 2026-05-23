@@ -5,11 +5,9 @@ import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { SopEditor } from '@/components/sops/SopEditor'
-import { ArrowLeft, Pencil, Save, X, Loader2 } from 'lucide-react'
+import { ArrowLeft, Pencil, Save, X, Loader2, FileText } from 'lucide-react'
 
 export default function SOPDetail() {
   const { sopId } = useParams<{ sopId: string }>()
@@ -70,7 +68,6 @@ export default function SOPDetail() {
       const pct = maxScrollRef.current
       if (seconds <= 0 && pct <= 0) return
       try {
-        // Upsert-by-unique (sop_id, user_id)
         const { data: existing } = await supabase
           .from('sop_views' as any)
           .select('id, max_scroll_pct, total_time_seconds, view_count')
@@ -116,30 +113,31 @@ export default function SOPDetail() {
   }
 
   if (loading) {
-    return <div className="min-h-screen bg-[#0a0610] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-[#ffb500]" /></div>
+    return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-[#ffb500]" /></div>
   }
 
   return (
-    <div ref={scrollRef} className="h-[calc(100vh-3.5rem)] md:h-screen overflow-y-auto bg-[#0a0610] text-white">
+    <div ref={scrollRef} className="h-[calc(100vh-3.5rem)] md:h-screen overflow-y-auto bg-background text-foreground">
       <Helmet><title>{title} | SOPs</title></Helmet>
 
-      <div className="sticky top-0 z-20 backdrop-blur bg-[#0a0610]/85 border-b border-white/5">
-        <div className="container mx-auto max-w-4xl px-4 py-3 flex items-center justify-between gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/sops')} className="text-white/70 hover:text-white hover:bg-white/10 -ml-2">
+      {/* Notion-style minimal top bar */}
+      <div className="sticky top-0 z-20 backdrop-blur bg-background/85 border-b border-border">
+        <div className="container mx-auto max-w-3xl px-4 py-2 flex items-center justify-between gap-3">
+          <Button variant="ghost" size="sm" onClick={() => navigate('/sops')} className="text-muted-foreground hover:text-foreground -ml-2 h-8">
             <ArrowLeft className="h-4 w-4 mr-1.5" /> SOPs
           </Button>
           {isAdminOrOwner && (
             editing ? (
-              <div className="flex gap-2">
-                <Button size="sm" variant="ghost" onClick={() => setEditing(false)} className="text-white/70 hover:text-white hover:bg-white/10">
+              <div className="flex gap-1">
+                <Button size="sm" variant="ghost" onClick={() => setEditing(false)} className="h-8 text-muted-foreground hover:text-foreground">
                   <X className="h-4 w-4 mr-1" /> Cancel
                 </Button>
-                <Button size="sm" disabled={saving} onClick={save} className="bg-[#ffb500] hover:bg-[#ffc733] text-[#290a52] font-semibold">
+                <Button size="sm" disabled={saving} onClick={save} className="h-8 bg-[#ffb500] hover:bg-[#ffc733] text-[#290a52] font-semibold">
                   {saving ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />} Save
                 </Button>
               </div>
             ) : (
-              <Button size="sm" variant="ghost" onClick={() => setEditing(true)} className="text-white/70 hover:text-white hover:bg-white/10">
+              <Button size="sm" variant="ghost" onClick={() => setEditing(true)} className="h-8 text-muted-foreground hover:text-foreground">
                 <Pencil className="h-4 w-4 mr-1.5" /> Edit
               </Button>
             )
@@ -147,22 +145,36 @@ export default function SOPDetail() {
         </div>
       </div>
 
-      <div className="container mx-auto max-w-4xl px-4 py-8 pb-24">
-        {editing ? (
-          <div className="space-y-4">
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="SOP title" className="text-2xl font-bold bg-transparent border-white/10 text-white" />
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Short description (optional)" className="bg-transparent border-white/10 text-white" />
-            <div className="bg-white text-foreground rounded-lg">
-              <SopEditor content={content} onChange={setContent} />
-            </div>
+      {/* Notion-style document */}
+      <div className="container mx-auto max-w-3xl px-4 md:px-8 pt-10 pb-32">
+        {/* Doc icon, like Notion's page emoji slot */}
+        <div className="mb-4">
+          <div className="h-12 w-12 rounded-lg bg-[#ffb500]/10 border border-[#ffb500]/20 flex items-center justify-center">
+            <FileText className="h-6 w-6 text-[#ffb500]" />
           </div>
+        </div>
+
+        {editing ? (
+          <>
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Untitled"
+              className="w-full bg-transparent border-0 outline-none text-4xl md:text-5xl font-bold tracking-tight placeholder:text-muted-foreground/40 mb-2"
+            />
+            <input
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Add a description…"
+              className="w-full bg-transparent border-0 outline-none text-base text-muted-foreground placeholder:text-muted-foreground/50 mb-6"
+            />
+            <SopEditor content={content} onChange={setContent} bare />
+          </>
         ) : (
           <>
-            <h1 className="text-3xl md:text-4xl font-bold mb-3 leading-tight">{title}</h1>
-            {description && <p className="text-white/60 mb-6">{description}</p>}
-            <div className="bg-white text-foreground rounded-lg p-2 md:p-4">
-              <SopEditor content={content} onChange={() => {}} editable={false} />
-            </div>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3 leading-tight">{title || 'Untitled'}</h1>
+            {description && <p className="text-base text-muted-foreground mb-6">{description}</p>}
+            <SopEditor content={content} onChange={() => {}} editable={false} bare />
           </>
         )}
       </div>

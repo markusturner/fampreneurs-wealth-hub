@@ -20,6 +20,8 @@ interface Props {
   content: string
   onChange: (html: string) => void
   editable?: boolean
+  /** Notion-style: no outer card border, transparent background, minimal toolbar */
+  bare?: boolean
 }
 
 // Convert embed-like URLs (Loom, Vimeo, Tella, Figma, Google Docs, generic) → iframe HTML
@@ -48,7 +50,7 @@ function urlToEmbedHtml(rawUrl: string): string | null {
   return wrap(url)
 }
 
-export function SopEditor({ content, onChange, editable = true }: Props) {
+export function SopEditor({ content, onChange, editable = true, bare = false }: Props) {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const docInputRef = useRef<HTMLInputElement>(null)
@@ -67,7 +69,7 @@ export function SopEditor({ content, onChange, editable = true }: Props) {
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: {
-        class: 'min-h-[400px] px-4 py-4 focus:outline-none prose prose-sm md:prose-base max-w-none w-full prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-a:text-[#2eb2ff] prose-strong:text-foreground prose-img:rounded-lg prose-img:my-4',
+        class: `${bare ? 'min-h-[300px] px-0 py-2' : 'min-h-[400px] px-4 py-4'} focus:outline-none prose prose-sm md:prose-base max-w-none w-full prose-headings:font-bold prose-headings:text-foreground prose-p:text-foreground prose-a:text-[#2eb2ff] prose-strong:text-foreground prose-img:rounded-lg prose-img:my-4`,
       },
       handlePaste: (_view, event) => {
         const text = event.clipboardData?.getData('text/plain')?.trim()
@@ -184,8 +186,9 @@ export function SopEditor({ content, onChange, editable = true }: Props) {
   )
 
   return (
-    <div className="border border-border rounded-lg bg-card">
-      <div className="flex flex-wrap items-center gap-0.5 border-b border-border px-2 py-1.5 sticky top-0 bg-card z-10 rounded-t-lg">
+    <div className={bare ? '' : 'border border-border rounded-lg bg-card'}>
+      <div className={`flex flex-wrap items-center gap-0.5 ${bare ? 'border border-border rounded-lg bg-card/80 backdrop-blur shadow-sm px-2 py-1.5 sticky top-12 z-10 mb-2' : 'border-b border-border px-2 py-1.5 sticky top-0 bg-card z-10 rounded-t-lg'}`}>
+
         <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} title="Heading 1"><Heading1 className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} title="Heading 2"><Heading2 className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} title="Heading 3"><Heading3 className="h-4 w-4" /></Btn>
