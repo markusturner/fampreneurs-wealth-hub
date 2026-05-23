@@ -828,6 +828,9 @@ export default function CourseDetail() {
             const isModuleDragging = activeDragModuleId === mod.id
             const showModuleDropBefore = dragType === 'module' && overModuleId === mod.id && mod.id !== '__uncategorized' && activeDragModuleId !== mod.id
             const isDraggableModule = isAdminOrOwner && mod.id !== '__uncategorized'
+            const moduleLocked = isProgramLocked(mod.required_programs)
+            const moduleLockText = lockLabel(mod.required_programs)
+
 
             return (
               <SortableModuleWrapper key={mod.id} moduleId={mod.id} disabled={!isDraggableModule} isDragging={isModuleDragging}>
@@ -869,15 +872,33 @@ export default function CourseDetail() {
                         <GripVertical className="h-3 w-3 text-muted-foreground" />
                       </div>
                     )}
-                    <span style={{ color: '#290a52' }}>{mod.title}</span>
+                    <span style={{ color: '#290a52', opacity: moduleLocked ? 0.7 : 1 }} className="flex items-center gap-1.5">
+                      {moduleLocked && <Lock className="h-3 w-3" />}
+                      {mod.title}
+                      {(mod.required_programs?.length ?? 0) > 0 && (
+                        <span className="ml-1 rounded-full px-1.5 py-0.5 text-[9px] font-medium normal-case tracking-normal" style={{ backgroundColor: '#290a52', color: '#ffb500' }}>
+                          {moduleLockText}
+                        </span>
+                      )}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     {isAdminOrOwner && mod.id !== '__uncategorized' && (
                       <button
                         onClick={e => { e.stopPropagation(); setRenamingModuleId(mod.id); setRenameModuleTitle(mod.title) }}
                         className="opacity-0 group-hover/mod:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
+                        title="Rename"
                       >
                         <Pencil className="h-3 w-3 text-muted-foreground" />
+                      </button>
+                    )}
+                    {isAdminOrOwner && mod.id !== '__uncategorized' && (
+                      <button
+                        onClick={e => { e.stopPropagation(); setRestrictModule(mod) }}
+                        className="opacity-0 group-hover/mod:opacity-100 transition-opacity p-1 rounded hover:bg-accent"
+                        title="Restrict to programs"
+                      >
+                        <Shield className="h-3 w-3 text-muted-foreground" />
                       </button>
                     )}
                     <ChevronDown className={cn('h-3.5 w-3.5 shrink-0 transition-transform text-muted-foreground', openModules.has(mod.id) && 'rotate-180')} />
@@ -889,6 +910,8 @@ export default function CourseDetail() {
                     {mod.lessons.map((lesson, idx) => {
                       const globalIdx = lessonCounter + idx + 1
                       const isOver = overLessonId === lesson.id && activeDragLessonId !== lesson.id && dragType === 'lesson'
+                      const lessonLocked = moduleLocked || isProgramLocked(lesson.required_programs)
+                      const lockText = moduleLocked ? moduleLockText : lockLabel(lesson.required_programs)
                       return (
                         <SortableLessonItem
                           key={lesson.id}
@@ -898,6 +921,8 @@ export default function CourseDetail() {
                           isAdminOrOwner={isAdminOrOwner}
                           showDropBefore={isOver}
                           showDropAfter={false}
+                          isLocked={lessonLocked}
+                          lockTooltip={lockText ? `Available to ${lockText}` : undefined}
                           onSelect={handleSelectLesson}
                           onEdit={(l) => { handleSelectLesson(l); setTimeout(startEditingLesson, 50) }}
                         />
