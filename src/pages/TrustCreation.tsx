@@ -188,7 +188,7 @@ export default function TrustCreation() {
   }
 
   const isUnlocked = (type: SectionType) => {
-    if (type === 'asset_inventory' || type === 'trust_name_translator' || type === 'trust_asset_uploads' || type === 'legacy_meeting') return true
+    if (type === 'asset_inventory' || type === 'trust_name_translator' || type === 'trust_asset_uploads') return true
     return trustAccess?.unlocked_trusts?.includes(type) ?? false
   }
 
@@ -311,7 +311,7 @@ export default function TrustCreation() {
     }
 
     // Asset Inventory & Trust Checklist use React forms
-    if (selectedSection === 'asset_inventory' || selectedSection === 'trust_name_translator' || selectedSection === 'trust_asset_uploads' || selectedSection === 'legacy_meeting') {
+    if (selectedSection === 'asset_inventory' || selectedSection === 'trust_name_translator' || selectedSection === 'trust_asset_uploads') {
       return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-5xl mx-auto">
           <Button variant="ghost" onClick={() => setSelectedSection(null)} className="gap-2">
@@ -330,8 +330,6 @@ export default function TrustCreation() {
                 <AssetInventoryForm onSubmitted={handleFormSubmitted} />
               ) : selectedSection === 'trust_asset_uploads' ? (
                 <TrustAssetUploads onSubmitted={handleFormSubmitted} />
-              ) : selectedSection === 'legacy_meeting' ? (
-                <FamilyLegacyMeetingUploads onSubmitted={handleFormSubmitted} />
               ) : (
                 <TrustNameTranslator onSubmitted={handleFormSubmitted} />
               )}
