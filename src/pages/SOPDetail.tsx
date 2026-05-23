@@ -142,7 +142,7 @@ export default function SOPDetail() {
           <Lock className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
           <h1 className="text-xl font-bold mb-1">This SOP is restricted</h1>
           <p className="text-sm text-muted-foreground">You don't have access to this document.</p>
-          <Button variant="ghost" size="sm" onClick={() => navigate('/sops')} className="mt-4"><ArrowLeft className="h-4 w-4 mr-1.5" /> Back to SOPs</Button>
+          <Button variant="ghost" size="sm" onClick={() => navigate('/classroom')} className="mt-4"><ArrowLeft className="h-4 w-4 mr-1.5" /> Back to Classroom</Button>
         </div>
       </div>
     )
