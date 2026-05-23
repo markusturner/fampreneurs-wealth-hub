@@ -445,7 +445,7 @@ export default function TrustCreation() {
           <Badge className="bg-accent text-accent-foreground">Step 3</Badge>
           <h2 className="text-lg font-semibold text-foreground">Schedule B & Proof of Transfer</h2>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-1">
           {(['trust_asset_uploads'] as SectionType[]).map(type => renderSectionCard(type))}
         </div>
       </div>
