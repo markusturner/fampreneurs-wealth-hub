@@ -1706,6 +1706,13 @@ export default function CourseDetail() {
       {courseId && (
         <>
           <AddModuleDialog courseId={courseId} open={showAddModule} onOpenChange={setShowAddModule} onCreated={fetchData} />
+          <ModuleRestrictDialog
+            moduleId={restrictModule?.id ?? null}
+            initial={(restrictModule?.required_programs as string[]) || []}
+            open={!!restrictModule}
+            onOpenChange={(o) => !o && setRestrictModule(null)}
+            onSaved={fetchData}
+          />
           <AddResourceDialog
             courseId={courseId}
             lessonId={selectedLesson?.id || null}
