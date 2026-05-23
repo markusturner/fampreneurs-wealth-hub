@@ -146,11 +146,8 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
       handlePaste: (_view, event) => {
         const text = event.clipboardData?.getData('text/plain')?.trim() || ''
         const html = event.clipboardData?.getData('text/html') || ''
-        // If clipboard contains HTML (e.g. Word, Google Docs, Notion), let tiptap parse it natively
-        // to keep formatting, tables, lists, etc.
-        if (html) return false
         // URL-only paste → convert to embed
-        if (text && /^https?:\/\/\S+$/.test(text)) {
+        if (!html && text && /^https?:\/\/\S+$/.test(text)) {
           if (/(youtube\.com|youtu\.be)/i.test(text)) {
             editor?.commands.setYoutubeVideo({ src: text })
             return true
@@ -159,6 +156,31 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
           if (out) {
             editor?.commands.insertContent(out)
             return true
+          }
+        }
+        // HTML paste → strip font-family / color / background so content inherits app theme
+        if (html) {
+          try {
+            const doc = new DOMParser().parseFromString(html, 'text/html')
+            doc.querySelectorAll('font').forEach((el) => {
+              el.removeAttribute('color')
+              el.removeAttribute('face')
+            })
+            doc.querySelectorAll<HTMLElement>('[style]').forEach((el) => {
+              const style = el.getAttribute('style') || ''
+              const cleaned = style
+                .split(';')
+                .map((s) => s.trim())
+                .filter((s) => s && !/^(color|background(-color)?|font-family|font|-webkit-text-fill-color)\s*:/i.test(s))
+                .join('; ')
+              if (cleaned) el.setAttribute('style', cleaned)
+              else el.removeAttribute('style')
+            })
+            doc.querySelectorAll('[color]').forEach((el) => el.removeAttribute('color'))
+            editor?.commands.insertContent(doc.body.innerHTML)
+            return true
+          } catch {
+            return false
           }
         }
         return false
