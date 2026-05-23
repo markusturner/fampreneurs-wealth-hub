@@ -31,7 +31,7 @@ export function MobileBottomNav() {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, profile, signOut } = useAuth()
-  const { isAdmin } = useUserRole()
+  const { isAdmin, isFamilyMember } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const { subscriptionStatus } = useSubscription()
   const [moreOpen, setMoreOpen] = useState(false)
@@ -99,7 +99,7 @@ export function MobileBottomNav() {
     { name: 'Classroom', href: classroomHref, icon: BookOpen },
   ]
 
-  const isFamilyMember = !!profile?.membership_type
+  
 
   const workspaceItems = [
     { name: 'AI Chat', href: '/ai-chat', icon: Bot },
