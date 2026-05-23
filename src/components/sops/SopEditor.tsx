@@ -283,14 +283,36 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
         <Btn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')} title="Underline"><UnderlineIcon className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough"><Strikethrough className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')} title="Highlight"><Highlighter className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().toggleSubscript().run()} active={editor.isActive('subscript')} title="Subscript"><SubIcon className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().toggleSuperscript().run()} active={editor.isActive('superscript')} title="Superscript"><SupIcon className="h-4 w-4" /></Btn>
+        <label className="relative p-2 rounded hover:bg-muted transition cursor-pointer text-foreground" title="Text color" onMouseDown={(e) => e.preventDefault()}>
+          <Palette className="h-4 w-4" />
+          <input
+            type="color"
+            className="absolute inset-0 opacity-0 cursor-pointer"
+            onInput={(e) => editor.chain().focus().setColor((e.target as HTMLInputElement).value).run()}
+          />
+        </label>
+        <Btn onClick={() => editor.chain().focus().unsetColor().unsetMark('highlight').unsetAllMarks().run()} title="Clear formatting"><RemoveFormatting className="h-4 w-4" /></Btn>
+        <div className="w-px h-5 bg-border mx-1" />
+        <Btn onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editor.isActive({ textAlign: 'left' })} title="Align left"><AlignLeft className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })} title="Align center"><AlignCenter className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editor.isActive({ textAlign: 'right' })} title="Align right"><AlignRight className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().setTextAlign('justify').run()} active={editor.isActive({ textAlign: 'justify' })} title="Justify"><AlignJustify className="h-4 w-4" /></Btn>
+        <Btn onClick={() => (editor.chain().focus() as any).outdent().run()} title="Decrease indent (Shift+Tab)"><IndentDecrease className="h-4 w-4" /></Btn>
+        <Btn onClick={() => (editor.chain().focus() as any).indent().run()} title="Increase indent (Tab)"><IndentIncrease className="h-4 w-4" /></Btn>
         <div className="w-px h-5 bg-border mx-1" />
         <Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="Bullet list"><List className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="Numbered list"><ListOrdered className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().toggleTaskList().run()} active={editor.isActive('taskList')} title="Checklist"><ListChecks className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="Quote"><Quote className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} title="Code block"><Code2 className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Divider"><Minus className="h-4 w-4" /></Btn>
         <Btn onClick={insertTable} active={editor.isActive('table')} title="Insert table"><TableIcon className="h-4 w-4" /></Btn>
         <Btn onClick={insertCallout} title="Insert highlight box"><Lightbulb className="h-4 w-4" /></Btn>
+        <div className="w-px h-5 bg-border mx-1" />
+        <Btn onClick={() => editor.chain().focus().undo().run()} title="Undo"><Undo2 className="h-4 w-4" /></Btn>
+        <Btn onClick={() => editor.chain().focus().redo().run()} title="Redo"><Redo2 className="h-4 w-4" /></Btn>
         <div className="w-px h-5 bg-border mx-1" />
         <Btn onClick={setLink} active={editor.isActive('link')} title="Link"><LinkIcon className="h-4 w-4" /></Btn>
         <Btn onClick={() => fileInputRef.current?.click()} title="Upload image"><ImageIcon className="h-4 w-4" /></Btn>
