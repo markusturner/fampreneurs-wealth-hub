@@ -1,0 +1,2 @@
+ALTER TABLE public.legacy_meeting_uploads ADD COLUMN IF NOT EXISTS meeting_type TEXT NOT NULL DEFAULT 'family_legacy';
+CREATE INDEX IF NOT EXISTS idx_legacy_meeting_uploads_meeting_type ON public.legacy_meeting_uploads(meeting_type);
