@@ -149,9 +149,9 @@ export default function SuccessionPlanning() {
         </p>
       </div>
 
-      {renderStep('Family Constellation & Legacy Foundation', 1, STEP_1, 'sm:grid-cols-3')}
-      {renderStep('First Family Legacy Meeting & Identity', 2, STEP_2, 'sm:grid-cols-2 lg:grid-cols-4')}
-      {renderStep('Annual Retreat & Stewardship', 3, STEP_3, 'sm:grid-cols-2 lg:grid-cols-3')}
+      {renderStep('Origin Story', 1, STEP_1, 'sm:grid-cols-2')}
+      {renderStep('Structure', 2, STEP_2, 'sm:grid-cols-2 lg:grid-cols-3')}
+      {renderStep('Stewardship', 3, STEP_3, 'sm:grid-cols-2 lg:grid-cols-3')}
     </div>
   )
 }
