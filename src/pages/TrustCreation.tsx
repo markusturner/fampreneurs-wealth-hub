@@ -443,12 +443,13 @@ export default function TrustCreation() {
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Badge className="bg-accent text-accent-foreground">Step 3</Badge>
-          <h2 className="text-lg font-semibold text-foreground">Schedule B & Family Legacy Meeting</h2>
+          <h2 className="text-lg font-semibold text-foreground">Schedule B & Proof of Transfer</h2>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
-          {(['trust_asset_uploads', 'legacy_meeting'] as SectionType[]).map(type => renderSectionCard(type))}
+          {(['trust_asset_uploads'] as SectionType[]).map(type => renderSectionCard(type))}
         </div>
       </div>
+
 
     </div>
   )
