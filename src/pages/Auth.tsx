@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Mail } from 'lucide-react'
+import { Loader2, Mail, Eye, EyeOff } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
 
@@ -14,6 +14,7 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const { toast } = useToast()
   const navigate = useNavigate()
 
@@ -133,7 +134,12 @@ export default function Auth() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="signin-password" className="text-sm">Password</Label>
-              <Input id="signin-password" type="password" placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} className="h-9" />
+              <div className="relative">
+                <Input id="signin-password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} className="h-9 pr-10" />
+                <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" tabIndex={-1}>
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
             <div className="flex justify-center pt-1">
               <RecoveryDialog />
