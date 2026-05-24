@@ -1214,6 +1214,16 @@ export default function Documents() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Responsible for implementing family policies, managing day-to-day operations, and executing strategic decisions.
                   </p>
+                  {parseMembers(constitutionGovernance?.familyCouncilMembers).length > 0 && (
+                    <div className="mb-4">
+                      <div className="text-sm font-semibold mb-1">Members:</div>
+                      <ul className="text-xs text-muted-foreground space-y-0.5 ml-4">
+                        {parseMembers(constitutionGovernance?.familyCouncilMembers).map((m, i) => (
+                          <li key={i}>• {m}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <div className="text-sm">
                       <strong>Key Responsibilities:</strong>
@@ -1226,6 +1236,7 @@ export default function Documents() {
                     </ul>
                   </div>
                 </CardContent>
+
               </Card>
 
               {/* Council of Elders - Judicial Branch */}
