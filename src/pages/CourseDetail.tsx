@@ -1372,6 +1372,47 @@ export default function CourseDetail() {
     }
 
     // ── VIEW MODE ──
+    if (selectedLessonLocked && !isAdminOrOwner) {
+      return (
+        <div className="relative w-full min-h-full">
+          <button
+            onClick={() => setMobileView('modules')}
+            className="md:hidden flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors px-4 pt-4"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to modules
+          </button>
+          {/* Blurred placeholder backdrop */}
+          <div className="absolute inset-0 pointer-events-none select-none" aria-hidden>
+            <div className="w-full h-full px-4 md:px-6 py-6 space-y-6 blur-md opacity-60">
+              <div className="w-full aspect-video bg-muted rounded-xl" />
+              <div className="h-6 w-2/3 bg-muted rounded" />
+              <div className="h-4 w-full bg-muted rounded" />
+              <div className="h-4 w-5/6 bg-muted rounded" />
+              <div className="h-4 w-4/6 bg-muted rounded" />
+            </div>
+          </div>
+          {/* Calendly booking overlay */}
+          <div className="relative z-10 w-full max-w-3xl mx-auto px-4 md:px-6 py-8 space-y-4">
+            <div className="rounded-2xl border border-border bg-card shadow-xl p-5 md:p-6 space-y-4 text-center">
+              <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#290a52' }}>
+                <Lock className="h-5 w-5" style={{ color: '#ffb500' }} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold" style={{ color: '#290a52' }}>This lesson is locked</h2>
+                <p className="text-sm text-muted-foreground mt-1">Book a call to unlock access to this program.</p>
+              </div>
+              <div
+                className="calendly-inline-widget mx-auto"
+                data-url="https://calendly.com/turnermarkus50/the-succession-society?primary_color=290a52"
+                style={{ minWidth: '320px', height: '700px' }}
+              />
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="w-full px-4 md:px-6 py-6 space-y-6">
         {/* Mobile back button */}
@@ -1382,6 +1423,7 @@ export default function CourseDetail() {
           <ArrowLeft className="h-4 w-4" />
           Back to modules
         </button>
+
 
         {/* Video Player */}
         {selectedLesson?.video_url ? (
