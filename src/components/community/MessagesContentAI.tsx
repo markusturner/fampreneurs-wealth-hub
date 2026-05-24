@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   BrainCircuit, MessageSquare, Send, Sparkles, TrendingUp, Target, Scroll, Shield, 
   Heart, Briefcase, Landmark, Bitcoin, ArrowLeft, Settings, Upload, X, 
-  PanelLeftClose, PanelLeftOpen, Plus, History, FolderOpen, BarChart3, CreditCard, DollarSign
+  PanelLeftClose, PanelLeftOpen, Plus, History, FolderOpen, BarChart3, CreditCard, DollarSign, Trash2, Award
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,8 +16,9 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useOwnerRole } from '@/hooks/useOwnerRole';
 import { toast } from 'sonner';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 interface Message {
   id: string;
@@ -40,34 +41,37 @@ interface ExpertProject {
   chatIds: string[];
 }
 
-const aiExperts = [
-  { id: 'ai-financial-advisor', name: 'Sarah Chen', role: 'Financial Advisor', avatar: 'SC', specialty: 'Investment Strategy & Wealth Planning' },
-  { id: 'ai-tax-specialist', name: 'Michael Rodriguez', role: 'Tax Specialist', avatar: 'MR', specialty: 'Tax Optimization & Planning' },
-  { id: 'ai-estate-planner', name: 'Jennifer Williams', role: 'Estate Planner', avatar: 'JW', specialty: 'Estate Planning & Succession' },
-  { id: 'ai-cio', name: 'David Thompson', role: 'Chief Investment Officer', avatar: 'DT', specialty: 'Portfolio Management & Asset Allocation' },
-  { id: 'ai-insurance-expert', name: 'Lisa Park', role: 'Private Life Insurance Agent', avatar: 'LP', specialty: 'Private Life Insurance & Risk Protection' },
-  { id: 'ai-business-consultant', name: 'Robert Johnson', role: 'Business Consultant', avatar: 'RJ', specialty: 'Business Strategy & Advisory' },
-  { id: 'ai-trust-officer', name: 'Amanda Foster', role: 'Trust Officer', avatar: 'AF', specialty: 'Trust Administration' },
-  { id: 'ai-crypto-advisor', name: 'Alex Kumar', role: 'Crypto Advisor', avatar: 'AK', specialty: 'Digital Assets & Crypto' },
-  { id: 'ai-forex-strategist', name: 'Marcus Lee', role: 'Forex Strategist', avatar: 'ML', specialty: 'Forex Strategy & Currency Trading' },
-  { id: 'ai-stock-strategist', name: 'Nicole Harris', role: 'Stock Strategist', avatar: 'NH', specialty: 'Traditional Stocks, Options & Covered Calls' },
-  { id: 'ai-financial-planner', name: 'James Wilson', role: 'Financial Planning Advisor', avatar: 'JW', specialty: 'Credit Repair, Budgeting & Credit Funding' },
+interface Expert {
+  id: string;
+  name: string;
+  role: string;
+  avatar: string;
+  specialty: string;
+  description: string;
+  yearsExperience: number;
+  iconName: string;
+}
+
+const ICON_MAP: Record<string, any> = {
+  TrendingUp, Target, Scroll, Shield, Heart, Briefcase, Landmark, Bitcoin,
+  BarChart3, CreditCard, DollarSign, MessageSquare, BrainCircuit, Sparkles,
+};
+const ICON_OPTIONS = Object.keys(ICON_MAP);
+
+const defaultExperts: Expert[] = [
+  { id: 'ai-financial-advisor', name: 'Sarah Chen', role: 'Financial Advisor', avatar: 'SC', specialty: 'Investment Strategy & Wealth Planning', description: 'Portfolio strategy and wealth building', yearsExperience: 18, iconName: 'TrendingUp' },
+  { id: 'ai-tax-specialist', name: 'Michael Rodriguez', role: 'Tax Specialist', avatar: 'MR', specialty: 'Tax Optimization & Planning', description: 'Tax optimization strategies', yearsExperience: 22, iconName: 'Target' },
+  { id: 'ai-estate-planner', name: 'Jennifer Williams', role: 'Estate Planner', avatar: 'JW', specialty: 'Estate Planning & Succession', description: 'Succession and legacy planning', yearsExperience: 25, iconName: 'Scroll' },
+  { id: 'ai-cio', name: 'David Thompson', role: 'Chief Investment Officer', avatar: 'DT', specialty: 'Portfolio Management & Asset Allocation', description: 'Portfolio management & asset allocation', yearsExperience: 28, iconName: 'BarChart3' },
+  { id: 'ai-insurance-expert', name: 'Lisa Park', role: 'Private Life Insurance Agent', avatar: 'LP', specialty: 'Private Life Insurance & Risk Protection', description: 'Private life insurance & risk protection', yearsExperience: 15, iconName: 'Shield' },
+  { id: 'ai-business-consultant', name: 'Robert Johnson', role: 'Business Consultant', avatar: 'RJ', specialty: 'Business Strategy & Advisory', description: 'Business strategy guidance', yearsExperience: 20, iconName: 'Briefcase' },
+  { id: 'ai-trust-officer', name: 'Amanda Foster', role: 'Trust Officer', avatar: 'AF', specialty: 'Trust Administration', description: 'Trust management services', yearsExperience: 17, iconName: 'Landmark' },
+  { id: 'ai-crypto-advisor', name: 'Alex Kumar', role: 'Crypto Advisor', avatar: 'AK', specialty: 'Digital Assets & Crypto', description: 'Digital asset management', yearsExperience: 9, iconName: 'Bitcoin' },
+  { id: 'ai-forex-strategist', name: 'Marcus Lee', role: 'Forex Strategist', avatar: 'ML', specialty: 'Forex Strategy & Currency Trading', description: 'Forex & currency trading strategy', yearsExperience: 14, iconName: 'DollarSign' },
+  { id: 'ai-stock-strategist', name: 'Nicole Harris', role: 'Stock Strategist', avatar: 'NH', specialty: 'Traditional Stocks, Options & Covered Calls', description: 'Stocks, options & covered calls', yearsExperience: 16, iconName: 'TrendingUp' },
+  { id: 'ai-financial-planner', name: 'James Wilson', role: 'Financial Planning Advisor', avatar: 'JW', specialty: 'Credit Repair, Budgeting & Credit Funding', description: 'Credit repair, budgeting & credit funding', yearsExperience: 12, iconName: 'CreditCard' },
 ];
 
-const services = [
-  { name: 'Investment Management', icon: TrendingUp, aiId: 'ai-financial-advisor', aiName: 'Sarah Chen', description: 'Portfolio strategy and wealth building' },
-  { name: 'Tax Planning', icon: Target, aiId: 'ai-tax-specialist', aiName: 'Michael Rodriguez', description: 'Tax optimization strategies' },
-  { name: 'Estate Planning', icon: Scroll, aiId: 'ai-estate-planner', aiName: 'Jennifer Williams', description: 'Succession and legacy planning' },
-  { name: 'Chief Investment Officer', icon: BarChart3, aiId: 'ai-cio', aiName: 'David Thompson', description: 'Portfolio management & asset allocation' },
-  { name: 'Private Life Insurance', icon: Shield, aiId: 'ai-insurance-expert', aiName: 'Lisa Park', description: 'Private life insurance & risk protection' },
-  { name: 'Business Advisory', icon: Briefcase, aiId: 'ai-business-consultant', aiName: 'Robert Johnson', description: 'Business strategy guidance' },
-  { name: 'Trust Administration', icon: Landmark, aiId: 'ai-trust-officer', aiName: 'Amanda Foster', description: 'Trust management services' },
-  { name: 'Crypto Strategy', icon: Bitcoin, aiId: 'ai-crypto-advisor', aiName: 'Alex Kumar', description: 'Digital asset management' },
-  { name: 'Forex Strategy', icon: DollarSign, aiId: 'ai-forex-strategist', aiName: 'Marcus Lee', description: 'Forex & currency trading strategy' },
-  { name: 'Stock Strategy', icon: TrendingUp, aiId: 'ai-stock-strategist', aiName: 'Nicole Harris', description: 'Stocks, options & covered calls' },
-  { name: 'Financial Planning', icon: CreditCard, aiId: 'ai-financial-planner', aiName: 'James Wilson', description: 'Credit repair, budgeting & credit funding' },
-  { name: 'Philanthropy Advisory', icon: Heart, aiId: 'ai-financial-advisor', aiName: 'Sarah Chen', description: 'Charitable giving strategies' },
-];
 
 export function MessagesContentAI() {
   const { user } = useAuth();
