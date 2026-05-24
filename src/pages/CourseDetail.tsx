@@ -699,16 +699,30 @@ export default function CourseDetail() {
   }
 
   const handleSelectLesson = (lesson: Lesson) => {
-    if (isProgramLocked(lesson.required_programs)) {
-      toast({
-        title: 'Locked',
-        description: `Available to: ${lockLabel(lesson.required_programs)}`,
-      })
-      return
-    }
     selectLesson(lesson)
     setMobileView('lesson')
   }
+
+  // Determine whether the currently selected lesson is locked for this user
+  const selectedLessonLocked = useMemo(() => {
+    if (!selectedLesson) return false
+    const parentModule = modules.find(m => m.lessons.some(l => l.id === selectedLesson.id))
+    if (parentModule && isProgramLocked(parentModule.required_programs)) return true
+    return isProgramLocked((selectedLesson as any).required_programs)
+  }, [selectedLesson, modules, isProgramLocked])
+
+  // Inject Calendly script once when a locked lesson is shown
+  useEffect(() => {
+    if (!selectedLessonLocked) return
+    const id = 'calendly-widget-script'
+    if (document.getElementById(id)) return
+    const s = document.createElement('script')
+    s.id = id
+    s.src = 'https://assets.calendly.com/assets/external/widget.js'
+    s.async = true
+    document.body.appendChild(s)
+  }, [selectedLessonLocked])
+
 
   const getEmbedUrl = (url: string | null) => {
     if (!url) return null
