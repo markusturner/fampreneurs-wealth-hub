@@ -213,9 +213,10 @@ function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, sho
             </span>
             {isLocked && (
               <p className="text-[10px] mt-0.5 flex items-center gap-1" style={{ color: '#290a52' }}>
-                <Lock className="h-2.5 w-2.5" /> {lockTooltip || 'Locked'}
+                <Lock className="h-2.5 w-2.5" /> Locked
               </p>
             )}
+
             {!isLocked && lesson.duration_seconds && (
               <p className="text-[10px] text-muted-foreground mt-0.5">
                 {Math.floor(lesson.duration_seconds / 60)} min
