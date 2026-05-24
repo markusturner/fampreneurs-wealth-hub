@@ -424,13 +424,64 @@ export function MessagesContentAI() {
                     <Upload className="h-3.5 w-3.5" /> Upload File
                   </Button>
                 </div>
-                <Button className="w-full" onClick={() => { setSettingsOpen(false); toast.success('Settings saved'); }}>
-                  Save Settings
-                </Button>
+                <div className="flex gap-2">
+                  <Button className="flex-1" onClick={() => { setSettingsOpen(false); toast.success('Settings saved'); }}>
+                    Save Settings
+                  </Button>
+                  {isAdminOrOwner && (
+                    <Button variant="destructive" className="gap-2" onClick={() => handleDeleteExpert(settingsExpertId!)}>
+                      <Trash2 className="h-4 w-4" /> Delete
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Add Expert Dialog */}
+        <Dialog open={addExpertOpen} onOpenChange={setAddExpertOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Add New AI Expert</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label className="text-sm">Name</Label>
+                <Input value={newExpert.name} onChange={(e) => setNewExpert({ ...newExpert, name: e.target.value })} placeholder="e.g. Olivia Bennett" />
+              </div>
+              <div>
+                <Label className="text-sm">Role / Title</Label>
+                <Input value={newExpert.role} onChange={(e) => setNewExpert({ ...newExpert, role: e.target.value })} placeholder="e.g. Real Estate Advisor" />
+              </div>
+              <div>
+                <Label className="text-sm">Specialty</Label>
+                <Input value={newExpert.specialty} onChange={(e) => setNewExpert({ ...newExpert, specialty: e.target.value })} placeholder="e.g. Commercial real estate & syndications" />
+              </div>
+              <div>
+                <Label className="text-sm">Short description (shown on card)</Label>
+                <Textarea rows={2} value={newExpert.description} onChange={(e) => setNewExpert({ ...newExpert, description: e.target.value })} placeholder="e.g. Real estate strategy and deal analysis" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-sm">Years of experience</Label>
+                  <Input type="number" min={0} value={newExpert.yearsExperience} onChange={(e) => setNewExpert({ ...newExpert, yearsExperience: parseInt(e.target.value) || 0 })} />
+                </div>
+                <div>
+                  <Label className="text-sm">Icon</Label>
+                  <select className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm" value={newExpert.iconName} onChange={(e) => setNewExpert({ ...newExpert, iconName: e.target.value })}>
+                    {ICON_OPTIONS.map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setAddExpertOpen(false)}>Cancel</Button>
+              <Button onClick={handleAddExpert} className="bg-[#ffb500] hover:bg-[#ffc733] text-[#290a52] font-semibold">Add Expert</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
       </div>
     );
   }
