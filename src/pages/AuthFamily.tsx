@@ -13,6 +13,7 @@ export default function AuthFamily() {
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [familySecretCode, setFamilySecretCode] = useState('')
   const { toast } = useToast()
   const navigate = useNavigate()
