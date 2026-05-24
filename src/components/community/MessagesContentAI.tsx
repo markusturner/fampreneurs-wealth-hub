@@ -286,11 +286,37 @@ export function MessagesContentAI() {
     input.click();
   };
 
-  const handleServiceClick = (service: typeof services[0]) => {
-    selectExpert(service.aiId);
+  const handleDeleteExpert = (expertId: string) => {
+    if (!confirm('Remove this expert from the list?')) return;
+    if (customExperts.some(e => e.id === expertId)) {
+      setCustomExperts(prev => prev.filter(e => e.id !== expertId));
+    } else {
+      setDeletedExpertIds(prev => [...prev, expertId]);
+    }
+    setSettingsOpen(false);
+    toast.success('Expert removed');
   };
 
-  // Not viewing an expert - show service cards
+  const handleAddExpert = () => {
+    if (!newExpert.name.trim() || !newExpert.role.trim()) {
+      toast.error('Name and role are required');
+      return;
+    }
+    const initials = newExpert.name.split(' ').map(s => s.charAt(0)).slice(0, 2).join('').toUpperCase() || 'AI';
+    const expert: Expert = {
+      ...newExpert,
+      avatar: initials,
+      specialty: newExpert.specialty || newExpert.role,
+      description: newExpert.description || newExpert.specialty || newExpert.role,
+      id: `ai-custom-${Date.now()}`,
+    };
+    setCustomExperts(prev => [...prev, expert]);
+    setAddExpertOpen(false);
+    setNewExpert({ name: '', role: '', specialty: '', description: '', yearsExperience: 5, iconName: 'BrainCircuit' });
+    toast.success(`Added ${expert.name}`);
+  };
+
+  // Not viewing an expert - show expert cards
   if (!selectedExpertId) {
     return (
       <div className="space-y-6">
@@ -298,22 +324,29 @@ export function MessagesContentAI() {
           <BrainCircuit className="h-16 w-16 mx-auto" color="#2eb2ff" />
           <h2 className="text-3xl font-bold">AI Experts</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Get instant expert advice from our AI specialists. Click any service to start chatting.
+            Get instant expert advice from our AI specialists. Click any expert to start chatting.
           </p>
           <Badge variant="default" className="text-sm px-4 py-2">
             <Sparkles className="h-4 w-4 mr-2" />
             Available 24/7
           </Badge>
+          {isAdminOrOwner && (
+            <div>
+              <Button onClick={() => setAddExpertOpen(true)} className="mt-2 gap-2 bg-[#ffb500] hover:bg-[#ffc733] text-[#290a52] font-semibold">
+                <Plus className="h-4 w-4" /> Add Expert
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-7xl mx-auto">
-          {services.map((service) => {
-            const Icon = service.icon;
+          {visibleExperts.map((expert) => {
+            const Icon = ICON_MAP[expert.iconName] || BrainCircuit;
             return (
               <Card 
-                key={service.name}
+                key={expert.id}
                 className="cursor-pointer hover:shadow-lg hover:border-[#ffb500] hover:scale-105 transition-all duration-300 relative"
-                onClick={() => handleServiceClick(service)}
+                onClick={() => selectExpert(expert.id)}
               >
                 <CardContent className="p-6">
                   <div className="space-y-4">
@@ -321,11 +354,15 @@ export function MessagesContentAI() {
                       <Icon className="h-8 w-8 text-foreground" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-lg mb-2">{service.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-3">{service.description}</p>
+                      <h3 className="font-bold text-lg mb-1">{expert.role}</h3>
+                      <p className="text-sm text-muted-foreground mb-2">{expert.description}</p>
+                      <div className="flex items-center gap-1.5 text-xs font-semibold text-[#ffb500] mb-3">
+                        <Award className="h-3.5 w-3.5" />
+                        {expert.yearsExperience}+ years experience
+                      </div>
                       <div className="flex items-center text-sm font-semibold text-foreground">
                         <MessageSquare className="h-4 w-4 mr-2" />
-                        Chat with {service.aiName}
+                        Chat with {expert.name}
                       </div>
                     </div>
                   </div>
@@ -333,7 +370,7 @@ export function MessagesContentAI() {
                 {isAdminOrOwner && (
                   <button
                     className="absolute top-2 right-2 p-1.5 rounded-lg hover:bg-muted transition-colors"
-                    onClick={(e) => { e.stopPropagation(); setSettingsExpertId(service.aiId); setSettingsOpen(true); }}
+                    onClick={(e) => { e.stopPropagation(); setSettingsExpertId(expert.id); setSettingsOpen(true); }}
                     title="Project Settings"
                   >
                     <Settings className="h-4 w-4 text-muted-foreground" />
@@ -343,6 +380,7 @@ export function MessagesContentAI() {
             );
           })}
         </div>
+
 
         {/* Settings Dialog */}
         <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
