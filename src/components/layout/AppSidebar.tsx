@@ -212,19 +212,20 @@ export function AppSidebar({ className }: { className?: string }) {
         <div className="px-3 pb-3">
           <Button
             className={cn(
-              "w-full justify-start gap-2 rounded-xl font-semibold border-0",
+              "w-full justify-start gap-2 rounded-xl text-base font-extrabold tracking-wide border-2 ring-2 ring-offset-2 ring-offset-sidebar transition-all",
               currentPath.includes("/succession-planning")
-                ? "bg-[hsl(270,80%,18%)] text-white hover:bg-[hsl(270,80%,25%)] shadow-md shadow-[hsl(270,80%,18%)]/30"
-                : "bg-[hsl(270,80%,18%)] text-[hsl(270,80%,75%)] hover:bg-[hsl(270,80%,28%)] hover:text-white"
+                ? "bg-[hsl(270,80%,18%)] text-white hover:bg-[hsl(270,80%,25%)] border-[hsl(43,100%,50%)] ring-[hsl(43,100%,50%)]/70 shadow-lg shadow-[hsl(270,80%,18%)]/40"
+                : "bg-[hsl(270,80%,18%)] text-white hover:bg-[hsl(270,80%,28%)] border-[hsl(43,100%,50%)]/80 ring-[hsl(43,100%,50%)]/40 shadow-md shadow-[hsl(270,80%,18%)]/30"
             )}
             variant="ghost"
             onClick={() => navigate('/succession-planning')}
           >
-            <Sprout className="h-4 w-4" />
+            <Sprout className="h-5 w-5" />
             Succession Planning
           </Button>
         </div>
       )}
+
 
       <ScrollArea className="flex-1 px-3 py-1">
         {/* WORKSPACE - show if not family-office-only, OR if user has a program assigned (admin-invited users) */}
