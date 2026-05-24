@@ -38,6 +38,8 @@ export default function SOPs() {
   const [newDescription, setNewDescription] = useState('')
   const [newPrograms, setNewPrograms] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dropIndex, setDropIndex] = useState<number | null>(null)
 
   const userPrograms = useMemo(() => profileProgramCodes(profile?.program_name), [profile?.program_name])
   const canAccessSops = isAdminOrOwner || userPrograms.some(p => SOP_PROGRAM_CODES.includes(p))
@@ -98,6 +100,31 @@ export default function SOPs() {
     if (error) toast({ title: 'Error', description: error.message, variant: 'destructive' })
     else { toast({ title: 'Deleted' }); fetchSops() }
   }
+
+  const handleDrop = async (toIndex: number) => {
+    if (!draggingId) return
+    const fromIndex = visibleSops.findIndex(s => s.id === draggingId)
+    setDraggingId(null)
+    setDropIndex(null)
+    if (fromIndex < 0 || fromIndex === toIndex || fromIndex === toIndex - 1) return
+    const reordered = [...visibleSops]
+    const [moved] = reordered.splice(fromIndex, 1)
+    const insertAt = toIndex > fromIndex ? toIndex - 1 : toIndex
+    reordered.splice(insertAt, 0, moved)
+    // Optimistic state
+    const idToNewOrder = new Map(reordered.map((s, i) => [s.id, i]))
+    setSops(prev => [...prev].sort((a, b) => (idToNewOrder.get(a.id) ?? 999) - (idToNewOrder.get(b.id) ?? 999)))
+    // Persist
+    const updates = reordered.map((s, i) =>
+      supabase.from('sops' as any).update({ order_index: i } as any).eq('id', s.id)
+    )
+    const results = await Promise.all(updates)
+    if (results.some(r => r.error)) {
+      toast({ title: 'Reorder failed', description: 'Some changes could not be saved.', variant: 'destructive' })
+      fetchSops()
+    }
+  }
+
 
   if (!canAccessSops && !loading) {
     return (
