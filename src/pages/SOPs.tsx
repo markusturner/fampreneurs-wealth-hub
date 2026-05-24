@@ -16,6 +16,8 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { Plus, FileText, ArrowLeft, BookOpen, Pencil, Trash2, Lock } from 'lucide-react'
 import { SOP_PROGRAM_CODES, programLabel, profileProgramCodes } from '@/lib/programs'
+import { cn } from '@/lib/utils'
+
 
 interface Sop {
   id: string
