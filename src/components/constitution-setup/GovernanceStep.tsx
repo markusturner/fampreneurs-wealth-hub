@@ -41,6 +41,59 @@ export function GovernanceStep({ data, onDataChange }: GovernanceStepProps) {
         </p>
       </div>
 
+      {/* Three Branches of Family Governance */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <Scale className="h-4 w-4 sm:h-5 sm:w-5" />
+            Three Branches of Family Governance
+          </CardTitle>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Who serves in each branch? List one name per line. These names will appear on your Family Constitution.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label className="text-sm sm:text-base flex items-center gap-2">
+              <Crown className="h-4 w-4 text-blue-500" />
+              Family Council (Executive Branch)
+            </Label>
+            <Textarea
+              value={data.familyCouncilMembers || ''}
+              onChange={(e) => handleChange('familyCouncilMembers', e.target.value)}
+              placeholder="John Doe&#10;Jane Doe&#10;..."
+              className="mt-2 min-h-[80px] text-sm sm:text-base"
+            />
+          </div>
+          <div>
+            <Label className="text-sm sm:text-base flex items-center gap-2">
+              <Gavel className="h-4 w-4 text-purple-500" />
+              Council of Elders (Judicial Branch)
+            </Label>
+            <Textarea
+              value={data.councilOfEldersMembers || ''}
+              onChange={(e) => handleChange('councilOfEldersMembers', e.target.value)}
+              placeholder="Grandma Doe&#10;Grandpa Doe&#10;..."
+              className="mt-2 min-h-[80px] text-sm sm:text-base"
+            />
+          </div>
+          <div>
+            <Label className="text-sm sm:text-base flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-green-500" />
+              Family Assembly (Legislative Branch)
+            </Label>
+            <Textarea
+              value={data.familyAssemblyMembers || ''}
+              onChange={(e) => handleChange('familyAssemblyMembers', e.target.value)}
+              placeholder="All voting-age family members&#10;..."
+              className="mt-2 min-h-[80px] text-sm sm:text-base"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
