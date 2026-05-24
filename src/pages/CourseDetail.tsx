@@ -875,12 +875,8 @@ export default function CourseDetail() {
                     <span style={{ color: '#290a52', opacity: moduleLocked ? 0.7 : 1 }} className="flex items-center gap-1.5">
                       {moduleLocked && <Lock className="h-3 w-3" />}
                       {mod.title}
-                      {(mod.required_programs?.length ?? 0) > 0 && (
-                        <span className="ml-1 rounded-full px-1.5 py-0.5 text-[9px] font-medium normal-case tracking-normal" style={{ backgroundColor: '#290a52', color: '#ffb500' }}>
-                          {moduleLockText}
-                        </span>
-                      )}
                     </span>
+
                   </div>
                   <div className="flex items-center gap-1">
                     {isAdminOrOwner && mod.id !== '__uncategorized' && (
