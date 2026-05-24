@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
-import { Scale, Users, Gavel, FileCheck } from 'lucide-react';
+import { Scale, Users, Gavel, FileCheck, Crown, UserCheck } from 'lucide-react';
 
 interface GovernanceStepProps {
   data: {
@@ -15,10 +15,14 @@ interface GovernanceStepProps {
     conflictResolution?: string;
     employmentPolicy?: string;
     dividentPolicy?: string;
+    familyCouncilMembers?: string;
+    councilOfEldersMembers?: string;
+    familyAssemblyMembers?: string;
   };
   onDataChange: (data: any) => void;
   allData: Record<string, any>;
 }
+
 
 export function GovernanceStep({ data, onDataChange }: GovernanceStepProps) {
   const handleChange = (field: string, value: string) => {
