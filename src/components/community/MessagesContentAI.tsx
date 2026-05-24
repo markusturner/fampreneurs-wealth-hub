@@ -96,6 +96,14 @@ export function MessagesContentAI() {
   // Projects per expert
   const [expertProjects, setExpertProjects] = useState<Record<string, ExpertProject[]>>({});
 
+  // Custom experts and deleted defaults (admin only managed)
+  const [customExperts, setCustomExperts] = useState<Expert[]>([]);
+  const [deletedExpertIds, setDeletedExpertIds] = useState<string[]>([]);
+  const [addExpertOpen, setAddExpertOpen] = useState(false);
+  const [newExpert, setNewExpert] = useState<Omit<Expert, 'id' | 'avatar'>>({
+    name: '', role: '', specialty: '', description: '', yearsExperience: 5, iconName: 'BrainCircuit',
+  });
+
   // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('aiExpertSessions');
@@ -106,6 +114,10 @@ export function MessagesContentAI() {
     if (savedFiles) setExpertFiles(JSON.parse(savedFiles));
     const savedProjects = localStorage.getItem('aiExpertProjects');
     if (savedProjects) setExpertProjects(JSON.parse(savedProjects));
+    const savedCustom = localStorage.getItem('aiExpertsCustom');
+    if (savedCustom) setCustomExperts(JSON.parse(savedCustom));
+    const savedDeleted = localStorage.getItem('aiExpertsDeleted');
+    if (savedDeleted) setDeletedExpertIds(JSON.parse(savedDeleted));
   }, []);
 
   useEffect(() => {
@@ -126,10 +138,23 @@ export function MessagesContentAI() {
   }, [expertProjects]);
 
   useEffect(() => {
+    localStorage.setItem('aiExpertsCustom', JSON.stringify(customExperts));
+  }, [customExperts]);
+
+  useEffect(() => {
+    localStorage.setItem('aiExpertsDeleted', JSON.stringify(deletedExpertIds));
+  }, [deletedExpertIds]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeChatId, expertSessions]);
 
-  const selectedExpert = aiExperts.find(e => e.id === selectedExpertId);
+  const allExperts: Expert[] = [...defaultExperts, ...customExperts];
+  const visibleExperts = allExperts.filter(e => !deletedExpertIds.includes(e.id));
+  const aiExperts = allExperts; // alias used by lookup logic below
+
+  const selectedExpert = allExperts.find(e => e.id === selectedExpertId);
+
   const sessions = selectedExpertId ? (expertSessions[selectedExpertId] || []) : [];
   const activeSession = sessions.find(s => s.id === activeChatId);
 
