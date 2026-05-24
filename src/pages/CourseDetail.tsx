@@ -213,9 +213,10 @@ function SortableLessonItem({ lesson, globalIdx, isSelected, isAdminOrOwner, sho
             </span>
             {isLocked && (
               <p className="text-[10px] mt-0.5 flex items-center gap-1" style={{ color: '#290a52' }}>
-                <Lock className="h-2.5 w-2.5" /> {lockTooltip || 'Locked'}
+                <Lock className="h-2.5 w-2.5" /> Locked
               </p>
             )}
+
             {!isLocked && lesson.duration_seconds && (
               <p className="text-[10px] text-muted-foreground mt-0.5">
                 {Math.floor(lesson.duration_seconds / 60)} min
@@ -698,16 +699,47 @@ export default function CourseDetail() {
   }
 
   const handleSelectLesson = (lesson: Lesson) => {
-    if (isProgramLocked(lesson.required_programs)) {
-      toast({
-        title: 'Locked',
-        description: `Available to: ${lockLabel(lesson.required_programs)}`,
-      })
-      return
-    }
     selectLesson(lesson)
     setMobileView('lesson')
   }
+
+  // Determine whether the currently selected lesson is locked for this user
+  const selectedLessonLocked = useMemo(() => {
+    if (!selectedLesson) return false
+    const parentModule = modules.find(m => m.lessons.some(l => l.id === selectedLesson.id))
+    if (parentModule && isProgramLocked(parentModule.required_programs)) return true
+    return isProgramLocked((selectedLesson as any).required_programs)
+  }, [selectedLesson, modules, isProgramLocked])
+
+  // Inject Calendly script once when a locked lesson is shown
+  useEffect(() => {
+    if (!selectedLessonLocked) return
+    const id = 'calendly-widget-script'
+    const initWidgets = () => {
+      const w: any = window as any
+      if (!w.Calendly) return
+      document.querySelectorAll('.calendly-inline-widget').forEach((el: any) => {
+        if (el.dataset.processed === 'true') return
+        const url = el.getAttribute('data-url')
+        if (!url) return
+        el.innerHTML = ''
+        w.Calendly.initInlineWidget({ url, parentElement: el })
+        el.dataset.processed = 'true'
+      })
+    }
+    if (document.getElementById(id)) {
+      setTimeout(initWidgets, 50)
+      return
+    }
+    const s = document.createElement('script')
+    s.id = id
+    s.src = 'https://assets.calendly.com/assets/external/widget.js'
+    s.async = true
+    s.onload = () => setTimeout(initWidgets, 50)
+    document.body.appendChild(s)
+  }, [selectedLessonLocked, selectedLesson?.id])
+
+
 
   const getEmbedUrl = (url: string | null) => {
     if (!url) return null
@@ -875,12 +907,8 @@ export default function CourseDetail() {
                     <span style={{ color: '#290a52', opacity: moduleLocked ? 0.7 : 1 }} className="flex items-center gap-1.5">
                       {moduleLocked && <Lock className="h-3 w-3" />}
                       {mod.title}
-                      {(mod.required_programs?.length ?? 0) > 0 && (
-                        <span className="ml-1 rounded-full px-1.5 py-0.5 text-[9px] font-medium normal-case tracking-normal" style={{ backgroundColor: '#290a52', color: '#ffb500' }}>
-                          {moduleLockText}
-                        </span>
-                      )}
                     </span>
+
                   </div>
                   <div className="flex items-center gap-1">
                     {isAdminOrOwner && mod.id !== '__uncategorized' && (
@@ -1361,6 +1389,47 @@ export default function CourseDetail() {
     }
 
     // ── VIEW MODE ──
+    if (selectedLessonLocked && !isAdminOrOwner) {
+      return (
+        <div className="relative w-full min-h-full">
+          <button
+            onClick={() => setMobileView('modules')}
+            className="md:hidden flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors px-4 pt-4"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to modules
+          </button>
+          {/* Blurred placeholder backdrop */}
+          <div className="absolute inset-0 pointer-events-none select-none" aria-hidden>
+            <div className="w-full h-full px-4 md:px-6 py-6 space-y-6 blur-md opacity-60">
+              <div className="w-full aspect-video bg-muted rounded-xl" />
+              <div className="h-6 w-2/3 bg-muted rounded" />
+              <div className="h-4 w-full bg-muted rounded" />
+              <div className="h-4 w-5/6 bg-muted rounded" />
+              <div className="h-4 w-4/6 bg-muted rounded" />
+            </div>
+          </div>
+          {/* Calendly booking overlay */}
+          <div className="relative z-10 w-full max-w-3xl mx-auto px-4 md:px-6 py-8 space-y-4">
+            <div className="rounded-2xl border border-border bg-card shadow-xl p-5 md:p-6 space-y-4 text-center">
+              <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#290a52' }}>
+                <Lock className="h-5 w-5" style={{ color: '#ffb500' }} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold" style={{ color: '#290a52' }}>This lesson is locked</h2>
+                <p className="text-sm text-muted-foreground mt-1">Book a call to unlock access to this program.</p>
+              </div>
+              <div
+                className="calendly-inline-widget mx-auto"
+                data-url="https://calendly.com/turnermarkus50/the-succession-society?primary_color=290a52"
+                style={{ minWidth: '320px', height: '700px' }}
+              />
+            </div>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="w-full px-4 md:px-6 py-6 space-y-6">
         {/* Mobile back button */}
@@ -1371,6 +1440,7 @@ export default function CourseDetail() {
           <ArrowLeft className="h-4 w-4" />
           Back to modules
         </button>
+
 
         {/* Video Player */}
         {selectedLesson?.video_url ? (
