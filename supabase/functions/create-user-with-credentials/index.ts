@@ -100,12 +100,32 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const existingUser = existingUsers?.users?.find(u => u.email === email);
-    
+    // Look up existing user by email via profiles (avoids 50-row listUsers pagination)
+    let existingUser: { id: string } | null = null;
+    const { data: existingProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id")
+      .eq("email", email)
+      .maybeSingle();
+    if (existingProfile?.user_id) {
+      existingUser = { id: existingProfile.user_id };
+    } else {
+      // Fallback: paginate listUsers to be safe
+      let page = 1;
+      while (page <= 20 && !existingUser) {
+        const { data: list, error: listErr } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+        if (listErr) { console.error("listUsers error:", listErr); break; }
+        const found = list?.users?.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
+        if (found) { existingUser = { id: found.id }; break; }
+        if (!list?.users || list.users.length < 200) break;
+        page++;
+      }
+    }
+
     const tempPassword = generateSecurePassword();
-    
+
     let authUser;
+
     let isExistingUser = false;
 
     if (existingUser) {
