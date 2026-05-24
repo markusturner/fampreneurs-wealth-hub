@@ -1254,6 +1254,16 @@ export default function Documents() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Provides wisdom, oversight, and resolution of disputes. Ensures family values and traditions are preserved.
                   </p>
+                  {parseMembers(constitutionGovernance?.councilOfEldersMembers).length > 0 && (
+                    <div className="mb-4">
+                      <div className="text-sm font-semibold mb-1">Members:</div>
+                      <ul className="text-xs text-muted-foreground space-y-0.5 ml-4">
+                        {parseMembers(constitutionGovernance?.councilOfEldersMembers).map((m, i) => (
+                          <li key={i}>• {m}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <div className="text-sm">
                       <strong>Key Responsibilities:</strong>
@@ -1266,6 +1276,7 @@ export default function Documents() {
                     </ul>
                   </div>
                 </CardContent>
+
               </Card>
 
               {/* Family Assembly - Legislative Branch */}
