@@ -212,15 +212,15 @@ export function AppSidebar({ className }: { className?: string }) {
         <div className="px-3 pb-3">
           <Button
             className={cn(
-              "w-full justify-start gap-2 rounded-xl text-base font-extrabold tracking-wide border-2 ring-2 ring-offset-2 ring-offset-sidebar transition-all",
+              "w-full justify-start gap-2 rounded-xl font-semibold border-0 transition-colors",
               currentPath.includes("/succession-planning")
-                ? "bg-[hsl(270,80%,18%)] text-white hover:bg-[hsl(270,80%,25%)] border-[hsl(43,100%,50%)] ring-[hsl(43,100%,50%)]/70 shadow-lg shadow-[hsl(270,80%,18%)]/40"
-                : "bg-[hsl(270,80%,18%)] text-white hover:bg-[hsl(270,80%,28%)] border-[hsl(43,100%,50%)]/80 ring-[hsl(43,100%,50%)]/40 shadow-md shadow-[hsl(270,80%,18%)]/30"
+                ? "bg-[hsl(270,80%,50%)] text-white hover:bg-[hsl(270,80%,45%)] shadow-md shadow-[hsl(270,80%,50%)]/30"
+                : "bg-[hsl(270,80%,50%)]/15 text-[hsl(270,80%,50%)] hover:bg-[hsl(270,80%,50%)]/25"
             )}
             variant="ghost"
             onClick={() => navigate('/succession-planning')}
           >
-            <Sprout className="h-5 w-5" />
+            <Sprout className="h-4 w-4" />
             Succession Planning
           </Button>
         </div>
