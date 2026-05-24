@@ -715,13 +715,30 @@ export default function CourseDetail() {
   useEffect(() => {
     if (!selectedLessonLocked) return
     const id = 'calendly-widget-script'
-    if (document.getElementById(id)) return
+    const initWidgets = () => {
+      const w: any = window as any
+      if (!w.Calendly) return
+      document.querySelectorAll('.calendly-inline-widget').forEach((el: any) => {
+        if (el.dataset.processed === 'true') return
+        const url = el.getAttribute('data-url')
+        if (!url) return
+        el.innerHTML = ''
+        w.Calendly.initInlineWidget({ url, parentElement: el })
+        el.dataset.processed = 'true'
+      })
+    }
+    if (document.getElementById(id)) {
+      setTimeout(initWidgets, 50)
+      return
+    }
     const s = document.createElement('script')
     s.id = id
     s.src = 'https://assets.calendly.com/assets/external/widget.js'
     s.async = true
+    s.onload = () => setTimeout(initWidgets, 50)
     document.body.appendChild(s)
-  }, [selectedLessonLocked])
+  }, [selectedLessonLocked, selectedLesson?.id])
+
 
 
   const getEmbedUrl = (url: string | null) => {
