@@ -16,6 +16,8 @@ import {
 import { useToast } from '@/hooks/use-toast'
 import { Plus, FileText, ArrowLeft, BookOpen, Pencil, Trash2, Lock } from 'lucide-react'
 import { SOP_PROGRAM_CODES, programLabel, profileProgramCodes } from '@/lib/programs'
+import { cn } from '@/lib/utils'
+
 
 interface Sop {
   id: string
@@ -38,6 +40,8 @@ export default function SOPs() {
   const [newDescription, setNewDescription] = useState('')
   const [newPrograms, setNewPrograms] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dropIndex, setDropIndex] = useState<number | null>(null)
 
   const userPrograms = useMemo(() => profileProgramCodes(profile?.program_name), [profile?.program_name])
   const canAccessSops = isAdminOrOwner || userPrograms.some(p => SOP_PROGRAM_CODES.includes(p))
@@ -99,6 +103,31 @@ export default function SOPs() {
     else { toast({ title: 'Deleted' }); fetchSops() }
   }
 
+  const handleDrop = async (toIndex: number) => {
+    if (!draggingId) return
+    const fromIndex = visibleSops.findIndex(s => s.id === draggingId)
+    setDraggingId(null)
+    setDropIndex(null)
+    if (fromIndex < 0 || fromIndex === toIndex || fromIndex === toIndex - 1) return
+    const reordered = [...visibleSops]
+    const [moved] = reordered.splice(fromIndex, 1)
+    const insertAt = toIndex > fromIndex ? toIndex - 1 : toIndex
+    reordered.splice(insertAt, 0, moved)
+    // Optimistic state
+    const idToNewOrder = new Map(reordered.map((s, i) => [s.id, i]))
+    setSops(prev => [...prev].sort((a, b) => (idToNewOrder.get(a.id) ?? 999) - (idToNewOrder.get(b.id) ?? 999)))
+    // Persist
+    const updates = reordered.map((s, i) =>
+      supabase.from('sops' as any).update({ order_index: i } as any).eq('id', s.id)
+    )
+    const results = await Promise.all(updates)
+    if (results.some(r => r.error)) {
+      toast({ title: 'Reorder failed', description: 'Some changes could not be saved.', variant: 'destructive' })
+      fetchSops()
+    }
+  }
+
+
   if (!canAccessSops && !loading) {
     return (
       <div className="min-h-screen bg-background text-foreground">
@@ -158,42 +187,81 @@ export default function SOPs() {
             <p className="text-sm">No SOPs yet{isAdminOrOwner ? ' — click "Add Document" to create one.' : '.'}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {visibleSops.map((sop) => (
-              <button
-                key={sop.id}
-                onClick={() => navigate(`/sops/${sop.id}`)}
-                className="group relative text-left rounded-xl border border-border bg-card hover:border-[#ffb500]/50 hover:shadow-md transition-all p-5 min-h-[150px] flex flex-col"
-              >
-                {isAdminOrOwner && (
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition flex gap-1">
-                    <span role="button" onClick={(e) => { e.stopPropagation(); navigate(`/sops/${sop.id}?edit=1`) }} className="h-7 w-7 rounded-md bg-muted hover:bg-muted-foreground/20 flex items-center justify-center">
-                      <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                    </span>
-                    <span role="button" onClick={(e) => { e.stopPropagation(); handleDelete(sop.id) }} className="h-7 w-7 rounded-md bg-muted hover:bg-red-500/20 flex items-center justify-center">
-                      <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                    </span>
-                  </div>
-                )}
-                <p className="text-[10px] uppercase tracking-wider text-[#ffb500] mb-2 font-semibold">SOP</p>
-                <div className="h-9 w-9 rounded-lg bg-[#ffb500]/15 border border-[#ffb500]/30 flex items-center justify-center mb-3">
-                  <FileText className="h-4 w-4 text-[#ffb500]" />
+          <>
+            {isAdminOrOwner && (
+              <p className="text-xs text-muted-foreground mb-3 text-center">
+                Drag and drop documents to reorder them. A gold line shows where the document will drop.
+              </p>
+            )}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {visibleSops.map((sop, index) => (
+                <div
+                  key={sop.id}
+                  className="relative"
+                  onDragOver={(e) => {
+                    if (!isAdminOrOwner || !draggingId) return
+                    e.preventDefault()
+                    const rect = e.currentTarget.getBoundingClientRect()
+                    const isAfter = e.clientX - rect.left > rect.width / 2
+                    setDropIndex(isAfter ? index + 1 : index)
+                  }}
+                  onDrop={(e) => {
+                    if (!isAdminOrOwner || !draggingId) return
+                    e.preventDefault()
+                    handleDrop(dropIndex ?? index)
+                  }}
+                >
+                  {/* Drop indicator (left side) */}
+                  {isAdminOrOwner && dropIndex === index && draggingId && (
+                    <div className="absolute -left-2 top-0 bottom-0 w-1 rounded-full bg-[#ffb500] shadow-[0_0_8px_2px_rgba(255,181,0,0.5)] z-10" />
+                  )}
+                  {/* Drop indicator (right side, last position) */}
+                  {isAdminOrOwner && dropIndex === index + 1 && draggingId && index === visibleSops.length - 1 && (
+                    <div className="absolute -right-2 top-0 bottom-0 w-1 rounded-full bg-[#ffb500] shadow-[0_0_8px_2px_rgba(255,181,0,0.5)] z-10" />
+                  )}
+                  <button
+                    draggable={isAdminOrOwner}
+                    onDragStart={() => setDraggingId(sop.id)}
+                    onDragEnd={() => { setDraggingId(null); setDropIndex(null) }}
+                    onClick={() => navigate(`/sops/${sop.id}`)}
+                    className={cn(
+                      "group relative text-left rounded-xl border border-border bg-card hover:border-[#ffb500]/50 hover:shadow-md transition-all p-5 min-h-[150px] flex flex-col w-full",
+                      isAdminOrOwner && "cursor-grab active:cursor-grabbing",
+                      draggingId === sop.id && "opacity-40"
+                    )}
+                  >
+                    {isAdminOrOwner && (
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition flex gap-1">
+                        <span role="button" onClick={(e) => { e.stopPropagation(); navigate(`/sops/${sop.id}?edit=1`) }} className="h-7 w-7 rounded-md bg-muted hover:bg-muted-foreground/20 flex items-center justify-center">
+                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                        </span>
+                        <span role="button" onClick={(e) => { e.stopPropagation(); handleDelete(sop.id) }} className="h-7 w-7 rounded-md bg-muted hover:bg-red-500/20 flex items-center justify-center">
+                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                        </span>
+                      </div>
+                    )}
+                    <p className="text-[10px] uppercase tracking-wider text-[#ffb500] mb-2 font-semibold">SOP</p>
+                    <div className="h-9 w-9 rounded-lg bg-[#ffb500]/15 border border-[#ffb500]/30 flex items-center justify-center mb-3">
+                      <FileText className="h-4 w-4 text-[#ffb500]" />
+                    </div>
+                    <h3 className="font-semibold text-foreground text-sm md:text-base leading-snug line-clamp-2">{sop.title}</h3>
+                    {sop.description && (
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{sop.description}</p>
+                    )}
+                    {sop.program_tags && sop.program_tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {sop.program_tags.map(t => (
+                          <Badge key={t} variant="secondary" className="text-[9px] py-0 px-1.5">{programLabel(t)}</Badge>
+                        ))}
+                      </div>
+                    )}
+                  </button>
                 </div>
-                <h3 className="font-semibold text-foreground text-sm md:text-base leading-snug line-clamp-2">{sop.title}</h3>
-                {sop.description && (
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{sop.description}</p>
-                )}
-                {sop.program_tags && sop.program_tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {sop.program_tags.map(t => (
-                      <Badge key={t} variant="secondary" className="text-[9px] py-0 px-1.5">{programLabel(t)}</Badge>
-                    ))}
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
+
       </div>
 
       <Dialog open={addOpen} onOpenChange={(o) => { if (!creating) setAddOpen(o) }}>
