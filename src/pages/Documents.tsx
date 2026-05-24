@@ -807,6 +807,7 @@ export default function Documents() {
   // Load governance onboarding data
   const [governanceData, setGovernanceData] = useState<any>(null);
   const [governanceLoading, setGovernanceLoading] = useState(true);
+  const [constitutionGovernance, setConstitutionGovernance] = useState<any>(null);
   
   useEffect(() => {
     if (user?.id) {
@@ -814,9 +815,20 @@ export default function Documents() {
       if (savedData) {
         setGovernanceData(JSON.parse(savedData));
       }
+      const constitutionRaw = localStorage.getItem(`constitution_setup_${user.id}`);
+      if (constitutionRaw) {
+        try {
+          const parsed = JSON.parse(constitutionRaw);
+          setConstitutionGovernance(parsed?.data?.governance || null);
+        } catch {}
+      }
       setGovernanceLoading(false);
     }
   }, [user?.id]);
+
+  const parseMembers = (raw?: string): string[] =>
+    (raw || '').split('\n').map(s => s.trim()).filter(Boolean);
+
 
   // Vote helper functions (after governanceData is defined)
   const calculateVoteResults = (vote: any) => {
