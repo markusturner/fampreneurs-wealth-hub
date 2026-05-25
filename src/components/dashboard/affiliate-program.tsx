@@ -13,7 +13,7 @@ export function AffiliateProgram() {
   const [customCode, setCustomCode] = useState('')
   const [affiliateLink, setAffiliateLink] = useState('')
 
-  const AFFILIATE_LINK = typeof window !== 'undefined' ? `${window.location.origin}/apply` : 'https://truheirs.app/apply'
+  const AFFILIATE_LINK = 'https://truheirs.app/apply'
 
   // Generate default affiliate link using user ID
   const generateDefaultLink = () => {
