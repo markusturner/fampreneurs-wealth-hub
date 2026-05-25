@@ -100,7 +100,7 @@ export default function Apply() {
       <footer className="py-10 text-center text-xs" style={{ backgroundColor: '#290a52', color: '#ffffff' }}>
         <div className="max-w-3xl mx-auto px-4 space-y-3">
           <div className="font-bold tracking-widest">THE FAMPRENEURS</div>
-          <p>© {new Date().getFullYear()} Social Business Solutions, LLC. All Rights Reserved.</p>
+          <p>© {new Date().getFullYear()} VNCI, LLC. All Rights Reserved.</p>
           <p className="opacity-80">
             This site is not a part of the Facebook website or Facebook Inc. FACEBOOK is a trademark of FACEBOOK, Inc.
           </p>
