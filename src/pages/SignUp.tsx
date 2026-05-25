@@ -109,6 +109,12 @@ export default function SignUp() {
         return
       }
 
+      if (affiliateRef) {
+        await supabase.from('affiliate_signups').insert({
+          code: affiliateRef, email, visitor_id: visitorId, user_id: null,
+        })
+      }
+
       window.location.href = checkoutData.url
     } catch (error) {
       toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" })
