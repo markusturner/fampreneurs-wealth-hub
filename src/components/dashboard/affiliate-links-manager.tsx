@@ -29,7 +29,7 @@ interface Stats {
 const SITE_BASE = typeof window !== 'undefined' ? window.location.origin : ''
 
 function buildLink(code: string) {
-  return `${SITE_BASE}/?ref=${encodeURIComponent(code)}`
+  return `${SITE_BASE}/apply?ref=${encodeURIComponent(code)}`
 }
 
 function randomCode() {
