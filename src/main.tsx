@@ -58,6 +58,7 @@ import OnboardingExplanation from "./pages/OnboardingExplanation";
 import ProfilePhotoUpload from "./pages/ProfilePhotoUpload";
 import ResetPassword from "./pages/ResetPassword";
 import TrustDesignBooking from "./pages/TrustDesignBooking";
+import Apply from "./pages/Apply";
 
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
@@ -103,6 +104,7 @@ function AppWithNotifications() {
       <Routes>
         {/* Public routes - no sidebar */}
         <Route path="/" element={<Auth />} />
+        <Route path="/apply" element={<Apply />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/family" element={<AuthFamily />} />
         <Route path="/signup" element={<SignUp />} />
