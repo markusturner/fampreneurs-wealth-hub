@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 
 const APPLICATION_URL = 'https://famlytics.io/f/the-family-business-accelerator-d3q4x7'
 // Replace with your actual VSL video (YouTube/Vimeo embed URL)
-const VIDEO_EMBED_URL = 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+const VIDEO_EMBED_URL = 'https://www.youtube.com/embed/I5U-q4WvCVg'
 
 export default function Apply() {
   useEffect(() => {
