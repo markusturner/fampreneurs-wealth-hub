@@ -36,7 +36,7 @@ export default function Apply() {
   const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
   const refCode = params?.get('ref') || (typeof window !== 'undefined' ? localStorage.getItem('affiliate_ref') : null)
   const applicationSrc = refCode
-    ? `${APPLICATION_URL}#ref=${encodeURIComponent(refCode)}`
+    ? `${APPLICATION_URL}?ref=${encodeURIComponent(refCode)}`
     : APPLICATION_URL
 
   return (
