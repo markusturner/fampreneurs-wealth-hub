@@ -1,14 +1,17 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AffiliateProgram } from '@/components/dashboard/affiliate-program'
+import { AffiliateLinksManager } from '@/components/dashboard/affiliate-links-manager'
 import { AccountSettings } from '@/components/dashboard/account-settings'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Settings, ArrowLeft, User } from 'lucide-react'
+import { Settings, ArrowLeft, User, Link2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 
 export function ProfileSettings() {
+  const { isAdminOrOwner } = useIsAdminOrOwner()
   const { profile } = useAuth()
   const navigate = useNavigate()
   const isMobile = useIsMobile()
