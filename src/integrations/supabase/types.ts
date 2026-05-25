@@ -82,6 +82,69 @@ export type Database = {
           },
         ]
       }
+      affiliate_links: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string
+          recipient_email: string | null
+          recipient_name: string
+          target_url: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          recipient_email?: string | null
+          recipient_name: string
+          target_url?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          recipient_email?: string | null
+          recipient_name?: string
+          target_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      affiliate_signups: {
+        Row: {
+          code: string
+          created_at: string
+          email: string | null
+          id: string
+          user_id: string | null
+          visitor_id: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          user_id?: string | null
+          visitor_id?: string | null
+        }
+        Relationships: []
+      }
       ai_chat_history: {
         Row: {
           content: string
@@ -3729,6 +3792,7 @@ export type Database = {
           created_at: string | null
           id: string
           page_path: string
+          ref_code: string | null
           referrer: string | null
           user_agent: string | null
           visitor_id: string | null
@@ -3737,6 +3801,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           page_path: string
+          ref_code?: string | null
           referrer?: string | null
           user_agent?: string | null
           visitor_id?: string | null
@@ -3745,6 +3810,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           page_path?: string
+          ref_code?: string | null
           referrer?: string | null
           user_agent?: string | null
           visitor_id?: string | null
