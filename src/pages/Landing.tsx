@@ -24,11 +24,20 @@ const Landing = () => {
           localStorage.setItem('visitor_id', visitorId)
         }
 
+        // Capture affiliate ref from URL and persist for signup attribution
+        const params = new URLSearchParams(window.location.search)
+        const refCode = params.get('ref')
+        if (refCode) {
+          sessionStorage.setItem('affiliate_ref', refCode)
+          localStorage.setItem('affiliate_ref', refCode)
+        }
+
         await supabase.from('page_views').insert({
           page_path: '/',
           visitor_id: visitorId,
           user_agent: navigator.userAgent,
-          referrer: document.referrer || null
+          referrer: document.referrer || null,
+          ref_code: refCode || null,
         })
       } catch (error) {
         console.error('Error tracking page view:', error)
