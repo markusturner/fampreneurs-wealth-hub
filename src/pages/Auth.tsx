@@ -18,7 +18,34 @@ export default function Auth() {
   const { toast } = useToast()
   const navigate = useNavigate()
 
+  // Track affiliate ref visits + persist for signup attribution
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const refCode = params.get('ref')
+      if (refCode) {
+        sessionStorage.setItem('affiliate_ref', refCode)
+        localStorage.setItem('affiliate_ref', refCode)
+      }
+      let visitorId = localStorage.getItem('visitor_id')
+      if (!visitorId) {
+        visitorId = crypto.randomUUID()
+        localStorage.setItem('visitor_id', visitorId)
+      }
+      supabase.from('page_views').insert({
+        page_path: '/auth',
+        visitor_id: visitorId,
+        user_agent: navigator.userAgent,
+        referrer: document.referrer || null,
+        ref_code: refCode || null,
+      }).then(() => {})
+    } catch (e) {
+      console.error('page view tracking failed', e)
+    }
+  }, [])
+
   // No auto-redirect on load — user must explicitly sign in
+
 
   const cleanupAuthState = () => {
     Object.keys(localStorage).forEach((key) => {

@@ -52,6 +52,9 @@ export default function SignUp() {
         return
       }
 
+      const affiliateRef = localStorage.getItem('affiliate_ref') || sessionStorage.getItem('affiliate_ref') || null
+      const visitorId = localStorage.getItem('visitor_id')
+
       // Admin-only "Other (Free)" path - create user immediately with temp password emailed
       if (paymentMethod === 'other') {
         const { data, error } = await supabase.functions.invoke('create-user-with-credentials', {
@@ -68,11 +71,17 @@ export default function SignUp() {
           toast({ title: "Sign up failed", description: error?.message || data?.error || "Try again later.", variant: "destructive" })
           return
         }
+        if (affiliateRef) {
+          await supabase.from('affiliate_signups').insert({
+            code: affiliateRef, email, visitor_id: visitorId, user_id: data?.userId ?? null,
+          })
+        }
         toast({ title: "Account created!", description: "A temporary password has been emailed to the user." })
         setEmail(''); setFirstName(''); setLastName('')
         setSelectedProgram(''); setSelectedPriceIndex(''); setPaymentMethod(''); setZipCode('')
         return
       }
+
 
       // Credit card path - go to Stripe checkout. Account is created by webhook after payment.
       const priceIdx = parseInt(selectedPriceIndex)
@@ -98,6 +107,12 @@ export default function SignUp() {
       if (checkoutError || !checkoutData?.url) {
         toast({ title: "Checkout failed", description: checkoutError?.message || "Unable to start checkout.", variant: "destructive" })
         return
+      }
+
+      if (affiliateRef) {
+        await supabase.from('affiliate_signups').insert({
+          code: affiliateRef, email, visitor_id: visitorId, user_id: null,
+        })
       }
 
       window.location.href = checkoutData.url

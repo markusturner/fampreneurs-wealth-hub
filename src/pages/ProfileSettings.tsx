@@ -1,14 +1,17 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AffiliateProgram } from '@/components/dashboard/affiliate-program'
+import { AffiliateLinksManager } from '@/components/dashboard/affiliate-links-manager'
 import { AccountSettings } from '@/components/dashboard/account-settings'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Settings, ArrowLeft, User } from 'lucide-react'
+import { Settings, ArrowLeft, User, Link2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 
 export function ProfileSettings() {
+  const { isAdminOrOwner } = useIsAdminOrOwner()
   const { profile } = useAuth()
   const navigate = useNavigate()
   const isMobile = useIsMobile()
@@ -43,7 +46,7 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="account" className="space-y-4 md:space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className={`grid w-full ${isAdminOrOwner ? 'grid-cols-3' : 'grid-cols-2'}`}>
           <TabsTrigger value="account" className="flex items-center gap-1 md:gap-2 text-sm">
             <User className="h-4 w-4 shrink-0" />
             {isMobile ? "Account" : "Account Settings"}
@@ -52,6 +55,12 @@ export function ProfileSettings() {
             <Settings className="h-4 w-4 shrink-0" />
             {isMobile ? "Affiliate" : "Affiliate Program"}
           </TabsTrigger>
+          {isAdminOrOwner && (
+            <TabsTrigger value="affiliate-manager" className="flex items-center gap-1 md:gap-2 text-sm">
+              <Link2 className="h-4 w-4 shrink-0" />
+              {isMobile ? "Links" : "Affiliate Links"}
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="account">
@@ -61,6 +70,12 @@ export function ProfileSettings() {
         <TabsContent value="affiliate">
           <AffiliateProgram />
         </TabsContent>
+
+        {isAdminOrOwner && (
+          <TabsContent value="affiliate-manager">
+            <AffiliateLinksManager />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )
