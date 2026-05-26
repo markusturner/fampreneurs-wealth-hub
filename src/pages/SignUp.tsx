@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -7,24 +7,45 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, CreditCard } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { PROGRAMS, type ProgramId } from '@/lib/stripe-programs'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { PROGRAMS, LITE_PRICING, type ProgramId } from '@/lib/stripe-programs'
 import { useAuth } from '@/contexts/AuthContext'
 
+const LITE_PLAN_MAP: Record<string, string> = {
+  lite_monthly: LITE_PRICING[0].price_id,
+  lite_quarterly: LITE_PRICING[1].price_id,
+  lite_annual: LITE_PRICING[2].price_id,
+}
+
 export default function SignUp() {
+  const [searchParams] = useSearchParams()
+  const planParam = searchParams.get('plan') || ''
+  const isLitePlan = planParam.startsWith('lite_')
+
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-  const [selectedProgram, setSelectedProgram] = useState<ProgramId | ''>('')
+  const [selectedProgram, setSelectedProgram] = useState<ProgramId | ''>(isLitePlan ? 'fbu' : '')
   const [selectedPriceIndex, setSelectedPriceIndex] = useState<string>('')
-  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'other' | ''>('')
+  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'other' | ''>(isLitePlan ? 'credit_card' : '')
   const [zipCode, setZipCode] = useState('')
 
   const { toast } = useToast()
   const navigate = useNavigate()
   const { profile } = useAuth()
   const isAdmin = profile?.is_admin === true
+
+  // Pre-select Lite pricing index when plan param is present
+  useEffect(() => {
+    if (!isLitePlan) return
+    const program = PROGRAMS.find(p => p.id === 'fbu')
+    if (!program) return
+    const litePriceId = LITE_PLAN_MAP[planParam]
+    const idx = program.pricing.findIndex(p => p.price_id === litePriceId)
+    if (idx >= 0) setSelectedPriceIndex(String(idx))
+  }, [planParam, isLitePlan])
+
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -111,7 +111,7 @@ function SubNavItem({ label, href, active, onClick }: { label: string; href?: st
 const SEARCH_SUGGESTIONS = [
   { label: 'Dashboard', path: '/dashboard', requiresSubscription: true },
   { label: 'Family Office', path: '/digital-family-office', requiresSubscription: true },
-  { label: 'Family Constitution', path: '/documents', requiresSubscription: true },
+  { label: 'Family Constitution', path: '/family-constitution', requiresSubscription: true },
   { label: 'Calendar', path: '/calendar', requiresSubscription: true },
   { label: 'Members', path: '/members', requiresSubscription: true },
   { label: 'AI Chat', path: '/ai-chat', requiresSubscription: false },
@@ -258,7 +258,7 @@ export function AppSidebar({ className }: { className?: string }) {
           <>
               <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
               <NavItem label="Family Office" icon={Home} href="/digital-family-office" active={isActive("/digital-family-office")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
-              <NavItem label="Family Constitution" icon={FileText} href="/documents" active={isActive("/documents")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
+              <NavItem label="Family Constitution" icon={FileText} href="/family-constitution" active={isActive("/family-constitution")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
               <NavItem label="Family Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
               <NavItem label="Family Members" icon={Users} href="/members" active={isActive("/members")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
             </>
