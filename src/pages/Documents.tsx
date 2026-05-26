@@ -430,7 +430,7 @@ export default function Documents() {
         toast.error('Please add your Ancestry.com URL in the Family Constitution setup first');
       }
     } else if (resourceTitle === "Family Governance") {
-      navigate('/family-governance');
+      navigate('/family-constitution');
     } else if (resourceTitle === "Family History Archive") {
       if (accessLevel) {
         alert("🏛️ TRUST ACCESS GRANTED - Accessing Family History Archive...");
