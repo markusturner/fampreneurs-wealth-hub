@@ -166,7 +166,7 @@ export default function FamilyConstitutionSetup() {
     if (user?.id) {
       localStorage.setItem(`governance_onboarding_complete_${user.id}`, 'true');
       toast.success('Family Constitution setup completed!');
-      navigate('/documents');
+      navigate('/family-constitution');
     }
   };
 
@@ -223,7 +223,7 @@ export default function FamilyConstitutionSetup() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/documents')}
+                onClick={() => navigate('/family-constitution')}
                 className="gap-1 sm:gap-2 px-2 sm:px-3"
               >
                 <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -307,7 +307,7 @@ export default function FamilyConstitutionSetup() {
                   <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                     <Button
                       variant="outline"
-                      onClick={() => navigate('/documents')}
+                      onClick={() => navigate('/family-constitution')}
                       className="w-full sm:w-auto"
                     >
                       Save & Exit

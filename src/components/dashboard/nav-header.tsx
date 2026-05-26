@@ -265,9 +265,9 @@ export function NavHeader({ onMenuClick }: NavHeaderProps) {
             <span className="hidden lg:inline">Family Office</span>
           </Button>
           <Button
-            variant={location.pathname === '/documents' ? "default" : "ghost"}
+            variant={location.pathname === '/family-constitution' ? "default" : "ghost"}
             size="sm"
-            onClick={() => navigate('/documents')}
+            onClick={() => navigate('/family-constitution')}
             className="gap-1 lg:gap-2 h-8 lg:h-9 px-2 lg:px-3 text-xs lg:text-sm"
           >
             <FileText className="h-3 w-3 lg:h-4 lg:w-4" />
