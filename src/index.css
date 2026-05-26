@@ -82,7 +82,42 @@ Brand: #290A52, #2EB2FF, #FFB500, #6215C8, #3031CB
     --sidebar-ring: 202 100% 59%;
   }
 
-  /* Dark mode removed - app is light-only */
+  /* Dark mode - scoped to .dark wrapper (used on public Landing page) */
+  .dark {
+    --background: 262 86% 8%;
+    --foreground: 0 0% 98%;
+
+    --card: 262 60% 12%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 262 60% 12%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 41 100% 50%;
+    --primary-foreground: 262 86% 10%;
+    --primary-glow: 41 100% 65%;
+
+    --secondary: 41 100% 50%;
+    --secondary-foreground: 262 86% 10%;
+    --secondary-glow: 41 100% 65%;
+
+    --accent: 202 100% 59%;
+    --accent-foreground: 262 86% 10%;
+
+    --muted: 262 40% 18%;
+    --muted-foreground: 240 5% 75%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 262 40% 22%;
+    --input: 262 40% 22%;
+    --ring: 41 100% 50%;
+
+    --glass-bg: hsl(262 60% 15% / 0.6);
+    --glass-border: hsl(0 0% 100% / 0.1);
+    --glass-shadow: 0 8px 32px hsl(0 0% 0% / 0.4);
+  }
 }
 
 @layer base {
