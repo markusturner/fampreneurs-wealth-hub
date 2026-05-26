@@ -25,7 +25,17 @@ const PRICE_TO_PROGRAM: Record<string, string> = {
   // TFBA
   "price_1T1dl0KKuJwlPZFrnPpruCYU": "tfba",
   "price_1T1dlOKKuJwlPZFrx1Ppbyz4": "tfba",
+  // TruHeirs Lite (FBU community only)
+  "price_1TbLymKKuJwlPZFrYjUNRGcl": "fbu",
+  "price_1TbMCMKKuJwlPZFrvzkgglxC": "fbu",
+  "price_1TbMCfKKuJwlPZFrSbCNsllH": "fbu",
 };
+
+const LITE_PRICE_IDS = new Set([
+  "price_1TbLymKKuJwlPZFrYjUNRGcl",
+  "price_1TbMCMKKuJwlPZFrvzkgglxC",
+  "price_1TbMCfKKuJwlPZFrSbCNsllH",
+]);
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -83,6 +93,8 @@ serve(async (req) => {
     });
 
     const activePrograms: string[] = [];
+    let isLite = false;
+    let hasNonLite = false;
 
     // From subscriptions
     for (const sub of subscriptions.data) {
@@ -90,25 +102,30 @@ serve(async (req) => {
       if (priceId && PRICE_TO_PROGRAM[priceId]) {
         const prog = PRICE_TO_PROGRAM[priceId];
         if (!activePrograms.includes(prog)) activePrograms.push(prog);
+        if (LITE_PRICE_IDS.has(priceId)) isLite = true;
+        else hasNonLite = true;
       }
     }
 
     // From one-time payments (PIF)
     for (const session of sessions.data) {
       if (session.payment_status === "paid" && session.mode === "payment") {
-        // Check line items
         const lineItems = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
         for (const item of lineItems.data) {
           const priceId = item.price?.id;
           if (priceId && PRICE_TO_PROGRAM[priceId]) {
             const prog = PRICE_TO_PROGRAM[priceId];
             if (!activePrograms.includes(prog)) activePrograms.push(prog);
+            hasNonLite = true;
           }
         }
       }
     }
 
-    logStep("Active programs", { activePrograms });
+    // If user has any non-lite product, treat them as full member (not lite)
+    if (hasNonLite) isLite = false;
+
+    logStep("Active programs", { activePrograms, isLite });
 
     const subscribed = activePrograms.length > 0;
     const subscriptionEnd = subscriptions.data.length > 0
@@ -118,6 +135,8 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       subscribed,
       programs: activePrograms,
+      tier: isLite ? 'lite' : 'standard',
+      is_lite: isLite,
       subscription_end: subscriptionEnd,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

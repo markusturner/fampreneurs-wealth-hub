@@ -6,6 +6,8 @@ interface SubscriptionStatus {
   programs: string[]; // e.g. ['fbu', 'tfv', 'tfba']
   subscription_end?: string;
   loading: boolean;
+  isLite: boolean;
+  tier?: 'lite' | 'standard';
 }
 
 export const useSubscription = () => {
@@ -13,6 +15,7 @@ export const useSubscription = () => {
     subscribed: false,
     programs: [],
     loading: true,
+    isLite: false,
   });
 
   const checkSubscription = async () => {
@@ -21,7 +24,7 @@ export const useSubscription = () => {
 
       const { data: session } = await supabase.auth.getSession();
       if (!session.session) {
-        setSubscriptionStatus({ subscribed: false, programs: [], loading: false });
+        setSubscriptionStatus({ subscribed: false, programs: [], loading: false, isLite: false });
         return;
       }
 
@@ -29,7 +32,7 @@ export const useSubscription = () => {
 
       if (error) {
         console.error('Subscription check error:', error);
-        setSubscriptionStatus({ subscribed: false, programs: [], loading: false });
+        setSubscriptionStatus({ subscribed: false, programs: [], loading: false, isLite: false });
         return;
       }
 
@@ -37,11 +40,13 @@ export const useSubscription = () => {
         subscribed: data.subscribed || false,
         programs: data.programs || [],
         subscription_end: data.subscription_end,
+        tier: data.tier,
+        isLite: !!data.is_lite,
         loading: false,
       });
     } catch (error) {
       console.error('Error checking subscription:', error);
-      setSubscriptionStatus({ subscribed: false, programs: [], loading: false });
+      setSubscriptionStatus({ subscribed: false, programs: [], loading: false, isLite: false });
     }
   };
 
@@ -79,7 +84,7 @@ export const useSubscription = () => {
       if (event === 'SIGNED_IN') {
         setTimeout(() => checkSubscription(), 0);
       } else if (event === 'SIGNED_OUT') {
-        setSubscriptionStatus({ subscribed: false, programs: [], loading: false });
+        setSubscriptionStatus({ subscribed: false, programs: [], loading: false, isLite: false });
       }
     });
 
