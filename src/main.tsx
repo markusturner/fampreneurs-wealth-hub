@@ -145,7 +145,7 @@ function AppWithNotifications() {
         <Route path="/tutorial-videos" element={<WithLayout><TutorialVideos /></WithLayout>} />
         <Route path="/help" element={<WithLayout><Help /></WithLayout>} />
         <Route path="/contact" element={<WithLayout><Contact /></WithLayout>} />
-        <Route path="/contact-support" element={<WithLayout><ContactSupport /></WithLayout>} />
+        <Route path="/contact-support" element={<ContactSupport />} />
         <Route path="/search" element={<WithLayout><Search /></WithLayout>} />
         <Route path="/ai-chat" element={<WithLayout><AIChat /></WithLayout>} />
         <Route path="/trust-creation" element={<WithLayout><TrustCreation /></WithLayout>} />
