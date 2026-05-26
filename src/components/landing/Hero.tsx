@@ -40,9 +40,6 @@ export const Hero = () => {
             />
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
-            <Button size="sm" variant="ghost" className="text-xs md:text-sm text-white hover:bg-white/10" onClick={goToSignIn}>
-              Sign In
-            </Button>
             <Button size="sm" className="text-xs md:text-sm shadow-medium hover:shadow-glow transition-smooth hover:scale-105 px-3 md:px-4" style={{
               backgroundColor: '#2eb2ff',
               color: '#290a52'
