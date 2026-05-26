@@ -161,7 +161,10 @@ function AppWithNotifications() {
   )
 }
 
-createRoot(document.getElementById("root")!).render(
+const container = document.getElementById("root")!;
+const w = window as unknown as { __app_root?: ReturnType<typeof createRoot> };
+const root = w.__app_root ?? (w.__app_root = createRoot(container));
+root.render(
   <StrictMode>
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
