@@ -14,7 +14,7 @@ const quickActions = [
     description: "Add trust or family documents",
     icon: Upload,
     variant: "premium" as const,
-    action: () => window.location.href = "/documents"
+    action: () => window.location.href = "/family-constitution"
   },
   {
     title: "Add Family Office Member",

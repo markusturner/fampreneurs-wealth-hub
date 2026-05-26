@@ -37,6 +37,8 @@ export function MobileBottomNav() {
   const [moreOpen, setMoreOpen] = useState(false)
   const [communityPickerOpen, setCommunityPickerOpen] = useState(false)
 
+  const isLite = subscriptionStatus.isLite && !isAdmin && !isOwner && profile?.truheirs_access !== true
+
   const onboardingRoutes = ['/onboarding-explanation', '/onboarding', '/program-agreement', '/profile-photo']
   const isOnboardingRoute = onboardingRoutes.some(r => location.pathname === r)
   const shouldShowNav = user && !location.pathname.includes('/sign-up') && !location.pathname.includes('/auth') && location.pathname !== '/' && !isOnboardingRoute
@@ -118,7 +120,7 @@ export function MobileBottomNav() {
 
   const moreItems = [...workspaceItems, ...truHeirsItems]
 
-  const adminItems = (isAdmin || isOwner) ? [
+  const adminItems = (isAdmin || isOwner) && !isLite ? [
     { name: 'Admin Settings', href: '/admin-settings', icon: Shield },
   ] : []
 

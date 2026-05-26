@@ -16,11 +16,27 @@ const TRUHEIRS_ROUTES = [
   '/dashboard',
   '/digital-family-office',
   '/documents',
+  '/family-constitution',
   '/calendar',
   '/members',
-  '/family-governance',
   '/family-constitution/setup',
   '/investments',
+]
+
+// Routes blocked for TruHeirs Lite (FBU community only) users
+const LITE_BLOCKED_ROUTES = [
+  '/dashboard',
+  '/digital-family-office',
+  '/documents',
+  '/family-constitution',
+  '/calendar',
+  '/members',
+  '/family-constitution/setup',
+  '/investments',
+  '/ai-chat',
+  '/trust-creation',
+  '/succession-planning',
+  '/admin-settings',
 ]
 
 
@@ -41,6 +57,14 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const isTruHeirsRoute = TRUHEIRS_ROUTES.includes(location.pathname)
   const hasTruHeirsAccess = isAdminOrOwner || isOwner || profile?.truheirs_access === true || subscriptionStatus.subscribed || subscriptionStatus.loading
+  const isLite = subscriptionStatus.isLite && !isAdminOrOwner && !isOwner && profile?.truheirs_access !== true
+
+  // Redirect Lite users away from blocked routes
+  useEffect(() => {
+    if (isLite && LITE_BLOCKED_ROUTES.includes(location.pathname)) {
+      navigate('/workspace-community?program=fbu')
+    }
+  }, [isLite, location.pathname, navigate])
 
   useEffect(() => {
     if (!loading && !user) {

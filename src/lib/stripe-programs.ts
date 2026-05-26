@@ -7,6 +7,7 @@ export interface PricingOption {
   amount: number; // cents
   interval: string; // display label
   mode: 'subscription' | 'payment';
+  tier?: 'lite' | 'standard';
 }
 
 export interface Program {
@@ -15,6 +16,15 @@ export interface Program {
   shortName: string;
   pricing: PricingOption[];
 }
+
+// TruHeirs Lite — FBU community-only access
+export const LITE_PRICING: PricingOption[] = [
+  { label: '$47/month', price_id: 'price_1TbLymKKuJwlPZFrYjUNRGcl', amount: 4700, interval: 'Monthly', mode: 'subscription', tier: 'lite' },
+  { label: '$127/quarter', price_id: 'price_1TbMCMKKuJwlPZFrvzkgglxC', amount: 12700, interval: 'Quarterly', mode: 'subscription', tier: 'lite' },
+  { label: '$547/year', price_id: 'price_1TbMCfKKuJwlPZFrSbCNsllH', amount: 54700, interval: 'Annual', mode: 'subscription', tier: 'lite' },
+];
+
+export const LITE_PRICE_IDS = LITE_PRICING.map(p => p.price_id);
 
 export const PROGRAMS: Program[] = [
   {
@@ -25,6 +35,7 @@ export const PROGRAMS: Program[] = [
       { label: '$97/month', price_id: 'price_1T1djeKKuJwlPZFrDTlV3lxH', amount: 9700, interval: 'Monthly', mode: 'subscription' },
       { label: '$247/quarter', price_id: 'price_1T1djuKKuJwlPZFrlK2XGRS0', amount: 24700, interval: 'Quarterly', mode: 'subscription' },
       { label: '$897/year', price_id: 'price_1T1dk5KKuJwlPZFrFxNE9FD7', amount: 89700, interval: 'Annual', mode: 'subscription' },
+      ...LITE_PRICING,
     ],
   },
   {
@@ -58,3 +69,4 @@ export const PROGRAMS: Program[] = [
 
 export const getProgramById = (id: ProgramId) => PROGRAMS.find(p => p.id === id);
 export const getProgramByName = (name: string) => PROGRAMS.find(p => p.name === name);
+export const isLitePriceId = (priceId: string) => LITE_PRICE_IDS.includes(priceId);

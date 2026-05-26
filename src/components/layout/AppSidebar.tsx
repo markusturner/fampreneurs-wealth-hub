@@ -111,7 +111,7 @@ function SubNavItem({ label, href, active, onClick }: { label: string; href?: st
 const SEARCH_SUGGESTIONS = [
   { label: 'Dashboard', path: '/dashboard', requiresSubscription: true },
   { label: 'Family Office', path: '/digital-family-office', requiresSubscription: true },
-  { label: 'Family Constitution', path: '/documents', requiresSubscription: true },
+  { label: 'Family Constitution', path: '/family-constitution', requiresSubscription: true },
   { label: 'Calendar', path: '/calendar', requiresSubscription: true },
   { label: 'Members', path: '/members', requiresSubscription: true },
   { label: 'AI Chat', path: '/ai-chat', requiresSubscription: false },
@@ -139,6 +139,8 @@ export function AppSidebar({ className }: { className?: string }) {
   // Admins/owners always have access. Users explicitly granted truheirs_access by admin (e.g. invited trustees)
   // also get full access without needing a Stripe subscription.
   const hasTruHeirsAccess = isAdmin || isOwner || profile?.truheirs_access === true || (subscriptionStatus.subscribed || subscriptionStatus.loading)
+  // TruHeirs Lite users (FBU community only) — hide AI Chat, Trust, Succession, DFO, Admin
+  const isLite = subscriptionStatus.isLite && !isAdmin && !isOwner && profile?.truheirs_access !== true
 
   const filteredSuggestions = SEARCH_SUGGESTIONS.filter(s => {
     // Filter by access
@@ -176,20 +178,22 @@ export function AppSidebar({ className }: { className?: string }) {
         <span className="font-montserrat font-bold text-lg text-sidebar-foreground">TruHeirs</span>
       </div>
 
-      {/* AI Chat Button */}
-      <div className="px-3 pb-2">
-        <Button
-          className="w-full justify-start gap-2 rounded-xl font-semibold bg-[hsl(210,100%,58%)]/10 text-[hsl(210,100%,58%)] hover:bg-[hsl(210,100%,58%)]/20 border-0"
-          variant="ghost"
-          onClick={() => navigate('/ai-chat')}
-        >
-          <Bot className="h-4 w-4" />
-          AI Chat
-        </Button>
-      </div>
+      {/* AI Chat Button — hidden for Lite */}
+      {!isLite && (
+        <div className="px-3 pb-2">
+          <Button
+            className="w-full justify-start gap-2 rounded-xl font-semibold bg-[hsl(210,100%,58%)]/10 text-[hsl(210,100%,58%)] hover:bg-[hsl(210,100%,58%)]/20 border-0"
+            variant="ghost"
+            onClick={() => navigate('/ai-chat')}
+          >
+            <Bot className="h-4 w-4" />
+            AI Chat
+          </Button>
+        </div>
+      )}
 
-      {/* Trust Creation - hidden for invited family members */}
-      {!isFamilyMember && (
+      {/* Trust Creation - hidden for invited family members and Lite */}
+      {!isFamilyMember && !isLite && (
         <div className="px-3 pb-2">
           <Button
             className={cn(
@@ -208,7 +212,7 @@ export function AppSidebar({ className }: { className?: string }) {
       )}
 
       {/* Succession Planning - brand purple */}
-      {!isFamilyMember && (
+      {!isFamilyMember && !isLite && (
         <div className="px-3 pb-3">
           <Button
             className={cn(
@@ -250,22 +254,24 @@ export function AppSidebar({ className }: { className?: string }) {
           </>
         )}
 
-        {/* DIGITAL FAMILY OFFICE */}
-        <div className="mb-1 mt-5">
-          <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Digital Family Office</p>
-        </div>
-        <div className="space-y-0.5">
+        {/* DIGITAL FAMILY OFFICE — hidden for Lite */}
+        {!isLite && (
           <>
+            <div className="mb-1 mt-5">
+              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Digital Family Office</p>
+            </div>
+            <div className="space-y-0.5">
               <NavItem label="Dashboard" icon={LayoutDashboard} href="/dashboard" active={isActive("/dashboard")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
               <NavItem label="Family Office" icon={Home} href="/digital-family-office" active={isActive("/digital-family-office")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
-              <NavItem label="Family Constitution" icon={FileText} href="/documents" active={isActive("/documents")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
+              <NavItem label="Family Constitution" icon={FileText} href="/family-constitution" active={isActive("/family-constitution")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
               <NavItem label="Family Calendar" icon={Calendar} href="/calendar" active={isActive("/calendar")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
               <NavItem label="Family Members" icon={Users} href="/members" active={isActive("/members")} locked={!hasTruHeirsAccess} onClick={() => handleLockedClick('fbu')} />
-            </>
-        </div>
+            </div>
+          </>
+        )}
 
-        {/* ADMIN */}
-        {(isAdmin || isOwner) && (
+        {/* ADMIN — hidden for Lite */}
+        {(isAdmin || isOwner) && !isLite && (
           <>
             <div className="mb-1 mt-5">
               <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</p>

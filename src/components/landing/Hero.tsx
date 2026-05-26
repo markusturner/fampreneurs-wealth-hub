@@ -1,21 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { ArrowDown, Star, Users, TrendingUp } from 'lucide-react';
-import { navigateToRoute, scrollToSection } from '@/utils/navigation';
-import { useTheme } from '@/components/theme-provider';
-import { FlowSelectionModal } from './FlowSelectionModal';
-import { useState } from 'react';
+import { scrollToSection } from '@/utils/navigation';
+import { useNavigate } from 'react-router-dom';
 export const Hero = () => {
-  const { theme } = useTheme();
-  const [showFlowModal, setShowFlowModal] = useState(false);
-  
+  const navigate = useNavigate();
   const scrollToPricing = () => {
     scrollToSection('pricing');
   };
-  
-
-  const handleGetStarted = () => {
-    setShowFlowModal(true);
-  };
+  const goToSignIn = () => navigate('/auth');
   return <section className="relative min-h-[100dvh] min-h-screen flex items-center justify-center bg-background overflow-hidden"
     style={{
       minHeight: 'calc(var(--vh, 1vh) * 100)', // Fallback for browsers without dvh support
@@ -41,13 +33,16 @@ export const Hero = () => {
       <nav className="absolute top-0 left-0 right-0 z-50 p-1 md:p-2 backdrop-blur-sm bg-background/80 safe-area-top">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-2 md:space-x-3">
-            <img 
-              src={theme === 'dark' ? "/lovable-uploads/04497296-47f8-41b8-8138-1326135c3c2e.png" : "/lovable-uploads/cb7af8d2-0809-4d9d-8fa4-acfb507144de.png"}
-              alt="TruHeirs Logo" 
+            <img
+              src="/lovable-uploads/04497296-47f8-41b8-8138-1326135c3c2e.png"
+              alt="TruHeirs Logo"
               className="w-14 h-14 md:w-16 md:h-16 object-contain transition-smooth hover:scale-105"
             />
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
+            <Button size="sm" variant="ghost" className="text-xs md:text-sm text-white hover:bg-white/10" onClick={goToSignIn}>
+              Sign In
+            </Button>
             <Button size="sm" className="text-xs md:text-sm shadow-medium hover:shadow-glow transition-smooth hover:scale-105 px-3 md:px-4" style={{
               backgroundColor: '#2eb2ff',
               color: '#290a52'
@@ -134,9 +129,5 @@ export const Hero = () => {
         </div>
       </div>
       
-      <FlowSelectionModal 
-        open={showFlowModal} 
-        onOpenChange={setShowFlowModal} 
-      />
     </section>;
 };
