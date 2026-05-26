@@ -10,7 +10,7 @@ import { MeetingsProvider } from "@/contexts/MeetingsContext";
 import { useZapierNotifications } from "@/hooks/useZapierNotifications";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppLayout } from "@/components/layout/AppLayout";
-// Landing page removed - auth is the default
+import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import AuthFamily from "./pages/AuthFamily";
@@ -32,7 +32,7 @@ import WorkspaceCalendar from "./pages/WorkspaceCalendar";
 import Messenger from "./pages/Messenger";
 import OnboardingSubmissions from "./pages/OnboardingSubmissions";
 
-import FamilyGovernance from "./pages/FamilyGovernance";
+
 import FamilyConstitutionSetup from "./pages/FamilyConstitutionSetup";
 import Search from "./pages/Search";
 
@@ -103,7 +103,7 @@ function AppWithNotifications() {
     <>
       <Routes>
         {/* Public routes - no sidebar */}
-        <Route path="/" element={<Auth />} />
+        <Route path="/" element={<Landing />} />
         <Route path="/apply" element={<Apply />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/family" element={<AuthFamily />} />
@@ -134,8 +134,8 @@ function AppWithNotifications() {
         <Route path="/onboarding-submissions" element={<WithLayout><OnboardingSubmissions /></WithLayout>} />
         <Route path="/courses" element={<WithLayout><Courses /></WithLayout>} />
         <Route path="/documents" element={<WithLayout><Documents /></WithLayout>} />
+        <Route path="/family-constitution" element={<WithLayout><Documents /></WithLayout>} />
         <Route path="/family-roundtable" element={<WithLayout><Dashboard /></WithLayout>} />
-        <Route path="/family-governance" element={<WithLayout><FamilyGovernance /></WithLayout>} />
         <Route path="/family-constitution/setup" element={<WithLayout><FamilyConstitutionSetup /></WithLayout>} />
         <Route path="/calendar" element={<WithLayout><Calendar /></WithLayout>} />
         <Route path="/members" element={<WithLayout><Members /></WithLayout>} />
