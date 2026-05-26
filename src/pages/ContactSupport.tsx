@@ -67,10 +67,10 @@ const ContactSupport = () => {
           </Button>
           <div className="ml-auto">
             <Button 
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/signup')}
               className="bg-primary text-primary-foreground hover:opacity-90"
             >
-              Sign In
+              Sign Up
             </Button>
           </div>
         </div>
