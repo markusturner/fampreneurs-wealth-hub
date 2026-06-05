@@ -4,6 +4,8 @@ import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
 import Underline from '@tiptap/extension-underline'
+import { TextStyle } from '@tiptap/extension-text-style'
+import { Color } from '@tiptap/extension-color'
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   List, ListOrdered, Quote, Code, Link as LinkIcon,
@@ -14,6 +16,47 @@ import { cn } from '@/lib/utils'
 interface Props {
   content: string
   onChange: (html: string) => void
+}
+
+const HEADING_COLORS = {
+  1: 'hsl(120 100% 50%)',
+  2: 'hsl(187 100% 55%)',
+  3: 'hsl(0 0% 100%)',
+  4: 'hsl(0 0% 100%)',
+} as const
+
+type HeadingLevel = keyof typeof HEADING_COLORS
+
+function recolorSelectedHeadings(editor: any, level: HeadingLevel) {
+  const { state, view } = editor
+  const { doc, selection, schema } = state
+  const textStyle = schema.marks.textStyle
+  if (!textStyle) return
+
+  const ranges: Array<{ from: number; to: number }> = []
+  if (selection.empty) {
+    const pos = selection.$from.before(selection.$from.depth)
+    const node = selection.$from.parent
+    if (node.type.name === 'heading' && node.attrs.level === level && node.content.size > 0) {
+      ranges.push({ from: pos + 1, to: pos + node.nodeSize - 1 })
+    }
+  } else {
+    doc.nodesBetween(selection.from, selection.to, (node: any, pos: number) => {
+      if (node.type.name === 'heading' && node.attrs.level === level && node.content.size > 0) {
+        ranges.push({ from: pos + 1, to: pos + node.nodeSize - 1 })
+        return false
+      }
+      return true
+    })
+  }
+
+  if (!ranges.length) return
+  const mark = textStyle.create({ color: HEADING_COLORS[level] })
+  let tr = state.tr
+  ranges.forEach(({ from, to }) => {
+    tr = tr.removeMark(from, to, textStyle).addMark(from, to, mark)
+  })
+  view.dispatch(tr)
 }
 
 export function LessonRichTextEditor({ content, onChange }: Props) {
@@ -27,6 +70,8 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
       Image.configure({ inline: false, allowBase64: true }),
       Link.configure({ openOnClick: false, autolink: true }),
       Underline,
+      TextStyle,
+      Color,
     ],
     content,
     onUpdate: ({ editor }) => {
@@ -98,15 +143,20 @@ export function LessonRichTextEditor({ content, onChange }: Props) {
     action()
   }
 
+  const applyHeading = (level: HeadingLevel) => {
+    editor.chain().focus().toggleHeading({ level }).run()
+    recolorSelectedHeadings(editor, level)
+  }
+
   return (
     <div className="border border-border rounded-xl overflow-hidden bg-background w-full">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border bg-muted/40">
         {/* Headings */}
-        <button type="button" tabIndex={-1} className={tb(editor.isActive('heading', { level: 1 }))} onMouseDown={(e) => cmd(e, () => editor.chain().focus().toggleHeading({ level: 1 }).run())} title="Heading 1"><span className="text-xs font-bold">H<sub>1</sub></span></button>
-        <button type="button" tabIndex={-1} className={tb(editor.isActive('heading', { level: 2 }))} onMouseDown={(e) => cmd(e, () => editor.chain().focus().toggleHeading({ level: 2 }).run())} title="Heading 2"><span className="text-xs font-bold">H<sub>2</sub></span></button>
-        <button type="button" tabIndex={-1} className={tb(editor.isActive('heading', { level: 3 }))} onMouseDown={(e) => cmd(e, () => editor.chain().focus().toggleHeading({ level: 3 }).run())} title="Heading 3"><span className="text-xs font-bold">H<sub>3</sub></span></button>
-        <button type="button" tabIndex={-1} className={tb(editor.isActive('heading', { level: 4 }))} onMouseDown={(e) => cmd(e, () => editor.chain().focus().toggleHeading({ level: 4 }).run())} title="Heading 4"><span className="text-xs font-bold">H<sub>4</sub></span></button>
+        <button type="button" tabIndex={-1} className={tb(editor.isActive('heading', { level: 1 }))} onMouseDown={(e) => cmd(e, () => { applyHeading(1); return true })} title="Heading 1"><span className="text-xs font-bold">H<sub>1</sub></span></button>
+        <button type="button" tabIndex={-1} className={tb(editor.isActive('heading', { level: 2 }))} onMouseDown={(e) => cmd(e, () => { applyHeading(2); return true })} title="Heading 2"><span className="text-xs font-bold">H<sub>2</sub></span></button>
+        <button type="button" tabIndex={-1} className={tb(editor.isActive('heading', { level: 3 }))} onMouseDown={(e) => cmd(e, () => { applyHeading(3); return true })} title="Heading 3"><span className="text-xs font-bold">H<sub>3</sub></span></button>
+        <button type="button" tabIndex={-1} className={tb(editor.isActive('heading', { level: 4 }))} onMouseDown={(e) => cmd(e, () => { applyHeading(4); return true })} title="Heading 4"><span className="text-xs font-bold">H<sub>4</sub></span></button>
         <div className="w-px h-5 bg-border mx-1" />
         {/* Text style */}
         <button type="button" tabIndex={-1} className={tb(editor.isActive('bold'))} onMouseDown={(e) => cmd(e, () => editor.chain().focus().toggleBold().run())} title="Bold"><Bold className="h-3.5 w-3.5" /></button>
