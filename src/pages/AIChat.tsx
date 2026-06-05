@@ -5,7 +5,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Send, Bot, User, Loader2, Shield, Building2, FileText, Paperclip, Settings2, X, ChevronDown, Upload, Mic, Square, Plus, FolderOpen, MessageSquare, MoreHorizontal, Trash2, FolderPlus, ArrowLeft, PanelLeftOpen, Video } from 'lucide-react'
+import { Send, Bot, User, Loader2, Shield, Building2, FileText, Paperclip, Settings2, X, ChevronDown, Upload, Mic, Square, Plus, FolderOpen, MessageSquare, MoreHorizontal, Trash2, FolderPlus, ArrowLeft, PanelLeftOpen, Video, Download, Cloud } from 'lucide-react'
+import jsPDF from 'jspdf'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
@@ -74,15 +75,14 @@ const AI_MODELS: AIModel[] = [
 
 const PERSONAS: { id: Persona; label: string; icon: React.ElementType; description: string; color: string; activeColor: string }[] = [
   { id: 'rachel', label: 'Rachel', icon: Bot, description: 'General Family Office Director', color: '#ffb500', activeColor: '#ffb500' },
-  { id: 'asset_protection', label: 'Asset Protection', icon: Shield, description: 'Trust docs & asset shielding', color: '#10b981', activeColor: '#10b981' },
-  { id: 'business_structure', label: 'Biz Structure', icon: Building2, description: 'F.L.I.P. Formula™ guidance', color: '#6366f1', activeColor: '#6366f1' },
+  { id: 'business_structure', label: 'Family Protection Planner', icon: Building2, description: 'Maps your assets, family structure, and legal exposure to build your custom Family Protection Plan and trust structure', color: '#6366f1', activeColor: '#6366f1' },
   { id: 'trust_writer', label: 'Trust Writer', icon: FileText, description: 'Draft trust clauses', color: '#ec4899', activeColor: '#ec4899' },
 ]
 
 const PERSONA_GREETINGS: Record<Persona, string> = {
   rachel: "Hello! I'm Rachel, your Family Office AI assistant. How can I help you today?",
   asset_protection: "Welcome! I specialize in asset protection strategies and trust document guidance. What assets would you like to protect?",
-  business_structure: "Hi! I'm your Business Structure Builder, powered by The F.L.I.P. Formula™. Let's optimize your business entities for maximum tax savings. What's your current setup?",
+  business_structure: "Hi! I'm your Family Protection Planner. I'll ask you a series of questions one at a time to map your assets, family structure, and legal exposure — then build your custom Family Protection Plan. Ready to begin?",
   trust_writer: "Hello! I help draft trust clauses and provisions for irrevocable trusts. What type of trust provision would you like to work on?",
 }
 
@@ -90,13 +90,9 @@ const PRESET_PROMPTS: Record<Persona, { label: string; prompt: string }[]> = {
   rachel: [
     { label: '💬 I need help', prompt: '__intro_rachel__' },
   ],
-  asset_protection: [
-    { label: '🛡️ I need asset protection help', prompt: '__intro_asset_protection__' },
-    { label: '🏦 Infinite banking concept', prompt: 'Can you explain the infinite banking concept?' },
-    { label: '📜 Family constitution contents', prompt: 'What should I include within my family constitution?' },
-  ],
+  asset_protection: [],
   business_structure: [
-    { label: '🏢 I need help structuring my business', prompt: '__intro_business_structure__' },
+    { label: '🛡️ Build my Family Protection Plan', prompt: '__intro_business_structure__' },
   ],
   trust_writer: [
     { label: '📝 I need help with my trust', prompt: '__intro_trust_writer__' },
@@ -307,11 +303,11 @@ export default function AIChat() {
       },
       '__intro_asset_protection__': {
         userMsg: 'I need asset protection help',
-        reply: `Hey ${displayName || 'there'}! I'm your Asset Protection Specialist. I help with trust documents, asset shielding strategies, and wealth preservation. What assets would you like to protect today?`
+        reply: `Hey ${displayName || 'there'}! I'm your Asset Protection Specialist.`
       },
       '__intro_business_structure__': {
-        userMsg: 'I need help structuring my business',
-        reply: `Hey ${displayName || 'there'}! I'm your Business Structure Builder, powered by The F.L.I.P. Formula™. I help optimize your business entities for maximum tax savings and asset protection. What's your current business setup?`
+        userMsg: 'Build my Family Protection Plan',
+        reply: `Hey ${displayName || 'there'}! I'm your Family Protection Planner. I'll ask you 6 short questions one at a time, then build your full Family Protection Plan and trust structure.\n\n**Question 1 of 6:** What is your full name, your spouse's name (if any), and the names and ages of your children?`
       },
       '__intro_trust_writer__': {
         userMsg: 'I need help with my trust',
@@ -485,6 +481,58 @@ export default function AIChat() {
   const currentModel = AI_MODELS.find(m => m.id === selectedModel)!
   const hasConversation = messages.length > 1
   const presets = PRESET_PROMPTS[activePersona]
+
+  // Detect latest Family Protection Plan document from assistant messages
+  const planMessage = [...messages].reverse().find(
+    m => m.role === 'assistant' && /#\s*Family Protection Plan/i.test(m.content)
+  )
+  const planDoc = planMessage?.content || ''
+  const showPlanPanel = activePersona === 'business_structure' && planDoc.length > 0
+
+  const downloadPlanPDF = () => {
+    if (!planDoc) return
+    const pdf = new jsPDF({ unit: 'pt', format: 'letter' })
+    const margin = 48
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    const maxWidth = pageWidth - margin * 2
+    let y = margin
+    const lines = planDoc.split('\n')
+    pdf.setFont('helvetica', 'normal')
+    for (const raw of lines) {
+      let line = raw.replace(/\*\*/g, '').replace(/`/g, '')
+      let size = 11
+      let style: 'normal' | 'bold' = 'normal'
+      if (line.startsWith('# ')) { size = 18; style = 'bold'; line = line.slice(2) }
+      else if (line.startsWith('## ')) { size = 14; style = 'bold'; line = line.slice(3) }
+      else if (line.startsWith('### ')) { size = 12; style = 'bold'; line = line.slice(4) }
+      else if (line.startsWith('- ') || line.startsWith('* ')) { line = '• ' + line.slice(2) }
+      pdf.setFontSize(size)
+      pdf.setFont('helvetica', style)
+      const wrapped = pdf.splitTextToSize(line || ' ', maxWidth)
+      for (const w of wrapped) {
+        if (y > pageHeight - margin) { pdf.addPage(); y = margin }
+        pdf.text(w, margin, y)
+        y += size + 4
+      }
+    }
+    pdf.save('family-protection-plan.pdf')
+  }
+
+  const uploadPlanToDrive = async () => {
+    if (!planDoc) return
+    toast({ title: 'Uploading to Google Drive...' })
+    try {
+      const { data, error } = await supabase.functions.invoke('family-plan-to-drive', {
+        body: { content: planDoc, fileName: `Family Protection Plan - ${new Date().toLocaleDateString()}` }
+      })
+      if (error || data?.error) throw new Error(error?.message || data?.error)
+      toast({ title: 'Saved to Google Drive', description: data?.link ? `Open: ${data.link}` : undefined })
+    } catch (err: any) {
+      toast({ title: 'Drive upload failed', description: err.message || 'Connect Google Drive in project settings.', variant: 'destructive' })
+    }
+  }
+
 
   // Group conversations by project
   const unfiledConversations = conversations.filter(c => !c.project_id)
@@ -816,6 +864,44 @@ export default function AIChat() {
           )}
         </div>
       </div>
+
+      {/* Family Protection Plan side panel */}
+      {showPlanPanel && (
+        <div className="hidden lg:flex flex-col w-[420px] xl:w-[480px] border-l bg-muted/30 flex-shrink-0">
+          <div className="flex items-center justify-between gap-2 px-4 py-2 border-b bg-card">
+            <div className="flex items-center gap-2 min-w-0">
+              <FileText className="h-4 w-4 text-primary flex-shrink-0" />
+              <span className="text-sm font-semibold truncate">Family Protection Plan</span>
+            </div>
+            <div className="flex gap-1 flex-shrink-0">
+              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={downloadPlanPDF}>
+                <Download className="h-3 w-3" /> PDF
+              </Button>
+              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={uploadPlanToDrive}>
+                <Cloud className="h-3 w-3" /> Drive
+              </Button>
+            </div>
+          </div>
+          <ScrollArea className="flex-1">
+            <div className="mx-auto my-6 bg-white text-gray-900 shadow-md rounded-sm px-12 py-14 max-w-[8.5in] min-h-[11in]"
+              style={{ fontFamily: 'Arial, sans-serif' }}>
+              <div className="prose prose-sm max-w-none
+                [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-3 [&_h1]:text-gray-900
+                [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h2]:text-gray-900
+                [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1.5 [&_h3]:text-gray-800
+                [&_p]:text-sm [&_p]:leading-relaxed [&_p]:text-gray-800 [&_p]:my-2
+                [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-2 [&_li]:text-sm [&_li]:text-gray-800
+                [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-2
+                [&_strong]:font-semibold [&_strong]:text-gray-900
+                [&_hr]:my-4 [&_hr]:border-gray-300">
+                <ReactMarkdown>{planDoc}</ReactMarkdown>
+              </div>
+            </div>
+          </ScrollArea>
+        </div>
+      )}
+
+
 
       {/* Settings Dialog */}
       {isAdminOrOwner && (
