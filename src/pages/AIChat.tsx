@@ -302,11 +302,11 @@ export default function AIChat() {
       },
       '__intro_asset_protection__': {
         userMsg: 'I need asset protection help',
-        reply: `Hey ${displayName || 'there'}! I'm your Asset Protection Specialist. I help with trust documents, asset shielding strategies, and wealth preservation. What assets would you like to protect today?`
+        reply: `Hey ${displayName || 'there'}! I'm your Asset Protection Specialist.`
       },
       '__intro_business_structure__': {
-        userMsg: 'I need help structuring my business',
-        reply: `Hey ${displayName || 'there'}! I'm your Business Structure Builder, powered by The F.L.I.P. Formula™. I help optimize your business entities for maximum tax savings and asset protection. What's your current business setup?`
+        userMsg: 'Build my Family Protection Plan',
+        reply: `Hey ${displayName || 'there'}! I'm your Family Protection Planner. I'll ask you 6 short questions one at a time, then build your full Family Protection Plan and trust structure.\n\n**Question 1 of 6:** What is your full name, your spouse's name (if any), and the names and ages of your children?`
       },
       '__intro_trust_writer__': {
         userMsg: 'I need help with my trust',
