@@ -331,6 +331,11 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
     editor.chain().focus().insertContent(code).run()
   }
 
+  const applyHeading = (level: HeadingLevel) => {
+    editor.chain().focus().toggleHeading({ level }).run()
+    recolorSelectedHeadings(editor, level)
+  }
+
   if (!editable) {
     return <EditorContent editor={editor} />
   }
@@ -351,9 +356,10 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
     <div className={bare ? '' : 'border border-border rounded-lg bg-card'}>
       <div className={`flex flex-wrap items-center gap-0.5 ${bare ? 'border border-border rounded-lg bg-card/80 backdrop-blur shadow-sm px-2 py-1.5 sticky top-12 z-10 mb-2' : 'border-b border-border px-2 py-1.5 sticky top-0 bg-card z-10 rounded-t-lg'}`}>
 
-        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} title="Heading 1"><Heading1 className="h-4 w-4" /></Btn>
-        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} title="Heading 2"><Heading2 className="h-4 w-4" /></Btn>
-        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} title="Heading 3"><Heading3 className="h-4 w-4" /></Btn>
+        <Btn onClick={() => applyHeading(1)} active={editor.isActive('heading', { level: 1 })} title="Heading 1"><Heading1 className="h-4 w-4" /></Btn>
+        <Btn onClick={() => applyHeading(2)} active={editor.isActive('heading', { level: 2 })} title="Heading 2"><Heading2 className="h-4 w-4" /></Btn>
+        <Btn onClick={() => applyHeading(3)} active={editor.isActive('heading', { level: 3 })} title="Heading 3"><Heading3 className="h-4 w-4" /></Btn>
+        <Btn onClick={() => applyHeading(4)} active={editor.isActive('heading', { level: 4 })} title="Heading 4"><Heading4 className="h-4 w-4" /></Btn>
         <div className="w-px h-5 bg-border mx-1" />
         <Btn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold"><Bold className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic"><Italic className="h-4 w-4" /></Btn>
