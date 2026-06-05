@@ -74,15 +74,14 @@ const AI_MODELS: AIModel[] = [
 
 const PERSONAS: { id: Persona; label: string; icon: React.ElementType; description: string; color: string; activeColor: string }[] = [
   { id: 'rachel', label: 'Rachel', icon: Bot, description: 'General Family Office Director', color: '#ffb500', activeColor: '#ffb500' },
-  { id: 'asset_protection', label: 'Asset Protection', icon: Shield, description: 'Trust docs & asset shielding', color: '#10b981', activeColor: '#10b981' },
-  { id: 'business_structure', label: 'Biz Structure', icon: Building2, description: 'F.L.I.P. Formula™ guidance', color: '#6366f1', activeColor: '#6366f1' },
+  { id: 'business_structure', label: 'Family Protection Planner', icon: Building2, description: 'Maps your assets, family structure, and legal exposure to build your custom Family Protection Plan and trust structure', color: '#6366f1', activeColor: '#6366f1' },
   { id: 'trust_writer', label: 'Trust Writer', icon: FileText, description: 'Draft trust clauses', color: '#ec4899', activeColor: '#ec4899' },
 ]
 
 const PERSONA_GREETINGS: Record<Persona, string> = {
   rachel: "Hello! I'm Rachel, your Family Office AI assistant. How can I help you today?",
   asset_protection: "Welcome! I specialize in asset protection strategies and trust document guidance. What assets would you like to protect?",
-  business_structure: "Hi! I'm your Business Structure Builder, powered by The F.L.I.P. Formula™. Let's optimize your business entities for maximum tax savings. What's your current setup?",
+  business_structure: "Hi! I'm your Family Protection Planner. I'll ask you a series of questions one at a time to map your assets, family structure, and legal exposure — then build your custom Family Protection Plan. Ready to begin?",
   trust_writer: "Hello! I help draft trust clauses and provisions for irrevocable trusts. What type of trust provision would you like to work on?",
 }
 
@@ -90,13 +89,9 @@ const PRESET_PROMPTS: Record<Persona, { label: string; prompt: string }[]> = {
   rachel: [
     { label: '💬 I need help', prompt: '__intro_rachel__' },
   ],
-  asset_protection: [
-    { label: '🛡️ I need asset protection help', prompt: '__intro_asset_protection__' },
-    { label: '🏦 Infinite banking concept', prompt: 'Can you explain the infinite banking concept?' },
-    { label: '📜 Family constitution contents', prompt: 'What should I include within my family constitution?' },
-  ],
+  asset_protection: [],
   business_structure: [
-    { label: '🏢 I need help structuring my business', prompt: '__intro_business_structure__' },
+    { label: '🛡️ Build my Family Protection Plan', prompt: '__intro_business_structure__' },
   ],
   trust_writer: [
     { label: '📝 I need help with my trust', prompt: '__intro_trust_writer__' },
