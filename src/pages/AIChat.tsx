@@ -482,6 +482,58 @@ export default function AIChat() {
   const hasConversation = messages.length > 1
   const presets = PRESET_PROMPTS[activePersona]
 
+  // Detect latest Family Protection Plan document from assistant messages
+  const planMessage = [...messages].reverse().find(
+    m => m.role === 'assistant' && /#\s*Family Protection Plan/i.test(m.content)
+  )
+  const planDoc = planMessage?.content || ''
+  const showPlanPanel = activePersona === 'business_structure' && planDoc.length > 0
+
+  const downloadPlanPDF = () => {
+    if (!planDoc) return
+    const pdf = new jsPDF({ unit: 'pt', format: 'letter' })
+    const margin = 48
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    const maxWidth = pageWidth - margin * 2
+    let y = margin
+    const lines = planDoc.split('\n')
+    pdf.setFont('helvetica', 'normal')
+    for (const raw of lines) {
+      let line = raw.replace(/\*\*/g, '').replace(/`/g, '')
+      let size = 11
+      let style: 'normal' | 'bold' = 'normal'
+      if (line.startsWith('# ')) { size = 18; style = 'bold'; line = line.slice(2) }
+      else if (line.startsWith('## ')) { size = 14; style = 'bold'; line = line.slice(3) }
+      else if (line.startsWith('### ')) { size = 12; style = 'bold'; line = line.slice(4) }
+      else if (line.startsWith('- ') || line.startsWith('* ')) { line = '• ' + line.slice(2) }
+      pdf.setFontSize(size)
+      pdf.setFont('helvetica', style)
+      const wrapped = pdf.splitTextToSize(line || ' ', maxWidth)
+      for (const w of wrapped) {
+        if (y > pageHeight - margin) { pdf.addPage(); y = margin }
+        pdf.text(w, margin, y)
+        y += size + 4
+      }
+    }
+    pdf.save('family-protection-plan.pdf')
+  }
+
+  const uploadPlanToDrive = async () => {
+    if (!planDoc) return
+    toast({ title: 'Uploading to Google Drive...' })
+    try {
+      const { data, error } = await supabase.functions.invoke('family-plan-to-drive', {
+        body: { content: planDoc, fileName: `Family Protection Plan - ${new Date().toLocaleDateString()}` }
+      })
+      if (error || data?.error) throw new Error(error?.message || data?.error)
+      toast({ title: 'Saved to Google Drive', description: data?.link ? `Open: ${data.link}` : undefined })
+    } catch (err: any) {
+      toast({ title: 'Drive upload failed', description: err.message || 'Connect Google Drive in project settings.', variant: 'destructive' })
+    }
+  }
+
+
   // Group conversations by project
   const unfiledConversations = conversations.filter(c => !c.project_id)
   const projectConversations = (projectId: string) => conversations.filter(c => c.project_id === projectId)
