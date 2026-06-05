@@ -865,6 +865,44 @@ export default function AIChat() {
         </div>
       </div>
 
+      {/* Family Protection Plan side panel */}
+      {showPlanPanel && (
+        <div className="hidden lg:flex flex-col w-[420px] xl:w-[480px] border-l bg-muted/30 flex-shrink-0">
+          <div className="flex items-center justify-between gap-2 px-4 py-2 border-b bg-card">
+            <div className="flex items-center gap-2 min-w-0">
+              <FileText className="h-4 w-4 text-primary flex-shrink-0" />
+              <span className="text-sm font-semibold truncate">Family Protection Plan</span>
+            </div>
+            <div className="flex gap-1 flex-shrink-0">
+              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={downloadPlanPDF}>
+                <Download className="h-3 w-3" /> PDF
+              </Button>
+              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={uploadPlanToDrive}>
+                <Cloud className="h-3 w-3" /> Drive
+              </Button>
+            </div>
+          </div>
+          <ScrollArea className="flex-1">
+            <div className="mx-auto my-6 bg-white text-gray-900 shadow-md rounded-sm px-12 py-14 max-w-[8.5in] min-h-[11in]"
+              style={{ fontFamily: 'Arial, sans-serif' }}>
+              <div className="prose prose-sm max-w-none
+                [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-3 [&_h1]:text-gray-900
+                [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-2 [&_h2]:text-gray-900
+                [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-1.5 [&_h3]:text-gray-800
+                [&_p]:text-sm [&_p]:leading-relaxed [&_p]:text-gray-800 [&_p]:my-2
+                [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:my-2 [&_li]:text-sm [&_li]:text-gray-800
+                [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:my-2
+                [&_strong]:font-semibold [&_strong]:text-gray-900
+                [&_hr]:my-4 [&_hr]:border-gray-300">
+                <ReactMarkdown>{planDoc}</ReactMarkdown>
+              </div>
+            </div>
+          </ScrollArea>
+        </div>
+      )}
+
+
+
       {/* Settings Dialog */}
       {isAdminOrOwner && (
         <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
