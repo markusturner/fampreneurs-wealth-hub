@@ -25,7 +25,7 @@ import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   List, ListOrdered, Quote, Link as LinkIcon,
   Image as ImageIcon, Minus, Youtube as YoutubeIcon, Heading1, Heading2,
-  Heading3, Code2, Sparkles, Paperclip, Highlighter, Table as TableIcon,
+  Heading3, Heading4, Code2, Sparkles, Paperclip, Highlighter, Table as TableIcon,
   Lightbulb, AlignLeft, AlignCenter, AlignRight, AlignJustify,
   IndentIncrease, IndentDecrease, ListChecks, Subscript as SubIcon,
   Superscript as SupIcon, Undo2, Redo2, RemoveFormatting, Palette,
@@ -107,6 +107,47 @@ function urlToEmbedHtml(rawUrl: string): string | null {
   return wrap(url)
 }
 
+const HEADING_COLORS = {
+  1: 'hsl(120 100% 50%)',
+  2: 'hsl(187 100% 55%)',
+  3: 'hsl(0 0% 100%)',
+  4: 'hsl(0 0% 100%)',
+} as const
+
+type HeadingLevel = keyof typeof HEADING_COLORS
+
+function recolorSelectedHeadings(editor: any, level: HeadingLevel) {
+  const { state, view } = editor
+  const { doc, selection, schema } = state
+  const textStyle = schema.marks.textStyle
+  if (!textStyle) return
+
+  const ranges: Array<{ from: number; to: number }> = []
+  if (selection.empty) {
+    const pos = selection.$from.before(selection.$from.depth)
+    const node = selection.$from.parent
+    if (node.type.name === 'heading' && node.attrs.level === level && node.content.size > 0) {
+      ranges.push({ from: pos + 1, to: pos + node.nodeSize - 1 })
+    }
+  } else {
+    doc.nodesBetween(selection.from, selection.to, (node: any, pos: number) => {
+      if (node.type.name === 'heading' && node.attrs.level === level && node.content.size > 0) {
+        ranges.push({ from: pos + 1, to: pos + node.nodeSize - 1 })
+        return false
+      }
+      return true
+    })
+  }
+
+  if (!ranges.length) return
+  const mark = textStyle.create({ color: HEADING_COLORS[level] })
+  let tr = state.tr
+  ranges.forEach(({ from, to }) => {
+    tr = tr.removeMark(from, to, textStyle).addMark(from, to, mark)
+  })
+  view.dispatch(tr)
+}
+
 export function SopEditor({ content, onChange, editable = true, bare = false }: Props) {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -116,7 +157,7 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
     immediatelyRender: true,
     editable,
     extensions: [
-      StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: false, underline: false }),
+      StarterKit.configure({ heading: { levels: [1, 2, 3, 4] }, link: false, underline: false }),
       Image.configure({ inline: false, allowBase64: true }),
       Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { class: 'text-[#2eb2ff] underline' } }),
       Underline,
@@ -290,6 +331,15 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
     editor.chain().focus().insertContent(code).run()
   }
 
+  const applyHeading = (level: HeadingLevel) => {
+    const wasHeading = editor.isActive('heading', { level })
+    editor.chain().focus().toggleHeading({ level }).run()
+    if (!wasHeading) {
+      editor.chain().focus().setColor(HEADING_COLORS[level]).run()
+      recolorSelectedHeadings(editor, level)
+    }
+  }
+
   if (!editable) {
     return <EditorContent editor={editor} />
   }
@@ -310,9 +360,10 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
     <div className={bare ? '' : 'border border-border rounded-lg bg-card'}>
       <div className={`flex flex-wrap items-center gap-0.5 ${bare ? 'border border-border rounded-lg bg-card/80 backdrop-blur shadow-sm px-2 py-1.5 sticky top-12 z-10 mb-2' : 'border-b border-border px-2 py-1.5 sticky top-0 bg-card z-10 rounded-t-lg'}`}>
 
-        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} title="Heading 1"><Heading1 className="h-4 w-4" /></Btn>
-        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} title="Heading 2"><Heading2 className="h-4 w-4" /></Btn>
-        <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} title="Heading 3"><Heading3 className="h-4 w-4" /></Btn>
+        <Btn onClick={() => applyHeading(1)} active={editor.isActive('heading', { level: 1 })} title="Heading 1"><Heading1 className="h-4 w-4" /></Btn>
+        <Btn onClick={() => applyHeading(2)} active={editor.isActive('heading', { level: 2 })} title="Heading 2"><Heading2 className="h-4 w-4" /></Btn>
+        <Btn onClick={() => applyHeading(3)} active={editor.isActive('heading', { level: 3 })} title="Heading 3"><Heading3 className="h-4 w-4" /></Btn>
+        <Btn onClick={() => applyHeading(4)} active={editor.isActive('heading', { level: 4 })} title="Heading 4"><Heading4 className="h-4 w-4" /></Btn>
         <div className="w-px h-5 bg-border mx-1" />
         <Btn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold"><Bold className="h-4 w-4" /></Btn>
         <Btn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic"><Italic className="h-4 w-4" /></Btn>
