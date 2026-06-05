@@ -25,7 +25,7 @@ import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   List, ListOrdered, Quote, Link as LinkIcon,
   Image as ImageIcon, Minus, Youtube as YoutubeIcon, Heading1, Heading2,
-  Heading3, Code2, Sparkles, Paperclip, Highlighter, Table as TableIcon,
+  Heading3, Heading4, Code2, Sparkles, Paperclip, Highlighter, Table as TableIcon,
   Lightbulb, AlignLeft, AlignCenter, AlignRight, AlignJustify,
   IndentIncrease, IndentDecrease, ListChecks, Subscript as SubIcon,
   Superscript as SupIcon, Undo2, Redo2, RemoveFormatting, Palette,
@@ -107,6 +107,47 @@ function urlToEmbedHtml(rawUrl: string): string | null {
   return wrap(url)
 }
 
+const HEADING_COLORS = {
+  1: 'hsl(120 100% 50%)',
+  2: 'hsl(187 100% 55%)',
+  3: 'hsl(0 0% 100%)',
+  4: 'hsl(0 0% 100%)',
+} as const
+
+type HeadingLevel = keyof typeof HEADING_COLORS
+
+function recolorSelectedHeadings(editor: any, level: HeadingLevel) {
+  const { state, view } = editor
+  const { doc, selection, schema } = state
+  const textStyle = schema.marks.textStyle
+  if (!textStyle) return
+
+  const ranges: Array<{ from: number; to: number }> = []
+  if (selection.empty) {
+    const pos = selection.$from.before(selection.$from.depth)
+    const node = selection.$from.parent
+    if (node.type.name === 'heading' && node.attrs.level === level && node.content.size > 0) {
+      ranges.push({ from: pos + 1, to: pos + node.nodeSize - 1 })
+    }
+  } else {
+    doc.nodesBetween(selection.from, selection.to, (node: any, pos: number) => {
+      if (node.type.name === 'heading' && node.attrs.level === level && node.content.size > 0) {
+        ranges.push({ from: pos + 1, to: pos + node.nodeSize - 1 })
+        return false
+      }
+      return true
+    })
+  }
+
+  if (!ranges.length) return
+  const mark = textStyle.create({ color: HEADING_COLORS[level] })
+  let tr = state.tr
+  ranges.forEach(({ from, to }) => {
+    tr = tr.removeMark(from, to, textStyle).addMark(from, to, mark)
+  })
+  view.dispatch(tr)
+}
+
 export function SopEditor({ content, onChange, editable = true, bare = false }: Props) {
   const { toast } = useToast()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -116,7 +157,7 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
     immediatelyRender: true,
     editable,
     extensions: [
-      StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: false, underline: false }),
+      StarterKit.configure({ heading: { levels: [1, 2, 3, 4] }, link: false, underline: false }),
       Image.configure({ inline: false, allowBase64: true }),
       Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { class: 'text-[#2eb2ff] underline' } }),
       Underline,
