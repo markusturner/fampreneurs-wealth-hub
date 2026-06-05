@@ -332,8 +332,12 @@ export function SopEditor({ content, onChange, editable = true, bare = false }: 
   }
 
   const applyHeading = (level: HeadingLevel) => {
+    const wasHeading = editor.isActive('heading', { level })
     editor.chain().focus().toggleHeading({ level }).run()
-    recolorSelectedHeadings(editor, level)
+    if (!wasHeading) {
+      editor.chain().focus().setColor(HEADING_COLORS[level]).run()
+      recolorSelectedHeadings(editor, level)
+    }
   }
 
   if (!editable) {
