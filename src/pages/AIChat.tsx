@@ -583,6 +583,7 @@ export default function AIChat() {
       )}
       <textarea
         ref={(el) => {
+          inputRef.current = el;
           if (el) {
             el.style.height = '0px';
             el.style.height = Math.max(36, Math.min(el.scrollHeight, 200)) + 'px';
@@ -592,9 +593,9 @@ export default function AIChat() {
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyPress={handleKeyPress}
-        disabled={isLoading}
+        autoFocus
         rows={1}
-        className="w-full resize-none border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none text-sm mb-3 bg-muted rounded-lg px-3 py-2 overflow-y-auto"
+        className="w-full resize-none border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none text-sm mb-3 bg-muted rounded-lg px-3 py-2 overflow-y-auto disabled:opacity-100"
         style={{ minHeight: '36px', maxHeight: '200px' }}
       />
       <div className="flex items-center justify-between gap-2">
