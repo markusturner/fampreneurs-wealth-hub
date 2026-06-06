@@ -11,6 +11,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+function buildFamilyProtectionFactGuard(messages: Array<{ role: string; content: string }>): string {
+  const userText = messages
+    .filter((msg) => msg.role === 'user')
+    .map((msg) => msg.content.toLowerCase())
+    .join('\n');
+
+  const noSpouse = /\b(no|none|not|don't|dont|do not|doesn't|doesnt|without)\b[^\n.]{0,40}\b(spouse|wife|husband|married|partner)\b|\b(single|unmarried|divorced|widowed)\b|\b(no spouse|dont have a spouse|don't have a spouse)\b/.test(userText);
+  const noChildren = /\b(no|none|not|don't|dont|do not|doesn't|doesnt|without)\b[^\n.]{0,40}\b(children|child|kids|sons|daughters)\b|\b(no children|no kids|dont have children|don't have children|dont have kids|don't have kids)\b/.test(userText);
+  const noDependents = /\b(no|none|not|don't|dont|do not|doesn't|doesnt|without)\b[^\n.]{0,40}\b(dependents|dependent|relies|rely|relying)\b|\b(no dependents|nobody relies|no one relies|sole dependent)\b/.test(userText);
+
+  const lockedFacts: string[] = [];
+  if (noSpouse) lockedFacts.push('- Client has confirmed they do NOT have a spouse. Never ask about a spouse again.');
+  if (noChildren) lockedFacts.push('- Client has confirmed they do NOT have children. Never ask about children, ages, guardians, or college again.');
+  if (noDependents) lockedFacts.push('- Client has confirmed they do NOT have dependents. Do not ask dependency questions except monthly burn rate/runway if still missing.');
+
+  if (lockedFacts.length === 0) return '';
+
+  return `\n\n## Locked User Facts — Must Not Be Re-Asked\n${lockedFacts.join('\n')}\nIf any earlier assistant message conflicts with these locked facts, ignore the assistant message and follow the user's facts.`;
+}
+
 const BASE_PERSONA_PROMPTS: Record<string, string> = {
   rachel: `You are Rachel, the AI Family Office Director for TruHeirs - an AI-first family office platform revolutionizing wealth management.
 
@@ -96,6 +116,10 @@ You MUST conduct a thorough, detailed interview to gather every fact needed to b
 
 CRITICAL ADAPTIVE RULES:
 - NEVER ask for information the user already provided. Before asking any question, scan the entire conversation history and skip or rephrase if already answered (e.g. if user said "no spouse or children," do NOT ask about spouse/children again).
+- Treat negative answers as permanent facts unless the user later corrects them. If the user says no spouse, single, unmarried, divorced, widowed, no children, no dependents, none, or no one, NEVER ask about that category again and NEVER invent spouse/child/dependent details.
+- If the user has no spouse, do not include spouse in future questions. Ask only about the client's own income, debts, trustees, beneficiaries, and assets.
+- If the user has no children/dependents, do not ask for children's names, ages, inheritance timing, college plans, guardians, or family dependency details. Ask who the client wants as beneficiaries instead.
+- If the assistant previously made a wrong assumption about spouse/children, explicitly discard that mistaken assumption and continue from the user's corrected answer.
 - If the user already answered part of a topic, only ask the MISSING pieces ("You mentioned an IRA and a car — what's the approximate value of each, and who is the IRA beneficiary?").
 - If an answer is vague or missing dollar amounts, ASK A FOLLOW-UP for the specific number before moving on. Always get amounts/values.
 - Ask ONE question at a time. Number them dynamically ("Question 3: ...") — do not promise a fixed count.
@@ -103,8 +127,8 @@ CRITICAL ADAPTIVE RULES:
 
 TOPICS TO COVER (skip any already fully answered):
 
-1. **Family structure** — full legal name, spouse's full name (if any), children's names + ages, any dependents or other beneficiaries.
-2. **Family dependency** — who relies financially on the client's income, monthly household burn rate, how long the family could survive without the client's income, any special-needs dependents or aging parents.
+1. **Family structure** — full legal name, spouse's full name ONLY if a spouse exists, children's names + ages ONLY if children exist, any dependents ONLY if dependents exist, and other beneficiaries.
+2. **Family dependency** — who relies financially on the client's income. If they already said nobody/no dependents/no spouse/no children, mark dependency as none and only ask monthly household burn rate and emergency runway.
 3. **Assets — full inventory WITH AMOUNTS.** For EACH asset get:
    - Type (real estate, bank/brokerage, business, vehicle, retirement, crypto, collectibles, life insurance, etc.)
    - Description / address / account institution
@@ -117,8 +141,8 @@ TOPICS TO COVER (skip any already fully answered):
 7. **Liabilities & exposure** — total debts with amounts, lawsuits (current/threatened), IRS or state tax issues with amounts, personal guarantees.
 8. **Bankruptcy & legal status** — has the client filed bankruptcy, is one being considered, any active judgments, divorce in progress, pending litigation, IRS liens, look-back window concerns. This drives trust timing.
 9. **Income** — annual W-2, 1099/business, rental, investment, spouse's income — with dollar amounts.
-10. **Successor trustees** — who would the client trust to control everything if they died or became incapacitated tomorrow; do they have a backup; have they ever discussed it with that person.
-11. **Goals & beneficiaries** — who should inherit what, charitable/ministry intent, special-needs or asset-protection concerns for heirs.
+10. **Successor trustees** — who would the client trust to control everything if they died or became incapacitated tomorrow; do they have a backup; have they ever discussed it with that person. Do NOT mention managing assets for children unless children exist.
+11. **Goals & beneficiaries** — who should inherit what, charitable/ministry intent, and special-needs or asset-protection concerns for heirs. Do NOT ask about children if the client said they have none.
 
 Keep asking follow-ups within a topic until you have specific amounts and specifics. Do not move to the final plan until every topic above is covered with concrete numbers.
 
@@ -342,6 +366,7 @@ serve(async (req) => {
       message: z.string().min(1).max(4000),
       persona: z.enum(['rachel', 'asset_protection', 'business_structure', 'trust_writer']).optional().default('rachel'),
       instructions: z.string().optional().default(''),
+      conversation_id: z.string().uuid().optional(),
     });
     
     const body = await req.json();
@@ -354,7 +379,7 @@ serve(async (req) => {
       );
     }
     
-    const { message, persona, instructions } = validation.data;
+    const { message, persona, instructions, conversation_id } = validation.data;
     
     // Build system prompt from DB settings + uploaded documents
     let systemPrompt = await buildSystemPrompt(supabase, persona);
@@ -364,15 +389,26 @@ serve(async (req) => {
       systemPrompt += `\n\n## Additional Instructions:\n${instructions}`;
     }
 
-    // Fetch chat history (last 20 messages)
-    const { data: chatHistory } = await supabase
+    // Fetch chat history for the active conversation only, with legacy fallback.
+    let historyQuery = supabase
       .from('ai_chat_history')
       .select('role, content')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(20);
 
+    if (conversation_id) {
+      historyQuery = historyQuery.eq('conversation_id', conversation_id);
+    } else {
+      historyQuery = historyQuery.contains('metadata', { persona });
+    }
+
+    const { data: chatHistory } = await historyQuery;
+
     const previousMessages = chatHistory?.reverse() || [];
+    const factGuard = persona === 'business_structure'
+      ? buildFamilyProtectionFactGuard([...previousMessages, { role: 'user', content: message }])
+      : '';
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -383,7 +419,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'google/gemini-3-flash-preview',
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: `${systemPrompt}${factGuard}` },
           ...previousMessages,
           { role: 'user', content: message }
         ],
