@@ -279,10 +279,20 @@ export default function AIChat() {
   }
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
-    }
-  }, [messages])
+    const root = scrollAreaRef.current
+    if (!root) return
+    const viewport = root.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement | null
+    const target = viewport || root
+    requestAnimationFrame(() => {
+      target.scrollTo({ top: target.scrollHeight, behavior: 'smooth' })
+    })
+  }, [messages, isLoading])
+
+  // Refocus the input after a send completes
+  useEffect(() => {
+    if (!isLoading) inputRef.current?.focus()
+  }, [isLoading])
+
 
   const switchPersona = useCallback((persona: Persona) => {
     setActivePersona(persona)
