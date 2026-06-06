@@ -776,6 +776,9 @@ export default function AIChat() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={createNewChat} title="New Chat">
+              <Plus className="h-4 w-4" />
+            </Button>
           </div>
           <div className="flex items-center gap-1">
             {isRecording && (
