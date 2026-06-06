@@ -169,18 +169,18 @@ Compute by deducting from 100 based on exposure across four categories. Show the
 |---|---|---|---|---|---|
 {one row per asset. "Exposure" column = % currently reachable by creditors/probate based on titling.}
 
-**Total Estate Value:** ${sum of equity}
-**Total Currently Exposed:** ${dollar amount, not %} ({% of estate})
+**Total Estate Value:** \${sum of equity}
+**Total Currently Exposed:** \${dollar amount, not %} ({% of estate})
 
 ## Dollars at Risk — Specific Exposure
-{For each major asset/income stream, write one sentence in this format: "Your ${amount} in {asset} is currently {%}% exposed to {specific risk} because {specific reason about titling/entity/lack of trust}." Use their numbers. No generic statements.}
+{For each major asset/income stream, write one sentence in this format: "Your \${amount} in {asset} is currently {%}% exposed to {specific risk} because {specific reason about titling/entity/lack of trust}." Use their numbers. No generic statements.}
 
 ## Cost of Doing Nothing
 Calculate and show:
-- **Probate freeze:** if probate takes 18 months and {business/income} generates ${annual income}, that's **${1.5 × income}** frozen while the family waits.
-- **Lawsuit exposure:** ${total reachable assets} could be lost to a single judgment.
-- **Tax leakage:** ${estimated annual overpayment} per year in avoidable taxes based on current structure.
-- **Total annual cost of inaction:** ${sum}
+- **Probate freeze:** if probate takes 18 months and {business/income} generates \${annual income}, that's **\${1.5 × income}** frozen while the family waits.
+- **Lawsuit exposure:** \${total reachable assets} could be lost to a single judgment.
+- **Tax leakage:** \${estimated annual overpayment} per year in avoidable taxes based on current structure.
+- **Total annual cost of inaction:** \${sum}
 
 ## Bankruptcy & Timing Strategy
 {Only include real strategy if relevant. Address look-back periods (typically 2-year fraudulent transfer / 10-year intentional fraud under §548), whether to fund trusts now vs after discharge, which assets must NOT be moved pre-filing, and the safe sequence given THEIR exact status. If no bankruptcy risk, write: "No bankruptcy risk detected. Trusts can be funded on the standard 90-day timeline below."}
