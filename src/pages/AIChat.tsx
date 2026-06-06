@@ -317,11 +317,31 @@ export default function AIChat() {
 
     if (introMap[messageText]) {
       const { userMsg, reply } = introMap[messageText]
-      setMessages([
+      const introMessages: Message[] = [
         { id: Date.now().toString(), content: userMsg, role: 'user', timestamp: new Date() },
         { id: (Date.now() + 1).toString(), content: reply, role: 'assistant', timestamp: new Date() }
-      ])
+      ]
+      setMessages(introMessages)
       setInput('')
+
+      if (user?.id) {
+        const title = userMsg.substring(0, 50) + (userMsg.length > 50 ? '...' : '')
+        const { data } = await supabase
+          .from('chat_conversations')
+          .insert({ user_id: user.id, title, persona: activePersona })
+          .select()
+          .single()
+
+        if (data) {
+          const convId = (data as any).id
+          setActiveConversationId(convId)
+          setConversations(prev => [data as any, ...prev])
+          await supabase.from('ai_chat_history').insert([
+            { user_id: user.id, role: 'user', content: userMsg, conversation_id: convId },
+            { user_id: user.id, role: 'assistant', content: reply, conversation_id: convId }
+          ])
+        }
+      }
       return
     }
     
@@ -354,7 +374,7 @@ export default function AIChat() {
     try {
       const personaInstructions = personaSettings[activePersona]?.instructions || ''
       const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { message: messageText, persona: activePersona, instructions: personaInstructions }
+        body: { message: messageText, persona: activePersona, instructions: personaInstructions, conversation_id: convId }
       })
       if (error) throw error
       if (data?.error) {
