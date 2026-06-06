@@ -161,20 +161,69 @@ export default function WorkspaceMembers() {
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
+  const loadChatThread = async (otherUserId: string) => {
+    if (!user) return
+    setChatLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('direct_messages')
+        .select('id, sender_id, content, created_at')
+        .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`)
+        .order('created_at', { ascending: true })
+        .limit(200)
+      if (error) throw error
+      setChatThread(data || [])
+    } catch (err) {
+      console.error('Error loading thread:', err)
+    } finally {
+      setChatLoading(false)
+    }
+  }
+
+  const openChat = (member: Member) => {
+    setChatMember(member)
+    setChatThread([])
+    loadChatThread(member.user_id)
+  }
+
   const handleSendChat = async () => {
     if (!chatMessage.trim() || !chatMember || !user) return
+    const content = chatMessage.trim()
+    setChatMessage('')
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('direct_messages')
-        .insert({ sender_id: user.id, receiver_id: chatMember.user_id, content: chatMessage.trim() })
+        .insert({ sender_id: user.id, receiver_id: chatMember.user_id, content })
+        .select('id, sender_id, content, created_at')
+        .single()
       if (error) throw error
-      toast({ title: 'Message sent', description: `Message sent to ${chatMember.display_name}` })
-      setChatMessage('')
+      if (data) setChatThread(prev => [...prev, data])
     } catch (error) {
       console.error('Error sending message:', error)
       toast({ title: 'Error', description: 'Failed to send message', variant: 'destructive' })
+      setChatMessage(content)
     }
   }
+
+  // Realtime: append incoming messages from the open chat partner
+  useEffect(() => {
+    if (!chatMember || !user) return
+    const channel = supabase
+      .channel(`chat-popup-${chatMember.user_id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'direct_messages',
+        filter: `receiver_id=eq.${user.id}`,
+      }, (payload) => {
+        const m = payload.new as any
+        if (m.sender_id === chatMember.user_id) {
+          setChatThread(prev => [...prev, { id: m.id, sender_id: m.sender_id, content: m.content, created_at: m.created_at }])
+        }
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [chatMember, user])
 
   const statusCounts = {
     active: members.filter(m => m.status === 'active').length,
