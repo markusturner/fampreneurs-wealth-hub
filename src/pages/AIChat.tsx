@@ -120,6 +120,7 @@ export default function AIChat() {
   const [isRecording, setIsRecording] = useState(false)
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   const chatFileRef = useRef<HTMLInputElement>(null)
   const settingsFileRef = useRef<HTMLInputElement>(null)
   const [settingsTab, setSettingsTab] = useState<string>('rachel')
@@ -278,10 +279,20 @@ export default function AIChat() {
   }
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
-    }
-  }, [messages])
+    const root = scrollAreaRef.current
+    if (!root) return
+    const viewport = root.querySelector('[data-radix-scroll-area-viewport]') as HTMLElement | null
+    const target = viewport || root
+    requestAnimationFrame(() => {
+      target.scrollTo({ top: target.scrollHeight, behavior: 'smooth' })
+    })
+  }, [messages, isLoading])
+
+  // Refocus the input after a send completes
+  useEffect(() => {
+    if (!isLoading) inputRef.current?.focus()
+  }, [isLoading])
+
 
   const switchPersona = useCallback((persona: Persona) => {
     setActivePersona(persona)
@@ -572,6 +583,7 @@ export default function AIChat() {
       )}
       <textarea
         ref={(el) => {
+          inputRef.current = el;
           if (el) {
             el.style.height = '0px';
             el.style.height = Math.max(36, Math.min(el.scrollHeight, 200)) + 'px';
@@ -581,9 +593,9 @@ export default function AIChat() {
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyPress={handleKeyPress}
-        disabled={isLoading}
+        autoFocus
         rows={1}
-        className="w-full resize-none border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none text-sm mb-3 bg-muted rounded-lg px-3 py-2 overflow-y-auto"
+        className="w-full resize-none border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none text-sm mb-3 bg-muted rounded-lg px-3 py-2 overflow-y-auto disabled:opacity-100"
         style={{ minHeight: '36px', maxHeight: '200px' }}
       />
       <div className="flex items-center justify-between gap-2">
