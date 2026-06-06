@@ -54,6 +54,8 @@ export default function WorkspaceMembers() {
   // Chat popup state
   const [chatMember, setChatMember] = useState<Member | null>(null)
   const [chatMessage, setChatMessage] = useState('')
+  const [chatThread, setChatThread] = useState<Array<{ id: string; sender_id: string; content: string; created_at: string }>>([])
+  const [chatLoading, setChatLoading] = useState(false)
 
   // Membership dialog
   const [membershipMember, setMembershipMember] = useState<Member | null>(null)
