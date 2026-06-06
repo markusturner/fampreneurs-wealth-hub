@@ -216,10 +216,10 @@ export function AppSidebar({ className }: { className?: string }) {
         <div className="px-3 pb-3">
           <Button
             className={cn(
-              "w-full justify-start gap-2 rounded-xl font-semibold border-0 transition-colors",
+              "w-full justify-start gap-2 rounded-xl font-semibold border-0 transition-colors text-white",
               currentPath.includes("/succession-planning")
-                ? "bg-[hsl(270,80%,50%)] text-white hover:bg-[hsl(270,80%,45%)] shadow-md shadow-[hsl(270,80%,50%)]/30"
-                : "bg-[hsl(270,80%,50%)]/15 text-[hsl(270,80%,50%)] hover:bg-[hsl(270,80%,50%)]/25"
+                ? "bg-[hsl(270,80%,50%)] hover:bg-[hsl(270,80%,45%)] shadow-md shadow-[hsl(270,80%,50%)]/30"
+                : "bg-[hsl(270,80%,50%)]/60 hover:bg-[hsl(270,80%,50%)]/80"
             )}
             variant="ghost"
             onClick={() => navigate('/succession-planning')}
@@ -248,8 +248,7 @@ export function AppSidebar({ className }: { className?: string }) {
               <NavItem label="Classroom" icon={BookOpen} href="/classroom" active={isActive("/classroom")} />
               <NavItem label="Members" icon={Users} href="/workspace-members" active={isActive("/workspace-members")} />
               <NavItem label="Calendar" icon={Calendar} href="/workspace-calendar" active={isActive("/workspace-calendar")} />
-              
-              <NavItem label="Messenger" icon={Mail} href="/messenger" active={isActive("/messenger")} />
+
             </div>
           </>
         )}

@@ -54,6 +54,8 @@ export default function WorkspaceMembers() {
   // Chat popup state
   const [chatMember, setChatMember] = useState<Member | null>(null)
   const [chatMessage, setChatMessage] = useState('')
+  const [chatThread, setChatThread] = useState<Array<{ id: string; sender_id: string; content: string; created_at: string }>>([])
+  const [chatLoading, setChatLoading] = useState(false)
 
   // Membership dialog
   const [membershipMember, setMembershipMember] = useState<Member | null>(null)
@@ -159,20 +161,69 @@ export default function WorkspaceMembers() {
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
+  const loadChatThread = async (otherUserId: string) => {
+    if (!user) return
+    setChatLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('direct_messages')
+        .select('id, sender_id, content, created_at')
+        .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user.id})`)
+        .order('created_at', { ascending: true })
+        .limit(200)
+      if (error) throw error
+      setChatThread(data || [])
+    } catch (err) {
+      console.error('Error loading thread:', err)
+    } finally {
+      setChatLoading(false)
+    }
+  }
+
+  const openChat = (member: Member) => {
+    setChatMember(member)
+    setChatThread([])
+    loadChatThread(member.user_id)
+  }
+
   const handleSendChat = async () => {
     if (!chatMessage.trim() || !chatMember || !user) return
+    const content = chatMessage.trim()
+    setChatMessage('')
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('direct_messages')
-        .insert({ sender_id: user.id, receiver_id: chatMember.user_id, content: chatMessage.trim() })
+        .insert({ sender_id: user.id, receiver_id: chatMember.user_id, content })
+        .select('id, sender_id, content, created_at')
+        .single()
       if (error) throw error
-      toast({ title: 'Message sent', description: `Message sent to ${chatMember.display_name}` })
-      setChatMessage('')
+      if (data) setChatThread(prev => [...prev, data])
     } catch (error) {
       console.error('Error sending message:', error)
       toast({ title: 'Error', description: 'Failed to send message', variant: 'destructive' })
+      setChatMessage(content)
     }
   }
+
+  // Realtime: append incoming messages from the open chat partner
+  useEffect(() => {
+    if (!chatMember || !user) return
+    const channel = supabase
+      .channel(`chat-popup-${chatMember.user_id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'direct_messages',
+        filter: `receiver_id=eq.${user.id}`,
+      }, (payload) => {
+        const m = payload.new as any
+        if (m.sender_id === chatMember.user_id) {
+          setChatThread(prev => [...prev, { id: m.id, sender_id: m.sender_id, content: m.content, created_at: m.created_at }])
+        }
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [chatMember, user])
 
   const statusCounts = {
     active: members.filter(m => m.status === 'active').length,
@@ -302,7 +353,7 @@ export default function WorkspaceMembers() {
                     <div className="flex items-center justify-between mb-1">
                       <h3 className="font-semibold text-sm sm:text-base">{member.display_name || 'Member'}</h3>
                       <div className="flex gap-1 sm:gap-2" onClick={e => e.stopPropagation()}>
-                        <Button variant="outline" size="sm" className="gap-1 h-7 sm:h-8 text-xs" onClick={() => navigate(`/messenger?user=${member.user_id}`)}>
+                        <Button variant="outline" size="sm" className="gap-1 h-7 sm:h-8 text-xs" onClick={() => openChat(member)}>
                           <MessageCircle className="h-3 w-3" />
                           <span className="hidden sm:inline">Chat</span>
                         </Button>
@@ -351,7 +402,7 @@ export default function WorkspaceMembers() {
                   <div className="flex items-center gap-2"><Calendar className="h-4 w-4" />Joined {formatDate(profileMember.created_at)}</div>
                 </div>
                 <div className="flex gap-2">
-                  <Button className="flex-1" variant="outline" onClick={() => { setProfileMember(null); navigate(`/messenger?user=${profileMember.user_id}`) }}>
+                  <Button className="flex-1" variant="outline" onClick={() => { const m = profileMember; setProfileMember(null); if (m) openChat(m) }}>
                     <MessageCircle className="h-4 w-4 mr-2" /> Chat
                   </Button>
                   <Button className="flex-1" style={{ backgroundColor: '#ffb500', color: '#290a52' }} onClick={() => { setProfileMember(null); openMembership(profileMember) }}>
@@ -379,20 +430,36 @@ export default function WorkspaceMembers() {
                   <p className="text-xs text-muted-foreground">Active {timeAgo(chatMember.created_at)}</p>
                 </div>
               </div>
-              <div className="h-64 flex flex-col items-center justify-center px-6 text-center">
-                <div className="flex items-center gap-2 mb-3">
-                  <Avatar className="h-10 w-10 border-2 border-background">
-                    {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
-                    <AvatarFallback>{getInitials(profile?.display_name || 'U')}</AvatarFallback>
-                  </Avatar>
-                  <RefreshCw className="h-4 w-4 text-muted-foreground" />
-                  <Avatar className="h-10 w-10 border-2 border-background">
-                    {chatMember.avatar_url && <AvatarImage src={chatMember.avatar_url} />}
-                    <AvatarFallback>{getInitials(chatMember.display_name)}</AvatarFallback>
-                  </Avatar>
-                </div>
-                <p className="text-sm text-muted-foreground">You and {chatMember.display_name} know each other from TruHeirs</p>
-                <p className="text-sm text-muted-foreground mt-1">You're about to break the ice!</p>
+              <div className="h-80 overflow-y-auto px-4 py-3 space-y-2 bg-muted/30">
+                {chatLoading ? (
+                  <p className="text-center text-xs text-muted-foreground py-6">Loading…</p>
+                ) : chatThread.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Avatar className="h-10 w-10 border-2 border-background">
+                        {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
+                        <AvatarFallback>{getInitials(profile?.display_name || 'U')}</AvatarFallback>
+                      </Avatar>
+                      <RefreshCw className="h-4 w-4 text-muted-foreground" />
+                      <Avatar className="h-10 w-10 border-2 border-background">
+                        {chatMember.avatar_url && <AvatarImage src={chatMember.avatar_url} />}
+                        <AvatarFallback>{getInitials(chatMember.display_name)}</AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Say hi to {chatMember.display_name?.split(' ')[0] || 'them'} 👋</p>
+                  </div>
+                ) : (
+                  chatThread.map(msg => {
+                    const mine = msg.sender_id === user?.id
+                    return (
+                      <div key={msg.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${mine ? 'bg-[#ffb500] text-[#290a52]' : 'bg-background border'}`}>
+                          {msg.content}
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
               </div>
               <div className="flex items-center gap-2 p-3 border-t">
                 <Input
