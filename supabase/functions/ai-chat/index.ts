@@ -11,6 +11,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+function buildFamilyProtectionFactGuard(messages: Array<{ role: string; content: string }>): string {
+  const userText = messages
+    .filter((msg) => msg.role === 'user')
+    .map((msg) => msg.content.toLowerCase())
+    .join('\n');
+
+  const noSpouse = /\b(no|none|not|don't|dont|do not|doesn't|doesnt|without)\b[^\n.]{0,40}\b(spouse|wife|husband|married|partner)\b|\b(single|unmarried|divorced|widowed)\b|\b(no spouse|dont have a spouse|don't have a spouse)\b/.test(userText);
+  const noChildren = /\b(no|none|not|don't|dont|do not|doesn't|doesnt|without)\b[^\n.]{0,40}\b(children|child|kids|sons|daughters)\b|\b(no children|no kids|dont have children|don't have children|dont have kids|don't have kids)\b/.test(userText);
+  const noDependents = /\b(no|none|not|don't|dont|do not|doesn't|doesnt|without)\b[^\n.]{0,40}\b(dependents|dependent|relies|rely|relying)\b|\b(no dependents|nobody relies|no one relies|sole dependent)\b/.test(userText);
+
+  const lockedFacts: string[] = [];
+  if (noSpouse) lockedFacts.push('- Client has confirmed they do NOT have a spouse. Never ask about a spouse again.');
+  if (noChildren) lockedFacts.push('- Client has confirmed they do NOT have children. Never ask about children, ages, guardians, or college again.');
+  if (noDependents) lockedFacts.push('- Client has confirmed they do NOT have dependents. Do not ask dependency questions except monthly burn rate/runway if still missing.');
+
+  if (lockedFacts.length === 0) return '';
+
+  return `\n\n## Locked User Facts — Must Not Be Re-Asked\n${lockedFacts.join('\n')}\nIf any earlier assistant message conflicts with these locked facts, ignore the assistant message and follow the user's facts.`;
+}
+
 const BASE_PERSONA_PROMPTS: Record<string, string> = {
   rachel: `You are Rachel, the AI Family Office Director for TruHeirs - an AI-first family office platform revolutionizing wealth management.
 
@@ -346,6 +366,7 @@ serve(async (req) => {
       message: z.string().min(1).max(4000),
       persona: z.enum(['rachel', 'asset_protection', 'business_structure', 'trust_writer']).optional().default('rachel'),
       instructions: z.string().optional().default(''),
+      conversation_id: z.string().uuid().optional(),
     });
     
     const body = await req.json();
@@ -358,7 +379,7 @@ serve(async (req) => {
       );
     }
     
-    const { message, persona, instructions } = validation.data;
+    const { message, persona, instructions, conversation_id } = validation.data;
     
     // Build system prompt from DB settings + uploaded documents
     let systemPrompt = await buildSystemPrompt(supabase, persona);
@@ -368,15 +389,26 @@ serve(async (req) => {
       systemPrompt += `\n\n## Additional Instructions:\n${instructions}`;
     }
 
-    // Fetch chat history (last 20 messages)
-    const { data: chatHistory } = await supabase
+    // Fetch chat history for the active conversation only, with legacy fallback.
+    let historyQuery = supabase
       .from('ai_chat_history')
       .select('role, content')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(20);
 
+    if (conversation_id) {
+      historyQuery = historyQuery.eq('conversation_id', conversation_id);
+    } else {
+      historyQuery = historyQuery.contains('metadata', { persona });
+    }
+
+    const { data: chatHistory } = await historyQuery;
+
     const previousMessages = chatHistory?.reverse() || [];
+    const factGuard = persona === 'business_structure'
+      ? buildFamilyProtectionFactGuard([...previousMessages, { role: 'user', content: message }])
+      : '';
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -387,7 +419,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'google/gemini-3-flash-preview',
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: `${systemPrompt}${factGuard}` },
           ...previousMessages,
           { role: 'user', content: message }
         ],
