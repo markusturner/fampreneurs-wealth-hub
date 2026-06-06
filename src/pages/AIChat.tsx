@@ -307,7 +307,7 @@ export default function AIChat() {
       },
       '__intro_business_structure__': {
         userMsg: 'Build my Family Protection Plan',
-        reply: `Hey ${displayName || 'there'}! I'm your Family Protection Planner. I'll ask you 6 short questions one at a time, then build your full Family Protection Plan and trust structure.\n\n**Question 1 of 6:** What is your full name, your spouse's name (if any), and the names and ages of your children?`
+        reply: `Hey ${displayName || 'there'}! I'm your Family Protection Planner. I'll walk you through a detailed interview — one question at a time — covering your family, every asset and its value, titling, business, existing protection, liabilities, income, and goals. I'll skip anything you've already told me and always ask for specific dollar amounts so the final plan is accurate.\n\n**Question 1:** What is your full legal name, your spouse's full name (if any), and the names and ages of your children or other dependents?`
       },
       '__intro_trust_writer__': {
         userMsg: 'I need help with my trust',
