@@ -120,6 +120,7 @@ export default function AIChat() {
   const [isRecording, setIsRecording] = useState(false)
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
   const chatFileRef = useRef<HTMLInputElement>(null)
   const settingsFileRef = useRef<HTMLInputElement>(null)
   const [settingsTab, setSettingsTab] = useState<string>('rachel')
