@@ -430,20 +430,36 @@ export default function WorkspaceMembers() {
                   <p className="text-xs text-muted-foreground">Active {timeAgo(chatMember.created_at)}</p>
                 </div>
               </div>
-              <div className="h-64 flex flex-col items-center justify-center px-6 text-center">
-                <div className="flex items-center gap-2 mb-3">
-                  <Avatar className="h-10 w-10 border-2 border-background">
-                    {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
-                    <AvatarFallback>{getInitials(profile?.display_name || 'U')}</AvatarFallback>
-                  </Avatar>
-                  <RefreshCw className="h-4 w-4 text-muted-foreground" />
-                  <Avatar className="h-10 w-10 border-2 border-background">
-                    {chatMember.avatar_url && <AvatarImage src={chatMember.avatar_url} />}
-                    <AvatarFallback>{getInitials(chatMember.display_name)}</AvatarFallback>
-                  </Avatar>
-                </div>
-                <p className="text-sm text-muted-foreground">You and {chatMember.display_name} know each other from TruHeirs</p>
-                <p className="text-sm text-muted-foreground mt-1">You're about to break the ice!</p>
+              <div className="h-80 overflow-y-auto px-4 py-3 space-y-2 bg-muted/30">
+                {chatLoading ? (
+                  <p className="text-center text-xs text-muted-foreground py-6">Loading…</p>
+                ) : chatThread.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Avatar className="h-10 w-10 border-2 border-background">
+                        {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
+                        <AvatarFallback>{getInitials(profile?.display_name || 'U')}</AvatarFallback>
+                      </Avatar>
+                      <RefreshCw className="h-4 w-4 text-muted-foreground" />
+                      <Avatar className="h-10 w-10 border-2 border-background">
+                        {chatMember.avatar_url && <AvatarImage src={chatMember.avatar_url} />}
+                        <AvatarFallback>{getInitials(chatMember.display_name)}</AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Say hi to {chatMember.display_name?.split(' ')[0] || 'them'} 👋</p>
+                  </div>
+                ) : (
+                  chatThread.map(msg => {
+                    const mine = msg.sender_id === user?.id
+                    return (
+                      <div key={msg.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${mine ? 'bg-[#ffb500] text-[#290a52]' : 'bg-background border'}`}>
+                          {msg.content}
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
               </div>
               <div className="flex items-center gap-2 p-3 border-t">
                 <Input
