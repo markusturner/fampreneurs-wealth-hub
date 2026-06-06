@@ -201,21 +201,21 @@ For each dependent, write 2 short bullets: what they rely on, and what happens i
 
 ## What You Own (Asset Inventory)
 For each asset, write a short bullet in this exact format:
-- **{Asset name}** — Titled in: {titling}. Worth **${value}**. Debt: **${debt}**. Equity: **${equity}**. Exposure: **{%}% reachable by creditors/probate** because {one short reason}.
+- **{Asset name}** — Titled in: {titling}. Worth **\${value}**. Debt: **\${debt}**. Equity: **\${equity}**. Exposure: **{%}% reachable by creditors/probate** because {one short reason}.
 
-**Total Estate Value:** **${sum of equity}**
-**Total Currently Exposed:** **${dollars}** ({%} of estate)
+**Total Estate Value:** **\${sum of equity}**
+**Total Currently Exposed:** **\${dollars}** ({%} of estate)
 
 ## Dollars at Risk (Plain English)
 One short bullet per major asset/income stream in this format:
-- "Your **${amount}** in {asset} is **{%}% exposed** to {risk} because {short reason}."
+- "Your **\${amount}** in {asset} is **{%}% exposed** to {risk} because {short reason}."
 
 ## The Cost of Doing Nothing
 Plain numbers, no jargon:
-- **Probate freeze:** If probate takes 18 months and your {business/income} makes **${annual}/yr**, that's **${1.5 × income}** frozen while your family waits.
-- **Lawsuit exposure:** **${reachable assets}** could be wiped out by one judgment.
-- **Tax leakage:** About **${estimate}/yr** in avoidable taxes with your current setup.
-- **Total annual cost of waiting:** **${sum}**
+- **Probate freeze:** If probate takes 18 months and your {business/income} makes **\${annual}/yr**, that's **\${1.5 × income}** frozen while your family waits.
+- **Lawsuit exposure:** **\${reachable assets}** could be wiped out by one judgment.
+- **Tax leakage:** About **\${estimate}/yr** in avoidable taxes with your current setup.
+- **Total annual cost of waiting:** **\${sum}**
 
 ## Bankruptcy & Timing (Only If It Applies)
 If client confirmed bankruptcy risk: short paragraph in plain English. Explain look-back rules (2-yr fraudulent transfer / 10-yr intentional fraud under §548), whether to fund trusts now or after discharge, which assets must NOT move pre-filing, and the safe order given THEIR exact status. If no bankruptcy risk, write one line: "No bankruptcy risk today. Trusts can be funded on the standard 90-day timeline below."
