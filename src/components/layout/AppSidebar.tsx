@@ -216,10 +216,10 @@ export function AppSidebar({ className }: { className?: string }) {
         <div className="px-3 pb-3">
           <Button
             className={cn(
-              "w-full justify-start gap-2 rounded-xl font-semibold border-0 transition-colors text-white",
+              "w-full justify-start gap-2 rounded-xl font-semibold border-0 transition-colors",
               currentPath.includes("/succession-planning")
-                ? "bg-[hsl(270,80%,50%)] hover:bg-[hsl(270,80%,45%)] shadow-md shadow-[hsl(270,80%,50%)]/30"
-                : "bg-[hsl(270,80%,50%)]/60 hover:bg-[hsl(270,80%,50%)]/80"
+                ? "bg-[hsl(270,80%,50%)] text-white hover:bg-[hsl(270,80%,45%)] shadow-md shadow-[hsl(270,80%,50%)]/30"
+                : "bg-[hsl(270,80%,50%)]/15 text-[hsl(270,80%,70%)] hover:bg-[hsl(270,80%,50%)]/25"
             )}
             variant="ghost"
             onClick={() => navigate('/succession-planning')}
