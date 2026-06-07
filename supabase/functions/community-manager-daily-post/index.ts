@@ -367,12 +367,20 @@ Deno.serve(async (req) => {
     const today = new Date();
     const dayIndex = Math.floor(today.getTime() / 86400000);
 
+    let force = false;
+    try {
+      if (req.method === "POST") {
+        const body = await req.json().catch(() => ({}));
+        force = !!body?.force;
+      }
+    } catch (_) { /* ignore */ }
+
     const startOfToday = new Date(today.toISOString().slice(0, 10) + "T00:00:00.000Z").toISOString();
     const { data: alreadyPosted } = await supabase
       .from("community_manager_post_log")
       .select("program")
       .gte("posted_at", startOfToday);
-    const postedPrograms = new Set((alreadyPosted || []).map((r: any) => r.program));
+    const postedPrograms = force ? new Set<string>() : new Set((alreadyPosted || []).map((r: any) => r.program));
 
     const results: any[] = [];
 
