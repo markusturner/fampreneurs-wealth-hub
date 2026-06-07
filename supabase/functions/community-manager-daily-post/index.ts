@@ -23,19 +23,6 @@ const TEMPLATES = [
 Check the Calendar tab for the time. See you there! 🚀`,
   },
   {
-    key: "coaching_call_recordings",
-    category: "recordings",
-    title: "🎥 Latest Coaching Call Recording",
-    body: `Missed the last coaching call? The recording is up.
-
-**Inside this call:**
-- Real questions from members like you
-- Step-by-step playbook you can copy
-- Q&A you can replay anytime
-
-Head to the Classroom recordings to watch.`,
-  },
-  {
     key: "student_of_the_month",
     category: "wins",
     title: "🌟 Student of the Month",
