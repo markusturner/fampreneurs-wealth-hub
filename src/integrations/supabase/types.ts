@@ -1094,6 +1094,87 @@ export type Database = {
           },
         ]
       }
+      community_manager_post_log: {
+        Row: {
+          id: string
+          post_id: string | null
+          posted_at: string
+          program: string
+          template_key: string
+          title: string | null
+        }
+        Insert: {
+          id?: string
+          post_id?: string | null
+          posted_at?: string
+          program: string
+          template_key: string
+          title?: string | null
+        }
+        Update: {
+          id?: string
+          post_id?: string | null
+          posted_at?: string
+          program?: string
+          template_key?: string
+          title?: string | null
+        }
+        Relationships: []
+      }
+      community_manager_reply_log: {
+        Row: {
+          created_at: string
+          id: string
+          parent_post_id: string | null
+          replied_to_user_id: string | null
+          reply_post_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parent_post_id?: string | null
+          replied_to_user_id?: string | null
+          reply_post_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parent_post_id?: string | null
+          replied_to_user_id?: string | null
+          reply_post_id?: string | null
+        }
+        Relationships: []
+      }
+      community_manager_settings: {
+        Row: {
+          enabled: boolean
+          id: string
+          last_post_at: string | null
+          persona_user_id: string
+          post_hour_utc: number
+          reply_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          id?: string
+          last_post_at?: string | null
+          persona_user_id?: string
+          post_hour_utc?: number
+          reply_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          id?: string
+          last_post_at?: string | null
+          persona_user_id?: string
+          post_hour_utc?: number
+          reply_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       community_poll_votes: {
         Row: {
           created_at: string
@@ -3912,6 +3993,30 @@ export type Database = {
           reminder_type?: string
           sent_at?: string | null
           subscription_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pending_user_reminder_log: {
+        Row: {
+          email: string
+          id: string
+          sent_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          sent_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          sent_at?: string
+          status?: string
           user_id?: string
         }
         Relationships: []
