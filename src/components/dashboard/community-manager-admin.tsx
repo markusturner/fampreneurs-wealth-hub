@@ -79,7 +79,7 @@ export function CommunityManagerAdmin() {
   const triggerNow = async () => {
     setTriggering(true)
     try {
-      const { data, error } = await supabase.functions.invoke('community-manager-daily-post', { body: {} })
+      const { data, error } = await supabase.functions.invoke('community-manager-daily-post', { body: { force: true } })
       if (error) throw error
       toast({ title: 'Triggered', description: `Posts created: ${(data?.results || []).filter((r: any) => r.post_id).length}` })
       await load()
