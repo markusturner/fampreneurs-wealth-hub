@@ -10,6 +10,52 @@ const PROGRAMS = ["fbu", "tfv", "tfba", "tffm"];
 // Template library inspired by the Community Manager Content board
 const TEMPLATES = [
   {
+    key: "coaching_call_announcement",
+    category: "updates",
+    title: "📣 Coaching Call This Week — Don't Miss It",
+    body: `Our weekly coaching call is coming up. Bring your questions, wins, and roadblocks.
+
+**What to expect:**
+- Live Q&A with the team
+- Real strategies you can use this week
+- Networking with other family business owners
+
+Check the Calendar tab for the time. See you there! 🚀`,
+  },
+  {
+    key: "coaching_call_recordings",
+    category: "recordings",
+    title: "🎥 Latest Coaching Call Recording",
+    body: `Missed the last coaching call? The recording is up.
+
+**Inside this call:**
+- Real questions from members like you
+- Step-by-step playbook you can copy
+- Q&A you can replay anytime
+
+Head to the Classroom recordings to watch.`,
+  },
+  {
+    key: "student_of_the_month",
+    category: "wins",
+    title: "🌟 Student of the Month",
+    body: `Shout-out to the members showing up week after week. Consistency wins.
+
+If someone here has helped you lately, tag them in the comments and tell us why. Let's give credit where it's due 💛`,
+  },
+  {
+    key: "new_plays_gems",
+    category: "gems",
+    title: "💎 New Plays & Gems",
+    body: `Here are a few gems to chew on this week:
+
+1. **Pay yourself first** — even $50 a week builds the habit
+2. **Document one process** — turn it into a system your family can run
+3. **Talk to one new person** — relationships compound
+
+Which one are you going to act on? Tell us below 👇`,
+  },
+  {
     key: "welcome_new_members",
     category: "discussion",
     title: "👋 Welcome to our newest members!",
@@ -25,43 +71,8 @@ Big welcome to everyone who joined this week. We're so glad you're here.
 Reply below and let's get to know you 💛`,
   },
   {
-    key: "coaching_call_announcement",
-    category: "announcement",
-    title: "📣 Coaching Call This Week — Don't Miss It",
-    body: `Our weekly coaching call is coming up. Bring your questions, wins, and roadblocks.
-
-**What to expect:**
-- Live Q&A with the team
-- Real strategies you can use this week
-- Networking with other family business owners
-
-Check the Calendar tab for the time. See you there! 🚀`,
-  },
-  {
-    key: "community_wins",
-    category: "wins",
-    title: "🏆 Community Wins of the Week",
-    body: `Let's celebrate! 🎉
-
-Drop your wins from this week in the comments — big or small. New client, finished a course, opened a trust, hard conversation with family… it all counts.
-
-Reading your wins fuels the rest of us. Let's hear it! 👇`,
-  },
-  {
-    key: "new_plays_gems",
-    category: "discussion",
-    title: "💎 New Plays & Gems",
-    body: `Here are a few gems to chew on this week:
-
-1. **Pay yourself first** — even $50 a week builds the habit
-2. **Document one process** — turn it into a system your family can run
-3. **Talk to one new person** — relationships compound
-
-Which one are you going to act on? Tell us below 👇`,
-  },
-  {
     key: "new_member_orientation",
-    category: "announcement",
+    category: "discussion",
     title: "🧭 New Member Orientation",
     body: `New here? Start with these 3 steps:
 
@@ -82,16 +93,18 @@ Got questions? Reply here and the team will jump in.`,
 What's a book, podcast, or habit that changed your life? Share it below 👇`,
   },
   {
-    key: "student_of_the_month",
+    key: "community_wins",
     category: "wins",
-    title: "🌟 Student Spotlight",
-    body: `Shout-out to all the members showing up week after week. Consistency wins.
+    title: "🏆 Community Wins of the Week",
+    body: `Let's celebrate! 🎉
 
-If someone in this community has helped you lately, tag them in the comments and tell us why. Let's give credit where it's due 💛`,
+Drop your wins from this week in the comments — big or small. New client, finished a course, opened a trust, hard conversation with family… it all counts.
+
+Reading your wins fuels the rest of us. Let's hear it! 👇`,
   },
   {
     key: "new_updates",
-    category: "announcement",
+    category: "updates",
     title: "🚀 New Updates Inside TruHeirs",
     body: `Here's what's new this week:
 
@@ -100,19 +113,6 @@ If someone in this community has helped you lately, tag them in the comments and
 - New coaching calls on the Calendar
 
 Log in, take a look, and tell us what you want to see next 👇`,
-  },
-  {
-    key: "coaching_recordings",
-    category: "recordings",
-    title: "🎥 Latest Coaching Call Recording",
-    body: `Missed the last coaching call? The recording is up.
-
-**Inside this call:**
-- Real questions from members like you
-- Step-by-step playbook you can copy
-- Q&A you can replay anytime
-
-Head to the Classroom recordings to watch.`,
   },
 ];
 
