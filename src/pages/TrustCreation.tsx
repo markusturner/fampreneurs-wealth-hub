@@ -448,6 +448,38 @@ export default function TrustCreation() {
         <div className="grid gap-4 sm:grid-cols-1">
           {(['trust_asset_uploads'] as SectionType[]).map(type => renderSectionCard(type))}
         </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 mt-4">
+          {[
+            {
+              title: "Complimentary Call w/ Trust Attorney Domonique Price",
+              description: "Book your complimentary estate planning consultation with Trust Attorney Domonique Price.",
+              url: "https://calendly.com/dprice-2/estateplanning-withprice?month=2023-08",
+            },
+            {
+              title: "Complimentary Call w/ Hasani Houston",
+              description: "Book your complimentary wealth consultation with Hasani Houston.",
+              url: "https://calendly.com/hzhouston12/wealth-consultation-famp",
+            },
+          ].map((item) => (
+            <Card
+              key={item.url}
+              onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}
+              className="cursor-pointer transition-all hover:shadow-md hover:border-accent"
+            >
+              <CardHeader>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-accent" />
+                    <CardTitle className="text-base">{item.title}</CardTitle>
+                  </div>
+                  <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
+                </div>
+                <CardDescription>{item.description}</CardDescription>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
       </div>
 
 
