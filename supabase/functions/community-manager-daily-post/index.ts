@@ -192,14 +192,10 @@ Drop a 🔥 in the comments to celebrate them 👇`,
   {
     key: "welcome_new_members",
     category: "discussion",
+    cadence: "as_needed",
     generate: async (supabase) => {
       const members = await getRecentNewMembers(supabase);
-      if (members.length === 0) {
-        return {
-          title: "👋 Welcome to our newest members!",
-          body: `Hey family! 👋 If you joined recently, drop a hello in the comments — tell us where you're from and one goal you want to hit this quarter.`,
-        };
-      }
+      if (members.length === 0) return null;
       const list = members
         .slice(0, 10)
         .map((m) => {
