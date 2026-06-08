@@ -182,13 +182,19 @@ export function AppSidebar({ className }: { className?: string }) {
       {!isLite && (
         <div className="px-3 pb-2">
           <Button
-            className="w-full justify-start gap-2 rounded-xl font-semibold bg-[hsl(210,100%,58%)]/10 text-[hsl(210,100%,58%)] hover:bg-[hsl(210,100%,58%)]/20 border-0"
+            className={cn(
+              "w-full justify-start gap-2 rounded-xl font-semibold border-0",
+              currentPath.includes("/ai-chat")
+                ? "bg-[hsl(210,100%,58%)] text-white hover:bg-[hsl(210,100%,53%)] shadow-md shadow-[hsl(210,100%,58%)]/30"
+                : "bg-[hsl(210,100%,58%)]/10 text-[hsl(210,100%,58%)] hover:bg-[hsl(210,100%,58%)]/20"
+            )}
             variant="ghost"
             onClick={() => navigate('/ai-chat')}
           >
             <Bot className="h-4 w-4" />
             AI Chat
           </Button>
+
         </div>
       )}
 
