@@ -8,9 +8,11 @@ const corsHeaders = {
 const PROGRAMS = ["fbu", "tfv", "tfba", "tffm"];
 
 type Generated = { title: string; body: string; replyToKey?: string };
+type Cadence = "daily" | "monthly" | "as_needed";
 type TemplateDef = {
   key: string;
   category: string;
+  cadence: Cadence;
   generate: (supabase: any, program: string) => Promise<Generated | null>;
 };
 
@@ -125,6 +127,7 @@ const TEMPLATES: TemplateDef[] = [
   {
     key: "student_of_the_month",
     category: "wins",
+    cadence: "monthly",
     generate: async (supabase) => {
       // Top member by trust submissions + succession progress in last 30 days
       const since = new Date(Date.now() - 30 * 86400000).toISOString();
@@ -146,14 +149,7 @@ const TEMPLATES: TemplateDef[] = [
         counts.set(r.user_id, c);
       }
       const top = [...counts.entries()].sort((a, b) => b[1].score - a[1].score)[0];
-      if (!top) {
-        return {
-          title: "🌟 Student of the Month",
-          body: `Quiet month on submissions — but consistency still wins.
-
-Tag a member below who's been showing up week after week. Let's give them their flowers 💛`,
-        };
-      }
+      if (!top) return null; // monthly: skip if no real winner
       let name = top[1].name;
       if (!name) {
         const { data: p } = await supabase
@@ -176,10 +172,10 @@ Drop a 🔥 in the comments to celebrate them 👇`,
   {
     key: "new_plays_gems",
     category: "gems",
+    cadence: "daily",
     generate: async (supabase) => {
       const dayIndex = Math.floor(Date.now() / 86400000);
       const gem = pickRotating(GEMS_PROMPTS, dayIndex);
-      // Optionally pull a recent Legacy Launchpad course title
       const { data: course } = await supabase
         .from("courses")
         .select("title")
@@ -196,14 +192,10 @@ Drop a 🔥 in the comments to celebrate them 👇`,
   {
     key: "welcome_new_members",
     category: "discussion",
+    cadence: "as_needed",
     generate: async (supabase) => {
       const members = await getRecentNewMembers(supabase);
-      if (members.length === 0) {
-        return {
-          title: "👋 Welcome to our newest members!",
-          body: `Hey family! 👋 If you joined recently, drop a hello in the comments — tell us where you're from and one goal you want to hit this quarter.`,
-        };
-      }
+      if (members.length === 0) return null;
       const list = members
         .slice(0, 10)
         .map((m) => {
@@ -229,8 +221,11 @@ Reply below — let's get to know you 👇`,
   {
     key: "new_member_orientation",
     category: "discussion",
+    cadence: "as_needed",
     generate: async (supabase) => {
-      // Pull next upcoming meeting for context
+      // Only post if there were new members in the last 7 days
+      const members = await getRecentNewMembers(supabase);
+      if (members.length === 0) return null;
       const today = new Date().toISOString().slice(0, 10);
       const { data: meeting } = await supabase
         .from("meetings")
@@ -259,6 +254,7 @@ Do those two and you're already ahead of 90% of new members. Reply below once yo
   {
     key: "recommendations",
     category: "discussion",
+    cadence: "daily",
     generate: async () => {
       const dayIndex = Math.floor(Date.now() / 86400000);
       const r = pickRotating(REC_PROMPTS, dayIndex);
@@ -268,8 +264,8 @@ Do those two and you're already ahead of 90% of new members. Reply below once yo
   {
     key: "community_wins",
     category: "wins",
+    cadence: "as_needed",
     generate: async (supabase) => {
-      // Members who have submitted BOTH required trust types
       const { data: subs } = await supabase
         .from("trust_submissions")
         .select("user_id, trust_type, submitter_name");
@@ -294,12 +290,7 @@ Do those two and you're already ahead of 90% of new members. Reply below once yo
           }
         }
       }
-      if (completers.length === 0) {
-        return {
-          title: "🏆 Community Wins of the Week",
-          body: `Drop your wins this week 👇 New client, finished a course, opened a trust, hard family conversation — it all counts. Reading your wins fuels the rest of us.`,
-        };
-      }
+      if (completers.length === 0) return null;
       const list = completers.slice(0, 25).map((n) => `- ${n} ✅`).join("\n");
       return {
         title: "🏆 Community Wins — Trust Creation Completed!",
@@ -314,6 +305,7 @@ These families just locked in protection that will outlive them. Drop a 🔥 in 
   {
     key: "new_updates",
     category: "updates",
+    cadence: "as_needed",
     generate: async (supabase) => {
       const since = new Date(Date.now() - 14 * 86400000).toISOString();
       const [coursesRes, meetingsRes] = await Promise.all([
@@ -322,6 +314,7 @@ These families just locked in protection that will outlive them. Drop a 🔥 in 
       ]);
       const newCourses = (coursesRes.data || []) as any[];
       const newMeetings = (meetingsRes.data || []) as any[];
+      if (!newCourses.length && !newMeetings.length) return null;
       let body = `Here's what's new inside TruHeirs this week:\n\n`;
       if (newCourses.length) {
         body += `**🎓 New in the Classroom:**\n` + newCourses.map((c) => `- ${c.title}`).join("\n") + `\n\n`;
@@ -329,18 +322,12 @@ These families just locked in protection that will outlive them. Drop a 🔥 in 
       if (newMeetings.length) {
         body += `**📅 New calls on the Calendar:**\n` + newMeetings.map((m) => `- ${m.title} — ${m.meeting_date}`).join("\n") + `\n\n`;
       }
-      if (!newCourses.length && !newMeetings.length) {
-        body += `- Fresh content coming to the Classroom\n- More live calls being added to the Calendar\n- New tools rolling out in your Family Office\n\n`;
-      }
       body += `Log in, take a look, and tell us what you want to see next 👇`;
       return { title: "🚀 New Updates Inside TruHeirs", body };
     },
   },
 ];
 
-function pickTemplate(dayIndex: number, programOffset: number) {
-  return TEMPLATES[(dayIndex + programOffset) % TEMPLATES.length];
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -365,7 +352,6 @@ Deno.serve(async (req) => {
 
     const personaUserId: string = settings.persona_user_id;
     const today = new Date();
-    const dayIndex = Math.floor(today.getTime() / 86400000);
 
     let force = false;
     try {
@@ -376,81 +362,98 @@ Deno.serve(async (req) => {
     } catch (_) { /* ignore */ }
 
     const startOfToday = new Date(today.toISOString().slice(0, 10) + "T00:00:00.000Z").toISOString();
-    const { data: alreadyPosted } = await supabase
+    const startOfMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1)).toISOString();
+
+    // Pull recent log entries to enforce cadence per (program, template)
+    const { data: recentLog } = await supabase
       .from("community_manager_post_log")
-      .select("program")
-      .gte("posted_at", startOfToday);
-    const postedPrograms = force ? new Set<string>() : new Set((alreadyPosted || []).map((r: any) => r.program));
+      .select("program, template_key, posted_at")
+      .gte("posted_at", startOfMonth);
+    const recent = (recentLog || []) as any[];
+
+    const postedToday = new Set<string>(); // `${program}|${template_key}`
+    const postedThisMonth = new Set<string>();
+    for (const r of recent) {
+      const key = `${r.program}|${r.template_key}`;
+      postedThisMonth.add(key);
+      if (r.posted_at >= startOfToday) postedToday.add(key);
+    }
 
     const results: any[] = [];
 
-    for (let i = 0; i < PROGRAMS.length; i++) {
-      const program = PROGRAMS[i];
-      if (postedPrograms.has(program)) {
-        results.push({ program, skipped: "already posted today" });
-        continue;
-      }
-      const tpl = pickTemplate(dayIndex, i);
-      let content: Generated | null = null;
-      try {
-        content = await tpl.generate(supabase, program);
-      } catch (e: any) {
-        results.push({ program, template: tpl.key, error: `generate failed: ${e?.message}` });
-        continue;
-      }
-      if (!content) {
-        results.push({ program, template: tpl.key, skipped: "no content" });
-        continue;
-      }
+    for (const program of PROGRAMS) {
+      for (const tpl of TEMPLATES) {
+        const key = `${program}|${tpl.key}`;
+        if (!force) {
+          if (tpl.cadence === "monthly" && postedThisMonth.has(key)) {
+            results.push({ program, template: tpl.key, skipped: "monthly: already posted this month" });
+            continue;
+          }
+          if ((tpl.cadence === "daily" || tpl.cadence === "as_needed") && postedToday.has(key)) {
+            results.push({ program, template: tpl.key, skipped: "already posted today" });
+            continue;
+          }
+        }
 
-      // Main post
-      const { data: post, error } = await supabase
-        .from("community_posts")
-        .insert({
-          user_id: personaUserId,
-          title: content.title,
-          content: content.body,
-          category: tpl.category,
-          program,
-          pinned: false,
-        })
-        .select("id")
-        .single();
+        let content: Generated | null = null;
+        try {
+          content = await tpl.generate(supabase, program);
+        } catch (e: any) {
+          results.push({ program, template: tpl.key, error: `generate failed: ${e?.message}` });
+          continue;
+        }
+        if (!content) {
+          results.push({ program, template: tpl.key, skipped: "no content" });
+          continue;
+        }
 
-      if (error) {
-        results.push({ program, error: error.message });
-        continue;
-      }
-
-      await supabase.from("community_manager_post_log").insert({
-        post_id: post.id,
-        program,
-        template_key: tpl.key,
-        title: content.title,
-      });
-
-      // If this template is meant to reply to another (e.g. orientation -> welcome), also post as comment
-      if (content.replyToKey) {
-        const { data: parent } = await supabase
-          .from("community_manager_post_log")
-          .select("post_id")
-          .eq("program", program)
-          .eq("template_key", content.replyToKey)
-          .order("posted_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (parent?.post_id) {
-          await supabase.from("community_posts").insert({
+        const { data: post, error } = await supabase
+          .from("community_posts")
+          .insert({
             user_id: personaUserId,
-            parent_id: parent.post_id,
+            title: content.title,
             content: content.body,
             category: tpl.category,
             program,
-          });
-        }
-      }
+            pinned: false,
+          })
+          .select("id")
+          .single();
 
-      results.push({ program, post_id: post.id, template: tpl.key });
+        if (error) {
+          results.push({ program, template: tpl.key, error: error.message });
+          continue;
+        }
+
+        await supabase.from("community_manager_post_log").insert({
+          post_id: post.id,
+          program,
+          template_key: tpl.key,
+          title: content.title,
+        });
+
+        if (content.replyToKey) {
+          const { data: parent } = await supabase
+            .from("community_manager_post_log")
+            .select("post_id")
+            .eq("program", program)
+            .eq("template_key", content.replyToKey)
+            .order("posted_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (parent?.post_id) {
+            await supabase.from("community_posts").insert({
+              user_id: personaUserId,
+              parent_id: parent.post_id,
+              content: content.body,
+              category: tpl.category,
+              program,
+            });
+          }
+        }
+
+        results.push({ program, post_id: post.id, template: tpl.key });
+      }
     }
 
     await supabase
