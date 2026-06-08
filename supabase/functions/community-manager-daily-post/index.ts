@@ -172,10 +172,10 @@ Drop a 🔥 in the comments to celebrate them 👇`,
   {
     key: "new_plays_gems",
     category: "gems",
+    cadence: "daily",
     generate: async (supabase) => {
       const dayIndex = Math.floor(Date.now() / 86400000);
       const gem = pickRotating(GEMS_PROMPTS, dayIndex);
-      // Optionally pull a recent Legacy Launchpad course title
       const { data: course } = await supabase
         .from("courses")
         .select("title")
