@@ -8,9 +8,11 @@ const corsHeaders = {
 const PROGRAMS = ["fbu", "tfv", "tfba", "tffm"];
 
 type Generated = { title: string; body: string; replyToKey?: string };
+type Cadence = "daily" | "monthly" | "as_needed";
 type TemplateDef = {
   key: string;
   category: string;
+  cadence: Cadence;
   generate: (supabase: any, program: string) => Promise<Generated | null>;
 };
 
