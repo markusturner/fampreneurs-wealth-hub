@@ -127,6 +127,7 @@ const TEMPLATES: TemplateDef[] = [
   {
     key: "student_of_the_month",
     category: "wins",
+    cadence: "monthly",
     generate: async (supabase) => {
       // Top member by trust submissions + succession progress in last 30 days
       const since = new Date(Date.now() - 30 * 86400000).toISOString();
@@ -148,14 +149,7 @@ const TEMPLATES: TemplateDef[] = [
         counts.set(r.user_id, c);
       }
       const top = [...counts.entries()].sort((a, b) => b[1].score - a[1].score)[0];
-      if (!top) {
-        return {
-          title: "🌟 Student of the Month",
-          body: `Quiet month on submissions — but consistency still wins.
-
-Tag a member below who's been showing up week after week. Let's give them their flowers 💛`,
-        };
-      }
+      if (!top) return null; // monthly: skip if no real winner
       let name = top[1].name;
       if (!name) {
         const { data: p } = await supabase
