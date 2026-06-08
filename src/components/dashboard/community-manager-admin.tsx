@@ -171,7 +171,7 @@ export function CommunityManagerAdmin() {
           {posts.length === 0 ? (
             <p className="text-sm text-muted-foreground py-6 text-center">No posts yet. Click "Post Now" to send the first batch.</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
               {posts.map((p) => (
                 <div key={p.id} className="flex items-start justify-between gap-3 rounded-lg border p-3">
                   <div className="min-w-0 flex-1">
