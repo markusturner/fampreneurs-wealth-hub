@@ -352,7 +352,6 @@ Deno.serve(async (req) => {
 
     const personaUserId: string = settings.persona_user_id;
     const today = new Date();
-    const dayIndex = Math.floor(today.getTime() / 86400000);
 
     let force = false;
     try {
@@ -363,81 +362,98 @@ Deno.serve(async (req) => {
     } catch (_) { /* ignore */ }
 
     const startOfToday = new Date(today.toISOString().slice(0, 10) + "T00:00:00.000Z").toISOString();
-    const { data: alreadyPosted } = await supabase
+    const startOfMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1)).toISOString();
+
+    // Pull recent log entries to enforce cadence per (program, template)
+    const { data: recentLog } = await supabase
       .from("community_manager_post_log")
-      .select("program")
-      .gte("posted_at", startOfToday);
-    const postedPrograms = force ? new Set<string>() : new Set((alreadyPosted || []).map((r: any) => r.program));
+      .select("program, template_key, posted_at")
+      .gte("posted_at", startOfMonth);
+    const recent = (recentLog || []) as any[];
+
+    const postedToday = new Set<string>(); // `${program}|${template_key}`
+    const postedThisMonth = new Set<string>();
+    for (const r of recent) {
+      const key = `${r.program}|${r.template_key}`;
+      postedThisMonth.add(key);
+      if (r.posted_at >= startOfToday) postedToday.add(key);
+    }
 
     const results: any[] = [];
 
-    for (let i = 0; i < PROGRAMS.length; i++) {
-      const program = PROGRAMS[i];
-      if (postedPrograms.has(program)) {
-        results.push({ program, skipped: "already posted today" });
-        continue;
-      }
-      const tpl = pickTemplate(dayIndex, i);
-      let content: Generated | null = null;
-      try {
-        content = await tpl.generate(supabase, program);
-      } catch (e: any) {
-        results.push({ program, template: tpl.key, error: `generate failed: ${e?.message}` });
-        continue;
-      }
-      if (!content) {
-        results.push({ program, template: tpl.key, skipped: "no content" });
-        continue;
-      }
+    for (const program of PROGRAMS) {
+      for (const tpl of TEMPLATES) {
+        const key = `${program}|${tpl.key}`;
+        if (!force) {
+          if (tpl.cadence === "monthly" && postedThisMonth.has(key)) {
+            results.push({ program, template: tpl.key, skipped: "monthly: already posted this month" });
+            continue;
+          }
+          if ((tpl.cadence === "daily" || tpl.cadence === "as_needed") && postedToday.has(key)) {
+            results.push({ program, template: tpl.key, skipped: "already posted today" });
+            continue;
+          }
+        }
 
-      // Main post
-      const { data: post, error } = await supabase
-        .from("community_posts")
-        .insert({
-          user_id: personaUserId,
-          title: content.title,
-          content: content.body,
-          category: tpl.category,
-          program,
-          pinned: false,
-        })
-        .select("id")
-        .single();
+        let content: Generated | null = null;
+        try {
+          content = await tpl.generate(supabase, program);
+        } catch (e: any) {
+          results.push({ program, template: tpl.key, error: `generate failed: ${e?.message}` });
+          continue;
+        }
+        if (!content) {
+          results.push({ program, template: tpl.key, skipped: "no content" });
+          continue;
+        }
 
-      if (error) {
-        results.push({ program, error: error.message });
-        continue;
-      }
-
-      await supabase.from("community_manager_post_log").insert({
-        post_id: post.id,
-        program,
-        template_key: tpl.key,
-        title: content.title,
-      });
-
-      // If this template is meant to reply to another (e.g. orientation -> welcome), also post as comment
-      if (content.replyToKey) {
-        const { data: parent } = await supabase
-          .from("community_manager_post_log")
-          .select("post_id")
-          .eq("program", program)
-          .eq("template_key", content.replyToKey)
-          .order("posted_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (parent?.post_id) {
-          await supabase.from("community_posts").insert({
+        const { data: post, error } = await supabase
+          .from("community_posts")
+          .insert({
             user_id: personaUserId,
-            parent_id: parent.post_id,
+            title: content.title,
             content: content.body,
             category: tpl.category,
             program,
-          });
-        }
-      }
+            pinned: false,
+          })
+          .select("id")
+          .single();
 
-      results.push({ program, post_id: post.id, template: tpl.key });
+        if (error) {
+          results.push({ program, template: tpl.key, error: error.message });
+          continue;
+        }
+
+        await supabase.from("community_manager_post_log").insert({
+          post_id: post.id,
+          program,
+          template_key: tpl.key,
+          title: content.title,
+        });
+
+        if (content.replyToKey) {
+          const { data: parent } = await supabase
+            .from("community_manager_post_log")
+            .select("post_id")
+            .eq("program", program)
+            .eq("template_key", content.replyToKey)
+            .order("posted_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (parent?.post_id) {
+            await supabase.from("community_posts").insert({
+              user_id: personaUserId,
+              parent_id: parent.post_id,
+              content: content.body,
+              category: tpl.category,
+              program,
+            });
+          }
+        }
+
+        results.push({ program, post_id: post.id, template: tpl.key });
+      }
     }
 
     await supabase
