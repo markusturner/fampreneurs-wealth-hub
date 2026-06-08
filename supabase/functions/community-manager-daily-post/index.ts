@@ -221,8 +221,11 @@ Reply below — let's get to know you 👇`,
   {
     key: "new_member_orientation",
     category: "discussion",
+    cadence: "as_needed",
     generate: async (supabase) => {
-      // Pull next upcoming meeting for context
+      // Only post if there were new members in the last 7 days
+      const members = await getRecentNewMembers(supabase);
+      if (members.length === 0) return null;
       const today = new Date().toISOString().slice(0, 10);
       const { data: meeting } = await supabase
         .from("meetings")
@@ -251,6 +254,7 @@ Do those two and you're already ahead of 90% of new members. Reply below once yo
   {
     key: "recommendations",
     category: "discussion",
+    cadence: "daily",
     generate: async () => {
       const dayIndex = Math.floor(Date.now() / 86400000);
       const r = pickRotating(REC_PROMPTS, dayIndex);
@@ -260,8 +264,8 @@ Do those two and you're already ahead of 90% of new members. Reply below once yo
   {
     key: "community_wins",
     category: "wins",
+    cadence: "as_needed",
     generate: async (supabase) => {
-      // Members who have submitted BOTH required trust types
       const { data: subs } = await supabase
         .from("trust_submissions")
         .select("user_id, trust_type, submitter_name");
@@ -286,12 +290,7 @@ Do those two and you're already ahead of 90% of new members. Reply below once yo
           }
         }
       }
-      if (completers.length === 0) {
-        return {
-          title: "🏆 Community Wins of the Week",
-          body: `Drop your wins this week 👇 New client, finished a course, opened a trust, hard family conversation — it all counts. Reading your wins fuels the rest of us.`,
-        };
-      }
+      if (completers.length === 0) return null;
       const list = completers.slice(0, 25).map((n) => `- ${n} ✅`).join("\n");
       return {
         title: "🏆 Community Wins — Trust Creation Completed!",
@@ -306,6 +305,7 @@ These families just locked in protection that will outlive them. Drop a 🔥 in 
   {
     key: "new_updates",
     category: "updates",
+    cadence: "as_needed",
     generate: async (supabase) => {
       const since = new Date(Date.now() - 14 * 86400000).toISOString();
       const [coursesRes, meetingsRes] = await Promise.all([
@@ -314,6 +314,7 @@ These families just locked in protection that will outlive them. Drop a 🔥 in 
       ]);
       const newCourses = (coursesRes.data || []) as any[];
       const newMeetings = (meetingsRes.data || []) as any[];
+      if (!newCourses.length && !newMeetings.length) return null;
       let body = `Here's what's new inside TruHeirs this week:\n\n`;
       if (newCourses.length) {
         body += `**🎓 New in the Classroom:**\n` + newCourses.map((c) => `- ${c.title}`).join("\n") + `\n\n`;
@@ -321,18 +322,12 @@ These families just locked in protection that will outlive them. Drop a 🔥 in 
       if (newMeetings.length) {
         body += `**📅 New calls on the Calendar:**\n` + newMeetings.map((m) => `- ${m.title} — ${m.meeting_date}`).join("\n") + `\n\n`;
       }
-      if (!newCourses.length && !newMeetings.length) {
-        body += `- Fresh content coming to the Classroom\n- More live calls being added to the Calendar\n- New tools rolling out in your Family Office\n\n`;
-      }
       body += `Log in, take a look, and tell us what you want to see next 👇`;
       return { title: "🚀 New Updates Inside TruHeirs", body };
     },
   },
 ];
 
-function pickTemplate(dayIndex: number, programOffset: number) {
-  return TEMPLATES[(dayIndex + programOffset) % TEMPLATES.length];
-}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
