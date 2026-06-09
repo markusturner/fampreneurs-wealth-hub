@@ -106,7 +106,7 @@ async function listFathomMeetings(): Promise<{ id: string; title: string; create
   const key = Deno.env.get('FATHOM_API_KEY')
   if (!key) return []
   try {
-    const since = new Date(Date.now() - 90 * 86400000).toISOString()
+    const since = new Date(Date.now() - 180 * 86400000).toISOString()
     const url = `https://api.fathom.ai/external/v1/meetings?created_after=${encodeURIComponent(since)}&include=transcript,summary&limit=200`
     const res = await fetch(url, { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
     if (!res.ok) { console.error('fathom err', res.status, await res.text()); return [] }
@@ -281,9 +281,9 @@ Deno.serve(async (req) => {
         if (negative) { fathomScore = 3; signals.push({ label: `Fathom: negative sentiment in recent call`, severity: 'critical' }) }
         else if (positive) { fathomScore = 9; signals.push({ label: `Fathom: positive sentiment — expansion candidate`, severity: 'info' }) }
         else fathomScore = 7
-        if (lastFathomDays > 30) signals.push({ label: `Last call ${lastFathomDays}d ago`, severity: 'warn' })
+        if (lastFathomDays > 60) signals.push({ label: `Last call ${lastFathomDays}d ago`, severity: 'warn' })
       } else if (fathomMeetings.length > 0) {
-        signals.push({ label: 'No recent calls found in Fathom', severity: 'warn' })
+        signals.push({ label: 'No calls found in Fathom (last 180d)', severity: 'warn' })
         fathomScore = 4
       }
 
@@ -349,6 +349,43 @@ Deno.serve(async (req) => {
           user_id: p.id, score, status, signals, arr_value, program: programKey,
         })
       }
+    }
+
+    // -------- Auto-draft retention messages for every client (parallel) --------
+    const lovableKey = Deno.env.get('LOVABLE_API_KEY')
+    if (lovableKey) {
+      const PROMPTS: Record<string, string> = {
+        at_risk: 'The client is at risk of churning. Write a short, warm, empathetic check-in (3-5 sentences). Acknowledge they have been quiet, ask how they are doing personally, offer a no-pressure 15-min call. Sign off "— Markus".',
+        slipping: 'The client is slipping in engagement. Write a light re-engagement message (3-4 sentences) referencing a relevant program win they could pursue this week. Sign off "— Markus".',
+        stable: 'The client is doing well. Write a friendly testimonial/referral ask (3-4 sentences). Acknowledge their wins and ask if they know a family we should be talking to. Sign off "— Markus".',
+        expansion_ready: 'The client is ready for an upsell to the next program tier (TFV→TFBA→TFFM Succession Society). Write an upbeat invitation (3-4 sentences) to a strategy call to discuss the next step. Sign off "— Markus".',
+      }
+      const systemPrompt = `You are Markus's retention assistant. Write personal, brief outreach in his voice — warm, direct, no fluff, no exclamation marks unless celebrating. Avoid corporate language.`
+
+      await Promise.all(results.map(async (r) => {
+        try {
+          const signalsText = r.signals.map((s) => `- ${s.label}`).join('\n') || '- (none)'
+          const metricsText = Object.entries(r.metrics).map(([k, v]) => `- ${k}: ${v ?? 'no data'}`).join('\n')
+          const userPrompt = `${PROMPTS[r.status]}\n\nClient: ${r.full_name}\nProgram: ${r.program ?? 'unknown'}\nHealth score: ${r.score}/10\nSignals:\n${signalsText}\nMetrics:\n${metricsText}\n\nReturn only the message body — no subject line, no headers.`
+          const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Lovable-API-Key': lovableKey, 'Content-Type': 'application/json', 'X-Lovable-AIG-SDK': 'manual' },
+            body: JSON.stringify({
+              model: 'google/gemini-3-flash-preview',
+              messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+            }),
+          })
+          if (resp.ok) {
+            const data = await resp.json()
+            ;(r as any).draft = data?.choices?.[0]?.message?.content ?? ''
+          } else {
+            ;(r as any).draft = ''
+          }
+        } catch (e) {
+          console.error('auto-draft error', r.user_id, e)
+          ;(r as any).draft = ''
+        }
+      }))
     }
 
     return new Response(JSON.stringify({

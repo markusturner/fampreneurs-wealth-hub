@@ -28,6 +28,7 @@ interface ClientScore {
   signals: { label: string; severity?: string }[]
   arr_value: number
   last_active_at: string | null
+  draft?: string
 }
 
 const STATUS_META: Record<Status, { label: string; color: string; bg: string; ring: string }> = {
@@ -136,6 +137,11 @@ export default function ClientRetention() {
   }
 
   const selected = useMemo(() => clients.find((c) => c.user_id === selectedId) ?? null, [clients, selectedId])
+
+  // Auto-fill draft from precomputed value when selection changes
+  useEffect(() => {
+    if (selected?.draft !== undefined) setDraft(selected.draft ?? "")
+  }, [selectedId, selected?.draft])
 
   const stats = useMemo(() => {
     const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [] }
