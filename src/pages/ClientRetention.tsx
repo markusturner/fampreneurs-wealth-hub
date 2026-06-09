@@ -104,9 +104,36 @@ export default function ClientRetention() {
     if (isAdmin || isOwner) {
       loadHealth()
       loadTrend()
+      loadAutopilot()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, isOwner])
+
+  const loadAutopilot = async () => {
+    const { data } = await supabase
+      .from("platform_settings")
+      .select("setting_value")
+      .eq("setting_key", "client_retention_autopilot")
+      .maybeSingle()
+    const v = data?.setting_value as any
+    setAutopilot(v === true || v === "true" || v?.enabled === true)
+  }
+
+  const toggleAutopilot = async (next: boolean) => {
+    setAutopilot(next)
+    const { error } = await supabase
+      .from("platform_settings")
+      .upsert(
+        [{ setting_key: "client_retention_autopilot", setting_value: String(next), updated_by: user?.id, description: "Auto-send retention messages daily" }],
+        { onConflict: "setting_key" }
+      )
+    if (error) {
+      toast.error("Couldn't save autopilot setting")
+      setAutopilot(!next)
+      return
+    }
+    toast.success(next ? "Autopilot ON — daily sends enabled" : "Autopilot OFF")
+  }
 
   const selected = useMemo(() => clients.find((c) => c.user_id === selectedId) ?? null, [clients, selectedId])
 
@@ -186,7 +213,7 @@ export default function ClientRetention() {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-sm">
-            <Switch checked={autopilot} onCheckedChange={setAutopilot} id="autopilot" />
+            <Switch checked={autopilot} onCheckedChange={toggleAutopilot} id="autopilot" />
             <label htmlFor="autopilot" className="text-muted-foreground">Autopilot</label>
           </div>
           <Button variant="outline" size="sm" onClick={() => { loadHealth(); loadTrend(); }} disabled={loading}>
