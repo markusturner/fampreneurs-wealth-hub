@@ -1542,6 +1542,9 @@ export function AdminAllUsersManagement() {
                       <Button size="sm" variant="outline" onClick={() => setEditingUser(mobileSelectedUser)} className="px-2">
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
+                      <Button size="sm" variant="outline" onClick={() => setLinkingUser(mobileSelectedUser)} className="px-2" title="Link related users">
+                        <Link2 className="h-3.5 w-3.5" />
+                      </Button>
                       <Button size="sm" variant="outline" onClick={() => setDeletingUserId(mobileSelectedUser.user_id)} className="text-destructive hover:text-destructive px-2">
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
