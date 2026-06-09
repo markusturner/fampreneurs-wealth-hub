@@ -212,44 +212,44 @@ export default function ClientRetention() {
   const expansionList = stats.buckets.expansion_ready
 
   return (
-    <div className="container mx-auto py-6 px-4 max-w-7xl">
+    <div className="container mx-auto py-4 sm:py-6 px-3 sm:px-4 max-w-7xl">
       <Helmet><title>Client Retention | TruHeirs Admin</title></Helmet>
 
-      <header className="mb-6 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Client Retention</h1>
-          <p className="text-sm text-muted-foreground">Health pulse across every active TFV, TFBA & TFFM client.</p>
+      <header className="mb-4 sm:mb-6 flex items-start sm:items-center justify-between flex-wrap gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Client Retention</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">Health pulse across every active TFV, TFBA & TFFM client.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <div className="flex items-center gap-2 text-sm">
             <Switch checked={autopilot} onCheckedChange={toggleAutopilot} id="autopilot" />
-            <label htmlFor="autopilot" className="text-muted-foreground">Autopilot</label>
+            <label htmlFor="autopilot" className="text-muted-foreground text-xs sm:text-sm">Autopilot</label>
           </div>
           <Button variant="outline" size="sm" onClick={() => { loadHealth(); loadTrend(); }} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+            <RefreshCw className={`h-4 w-4 sm:mr-1.5 ${loading ? "animate-spin" : ""}`} /> <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>
       </header>
 
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-5">
-        <Card><CardContent className="py-4">
-          <p className="text-xs text-muted-foreground">Avg Health Score</p>
-          <p className="text-2xl font-bold">{stats.avg}<span className="text-base text-muted-foreground">/10</span></p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-4 sm:mb-5">
+        <Card><CardContent className="py-3 sm:py-4 px-3 sm:px-6">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Avg Health Score</p>
+          <p className="text-xl sm:text-2xl font-bold">{stats.avg}<span className="text-sm sm:text-base text-muted-foreground">/10</span></p>
         </CardContent></Card>
-        <Card><CardContent className="py-4">
-          <p className="text-xs text-muted-foreground">Active / Inactive</p>
-          <p className="text-2xl font-bold">{stats.active}<span className="text-base text-muted-foreground"> / {stats.inactive}</span></p>
+        <Card><CardContent className="py-3 sm:py-4 px-3 sm:px-6">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Active / Inactive</p>
+          <p className="text-xl sm:text-2xl font-bold">{stats.active}<span className="text-sm sm:text-base text-muted-foreground"> / {stats.inactive}</span></p>
         </CardContent></Card>
         {(["at_risk","slipping","stable","expansion_ready"] as Status[]).map((s) => {
           const arr = stats.buckets[s].reduce((sum, c) => sum + c.arr_value, 0)
           return (
             <Card key={s} className={`${STATUS_META[s].bg} ring-1 ${STATUS_META[s].ring}`}>
-              <CardContent className="py-4">
-                <p className={`text-xs font-medium ${STATUS_META[s].color}`}>{STATUS_META[s].label}</p>
-                <p className="text-2xl font-bold">{stats.buckets[s].length}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">${arr.toLocaleString()} ARR</p>
+              <CardContent className="py-3 sm:py-4 px-3 sm:px-6">
+                <p className={`text-[10px] sm:text-xs font-medium ${STATUS_META[s].color}`}>{STATUS_META[s].label}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stats.buckets[s].length}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">${arr.toLocaleString()} ARR</p>
               </CardContent>
             </Card>
           )
@@ -257,15 +257,16 @@ export default function ClientRetention() {
       </div>
 
       <Tabs defaultValue="today" className="w-full">
-        <TabsList>
-          <TabsTrigger value="today">Today</TabsTrigger>
-          <TabsTrigger value="movement">Movement</TabsTrigger>
-          <TabsTrigger value="wins">Wins</TabsTrigger>
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="today" className="flex-1 sm:flex-none">Today</TabsTrigger>
+          <TabsTrigger value="movement" className="flex-1 sm:flex-none">Movement</TabsTrigger>
+          <TabsTrigger value="wins" className="flex-1 sm:flex-none">Wins</TabsTrigger>
         </TabsList>
 
         {/* TODAY */}
         <TabsContent value="today" className="mt-4">
-          <div className="grid lg:grid-cols-[360px_1fr] gap-4">
+          <div className="grid lg:grid-cols-[340px_1fr] xl:grid-cols-[380px_1fr] gap-4">
+
             {/* Left queue */}
             <div className="space-y-4">
               <QueueGroup title="Urgent — Act Today" icon={<AlertTriangle className="h-4 w-4 text-red-600" />} clients={urgentList} selectedId={selectedId} onSelect={setSelectedId} loading={loading} />
@@ -274,25 +275,26 @@ export default function ClientRetention() {
 
             {/* Right detail */}
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+                  <div className="min-w-0">
+                    <CardTitle className="text-base truncate">
                       {selected ? selected.full_name : "Select a client"}
                     </CardTitle>
                     {selected && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5 break-all sm:break-normal">
                         {selected.email} · {selected.program?.toUpperCase()} · Score {selected.score}/10
                       </p>
                     )}
                   </div>
                   {selected && (
-                    <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none`}>
+                    <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none shrink-0`}>
                       {STATUS_META[selected.status].label}
                     </Badge>
                   )}
                 </div>
               </CardHeader>
+
               <CardContent>
                 {!selected ? (
                   <p className="text-sm text-muted-foreground">Pick a client from the queue to see signals and a drafted save play.</p>
