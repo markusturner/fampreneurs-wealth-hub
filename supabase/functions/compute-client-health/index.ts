@@ -284,7 +284,7 @@ Deno.serve(async (req) => {
         else fathomScore = 7
         if (lastFathomDays > 60) signals.push({ label: `Last call ${lastFathomDays}d ago`, severity: 'warn' })
       } else if (fathomMeetings.length > 0) {
-        signals.push({ label: 'No calls found in Fathom (last 180d)', severity: 'warn' })
+        signals.push({ label: 'No calls found in Fathom (last 2 years)', severity: 'warn' })
         fathomScore = 4
       }
 
