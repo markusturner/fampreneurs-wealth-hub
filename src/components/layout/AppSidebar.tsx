@@ -23,6 +23,7 @@ import {
   Mail,
   ScrollText,
   Sprout,
+  HeartPulse,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -120,6 +121,7 @@ const SEARCH_SUGGESTIONS = [
   { label: 'Messenger', path: '/messenger', requiresSubscription: false },
   { label: 'Profile Settings', path: '/profile-settings', requiresSubscription: false },
   { label: 'Admin Settings', path: '/admin-settings', requiresAdmin: true },
+  { label: 'Client Retention', path: '/client-retention', requiresAdmin: true },
 ]
 
 export function AppSidebar({ className }: { className?: string }) {
@@ -283,6 +285,7 @@ export function AppSidebar({ className }: { className?: string }) {
             </div>
             <div className="space-y-0.5">
               <NavItem label="Admin Settings" icon={Shield} href="/admin-settings" active={isActive("/admin-settings")} />
+              <NavItem label="Client Retention" icon={HeartPulse} href="/client-retention" active={isActive("/client-retention")} />
             </div>
           </>
         )}
