@@ -62,21 +62,46 @@ export default function ClientRetention() {
     }
   }, [user, isAdmin, isOwner, roleLoading, ownerLoading, navigate])
 
-  const loadHealth = async () => {
-    setLoading(true)
+  const applyClients = (list: ClientScore[]) => {
+    setClients(list)
+    setSelectedId((prev) => {
+      if (prev && list.some((c) => c.user_id === prev)) return prev
+      const firstAtRisk = list.find((c) => c.status === "at_risk") ?? list[0]
+      return firstAtRisk?.user_id ?? null
+    })
+  }
+
+  const loadCache = async () => {
+    const { data } = await supabase
+      .from("platform_settings")
+      .select("setting_value")
+      .eq("setting_key", "client_retention_cache")
+      .maybeSingle()
+    const raw = data?.setting_value as string | null
+    if (!raw) return false
+    try {
+      const parsed = typeof raw === "string" ? JSON.parse(raw) : raw
+      const list: ClientScore[] = parsed?.clients ?? []
+      if (list.length > 0) {
+        applyClients(list)
+        setLoading(false)
+        return true
+      }
+    } catch {}
+    return false
+  }
+
+  const loadHealth = async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const { data, error } = await supabase.functions.invoke("compute-client-health", { body: {} })
       if (error) throw error
       const list: ClientScore[] = data?.clients ?? []
-      setClients(list)
-      if (!selectedId && list.length > 0) {
-        const firstAtRisk = list.find((c) => c.status === "at_risk") ?? list[0]
-        setSelectedId(firstAtRisk.user_id)
-      }
+      applyClients(list)
     } catch (e: any) {
-      toast.error("Failed to load client health: " + (e?.message ?? e))
+      if (!silent) toast.error("Failed to load client health: " + (e?.message ?? e))
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
@@ -105,7 +130,10 @@ export default function ClientRetention() {
 
   useEffect(() => {
     if (isAdmin || isOwner) {
-      loadHealth()
+      // Instant load from cached payload, then refresh silently in background
+      loadCache().then((hadCache) => {
+        loadHealth(hadCache)
+      })
       loadTrend()
       loadAutopilot()
     }
