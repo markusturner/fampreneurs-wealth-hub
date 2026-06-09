@@ -253,13 +253,29 @@ Deno.serve(async (req) => {
         .select('updated_at, status').eq('user_id', p.id).order('updated_at', { ascending: false }).limit(1).maybeSingle()
       const trustDays = daysSince(lastTrust?.updated_at)
 
+      // Ascension eligibility per Customer Feedback Framework:
+      //   1) Family Protection Plan complete  2) All 3 trusts drafted (family, business, ministry)  3) Assets moved into trusts
+      const [{ data: allTrusts }, { count: assetCount }] = await Promise.all([
+        supabase.from('trust_submissions').select('trust_type, status').eq('user_id', p.id),
+        supabase.from('trust_asset_uploads').select('id', { count: 'exact', head: true }).eq('user_id', p.id),
+      ])
+      const trustTypes = new Set((allTrusts ?? []).map((t: any) => (t.trust_type || '').toLowerCase()))
+      const hasFamily = [...trustTypes].some((t) => t.includes('family'))
+      const hasBusiness = [...trustTypes].some((t) => t.includes('business'))
+      const hasMinistry = [...trustTypes].some((t) => t.includes('ministry'))
+      const assetsMoved = (assetCount ?? 0) > 0
+      const ascensionEligible = hasFamily && hasBusiness && hasMinistry && assetsMoved
+
       const driveMatches = driveTree.filter((f) => nameMatches(f.name, fullName))
       const trustCompletedInDrive = driveMatches.some((f) =>
         /complete|final|signed|executed|done/i.test(f.name) ||
         (f.mimeType === 'application/vnd.google-apps.folder' && driveMatches.length >= 2)
       )
 
-      if (trustCompletedInDrive) {
+      if (ascensionEligible) {
+        trustScore = 10
+        signals.push({ label: 'Ascension-ready: 3 trusts drafted + assets funded', severity: 'info' })
+      } else if (trustCompletedInDrive) {
         trustScore = 10
         signals.push({ label: 'Trust folder found in AI Trust Software (likely complete)', severity: 'info' })
       } else if (driveMatches.length > 0) {
