@@ -231,28 +231,6 @@ export default function ClientRetention() {
         </div>
       </header>
 
-      {/* Top banner */}
-      {urgentList.length + slippingList.length > 0 && (
-        <Card className="mb-5 border-l-4 border-l-[#ffb500] bg-gradient-to-r from-amber-50 to-transparent">
-          <CardContent className="py-4">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">
-                  {urgentList.length + slippingList.length} clients need attention. Here's what Client Retention is doing.
-                </p>
-                <div className="mt-1.5 flex flex-wrap gap-1.5">
-                  {[...urgentList, ...slippingList].slice(0, 8).map((c) => (
-                    <Badge key={c.user_id} variant="outline" className="text-xs">
-                      {c.full_name} · {STATUS_META[c.status].label}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-5">
