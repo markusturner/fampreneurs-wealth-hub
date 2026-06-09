@@ -48,15 +48,20 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    // Fetch all active non-Lite, non-FBU-only clients
+    // Fetch all active non-Lite, non-FBU-only clients (exclude invited/incomplete profiles)
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, display_name, email, program_name, created_at')
+      .select('id, first_name, last_name, display_name, email, program_name, created_at, needs_profile_completion, membership_type')
       .not('program_name', 'is', null)
 
     const clients = (profiles ?? []).filter((p) => {
       const prog = (p.program_name || '').toLowerCase()
-      return prog && prog !== 'fbu' && prog !== 'truheirs-lite' && prog !== 'lite'
+      if (!prog || prog === 'fbu' || prog === 'truheirs-lite' || prog === 'lite') return false
+      // Exclude invited users who haven't completed signup
+      if (p.needs_profile_completion === true) return false
+      if ((p.first_name || '').toLowerCase() === 'invited') return false
+      if (p.membership_type === 'family_member') return false
+      return true
     })
 
     const results: ClientScore[] = []
