@@ -124,7 +124,7 @@ export default function ClientRetention() {
     const { error } = await supabase
       .from("platform_settings")
       .upsert(
-        { setting_key: "client_retention_autopilot", setting_value: next, updated_by: user?.id, description: "Auto-send retention messages daily" },
+        [{ setting_key: "client_retention_autopilot", setting_value: String(next), updated_by: user?.id, description: "Auto-send retention messages daily" }],
         { onConflict: "setting_key" }
       )
     if (error) {
