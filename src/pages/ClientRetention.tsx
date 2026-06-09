@@ -275,25 +275,26 @@ export default function ClientRetention() {
 
             {/* Right detail */}
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-base">
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+                  <div className="min-w-0">
+                    <CardTitle className="text-base truncate">
                       {selected ? selected.full_name : "Select a client"}
                     </CardTitle>
                     {selected && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5 break-all sm:break-normal">
                         {selected.email} · {selected.program?.toUpperCase()} · Score {selected.score}/10
                       </p>
                     )}
                   </div>
                   {selected && (
-                    <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none`}>
+                    <Badge className={`${STATUS_META[selected.status].bg} ${STATUS_META[selected.status].color} border-none shrink-0`}>
                       {STATUS_META[selected.status].label}
                     </Badge>
                   )}
                 </div>
               </CardHeader>
+
               <CardContent>
                 {!selected ? (
                   <p className="text-sm text-muted-foreground">Pick a client from the queue to see signals and a drafted save play.</p>
