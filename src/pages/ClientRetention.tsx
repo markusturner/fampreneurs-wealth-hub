@@ -28,6 +28,7 @@ interface ClientScore {
   signals: { label: string; severity?: string }[]
   arr_value: number
   last_active_at: string | null
+  draft?: string
 }
 
 const STATUS_META: Record<Status, { label: string; color: string; bg: string; ring: string }> = {
