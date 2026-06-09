@@ -2061,6 +2061,15 @@ export function AdminAllUsersManagement() {
         </CardContent>
       </Card>
 
+      {/* Link Users Dialog */}
+      <LinkUsersDialog
+        open={!!linkingUser}
+        onOpenChange={(open) => !open && setLinkingUser(null)}
+        userId={linkingUser?.user_id ?? null}
+        userName={linkingUser ? ([linkingUser.first_name, linkingUser.last_name].filter(Boolean).join(' ') || (linkingUser as any).email) : null}
+        onSaved={() => fetchUsers(true)}
+      />
+
       {/* Edit User Dialog */}
       <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
