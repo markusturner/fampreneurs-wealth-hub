@@ -122,6 +122,7 @@ export function MobileBottomNav() {
 
   const adminItems = (isAdmin || isOwner) && !isLite ? [
     { name: 'Admin Settings', href: '/admin-settings', icon: Shield },
+    { name: 'Client Retention', href: '/client-retention', icon: HeartPulse },
   ] : []
 
   const isMoreActive = [...moreItems, ...adminItems].some(i => location.pathname === i.href)
