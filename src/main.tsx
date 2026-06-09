@@ -38,6 +38,7 @@ import Search from "./pages/Search";
 import Onboarding from "./pages/Onboarding";
 import ProfileSettings from "./pages/ProfileSettings";
 import AdminSettings from "./pages/AdminSettings";
+import ClientRetention from "./pages/ClientRetention";
 import TutorialVideos from "./pages/TutorialVideos";
 import Help from "./pages/Help";
 import Contact from "./pages/Contact";
