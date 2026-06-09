@@ -138,6 +138,11 @@ export default function ClientRetention() {
 
   const selected = useMemo(() => clients.find((c) => c.user_id === selectedId) ?? null, [clients, selectedId])
 
+  // Auto-fill draft from precomputed value when selection changes
+  useEffect(() => {
+    if (selected?.draft !== undefined) setDraft(selected.draft ?? "")
+  }, [selectedId, selected?.draft])
+
   const stats = useMemo(() => {
     const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [] }
     clients.forEach((c) => buckets[c.status].push(c))
