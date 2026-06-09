@@ -10,7 +10,7 @@ import { MeetingsProvider } from "@/contexts/MeetingsContext";
 import { useZapierNotifications } from "@/hooks/useZapierNotifications";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppLayout } from "@/components/layout/AppLayout";
-import Landing from "./pages/Landing";
+import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import AuthFamily from "./pages/AuthFamily";
