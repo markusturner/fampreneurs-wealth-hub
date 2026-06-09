@@ -102,29 +102,50 @@ async function listDriveTree(token: string): Promise<{ name: string; mimeType: s
   return all
 }
 
-// ---------- Fathom: recent meetings + transcripts ----------
-async function listFathomMeetings(): Promise<{ id: string; title: string; created_at: string; transcript?: string; summary?: string }[]> {
+// ---------- Fathom: recent meetings + transcripts (paginated) ----------
+interface FathomMeeting { id: string; title: string; created_at: string; transcript: string; summary: string; invitees: string }
+async function listFathomMeetings(): Promise<FathomMeeting[]> {
   const key = Deno.env.get('FATHOM_API_KEY')
   if (!key) return []
+  const out: FathomMeeting[] = []
   try {
-    // Scan up to 2 years of Fathom history
     const since = new Date(Date.now() - 730 * 86400000).toISOString()
-    const url = `https://api.fathom.ai/external/v1/meetings?created_after=${encodeURIComponent(since)}&include=transcript,summary&limit=500`
-    const res = await fetch(url, { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
-    if (!res.ok) { console.error('fathom err', res.status, await res.text()); return [] }
-    const json = await res.json()
-    const items = json?.items ?? json?.meetings ?? json?.data ?? []
-    return items.map((m: any) => ({
-      id: String(m.id ?? m.uuid ?? ''),
-      title: m.title ?? m.name ?? '',
-      created_at: m.created_at ?? m.scheduled_start_time ?? m.start_time ?? new Date().toISOString(),
-      transcript: typeof m.transcript === 'string' ? m.transcript : m.transcript?.text ?? '',
-      summary: typeof m.summary === 'string' ? m.summary : m.summary?.text ?? '',
-    }))
+    let cursor: string | undefined
+    let pages = 0
+    do {
+      const url = new URL('https://api.fathom.ai/external/v1/meetings')
+      url.searchParams.set('created_after', since)
+      url.searchParams.set('include_transcript', 'true')
+      url.searchParams.set('include_summary', 'true')
+      if (cursor) url.searchParams.set('cursor', cursor)
+      const res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
+      if (!res.ok) { console.error('fathom err', res.status, await res.text()); break }
+      const json = await res.json()
+      const items = json?.items ?? []
+      for (const m of items) {
+        const transcript = Array.isArray(m.transcript)
+          ? m.transcript.map((t: any) => `${t?.speaker?.display_name ?? ''}: ${t?.text ?? ''}`).join('\n')
+          : (typeof m.transcript === 'string' ? m.transcript : m.transcript?.text ?? '')
+        const summary = typeof m.default_summary === 'object'
+          ? (m.default_summary?.markdown_formatted ?? '')
+          : (typeof m.summary === 'string' ? m.summary : m.summary?.text ?? '')
+        const invitees = Array.isArray(m.calendar_invitees)
+          ? m.calendar_invitees.map((i: any) => `${i?.name ?? ''} <${i?.email ?? ''}>`).join(', ')
+          : ''
+        out.push({
+          id: String(m.recording_id ?? m.id ?? ''),
+          title: `${m.meeting_title ?? ''} ${m.title ?? ''}`.trim(),
+          created_at: m.created_at ?? m.scheduled_start_time ?? m.recording_start_time ?? new Date().toISOString(),
+          transcript, summary, invitees,
+        })
+      }
+      cursor = json?.next_cursor ?? undefined
+      pages++
+    } while (cursor && pages < 50) // safety cap ~500+ meetings
   } catch (e) {
     console.error('fathom fetch failed', e)
-    return []
   }
+  return out
 }
 
 function nameMatches(haystack: string, fullName: string): boolean {
