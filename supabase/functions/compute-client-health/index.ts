@@ -291,9 +291,12 @@ Deno.serve(async (req) => {
       else responseScore = 7
 
       // -------- Fathom transcript scan --------
-      const myMeetings = fathomMeetings.filter((m) =>
-        nameMatches(`${m.title}\n${m.transcript ?? ''}\n${m.summary ?? ''}`, fullName)
-      )
+      const emailLc = (p.email || '').toLowerCase()
+      const myMeetings = fathomMeetings.filter((m) => {
+        const hay = `${m.title}\n${m.invitees}\n${m.summary}\n${m.transcript}`
+        if (emailLc && hay.toLowerCase().includes(emailLc)) return true
+        return nameMatches(hay, fullName)
+      })
       let lastFathomDays: number | null = null
       if (myMeetings.length > 0) {
         const latest = myMeetings.map((m) => new Date(m.created_at).getTime()).sort().reverse()[0]
