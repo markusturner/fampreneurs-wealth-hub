@@ -28,6 +28,7 @@ interface ClientScore {
   signals: { label: string; severity?: string }[]
   arr_value: number
   last_active_at: string | null
+  linked_users?: { user_id: string; full_name: string }[]
   draft?: string
 }
 
@@ -294,6 +295,27 @@ export default function ClientRetention() {
                   )}
                 </div>
               </CardHeader>
+
+              {selected && selected.linked_users && selected.linked_users.length > 0 && (
+                <div className="px-6 -mt-2 mb-2 flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Linked:</span>
+                  {selected.linked_users.map((lu) => {
+                    const match = clients.find((c) => c.user_id === lu.user_id)
+                    const name = match?.full_name ?? lu.full_name ?? 'User'
+                    return (
+                      <button
+                        key={lu.user_id}
+                        onClick={() => match && setSelectedId(match.user_id)}
+                        disabled={!match}
+                        className={`text-[11px] px-2 py-0.5 rounded-full border ${match ? 'hover:bg-amber-50 border-[#ffb500]/60 text-[#290a52]' : 'border-muted text-muted-foreground opacity-60 cursor-default'}`}
+                      >
+                        {name}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+
 
               <CardContent>
                 {!selected ? (

@@ -14,6 +14,7 @@ interface ClientScore {
   arr_value: number
   last_active_at: string | null
   metrics: Record<string, number | null | string>
+  linked_users?: { user_id: string; full_name: string }[]
 }
 
 const PROGRAM_DURATION_DAYS: Record<string, number> = { tfv: 180, tfba: 90, tffm: 365 }
@@ -106,8 +107,9 @@ async function listFathomMeetings(): Promise<{ id: string; title: string; create
   const key = Deno.env.get('FATHOM_API_KEY')
   if (!key) return []
   try {
-    const since = new Date(Date.now() - 180 * 86400000).toISOString()
-    const url = `https://api.fathom.ai/external/v1/meetings?created_after=${encodeURIComponent(since)}&include=transcript,summary&limit=200`
+    // Scan up to 2 years of Fathom history
+    const since = new Date(Date.now() - 730 * 86400000).toISOString()
+    const url = `https://api.fathom.ai/external/v1/meetings?created_after=${encodeURIComponent(since)}&include=transcript,summary&limit=500`
     const res = await fetch(url, { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
     if (!res.ok) { console.error('fathom err', res.status, await res.text()); return [] }
     const json = await res.json()
@@ -147,7 +149,7 @@ Deno.serve(async (req) => {
     // Active non-Lite clients
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, display_name, email, program_name, created_at, needs_profile_completion, membership_type')
+      .select('id, first_name, last_name, display_name, email, program_name, created_at, needs_profile_completion, membership_type, linked_user_ids')
       .not('program_name', 'is', null)
 
     const clients = (profiles ?? []).filter((p) => {
@@ -283,7 +285,7 @@ Deno.serve(async (req) => {
         else fathomScore = 7
         if (lastFathomDays > 60) signals.push({ label: `Last call ${lastFathomDays}d ago`, severity: 'warn' })
       } else if (fathomMeetings.length > 0) {
-        signals.push({ label: 'No calls found in Fathom (last 180d)', severity: 'warn' })
+        signals.push({ label: 'No calls found in Fathom (last 2 years)', severity: 'warn' })
         fathomScore = 4
       }
 
@@ -310,6 +312,8 @@ Deno.serve(async (req) => {
       const status = classify(score)
       const arr_value = PROGRAM_ARR[programKey] ?? 0
 
+      const linkedIds = ((p as any).linked_user_ids as string[] | null) ?? []
+
       results.push({
         user_id: p.id,
         full_name: fullName,
@@ -333,6 +337,7 @@ Deno.serve(async (req) => {
           days_to_program_end: daysToEnd,
           tenure_days: tenureDays,
         },
+        linked_users: linkedIds.map((id) => ({ user_id: id, full_name: '' })),
       })
 
       // Persist snapshot (one per day per user)

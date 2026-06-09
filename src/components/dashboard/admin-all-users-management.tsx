@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
-import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar, Clock, Star, Trophy, MessageSquare, ShieldCheck, Lock, Unlock, Download, Upload, Image } from 'lucide-react'
+import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar, Clock, Star, Trophy, MessageSquare, ShieldCheck, Lock, Unlock, Download, Upload, Image, Link2 } from 'lucide-react'
+import { LinkUsersDialog } from './link-users-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Badge } from '@/components/ui/badge'
@@ -102,6 +103,7 @@ export function AdminAllUsersManagement() {
   const [loadingCommunities, setLoadingCommunities] = useState(false)
   const [selectedProgramNames, setSelectedProgramNames] = useState<Set<string>>(new Set())
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
+  const [linkingUser, setLinkingUser] = useState<UserProfile | null>(null)
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
   const [resendingCredentialsId, setResendingCredentialsId] = useState<string | null>(null)
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
@@ -1540,6 +1542,9 @@ export function AdminAllUsersManagement() {
                       <Button size="sm" variant="outline" onClick={() => setEditingUser(mobileSelectedUser)} className="px-2">
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
+                      <Button size="sm" variant="outline" onClick={() => setLinkingUser(mobileSelectedUser)} className="px-2" title="Link related users">
+                        <Link2 className="h-3.5 w-3.5" />
+                      </Button>
                       <Button size="sm" variant="outline" onClick={() => setDeletingUserId(mobileSelectedUser.user_id)} className="text-destructive hover:text-destructive px-2">
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
@@ -2000,6 +2005,7 @@ export function AdminAllUsersManagement() {
                           {resendingCredentialsId === user.user_id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => setEditingUser(user)} title="Edit user"><Pencil className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => setLinkingUser(user)} title="Link related users (siblings, spouse, etc.)"><Link2 className="h-4 w-4" /></Button>
                         <Button size="sm" variant="ghost" onClick={() => setDeletingUserId(user.user_id)} title="Delete user" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </TableCell>
@@ -2054,6 +2060,15 @@ export function AdminAllUsersManagement() {
             )}
         </CardContent>
       </Card>
+
+      {/* Link Users Dialog */}
+      <LinkUsersDialog
+        open={!!linkingUser}
+        onOpenChange={(open) => !open && setLinkingUser(null)}
+        userId={linkingUser?.user_id ?? null}
+        userName={linkingUser ? ([linkingUser.first_name, linkingUser.last_name].filter(Boolean).join(' ') || (linkingUser as any).email) : null}
+        onSaved={() => fetchUsers(true)}
+      />
 
       {/* Edit User Dialog */}
       <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>

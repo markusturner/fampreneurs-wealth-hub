@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Mail, Calendar, MessageSquare, BookOpen, LayoutGrid, LayoutDashboard, Home, FileText, Users, Bot, Shield, ScrollText, Sprout, Settings, LogOut, ChevronRight } from 'lucide-react'
+import { Mail, Calendar, MessageSquare, BookOpen, LayoutGrid, LayoutDashboard, Home, FileText, Users, Bot, Shield, ScrollText, Sprout, Settings, LogOut, ChevronRight, HeartPulse } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserRole } from '@/hooks/useUserRole'
@@ -122,6 +122,7 @@ export function MobileBottomNav() {
 
   const adminItems = (isAdmin || isOwner) && !isLite ? [
     { name: 'Admin Settings', href: '/admin-settings', icon: Shield },
+    { name: 'Client Retention', href: '/client-retention', icon: HeartPulse },
   ] : []
 
   const isMoreActive = [...moreItems, ...adminItems].some(i => location.pathname === i.href)

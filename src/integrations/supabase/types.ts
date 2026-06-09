@@ -4179,6 +4179,7 @@ export type Database = {
           is_admin: boolean | null
           is_moderator: boolean | null
           last_name: string | null
+          linked_user_ids: string[]
           linkedin_url: string | null
           location: string | null
           mailing_address: string | null
@@ -4233,6 +4234,7 @@ export type Database = {
           is_admin?: boolean | null
           is_moderator?: boolean | null
           last_name?: string | null
+          linked_user_ids?: string[]
           linkedin_url?: string | null
           location?: string | null
           mailing_address?: string | null
@@ -4287,6 +4289,7 @@ export type Database = {
           is_admin?: boolean | null
           is_moderator?: boolean | null
           last_name?: string | null
+          linked_user_ids?: string[]
           linkedin_url?: string | null
           location?: string | null
           mailing_address?: string | null

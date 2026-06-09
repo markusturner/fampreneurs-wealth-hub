@@ -1,0 +1,2 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS linked_user_ids uuid[] NOT NULL DEFAULT '{}'::uuid[];
+CREATE INDEX IF NOT EXISTS profiles_linked_user_ids_gin ON public.profiles USING gin (linked_user_ids);
