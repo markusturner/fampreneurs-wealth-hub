@@ -312,6 +312,8 @@ Deno.serve(async (req) => {
       const status = classify(score)
       const arr_value = PROGRAM_ARR[programKey] ?? 0
 
+      const linkedIds = ((p as any).linked_user_ids as string[] | null) ?? []
+
       results.push({
         user_id: p.id,
         full_name: fullName,
@@ -335,6 +337,7 @@ Deno.serve(async (req) => {
           days_to_program_end: daysToEnd,
           tenure_days: tenureDays,
         },
+        linked_users: linkedIds.map((id) => ({ user_id: id, full_name: '' })),
       })
 
       // Persist snapshot (one per day per user)
