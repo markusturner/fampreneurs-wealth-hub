@@ -349,7 +349,9 @@ Deno.serve(async (req) => {
 
       let score = Math.max(1, Math.min(10, Number(raw.toFixed(1))))
       if (score >= 7 && renewalWindow) score = Math.min(10, score + 1.5)
-      const status = classify(score)
+      // Framework override: meeting all 3 ascension criteria forces expansion_ready
+      let status = classify(score)
+      if (ascensionEligible) { status = 'expansion_ready'; score = Math.max(score, 9) }
       const arr_value = PROGRAM_ARR[programKey] ?? 0
 
       const linkedIds = ((p as any).linked_user_ids as string[] | null) ?? []
@@ -374,6 +376,9 @@ Deno.serve(async (req) => {
           fathom_meetings_found: myMeetings.length,
           drive_files_found: driveMatches.length,
           trust_completed_in_drive: trustCompletedInDrive ? 'yes' : 'no',
+          ascension_eligible: ascensionEligible ? 'yes' : 'no',
+          trusts_drafted: `${[hasFamily && 'family', hasBusiness && 'business', hasMinistry && 'ministry'].filter(Boolean).join(',') || 'none'}`,
+          assets_funded_count: assetCount ?? 0,
           days_to_program_end: daysToEnd,
           tenure_days: tenureDays,
         },
