@@ -14,6 +14,7 @@ interface ClientScore {
   arr_value: number
   last_active_at: string | null
   metrics: Record<string, number | null | string>
+  linked_users?: { user_id: string; full_name: string }[]
 }
 
 const PROGRAM_DURATION_DAYS: Record<string, number> = { tfv: 180, tfba: 90, tffm: 365 }
