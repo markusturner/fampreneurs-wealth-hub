@@ -234,12 +234,14 @@ Deno.serve(async (req) => {
       else if (lastCommunityDays > 4) { communityScore = 7 }
       else communityScore = 9
 
-      // -------- Attendance --------
+      // -------- Attendance (TFV has no coaching calls — skip) --------
       const { data: lastAttended } = await supabase
         .from('session_attendance')
         .select('joined_at').eq('user_id', p.id).order('joined_at', { ascending: false }).limit(1).maybeSingle()
       const lastAttendedDays = daysSince(lastAttended?.joined_at)
-      if (lastAttendedDays === null) {
+      if (programKey === 'tfv') {
+        attendanceScore = 8 // neutral-positive; TFV doesn't include coaching calls
+      } else if (lastAttendedDays === null) {
         signals.push({ label: 'No coaching call attendance logged', severity: 'warn' })
         attendanceScore = 4
       } else if (lastAttendedDays > 30) { attendanceScore = 2; signals.push({ label: `Missed coaching calls (${lastAttendedDays}d)`, severity: 'critical' }) }
