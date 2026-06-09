@@ -130,7 +130,10 @@ export default function ClientRetention() {
 
   useEffect(() => {
     if (isAdmin || isOwner) {
-      loadHealth()
+      // Instant load from cached payload, then refresh silently in background
+      loadCache().then((hadCache) => {
+        loadHealth(hadCache)
+      })
       loadTrend()
       loadAutopilot()
     }
