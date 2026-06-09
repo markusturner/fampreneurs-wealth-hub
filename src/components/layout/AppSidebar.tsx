@@ -121,6 +121,7 @@ const SEARCH_SUGGESTIONS = [
   { label: 'Messenger', path: '/messenger', requiresSubscription: false },
   { label: 'Profile Settings', path: '/profile-settings', requiresSubscription: false },
   { label: 'Admin Settings', path: '/admin-settings', requiresAdmin: true },
+  { label: 'Client Retention', path: '/client-retention', requiresAdmin: true },
 ]
 
 export function AppSidebar({ className }: { className?: string }) {
