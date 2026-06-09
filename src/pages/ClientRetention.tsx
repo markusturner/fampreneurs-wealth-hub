@@ -45,9 +45,22 @@ export default function ClientRetention() {
   const { isAdmin, isLoading: roleLoading } = useUserRole()
   const { isOwner, isLoading: ownerLoading } = useOwnerRole(user?.id ?? null)
 
-  const [loading, setLoading] = useState(true)
-  const [clients, setClients] = useState<ClientScore[]>([])
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  // Hydrate synchronously from localStorage so the page renders instantly on mount
+  const cached = (() => {
+    try {
+      const raw = localStorage.getItem("client_retention_cache_v1")
+      if (!raw) return null
+      const parsed = JSON.parse(raw)
+      const list: ClientScore[] = parsed?.clients ?? []
+      if (!Array.isArray(list) || list.length === 0) return null
+      const firstAtRisk = list.find((c) => c.status === "at_risk") ?? list[0]
+      return { list, selectedId: firstAtRisk?.user_id ?? null }
+    } catch { return null }
+  })()
+
+  const [loading, setLoading] = useState(!cached)
+  const [clients, setClients] = useState<ClientScore[]>(cached?.list ?? [])
+  const [selectedId, setSelectedId] = useState<string | null>(cached?.selectedId ?? null)
   const [trend, setTrend] = useState<{ day: string; avg: number }[]>([])
   const [draft, setDraft] = useState<string>("")
   const [drafting, setDrafting] = useState(false)
@@ -85,6 +98,7 @@ export default function ClientRetention() {
       if (list.length > 0) {
         applyClients(list)
         setLoading(false)
+        try { localStorage.setItem("client_retention_cache_v1", JSON.stringify({ clients: list })) } catch {}
         return true
       }
     } catch {}
@@ -98,6 +112,7 @@ export default function ClientRetention() {
       if (error) throw error
       const list: ClientScore[] = data?.clients ?? []
       applyClients(list)
+      try { localStorage.setItem("client_retention_cache_v1", JSON.stringify({ clients: list })) } catch {}
     } catch (e: any) {
       if (!silent) toast.error("Failed to load client health: " + (e?.message ?? e))
     } finally {
