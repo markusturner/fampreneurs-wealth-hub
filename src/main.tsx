@@ -10,7 +10,6 @@ import { MeetingsProvider } from "@/contexts/MeetingsContext";
 import { useZapierNotifications } from "@/hooks/useZapierNotifications";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppLayout } from "@/components/layout/AppLayout";
-import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import AuthFamily from "./pages/AuthFamily";
@@ -103,7 +102,7 @@ function AppWithNotifications() {
     <>
       <Routes>
         {/* Public routes - no sidebar */}
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<Auth />} />
         <Route path="/apply" element={<Apply />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/family" element={<AuthFamily />} />
