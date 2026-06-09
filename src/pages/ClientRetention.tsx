@@ -177,24 +177,26 @@ export default function ClientRetention() {
 
   const handleSend = async () => {
     if (!selected || !draft.trim()) return
+    if (!selected.email) {
+      toast.error("No email on file for this client")
+      return
+    }
     setSending(true)
     try {
-      const { error } = await supabase.from("retention_messages").insert({
-        client_id: selected.user_id,
-        status: selected.status,
-        channel: "inapp",
-        draft,
-        sent_at: new Date().toISOString(),
-        sent_by: user?.id,
+      const { data, error } = await supabase.functions.invoke("send-retention-email", {
+        body: {
+          client_id: selected.user_id,
+          client_name: selected.full_name,
+          client_email: selected.email,
+          status: selected.status,
+          program: selected.program,
+          signals: selected.signals,
+          short_draft: draft,
+        },
       })
       if (error) throw error
-      // Also create an in-app message
-      await supabase.from("messages").insert({
-        sender_id: user?.id,
-        recipient_id: selected.user_id,
-        content: draft,
-      })
-      toast.success(`Sent to ${selected.full_name}`)
+      if ((data as any)?.error) throw new Error((data as any).error)
+      toast.success(`Email sent to ${selected.full_name}`)
       setDraft("")
     } catch (e: any) {
       toast.error("Send failed: " + (e?.message ?? e))
