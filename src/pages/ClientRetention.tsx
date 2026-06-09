@@ -28,6 +28,7 @@ interface ClientScore {
   signals: { label: string; severity?: string }[]
   arr_value: number
   last_active_at: string | null
+  linked_users?: { user_id: string; full_name: string }[]
   draft?: string
 }
 
