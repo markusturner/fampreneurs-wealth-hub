@@ -213,7 +213,7 @@ export default function ClientRetention() {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-sm">
-            <Switch checked={autopilot} onCheckedChange={setAutopilot} id="autopilot" />
+            <Switch checked={autopilot} onCheckedChange={toggleAutopilot} id="autopilot" />
             <label htmlFor="autopilot" className="text-muted-foreground">Autopilot</label>
           </div>
           <Button variant="outline" size="sm" onClick={() => { loadHealth(); loadTrend(); }} disabled={loading}>
