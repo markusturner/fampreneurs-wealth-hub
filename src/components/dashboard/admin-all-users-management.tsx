@@ -103,6 +103,7 @@ export function AdminAllUsersManagement() {
   const [loadingCommunities, setLoadingCommunities] = useState(false)
   const [selectedProgramNames, setSelectedProgramNames] = useState<Set<string>>(new Set())
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
+  const [linkingUser, setLinkingUser] = useState<UserProfile | null>(null)
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
   const [resendingCredentialsId, setResendingCredentialsId] = useState<string | null>(null)
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
