@@ -41,8 +41,8 @@ const STATUS_META: Record<Status, { label: string; color: string; bg: string; ri
 export default function ClientRetention() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { isAdmin } = useUserRole()
-  const { isOwner } = useOwnerRole(user?.id ?? null)
+  const { isAdmin, isLoading: roleLoading } = useUserRole()
+  const { isOwner, isLoading: ownerLoading } = useOwnerRole(user?.id ?? null)
 
   const [loading, setLoading] = useState(true)
   const [clients, setClients] = useState<ClientScore[]>([])
@@ -55,10 +55,11 @@ export default function ClientRetention() {
 
   useEffect(() => {
     if (!user) return
+    if (roleLoading || ownerLoading) return
     if (!isAdmin && !isOwner) {
       navigate("/dashboard", { replace: true })
     }
-  }, [user, isAdmin, isOwner, navigate])
+  }, [user, isAdmin, isOwner, roleLoading, ownerLoading, navigate])
 
   const loadHealth = async () => {
     setLoading(true)
