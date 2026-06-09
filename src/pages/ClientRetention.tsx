@@ -98,6 +98,7 @@ export default function ClientRetention() {
       if (list.length > 0) {
         applyClients(list)
         setLoading(false)
+        try { localStorage.setItem("client_retention_cache_v1", JSON.stringify({ clients: list })) } catch {}
         return true
       }
     } catch {}
@@ -111,6 +112,7 @@ export default function ClientRetention() {
       if (error) throw error
       const list: ClientScore[] = data?.clients ?? []
       applyClients(list)
+      try { localStorage.setItem("client_retention_cache_v1", JSON.stringify({ clients: list })) } catch {}
     } catch (e: any) {
       if (!silent) toast.error("Failed to load client health: " + (e?.message ?? e))
     } finally {
