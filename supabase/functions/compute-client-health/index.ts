@@ -253,13 +253,29 @@ Deno.serve(async (req) => {
         .select('updated_at, status').eq('user_id', p.id).order('updated_at', { ascending: false }).limit(1).maybeSingle()
       const trustDays = daysSince(lastTrust?.updated_at)
 
+      // Ascension eligibility per Customer Feedback Framework:
+      //   1) Family Protection Plan complete  2) All 3 trusts drafted (family, business, ministry)  3) Assets moved into trusts
+      const [{ data: allTrusts }, { count: assetCount }] = await Promise.all([
+        supabase.from('trust_submissions').select('trust_type, status').eq('user_id', p.id),
+        supabase.from('trust_asset_uploads').select('id', { count: 'exact', head: true }).eq('user_id', p.id),
+      ])
+      const trustTypes = new Set((allTrusts ?? []).map((t: any) => (t.trust_type || '').toLowerCase()))
+      const hasFamily = [...trustTypes].some((t) => t.includes('family'))
+      const hasBusiness = [...trustTypes].some((t) => t.includes('business'))
+      const hasMinistry = [...trustTypes].some((t) => t.includes('ministry'))
+      const assetsMoved = (assetCount ?? 0) > 0
+      const ascensionEligible = hasFamily && hasBusiness && hasMinistry && assetsMoved
+
       const driveMatches = driveTree.filter((f) => nameMatches(f.name, fullName))
       const trustCompletedInDrive = driveMatches.some((f) =>
         /complete|final|signed|executed|done/i.test(f.name) ||
         (f.mimeType === 'application/vnd.google-apps.folder' && driveMatches.length >= 2)
       )
 
-      if (trustCompletedInDrive) {
+      if (ascensionEligible) {
+        trustScore = 10
+        signals.push({ label: 'Ascension-ready: 3 trusts drafted + assets funded', severity: 'info' })
+      } else if (trustCompletedInDrive) {
         trustScore = 10
         signals.push({ label: 'Trust folder found in AI Trust Software (likely complete)', severity: 'info' })
       } else if (driveMatches.length > 0) {
@@ -333,7 +349,9 @@ Deno.serve(async (req) => {
 
       let score = Math.max(1, Math.min(10, Number(raw.toFixed(1))))
       if (score >= 7 && renewalWindow) score = Math.min(10, score + 1.5)
-      const status = classify(score)
+      // Framework override: meeting all 3 ascension criteria forces expansion_ready
+      let status = classify(score)
+      if (ascensionEligible) { status = 'expansion_ready'; score = Math.max(score, 9) }
       const arr_value = PROGRAM_ARR[programKey] ?? 0
 
       const linkedIds = ((p as any).linked_user_ids as string[] | null) ?? []
@@ -358,6 +376,9 @@ Deno.serve(async (req) => {
           fathom_meetings_found: myMeetings.length,
           drive_files_found: driveMatches.length,
           trust_completed_in_drive: trustCompletedInDrive ? 'yes' : 'no',
+          ascension_eligible: ascensionEligible ? 'yes' : 'no',
+          trusts_drafted: `${[hasFamily && 'family', hasBusiness && 'business', hasMinistry && 'ministry'].filter(Boolean).join(',') || 'none'}`,
+          assets_funded_count: assetCount ?? 0,
           days_to_program_end: daysToEnd,
           tenure_days: tenureDays,
         },
@@ -384,12 +405,12 @@ Deno.serve(async (req) => {
     const lovableKey = Deno.env.get('LOVABLE_API_KEY')
     if (lovableKey) {
       const PROMPTS: Record<string, string> = {
-        at_risk: 'The client is at risk of churning. Write a short, warm, empathetic check-in (3-5 sentences). Acknowledge they have been quiet, ask how they are doing personally, offer a no-pressure 15-min call. Sign off "— Markus".',
-        slipping: 'The client is slipping in engagement. Write a light re-engagement message (3-4 sentences) referencing a relevant program win they could pursue this week. Sign off "— Markus".',
-        stable: 'The client is doing well. Write a friendly testimonial/referral ask (3-4 sentences). Acknowledge their wins and ask if they know a family we should be talking to. Sign off "— Markus".',
-        expansion_ready: 'The client is ready for an upsell to the next program tier (TFV→TFBA→TFFM Succession Society). Write an upbeat invitation (3-4 sentences) to a strategy call to discuss the next step. Sign off "— Markus".',
+        at_risk: 'Client is at risk of churning. Write a short, warm, empathetic check-in (3-5 sentences). Acknowledge they have been quiet, ask how they are personally, offer a no-pressure 15-min call. Sign off "— Markus".',
+        slipping: 'Client is slipping in engagement. Write a light re-engagement message (3-4 sentences) referencing a relevant program win they could pursue this week. Sign off "— Markus".',
+        stable: `Client is doing well — send the TESTIMONIAL ASK from the Customer Feedback Framework. Use this voice and structure (personalize [Name] and [achievement]):\n\n"Hey [Name], congrats on [specific achievement]. We're going to keep helping you crush it, let us know what you need from our side. BTW, let us know if you're able to film a testimonial for us. It would be great to celebrate your success and this helps us out a lot."\n\nReturn only the text message body. Sign off "— Markus".`,
+        expansion_ready: `Client has hit ASCENSION CRITERIA (Family Protection Plan done, all 3 trusts drafted — Family/Business/Ministry, assets moved into trusts). Per the Customer Feedback Framework, send the Graduation/Ascension Call invite right after their testimonial moment. Use Markus's voice and this exact tone:\n\n"[Name], this was incredible. Because of where you are right now we want to get you on a quick legacy evaluation call to review everything you've built, make sure everything is locked in correctly, map out what's next for your family, and celebrate everything you've built. Depending on where you are we can do this in person or virtually — which works best for you?"\n\nIf they are TFBA → invite to Graduation Call (next step: Succession Society $22k / 6mo or $4k/mo). If TFV → invite to Accelerator strategy call. If TFFM Succession Society → soft-seed a Founding Families nomination conversation WITHOUT naming Founding Families. Keep it 3-5 sentences. Sign off "— Markus".`,
       }
-      const systemPrompt = `You are Markus's retention assistant. Write personal, brief outreach in his voice — warm, direct, no fluff, no exclamation marks unless celebrating. Avoid corporate language.`
+      const systemPrompt = `You are Markus's retention assistant for Fampreneurs/TruHeirs. Write personal, brief outreach in his voice — warm, direct, no fluff, no exclamation marks unless celebrating. Avoid corporate language. Follow the Customer Feedback Framework scripts when provided.`
 
       await Promise.all(results.map(async (r) => {
         try {
