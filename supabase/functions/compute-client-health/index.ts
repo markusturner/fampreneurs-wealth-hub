@@ -417,11 +417,23 @@ Deno.serve(async (req) => {
       }))
     }
 
-    return new Response(JSON.stringify({
+    const payload = {
       clients: results,
       computed_at: new Date().toISOString(),
       sources: { drive_files: driveTree.length, fathom_meetings: fathomMeetings.length },
-    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    // Persist full payload for instant loads on the Client Retention page
+    try {
+      await supabase.from('platform_settings').upsert(
+        [{ setting_key: 'client_retention_cache', setting_value: JSON.stringify(payload), description: 'Cached client retention payload for instant page loads' }],
+        { onConflict: 'setting_key' }
+      )
+    } catch (e) {
+      console.error('cache persist error', e)
+    }
+
+    return new Response(JSON.stringify(payload), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (e) {
     console.error('compute-client-health error', e)
     return new Response(JSON.stringify({ error: String(e) }), {
