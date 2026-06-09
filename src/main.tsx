@@ -142,6 +142,7 @@ function AppWithNotifications() {
         <Route path="/investments" element={<WithLayout><Investments /></WithLayout>} />
         <Route path="/profile-settings" element={<WithLayout><ProfileSettings /></WithLayout>} />
         <Route path="/admin-settings" element={<WithLayout><AdminSettings /></WithLayout>} />
+        <Route path="/client-retention" element={<WithLayout><ClientRetention /></WithLayout>} />
         <Route path="/tutorial-videos" element={<WithLayout><TutorialVideos /></WithLayout>} />
         <Route path="/help" element={<WithLayout><Help /></WithLayout>} />
         <Route path="/contact" element={<WithLayout><Contact /></WithLayout>} />
