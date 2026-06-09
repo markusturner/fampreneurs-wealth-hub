@@ -281,9 +281,9 @@ Deno.serve(async (req) => {
         if (negative) { fathomScore = 3; signals.push({ label: `Fathom: negative sentiment in recent call`, severity: 'critical' }) }
         else if (positive) { fathomScore = 9; signals.push({ label: `Fathom: positive sentiment — expansion candidate`, severity: 'info' }) }
         else fathomScore = 7
-        if (lastFathomDays > 30) signals.push({ label: `Last call ${lastFathomDays}d ago`, severity: 'warn' })
+        if (lastFathomDays > 60) signals.push({ label: `Last call ${lastFathomDays}d ago`, severity: 'warn' })
       } else if (fathomMeetings.length > 0) {
-        signals.push({ label: 'No recent calls found in Fathom', severity: 'warn' })
+        signals.push({ label: 'No calls found in Fathom (last 180d)', severity: 'warn' })
         fathomScore = 4
       }
 
