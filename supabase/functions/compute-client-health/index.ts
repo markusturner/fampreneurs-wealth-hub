@@ -106,8 +106,9 @@ async function listFathomMeetings(): Promise<{ id: string; title: string; create
   const key = Deno.env.get('FATHOM_API_KEY')
   if (!key) return []
   try {
-    const since = new Date(Date.now() - 180 * 86400000).toISOString()
-    const url = `https://api.fathom.ai/external/v1/meetings?created_after=${encodeURIComponent(since)}&include=transcript,summary&limit=200`
+    // Scan up to 2 years of Fathom history
+    const since = new Date(Date.now() - 730 * 86400000).toISOString()
+    const url = `https://api.fathom.ai/external/v1/meetings?created_after=${encodeURIComponent(since)}&include=transcript,summary&limit=500`
     const res = await fetch(url, { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
     if (!res.ok) { console.error('fathom err', res.status, await res.text()); return [] }
     const json = await res.json()
