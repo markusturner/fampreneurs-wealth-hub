@@ -791,6 +791,72 @@ export type Database = {
         }
         Relationships: []
       }
+      client_health_snapshots: {
+        Row: {
+          arr_value: number
+          computed_at: string
+          id: string
+          program: string | null
+          score: number
+          signals: Json
+          status: string
+          user_id: string
+        }
+        Insert: {
+          arr_value?: number
+          computed_at?: string
+          id?: string
+          program?: string | null
+          score: number
+          signals?: Json
+          status: string
+          user_id: string
+        }
+        Update: {
+          arr_value?: number
+          computed_at?: string
+          id?: string
+          program?: string | null
+          score?: number
+          signals?: Json
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      client_health_weights: {
+        Row: {
+          attendance: number
+          community: number
+          id: string
+          response: number
+          succession: number
+          tenure: number
+          trust: number
+          updated_at: string
+        }
+        Insert: {
+          attendance?: number
+          community?: number
+          id?: string
+          response?: number
+          succession?: number
+          tenure?: number
+          trust?: number
+          updated_at?: string
+        }
+        Update: {
+          attendance?: number
+          community?: number
+          id?: string
+          response?: number
+          succession?: number
+          tenure?: number
+          trust?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coach_assignments: {
         Row: {
           assigned_at: string
@@ -4347,6 +4413,42 @@ export type Database = {
           token?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      retention_messages: {
+        Row: {
+          channel: string
+          client_id: string
+          created_at: string
+          draft: string
+          id: string
+          response_received_at: string | null
+          sent_at: string | null
+          sent_by: string | null
+          status: string
+        }
+        Insert: {
+          channel?: string
+          client_id: string
+          created_at?: string
+          draft: string
+          id?: string
+          response_received_at?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status: string
+        }
+        Update: {
+          channel?: string
+          client_id?: string
+          created_at?: string
+          draft?: string
+          id?: string
+          response_received_at?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string
         }
         Relationships: []
       }
