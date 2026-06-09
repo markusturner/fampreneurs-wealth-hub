@@ -239,7 +239,7 @@ export default function ClientRetention() {
               </CardContent>
             </Card>
           )
-        }).slice(0,3)}
+        })}
       </div>
 
       <Tabs defaultValue="today" className="w-full">
