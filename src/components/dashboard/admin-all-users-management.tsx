@@ -2002,6 +2002,7 @@ export function AdminAllUsersManagement() {
                           {resendingCredentialsId === user.user_id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                         </Button>
                         <Button size="sm" variant="ghost" onClick={() => setEditingUser(user)} title="Edit user"><Pencil className="h-4 w-4" /></Button>
+                        <Button size="sm" variant="ghost" onClick={() => setLinkingUser(user)} title="Link related users (siblings, spouse, etc.)"><Link2 className="h-4 w-4" /></Button>
                         <Button size="sm" variant="ghost" onClick={() => setDeletingUserId(user.user_id)} title="Delete user" className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
                       </div>
                     </TableCell>
