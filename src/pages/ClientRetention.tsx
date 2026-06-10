@@ -511,12 +511,13 @@ function QueueGroup({
         <CardTitle className="text-sm flex items-center gap-2">{icon} {title} <span className="ml-auto text-xs text-muted-foreground font-normal">{clients.length}</span></CardTitle>
       </CardHeader>
       <CardContent className="space-y-1.5 max-h-[300px] overflow-auto">
-        {loading && <>
+        {loading && clients.length === 0 && <>
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-12 w-full" />
         </>}
         {!loading && clients.length === 0 && <p className="text-xs text-muted-foreground py-2">No clients in this group.</p>}
-        {!loading && clients.map((c) => (
+
+        {clients.map((c) => (
           <button
             key={c.user_id}
             onClick={() => onSelect(c.user_id)}
