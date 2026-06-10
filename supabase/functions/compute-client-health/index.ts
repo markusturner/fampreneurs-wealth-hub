@@ -175,11 +175,20 @@ async function listFathomMeetings(): Promise<FathomMeeting[]> {
       cursor = json?.next_cursor ?? undefined
       pages++
     } while (cursor && pages < 50)
-  } catch (e) {
-    console.error('fathom fetch failed', e)
+    } catch (e) {
+      console.error('fathom fetch failed', e)
+    }
+    _fathomCache = { at: Date.now(), data: out }
+    return out
+  })()
+  try {
+    const result = await _fathomInflight
+    return result
+  } finally {
+    _fathomInflight = null
   }
-  return out
 }
+
 
 function nameMatches(haystack: string, fullName: string): boolean {
   const h = haystack.toLowerCase()
