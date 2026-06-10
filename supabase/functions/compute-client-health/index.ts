@@ -104,33 +104,48 @@ async function listDriveTree(token: string): Promise<{ name: string; mimeType: s
 
 // ---------- Fathom: recent meetings + transcripts (paginated) ----------
 interface FathomMeeting { id: string; title: string; created_at: string; transcript: string; summary: string; invitees: string; speakers: string }
-async function listFathomMeetings(): Promise<FathomMeeting[]> {
-  const key = Deno.env.get('FATHOM_API_KEY')
-  if (!key) return []
-  const out: FathomMeeting[] = []
-  try {
-    const since = new Date(Date.now() - 730 * 86400000).toISOString()
-    let cursor: string | undefined
-    let pages = 0
-    do {
-      const url = new URL('https://api.fathom.ai/external/v1/meetings')
-      url.searchParams.set('created_after', since)
-      url.searchParams.set('include_transcript', 'true')
-      url.searchParams.set('include_summary', 'true')
-      if (cursor) url.searchParams.set('cursor', cursor)
+// Module-scope cache so repeat invocations in the same isolate don't hammer Fathom
+let _fathomCache: { at: number; data: FathomMeeting[] } | null = null
+let _fathomInflight: Promise<FathomMeeting[]> | null = null
+const FATHOM_TTL_MS = 10 * 60 * 1000
 
-      // Retry on 502/503/504 transients (Fathom is flaky)
-      let res: Response | null = null
-      for (let attempt = 0; attempt < 4; attempt++) {
-        res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
-        if (res.ok) break
-        if (![502, 503, 504, 429].includes(res.status)) break
-        await new Promise((r) => setTimeout(r, 800 * (attempt + 1)))
-      }
-      if (!res || !res.ok) {
-        console.error('fathom err', res?.status, await res?.text())
-        break
-      }
+async function listFathomMeetings(): Promise<FathomMeeting[]> {
+  if (_fathomCache && (Date.now() - _fathomCache.at) < FATHOM_TTL_MS) return _fathomCache.data
+  if (_fathomInflight) return _fathomInflight
+  _fathomInflight = (async () => {
+    const key = Deno.env.get('FATHOM_API_KEY')
+    if (!key) return []
+    const out: FathomMeeting[] = []
+    try {
+      const since = new Date(Date.now() - 730 * 86400000).toISOString()
+      let cursor: string | undefined
+      let pages = 0
+      do {
+        const url = new URL('https://api.fathom.ai/external/v1/meetings')
+        url.searchParams.set('created_after', since)
+        url.searchParams.set('include_transcript', 'true')
+        url.searchParams.set('include_summary', 'true')
+        if (cursor) url.searchParams.set('cursor', cursor)
+
+        // Retry on 502/503/504/429 — honor Retry-After for 429
+        let res: Response | null = null
+        for (let attempt = 0; attempt < 6; attempt++) {
+          res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
+          if (res.ok) break
+          if (![502, 503, 504, 429].includes(res.status)) break
+          let waitMs = 1000 * Math.pow(2, attempt) // 1s,2s,4s,8s,16s,32s
+          const ra = res.headers.get('Retry-After')
+          if (ra) {
+            const n = Number(ra)
+            if (!Number.isNaN(n)) waitMs = Math.max(waitMs, n * 1000)
+          }
+          await new Promise((r) => setTimeout(r, waitMs))
+        }
+        if (!res || !res.ok) {
+          console.error('fathom err', res?.status, await res?.text())
+          break
+        }
+
       const json = await res.json()
       const items = json?.items ?? []
       for (const m of items) {
