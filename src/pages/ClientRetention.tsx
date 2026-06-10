@@ -517,7 +517,7 @@ function QueueGroup({
         </>}
         {!loading && clients.length === 0 && <p className="text-xs text-muted-foreground py-2">No clients in this group.</p>}
 
-        {!loading && clients.map((c) => (
+        {clients.map((c) => (
           <button
             key={c.user_id}
             onClick={() => onSelect(c.user_id)}
