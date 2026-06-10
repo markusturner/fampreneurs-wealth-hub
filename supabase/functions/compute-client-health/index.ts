@@ -118,8 +118,19 @@ async function listFathomMeetings(): Promise<FathomMeeting[]> {
       url.searchParams.set('include_transcript', 'true')
       url.searchParams.set('include_summary', 'true')
       if (cursor) url.searchParams.set('cursor', cursor)
-      const res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
-      if (!res.ok) { console.error('fathom err', res.status, await res.text()); break }
+
+      // Retry on 502/503/504 transients (Fathom is flaky)
+      let res: Response | null = null
+      for (let attempt = 0; attempt < 4; attempt++) {
+        res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
+        if (res.ok) break
+        if (![502, 503, 504, 429].includes(res.status)) break
+        await new Promise((r) => setTimeout(r, 800 * (attempt + 1)))
+      }
+      if (!res || !res.ok) {
+        console.error('fathom err', res?.status, await res?.text())
+        break
+      }
       const json = await res.json()
       const items = json?.items ?? []
       for (const m of items) {
@@ -141,7 +152,7 @@ async function listFathomMeetings(): Promise<FathomMeeting[]> {
       }
       cursor = json?.next_cursor ?? undefined
       pages++
-    } while (cursor && pages < 50) // safety cap ~500+ meetings
+    } while (cursor && pages < 50)
   } catch (e) {
     console.error('fathom fetch failed', e)
   }
