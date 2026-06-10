@@ -338,9 +338,10 @@ Deno.serve(async (req) => {
       }
       const myMeetings = fathomMeetings.filter((m) => {
         if (isSalesMeeting(m)) return false
-        const idHay = `${m.title}\n${m.invitees}`
+        const idHay = `${m.title}\n${m.invitees}\n${m.speakers}`
         if (emailLc && idHay.toLowerCase().includes(emailLc)) return true
         return nameMatches(idHay, fullName)
+
       })
 
       let lastFathomDays: number | null = null
