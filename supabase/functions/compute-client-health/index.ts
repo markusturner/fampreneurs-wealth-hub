@@ -392,12 +392,22 @@ Deno.serve(async (req) => {
         }
         if (!oneLine && latestMeeting.title) oneLine = latestMeeting.title
 
-        const blob = myMeetings.map((m) => `${m.summary ?? ''} ${m.transcript ?? ''}`).join(' ').toLowerCase()
-        const negative = /(frustrat|cancel|refund|angry|upset|disappoint|leaving|quit|unhappy|complain)/i.test(blob)
-        const positive = /(love|amazing|excited|referral|expand|upgrade|grateful|huge win|game.?changer|breakthrough)/i.test(blob)
-        if (negative) fathomScore = 4
-        else if (positive) fathomScore = 8
+        // Scan ALL transcripts for this person, but weight the latest convo most.
+        const latestBlob = `${latestMeeting.summary ?? ''} ${latestMeeting.transcript ?? ''}`.toLowerCase()
+        const historyBlob = sorted.slice(1).map((m) => `${m.summary ?? ''} ${m.transcript ?? ''}`).join(' ').toLowerCase()
+        const negRe = /(frustrat|cancel|refund|angry|upset|disappoint|leaving|quit|unhappy|complain)/i
+        const posRe = /(love|amazing|excited|referral|expand|upgrade|grateful|huge win|game.?changer|breakthrough)/i
+        const latestNeg = negRe.test(latestBlob)
+        const latestPos = posRe.test(latestBlob)
+        const histNeg = negRe.test(historyBlob)
+        const histPos = posRe.test(historyBlob)
+        // Latest call drives the score; history nudges it.
+        if (latestNeg) fathomScore = histPos ? 5 : 4
+        else if (latestPos) fathomScore = histNeg ? 7 : 8
+        else if (histNeg) fathomScore = 6
+        else if (histPos) fathomScore = 7
         else fathomScore = 7
+        const negative = latestNeg || histNeg
 
         if (oneLine) {
           signals.push({ label: `Last call (${lastFathomDays}d ago): ${oneLine}`, severity: negative ? 'warn' : 'info' })
