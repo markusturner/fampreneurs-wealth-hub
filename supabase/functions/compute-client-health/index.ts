@@ -317,15 +317,32 @@ Deno.serve(async (req) => {
       })
       let lastFathomDays: number | null = null
       if (myMeetings.length > 0) {
-        const latest = myMeetings.map((m) => new Date(m.created_at).getTime()).sort().reverse()[0]
-        lastFathomDays = Math.floor((Date.now() - latest) / 86400000)
+        // Most recent call
+        const sorted = [...myMeetings].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        const latestMeeting = sorted[0]
+        lastFathomDays = Math.floor((Date.now() - new Date(latestMeeting.created_at).getTime()) / 86400000)
+
+        // Build a concise 1-sentence summary from the actual summary text (strip markdown headings/bullets)
+        const rawSummary = (latestMeeting.summary || '').replace(/[#*_>`-]+/g, ' ').replace(/\s+/g, ' ').trim()
+        let oneLine = ''
+        if (rawSummary) {
+          const sentence = rawSummary.split(/(?<=[.!?])\s+/).find((s) => s.length > 20) || rawSummary
+          oneLine = sentence.length > 180 ? sentence.slice(0, 177).trim() + '…' : sentence
+        }
+        if (!oneLine && latestMeeting.title) oneLine = latestMeeting.title
+
         const blob = myMeetings.map((m) => `${m.summary ?? ''} ${m.transcript ?? ''}`).join(' ').toLowerCase()
-        const negative = /(frustrat|cancel|refund|angry|upset|confus|disappoint|leaving|quit|unhappy|not working|complain)/i.test(blob)
+        const negative = /(frustrat|cancel|refund|angry|upset|disappoint|leaving|quit|unhappy|complain)/i.test(blob)
         const positive = /(love|amazing|excited|referral|expand|upgrade|grateful|huge win|game.?changer|breakthrough)/i.test(blob)
-        if (negative) { fathomScore = 3; signals.push({ label: `Fathom: negative sentiment in recent call`, severity: 'critical' }) }
-        else if (positive) { fathomScore = 9; signals.push({ label: `Fathom: positive sentiment — expansion candidate`, severity: 'info' }) }
+        if (negative) fathomScore = 4
+        else if (positive) fathomScore = 8
         else fathomScore = 7
-        if (lastFathomDays > 60) signals.push({ label: `Last call ${lastFathomDays}d ago`, severity: 'warn' })
+
+        if (oneLine) {
+          signals.push({ label: `Last call (${lastFathomDays}d ago): ${oneLine}`, severity: negative ? 'warn' : 'info' })
+        } else {
+          signals.push({ label: `Last call ${lastFathomDays}d ago`, severity: 'info' })
+        }
       } else if (fathomMeetings.length > 0) {
         signals.push({ label: 'No calls found in Fathom (last 2 years)', severity: 'warn' })
         fathomScore = 4
