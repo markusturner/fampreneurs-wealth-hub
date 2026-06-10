@@ -333,12 +333,20 @@ Deno.serve(async (req) => {
         const latestMeeting = sorted[0]
         lastFathomDays = Math.floor((Date.now() - new Date(latestMeeting.created_at).getTime()) / 86400000)
 
-        // Build a concise 1-sentence summary from the actual summary text (strip markdown headings/bullets)
-        const rawSummary = (latestMeeting.summary || '').replace(/[#*_>`-]+/g, ' ').replace(/\s+/g, ' ').trim()
+        // Clean the summary: drop markdown links, brackets, headings, field labels, then take first sentence
+        const cleaned = (latestMeeting.summary || '')
+          .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')     // [text](url) -> text
+          .replace(/https?:\/\/\S+/g, '')              // bare urls
+          .replace(/[#*_>`]+/g, ' ')                   // markdown noise
+          .replace(/^\s*[-•]\s*/gm, ' ')               // list bullets
+          .replace(/\b(Meeting Purpose|Key Takeaways?|Next Steps?|Action Items?|Summary|Notes)\b\s*:?/gi, ' ')
+          .replace(/[\[\]]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
         let oneLine = ''
-        if (rawSummary) {
-          const sentence = rawSummary.split(/(?<=[.!?])\s+/).find((s) => s.length > 20) || rawSummary
-          oneLine = sentence.length > 180 ? sentence.slice(0, 177).trim() + '…' : sentence
+        if (cleaned) {
+          const sentence = cleaned.split(/(?<=[.!?])\s+/).find((s) => s.length > 20) || cleaned
+          oneLine = sentence.length > 160 ? sentence.slice(0, 157).trim() + '…' : sentence
         }
         if (!oneLine && latestMeeting.title) oneLine = latestMeeting.title
 
