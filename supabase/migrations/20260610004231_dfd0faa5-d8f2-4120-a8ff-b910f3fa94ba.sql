@@ -1,0 +1,1 @@
+DELETE FROM public.platform_settings WHERE setting_key = 'client_retention_cache';
