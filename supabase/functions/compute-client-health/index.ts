@@ -134,8 +134,13 @@ async function listFathomMeetings(): Promise<FathomMeeting[]> {
       const json = await res.json()
       const items = json?.items ?? []
       for (const m of items) {
+        const speakerSet = new Set<string>()
         const transcript = Array.isArray(m.transcript)
-          ? m.transcript.map((t: any) => `${t?.speaker?.display_name ?? ''}: ${t?.text ?? ''}`).join('\n')
+          ? m.transcript.map((t: any) => {
+              const sp = t?.speaker?.display_name ?? ''
+              if (sp) speakerSet.add(sp)
+              return `${sp}: ${t?.text ?? ''}`
+            }).join('\n')
           : (typeof m.transcript === 'string' ? m.transcript : m.transcript?.text ?? '')
         const summary = typeof m.default_summary === 'object'
           ? (m.default_summary?.markdown_formatted ?? '')
@@ -148,8 +153,10 @@ async function listFathomMeetings(): Promise<FathomMeeting[]> {
           title: `${m.meeting_title ?? ''} ${m.title ?? ''}`.trim(),
           created_at: m.created_at ?? m.scheduled_start_time ?? m.recording_start_time ?? new Date().toISOString(),
           transcript, summary, invitees,
+          speakers: Array.from(speakerSet).join(', '),
         })
       }
+
       cursor = json?.next_cursor ?? undefined
       pages++
     } while (cursor && pages < 50)
