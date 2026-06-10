@@ -103,7 +103,7 @@ async function listDriveTree(token: string): Promise<{ name: string; mimeType: s
 }
 
 // ---------- Fathom: recent meetings + transcripts (paginated) ----------
-interface FathomMeeting { id: string; title: string; created_at: string; transcript: string; summary: string; invitees: string }
+interface FathomMeeting { id: string; title: string; created_at: string; transcript: string; summary: string; invitees: string; speakers: string }
 async function listFathomMeetings(): Promise<FathomMeeting[]> {
   const key = Deno.env.get('FATHOM_API_KEY')
   if (!key) return []
