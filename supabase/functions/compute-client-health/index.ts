@@ -320,12 +320,22 @@ Deno.serve(async (req) => {
       else responseScore = 7
 
       // -------- Fathom transcript scan --------
+      // Only attribute a call to a client when their name/email appears in the
+      // meeting TITLE or INVITEES (not transcript body — that catches mentions
+      // of other clients). Also exclude sales meetings (transcripts that talk
+      // about "booking a call" / "book a call" / "schedule a call").
       const emailLc = (p.email || '').toLowerCase()
+      const isSalesMeeting = (m: FathomMeeting) => {
+        const t = `${m.transcript ?? ''} ${m.summary ?? ''}`.toLowerCase()
+        return /\b(book(ing)?\s+(a\s+)?call|schedul(e|ing)\s+(a\s+)?call|book\s+(a\s+)?time|get\s+on\s+(a\s+)?call|hop\s+on\s+(a\s+)?call)\b/.test(t)
+      }
       const myMeetings = fathomMeetings.filter((m) => {
-        const hay = `${m.title}\n${m.invitees}\n${m.summary}\n${m.transcript}`
-        if (emailLc && hay.toLowerCase().includes(emailLc)) return true
-        return nameMatches(hay, fullName)
+        if (isSalesMeeting(m)) return false
+        const idHay = `${m.title}\n${m.invitees}`
+        if (emailLc && idHay.toLowerCase().includes(emailLc)) return true
+        return nameMatches(idHay, fullName)
       })
+
       let lastFathomDays: number | null = null
       if (myMeetings.length > 0) {
         // Most recent call
