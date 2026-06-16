@@ -32,7 +32,7 @@ interface ClientScore {
   draft?: string
 }
 
-const CLIENT_RETENTION_CACHE_KEY = "client_retention_cache_v3"
+const CLIENT_RETENTION_CACHE_KEY = "client_retention_cache_v4"
 
 const STATUS_META: Record<Status, { label: string; color: string; bg: string; ring: string }> = {
   at_risk: { label: "At Risk", color: "text-red-700", bg: "bg-red-50", ring: "ring-red-200" },
