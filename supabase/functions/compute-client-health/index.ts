@@ -409,14 +409,18 @@ Deno.serve(async (req) => {
         else fathomScore = 7
         const negative = latestNeg || histNeg
 
+        const scanned = myMeetings.length
         if (oneLine) {
-          signals.push({ label: `Last call (${lastFathomDays}d ago): ${oneLine}`, severity: negative ? 'warn' : 'info' })
+          signals.push({ label: `Fathom — Last call (${lastFathomDays}d ago): ${oneLine}`, severity: negative ? 'warn' : 'info' })
         } else {
-          signals.push({ label: `Last call ${lastFathomDays}d ago`, severity: 'info' })
+          signals.push({ label: `Fathom — Last call ${lastFathomDays}d ago`, severity: 'info' })
         }
+        signals.push({ label: `Fathom — Scanned ${scanned} transcript${scanned === 1 ? '' : 's'} for this client`, severity: 'info' })
       } else if (fathomMeetings.length > 0) {
-        signals.push({ label: 'No calls found in Fathom (last 2 years)', severity: 'warn' })
+        signals.push({ label: 'Fathom — No 1:1 coaching calls found for this client (last 2 years)', severity: 'warn' })
         fathomScore = 4
+      } else {
+        signals.push({ label: 'Fathom — No transcripts available yet', severity: 'info' })
       }
 
       // -------- Tenure / renewal window --------
