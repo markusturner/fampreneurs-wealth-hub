@@ -103,12 +103,59 @@ async function listDriveTree(token: string): Promise<{ name: string; mimeType: s
 }
 
 // ---------- Fathom: recent meetings + transcripts (paginated) ----------
-interface FathomMeeting { id: string; title: string; meeting_type: string; created_at: string; transcript: string; summary: string; invitees: string; speakers: string; identity: string; invitee_count: number; external_count: number }
+interface FathomMeeting { id: string; title: string; meeting_type: string; created_at: string; transcript: string; summary: string; invitees: string; speakers: string; identity: string; invitee_count: number; external_count: number; share_url?: string }
 interface FathomListResult { meetings: FathomMeeting[]; complete: boolean; rateLimited: boolean }
 // Module-scope cache so repeat invocations in the same isolate don't hammer Fathom
 let _fathomCache: { at: number; data: FathomListResult } | null = null
 let _fathomInflight: Promise<FathomListResult> | null = null
+const _fathomDetailsCache = new Map<string, Promise<{ meeting: FathomMeeting; complete: boolean; rateLimited: boolean }>>()
 const FATHOM_TTL_MS = 60 * 60 * 1000
+
+async function fathomJson(url: URL, key: string): Promise<{ ok: boolean; status: number; json: any; body: string; rateLimited: boolean }> {
+  let lastStatus = 0
+  let lastBody = ''
+  let rateLimited = false
+  for (let attempt = 0; attempt < 4; attempt++) {
+    let res: Response | null = null
+    try {
+      res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
+    } catch (e) {
+      console.error('fathom fetch attempt failed', e)
+    }
+    if (res?.ok) {
+      const json = await res.json().catch(() => null)
+      return { ok: true, status: res.status, json, body: '', rateLimited: false }
+    }
+    lastStatus = res?.status ?? 0
+    lastBody = res ? await res.text().catch(() => '') : ''
+    if (lastStatus === 429) rateLimited = true
+    if (![429, 502, 503, 504].includes(lastStatus)) break
+    const retryAfter = res?.headers.get('Retry-After')
+    const retryMs = retryAfter && !Number.isNaN(Number(retryAfter)) ? Number(retryAfter) * 1000 : 800 * Math.pow(2, attempt)
+    await new Promise((r) => setTimeout(r, Math.min(10000, retryMs)))
+  }
+  return { ok: false, status: lastStatus, json: null, body: lastBody, rateLimited }
+}
+
+function transcriptToText(raw: any): { text: string; speakers: string; speakerEmails: string } {
+  if (!Array.isArray(raw)) return { text: typeof raw === 'string' ? raw : (raw?.text ?? ''), speakers: '', speakerEmails: '' }
+  const speakerSet = new Set<string>()
+  const speakerEmailSet = new Set<string>()
+  const text = raw.map((t: any) => {
+    const sp = t?.speaker?.display_name ?? ''
+    const speakerEmail = t?.speaker?.matched_calendar_invitee_email ?? ''
+    if (sp) speakerSet.add(sp)
+    if (speakerEmail) speakerEmailSet.add(speakerEmail)
+    return `${sp}: ${t?.text ?? ''}`
+  }).join('\n')
+  return { text, speakers: Array.from(speakerSet).join(', '), speakerEmails: Array.from(speakerEmailSet).join(' ') }
+}
+
+function summaryToText(raw: any): string {
+  if (!raw) return ''
+  if (typeof raw === 'string') return raw
+  return raw.markdown_formatted ?? raw.text ?? ''
+}
 
 async function listFathomMeetings(): Promise<FathomListResult> {
   if (_fathomCache && (Date.now() - _fathomCache.at) < FATHOM_TTL_MS) return _fathomCache.data
@@ -126,68 +173,39 @@ async function listFathomMeetings(): Promise<FathomListResult> {
       do {
         const url = new URL('https://api.fathom.ai/external/v1/meetings')
         url.searchParams.set('created_after', since)
-        url.searchParams.set('include_transcript', 'true')
-        url.searchParams.set('include_summary', 'true')
+        // List metadata first. Pulling every transcript here hits Fathom rate limits
+        // and can poison the retention cache with empty/partial results.
+        url.searchParams.set('calendar_invitees_domains_type', 'all')
         url.searchParams.set('limit', '100')
         if (cursor) url.searchParams.set('cursor', cursor)
 
-        // Retry on 502/503/504/429 — honor Retry-After for 429
-        let res: Response | null = null
-        for (let attempt = 0; attempt < 6; attempt++) {
-          try {
-            res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
-          } catch (e) {
-            console.error('fathom fetch attempt failed', e)
-            res = null
-          }
-          if (res?.ok) break
-          if (!res || ![502, 503, 504, 429].includes(res.status)) break
-          if (res.status === 429) rateLimited = true
-          let waitMs = 1000 * Math.pow(2, attempt) // 1s,2s,4s,8s,16s,32s
-          const ra = res.headers.get('Retry-After')
-          if (ra) {
-            const n = Number(ra)
-            if (!Number.isNaN(n)) waitMs = Math.max(waitMs, n * 1000)
-          }
-          await new Promise((r) => setTimeout(r, waitMs))
-        }
-        if (!res || !res.ok) {
-          const body = res ? await res.text().catch(() => '') : ''
-          console.error('fathom err', res?.status, body)
+        const response = await fathomJson(url, key)
+        if (!response.ok) {
+          if (response.rateLimited) rateLimited = true
+          console.error('fathom err', response.status, response.body)
           break
         }
 
-      const json = await res.json()
+      const json = response.json
       const items = json?.items ?? []
       for (const m of items) {
-        const speakerSet = new Set<string>()
-        const speakerEmailSet = new Set<string>()
-        const transcript = Array.isArray(m.transcript)
-          ? m.transcript.map((t: any) => {
-              const sp = t?.speaker?.display_name ?? ''
-              const speakerEmail = t?.speaker?.matched_calendar_invitee_email ?? ''
-              if (sp) speakerSet.add(sp)
-              if (speakerEmail) speakerEmailSet.add(speakerEmail)
-              return `${sp}: ${t?.text ?? ''}`
-            }).join('\n')
-          : (typeof m.transcript === 'string' ? m.transcript : m.transcript?.text ?? '')
-        const summary = typeof m.default_summary === 'object'
-          ? (m.default_summary?.markdown_formatted ?? '')
-          : (typeof m.summary === 'string' ? m.summary : m.summary?.text ?? '')
+        const transcriptResult = transcriptToText(m.transcript)
+        const summary = summaryToText(m.default_summary ?? m.summary)
         const inviteeArr = Array.isArray(m.calendar_invitees) ? m.calendar_invitees : []
         const invitees = inviteeArr.map((i: any) => `${i?.name ?? ''} <${i?.email ?? ''}>`).join(', ')
         const inviteeIdentity = inviteeArr.map((i: any) => `${i?.name ?? ''} ${i?.email ?? ''} ${i?.matched_speaker_display_name ?? ''}`).join(' ')
         const title = `${m.meeting_title ?? ''} ${m.title ?? ''}`.trim()
         const meetingType = String(m.meeting_type ?? '')
-        const speakers = Array.from(speakerSet).join(', ')
+        const speakers = transcriptResult.speakers
         out.push({
           id: String(m.recording_id ?? m.id ?? ''),
           title,
           meeting_type: meetingType,
           created_at: m.created_at ?? m.scheduled_start_time ?? m.recording_start_time ?? new Date().toISOString(),
-          transcript, summary, invitees,
+          transcript: transcriptResult.text, summary, invitees,
           speakers,
-          identity: `${title} ${meetingType} ${inviteeIdentity} ${speakers} ${Array.from(speakerEmailSet).join(' ')}`,
+          share_url: m.share_url ?? m.url,
+          identity: `${title} ${meetingType} ${inviteeIdentity} ${speakers} ${transcriptResult.speakerEmails} ${summary}`,
           invitee_count: inviteeArr.length,
           external_count: inviteeArr.filter((i: any) => i?.is_external === true).length,
         })
@@ -195,7 +213,7 @@ async function listFathomMeetings(): Promise<FathomListResult> {
 
       cursor = json?.next_cursor ?? undefined
       pages++
-    } while (cursor && pages < 50)
+      } while (cursor && pages < 300)
       complete = !cursor
     } catch (e) {
       console.error('fathom fetch failed', e)
@@ -210,6 +228,46 @@ async function listFathomMeetings(): Promise<FathomListResult> {
     return result
   } finally {
     _fathomInflight = null
+  }
+}
+
+async function hydrateFathomMeetings(meetings: FathomMeeting[]): Promise<{ meetings: FathomMeeting[]; complete: boolean; rateLimited: boolean }> {
+  const key = Deno.env.get('FATHOM_API_KEY')
+  if (!key || meetings.length === 0) return { meetings, complete: true, rateLimited: false }
+  const detailed = await Promise.all(meetings.map((m) => {
+    if (!m.id) return Promise.resolve({ meeting: m, complete: true, rateLimited: false })
+    const cached = _fathomDetailsCache.get(m.id)
+    if (cached) return cached
+    const task = (async () => {
+      const transcriptUrl = new URL(`https://api.fathom.ai/external/v1/recordings/${encodeURIComponent(m.id)}/transcript`)
+      const summaryUrl = new URL(`https://api.fathom.ai/external/v1/recordings/${encodeURIComponent(m.id)}/summary`)
+      const [transcriptResp, summaryResp] = await Promise.all([fathomJson(transcriptUrl, key), fathomJson(summaryUrl, key)])
+      const rateLimited = transcriptResp.rateLimited || summaryResp.rateLimited
+      const complete = !rateLimited && ![0, 502, 503, 504].includes(transcriptResp.status) && ![0, 502, 503, 504].includes(summaryResp.status)
+      if (!transcriptResp.ok && transcriptResp.status !== 404) console.error('fathom transcript err', m.id, transcriptResp.status, transcriptResp.body)
+      if (!summaryResp.ok && summaryResp.status !== 404) console.error('fathom summary err', m.id, summaryResp.status, summaryResp.body)
+      const transcriptResult = transcriptResp.ok ? transcriptToText(transcriptResp.json?.transcript) : { text: m.transcript, speakers: m.speakers, speakerEmails: '' }
+      const summary = summaryResp.ok ? summaryToText(summaryResp.json?.summary) : m.summary
+      const speakers = transcriptResult.speakers || m.speakers
+      return {
+        meeting: {
+          ...m,
+          transcript: transcriptResult.text || m.transcript,
+          summary: summary || m.summary,
+          speakers,
+          identity: `${m.identity} ${speakers} ${transcriptResult.speakerEmails} ${summary || ''}`,
+        },
+        complete,
+        rateLimited,
+      }
+    })()
+    _fathomDetailsCache.set(m.id, task)
+    return task
+  }))
+  return {
+    meetings: detailed.map((d) => d.meeting),
+    complete: detailed.every((d) => d.complete),
+    rateLimited: detailed.some((d) => d.rateLimited),
   }
 }
 
@@ -429,10 +487,17 @@ Deno.serve(async (req) => {
       const scoredMeetings = fathomMeetings
         .map((m) => ({ meeting: m, matchScore: clientMeetingScore(m, fullName, p.email, firstNameCounts, lastNameCounts) }))
         .filter((x) => x.matchScore >= 35)
-      const myMeetings = scoredMeetings
-        .filter((x) => !isSalesMeeting(x.meeting))
-        .sort((a, b) => b.matchScore - a.matchScore)
-        .map((x) => x.meeting)
+      const hydrated = await hydrateFathomMeetings(scoredMeetings.map((x) => x.meeting))
+      if (!hydrated.complete) {
+        console.error(`fathom detail incomplete for ${fullName}; refusing inaccurate result. meetings matched: ${scoredMeetings.length}, rate limited: ${hydrated.rateLimited}`)
+        return new Response(JSON.stringify({ error: 'Fathom is still syncing/rate-limited. Keeping existing retention data until the matching transcripts finish loading.', sources: { fathom_meetings: fathomMeetings.length, fathom_complete: false, fathom_rate_limited: hydrated.rateLimited } }), {
+          status: 503,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const myMeetings = hydrated.meetings
+        .filter((x) => !isSalesMeeting(x))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
       let lastFathomDays: number | null = null
       if (myMeetings.length > 0) {
@@ -561,8 +626,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // -------- Auto-draft retention messages for every client (parallel) --------
-    const lovableKey = Deno.env.get('LOVABLE_API_KEY')
+    // -------- Auto-draft retention messages only when explicitly requested --------
+    let includeDrafts = false
+    try { includeDrafts = (await req.clone().json().catch(() => ({})))?.include_drafts === true } catch {}
+    const lovableKey = includeDrafts ? Deno.env.get('LOVABLE_API_KEY') : null
     if (lovableKey) {
       const PROMPTS: Record<string, string> = {
         at_risk: 'Client is at risk of churning. Write a short, warm, empathetic check-in (3-5 sentences). Acknowledge they have been quiet, ask how they are personally, offer a no-pressure 15-min call. Sign off "— Markus".',
