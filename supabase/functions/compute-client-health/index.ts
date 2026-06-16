@@ -140,7 +140,7 @@ async function listFathomMeetings(): Promise<FathomListResult> {
             console.error('fathom fetch attempt failed', e)
             res = null
           }
-          if (res.ok) break
+          if (res?.ok) break
           if (!res || ![502, 503, 504, 429].includes(res.status)) break
           if (res.status === 429) rateLimited = true
           let waitMs = 1000 * Math.pow(2, attempt) // 1s,2s,4s,8s,16s,32s
@@ -249,12 +249,13 @@ Deno.serve(async (req) => {
     })
 
     // External sources — fetch once, reuse per client
-    const [driveToken, fathomMeetings] = await Promise.all([
+    const [driveToken, fathomResult] = await Promise.all([
       getGoogleAccessToken(),
       listFathomMeetings(),
     ])
+    const fathomMeetings = fathomResult.meetings
     const driveTree = driveToken ? await listDriveTree(driveToken) : []
-    console.log(`drive files: ${driveTree.length}, fathom meetings: ${fathomMeetings.length}`)
+    console.log(`drive files: ${driveTree.length}, fathom meetings: ${fathomMeetings.length}, fathom complete: ${fathomResult.complete}, rate limited: ${fathomResult.rateLimited}`)
 
     const results: ClientScore[] = []
 
