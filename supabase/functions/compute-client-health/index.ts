@@ -408,22 +408,24 @@ Deno.serve(async (req) => {
       else responseScore = 7
 
       // -------- Fathom transcript scan --------
-      // Only attribute a call to a client when their name/email appears in the
-      // meeting TITLE or INVITEES (not transcript body — that catches mentions
-      // of other clients). Also exclude sales meetings (transcripts that talk
-      // about "booking a call" / "book a call" / "schedule a call").
-      const emailLc = (p.email || '').toLowerCase()
+      // Attribute calls only from Fathom identity fields (email, invitees,
+      // matched speaker, title/type). Do not match on transcript body because
+      // that wrongly assigns one client's story to another client.
       const isSalesMeeting = (m: FathomMeeting) => {
-        const t = `${m.transcript ?? ''} ${m.summary ?? ''}`.toLowerCase()
-        return /\b(book(ing)?\s+(a\s+)?call|schedul(e|ing)\s+(a\s+)?call|book\s+(a\s+)?time|get\s+on\s+(a\s+)?call|hop\s+on\s+(a\s+)?call)\b/.test(t)
+        const transcript = `${m.transcript ?? ''} ${m.summary ?? ''}`.toLowerCase()
+        const context = `${m.title ?? ''} ${m.meeting_type ?? ''}`.toLowerCase()
+        const bookingTalk = /\b(book(ing)?|schedul(e|ing)|calendar|setter|appointment)\s+(more\s+|sales\s+|strategy\s+|discovery\s+|intro\s+|consultation\s+)?calls?\b|\bget\s+calls?\s+(booked|on\s+the\s+calendar)\b|\bcall\s+booking\b/.test(transcript)
+        const salesContext = /\b(sales|prospect|lead|setter|closer|pipeline|discovery|consultation|strategy\s+call|application|enrollment|offer)\b/.test(`${transcript} ${context}`)
+        const coachingContext = /\b(1[:\s-]?1|one[\s-]?on[\s-]?one|coaching|client\s+session|trust\s+design|onboard|onboarding)\b/.test(context)
+        return bookingTalk && salesContext && !coachingContext
       }
-      const myMeetings = fathomMeetings.filter((m) => {
-        if (isSalesMeeting(m)) return false
-        const idHay = `${m.title}\n${m.invitees}\n${m.speakers}`
-        if (emailLc && idHay.toLowerCase().includes(emailLc)) return true
-        return nameMatches(idHay, fullName)
-
-      })
+      const scoredMeetings = fathomMeetings
+        .map((m) => ({ meeting: m, matchScore: clientMeetingScore(m, fullName, p.email, firstNameCounts, lastNameCounts) }))
+        .filter((x) => x.matchScore >= 35)
+      const myMeetings = scoredMeetings
+        .filter((x) => !isSalesMeeting(x.meeting))
+        .sort((a, b) => b.matchScore - a.matchScore)
+        .map((x) => x.meeting)
 
       let lastFathomDays: number | null = null
       if (myMeetings.length > 0) {
