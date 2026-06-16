@@ -173,68 +173,39 @@ async function listFathomMeetings(): Promise<FathomListResult> {
       do {
         const url = new URL('https://api.fathom.ai/external/v1/meetings')
         url.searchParams.set('created_after', since)
-        url.searchParams.set('include_transcript', 'true')
-        url.searchParams.set('include_summary', 'true')
+        // List metadata first. Pulling every transcript here hits Fathom rate limits
+        // and can poison the retention cache with empty/partial results.
+        url.searchParams.set('calendar_invitees_domains_type', 'all')
         url.searchParams.set('limit', '100')
         if (cursor) url.searchParams.set('cursor', cursor)
 
-        // Retry on 502/503/504/429 — honor Retry-After for 429
-        let res: Response | null = null
-        for (let attempt = 0; attempt < 6; attempt++) {
-          try {
-            res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
-          } catch (e) {
-            console.error('fathom fetch attempt failed', e)
-            res = null
-          }
-          if (res?.ok) break
-          if (!res || ![502, 503, 504, 429].includes(res.status)) break
-          if (res.status === 429) rateLimited = true
-          let waitMs = 1000 * Math.pow(2, attempt) // 1s,2s,4s,8s,16s,32s
-          const ra = res.headers.get('Retry-After')
-          if (ra) {
-            const n = Number(ra)
-            if (!Number.isNaN(n)) waitMs = Math.max(waitMs, n * 1000)
-          }
-          await new Promise((r) => setTimeout(r, waitMs))
-        }
-        if (!res || !res.ok) {
-          const body = res ? await res.text().catch(() => '') : ''
-          console.error('fathom err', res?.status, body)
+        const response = await fathomJson(url, key)
+        if (!response.ok) {
+          if (response.rateLimited) rateLimited = true
+          console.error('fathom err', response.status, response.body)
           break
         }
 
-      const json = await res.json()
+      const json = response.json
       const items = json?.items ?? []
       for (const m of items) {
-        const speakerSet = new Set<string>()
-        const speakerEmailSet = new Set<string>()
-        const transcript = Array.isArray(m.transcript)
-          ? m.transcript.map((t: any) => {
-              const sp = t?.speaker?.display_name ?? ''
-              const speakerEmail = t?.speaker?.matched_calendar_invitee_email ?? ''
-              if (sp) speakerSet.add(sp)
-              if (speakerEmail) speakerEmailSet.add(speakerEmail)
-              return `${sp}: ${t?.text ?? ''}`
-            }).join('\n')
-          : (typeof m.transcript === 'string' ? m.transcript : m.transcript?.text ?? '')
-        const summary = typeof m.default_summary === 'object'
-          ? (m.default_summary?.markdown_formatted ?? '')
-          : (typeof m.summary === 'string' ? m.summary : m.summary?.text ?? '')
+        const transcriptResult = transcriptToText(m.transcript)
+        const summary = summaryToText(m.default_summary ?? m.summary)
         const inviteeArr = Array.isArray(m.calendar_invitees) ? m.calendar_invitees : []
         const invitees = inviteeArr.map((i: any) => `${i?.name ?? ''} <${i?.email ?? ''}>`).join(', ')
         const inviteeIdentity = inviteeArr.map((i: any) => `${i?.name ?? ''} ${i?.email ?? ''} ${i?.matched_speaker_display_name ?? ''}`).join(' ')
         const title = `${m.meeting_title ?? ''} ${m.title ?? ''}`.trim()
         const meetingType = String(m.meeting_type ?? '')
-        const speakers = Array.from(speakerSet).join(', ')
+        const speakers = transcriptResult.speakers
         out.push({
           id: String(m.recording_id ?? m.id ?? ''),
           title,
           meeting_type: meetingType,
           created_at: m.created_at ?? m.scheduled_start_time ?? m.recording_start_time ?? new Date().toISOString(),
-          transcript, summary, invitees,
+          transcript: transcriptResult.text, summary, invitees,
           speakers,
-          identity: `${title} ${meetingType} ${inviteeIdentity} ${speakers} ${Array.from(speakerEmailSet).join(' ')}`,
+          share_url: m.share_url ?? m.url,
+          identity: `${title} ${meetingType} ${inviteeIdentity} ${speakers} ${transcriptResult.speakerEmails} ${summary}`,
           invitee_count: inviteeArr.length,
           external_count: inviteeArr.filter((i: any) => i?.is_external === true).length,
         })
