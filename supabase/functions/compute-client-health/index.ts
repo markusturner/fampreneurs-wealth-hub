@@ -496,7 +496,7 @@ Deno.serve(async (req) => {
         })
       }
       const myMeetings = hydrated.meetings
-        .filter((x) => !isSalesMeeting(x.meeting))
+        .filter((x) => !isSalesMeeting(x))
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
       let lastFathomDays: number | null = null
