@@ -103,19 +103,22 @@ async function listDriveTree(token: string): Promise<{ name: string; mimeType: s
 }
 
 // ---------- Fathom: recent meetings + transcripts (paginated) ----------
-interface FathomMeeting { id: string; title: string; created_at: string; transcript: string; summary: string; invitees: string; speakers: string }
+interface FathomMeeting { id: string; title: string; meeting_type: string; created_at: string; transcript: string; summary: string; invitees: string; speakers: string; identity: string; invitee_count: number; external_count: number }
+interface FathomListResult { meetings: FathomMeeting[]; complete: boolean; rateLimited: boolean }
 // Module-scope cache so repeat invocations in the same isolate don't hammer Fathom
-let _fathomCache: { at: number; data: FathomMeeting[] } | null = null
-let _fathomInflight: Promise<FathomMeeting[]> | null = null
-const FATHOM_TTL_MS = 10 * 60 * 1000
+let _fathomCache: { at: number; data: FathomListResult } | null = null
+let _fathomInflight: Promise<FathomListResult> | null = null
+const FATHOM_TTL_MS = 60 * 60 * 1000
 
-async function listFathomMeetings(): Promise<FathomMeeting[]> {
+async function listFathomMeetings(): Promise<FathomListResult> {
   if (_fathomCache && (Date.now() - _fathomCache.at) < FATHOM_TTL_MS) return _fathomCache.data
   if (_fathomInflight) return _fathomInflight
   _fathomInflight = (async () => {
     const key = Deno.env.get('FATHOM_API_KEY')
-    if (!key) return []
+    if (!key) return { meetings: [], complete: true, rateLimited: false }
     const out: FathomMeeting[] = []
+    let complete = false
+    let rateLimited = false
     try {
       const since = new Date(Date.now() - 730 * 86400000).toISOString()
       let cursor: string | undefined
@@ -125,14 +128,21 @@ async function listFathomMeetings(): Promise<FathomMeeting[]> {
         url.searchParams.set('created_after', since)
         url.searchParams.set('include_transcript', 'true')
         url.searchParams.set('include_summary', 'true')
+        url.searchParams.set('limit', '100')
         if (cursor) url.searchParams.set('cursor', cursor)
 
         // Retry on 502/503/504/429 — honor Retry-After for 429
         let res: Response | null = null
         for (let attempt = 0; attempt < 6; attempt++) {
-          res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
+          try {
+            res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
+          } catch (e) {
+            console.error('fathom fetch attempt failed', e)
+            res = null
+          }
           if (res.ok) break
-          if (![502, 503, 504, 429].includes(res.status)) break
+          if (!res || ![502, 503, 504, 429].includes(res.status)) break
+          if (res.status === 429) rateLimited = true
           let waitMs = 1000 * Math.pow(2, attempt) // 1s,2s,4s,8s,16s,32s
           const ra = res.headers.get('Retry-After')
           if (ra) {
@@ -142,7 +152,8 @@ async function listFathomMeetings(): Promise<FathomMeeting[]> {
           await new Promise((r) => setTimeout(r, waitMs))
         }
         if (!res || !res.ok) {
-          console.error('fathom err', res?.status, await res?.text())
+          const body = res ? await res.text().catch(() => '') : ''
+          console.error('fathom err', res?.status, body)
           break
         }
 
@@ -150,36 +161,49 @@ async function listFathomMeetings(): Promise<FathomMeeting[]> {
       const items = json?.items ?? []
       for (const m of items) {
         const speakerSet = new Set<string>()
+        const speakerEmailSet = new Set<string>()
         const transcript = Array.isArray(m.transcript)
           ? m.transcript.map((t: any) => {
               const sp = t?.speaker?.display_name ?? ''
+              const speakerEmail = t?.speaker?.matched_calendar_invitee_email ?? ''
               if (sp) speakerSet.add(sp)
+              if (speakerEmail) speakerEmailSet.add(speakerEmail)
               return `${sp}: ${t?.text ?? ''}`
             }).join('\n')
           : (typeof m.transcript === 'string' ? m.transcript : m.transcript?.text ?? '')
         const summary = typeof m.default_summary === 'object'
           ? (m.default_summary?.markdown_formatted ?? '')
           : (typeof m.summary === 'string' ? m.summary : m.summary?.text ?? '')
-        const invitees = Array.isArray(m.calendar_invitees)
-          ? m.calendar_invitees.map((i: any) => `${i?.name ?? ''} <${i?.email ?? ''}>`).join(', ')
-          : ''
+        const inviteeArr = Array.isArray(m.calendar_invitees) ? m.calendar_invitees : []
+        const invitees = inviteeArr.map((i: any) => `${i?.name ?? ''} <${i?.email ?? ''}>`).join(', ')
+        const inviteeIdentity = inviteeArr.map((i: any) => `${i?.name ?? ''} ${i?.email ?? ''} ${i?.matched_speaker_display_name ?? ''}`).join(' ')
+        const title = `${m.meeting_title ?? ''} ${m.title ?? ''}`.trim()
+        const meetingType = String(m.meeting_type ?? '')
+        const speakers = Array.from(speakerSet).join(', ')
         out.push({
           id: String(m.recording_id ?? m.id ?? ''),
-          title: `${m.meeting_title ?? ''} ${m.title ?? ''}`.trim(),
+          title,
+          meeting_type: meetingType,
           created_at: m.created_at ?? m.scheduled_start_time ?? m.recording_start_time ?? new Date().toISOString(),
           transcript, summary, invitees,
-          speakers: Array.from(speakerSet).join(', '),
+          speakers,
+          identity: `${title} ${meetingType} ${inviteeIdentity} ${speakers} ${Array.from(speakerEmailSet).join(' ')}`,
+          invitee_count: inviteeArr.length,
+          external_count: inviteeArr.filter((i: any) => i?.is_external === true).length,
         })
       }
 
       cursor = json?.next_cursor ?? undefined
       pages++
     } while (cursor && pages < 50)
+      complete = !cursor
     } catch (e) {
       console.error('fathom fetch failed', e)
     }
-    _fathomCache = { at: Date.now(), data: out }
-    return out
+    const result = { meetings: out, complete, rateLimited }
+    if (complete) _fathomCache = { at: Date.now(), data: result }
+    else if (_fathomCache?.data?.meetings?.length) return { ..._fathomCache.data, complete: _fathomCache.data.complete }
+    return result
   })()
   try {
     const result = await _fathomInflight
