@@ -601,7 +601,7 @@ Deno.serve(async (req) => {
     const payload = {
       clients: results,
       computed_at: new Date().toISOString(),
-      sources: { drive_files: driveTree.length, fathom_meetings: fathomMeetings.length },
+      sources: { drive_files: driveTree.length, fathom_meetings: fathomMeetings.length, fathom_complete: fathomResult.complete, fathom_rate_limited: fathomResult.rateLimited },
     }
 
     // Persist full payload for instant loads on the Client Retention page
