@@ -103,19 +103,22 @@ async function listDriveTree(token: string): Promise<{ name: string; mimeType: s
 }
 
 // ---------- Fathom: recent meetings + transcripts (paginated) ----------
-interface FathomMeeting { id: string; title: string; created_at: string; transcript: string; summary: string; invitees: string; speakers: string }
+interface FathomMeeting { id: string; title: string; meeting_type: string; created_at: string; transcript: string; summary: string; invitees: string; speakers: string; identity: string; invitee_count: number; external_count: number }
+interface FathomListResult { meetings: FathomMeeting[]; complete: boolean; rateLimited: boolean }
 // Module-scope cache so repeat invocations in the same isolate don't hammer Fathom
-let _fathomCache: { at: number; data: FathomMeeting[] } | null = null
-let _fathomInflight: Promise<FathomMeeting[]> | null = null
-const FATHOM_TTL_MS = 10 * 60 * 1000
+let _fathomCache: { at: number; data: FathomListResult } | null = null
+let _fathomInflight: Promise<FathomListResult> | null = null
+const FATHOM_TTL_MS = 60 * 60 * 1000
 
-async function listFathomMeetings(): Promise<FathomMeeting[]> {
+async function listFathomMeetings(): Promise<FathomListResult> {
   if (_fathomCache && (Date.now() - _fathomCache.at) < FATHOM_TTL_MS) return _fathomCache.data
   if (_fathomInflight) return _fathomInflight
   _fathomInflight = (async () => {
     const key = Deno.env.get('FATHOM_API_KEY')
-    if (!key) return []
+    if (!key) return { meetings: [], complete: true, rateLimited: false }
     const out: FathomMeeting[] = []
+    let complete = false
+    let rateLimited = false
     try {
       const since = new Date(Date.now() - 730 * 86400000).toISOString()
       let cursor: string | undefined
@@ -125,14 +128,21 @@ async function listFathomMeetings(): Promise<FathomMeeting[]> {
         url.searchParams.set('created_after', since)
         url.searchParams.set('include_transcript', 'true')
         url.searchParams.set('include_summary', 'true')
+        url.searchParams.set('limit', '100')
         if (cursor) url.searchParams.set('cursor', cursor)
 
         // Retry on 502/503/504/429 — honor Retry-After for 429
         let res: Response | null = null
         for (let attempt = 0; attempt < 6; attempt++) {
-          res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
-          if (res.ok) break
-          if (![502, 503, 504, 429].includes(res.status)) break
+          try {
+            res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
+          } catch (e) {
+            console.error('fathom fetch attempt failed', e)
+            res = null
+          }
+          if (res?.ok) break
+          if (!res || ![502, 503, 504, 429].includes(res.status)) break
+          if (res.status === 429) rateLimited = true
           let waitMs = 1000 * Math.pow(2, attempt) // 1s,2s,4s,8s,16s,32s
           const ra = res.headers.get('Retry-After')
           if (ra) {
@@ -142,7 +152,8 @@ async function listFathomMeetings(): Promise<FathomMeeting[]> {
           await new Promise((r) => setTimeout(r, waitMs))
         }
         if (!res || !res.ok) {
-          console.error('fathom err', res?.status, await res?.text())
+          const body = res ? await res.text().catch(() => '') : ''
+          console.error('fathom err', res?.status, body)
           break
         }
 
@@ -150,36 +161,49 @@ async function listFathomMeetings(): Promise<FathomMeeting[]> {
       const items = json?.items ?? []
       for (const m of items) {
         const speakerSet = new Set<string>()
+        const speakerEmailSet = new Set<string>()
         const transcript = Array.isArray(m.transcript)
           ? m.transcript.map((t: any) => {
               const sp = t?.speaker?.display_name ?? ''
+              const speakerEmail = t?.speaker?.matched_calendar_invitee_email ?? ''
               if (sp) speakerSet.add(sp)
+              if (speakerEmail) speakerEmailSet.add(speakerEmail)
               return `${sp}: ${t?.text ?? ''}`
             }).join('\n')
           : (typeof m.transcript === 'string' ? m.transcript : m.transcript?.text ?? '')
         const summary = typeof m.default_summary === 'object'
           ? (m.default_summary?.markdown_formatted ?? '')
           : (typeof m.summary === 'string' ? m.summary : m.summary?.text ?? '')
-        const invitees = Array.isArray(m.calendar_invitees)
-          ? m.calendar_invitees.map((i: any) => `${i?.name ?? ''} <${i?.email ?? ''}>`).join(', ')
-          : ''
+        const inviteeArr = Array.isArray(m.calendar_invitees) ? m.calendar_invitees : []
+        const invitees = inviteeArr.map((i: any) => `${i?.name ?? ''} <${i?.email ?? ''}>`).join(', ')
+        const inviteeIdentity = inviteeArr.map((i: any) => `${i?.name ?? ''} ${i?.email ?? ''} ${i?.matched_speaker_display_name ?? ''}`).join(' ')
+        const title = `${m.meeting_title ?? ''} ${m.title ?? ''}`.trim()
+        const meetingType = String(m.meeting_type ?? '')
+        const speakers = Array.from(speakerSet).join(', ')
         out.push({
           id: String(m.recording_id ?? m.id ?? ''),
-          title: `${m.meeting_title ?? ''} ${m.title ?? ''}`.trim(),
+          title,
+          meeting_type: meetingType,
           created_at: m.created_at ?? m.scheduled_start_time ?? m.recording_start_time ?? new Date().toISOString(),
           transcript, summary, invitees,
-          speakers: Array.from(speakerSet).join(', '),
+          speakers,
+          identity: `${title} ${meetingType} ${inviteeIdentity} ${speakers} ${Array.from(speakerEmailSet).join(' ')}`,
+          invitee_count: inviteeArr.length,
+          external_count: inviteeArr.filter((i: any) => i?.is_external === true).length,
         })
       }
 
       cursor = json?.next_cursor ?? undefined
       pages++
     } while (cursor && pages < 50)
+      complete = !cursor
     } catch (e) {
       console.error('fathom fetch failed', e)
     }
-    _fathomCache = { at: Date.now(), data: out }
-    return out
+    const result = { meetings: out, complete, rateLimited }
+    if (complete) _fathomCache = { at: Date.now(), data: result }
+    else if (_fathomCache?.data?.meetings?.length) return { ..._fathomCache.data, complete: _fathomCache.data.complete }
+    return result
   })()
   try {
     const result = await _fathomInflight
@@ -198,6 +222,27 @@ function nameMatches(haystack: string, fullName: string): boolean {
   // Match if first + last name both appear
   if (parts.length >= 2) return h.includes(parts[0]) && h.includes(parts[parts.length - 1])
   return h.includes(parts[0])
+}
+
+function tokenMatches(haystack: string, token: string): boolean {
+  if (!token) return false
+  const escaped = token.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i').test(haystack)
+}
+
+function clientMeetingScore(meeting: FathomMeeting, fullName: string, email: string | null | undefined, firstNameCounts: Map<string, number>, lastNameCounts: Map<string, number>): number {
+  const identity = (meeting.identity || `${meeting.title} ${meeting.invitees} ${meeting.speakers}`).toLowerCase()
+  const emailLc = (email || '').toLowerCase().trim()
+  const parts = fullName.toLowerCase().split(/\s+/).filter(Boolean)
+  const first = parts[0] ?? ''
+  const last = parts.length > 1 ? parts[parts.length - 1] : ''
+  let score = 0
+  if (emailLc && identity.includes(emailLc)) score += 100
+  if (fullName && identity.includes(fullName.toLowerCase())) score += 80
+  if (first && last && tokenMatches(identity, first) && tokenMatches(identity, last)) score += 75
+  if (first && firstNameCounts.get(first) === 1 && tokenMatches(identity, first)) score += 45
+  if (last && lastNameCounts.get(last) === 1 && tokenMatches(identity, last)) score += 35
+  return score
 }
 
 Deno.serve(async (req) => {
@@ -225,12 +270,31 @@ Deno.serve(async (req) => {
     })
 
     // External sources — fetch once, reuse per client
-    const [driveToken, fathomMeetings] = await Promise.all([
+    const [driveToken, fathomResult] = await Promise.all([
       getGoogleAccessToken(),
       listFathomMeetings(),
     ])
+    const fathomMeetings = fathomResult.meetings
+    if (!fathomResult.complete) {
+      console.error(`fathom incomplete; refusing to compute inaccurate retention results. meetings fetched: ${fathomMeetings.length}, rate limited: ${fathomResult.rateLimited}`)
+      return new Response(JSON.stringify({ error: 'Fathom is still syncing/rate-limited. Keeping existing retention data until a full transcript scan completes.', sources: { fathom_meetings: fathomMeetings.length, fathom_complete: false, fathom_rate_limited: fathomResult.rateLimited } }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
     const driveTree = driveToken ? await listDriveTree(driveToken) : []
-    console.log(`drive files: ${driveTree.length}, fathom meetings: ${fathomMeetings.length}`)
+    console.log(`drive files: ${driveTree.length}, fathom meetings: ${fathomMeetings.length}, fathom complete: ${fathomResult.complete}, rate limited: ${fathomResult.rateLimited}`)
+
+    const firstNameCounts = new Map<string, number>()
+    const lastNameCounts = new Map<string, number>()
+    for (const c of clients) {
+      const clientName = [c.first_name, c.last_name].filter(Boolean).join(' ') || c.display_name || c.email || ''
+      const parts = clientName.toLowerCase().split(/\s+/).filter(Boolean)
+      const first = parts[0]
+      const last = parts.length > 1 ? parts[parts.length - 1] : ''
+      if (first) firstNameCounts.set(first, (firstNameCounts.get(first) ?? 0) + 1)
+      if (last) lastNameCounts.set(last, (lastNameCounts.get(last) ?? 0) + 1)
+    }
 
     const results: ClientScore[] = []
 
@@ -351,22 +415,24 @@ Deno.serve(async (req) => {
       else responseScore = 7
 
       // -------- Fathom transcript scan --------
-      // Only attribute a call to a client when their name/email appears in the
-      // meeting TITLE or INVITEES (not transcript body — that catches mentions
-      // of other clients). Also exclude sales meetings (transcripts that talk
-      // about "booking a call" / "book a call" / "schedule a call").
-      const emailLc = (p.email || '').toLowerCase()
+      // Attribute calls only from Fathom identity fields (email, invitees,
+      // matched speaker, title/type). Do not match on transcript body because
+      // that wrongly assigns one client's story to another client.
       const isSalesMeeting = (m: FathomMeeting) => {
-        const t = `${m.transcript ?? ''} ${m.summary ?? ''}`.toLowerCase()
-        return /\b(book(ing)?\s+(a\s+)?call|schedul(e|ing)\s+(a\s+)?call|book\s+(a\s+)?time|get\s+on\s+(a\s+)?call|hop\s+on\s+(a\s+)?call)\b/.test(t)
+        const transcript = `${m.transcript ?? ''} ${m.summary ?? ''}`.toLowerCase()
+        const context = `${m.title ?? ''} ${m.meeting_type ?? ''}`.toLowerCase()
+        const bookingTalk = /\b(book(ing)?|schedul(e|ing)|calendar|setter|appointment)\s+(more\s+|sales\s+|strategy\s+|discovery\s+|intro\s+|consultation\s+)?calls?\b|\bget\s+calls?\s+(booked|on\s+the\s+calendar)\b|\bcall\s+booking\b/.test(transcript)
+        const salesContext = /\b(sales|prospect|lead|setter|closer|pipeline|discovery|consultation|strategy\s+call|application|enrollment|offer)\b/.test(`${transcript} ${context}`)
+        const coachingContext = /\b(1[:\s-]?1|one[\s-]?on[\s-]?one|coaching|client\s+session|trust\s+design|onboard|onboarding)\b/.test(context)
+        return bookingTalk && salesContext && !coachingContext
       }
-      const myMeetings = fathomMeetings.filter((m) => {
-        if (isSalesMeeting(m)) return false
-        const idHay = `${m.title}\n${m.invitees}\n${m.speakers}`
-        if (emailLc && idHay.toLowerCase().includes(emailLc)) return true
-        return nameMatches(idHay, fullName)
-
-      })
+      const scoredMeetings = fathomMeetings
+        .map((m) => ({ meeting: m, matchScore: clientMeetingScore(m, fullName, p.email, firstNameCounts, lastNameCounts) }))
+        .filter((x) => x.matchScore >= 35)
+      const myMeetings = scoredMeetings
+        .filter((x) => !isSalesMeeting(x.meeting))
+        .sort((a, b) => b.matchScore - a.matchScore)
+        .map((x) => x.meeting)
 
       let lastFathomDays: number | null = null
       if (myMeetings.length > 0) {
@@ -535,7 +601,7 @@ Deno.serve(async (req) => {
     const payload = {
       clients: results,
       computed_at: new Date().toISOString(),
-      sources: { drive_files: driveTree.length, fathom_meetings: fathomMeetings.length },
+      sources: { drive_files: driveTree.length, fathom_meetings: fathomMeetings.length, fathom_complete: fathomResult.complete, fathom_rate_limited: fathomResult.rateLimited },
     }
 
     // Persist full payload for instant loads on the Client Retention page
