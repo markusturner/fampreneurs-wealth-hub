@@ -224,6 +224,27 @@ function nameMatches(haystack: string, fullName: string): boolean {
   return h.includes(parts[0])
 }
 
+function tokenMatches(haystack: string, token: string): boolean {
+  if (!token) return false
+  const escaped = token.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i').test(haystack)
+}
+
+function clientMeetingScore(meeting: FathomMeeting, fullName: string, email: string | null | undefined, firstNameCounts: Map<string, number>, lastNameCounts: Map<string, number>): number {
+  const identity = (meeting.identity || `${meeting.title} ${meeting.invitees} ${meeting.speakers}`).toLowerCase()
+  const emailLc = (email || '').toLowerCase().trim()
+  const parts = fullName.toLowerCase().split(/\s+/).filter(Boolean)
+  const first = parts[0] ?? ''
+  const last = parts.length > 1 ? parts[parts.length - 1] : ''
+  let score = 0
+  if (emailLc && identity.includes(emailLc)) score += 100
+  if (fullName && identity.includes(fullName.toLowerCase())) score += 80
+  if (first && last && tokenMatches(identity, first) && tokenMatches(identity, last)) score += 75
+  if (first && firstNameCounts.get(first) === 1 && tokenMatches(identity, first)) score += 45
+  if (last && lastNameCounts.get(last) === 1 && tokenMatches(identity, last)) score += 35
+  return score
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
