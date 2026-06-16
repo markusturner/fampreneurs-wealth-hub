@@ -124,7 +124,7 @@ async function fathomJson(url: URL, key: string): Promise<{ ok: boolean; status:
     }
     if (res?.ok) {
       const json = await res.json().catch(() => null)
-      return { ok: true, status: res.status, json, body: '', rateLimited }
+      return { ok: true, status: res.status, json, body: '', rateLimited: false }
     }
     lastStatus = res?.status ?? 0
     lastBody = res ? await res.text().catch(() => '') : ''
