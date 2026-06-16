@@ -231,6 +231,46 @@ async function listFathomMeetings(): Promise<FathomListResult> {
   }
 }
 
+async function hydrateFathomMeetings(meetings: FathomMeeting[]): Promise<{ meetings: FathomMeeting[]; complete: boolean; rateLimited: boolean }> {
+  const key = Deno.env.get('FATHOM_API_KEY')
+  if (!key || meetings.length === 0) return { meetings, complete: true, rateLimited: false }
+  const detailed = await Promise.all(meetings.map((m) => {
+    if (!m.id) return Promise.resolve({ meeting: m, complete: true, rateLimited: false })
+    const cached = _fathomDetailsCache.get(m.id)
+    if (cached) return cached
+    const task = (async () => {
+      const transcriptUrl = new URL(`https://api.fathom.ai/external/v1/recordings/${encodeURIComponent(m.id)}/transcript`)
+      const summaryUrl = new URL(`https://api.fathom.ai/external/v1/recordings/${encodeURIComponent(m.id)}/summary`)
+      const [transcriptResp, summaryResp] = await Promise.all([fathomJson(transcriptUrl, key), fathomJson(summaryUrl, key)])
+      const rateLimited = transcriptResp.rateLimited || summaryResp.rateLimited
+      const complete = !rateLimited && ![0, 502, 503, 504].includes(transcriptResp.status) && ![0, 502, 503, 504].includes(summaryResp.status)
+      if (!transcriptResp.ok && transcriptResp.status !== 404) console.error('fathom transcript err', m.id, transcriptResp.status, transcriptResp.body)
+      if (!summaryResp.ok && summaryResp.status !== 404) console.error('fathom summary err', m.id, summaryResp.status, summaryResp.body)
+      const transcriptResult = transcriptResp.ok ? transcriptToText(transcriptResp.json?.transcript) : { text: m.transcript, speakers: m.speakers, speakerEmails: '' }
+      const summary = summaryResp.ok ? summaryToText(summaryResp.json?.summary) : m.summary
+      const speakers = transcriptResult.speakers || m.speakers
+      return {
+        meeting: {
+          ...m,
+          transcript: transcriptResult.text || m.transcript,
+          summary: summary || m.summary,
+          speakers,
+          identity: `${m.identity} ${speakers} ${transcriptResult.speakerEmails} ${summary || ''}`,
+        },
+        complete,
+        rateLimited,
+      }
+    })()
+    _fathomDetailsCache.set(m.id, task)
+    return task
+  }))
+  return {
+    meetings: detailed.map((d) => d.meeting),
+    complete: detailed.every((d) => d.complete),
+    rateLimited: detailed.some((d) => d.rateLimited),
+  }
+}
+
 
 function nameMatches(haystack: string, fullName: string): boolean {
   const h = haystack.toLowerCase()
