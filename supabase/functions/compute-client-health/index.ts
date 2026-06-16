@@ -278,6 +278,17 @@ Deno.serve(async (req) => {
     const driveTree = driveToken ? await listDriveTree(driveToken) : []
     console.log(`drive files: ${driveTree.length}, fathom meetings: ${fathomMeetings.length}, fathom complete: ${fathomResult.complete}, rate limited: ${fathomResult.rateLimited}`)
 
+    const firstNameCounts = new Map<string, number>()
+    const lastNameCounts = new Map<string, number>()
+    for (const c of clients) {
+      const clientName = [c.first_name, c.last_name].filter(Boolean).join(' ') || c.display_name || c.email || ''
+      const parts = clientName.toLowerCase().split(/\s+/).filter(Boolean)
+      const first = parts[0]
+      const last = parts.length > 1 ? parts[parts.length - 1] : ''
+      if (first) firstNameCounts.set(first, (firstNameCounts.get(first) ?? 0) + 1)
+      if (last) lastNameCounts.set(last, (lastNameCounts.get(last) ?? 0) + 1)
+    }
+
     const results: ClientScore[] = []
 
     for (const p of clients) {
