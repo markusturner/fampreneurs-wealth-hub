@@ -103,12 +103,59 @@ async function listDriveTree(token: string): Promise<{ name: string; mimeType: s
 }
 
 // ---------- Fathom: recent meetings + transcripts (paginated) ----------
-interface FathomMeeting { id: string; title: string; meeting_type: string; created_at: string; transcript: string; summary: string; invitees: string; speakers: string; identity: string; invitee_count: number; external_count: number }
+interface FathomMeeting { id: string; title: string; meeting_type: string; created_at: string; transcript: string; summary: string; invitees: string; speakers: string; identity: string; invitee_count: number; external_count: number; share_url?: string }
 interface FathomListResult { meetings: FathomMeeting[]; complete: boolean; rateLimited: boolean }
 // Module-scope cache so repeat invocations in the same isolate don't hammer Fathom
 let _fathomCache: { at: number; data: FathomListResult } | null = null
 let _fathomInflight: Promise<FathomListResult> | null = null
+const _fathomDetailsCache = new Map<string, Promise<{ meeting: FathomMeeting; complete: boolean; rateLimited: boolean }>>()
 const FATHOM_TTL_MS = 60 * 60 * 1000
+
+async function fathomJson(url: URL, key: string): Promise<{ ok: boolean; status: number; json: any; body: string; rateLimited: boolean }> {
+  let lastStatus = 0
+  let lastBody = ''
+  let rateLimited = false
+  for (let attempt = 0; attempt < 4; attempt++) {
+    let res: Response | null = null
+    try {
+      res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
+    } catch (e) {
+      console.error('fathom fetch attempt failed', e)
+    }
+    if (res?.ok) {
+      const json = await res.json().catch(() => null)
+      return { ok: true, status: res.status, json, body: '', rateLimited }
+    }
+    lastStatus = res?.status ?? 0
+    lastBody = res ? await res.text().catch(() => '') : ''
+    if (lastStatus === 429) rateLimited = true
+    if (![429, 502, 503, 504].includes(lastStatus)) break
+    const retryAfter = res?.headers.get('Retry-After')
+    const retryMs = retryAfter && !Number.isNaN(Number(retryAfter)) ? Number(retryAfter) * 1000 : 800 * Math.pow(2, attempt)
+    await new Promise((r) => setTimeout(r, Math.min(10000, retryMs)))
+  }
+  return { ok: false, status: lastStatus, json: null, body: lastBody, rateLimited }
+}
+
+function transcriptToText(raw: any): { text: string; speakers: string; speakerEmails: string } {
+  if (!Array.isArray(raw)) return { text: typeof raw === 'string' ? raw : (raw?.text ?? ''), speakers: '', speakerEmails: '' }
+  const speakerSet = new Set<string>()
+  const speakerEmailSet = new Set<string>()
+  const text = raw.map((t: any) => {
+    const sp = t?.speaker?.display_name ?? ''
+    const speakerEmail = t?.speaker?.matched_calendar_invitee_email ?? ''
+    if (sp) speakerSet.add(sp)
+    if (speakerEmail) speakerEmailSet.add(speakerEmail)
+    return `${sp}: ${t?.text ?? ''}`
+  }).join('\n')
+  return { text, speakers: Array.from(speakerSet).join(', '), speakerEmails: Array.from(speakerEmailSet).join(' ') }
+}
+
+function summaryToText(raw: any): string {
+  if (!raw) return ''
+  if (typeof raw === 'string') return raw
+  return raw.markdown_formatted ?? raw.text ?? ''
+}
 
 async function listFathomMeetings(): Promise<FathomListResult> {
   if (_fathomCache && (Date.now() - _fathomCache.at) < FATHOM_TTL_MS) return _fathomCache.data
