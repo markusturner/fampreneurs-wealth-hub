@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react"
+import React, { createContext, useContext, useEffect } from "react"
 
 type Theme = "dark" | "light" | "system"
 
@@ -14,65 +14,36 @@ type ThemeProviderState = {
 }
 
 const initialState: ThemeProviderState = {
-  theme: "system",
+  theme: "light",
   setTheme: () => null,
 }
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
-export function ThemeProvider({
-  children,
-  defaultTheme = "dark",
-  storageKey = "fampreneurs-ui-theme",
-  ...props
-}: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme)
-
-  // Initialize theme from localStorage after component mounts
-  useEffect(() => {
-    try {
-      const storedTheme = localStorage.getItem(storageKey) as Theme
-      if (storedTheme && (storedTheme === "dark" || storedTheme === "light" || storedTheme === "system")) {
-        setTheme(storedTheme)
-      }
-    } catch (error) {
-      console.warn("Error reading theme from localStorage:", error)
-    }
-  }, [storageKey])
+export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+  // App is locked to light mode at all times.
+  const theme: Theme = "light"
 
   useEffect(() => {
     const root = window.document.documentElement
-
     root.classList.remove("light", "dark")
+    root.classList.add("light")
+    try {
+      // Clear any previously persisted theme so it can't override the lock.
+      localStorage.removeItem("fampreneurs-ui-theme")
+      localStorage.removeItem("family-dashboard-theme")
+    } catch {}
+  }, [])
 
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light"
-
-      root.classList.add(systemTheme)
-      return
-    }
-
-    root.classList.add(theme)
-  }, [theme])
-
-  const value = {
+  const value: ThemeProviderState = {
     theme,
-    setTheme: (newTheme: Theme) => {
-      try {
-        localStorage.setItem(storageKey, newTheme)
-        setTheme(newTheme)
-      } catch (error) {
-        console.warn("Error saving theme to localStorage:", error)
-        setTheme(newTheme)
-      }
+    setTheme: () => {
+      // No-op: theme is locked to light.
     },
   }
 
   return (
-    <ThemeProviderContext.Provider {...props} value={value}>
+    <ThemeProviderContext.Provider value={value}>
       {children}
     </ThemeProviderContext.Provider>
   )
