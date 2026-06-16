@@ -487,10 +487,17 @@ Deno.serve(async (req) => {
       const scoredMeetings = fathomMeetings
         .map((m) => ({ meeting: m, matchScore: clientMeetingScore(m, fullName, p.email, firstNameCounts, lastNameCounts) }))
         .filter((x) => x.matchScore >= 35)
-      const myMeetings = scoredMeetings
+      const hydrated = await hydrateFathomMeetings(scoredMeetings.map((x) => x.meeting))
+      if (!hydrated.complete) {
+        console.error(`fathom detail incomplete for ${fullName}; refusing inaccurate result. meetings matched: ${scoredMeetings.length}, rate limited: ${hydrated.rateLimited}`)
+        return new Response(JSON.stringify({ error: 'Fathom is still syncing/rate-limited. Keeping existing retention data until the matching transcripts finish loading.', sources: { fathom_meetings: fathomMeetings.length, fathom_complete: false, fathom_rate_limited: hydrated.rateLimited } }), {
+          status: 503,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const myMeetings = hydrated.meetings
         .filter((x) => !isSalesMeeting(x.meeting))
-        .sort((a, b) => b.matchScore - a.matchScore)
-        .map((x) => x.meeting)
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
       let lastFathomDays: number | null = null
       if (myMeetings.length > 0) {
