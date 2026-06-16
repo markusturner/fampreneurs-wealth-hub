@@ -626,8 +626,10 @@ Deno.serve(async (req) => {
       }
     }
 
-    // -------- Auto-draft retention messages for every client (parallel) --------
-    const lovableKey = Deno.env.get('LOVABLE_API_KEY')
+    // -------- Auto-draft retention messages only when explicitly requested --------
+    let includeDrafts = false
+    try { includeDrafts = (await req.clone().json().catch(() => ({})))?.include_drafts === true } catch {}
+    const lovableKey = includeDrafts ? Deno.env.get('LOVABLE_API_KEY') : null
     if (lovableKey) {
       const PROMPTS: Record<string, string> = {
         at_risk: 'Client is at risk of churning. Write a short, warm, empathetic check-in (3-5 sentences). Acknowledge they have been quiet, ask how they are personally, offer a no-pressure 15-min call. Sign off "— Markus".',
