@@ -230,7 +230,7 @@ export default function WorkspaceCommunity() {
         .select('*')
         .or(`program.eq.${program},program.is.null`)
         .order('created_at', { ascending: false })
-        .limit(30)
+        .limit(500)
 
       if (error) throw error
 
@@ -2047,7 +2047,7 @@ export default function WorkspaceCommunity() {
         </DialogContent>
       </Dialog>
 
-      <div className="pb-20 md:pb-0" />
+      <div className="pb-40 md:pb-16" />
     </div>
   )
 }
