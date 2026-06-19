@@ -514,7 +514,7 @@ Deno.serve(async (req) => {
       }
       const scoredMeetings = fathomMeetings
         .map((m) => ({ meeting: m, matchScore: clientMeetingScore(m, fullName, p.email, firstNameCounts, lastNameCounts) }))
-        .filter((x) => x.matchScore >= 35)
+        .filter((x) => x.matchScore >= 30)
       const hydrated = await hydrateFathomMeetings(scoredMeetings.map((x) => x.meeting))
       if (!hydrated.complete) {
         console.error(`fathom detail incomplete for ${fullName}; refusing inaccurate result. meetings matched: ${scoredMeetings.length}, rate limited: ${hydrated.rateLimited}`)
@@ -529,17 +529,15 @@ Deno.serve(async (req) => {
 
       let lastFathomDays: number | null = null
       if (myMeetings.length > 0) {
-        // Most recent call
         const sorted = [...myMeetings].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         const latestMeeting = sorted[0]
         lastFathomDays = Math.floor((Date.now() - new Date(latestMeeting.created_at).getTime()) / 86400000)
 
-        // Clean the summary: drop markdown links, brackets, headings, field labels, then take first sentence
         const cleaned = (latestMeeting.summary || '')
-          .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')     // [text](url) -> text
-          .replace(/https?:\/\/\S+/g, '')              // bare urls
-          .replace(/[#*_>`]+/g, ' ')                   // markdown noise
-          .replace(/^\s*[-•]\s*/gm, ' ')               // list bullets
+          .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+          .replace(/https?:\/\/\S+/g, '')
+          .replace(/[#*_>`]+/g, ' ')
+          .replace(/^\s*[-•]\s*/gm, ' ')
           .replace(/\b(Meeting Purpose|Key Takeaways?|Next Steps?|Action Items?|Summary|Notes)\b\s*:?/gi, ' ')
           .replace(/[\[\]]/g, ' ')
           .replace(/\s+/g, ' ')
@@ -551,7 +549,6 @@ Deno.serve(async (req) => {
         }
         if (!oneLine && latestMeeting.title) oneLine = latestMeeting.title
 
-        // Scan ALL transcripts for this person, but weight the latest convo most.
         const latestBlob = `${latestMeeting.summary ?? ''} ${latestMeeting.transcript ?? ''}`.toLowerCase()
         const historyBlob = sorted.slice(1).map((m) => `${m.summary ?? ''} ${m.transcript ?? ''}`).join(' ').toLowerCase()
         const negRe = /(frustrat|cancel|refund|angry|upset|disappoint|leaving|quit|unhappy|complain)/i
@@ -560,7 +557,6 @@ Deno.serve(async (req) => {
         const latestPos = posRe.test(latestBlob)
         const histNeg = negRe.test(historyBlob)
         const histPos = posRe.test(historyBlob)
-        // Latest call drives the score; history nudges it.
         if (latestNeg) fathomScore = histPos ? 5 : 4
         else if (latestPos) fathomScore = histNeg ? 7 : 8
         else if (histNeg) fathomScore = 6
@@ -576,11 +572,14 @@ Deno.serve(async (req) => {
         }
         signals.push({ label: `Fathom — Scanned ${scanned} transcript${scanned === 1 ? '' : 's'} for this client`, severity: 'info' })
       } else if (fathomMeetings.length > 0) {
-        signals.push({ label: 'Fathom — No 1:1 coaching calls found for this client (last 2 years)', severity: 'warn' })
-        fathomScore = 4
+        signals.push({ label: `Fathom — Scanned ${fathomMeetings.length} meeting${fathomMeetings.length === 1 ? '' : 's'}; none matched this client's name or email yet`, severity: 'warn' })
+        fathomScore = 5
+      } else if (!Deno.env.get('FATHOM_API_KEY')) {
+        signals.push({ label: 'Fathom — Not connected (FATHOM_API_KEY missing)', severity: 'warn' })
       } else {
-        signals.push({ label: 'Fathom — No transcripts available yet', severity: 'info' })
+        signals.push({ label: 'Fathom — No meetings returned from API (check API key / permissions)', severity: 'warn' })
       }
+
 
       // -------- Tenure / renewal window --------
       let renewalWindow = false
