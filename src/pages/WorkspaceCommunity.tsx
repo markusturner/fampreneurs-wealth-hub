@@ -2047,7 +2047,7 @@ export default function WorkspaceCommunity() {
         </DialogContent>
       </Dialog>
 
-      <div className="pb-20 md:pb-0" />
+      <div className="pb-40 md:pb-16" />
     </div>
   )
 }
