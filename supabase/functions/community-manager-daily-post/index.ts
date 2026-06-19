@@ -7,8 +7,15 @@ const corsHeaders = {
 
 const PROGRAMS = ["fbu", "tfv", "tfba", "tffm"];
 
+const PROGRAM_NAMES: Record<string, string> = {
+  fbu: "Family Business University",
+  tfv: "The Family Vault",
+  tfba: "The Family Business Accelerator",
+  tffm: "The Family Fortune Mastermind",
+};
+
 type Generated = { title: string; body: string; replyToKey?: string };
-type Cadence = "daily" | "monthly" | "as_needed";
+type Cadence = "monthly" | "as_needed";
 type TemplateDef = {
   key: string;
   category: string;
@@ -18,110 +25,34 @@ type TemplateDef = {
 
 const REQUIRED_TRUST_TYPES = ["family", "business"];
 
-async function getRecentNewMembers(supabase: any) {
+async function getOnboardedUserIds(supabase: any, userIds: string[]): Promise<Set<string>> {
+  if (!userIds.length) return new Set();
+  const { data } = await supabase
+    .from("onboarding_responses")
+    .select("user_id")
+    .in("user_id", userIds);
+  return new Set((data || []).map((d: any) => d.user_id));
+}
+
+async function getRecentOnboardedNewMembers(supabase: any, program: string) {
   const since = new Date(Date.now() - 7 * 86400000).toISOString();
+  const programName = PROGRAM_NAMES[program];
   const { data } = await supabase
     .from("profiles")
-    .select("display_name, first_name, last_name, city, state, created_at")
+    .select("user_id, display_name, first_name, last_name, city, state, created_at, program_name")
     .gte("created_at", since)
+    .ilike("program_name", `%${programName}%`)
     .order("created_at", { ascending: false })
-    .limit(15);
-  return (data || []) as any[];
+    .limit(25);
+  const list = (data || []) as any[];
+  if (!list.length) return [];
+  const onboarded = await getOnboardedUserIds(supabase, list.map((m) => m.user_id));
+  return list.filter((m) => onboarded.has(m.user_id)).slice(0, 15);
 }
 
 function nameOf(p: any) {
   return p.display_name || [p.first_name, p.last_name].filter(Boolean).join(" ") || "A new member";
 }
-
-function pickRotating<T>(arr: T[], dayIndex: number, programOffset = 0): T {
-  return arr[(dayIndex + programOffset) % arr.length];
-}
-
-const REC_PROMPTS = [
-  {
-    title: "🏆 Trust Win of the Week",
-    body: `Share your latest protection milestone with the family — LLC filed, trust funded, bank account opened, EIN secured.
-
-Drop yours below 👇 No win is too small. Every step locks in generational protection.`,
-  },
-  {
-    title: "📚 Best Resource for Family Wealth Building",
-    body: `What book, attorney, podcast, or tool actually moved the needle for you?
-
-Reply with **one recommendation** and a sentence on why it helped. Let's build a community resource list 💛`,
-  },
-  {
-    title: "🤝 Vendor Recs — Drop Your Trusted Pros",
-    body: `Looking for vetted CPAs, estate attorneys, registered agents, or bookkeepers?
-
-Comment with someone you've **actually used** and what they handled for you. No referrals — real receipts only.`,
-  },
-  {
-    title: "💭 What I Wish I Knew Before Starting My Trust",
-    body: `If you could go back, what would you tell yourself the day before you started your trust?
-
-Your lesson could save another family weeks of confusion. Drop it below 👇`,
-  },
-  {
-    title: "🔍 Business Structure Check",
-    body: `Post your current setup (LLC, S-Corp, Trust, Holding Co.) and get peer feedback before your next call with Markus.
-
-Format:
-- Entity type:
-- State:
-- Purpose:
-- One question you have:`,
-  },
-  {
-    title: "🏦 Banking Wins for Black Family Businesses",
-    body: `Which business banks, credit unions, or cards are actually working for you right now?
-
-Share what's working — easy approvals, no nonsense fees, real support. Let's map the landscape 🗺️`,
-  },
-];
-
-const GEMS_PROMPTS = [
-  {
-    title: "💎 Legacy Launchpad Gem: Pay Yourself First",
-    body: `Pulled from **Week 1 of Legacy Launchpad** — pay yourself before any bill, any expense, any investment.
-
-Even $50 a week, automated, builds the habit and the wealth. Open the Classroom and watch the Week 1 walkthrough.
-
-What's your "pay yourself first" number? 👇`,
-  },
-  {
-    title: "💎 Gem: Document One Process This Week",
-    body: `From the **Legacy Launchpad systems module** — every undocumented process dies with you.
-
-This week: pick one thing only you know how to do, write it down, and hand it to a family member. That's legacy.`,
-  },
-  {
-    title: "⚖️ New Law Watch: Corporate Transparency Act",
-    body: `Heads up — the **Corporate Transparency Act (BOI reporting)** is still in flux. If you own an LLC, you may need to file beneficial ownership info with FinCEN.
-
-Check the latest status before year-end. Ask your CPA or post questions below.`,
-  },
-  {
-    title: "🏛️ Politics & Your Wealth: Estate Tax Sunset",
-    body: `The current **estate tax exemption (~$13.6M per person)** is scheduled to sunset at the end of 2025 — dropping to roughly $7M.
-
-If your family is anywhere near that line, this is the year to lock in trust planning. Don't sleep on it.`,
-  },
-  {
-    title: "💎 Gem from Legacy Launchpad: Trust Funding > Trust Drafting",
-    body: `A trust with no assets in it is just paper.
-
-**This week's play:** list every asset you own and ask, "Is this titled in my trust's name?" If no — that's your next move.
-
-Watch the Funding module in the Classroom for the step-by-step.`,
-  },
-  {
-    title: "📰 New Update: IRS Inheritance Reporting",
-    body: `The IRS continues to tighten reporting on inherited assets and step-up in basis calculations.
-
-If you're inheriting (or leaving) property, get your **cost basis documented now** — not after the fact. Save your family the audit.`,
-  },
-];
 
 const TEMPLATES: TemplateDef[] = [
   {
@@ -129,7 +60,6 @@ const TEMPLATES: TemplateDef[] = [
     category: "wins",
     cadence: "monthly",
     generate: async (supabase) => {
-      // Top member by trust submissions + succession progress in last 30 days
       const since = new Date(Date.now() - 30 * 86400000).toISOString();
       const [tsRes, spRes] = await Promise.all([
         supabase.from("trust_submissions").select("user_id, submitter_name, created_at").gte("created_at", since),
@@ -149,7 +79,7 @@ const TEMPLATES: TemplateDef[] = [
         counts.set(r.user_id, c);
       }
       const top = [...counts.entries()].sort((a, b) => b[1].score - a[1].score)[0];
-      if (!top) return null; // monthly: skip if no real winner
+      if (!top) return null;
       let name = top[1].name;
       if (!name) {
         const { data: p } = await supabase
@@ -170,31 +100,11 @@ Drop a 🔥 in the comments to celebrate them 👇`,
     },
   },
   {
-    key: "new_plays_gems",
-    category: "gems",
-    cadence: "daily",
-    generate: async (supabase) => {
-      const dayIndex = Math.floor(Date.now() / 86400000);
-      const gem = pickRotating(GEMS_PROMPTS, dayIndex);
-      const { data: course } = await supabase
-        .from("courses")
-        .select("title")
-        .ilike("title", "%legacy%")
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      const courseLine = course?.title
-        ? `\n\n📺 Watch "${course.title}" in the Classroom for the deeper breakdown.`
-        : "";
-      return { title: gem.title, body: gem.body + courseLine };
-    },
-  },
-  {
     key: "welcome_new_members",
     category: "discussion",
     cadence: "as_needed",
-    generate: async (supabase) => {
-      const members = await getRecentNewMembers(supabase);
+    generate: async (supabase, program) => {
+      const members = await getRecentOnboardedNewMembers(supabase, program);
       if (members.length === 0) return null;
       const list = members
         .slice(0, 10)
@@ -222,9 +132,8 @@ Reply below — let's get to know you 👇`,
     key: "new_member_orientation",
     category: "discussion",
     cadence: "as_needed",
-    generate: async (supabase) => {
-      // Only post if there were new members in the last 7 days
-      const members = await getRecentNewMembers(supabase);
+    generate: async (supabase, program) => {
+      const members = await getRecentOnboardedNewMembers(supabase, program);
       if (members.length === 0) return null;
       const today = new Date().toISOString().slice(0, 10);
       const { data: meeting } = await supabase
@@ -252,49 +161,80 @@ Do those two and you're already ahead of 90% of new members. Reply below once yo
     },
   },
   {
-    key: "recommendations",
-    category: "discussion",
-    cadence: "daily",
-    generate: async () => {
-      const dayIndex = Math.floor(Date.now() / 86400000);
-      const r = pickRotating(REC_PROMPTS, dayIndex);
-      return { title: r.title, body: r.body };
-    },
-  },
-  {
     key: "community_wins",
     category: "wins",
     cadence: "as_needed",
-    generate: async (supabase) => {
-      const { data: subs } = await supabase
+    generate: async (supabase, program) => {
+      // TFFM (Succession Society) members already completed trust creation — skip.
+      if (program === "tffm") return null;
+
+      // Look at recent trust submissions (last 14d) for new completers
+      const since = new Date(Date.now() - 14 * 86400000).toISOString();
+      const { data: recent } = await supabase
         .from("trust_submissions")
-        .select("user_id, trust_type, submitter_name");
-      const byUser = new Map<string, { types: Set<string>; name?: string }>();
-      for (const s of (subs || []) as any[]) {
-        const entry = byUser.get(s.user_id) || { types: new Set<string>(), name: s.submitter_name };
+        .select("user_id, trust_type, submitter_name, created_at")
+        .gte("created_at", since);
+      const recentUserIds = Array.from(new Set(((recent || []) as any[]).map((r) => r.user_id)));
+      if (!recentUserIds.length) return null;
+
+      // Get all their submissions to check completion
+      const { data: allSubs } = await supabase
+        .from("trust_submissions")
+        .select("user_id, trust_type, submitter_name, created_at")
+        .in("user_id", recentUserIds);
+
+      // Filter to recent users in THIS program only
+      const programName = PROGRAM_NAMES[program];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, first_name, last_name, program_name")
+        .in("user_id", recentUserIds)
+        .ilike("program_name", `%${programName}%`);
+      const inProgram = new Set(((profs || []) as any[]).map((p) => p.user_id));
+
+      const byUser = new Map<string, { types: Set<string>; name?: string; latest: string }>();
+      for (const s of (allSubs || []) as any[]) {
+        if (!inProgram.has(s.user_id)) continue;
+        const entry = byUser.get(s.user_id) || { types: new Set<string>(), name: s.submitter_name, latest: s.created_at };
         entry.types.add(s.trust_type);
         if (s.submitter_name) entry.name = s.submitter_name;
+        if (s.created_at > entry.latest) entry.latest = s.created_at;
         byUser.set(s.user_id, entry);
       }
-      const completers: string[] = [];
+
+      // Skip users we've already celebrated for this template
+      const candidateIds = [...byUser.keys()];
+      const { data: alreadyCelebrated } = await supabase
+        .from("community_manager_celebrated_users")
+        .select("user_id")
+        .eq("program", program)
+        .eq("template_key", "community_wins")
+        .in("user_id", candidateIds);
+      const celebrated = new Set(((alreadyCelebrated || []) as any[]).map((c) => c.user_id));
+
+      const newCompleters: { id: string; name: string }[] = [];
       for (const [uid, v] of byUser.entries()) {
-        if (REQUIRED_TRUST_TYPES.every((t) => v.types.has(t))) {
-          if (v.name) completers.push(v.name);
-          else {
-            const { data: p } = await supabase
-              .from("profiles")
-              .select("display_name, first_name, last_name")
-              .eq("user_id", uid)
-              .maybeSingle();
-            completers.push(p ? nameOf(p) : "A member");
-          }
+        if (celebrated.has(uid)) continue;
+        if (!REQUIRED_TRUST_TYPES.every((t) => v.types.has(t))) continue;
+        let name = v.name;
+        if (!name) {
+          const prof = ((profs || []) as any[]).find((p) => p.user_id === uid);
+          name = prof ? nameOf(prof) : "A member";
         }
+        newCompleters.push({ id: uid, name });
       }
-      if (completers.length === 0) return null;
-      const list = completers.slice(0, 25).map((n) => `- ${n} ✅`).join("\n");
+      if (newCompleters.length === 0) return null;
+
+      const list = newCompleters.slice(0, 25).map((n) => `- ${n.name} ✅`).join("\n");
+
+      // Mark these as celebrated
+      await supabase.from("community_manager_celebrated_users").insert(
+        newCompleters.map((n) => ({ user_id: n.id, program, template_key: "community_wins" })),
+      );
+
       return {
         title: "🏆 Community Wins — Trust Creation Completed!",
-        body: `Massive shout-out to the members who've completed **all of their trust creation submissions**! 🎉
+        body: `Massive shout-out to the members who just completed **all of their trust creation submissions**! 🎉
 
 ${list}
 
@@ -364,14 +304,13 @@ Deno.serve(async (req) => {
     const startOfToday = new Date(today.toISOString().slice(0, 10) + "T00:00:00.000Z").toISOString();
     const startOfMonth = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1)).toISOString();
 
-    // Pull recent log entries to enforce cadence per (program, template)
     const { data: recentLog } = await supabase
       .from("community_manager_post_log")
       .select("program, template_key, posted_at")
       .gte("posted_at", startOfMonth);
     const recent = (recentLog || []) as any[];
 
-    const postedToday = new Set<string>(); // `${program}|${template_key}`
+    const postedToday = new Set<string>();
     const postedThisMonth = new Set<string>();
     for (const r of recent) {
       const key = `${r.program}|${r.template_key}`;
@@ -389,7 +328,7 @@ Deno.serve(async (req) => {
             results.push({ program, template: tpl.key, skipped: "monthly: already posted this month" });
             continue;
           }
-          if ((tpl.cadence === "daily" || tpl.cadence === "as_needed") && postedToday.has(key)) {
+          if (tpl.cadence === "as_needed" && postedToday.has(key)) {
             results.push({ program, template: tpl.key, skipped: "already posted today" });
             continue;
           }
