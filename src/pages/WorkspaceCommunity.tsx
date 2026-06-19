@@ -230,7 +230,7 @@ export default function WorkspaceCommunity() {
         .select('*')
         .or(`program.eq.${program},program.is.null`)
         .order('created_at', { ascending: false })
-        .limit(30)
+        .limit(500)
 
       if (error) throw error
 
