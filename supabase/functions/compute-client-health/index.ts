@@ -288,6 +288,30 @@ function tokenMatches(haystack: string, token: string): boolean {
   return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i').test(haystack)
 }
 
+function levenshtein(a: string, b: string): number {
+  if (a === b) return 0
+  const m = a.length, n = b.length
+  if (!m) return n
+  if (!n) return m
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0))
+  for (let i = 0; i <= m; i++) dp[i][0] = i
+  for (let j = 0; j <= n; j++) dp[0][j] = j
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1
+      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
+    }
+  }
+  return dp[m][n]
+}
+
+function fuzzyTokenMatch(haystack: string, token: string): boolean {
+  if (!token || token.length < 4) return false
+  // Pull word tokens (3+ chars) from haystack and compare via Levenshtein ≤ 1
+  const words = haystack.toLowerCase().match(/[a-z]{3,}/g) ?? []
+  return words.some((w) => Math.abs(w.length - token.length) <= 1 && levenshtein(w, token) <= 1)
+}
+
 function clientMeetingScore(meeting: FathomMeeting, fullName: string, email: string | null | undefined, firstNameCounts: Map<string, number>, lastNameCounts: Map<string, number>): number {
   const identity = (meeting.identity || `${meeting.title} ${meeting.invitees} ${meeting.speakers}`).toLowerCase()
   const emailLc = (email || '').toLowerCase().trim()
@@ -299,9 +323,13 @@ function clientMeetingScore(meeting: FathomMeeting, fullName: string, email: str
   if (fullName && identity.includes(fullName.toLowerCase())) score += 80
   if (first && last && tokenMatches(identity, first) && tokenMatches(identity, last)) score += 75
   if (first && firstNameCounts.get(first) === 1 && tokenMatches(identity, first)) score += 45
-  if (last && lastNameCounts.get(last) === 1 && tokenMatches(identity, last)) score += 35
+  if (last && lastNameCounts.get(last) === 1 && tokenMatches(identity, last)) score += 40
+  // Fuzzy: typo-tolerant first or last name match (e.g. Jamel/Jamal, Terrence/Terence)
+  if (first && first.length >= 4 && fuzzyTokenMatch(identity, first) && (firstNameCounts.get(first) ?? 0) <= 2) score += 30
+  if (last && last.length >= 4 && fuzzyTokenMatch(identity, last) && (lastNameCounts.get(last) ?? 0) <= 2) score += 30
   return score
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
