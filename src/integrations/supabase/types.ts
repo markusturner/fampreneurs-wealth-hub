@@ -1160,6 +1160,51 @@ export type Database = {
           },
         ]
       }
+      community_manager_celebrated_users: {
+        Row: {
+          celebrated_at: string
+          id: string
+          program: string
+          template_key: string
+          user_id: string
+        }
+        Insert: {
+          celebrated_at?: string
+          id?: string
+          program: string
+          template_key: string
+          user_id: string
+        }
+        Update: {
+          celebrated_at?: string
+          id?: string
+          program?: string
+          template_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      community_manager_checkin_log: {
+        Row: {
+          id: string
+          reason: string | null
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          reason?: string | null
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          reason?: string | null
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_manager_post_log: {
         Row: {
           id: string

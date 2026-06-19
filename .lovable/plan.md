@@ -1,98 +1,42 @@
-# Client Retention Page (Admin)
+## Plan
 
-A new admin-only page at `/client-retention` (sidebar entry placed right after Admin Settings) that scores every active client into **At Risk / Slipping / Stable / Expansion Ready**, surfaces a daily action queue, and drafts the exact outreach message to send — modeled after the Latch AI screens.
+### 1. Recording posts (investigate)
+Recordings are user-uploaded posts with `category='recordings'` in `community_posts` (Workspace Community). They still exist — the WorkspaceCommunity feed already filters by `category='recordings'`. Will check that no recent migration excluded `recordings` from the program-specific Community feed (`src/pages/Community.tsx`) and the FBA filter, and restore visibility if missing.
 
-## Inputs (signals used to score health)
+### 2. Welcome only onboarded members
+In `community-manager-daily-post/index.ts`, update `getRecentNewMembers` to inner-join `onboarding_progress` (or check `user_onboarding_status`) so only members whose onboarding is `completed` are welcomed.
 
-Pulled from existing Supabase tables — no new external integrations required up front:
+### 3. Trust-creation Community Win triggered by submission date
+- `community_wins` template already lists members who completed both `family` + `business` trust submissions. Change it to detect *recent* completions (last 7d using `trust_submissions.created_at`, the same date that appears in All Users Management) and only post when there is a brand-new completer not previously celebrated (use `community_manager_post_log` `meta` to track celebrated user_ids).
 
-- **Zoom group coaching attendance** → `meetings` + `session_attendance` (consecutive missed calls, last attended date).
-- **Fathom accountability + Trust coaching calls** → `call_recordings` + `coaching_call_recordings` (last recording, presence trend).
-- **Community engagement** → `community_posts`, `community_comments`, `community_reactions`, `direct_messages`, `group_messages` (last post date, posting frequency drop, response latency).
-- **Trust Creation progress** → `trust_submissions` + `trust_page_locks` (stalled steps, days since last update, missing Schedule B / funding step).
-- **Succession Planning progress** → `succession_progress` (stalled items, completion %, days since last activity).
-- **Billing / renewal window** → `subscribers` + `user_payment_plans` (days until renewal, overdue payment flags).
+### 4. Skip Trust-Creation Wins in TFFM (Succession Society)
+Inside `community_wins.generate`, return `null` when `program === 'tffm'`.
 
-## Program duration windows (drives renewal & expansion timing)
+### 5. New posting cadence (no daily posts)
+Remove `daily` cadence entirely. Cadence becomes:
+- `student_of_the_month` — monthly (kept)
+- `welcome_new_members` / `new_member_orientation` — as needed (onboarded gate)
+- `community_wins` — as needed (recent trust completion)
+- `new_updates` — as needed (real new courses/meetings)
+- `new_plays_gems` & `recommendations` — REMOVED from auto-cadence; only triggered manually or by big news event
+- New cadence rule: when a member is *inactive* (per Client Retention `client_retention_cache` — `last_active_at` older than 30 days), call `community-manager-reply` to send them a personal check-in DM (insert into `messages` from persona). Add a new edge function `community-manager-inactive-checkin` invoked daily by cron.
+- Existing `community-manager-reply` already handles replying when someone posts — confirm cron is wired to it.
 
-- **TFV (Family Vault)** — 6-month track.
-- **TFBA (Family Business Accelerator)** — **3 months**.
-- **TFFM (The Succession Society)** — **12 months**.
+### 6. Fathom "No transcripts" false negative
+Root cause in `compute-client-health/index.ts`: meetings are fetched but the new "scored matching" requires email or strict tokenized first+last name on `external_invitees`; many Fathom calls (Robert Bayless, Nelson, Jamel, Terrence, Carol) likely lack invitee emails so they score 0 and the client shows zero transcripts.
 
-FBU and TruHeirs Lite members are excluded from the retention scoring (community-only tiers). "Renewal Due" + "Expansion Ready" triggers fire inside the last 30 days of each program's duration window.
+Fix:
+- Match against meeting `title`, `attendees[].name`, `host_name`, AND the transcript snippet text — not just invitee emails.
+- Lower threshold: any single-name (first OR last) token match scores ≥ 30 (was 35 last-name only).
+- Add fuzzy match (Levenshtein ≤ 1) for first names ≥ 4 chars to catch "Jamel"/"Jamal" style variance.
+- When `meetings.length > 0` but `matched.length === 0`, signal becomes `Fathom — Scanned N meeting(s); none matched this client's name/email yet` instead of "No transcripts available yet".
+- Bump cache key to `client_retention_cache_v5` and clear DB cache.
 
-## Health Score & Categories
-
-Each client gets a **1–10 score** (one decimal place), recomputed on page load (cached 1h in `client_health_snapshots`):
-
-| Status | Score | Trigger examples |
-|---|---|---|
-| At Risk (red) | 1.0 – 3.9 | Missed 3+ coaching calls, no community activity 21+ days, trust progress stalled 14+ days, overdue payment, login gap 18+ days |
-| Slipping (orange) | 4.0 – 6.4 | Missed 1–2 calls, response time doubled, posting cadence dropped 50%, trust step stuck 7–13 days |
-| Stable (green) | 6.5 – 8.4 | On cadence, active in community, trust/succession moving forward |
-| Expansion Ready (purple) | 8.5 – 10.0 | Trust fully funded, high engagement, posted a win, OR inside last 30 days of their program window (TFBA day 60+, TFFM day 335+) |
-
-Weighted sum on the 1–10 scale: attendance 25%, community 20%, trust progress 20%, succession progress 15%, response time 10%, tenure/renewal proximity 10%. Weights live in a tunable `client_health_weights` config row.
-
-## Page Layout (mirrors the Latch screens)
-
-### Tabs: Today · Movement · Wins
-
-**Top banner** — "{N} clients need attention. Here's what Client Retention is doing." Lists at-risk + slipping names with quick tags.
-
-**Client Health Pulse (KPI strip)**
-- Average Health Score (x.x / 10, +/- vs last week)
-- Active % (engaged last 14d) / Inactive % (no activity 14d+)
-- Four counters: At Risk / Slipping / Expansion Ready / Stable (count + $ ARR from plan price)
-
-**Charts row**
-- Health Score Trend (6-week line, y-axis 1–10) — from `client_health_snapshots`
-- Status Distribution by Week (stacked bar)
-
-**Today's Queue (two-pane)**
-- Left: grouped list — *Urgent – Act Today* (At Risk), *Slipping – Watch This Week*, *Renewals Due Within 14 Days*
-- Right: selected client → **Signals Detected** (bulleted reasons) + **Drafted Save Play** with `Approve & send` (gold for At Risk, green for recovery), `Edit message`, `Schedule`. Sending writes to `messages` and queues an email via existing `notify-message-email` edge function.
-
-**Wins tab** — "Ready for Referral Ask" + "Ready for Testimonial" cards for Expansion Ready clients, each with drafted message. Upsell ladder: TFV $5k → TFBA $9k → TFFM Succession Society $40k → $45k peer mastermind.
-
-**Autopilot toggle** — when on, approved templates auto-send on schedule (reuses `community-manager-daily-post` pattern). Off by default.
-
-## Message Drafting
-
-New edge function `draft-retention-message` using **Lovable AI gateway** (`google/gemini-3-flash-preview`). Inputs `{ clientId, status, signals[] }`, returns message in the admin's voice. Templates per status follow the transcript examples (empathetic check-in, light re-engagement, referral ask, upsell to next tier, testimonial ask).
-
-## Access & Routing
-
-- Route `/client-retention` in `src/main.tsx`, wrapped in `WithLayout`, gated by `useIsAdminOrOwner` (non-admins → `/dashboard`).
-- Sidebar item **"Client Retention"** placed directly after **Admin Settings** in `src/components/layout/AppSidebar.tsx` (dark sidebar styling, gold active highlight).
-
-## Database (new tables)
-
-```text
-client_health_snapshots
-  id, user_id, score numeric(3,1)  -- 1.0 to 10.0
-  status text, signals jsonb,
-  arr_value numeric, computed_at timestamptz
-  -- one row per client per day for trend charts
-
-client_health_weights         (single-row admin-editable config)
-  attendance, community, trust, succession, response, tenure
-
-retention_messages
-  id, client_id, status, channel (email|inapp),
-  draft text, sent_at, sent_by, response_received_at
-```
-
-All three: `GRANT` to `authenticated` + `service_role`, RLS limited to admins/owners via `has_role(auth.uid(), 'admin'|'owner')`.
-
-## Technical Notes
-
-- Scoring runs in new edge function `compute-client-health` (Deno.serve + esm.sh), invoked on page load if latest snapshot >1h old; also scheduled nightly via existing cron pattern.
-- Follows light-mode theme. Status colors: red `#ef4444`, orange `#f59e0b`, green `#10b981`, purple `#8b5cf6`. Primary CTAs use brand Gold `#ffb500`.
-- Charts use existing `recharts` setup (same as `admin-analytics-overview.tsx`).
-- Mobile-responsive; horizontal scroll for the queue table on small screens.
-
-## Out of Scope (v1)
-- Direct Fathom API pull for transcript sentiment (would need Fathom connector).
-- SMS sending (only email + in-app).
-- Per-client custom scoring overrides.
+### Files
+- `supabase/functions/community-manager-daily-post/index.ts` — gate welcomes, cadence overhaul, TFFM skip, recent-completion logic
+- `supabase/functions/community-manager-inactive-checkin/index.ts` — NEW: personal DMs to inactive members
+- `supabase/functions/compute-client-health/index.ts` — improved Fathom matching + better empty-state signal
+- `src/pages/ClientRetention.tsx` — bump cache key to v5
+- `src/pages/Community.tsx` — confirm `recordings` category visible (read-only check, edit if missing)
+- Migration: clear `client_retention_cache`; add `community_manager_celebrated_users` table to avoid duplicate trust-wins posts
+- Update `mem://features/community-manager/post-cadence.md`

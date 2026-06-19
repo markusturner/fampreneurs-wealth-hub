@@ -288,6 +288,30 @@ function tokenMatches(haystack: string, token: string): boolean {
   return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i').test(haystack)
 }
 
+function levenshtein(a: string, b: string): number {
+  if (a === b) return 0
+  const m = a.length, n = b.length
+  if (!m) return n
+  if (!n) return m
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0))
+  for (let i = 0; i <= m; i++) dp[i][0] = i
+  for (let j = 0; j <= n; j++) dp[0][j] = j
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1
+      dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
+    }
+  }
+  return dp[m][n]
+}
+
+function fuzzyTokenMatch(haystack: string, token: string): boolean {
+  if (!token || token.length < 4) return false
+  // Pull word tokens (3+ chars) from haystack and compare via Levenshtein ≤ 1
+  const words = haystack.toLowerCase().match(/[a-z]{3,}/g) ?? []
+  return words.some((w) => Math.abs(w.length - token.length) <= 1 && levenshtein(w, token) <= 1)
+}
+
 function clientMeetingScore(meeting: FathomMeeting, fullName: string, email: string | null | undefined, firstNameCounts: Map<string, number>, lastNameCounts: Map<string, number>): number {
   const identity = (meeting.identity || `${meeting.title} ${meeting.invitees} ${meeting.speakers}`).toLowerCase()
   const emailLc = (email || '').toLowerCase().trim()
@@ -299,9 +323,13 @@ function clientMeetingScore(meeting: FathomMeeting, fullName: string, email: str
   if (fullName && identity.includes(fullName.toLowerCase())) score += 80
   if (first && last && tokenMatches(identity, first) && tokenMatches(identity, last)) score += 75
   if (first && firstNameCounts.get(first) === 1 && tokenMatches(identity, first)) score += 45
-  if (last && lastNameCounts.get(last) === 1 && tokenMatches(identity, last)) score += 35
+  if (last && lastNameCounts.get(last) === 1 && tokenMatches(identity, last)) score += 40
+  // Fuzzy: typo-tolerant first or last name match (e.g. Jamel/Jamal, Terrence/Terence)
+  if (first && first.length >= 4 && fuzzyTokenMatch(identity, first) && (firstNameCounts.get(first) ?? 0) <= 2) score += 30
+  if (last && last.length >= 4 && fuzzyTokenMatch(identity, last) && (lastNameCounts.get(last) ?? 0) <= 2) score += 30
   return score
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
@@ -486,7 +514,7 @@ Deno.serve(async (req) => {
       }
       const scoredMeetings = fathomMeetings
         .map((m) => ({ meeting: m, matchScore: clientMeetingScore(m, fullName, p.email, firstNameCounts, lastNameCounts) }))
-        .filter((x) => x.matchScore >= 35)
+        .filter((x) => x.matchScore >= 30)
       const hydrated = await hydrateFathomMeetings(scoredMeetings.map((x) => x.meeting))
       if (!hydrated.complete) {
         console.error(`fathom detail incomplete for ${fullName}; refusing inaccurate result. meetings matched: ${scoredMeetings.length}, rate limited: ${hydrated.rateLimited}`)
@@ -501,17 +529,15 @@ Deno.serve(async (req) => {
 
       let lastFathomDays: number | null = null
       if (myMeetings.length > 0) {
-        // Most recent call
         const sorted = [...myMeetings].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         const latestMeeting = sorted[0]
         lastFathomDays = Math.floor((Date.now() - new Date(latestMeeting.created_at).getTime()) / 86400000)
 
-        // Clean the summary: drop markdown links, brackets, headings, field labels, then take first sentence
         const cleaned = (latestMeeting.summary || '')
-          .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')     // [text](url) -> text
-          .replace(/https?:\/\/\S+/g, '')              // bare urls
-          .replace(/[#*_>`]+/g, ' ')                   // markdown noise
-          .replace(/^\s*[-•]\s*/gm, ' ')               // list bullets
+          .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+          .replace(/https?:\/\/\S+/g, '')
+          .replace(/[#*_>`]+/g, ' ')
+          .replace(/^\s*[-•]\s*/gm, ' ')
           .replace(/\b(Meeting Purpose|Key Takeaways?|Next Steps?|Action Items?|Summary|Notes)\b\s*:?/gi, ' ')
           .replace(/[\[\]]/g, ' ')
           .replace(/\s+/g, ' ')
@@ -523,7 +549,6 @@ Deno.serve(async (req) => {
         }
         if (!oneLine && latestMeeting.title) oneLine = latestMeeting.title
 
-        // Scan ALL transcripts for this person, but weight the latest convo most.
         const latestBlob = `${latestMeeting.summary ?? ''} ${latestMeeting.transcript ?? ''}`.toLowerCase()
         const historyBlob = sorted.slice(1).map((m) => `${m.summary ?? ''} ${m.transcript ?? ''}`).join(' ').toLowerCase()
         const negRe = /(frustrat|cancel|refund|angry|upset|disappoint|leaving|quit|unhappy|complain)/i
@@ -532,7 +557,6 @@ Deno.serve(async (req) => {
         const latestPos = posRe.test(latestBlob)
         const histNeg = negRe.test(historyBlob)
         const histPos = posRe.test(historyBlob)
-        // Latest call drives the score; history nudges it.
         if (latestNeg) fathomScore = histPos ? 5 : 4
         else if (latestPos) fathomScore = histNeg ? 7 : 8
         else if (histNeg) fathomScore = 6
@@ -548,11 +572,14 @@ Deno.serve(async (req) => {
         }
         signals.push({ label: `Fathom — Scanned ${scanned} transcript${scanned === 1 ? '' : 's'} for this client`, severity: 'info' })
       } else if (fathomMeetings.length > 0) {
-        signals.push({ label: 'Fathom — No 1:1 coaching calls found for this client (last 2 years)', severity: 'warn' })
-        fathomScore = 4
+        signals.push({ label: `Fathom — Scanned ${fathomMeetings.length} meeting${fathomMeetings.length === 1 ? '' : 's'}; none matched this client's name or email yet`, severity: 'warn' })
+        fathomScore = 5
+      } else if (!Deno.env.get('FATHOM_API_KEY')) {
+        signals.push({ label: 'Fathom — Not connected (FATHOM_API_KEY missing)', severity: 'warn' })
       } else {
-        signals.push({ label: 'Fathom — No transcripts available yet', severity: 'info' })
+        signals.push({ label: 'Fathom — No meetings returned from API (check API key / permissions)', severity: 'warn' })
       }
+
 
       // -------- Tenure / renewal window --------
       let renewalWindow = false
