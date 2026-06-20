@@ -146,13 +146,35 @@ export default function ClientRetention() {
   }
 
   useEffect(() => {
-    if (isAdmin || isOwner) {
-      // Instant load from cached payload, then refresh silently in background
-      loadCache().then((hadCache) => {
-        loadHealth(hadCache)
-      })
-      loadTrend()
-      loadAutopilot()
+    if (!(isAdmin || isOwner)) return
+    // Instant load from cached payload, then refresh silently in background
+    loadCache().then((hadCache) => {
+      loadHealth(hadCache)
+    })
+    loadTrend()
+    loadAutopilot()
+
+    // Auto-refresh every 60s so signals stay fresh without manual reload
+    const interval = setInterval(() => { loadHealth(true) }, 60000)
+
+    // Realtime: re-compute when community activity or trust progress changes
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null
+    const scheduleRefresh = () => {
+      if (debounceTimer) clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(() => { loadHealth(true) }, 3000)
+    }
+    const channel = supabase
+      .channel("client-retention-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "community_posts" }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "community_comments" }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "trust_submissions" }, scheduleRefresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, scheduleRefresh)
+      .subscribe()
+
+    return () => {
+      clearInterval(interval)
+      if (debounceTimer) clearTimeout(debounceTimer)
+      supabase.removeChannel(channel)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAdmin, isOwner])
