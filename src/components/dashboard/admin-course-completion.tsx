@@ -57,14 +57,16 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
         supabase.from('courses').select('id, title').order('title'),
         supabase.from('course_videos').select('id, course_id'),
         supabase.from('lesson_completions').select('user_id, lesson_id, course_id'),
-        supabase.from('profiles').select('user_id, full_name, email'),
+        supabase.from('profiles').select('user_id, full_name, first_name, last_name, email'),
       ])
 
       if (!allCourses) { setLoading(false); return }
 
       const profileMap = new Map<string, { name: string; email: string }>()
       ;(profiles || []).forEach((p: any) => {
-        profileMap.set(p.user_id, { name: p.full_name || 'Unknown', email: p.email || '' })
+        const composed = [p.first_name, p.last_name].filter(Boolean).join(' ').trim()
+        const name = (p.full_name && p.full_name.trim()) || composed || (p.email ? p.email.split('@')[0] : 'Unknown')
+        profileMap.set(p.user_id, { name, email: p.email || '' })
       })
 
       const lessonCountByCourse = new Map<string, number>()
@@ -170,7 +172,7 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
                       <button
                         type="button"
                         onClick={() => setOpenCourse(course)}
-                        className="inline-flex items-center gap-1 font-semibold text-foreground hover:text-primary hover:underline focus:outline-none"
+                        className="inline-flex items-center gap-1 font-semibold text-foreground hover:text-[#2eb2ff] hover:underline focus:outline-none transition-colors"
                         title="View learners"
                       >
                         <Users className="h-3 w-3" />
