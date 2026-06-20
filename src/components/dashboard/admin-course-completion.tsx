@@ -170,11 +170,11 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
                       <button
                         type="button"
                         onClick={() => setOpenCourse(course)}
-                        className="inline-flex items-center gap-1 text-primary hover:underline focus:outline-none"
+                        className="inline-flex items-center gap-1 font-semibold text-foreground hover:text-primary hover:underline focus:outline-none"
                         title="View learners"
                       >
                         <Users className="h-3 w-3" />
-                        {course.enrolledCount}
+                        <span>{course.enrolledCount}</span>
                       </button>
                     </TableCell>
                     <TableCell className="text-center">{course.completedCount}</TableCell>
