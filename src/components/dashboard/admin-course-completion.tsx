@@ -2,8 +2,17 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { supabase } from '@/integrations/supabase/client'
-import { BookOpen, Loader2, Users } from 'lucide-react'
+import { BookOpen, Loader2, Users, CheckCircle2 } from 'lucide-react'
+
+interface LearnerRow {
+  userId: string
+  name: string
+  email: string
+  progress: number
+  completed: boolean
+}
 
 interface CourseCompletion {
   courseId: string
@@ -11,6 +20,7 @@ interface CourseCompletion {
   enrolledCount: number
   avgProgress: number
   completedCount: number
+  learners: LearnerRow[]
 }
 
 interface AdminCourseCompletionProps {
@@ -22,6 +32,7 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
   const [courses, setCourses] = useState<CourseCompletion[]>([])
   const [loading, setLoading] = useState(true)
   const [overallAvg, setOverallAvg] = useState(0)
+  const [openCourse, setOpenCourse] = useState<CourseCompletion | null>(null)
 
   useEffect(() => {
     fetchCourseCompletion()
@@ -31,7 +42,6 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
     try {
       setLoading(true)
 
-      // Build optional user filter for tabs
       let filterUserIds: Set<string> | null = null
       if (programOnly) {
         const { data: pp } = await supabase
@@ -43,22 +53,25 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
         filterUserIds = new Set((tp || []).map((p: any) => p.user_id))
       }
 
-      // Live data: derive progress from lesson_completions (course_videos = lessons)
-      const [{ data: allCourses }, { data: videos }, { data: completions }] = await Promise.all([
+      const [{ data: allCourses }, { data: videos }, { data: completions }, { data: profiles }] = await Promise.all([
         supabase.from('courses').select('id, title').order('title'),
         supabase.from('course_videos').select('id, course_id'),
         supabase.from('lesson_completions').select('user_id, lesson_id, course_id'),
+        supabase.from('profiles').select('user_id, full_name, email'),
       ])
 
       if (!allCourses) { setLoading(false); return }
 
-      // total lessons per course
+      const profileMap = new Map<string, { name: string; email: string }>()
+      ;(profiles || []).forEach((p: any) => {
+        profileMap.set(p.user_id, { name: p.full_name || 'Unknown', email: p.email || '' })
+      })
+
       const lessonCountByCourse = new Map<string, number>()
       ;(videos || []).forEach((v: any) => {
         lessonCountByCourse.set(v.course_id, (lessonCountByCourse.get(v.course_id) || 0) + 1)
       })
 
-      // completions per (user,course)
       const compsByCourseUser = new Map<string, Map<string, number>>()
       ;(completions || []).forEach((c: any) => {
         if (filterUserIds && !filterUserIds.has(c.user_id)) return
@@ -72,13 +85,18 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
         const userMap = compsByCourseUser.get(course.id) || new Map<string, number>()
         const enrolledCount = userMap.size
         let sumPct = 0, completedCount = 0
-        userMap.forEach((done) => {
+        const learners: LearnerRow[] = []
+        userMap.forEach((done, userId) => {
           const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0
           sumPct += pct
-          if (total > 0 && done >= total) completedCount += 1
+          const completed = total > 0 && done >= total
+          if (completed) completedCount += 1
+          const p = profileMap.get(userId) || { name: 'Unknown', email: '' }
+          learners.push({ userId, name: p.name, email: p.email, progress: pct, completed })
         })
+        learners.sort((a, b) => b.progress - a.progress)
         const avgProgress = enrolledCount > 0 ? Math.round(sumPct / enrolledCount) : 0
-        return { courseId: course.id, courseTitle: course.title, enrolledCount, avgProgress, completedCount }
+        return { courseId: course.id, courseTitle: course.title, enrolledCount, avgProgress, completedCount, learners }
       })
 
       const activeCourses = courseMap.filter((c) => c.enrolledCount > 0)
@@ -149,10 +167,15 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
                   <TableRow key={course.courseId}>
                     <TableCell className="font-medium">{course.courseTitle}</TableCell>
                     <TableCell className="text-center">
-                      <span className="inline-flex items-center gap-1 text-muted-foreground">
+                      <button
+                        type="button"
+                        onClick={() => setOpenCourse(course)}
+                        className="inline-flex items-center gap-1 text-primary hover:underline focus:outline-none"
+                        title="View learners"
+                      >
                         <Users className="h-3 w-3" />
                         {course.enrolledCount}
-                      </span>
+                      </button>
                     </TableCell>
                     <TableCell className="text-center">{course.completedCount}</TableCell>
                     <TableCell>
@@ -176,6 +199,46 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
           </CardContent>
         </Card>
       )}
+
+      <Dialog open={!!openCourse} onOpenChange={(o) => !o && setOpenCourse(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Learners — {openCourse?.courseTitle}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead className="w-[160px]">Progress</TableHead>
+                  <TableHead className="w-[80px] text-center">Done</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {openCourse?.learners.map((l) => (
+                  <TableRow key={l.userId}>
+                    <TableCell className="font-medium">{l.name}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm">{l.email}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Progress value={l.progress} className="h-2 flex-1" />
+                        <span className="text-xs w-9 text-right">{l.progress}%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {l.completed ? <CheckCircle2 className="h-4 w-4 text-green-600 inline" /> : <span className="text-muted-foreground">—</span>}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
