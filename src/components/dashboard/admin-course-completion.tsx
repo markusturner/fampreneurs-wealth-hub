@@ -172,7 +172,7 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
                       <button
                         type="button"
                         onClick={() => setOpenCourse(course)}
-                        className="inline-flex items-center gap-1 font-semibold text-foreground hover:text-primary hover:underline focus:outline-none"
+                        className="inline-flex items-center gap-1 font-semibold text-foreground hover:text-[#2eb2ff] hover:underline focus:outline-none transition-colors"
                         title="View learners"
                       >
                         <Users className="h-3 w-3" />
