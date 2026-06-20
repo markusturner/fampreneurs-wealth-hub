@@ -57,7 +57,7 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
         supabase.from('courses').select('id, title').order('title'),
         supabase.from('course_videos').select('id, course_id'),
         supabase.from('lesson_completions').select('user_id, lesson_id, course_id'),
-        supabase.from('profiles').select('user_id, full_name, first_name, last_name, email'),
+        supabase.from('profiles').select('user_id, first_name, last_name, display_name, email'),
       ])
 
       if (!allCourses) { setLoading(false); return }
@@ -65,7 +65,7 @@ export function AdminCourseCompletion({ programOnly = false, truheirsOnly = fals
       const profileMap = new Map<string, { name: string; email: string }>()
       ;(profiles || []).forEach((p: any) => {
         const composed = [p.first_name, p.last_name].filter(Boolean).join(' ').trim()
-        const name = (p.full_name && p.full_name.trim()) || composed || (p.email ? p.email.split('@')[0] : 'Unknown')
+        const name = composed || (p.display_name && p.display_name.trim()) || (p.email ? p.email.split('@')[0] : 'Unknown')
         profileMap.set(p.user_id, { name, email: p.email || '' })
       })
 
