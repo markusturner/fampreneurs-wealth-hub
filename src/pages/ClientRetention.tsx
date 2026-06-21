@@ -82,13 +82,38 @@ export default function ClientRetention() {
     }
   }, [user, isAdmin, isOwner, roleLoading, ownerLoading, navigate])
 
-  const applyClients = (list: ClientScore[]) => {
-    setClients(list)
+  const mergeNotes = (list: ClientScore[], map: Record<string, { note: string; status_override: Status | null }>): ClientScore[] => {
+    return list.map((c) => {
+      const entry = map[c.user_id]
+      if (!entry) return c
+      const status = entry.status_override ?? c.status
+      const signals = entry.note?.trim()
+        ? [{ label: `📝 Admin note: ${entry.note.trim()}`, severity: "info" }, ...c.signals]
+        : c.signals
+      return { ...c, status, signals }
+    })
+  }
+
+  const applyClients = (list: ClientScore[], overrideMap?: Record<string, { note: string; status_override: Status | null }>) => {
+    const merged = mergeNotes(list, overrideMap ?? notesMap)
+    setClients(merged)
     setSelectedId((prev) => {
-      if (prev && list.some((c) => c.user_id === prev)) return prev
-      const firstAtRisk = list.find((c) => c.status === "at_risk") ?? list[0]
+      if (prev && merged.some((c) => c.user_id === prev)) return prev
+      const firstAtRisk = merged.find((c) => c.status === "at_risk") ?? merged[0]
       return firstAtRisk?.user_id ?? null
     })
+  }
+
+  const loadNotes = async () => {
+    const { data } = await supabase
+      .from("client_retention_notes")
+      .select("user_id, note, status_override")
+    const map: Record<string, { note: string; status_override: Status | null }> = {}
+    ;(data ?? []).forEach((r: any) => {
+      map[r.user_id] = { note: r.note ?? "", status_override: (r.status_override as Status) ?? null }
+    })
+    setNotesMap(map)
+    return map
   }
 
   const loadCache = async () => {
