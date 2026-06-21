@@ -468,6 +468,39 @@ export default function ClientRetention() {
                       </ul>
                     </section>
 
+                    <section className="rounded-lg border border-[#ffb500]/40 bg-amber-50/40 p-3">
+                      <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[#290a52] flex items-center gap-1.5">
+                          <StickyNote className="h-3.5 w-3.5" /> Your Notes & Status
+                        </p>
+                        <Select value={statusDraft} onValueChange={(v) => setStatusDraft(v as Status | "auto")}>
+                          <SelectTrigger className="h-8 w-[170px] text-xs">
+                            <SelectValue placeholder="Status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="auto">Auto (from signals)</SelectItem>
+                            <SelectItem value="at_risk">At Risk</SelectItem>
+                            <SelectItem value="slipping">Slipping</SelectItem>
+                            <SelectItem value="stable">Stable</SelectItem>
+                            <SelectItem value="expansion_ready">Expansion Ready</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Textarea
+                        value={noteDraft}
+                        onChange={(e) => setNoteDraft(e.target.value)}
+                        placeholder="Add private notes about this client — they'll appear at the top of the Signals list."
+                        className="min-h-[90px] text-sm bg-white"
+                      />
+                      <div className="mt-2 flex justify-end">
+                        <Button size="sm" onClick={saveNote} disabled={savingNote} className="bg-[#290a52] text-white hover:bg-[#1d0639]">
+                          {savingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+                          Save note & status
+                        </Button>
+                      </div>
+                    </section>
+
+
                     <section>
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Drafted Save Play</p>
