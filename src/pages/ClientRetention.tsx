@@ -278,6 +278,33 @@ export default function ClientRetention() {
     }
   }
 
+  const deleteNote = async () => {
+    if (!selected) return
+    setSavingNote(true)
+    try {
+      const { error } = await supabase
+        .from("client_retention_notes")
+        .delete()
+        .eq("user_id", selected.user_id)
+      if (error) throw error
+      const nextMap = { ...notesMap }
+      delete nextMap[selected.user_id]
+      setNotesMap(nextMap)
+      setNoteDraft("")
+      setStatusDraft("auto")
+      const stripped = clients.map((c) => ({
+        ...c,
+        signals: c.signals.filter((s) => !s.label.startsWith("📝 Admin note:")),
+      }))
+      applyClients(stripped, nextMap)
+      toast.success("Note cleared")
+    } catch (e: any) {
+      toast.error("Couldn't delete note: " + (e?.message ?? e))
+    } finally {
+      setSavingNote(false)
+    }
+  }
+
   const stats = useMemo(() => {
     const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [] }
     clients.forEach((c) => buckets[c.status].push(c))
