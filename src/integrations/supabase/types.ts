@@ -857,6 +857,33 @@ export type Database = {
         }
         Relationships: []
       }
+      client_retention_notes: {
+        Row: {
+          created_at: string
+          note: string
+          status_override: string | null
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          note?: string
+          status_override?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          note?: string
+          status_override?: string | null
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       coach_assignments: {
         Row: {
           assigned_at: string

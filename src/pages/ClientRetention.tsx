@@ -12,8 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw } from "lucide-react"
+import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save } from "lucide-react"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 
 type Status = "at_risk" | "slipping" | "stable" | "expansion_ready"
@@ -68,6 +69,10 @@ export default function ClientRetention() {
   const [drafting, setDrafting] = useState(false)
   const [sending, setSending] = useState(false)
   const [autopilot, setAutopilot] = useState(false)
+  const [notesMap, setNotesMap] = useState<Record<string, { note: string; status_override: Status | null }>>({})
+  const [noteDraft, setNoteDraft] = useState<string>("")
+  const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
+  const [savingNote, setSavingNote] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -77,13 +82,38 @@ export default function ClientRetention() {
     }
   }, [user, isAdmin, isOwner, roleLoading, ownerLoading, navigate])
 
-  const applyClients = (list: ClientScore[]) => {
-    setClients(list)
+  const mergeNotes = (list: ClientScore[], map: Record<string, { note: string; status_override: Status | null }>): ClientScore[] => {
+    return list.map((c) => {
+      const entry = map[c.user_id]
+      if (!entry) return c
+      const status = entry.status_override ?? c.status
+      const signals = entry.note?.trim()
+        ? [{ label: `📝 Admin note: ${entry.note.trim()}`, severity: "info" }, ...c.signals]
+        : c.signals
+      return { ...c, status, signals }
+    })
+  }
+
+  const applyClients = (list: ClientScore[], overrideMap?: Record<string, { note: string; status_override: Status | null }>) => {
+    const merged = mergeNotes(list, overrideMap ?? notesMap)
+    setClients(merged)
     setSelectedId((prev) => {
-      if (prev && list.some((c) => c.user_id === prev)) return prev
-      const firstAtRisk = list.find((c) => c.status === "at_risk") ?? list[0]
+      if (prev && merged.some((c) => c.user_id === prev)) return prev
+      const firstAtRisk = merged.find((c) => c.status === "at_risk") ?? merged[0]
       return firstAtRisk?.user_id ?? null
     })
+  }
+
+  const loadNotes = async () => {
+    const { data } = await supabase
+      .from("client_retention_notes")
+      .select("user_id, note, status_override")
+    const map: Record<string, { note: string; status_override: Status | null }> = {}
+    ;(data ?? []).forEach((r: any) => {
+      map[r.user_id] = { note: r.note ?? "", status_override: (r.status_override as Status) ?? null }
+    })
+    setNotesMap(map)
+    return map
   }
 
   const loadCache = async () => {
@@ -147,9 +177,11 @@ export default function ClientRetention() {
 
   useEffect(() => {
     if (!(isAdmin || isOwner)) return
-    // Instant load from cached payload, then refresh silently in background
-    loadCache().then((hadCache) => {
-      loadHealth(hadCache)
+    // Load notes first so initial render of cached/fresh data is merged
+    loadNotes().then(() => {
+      loadCache().then((hadCache) => {
+        loadHealth(hadCache)
+      })
     })
     loadTrend()
     loadAutopilot()
@@ -210,7 +242,41 @@ export default function ClientRetention() {
   // Auto-fill draft from precomputed value when selection changes
   useEffect(() => {
     if (selected?.draft !== undefined) setDraft(selected.draft ?? "")
+    const entry = selected ? notesMap[selected.user_id] : null
+    setNoteDraft(entry?.note ?? "")
+    setStatusDraft((entry?.status_override as Status) ?? "auto")
   }, [selectedId, selected?.draft])
+
+  const saveNote = async () => {
+    if (!selected) return
+    setSavingNote(true)
+    try {
+      const payload = {
+        user_id: selected.user_id,
+        note: noteDraft,
+        status_override: statusDraft === "auto" ? null : statusDraft,
+        updated_by: user?.id ?? null,
+      }
+      const { error } = await supabase
+        .from("client_retention_notes")
+        .upsert(payload, { onConflict: "user_id" })
+      if (error) throw error
+      const nextMap = { ...notesMap, [selected.user_id]: { note: noteDraft, status_override: payload.status_override as Status | null } }
+      setNotesMap(nextMap)
+      // Re-merge against the original list from the cache/function (strip note signals first)
+      const stripped = clients.map((c) => {
+        const cleanSignals = c.signals.filter((s) => !s.label.startsWith("📝 Admin note:"))
+        // Revert any prior override using cached payload would be ideal, but applying new merge is sufficient here
+        return { ...c, signals: cleanSignals }
+      })
+      applyClients(stripped, nextMap)
+      toast.success("Note saved")
+    } catch (e: any) {
+      toast.error("Couldn't save note: " + (e?.message ?? e))
+    } finally {
+      setSavingNote(false)
+    }
+  }
 
   const stats = useMemo(() => {
     const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [] }
@@ -401,6 +467,39 @@ export default function ClientRetention() {
                         ))}
                       </ul>
                     </section>
+
+                    <section className="rounded-lg border border-[#ffb500]/40 bg-amber-50/40 p-3">
+                      <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[#290a52] flex items-center gap-1.5">
+                          <StickyNote className="h-3.5 w-3.5" /> Your Notes & Status
+                        </p>
+                        <Select value={statusDraft} onValueChange={(v) => setStatusDraft(v as Status | "auto")}>
+                          <SelectTrigger className="h-8 w-[170px] text-xs">
+                            <SelectValue placeholder="Status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="auto">Auto (from signals)</SelectItem>
+                            <SelectItem value="at_risk">At Risk</SelectItem>
+                            <SelectItem value="slipping">Slipping</SelectItem>
+                            <SelectItem value="stable">Stable</SelectItem>
+                            <SelectItem value="expansion_ready">Expansion Ready</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Textarea
+                        value={noteDraft}
+                        onChange={(e) => setNoteDraft(e.target.value)}
+                        placeholder="Add private notes about this client — they'll appear at the top of the Signals list."
+                        className="min-h-[90px] text-sm bg-white"
+                      />
+                      <div className="mt-2 flex justify-end">
+                        <Button size="sm" onClick={saveNote} disabled={savingNote} className="bg-[#290a52] text-white hover:bg-[#1d0639]">
+                          {savingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
+                          Save note & status
+                        </Button>
+                      </div>
+                    </section>
+
 
                     <section>
                       <div className="flex items-center justify-between mb-2">
