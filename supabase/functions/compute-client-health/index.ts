@@ -363,12 +363,9 @@ Deno.serve(async (req) => {
       listFathomMeetings(),
     ])
     const fathomMeetings = fathomResult.meetings
-    if (!fathomResult.complete) {
-      console.error(`fathom incomplete; refusing to compute inaccurate retention results. meetings fetched: ${fathomMeetings.length}, rate limited: ${fathomResult.rateLimited}`)
-      return new Response(JSON.stringify({ error: 'Fathom is still syncing/rate-limited. Keeping existing retention data until a full transcript scan completes.', sources: { fathom_meetings: fathomMeetings.length, fathom_complete: false, fathom_rate_limited: fathomResult.rateLimited } }), {
-        status: 503,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    const fathomDegraded = !fathomResult.complete
+    if (fathomDegraded) {
+      console.error(`fathom degraded; proceeding with ${fathomMeetings.length} cached/partial meetings. rate limited: ${fathomResult.rateLimited}`)
     }
     const driveTree = driveToken ? await listDriveTree(driveToken) : []
     console.log(`drive files: ${driveTree.length}, fathom meetings: ${fathomMeetings.length}, fathom complete: ${fathomResult.complete}, rate limited: ${fathomResult.rateLimited}`)
