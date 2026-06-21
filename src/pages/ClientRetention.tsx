@@ -177,9 +177,11 @@ export default function ClientRetention() {
 
   useEffect(() => {
     if (!(isAdmin || isOwner)) return
-    // Instant load from cached payload, then refresh silently in background
-    loadCache().then((hadCache) => {
-      loadHealth(hadCache)
+    // Load notes first so initial render of cached/fresh data is merged
+    loadNotes().then(() => {
+      loadCache().then((hadCache) => {
+        loadHealth(hadCache)
+      })
     })
     loadTrend()
     loadAutopilot()
