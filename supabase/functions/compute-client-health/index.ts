@@ -115,7 +115,7 @@ async function fathomJson(url: URL, key: string): Promise<{ ok: boolean; status:
   let lastStatus = 0
   let lastBody = ''
   let rateLimited = false
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < 7; attempt++) {
     let res: Response | null = null
     try {
       res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
@@ -129,10 +129,10 @@ async function fathomJson(url: URL, key: string): Promise<{ ok: boolean; status:
     lastStatus = res?.status ?? 0
     lastBody = res ? await res.text().catch(() => '') : ''
     if (lastStatus === 429) rateLimited = true
-    if (![429, 502, 503, 504].includes(lastStatus)) break
+    if (![0, 429, 500, 502, 503, 504].includes(lastStatus)) break
     const retryAfter = res?.headers.get('Retry-After')
-    const retryMs = retryAfter && !Number.isNaN(Number(retryAfter)) ? Number(retryAfter) * 1000 : 800 * Math.pow(2, attempt)
-    await new Promise((r) => setTimeout(r, Math.min(10000, retryMs)))
+    const retryMs = retryAfter && !Number.isNaN(Number(retryAfter)) ? Number(retryAfter) * 1000 : 1000 * Math.pow(2, attempt)
+    await new Promise((r) => setTimeout(r, Math.min(15000, retryMs)))
   }
   return { ok: false, status: lastStatus, json: null, body: lastBody, rateLimited }
 }
