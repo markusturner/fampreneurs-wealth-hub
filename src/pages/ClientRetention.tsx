@@ -525,7 +525,19 @@ export default function ClientRetention() {
                         placeholder="Add notes & press Enter to save (Shift+Enter for a new line)."
                         className="min-h-[90px] text-sm bg-white"
                       />
-                      <div className="mt-2 flex justify-end">
+                      <div className="mt-2 flex justify-end gap-2">
+                        {notesMap[selected.user_id] && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={deleteNote}
+                            disabled={savingNote}
+                            className="text-muted-foreground hover:text-red-600"
+                          >
+                            <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                            Delete
+                          </Button>
+                        )}
                         <Button size="sm" onClick={saveNote} disabled={savingNote} className="bg-[#290a52] text-white hover:bg-[#1d0639]">
                           {savingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
                           Save note & status
