@@ -242,7 +242,41 @@ export default function ClientRetention() {
   // Auto-fill draft from precomputed value when selection changes
   useEffect(() => {
     if (selected?.draft !== undefined) setDraft(selected.draft ?? "")
+    const entry = selected ? notesMap[selected.user_id] : null
+    setNoteDraft(entry?.note ?? "")
+    setStatusDraft((entry?.status_override as Status) ?? "auto")
   }, [selectedId, selected?.draft])
+
+  const saveNote = async () => {
+    if (!selected) return
+    setSavingNote(true)
+    try {
+      const payload = {
+        user_id: selected.user_id,
+        note: noteDraft,
+        status_override: statusDraft === "auto" ? null : statusDraft,
+        updated_by: user?.id ?? null,
+      }
+      const { error } = await supabase
+        .from("client_retention_notes")
+        .upsert(payload, { onConflict: "user_id" })
+      if (error) throw error
+      const nextMap = { ...notesMap, [selected.user_id]: { note: noteDraft, status_override: payload.status_override as Status | null } }
+      setNotesMap(nextMap)
+      // Re-merge against the original list from the cache/function (strip note signals first)
+      const stripped = clients.map((c) => {
+        const cleanSignals = c.signals.filter((s) => !s.label.startsWith("📝 Admin note:"))
+        // Revert any prior override using cached payload would be ideal, but applying new merge is sufficient here
+        return { ...c, signals: cleanSignals }
+      })
+      applyClients(stripped, nextMap)
+      toast.success("Note saved")
+    } catch (e: any) {
+      toast.error("Couldn't save note: " + (e?.message ?? e))
+    } finally {
+      setSavingNote(false)
+    }
+  }
 
   const stats = useMemo(() => {
     const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [] }
