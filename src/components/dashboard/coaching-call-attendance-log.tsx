@@ -236,8 +236,14 @@ export function CoachingCallAttendanceLog() {
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-xs">Session title</Label>
-                    <Input value={fTitle} onChange={(e) => setFTitle(e.target.value)} placeholder="e.g. TFV Weekly Coaching" />
+                    <Label className="text-xs">Session type</Label>
+                    <Select value={fTitle} onValueChange={setFTitle}>
+                      <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Group Coaching">Group Coaching</SelectItem>
+                        <SelectItem value="1-1 Coaching Call">1-1 Coaching Call</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
