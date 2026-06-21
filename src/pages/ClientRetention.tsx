@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Helmet } from "react-helmet-async"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { useUserRole } from "@/hooks/useUserRole"
 import { useOwnerRole } from "@/hooks/useOwnerRole"
@@ -45,6 +45,8 @@ const STATUS_META: Record<Status, { label: string; color: string; bg: string; ri
 
 export default function ClientRetention() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const isAttendanceView = new URLSearchParams(location.search).get('tab') === 'attendance'
   const { user } = useAuth()
   const { isAdmin, isLoading: roleLoading } = useUserRole()
   const { isOwner, isLoading: ownerLoading } = useOwnerRole(user?.id ?? null)
@@ -379,8 +381,20 @@ export default function ClientRetention() {
 
   return (
     <div className="container mx-auto py-4 sm:py-6 px-3 sm:px-4 max-w-7xl">
-      <Helmet><title>Client Retention | TruHeirs Admin</title></Helmet>
+      <Helmet><title>{isAttendanceView ? 'Attendance Log' : 'Client Retention'} | TruHeirs Admin</title></Helmet>
 
+      {isAttendanceView ? (
+        <>
+          <header className="mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight flex items-center gap-2">
+              <ClipboardList className="h-5 w-5" /> Attendance Log
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">Coaching call attendance — automated and manual entries.</p>
+          </header>
+          <CoachingCallAttendanceLog />
+        </>
+      ) : (
+        <>
       <header className="mb-4 sm:mb-6 flex items-start sm:items-center justify-between flex-wrap gap-3">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Client Retention</h1>
@@ -422,12 +436,11 @@ export default function ClientRetention() {
         })}
       </div>
 
-      <Tabs defaultValue={typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'attendance' ? 'attendance' : 'today'} className="w-full">
+      <Tabs defaultValue="today" className="w-full">
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="today" className="flex-1 sm:flex-none">Today</TabsTrigger>
           <TabsTrigger value="movement" className="flex-1 sm:flex-none">Movement</TabsTrigger>
           <TabsTrigger value="wins" className="flex-1 sm:flex-none">Wins</TabsTrigger>
-          <TabsTrigger value="attendance" className="flex-1 sm:flex-none"><ClipboardList className="h-3.5 w-3.5 mr-1.5" />Attendance</TabsTrigger>
         </TabsList>
 
         {/* TODAY */}
@@ -670,11 +683,9 @@ export default function ClientRetention() {
           </div>
         </TabsContent>
 
-        {/* ATTENDANCE */}
-        <TabsContent value="attendance" className="mt-4">
-          <CoachingCallAttendanceLog />
-        </TabsContent>
       </Tabs>
+        </>
+      )}
     </div>
   )
 }
