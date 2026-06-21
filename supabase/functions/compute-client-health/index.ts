@@ -165,6 +165,7 @@ async function listFathomMeetings(): Promise<FathomListResult> {
     if (!key) return { meetings: [], complete: true, rateLimited: false }
     const out: FathomMeeting[] = []
     let complete = false
+    let requestFailed = false
     let rateLimited = false
     try {
       const since = new Date(Date.now() - 730 * 86400000).toISOString()
@@ -182,6 +183,7 @@ async function listFathomMeetings(): Promise<FathomListResult> {
         const response = await fathomJson(url, key)
         if (!response.ok) {
           if (response.rateLimited) rateLimited = true
+          requestFailed = true
           console.error('fathom err', response.status, response.body)
           break
         }
@@ -214,7 +216,7 @@ async function listFathomMeetings(): Promise<FathomListResult> {
       cursor = json?.next_cursor ?? undefined
       pages++
       } while (cursor && pages < 300)
-      complete = !cursor
+      complete = !requestFailed && !cursor
     } catch (e) {
       console.error('fathom fetch failed', e)
     }
