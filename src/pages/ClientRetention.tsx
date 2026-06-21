@@ -489,7 +489,13 @@ export default function ClientRetention() {
                       <Textarea
                         value={noteDraft}
                         onChange={(e) => setNoteDraft(e.target.value)}
-                        placeholder="Add private notes about this client — they'll appear at the top of the Signals list."
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            if (!savingNote) saveNote();
+                          }
+                        }}
+                        placeholder="Add notes & press Enter to save (Shift+Enter for a new line)."
                         className="min-h-[90px] text-sm bg-white"
                       />
                       <div className="mt-2 flex justify-end">
