@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save } from "lucide-react"
+import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2 } from "lucide-react"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 
 type Status = "at_risk" | "slipping" | "stable" | "expansion_ready"
@@ -278,6 +278,33 @@ export default function ClientRetention() {
     }
   }
 
+  const deleteNote = async () => {
+    if (!selected) return
+    setSavingNote(true)
+    try {
+      const { error } = await supabase
+        .from("client_retention_notes")
+        .delete()
+        .eq("user_id", selected.user_id)
+      if (error) throw error
+      const nextMap = { ...notesMap }
+      delete nextMap[selected.user_id]
+      setNotesMap(nextMap)
+      setNoteDraft("")
+      setStatusDraft("auto")
+      const stripped = clients.map((c) => ({
+        ...c,
+        signals: c.signals.filter((s) => !s.label.startsWith("📝 Admin note:")),
+      }))
+      applyClients(stripped, nextMap)
+      toast.success("Note cleared")
+    } catch (e: any) {
+      toast.error("Couldn't delete note: " + (e?.message ?? e))
+    } finally {
+      setSavingNote(false)
+    }
+  }
+
   const stats = useMemo(() => {
     const buckets: Record<Status, ClientScore[]> = { at_risk: [], slipping: [], stable: [], expansion_ready: [] }
     clients.forEach((c) => buckets[c.status].push(c))
@@ -498,7 +525,19 @@ export default function ClientRetention() {
                         placeholder="Add notes & press Enter to save (Shift+Enter for a new line)."
                         className="min-h-[90px] text-sm bg-white"
                       />
-                      <div className="mt-2 flex justify-end">
+                      <div className="mt-2 flex justify-end gap-2">
+                        {notesMap[selected.user_id] && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={deleteNote}
+                            disabled={savingNote}
+                            className="text-muted-foreground hover:text-red-600"
+                          >
+                            <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                            Delete
+                          </Button>
+                        )}
                         <Button size="sm" onClick={saveNote} disabled={savingNote} className="bg-[#290a52] text-white hover:bg-[#1d0639]">
                           {savingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
                           Save note & status
