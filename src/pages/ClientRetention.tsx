@@ -69,6 +69,10 @@ export default function ClientRetention() {
   const [drafting, setDrafting] = useState(false)
   const [sending, setSending] = useState(false)
   const [autopilot, setAutopilot] = useState(false)
+  const [notesMap, setNotesMap] = useState<Record<string, { note: string; status_override: Status | null }>>({})
+  const [noteDraft, setNoteDraft] = useState<string>("")
+  const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
+  const [savingNote, setSavingNote] = useState(false)
 
   useEffect(() => {
     if (!user) return
