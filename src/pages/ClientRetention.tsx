@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Helmet } from "react-helmet-async"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
@@ -70,6 +70,8 @@ export default function ClientRetention() {
   const [sending, setSending] = useState(false)
   const [autopilot, setAutopilot] = useState(false)
   const [notesMap, setNotesMap] = useState<Record<string, { note: string; status_override: Status | null }>>({})
+  const notesMapRef = useRef(notesMap)
+  useEffect(() => { notesMapRef.current = notesMap }, [notesMap])
   const [noteDraft, setNoteDraft] = useState<string>("")
   const [statusDraft, setStatusDraft] = useState<Status | "auto">("auto")
   const [savingNote, setSavingNote] = useState(false)
@@ -95,7 +97,9 @@ export default function ClientRetention() {
   }
 
   const applyClients = (list: ClientScore[], overrideMap?: Record<string, { note: string; status_override: Status | null }>) => {
-    const merged = mergeNotes(list, overrideMap ?? notesMap)
+    // Always strip prior admin-note signals so notes don't accumulate or persist after deletion
+    const cleaned = list.map((c) => ({ ...c, signals: c.signals.filter((s) => !s.label.startsWith("📝 Admin note:")) }))
+    const merged = mergeNotes(cleaned, overrideMap ?? notesMapRef.current)
     setClients(merged)
     setSelectedId((prev) => {
       if (prev && merged.some((c) => c.user_id === prev)) return prev
