@@ -683,11 +683,9 @@ export default function ClientRetention() {
           </div>
         </TabsContent>
 
-        {/* ATTENDANCE */}
-        <TabsContent value="attendance" className="mt-4">
-          <CoachingCallAttendanceLog />
-        </TabsContent>
       </Tabs>
+        </>
+      )}
     </div>
   )
 }
