@@ -571,6 +571,8 @@ Deno.serve(async (req) => {
         fathomScore = 5
       } else if (!Deno.env.get('FATHOM_API_KEY')) {
         signals.push({ label: 'Fathom — Not connected (FATHOM_API_KEY missing)', severity: 'warn' })
+      } else if (fathomDegraded) {
+        signals.push({ label: 'Fathom — Provider API is down right now; will refresh automatically when it recovers', severity: 'warn' })
       } else {
         signals.push({ label: 'Fathom — No meetings returned from API (check API key / permissions)', severity: 'warn' })
       }
