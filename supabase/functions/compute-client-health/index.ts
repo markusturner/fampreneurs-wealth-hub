@@ -115,7 +115,7 @@ async function fathomJson(url: URL, key: string): Promise<{ ok: boolean; status:
   let lastStatus = 0
   let lastBody = ''
   let rateLimited = false
-  for (let attempt = 0; attempt < 4; attempt++) {
+  for (let attempt = 0; attempt < 7; attempt++) {
     let res: Response | null = null
     try {
       res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
@@ -129,10 +129,10 @@ async function fathomJson(url: URL, key: string): Promise<{ ok: boolean; status:
     lastStatus = res?.status ?? 0
     lastBody = res ? await res.text().catch(() => '') : ''
     if (lastStatus === 429) rateLimited = true
-    if (![429, 502, 503, 504].includes(lastStatus)) break
+    if (![0, 429, 500, 502, 503, 504].includes(lastStatus)) break
     const retryAfter = res?.headers.get('Retry-After')
-    const retryMs = retryAfter && !Number.isNaN(Number(retryAfter)) ? Number(retryAfter) * 1000 : 800 * Math.pow(2, attempt)
-    await new Promise((r) => setTimeout(r, Math.min(10000, retryMs)))
+    const retryMs = retryAfter && !Number.isNaN(Number(retryAfter)) ? Number(retryAfter) * 1000 : 1000 * Math.pow(2, attempt)
+    await new Promise((r) => setTimeout(r, Math.min(15000, retryMs)))
   }
   return { ok: false, status: lastStatus, json: null, body: lastBody, rateLimited }
 }
@@ -363,12 +363,9 @@ Deno.serve(async (req) => {
       listFathomMeetings(),
     ])
     const fathomMeetings = fathomResult.meetings
-    if (!fathomResult.complete) {
-      console.error(`fathom incomplete; refusing to compute inaccurate retention results. meetings fetched: ${fathomMeetings.length}, rate limited: ${fathomResult.rateLimited}`)
-      return new Response(JSON.stringify({ error: 'Fathom is still syncing/rate-limited. Keeping existing retention data until a full transcript scan completes.', sources: { fathom_meetings: fathomMeetings.length, fathom_complete: false, fathom_rate_limited: fathomResult.rateLimited } }), {
-        status: 503,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    const fathomDegraded = !fathomResult.complete
+    if (fathomDegraded) {
+      console.error(`fathom degraded; proceeding with ${fathomMeetings.length} cached/partial meetings. rate limited: ${fathomResult.rateLimited}`)
     }
     const driveTree = driveToken ? await listDriveTree(driveToken) : []
     console.log(`drive files: ${driveTree.length}, fathom meetings: ${fathomMeetings.length}, fathom complete: ${fathomResult.complete}, rate limited: ${fathomResult.rateLimited}`)
@@ -519,11 +516,7 @@ Deno.serve(async (req) => {
         .filter((x) => x.matchScore >= 30)
       const hydrated = await hydrateFathomMeetings(scoredMeetings.map((x) => x.meeting))
       if (!hydrated.complete) {
-        console.error(`fathom detail incomplete for ${fullName}; refusing inaccurate result. meetings matched: ${scoredMeetings.length}, rate limited: ${hydrated.rateLimited}`)
-        return new Response(JSON.stringify({ error: 'Fathom is still syncing/rate-limited. Keeping existing retention data until the matching transcripts finish loading.', sources: { fathom_meetings: fathomMeetings.length, fathom_complete: false, fathom_rate_limited: hydrated.rateLimited } }), {
-          status: 503,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
+        console.error(`fathom detail degraded for ${fullName}; proceeding with ${hydrated.meetings.length} hydrated meetings. rate limited: ${hydrated.rateLimited}`)
       }
       const myMeetings = hydrated.meetings
         .filter((x) => !isSalesMeeting(x))
@@ -578,6 +571,8 @@ Deno.serve(async (req) => {
         fathomScore = 5
       } else if (!Deno.env.get('FATHOM_API_KEY')) {
         signals.push({ label: 'Fathom — Not connected (FATHOM_API_KEY missing)', severity: 'warn' })
+      } else if (fathomDegraded) {
+        signals.push({ label: 'Fathom — Provider API is down right now; will refresh automatically when it recovers', severity: 'warn' })
       } else {
         signals.push({ label: 'Fathom — No meetings returned from API (check API key / permissions)', severity: 'warn' })
       }
