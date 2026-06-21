@@ -14,8 +14,9 @@ import { Switch } from "@/components/ui/switch"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
-import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2 } from "lucide-react"
+import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList } from "lucide-react"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
+import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
 
 type Status = "at_risk" | "slipping" | "stable" | "expansion_ready"
 
@@ -421,11 +422,12 @@ export default function ClientRetention() {
         })}
       </div>
 
-      <Tabs defaultValue="today" className="w-full">
+      <Tabs defaultValue={typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'attendance' ? 'attendance' : 'today'} className="w-full">
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="today" className="flex-1 sm:flex-none">Today</TabsTrigger>
           <TabsTrigger value="movement" className="flex-1 sm:flex-none">Movement</TabsTrigger>
           <TabsTrigger value="wins" className="flex-1 sm:flex-none">Wins</TabsTrigger>
+          <TabsTrigger value="attendance" className="flex-1 sm:flex-none"><ClipboardList className="h-3.5 w-3.5 mr-1.5" />Attendance</TabsTrigger>
         </TabsList>
 
         {/* TODAY */}
@@ -666,6 +668,11 @@ export default function ClientRetention() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* ATTENDANCE */}
+        <TabsContent value="attendance" className="mt-4">
+          <CoachingCallAttendanceLog />
         </TabsContent>
       </Tabs>
     </div>

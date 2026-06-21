@@ -51,7 +51,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { ChevronDown } from 'lucide-react'
 import { getAgreementTextByProgram } from '@/lib/agreement-texts'
-import { CoachingCallAttendanceLog } from './coaching-call-attendance-log'
 
 // Map program_name -> community_groups.name (matches DB trigger logic)
 const PROGRAM_TO_COMMUNITY_NAME: Record<string, string> = {
@@ -3132,10 +3131,6 @@ export function AdminAllUsersManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <div className="mt-6">
-        <CoachingCallAttendanceLog />
-      </div>
     </>
   )
 }

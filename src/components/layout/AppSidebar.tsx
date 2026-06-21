@@ -24,6 +24,7 @@ import {
   ScrollText,
   Sprout,
   HeartPulse,
+  ClipboardList,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -285,7 +286,8 @@ export function AppSidebar({ className }: { className?: string }) {
             </div>
             <div className="space-y-0.5">
               <NavItem label="Admin Settings" icon={Shield} href="/admin-settings" active={isActive("/admin-settings")} />
-              <NavItem label="Client Retention" icon={HeartPulse} href="/client-retention" active={isActive("/client-retention")} />
+              <NavItem label="Client Retention" icon={HeartPulse} href="/client-retention" active={isActive("/client-retention") && !location.search.includes("tab=attendance")} />
+              <NavItem label="Attendance Log" icon={ClipboardList} href="/client-retention?tab=attendance" active={isActive("/client-retention") && location.search.includes("tab=attendance")} />
             </div>
           </>
         )}
