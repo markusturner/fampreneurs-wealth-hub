@@ -356,38 +356,55 @@ export default function ClientRetention() {
 
   const selected = useMemo(() => clients.find((c) => c.user_id === selectedId) ?? null, [clients, selectedId])
 
-  // Auto-fill draft from precomputed value when selection changes
+  // Auto-fill status selector when selection changes (notes are append-only, draft starts empty)
   useEffect(() => {
     if (selected?.draft !== undefined) setDraft(selected.draft ?? "")
     const entry = selected ? notesMap[selected.user_id] : null
-    setNoteDraft(entry?.note ?? "")
+    setNoteDraft("")
     setStatusDraft((entry?.status_override as Status) ?? "auto")
   }, [selectedId, selected?.draft])
 
   const saveNote = async () => {
     if (!selected) return
+    const text = noteDraft.trim()
+    const existing = notesMap[selected.user_id]
+    const nextStatus = statusDraft === "auto" ? null : statusDraft
+    const statusChanged = (existing?.status_override ?? null) !== nextStatus
+    if (!text && !statusChanged) {
+      toast.error("Type a note or change the status first.")
+      return
+    }
     setSavingNote(true)
     try {
-      const payload = {
-        user_id: selected.user_id,
-        note: noteDraft,
-        status_override: statusDraft === "auto" ? null : statusDraft,
-        updated_by: user?.id ?? null,
+      let newEntry: NoteEntry | null = null
+      if (text) {
+        const { data, error } = await supabase
+          .from("client_retention_note_entries")
+          .insert({ user_id: selected.user_id, note: text, created_by: user?.id ?? null })
+          .select("id, note, created_at")
+          .single()
+        if (error) throw error
+        newEntry = { id: data.id, note: data.note, created_at: data.created_at }
       }
-      const { error } = await supabase
-        .from("client_retention_notes")
-        .upsert(payload, { onConflict: "user_id" })
-      if (error) throw error
-      const nextMap = { ...notesMap, [selected.user_id]: { note: noteDraft, status_override: payload.status_override as Status | null } }
+      if (statusChanged) {
+        const { error } = await supabase
+          .from("client_retention_notes")
+          .upsert(
+            { user_id: selected.user_id, note: "", status_override: nextStatus, updated_by: user?.id ?? null },
+            { onConflict: "user_id" }
+          )
+        if (error) throw error
+      }
+      const prior = existing ?? { entries: [], status_override: null }
+      const nextEntry: NotesEntry = {
+        entries: newEntry ? [newEntry, ...prior.entries] : prior.entries,
+        status_override: nextStatus,
+      }
+      const nextMap = { ...notesMap, [selected.user_id]: nextEntry }
       setNotesMap(nextMap)
-      // Re-merge against the original list from the cache/function (strip note signals first)
-      const stripped = clients.map((c) => {
-        const cleanSignals = c.signals.filter((s) => !s.label.startsWith("📝 Admin note:"))
-        // Revert any prior override using cached payload would be ideal, but applying new merge is sufficient here
-        return { ...c, signals: cleanSignals }
-      })
-      applyClients(stripped, nextMap)
-      toast.success("Note saved")
+      applyClients(clients, nextMap)
+      setNoteDraft("")
+      toast.success(newEntry ? "Note added" : "Status updated")
     } catch (e: any) {
       toast.error("Couldn't save note: " + (e?.message ?? e))
     } finally {
@@ -395,29 +412,29 @@ export default function ClientRetention() {
     }
   }
 
-  const deleteNote = async () => {
+  const deleteNoteEntry = async (entryId: string) => {
     if (!selected) return
     setSavingNote(true)
     try {
       const { error } = await supabase
-        .from("client_retention_notes")
+        .from("client_retention_note_entries")
         .delete()
-        .eq("user_id", selected.user_id)
+        .eq("id", entryId)
       if (error) throw error
-      const nextMap = { ...notesMap }
-      delete nextMap[selected.user_id]
+      const existing = notesMap[selected.user_id]
+      if (!existing) return
+      const nextEntry: NotesEntry = {
+        ...existing,
+        entries: existing.entries.filter((e) => e.id !== entryId),
+      }
+      const nextMap = { ...notesMap, [selected.user_id]: nextEntry }
       setNotesMap(nextMap)
-      setNoteDraft("")
-      setStatusDraft("auto")
-      const stripped = clients.map((c) => ({
-        ...c,
-        signals: c.signals.filter((s) => !s.label.startsWith("📝 Admin note:")),
-      }))
-      applyClients(stripped, nextMap)
-      toast.success("Note cleared")
+      applyClients(clients, nextMap)
+      toast.success("Note removed")
     } catch (e: any) {
       toast.error("Couldn't delete note: " + (e?.message ?? e))
     } finally {
+
       setSavingNote(false)
     }
   }
