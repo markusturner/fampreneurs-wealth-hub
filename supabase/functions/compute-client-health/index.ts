@@ -323,12 +323,16 @@ function clientMeetingScore(meeting: FathomMeeting, fullName: string, email: str
   let score = 0
   if (emailLc && identity.includes(emailLc)) score += 100
   if (fullName && identity.includes(fullName.toLowerCase())) score += 80
-  if (first && last && tokenMatches(identity, first) && tokenMatches(identity, last)) score += 75
-  if (first && firstNameCounts.get(first) === 1 && tokenMatches(identity, first)) score += 45
-  if (last && lastNameCounts.get(last) === 1 && tokenMatches(identity, last)) score += 40
-  // Fuzzy: typo-tolerant first or last name match (e.g. Jamel/Jamal, Terrence/Terence)
-  if (first && first.length >= 4 && fuzzyTokenMatch(identity, first) && (firstNameCounts.get(first) ?? 0) <= 2) score += 30
-  if (last && last.length >= 4 && fuzzyTokenMatch(identity, last) && (lastNameCounts.get(last) ?? 0) <= 2) score += 30
+  // Require BOTH first and last name to appear together (exact or fuzzy).
+  // Never award points for just a shared last name (e.g. Carol vs Jeremy Lewis)
+  // or just a shared first name — that's how the wrong client's calls got attributed.
+  const firstHit = !!first && (tokenMatches(identity, first) || (first.length >= 4 && fuzzyTokenMatch(identity, first)))
+  const lastHit = !!last && (tokenMatches(identity, last) || (last.length >= 4 && fuzzyTokenMatch(identity, last)))
+  if (first && last && firstHit && lastHit) {
+    score += 75
+    if (firstNameCounts.get(first) === 1) score += 10
+    if (lastNameCounts.get(last) === 1) score += 10
+  }
   return score
 }
 
