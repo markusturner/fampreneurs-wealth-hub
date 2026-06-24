@@ -72,7 +72,9 @@ export default function ClientRetention() {
   const [drafting, setDrafting] = useState(false)
   const [sending, setSending] = useState(false)
   const [autopilot, setAutopilot] = useState(false)
-  const [notesMap, setNotesMap] = useState<Record<string, { note: string; status_override: Status | null }>>({})
+  type NoteEntry = { id: string; note: string; created_at: string }
+  type NotesEntry = { entries: NoteEntry[]; status_override: Status | null }
+  const [notesMap, setNotesMap] = useState<Record<string, NotesEntry>>({})
   const notesMapRef = useRef(notesMap)
   useEffect(() => { notesMapRef.current = notesMap }, [notesMap])
   const [noteDraft, setNoteDraft] = useState<string>("")
@@ -87,21 +89,124 @@ export default function ClientRetention() {
     }
   }, [user, isAdmin, isOwner, roleLoading, ownerLoading, navigate])
 
-  const mergeNotes = (list: ClientScore[], map: Record<string, { note: string; status_override: Status | null }>): ClientScore[] => {
+  // Parse free-text notes to derive positive dimension boosts so the score adapts.
+  // Each match adds a positive signal and removes stale negative signals for that dimension.
+  const NOTE_SIGNATURE = "📝"
+  const analyzeNotes = (combined: string) => {
+    const text = combined.toLowerCase()
+    const has = (re: RegExp) => re.test(text)
+    const boosts = { attendance: 0, community: 0, trust: 0, succession: 0, response: 0, fathom: 0 }
+    const addedSignals: { label: string; severity?: string }[] = []
+    const drop = { attendance: false, community: false, trust: false, succession: false, response: false, fathom: false }
+    let forceExpansion = false
+
+    // Trust progress
+    const trustsComplete = has(/\b(3|three|all)\s+trusts?\b.*\b(complete|done|drafted|finish|signed|funded)\b/) ||
+                           has(/\b(complete|done|drafted|finish|signed)\b.*\b(3|three|all)\s+trusts?\b/) ||
+                           has(/completed\s+(their|the)?\s*3\s+trusts?/)
+    const funded = has(/\b(funded|funding|moved\s+(assets|house|property)|assets?\s+(moved|funded|titled))\b/) ||
+                   has(/\bdone\s+for\s+you\b/)
+    if (trustsComplete) { boosts.trust = 10; drop.trust = true; addedSignals.push({ label: "✅ Note: all 3 trusts completed", severity: "info" }) }
+    else if (has(/\btrust\b.*\b(complete|done|signed|drafted|progress|started)\b/) || has(/\b(family|business|ministry)\s+trust\b/)) {
+      boosts.trust = Math.max(boosts.trust, 8); drop.trust = true; addedSignals.push({ label: "✅ Note: trust work in progress", severity: "info" })
+    }
+    if (funded) { boosts.trust = Math.max(boosts.trust, 9); addedSignals.push({ label: "✅ Note: assets funded into trust", severity: "info" }) }
+    if (trustsComplete && funded) forceExpansion = true
+
+    // Attendance
+    if (has(/\b(attended|showed up|made it|on the call|joined (the )?call|hopped on)\b/)) {
+      boosts.attendance = 9; drop.attendance = true; addedSignals.push({ label: "✅ Note: attended recent coaching call", severity: "info" })
+    }
+    // Community
+    if (has(/\b(active in (the )?community|posted|posting|engaged|engaging)\b/)) {
+      boosts.community = 9; drop.community = true; addedSignals.push({ label: "✅ Note: active in community", severity: "info" })
+    }
+    // Response time
+    if (has(/\b(responsive|replied|got back|reached out|messaged me|sent (a )?dm)\b/)) {
+      boosts.response = 9; drop.response = true; addedSignals.push({ label: "✅ Note: responsive in DMs", severity: "info" })
+    }
+    // Succession
+    if (has(/\bsuccession\b.*\b(complete|done|started|in progress|drafted)\b/)) {
+      boosts.succession = 9; drop.succession = true; addedSignals.push({ label: "✅ Note: succession plan progressing", severity: "info" })
+    }
+    // Fathom / sentiment
+    if (has(/\b(happy|loves|love it|excited|grateful|big win|breakthrough|expand|upgrade|referral)\b/)) {
+      boosts.fathom = 8; addedSignals.push({ label: "✅ Note: positive sentiment", severity: "info" })
+    }
+    if (has(/\b(frustrat|upset|cancel|refund|leaving|quit|unhappy|complain)\b/)) {
+      boosts.fathom = Math.min(boosts.fathom || 4, 4); addedSignals.push({ label: "⚠️ Note: concern raised", severity: "warn" })
+    }
+
+    return { boosts, addedSignals, drop, forceExpansion }
+  }
+
+  // Map signal labels to a dimension so we can strip stale negatives when a note overrides them
+  const signalDim = (label: string): keyof ReturnType<typeof analyzeNotes>["drop"] | null => {
+    const l = label.toLowerCase()
+    if (l.includes("trust")) return "trust"
+    if (l.includes("coaching call") || l.includes("missed session") || l.includes("attendance")) return "attendance"
+    if (l.includes("community") || l.includes("posting")) return "community"
+    if (l.includes("dm") || l.includes("response")) return "response"
+    if (l.includes("succession")) return "succession"
+    if (l.includes("fathom")) return "fathom"
+    return null
+  }
+
+  const WEIGHTS = { attendance: 0.20, community: 0.15, trust: 0.20, succession: 0.10, response: 0.10, fathom: 0.15 } as const
+
+  const mergeNotes = (list: ClientScore[], map: Record<string, NotesEntry>): ClientScore[] => {
     return list.map((c) => {
       const entry = map[c.user_id]
-      if (!entry) return c
-      const status = entry.status_override ?? c.status
-      const signals = entry.note?.trim()
-        ? [{ label: `📝 Admin note: ${entry.note.trim()}`, severity: "info" }, ...c.signals]
-        : c.signals
-      return { ...c, status, signals }
+      if (!entry || (!entry.entries.length && !entry.status_override)) return c
+      const combined = entry.entries.map((e) => e.note).join("\n")
+      const { boosts, addedSignals, drop, forceExpansion } = analyzeNotes(combined)
+
+      // Build note signals (each entry shows as its own admin note line)
+      const noteSignals = entry.entries.map((e) => ({
+        label: `${NOTE_SIGNATURE} ${new Date(e.created_at).toLocaleDateString()}: ${e.note}`,
+        severity: "info" as const,
+      }))
+
+      // Drop stale negatives for dimensions overridden by note keywords
+      const trimmedExisting = c.signals.filter((s) => {
+        if (s.severity === "info") return true
+        const dim = signalDim(s.label)
+        return !(dim && drop[dim])
+      })
+
+      // Bump score by averaged dimension boosts
+      let scoreDelta = 0
+      ;(Object.keys(boosts) as (keyof typeof boosts)[]).forEach((k) => {
+        if (boosts[k] > 0) {
+          // assume the baseline for that dim was ~5; gain = (boost - 5) * weight
+          scoreDelta += Math.max(0, (boosts[k] - 5)) * WEIGHTS[k]
+        }
+      })
+      let nextScore = Math.min(10, Math.max(1, Number((c.score + scoreDelta).toFixed(1))))
+      let nextStatus: Status = entry.status_override ?? c.status
+      if (forceExpansion) { nextStatus = "expansion_ready"; nextScore = Math.max(nextScore, 9) }
+      else if (!entry.status_override) {
+        if (nextScore >= 8.5) nextStatus = "expansion_ready"
+        else if (nextScore >= 6.5) nextStatus = "stable"
+        else if (nextScore >= 4) nextStatus = "slipping"
+        else nextStatus = "at_risk"
+      }
+
+      return {
+        ...c,
+        score: nextScore,
+        status: nextStatus,
+        signals: [...addedSignals, ...noteSignals, ...trimmedExisting],
+      }
     })
   }
 
-  const applyClients = (list: ClientScore[], overrideMap?: Record<string, { note: string; status_override: Status | null }>) => {
-    // Always strip prior admin-note signals so notes don't accumulate or persist after deletion
-    const cleaned = list.map((c) => ({ ...c, signals: c.signals.filter((s) => !s.label.startsWith("📝 Admin note:")) }))
+  const applyClients = (list: ClientScore[], overrideMap?: Record<string, NotesEntry>) => {
+    // Always strip prior note-derived signals so notes don't accumulate or persist after deletion
+    const cleaned = list.map((c) => ({
+      ...c,
+      signals: c.signals.filter((s) => !s.label.startsWith(NOTE_SIGNATURE) && !s.label.startsWith("✅ Note:") && !s.label.startsWith("⚠️ Note:")),
+    }))
     const merged = mergeNotes(cleaned, overrideMap ?? notesMapRef.current)
     setClients(merged)
     setSelectedId((prev) => {
@@ -112,12 +217,17 @@ export default function ClientRetention() {
   }
 
   const loadNotes = async () => {
-    const { data } = await supabase
-      .from("client_retention_notes")
-      .select("user_id, note, status_override")
-    const map: Record<string, { note: string; status_override: Status | null }> = {}
-    ;(data ?? []).forEach((r: any) => {
-      map[r.user_id] = { note: r.note ?? "", status_override: (r.status_override as Status) ?? null }
+    const [{ data: statusRows }, { data: entryRows }] = await Promise.all([
+      supabase.from("client_retention_notes").select("user_id, status_override"),
+      supabase.from("client_retention_note_entries").select("id, user_id, note, created_at").order("created_at", { ascending: false }),
+    ])
+    const map: Record<string, NotesEntry> = {}
+    ;(statusRows ?? []).forEach((r: any) => {
+      map[r.user_id] = { entries: [], status_override: (r.status_override as Status) ?? null }
+    })
+    ;(entryRows ?? []).forEach((r: any) => {
+      if (!map[r.user_id]) map[r.user_id] = { entries: [], status_override: null }
+      map[r.user_id].entries.push({ id: r.id, note: r.note, created_at: r.created_at })
     })
     setNotesMap(map)
     return map
@@ -246,38 +356,55 @@ export default function ClientRetention() {
 
   const selected = useMemo(() => clients.find((c) => c.user_id === selectedId) ?? null, [clients, selectedId])
 
-  // Auto-fill draft from precomputed value when selection changes
+  // Auto-fill status selector when selection changes (notes are append-only, draft starts empty)
   useEffect(() => {
     if (selected?.draft !== undefined) setDraft(selected.draft ?? "")
     const entry = selected ? notesMap[selected.user_id] : null
-    setNoteDraft(entry?.note ?? "")
+    setNoteDraft("")
     setStatusDraft((entry?.status_override as Status) ?? "auto")
   }, [selectedId, selected?.draft])
 
   const saveNote = async () => {
     if (!selected) return
+    const text = noteDraft.trim()
+    const existing = notesMap[selected.user_id]
+    const nextStatus = statusDraft === "auto" ? null : statusDraft
+    const statusChanged = (existing?.status_override ?? null) !== nextStatus
+    if (!text && !statusChanged) {
+      toast.error("Type a note or change the status first.")
+      return
+    }
     setSavingNote(true)
     try {
-      const payload = {
-        user_id: selected.user_id,
-        note: noteDraft,
-        status_override: statusDraft === "auto" ? null : statusDraft,
-        updated_by: user?.id ?? null,
+      let newEntry: NoteEntry | null = null
+      if (text) {
+        const { data, error } = await supabase
+          .from("client_retention_note_entries")
+          .insert({ user_id: selected.user_id, note: text, created_by: user?.id ?? null })
+          .select("id, note, created_at")
+          .single()
+        if (error) throw error
+        newEntry = { id: data.id, note: data.note, created_at: data.created_at }
       }
-      const { error } = await supabase
-        .from("client_retention_notes")
-        .upsert(payload, { onConflict: "user_id" })
-      if (error) throw error
-      const nextMap = { ...notesMap, [selected.user_id]: { note: noteDraft, status_override: payload.status_override as Status | null } }
+      if (statusChanged) {
+        const { error } = await supabase
+          .from("client_retention_notes")
+          .upsert(
+            { user_id: selected.user_id, note: "", status_override: nextStatus, updated_by: user?.id ?? null },
+            { onConflict: "user_id" }
+          )
+        if (error) throw error
+      }
+      const prior = existing ?? { entries: [], status_override: null }
+      const nextEntry: NotesEntry = {
+        entries: newEntry ? [newEntry, ...prior.entries] : prior.entries,
+        status_override: nextStatus,
+      }
+      const nextMap = { ...notesMap, [selected.user_id]: nextEntry }
       setNotesMap(nextMap)
-      // Re-merge against the original list from the cache/function (strip note signals first)
-      const stripped = clients.map((c) => {
-        const cleanSignals = c.signals.filter((s) => !s.label.startsWith("📝 Admin note:"))
-        // Revert any prior override using cached payload would be ideal, but applying new merge is sufficient here
-        return { ...c, signals: cleanSignals }
-      })
-      applyClients(stripped, nextMap)
-      toast.success("Note saved")
+      applyClients(clients, nextMap)
+      setNoteDraft("")
+      toast.success(newEntry ? "Note added" : "Status updated")
     } catch (e: any) {
       toast.error("Couldn't save note: " + (e?.message ?? e))
     } finally {
@@ -285,29 +412,29 @@ export default function ClientRetention() {
     }
   }
 
-  const deleteNote = async () => {
+  const deleteNoteEntry = async (entryId: string) => {
     if (!selected) return
     setSavingNote(true)
     try {
       const { error } = await supabase
-        .from("client_retention_notes")
+        .from("client_retention_note_entries")
         .delete()
-        .eq("user_id", selected.user_id)
+        .eq("id", entryId)
       if (error) throw error
-      const nextMap = { ...notesMap }
-      delete nextMap[selected.user_id]
+      const existing = notesMap[selected.user_id]
+      if (!existing) return
+      const nextEntry: NotesEntry = {
+        ...existing,
+        entries: existing.entries.filter((e) => e.id !== entryId),
+      }
+      const nextMap = { ...notesMap, [selected.user_id]: nextEntry }
       setNotesMap(nextMap)
-      setNoteDraft("")
-      setStatusDraft("auto")
-      const stripped = clients.map((c) => ({
-        ...c,
-        signals: c.signals.filter((s) => !s.label.startsWith("📝 Admin note:")),
-      }))
-      applyClients(stripped, nextMap)
-      toast.success("Note cleared")
+      applyClients(clients, nextMap)
+      toast.success("Note removed")
     } catch (e: any) {
       toast.error("Couldn't delete note: " + (e?.message ?? e))
     } finally {
+
       setSavingNote(false)
     }
   }
@@ -532,6 +659,30 @@ export default function ClientRetention() {
                           </SelectContent>
                         </Select>
                       </div>
+                      {(notesMap[selected.user_id]?.entries.length ?? 0) > 0 && (
+                        <ul className="mb-3 space-y-1.5">
+                          {notesMap[selected.user_id].entries.map((entry) => (
+                            <li key={entry.id} className="flex items-start gap-2 rounded-md bg-white border border-amber-200 p-2 text-sm">
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                                  {new Date(entry.created_at).toLocaleString()}
+                                </div>
+                                <div className="whitespace-pre-wrap break-words">{entry.note}</div>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => deleteNoteEntry(entry.id)}
+                                disabled={savingNote}
+                                className="h-7 w-7 p-0 text-muted-foreground hover:text-red-600"
+                                aria-label="Delete note"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       <Textarea
                         value={noteDraft}
                         onChange={(e) => setNoteDraft(e.target.value)}
@@ -541,28 +692,17 @@ export default function ClientRetention() {
                             if (!savingNote) saveNote();
                           }
                         }}
-                        placeholder="Add notes & press Enter to save (Shift+Enter for a new line)."
+                        placeholder="Add a new note & press Enter to append (Shift+Enter for a new line)."
                         className="min-h-[90px] text-sm bg-white"
                       />
                       <div className="mt-2 flex justify-end gap-2">
-                        {notesMap[selected.user_id] && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={deleteNote}
-                            disabled={savingNote}
-                            className="text-muted-foreground hover:text-red-600"
-                          >
-                            <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                            Delete
-                          </Button>
-                        )}
                         <Button size="sm" onClick={saveNote} disabled={savingNote} className="bg-[#290a52] text-white hover:bg-[#1d0639]">
                           {savingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
-                          Save note & status
+                          Add note & save status
                         </Button>
                       </div>
                     </section>
+
 
 
                     <section>
