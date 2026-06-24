@@ -659,6 +659,30 @@ export default function ClientRetention() {
                           </SelectContent>
                         </Select>
                       </div>
+                      {(notesMap[selected.user_id]?.entries.length ?? 0) > 0 && (
+                        <ul className="mb-3 space-y-1.5">
+                          {notesMap[selected.user_id].entries.map((entry) => (
+                            <li key={entry.id} className="flex items-start gap-2 rounded-md bg-white border border-amber-200 p-2 text-sm">
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                                  {new Date(entry.created_at).toLocaleString()}
+                                </div>
+                                <div className="whitespace-pre-wrap break-words">{entry.note}</div>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => deleteNoteEntry(entry.id)}
+                                disabled={savingNote}
+                                className="h-7 w-7 p-0 text-muted-foreground hover:text-red-600"
+                                aria-label="Delete note"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       <Textarea
                         value={noteDraft}
                         onChange={(e) => setNoteDraft(e.target.value)}
@@ -668,28 +692,17 @@ export default function ClientRetention() {
                             if (!savingNote) saveNote();
                           }
                         }}
-                        placeholder="Add notes & press Enter to save (Shift+Enter for a new line)."
+                        placeholder="Add a new note & press Enter to append (Shift+Enter for a new line)."
                         className="min-h-[90px] text-sm bg-white"
                       />
                       <div className="mt-2 flex justify-end gap-2">
-                        {notesMap[selected.user_id] && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={deleteNote}
-                            disabled={savingNote}
-                            className="text-muted-foreground hover:text-red-600"
-                          >
-                            <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                            Delete
-                          </Button>
-                        )}
                         <Button size="sm" onClick={saveNote} disabled={savingNote} className="bg-[#290a52] text-white hover:bg-[#1d0639]">
                           {savingNote ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Save className="h-3.5 w-3.5 mr-1.5" />}
-                          Save note & status
+                          Add note & save status
                         </Button>
                       </div>
                     </section>
+
 
 
                     <section>
