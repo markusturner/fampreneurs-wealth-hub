@@ -125,17 +125,17 @@ export function CoachingCallAttendanceLog() {
   }, [])
 
   const resetForm = () => {
-    setFUserId(''); setFTitle(''); setFCoach(''); setFDate(new Date().toISOString().slice(0, 10))
+    setFUserIds([]); setFTitle(''); setFCoach(''); setFDate(new Date().toISOString().slice(0, 10))
     setFAttended(true); setFDuration(''); setFNotes('')
   }
 
   const handleSave = async () => {
-    if (!fUserId) { toast.error('Pick a member'); return }
+    if (fUserIds.length === 0) { toast.error('Pick at least one member'); return }
     if (!fTitle.trim()) { toast.error('Add a session title'); return }
     setSaving(true)
     try {
-      const { error } = await supabase.from('session_attendance').insert({
-        user_id: fUserId,
+      const rows = fUserIds.map(uid => ({
+        user_id: uid,
         session_id: null,
         session_type: 'manual',
         attended: fAttended,
@@ -146,9 +146,10 @@ export function CoachingCallAttendanceLog() {
         source: 'manual',
         notes: fNotes.trim() || null,
         logged_by: user?.id ?? null,
-      } as any)
+      }))
+      const { error } = await supabase.from('session_attendance').insert(rows as any)
       if (error) throw error
-      toast.success('Attendance logged')
+      toast.success(`Logged ${rows.length} attendance ${rows.length === 1 ? 'record' : 'records'}`)
       setDialogOpen(false)
       resetForm()
       load()
