@@ -9,7 +9,9 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Loader2, Calendar, Search, Plus, Trash2, UserPlus } from 'lucide-react'
+import { Loader2, Calendar, Search, Plus, Trash2, UserPlus, Check, ChevronsUpDown, X } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
@@ -43,7 +45,8 @@ export function CoachingCallAttendanceLog() {
   const [saving, setSaving] = useState(false)
 
   // form state
-  const [fUserId, setFUserId] = useState<string>('')
+  const [fUserIds, setFUserIds] = useState<string[]>([])
+  const [memberPopoverOpen, setMemberPopoverOpen] = useState(false)
   const [fTitle, setFTitle] = useState('')
   const [fCoach, setFCoach] = useState('')
   const [fDate, setFDate] = useState<string>(new Date().toISOString().slice(0, 10))
@@ -122,17 +125,17 @@ export function CoachingCallAttendanceLog() {
   }, [])
 
   const resetForm = () => {
-    setFUserId(''); setFTitle(''); setFCoach(''); setFDate(new Date().toISOString().slice(0, 10))
+    setFUserIds([]); setFTitle(''); setFCoach(''); setFDate(new Date().toISOString().slice(0, 10))
     setFAttended(true); setFDuration(''); setFNotes('')
   }
 
   const handleSave = async () => {
-    if (!fUserId) { toast.error('Pick a member'); return }
+    if (fUserIds.length === 0) { toast.error('Pick at least one member'); return }
     if (!fTitle.trim()) { toast.error('Add a session title'); return }
     setSaving(true)
     try {
-      const { error } = await supabase.from('session_attendance').insert({
-        user_id: fUserId,
+      const rows = fUserIds.map(uid => ({
+        user_id: uid,
         session_id: null,
         session_type: 'manual',
         attended: fAttended,
@@ -143,9 +146,10 @@ export function CoachingCallAttendanceLog() {
         source: 'manual',
         notes: fNotes.trim() || null,
         logged_by: user?.id ?? null,
-      } as any)
+      }))
+      const { error } = await supabase.from('session_attendance').insert(rows as any)
       if (error) throw error
-      toast.success('Attendance logged')
+      toast.success(`Logged ${rows.length} attendance ${rows.length === 1 ? 'record' : 'records'}`)
       setDialogOpen(false)
       resetForm()
       load()
@@ -225,15 +229,67 @@ export function CoachingCallAttendanceLog() {
                 </DialogHeader>
                 <div className="space-y-3">
                   <div>
-                    <Label className="text-xs">Member</Label>
-                    <Select value={fUserId} onValueChange={setFUserId}>
-                      <SelectTrigger><SelectValue placeholder="Select member" /></SelectTrigger>
-                      <SelectContent className="max-h-72">
-                        {members.map(m => (
-                          <SelectItem key={m.user_id} value={m.user_id}>{m.name} <span className="text-muted-foreground">· {m.email}</span></SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label className="text-xs">Members</Label>
+                    <Popover open={memberPopoverOpen} onOpenChange={setMemberPopoverOpen}>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
+                          <span className="truncate">
+                            {fUserIds.length === 0
+                              ? 'Select members'
+                              : `${fUserIds.length} selected`}
+                          </span>
+                          <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search members…" />
+                          <CommandList>
+                            <CommandEmpty>No members found.</CommandEmpty>
+                            <CommandGroup>
+                              {members.map(m => {
+                                const checked = fUserIds.includes(m.user_id)
+                                return (
+                                  <CommandItem
+                                    key={m.user_id}
+                                    value={`${m.name} ${m.email}`}
+                                    onSelect={() => {
+                                      setFUserIds(prev => prev.includes(m.user_id)
+                                        ? prev.filter(id => id !== m.user_id)
+                                        : [...prev, m.user_id])
+                                    }}
+                                  >
+                                    <Check className={`mr-2 h-4 w-4 ${checked ? 'opacity-100' : 'opacity-0'}`} />
+                                    <span className="truncate">{m.name}</span>
+                                    <span className="ml-2 text-xs text-muted-foreground truncate">{m.email}</span>
+                                  </CommandItem>
+                                )
+                              })}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    {fUserIds.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {fUserIds.map(uid => {
+                          const m = members.find(x => x.user_id === uid)
+                          if (!m) return null
+                          return (
+                            <Badge key={uid} variant="outline" className="gap-1 pr-1">
+                              {m.name}
+                              <button
+                                type="button"
+                                onClick={() => setFUserIds(prev => prev.filter(id => id !== uid))}
+                                className="ml-1 rounded hover:bg-muted p-0.5"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </Badge>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <Label className="text-xs">Session type</Label>
