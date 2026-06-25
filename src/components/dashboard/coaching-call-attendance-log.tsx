@@ -45,7 +45,8 @@ export function CoachingCallAttendanceLog() {
   const [saving, setSaving] = useState(false)
 
   // form state
-  const [fUserId, setFUserId] = useState<string>('')
+  const [fUserIds, setFUserIds] = useState<string[]>([])
+  const [memberPopoverOpen, setMemberPopoverOpen] = useState(false)
   const [fTitle, setFTitle] = useState('')
   const [fCoach, setFCoach] = useState('')
   const [fDate, setFDate] = useState<string>(new Date().toISOString().slice(0, 10))
