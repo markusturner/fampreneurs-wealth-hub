@@ -57,7 +57,7 @@ import ProgramAgreements from "./pages/ProgramAgreements";
 import OnboardingExplanation from "./pages/OnboardingExplanation";
 import ProfilePhotoUpload from "./pages/ProfilePhotoUpload";
 import ResetPassword from "./pages/ResetPassword";
-import TrustDesignBooking from "./pages/TrustDesignBooking";
+import Apply from "./pages/Apply";
 import Welcome from "./pages/Welcome";
 
 import { initializeMobileServices } from "./lib/mobile";
