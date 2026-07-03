@@ -29,6 +29,7 @@ const Dashboard = () => {
   const navigate = useNavigate()
   const { shouldShowTutorial, isLoading: tutorialLoading, markAsWatched } = useTutorialVideo(user?.id || null)
   const [manualTutorialOpen, setManualTutorialOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<FamilyTab>('dashboard')
 
   // Only show tutorial if user actually has TruHeirs access
   const hasTruHeirsAccess = isAdminOrOwner || isOwner || profile?.truheirs_access === true || subscriptionStatus.subscribed
