@@ -69,12 +69,41 @@ export default function Welcome() {
       {/* Top-right utilities */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-8 flex items-center gap-3 z-20">
         <NotificationBell />
-        <Avatar className="h-9 w-9 sm:h-10 sm:w-10 border border-border/60 bg-secondary/20">
-          {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} />}
-          <AvatarFallback className="text-[11px] font-semibold text-foreground bg-secondary/30">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring">
+              <Avatar className="h-9 w-9 sm:h-10 sm:w-10 border border-border/60 bg-secondary/20 cursor-pointer">
+                {avatarUrl && <AvatarImage src={avatarUrl} alt={displayName} />}
+                <AvatarFallback className="text-[11px] font-semibold text-foreground bg-secondary/30">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem onClick={() => navigate('/profile-settings')}>
+              <User className="h-4 w-4 mr-2" /> Profile Settings
+            </DropdownMenuItem>
+            {(isAdmin || isOwner) && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/admin-settings')}>
+                  <Shield className="h-4 w-4 mr-2" /> Admin Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/client-retention')}>
+                  <HeartPulse className="h-4 w-4 mr-2" /> Client Retention
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/client-retention?tab=attendance')}>
+                  <ClipboardList className="h-4 w-4 mr-2" /> Attendance Log
+                </DropdownMenuItem>
+              </>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => signOut()} className="text-destructive focus:text-destructive">
+              <LogOut className="h-4 w-4 mr-2" /> Log out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="relative z-10 flex flex-col items-center text-center w-full max-w-4xl">
