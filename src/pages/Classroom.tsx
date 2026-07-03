@@ -258,7 +258,7 @@ export default function Classroom() {
         {[
           { label: 'Classroom', icon: BookOpen, action: () => setActiveTab('classroom'), active: activeTab === 'classroom' },
           { label: 'SOPs & Playbooks', icon: FileText, action: () => setActiveTab('sops'), active: activeTab === 'sops' },
-          { label: 'Family Protection Plan', icon: MessageSquare, action: () => setActiveTab('ai'), active: activeTab === 'ai' },
+          { label: 'Family Protection Plan Chat', icon: MessageSquare, action: () => setActiveTab('ai'), active: activeTab === 'ai' },
           { label: 'Trust Creation', icon: Shield, action: () => navigate('/trust-creation'), active: false },
           { label: 'Succession Planning', icon: Users, action: () => navigate('/succession-planning'), active: false },
         ].map(({ label, icon: Icon, action, active }) => (
@@ -280,7 +280,9 @@ export default function Classroom() {
       {activeTab === 'sops' ? (
         <SopLibraryPanel />
       ) : activeTab === 'ai' ? (
-        <AIChat />
+        <div className="max-w-4xl mx-auto w-full">
+          <AIChat embedded />
+        </div>
       ) : (
         <>
       {loading ? (

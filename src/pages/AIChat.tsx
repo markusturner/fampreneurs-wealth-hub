@@ -106,7 +106,7 @@ const DEFAULT_PERSONA_SETTINGS: Record<Persona, PersonaSettings> = {
   trust_writer: { instructions: '', files: [] },
 }
 
-export default function AIChat() {
+export default function AIChat({ embedded = false }: { embedded?: boolean }) {
   const [activePersona, setActivePersona] = useState<Persona>('rachel')
   const [selectedModel, setSelectedModel] = useState<string>('gpt-5')
   const [messages, setMessages] = useState<Message[]>([
@@ -743,13 +743,14 @@ export default function AIChat() {
   )
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] md:h-screen">
+    <div className={embedded ? "flex h-[calc(100vh-12rem)] min-h-[500px] w-full" : "flex h-[calc(100vh-3.5rem)] md:h-screen"}>
       {/* Sidebar */}
-      {renderSidebar()}
+      {!embedded && renderSidebar()}
 
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
+        {!embedded && (
         <div className="flex items-center justify-between px-4 py-2 border-b">
           <div className="flex items-center gap-2">
             {!sidebarOpen && (
@@ -796,6 +797,7 @@ export default function AIChat() {
             )}
           </div>
         </div>
+        )}
 
         {/* Main content */}
         <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
@@ -901,7 +903,7 @@ export default function AIChat() {
       </div>
 
       {/* Family Protection Plan side panel */}
-      {showPlanPanel && (
+      {!embedded && showPlanPanel && (
         <div className="hidden lg:flex flex-col flex-1 min-w-0 border-l bg-muted/30">
           <div className="flex items-center justify-between gap-2 px-4 py-2 border-b bg-card">
             <div className="flex items-center gap-2 min-w-0">
