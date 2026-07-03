@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
-import { Loader2, Mail, Eye, EyeOff } from 'lucide-react'
+import { Loader2, Mail, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { RecoveryDialog } from '@/components/auth/recovery-dialog'
 
@@ -131,7 +131,7 @@ export default function Auth() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+    <main className="relative min-h-screen overflow-hidden flex items-center justify-center p-4 bg-[#0a0410] text-white">
       <Helmet>
         <title>Sign In — TruHeirs Trustee Portal</title>
         <meta name="description" content="Sign in to TruHeirs, the digital family office platform for trustees managing family wealth, governance, and legacy." />
@@ -140,45 +140,85 @@ export default function Auth() {
         <meta property="og:description" content="Sign in to TruHeirs, the digital family office platform for trustees managing family wealth, governance, and legacy." />
         <meta property="og:url" content="https://truheirs.app/auth" />
       </Helmet>
-      <Card className="w-full max-w-md shadow-soft relative">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-4">
-            <img
-              src="/lovable-uploads/cb7af8d2-0809-4d9d-8fa4-acfb507144de.png"
-              alt="TruHeirs Logo"
-              className="w-20 h-20 object-contain"
-            />
-          </div>
-          <CardTitle className="text-2xl font-bold">TruHeirs</CardTitle>
-          <CardDescription>Trustee Sign In</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSignIn} className="space-y-3">
-            <p className="text-[10px] text-muted-foreground leading-tight">Use your mentee program credentials.</p>
-            <div className="space-y-1.5">
-              <Label htmlFor="signin-email" className="text-sm">Email</Label>
-              <Input id="signin-email" type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} className="h-9" />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="signin-password" className="text-sm">Password</Label>
-              <div className="relative">
-                <Input id="signin-password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} className="h-9 pr-10" />
-                <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" tabIndex={-1}>
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </div>
-            <div className="flex justify-center pt-1">
-              <RecoveryDialog />
-            </div>
-            <Button type="submit" className="w-full h-9" style={{ backgroundColor: '#ffb500', color: '#290a52' }} disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In (Trustees)
-            </Button>
 
-          </form>
-        </CardContent>
-      </Card>
+      {/* Animated ambient background */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="th-blob th-blob-gold" />
+        <div className="th-blob th-blob-purple" />
+        <div className="th-blob th-blob-sky" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(10,4,16,0.65)_55%,#0a0410_100%)]" />
+      </div>
+
+      <style>{`
+        @keyframes th-drift-1 { 0%,100% { transform: translate(-10%, -15%) scale(1);} 50% { transform: translate(15%, 10%) scale(1.15);} }
+        @keyframes th-drift-2 { 0%,100% { transform: translate(20%, 25%) scale(1.1);} 50% { transform: translate(-15%, -10%) scale(0.95);} }
+        @keyframes th-drift-3 { 0%,100% { transform: translate(30%, -20%) scale(0.9);} 50% { transform: translate(-25%, 20%) scale(1.1);} }
+        .th-blob { position:absolute; border-radius:9999px; filter: blur(120px); opacity:0.55; will-change: transform; }
+        .th-blob-gold { width:60vw; height:60vw; background:#ffb500; top:-10%; left:20%; animation: th-drift-1 22s ease-in-out infinite; }
+        .th-blob-purple { width:65vw; height:65vw; background:#290a52; top:20%; left:-15%; opacity:0.9; animation: th-drift-2 26s ease-in-out infinite; }
+        .th-blob-sky { width:45vw; height:45vw; background:#2eb2ff; bottom:-15%; right:-5%; opacity:0.35; animation: th-drift-3 30s ease-in-out infinite; }
+      `}</style>
+
+      <div className="relative z-10 w-full max-w-sm">
+        <div className="text-center mb-10">
+          <p className="text-[11px] tracking-[0.4em] text-[#ffb500]/80 uppercase">TruHeirs</p>
+        </div>
+
+        <form onSubmit={handleSignIn} className="space-y-4">
+          <input
+            id="signin-email"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={isLoading}
+            className="w-full h-12 px-4 rounded-md bg-white/5 border border-white/10 text-white placeholder:text-white/40 outline-none focus:border-[#ffb500]/60 focus:bg-white/[0.07] transition"
+          />
+
+          <div className="relative">
+            <input
+              id="signin-password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={isLoading}
+              className="w-full h-12 px-4 pr-11 rounded-md bg-white/5 border border-white/10 text-white placeholder:text-white/40 outline-none focus:border-[#ffb500]/60 focus:bg-white/[0.07] transition"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(v => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+
+          <div className="flex justify-center pt-2">
+            <button
+              type="submit"
+              disabled={isLoading}
+              aria-label="Sign in"
+              className="group inline-flex items-center justify-center text-[#ffb500] hover:text-white transition disabled:opacity-50"
+            >
+              {isLoading
+                ? <Loader2 className="h-5 w-5 animate-spin" />
+                : <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />}
+            </button>
+          </div>
+
+          <div className="flex justify-center pt-1">
+            <RecoveryDialog />
+          </div>
+        </form>
+
+        <div className="mt-16 text-center">
+          <p className="text-[10px] tracking-[0.35em] text-white/40 uppercase">Licensed Members Only</p>
+        </div>
+      </div>
     </main>
   )
 }
