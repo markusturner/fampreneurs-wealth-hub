@@ -196,6 +196,16 @@ export default function Welcome() {
           </button>
         </nav>
       </div>
+
+      {user && tutorialOpen && (
+        <TutorialVideoModal
+          isOpen={tutorialOpen}
+          onClose={() => { markAsWatched(); setTutorialOpen(false); }}
+          onWatched={() => { markAsWatched(); setTutorialOpen(false); }}
+          onSkipped={() => { markAsWatched(); setTutorialOpen(false); }}
+          userId={user.id}
+        />
+      )}
     </main>
   )
 }
