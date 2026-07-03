@@ -13,7 +13,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, FileText, BookOpen, Pencil, Trash2, Lock } from 'lucide-react'
+import { Plus, FileText, Pencil, Trash2, Lock } from 'lucide-react'
 import { SOP_PROGRAM_CODES, programLabel, profileProgramCodes } from '@/lib/programs'
 import { cn } from '@/lib/utils'
 
