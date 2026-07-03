@@ -139,6 +139,7 @@ export default function Classroom() {
   const [loading, setLoading] = useState(true)
   const [showAddCourse, setShowAddCourse] = useState(false)
   const [editingCourse, setEditingCourse] = useState<Course | null>(null)
+  const [activeTab, setActiveTab] = useState<'classroom' | 'sops'>('classroom')
   const { isAdminOrOwner } = useIsAdminOrOwner()
   const { toast } = useToast()
 
