@@ -132,19 +132,19 @@ export default function Welcome() {
             <DropdownMenuContent align="center" className="min-w-[240px] rounded-none border-border/60 bg-background/95 backdrop-blur">
               <DropdownMenuItem
                 onClick={() => navigate('/workspace-community?program=tfv')}
-                className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 focus:text-accent"
+                className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 hover:text-secondary focus:text-accent"
               >
                 The Family Vault
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => navigate('/workspace-community?program=tfba')}
-                className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 focus:text-accent"
+                className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 hover:text-secondary focus:text-accent"
               >
                 The Family Business Accelerator
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => navigate('/workspace-community?program=tffm')}
-                className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 focus:text-accent"
+                className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 hover:text-secondary focus:text-accent"
               >
                 The Succession Society
               </DropdownMenuItem>
