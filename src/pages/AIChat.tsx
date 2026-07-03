@@ -797,6 +797,7 @@ export default function AIChat({ embedded = false }: { embedded?: boolean }) {
             )}
           </div>
         </div>
+        )}
 
         {/* Main content */}
         <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
