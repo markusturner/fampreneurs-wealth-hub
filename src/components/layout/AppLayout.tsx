@@ -168,6 +168,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Page content */}
         <main className={`flex-1 ${location.pathname.startsWith('/classroom/') ? 'overflow-hidden' : 'overflow-auto pb-20 md:pb-0'}`}>
+          {FAMILY_TOGGLE_ROUTES.includes(location.pathname) && (
+            <div className="p-4 sm:p-6 lg:p-8 pb-0">
+              <FamilyToggleBar />
+            </div>
+          )}
           {isTruHeirsRoute && !hasTruHeirsAccess ? (
             <LockedPageOverlay locked={true} programFilter="fbu" title="Unlock TruHeirs">
               {children}
