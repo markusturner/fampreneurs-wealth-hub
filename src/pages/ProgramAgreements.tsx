@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast'
 interface ProgramAgreement {
   id: string
   user_id: string
-  agreement_type: string
+  program_name: string
   full_name: string
   mailing_address: string | null
   signature_data: string | null
@@ -43,7 +43,7 @@ export default function ProgramAgreements() {
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<ProgramAgreement | null>(null)
   const [editing, setEditing] = useState<ProgramAgreement | null>(null)
-  const [editForm, setEditForm] = useState({ full_name: '', mailing_address: '', agreement_type: '' })
+  const [editForm, setEditForm] = useState({ full_name: '', mailing_address: '', program_name: '' })
   const [saving, setSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<ProgramAgreement | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -72,7 +72,7 @@ export default function ProgramAgreements() {
     setEditForm({
       full_name: a.full_name || '',
       mailing_address: a.mailing_address || '',
-      agreement_type: a.agreement_type || '',
+      program_name: a.program_name || '',
     })
     setEditing(a)
   }
@@ -86,7 +86,7 @@ export default function ProgramAgreements() {
         .update({
           full_name: editForm.full_name,
           mailing_address: editForm.mailing_address || null,
-          agreement_type: editForm.agreement_type,
+          program_name: editForm.program_name,
         })
         .eq('id', editing.id)
 
@@ -180,7 +180,7 @@ export default function ProgramAgreements() {
                     <p className="font-medium text-sm truncate">{a.full_name}</p>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <Badge variant="outline" className="text-xs">
-                        {AGREEMENT_LABELS[a.agreement_type] || a.agreement_type}
+                        {AGREEMENT_LABELS[a.program_name] || a.program_name}
                       </Badge>
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3 text-muted-foreground" />
@@ -219,7 +219,7 @@ export default function ProgramAgreements() {
               <div className="space-y-4">
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Agreement Type</p>
-                  <p className="text-sm bg-muted/30 rounded-lg p-3">{AGREEMENT_LABELS[selected.agreement_type] || selected.agreement_type}</p>
+                  <p className="text-sm bg-muted/30 rounded-lg p-3">{AGREEMENT_LABELS[selected.program_name] || selected.program_name}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Full Name</p>
@@ -279,8 +279,8 @@ export default function ProgramAgreements() {
               <Textarea value={editForm.mailing_address} onChange={e => setEditForm(prev => ({ ...prev, mailing_address: e.target.value }))} rows={3} />
             </div>
             <div className="space-y-1">
-              <Label>Agreement Type</Label>
-              <Input value={editForm.agreement_type} onChange={e => setEditForm(prev => ({ ...prev, agreement_type: e.target.value }))} />
+              <Label>Program Name</Label>
+              <Input value={editForm.program_name} onChange={e => setEditForm(prev => ({ ...prev, program_name: e.target.value }))} />
             </div>
           </div>
           <DialogFooter>

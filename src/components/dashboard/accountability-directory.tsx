@@ -70,7 +70,7 @@ export function AccountabilityDirectory() {
           sender_id: user.id,
           recipient_id: recipientId,
           content: messageContent.trim(),
-          read: false
+          read_at: null
         })
 
       if (error) throw error
