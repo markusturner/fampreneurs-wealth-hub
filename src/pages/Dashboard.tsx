@@ -71,7 +71,18 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-hidden">
-      <BackToWelcome />
+      <div className="flex items-center justify-between gap-4">
+        <BackToWelcome />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 shrink-0"
+          onClick={() => setManualTutorialOpen(true)}
+          title="Watch Tutorial Video"
+        >
+          <Video className="h-5 w-5" />
+        </Button>
+      </div>
 
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -80,15 +91,6 @@ const Dashboard = () => {
             Your financial overview, key metrics, and recent activity at a glance.
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 shrink-0 mt-1"
-          onClick={() => setManualTutorialOpen(true)}
-          title="Watch Tutorial Video"
-        >
-          <Video className="h-5 w-5" />
-        </Button>
       </div>
 
       <FamilyToggleBar />
