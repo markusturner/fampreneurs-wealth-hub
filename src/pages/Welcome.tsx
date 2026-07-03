@@ -4,7 +4,14 @@ import { Helmet } from 'react-helmet-async'
 import { useAuth } from '@/contexts/AuthContext'
 import { NotificationBell } from '@/components/dashboard/notification-bell'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ChevronDown } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+
 
 export default function Welcome() {
   const { user, profile, loading } = useAuth()
