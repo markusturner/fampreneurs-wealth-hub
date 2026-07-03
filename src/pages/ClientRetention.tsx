@@ -17,6 +17,7 @@ import { toast } from "sonner"
 import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList } from "lucide-react"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
+import { BackToWelcome } from "@/components/layout/BackToWelcome"
 
 type Status = "at_risk" | "slipping" | "stable" | "expansion_ready"
 
