@@ -285,6 +285,10 @@ export default function Classroom() {
         <div className="max-w-4xl mx-auto w-full">
           <AIChat embedded />
         </div>
+      ) : activeTab === 'trust' ? (
+        <TrustCreation />
+      ) : activeTab === 'succession' ? (
+        <SuccessionPlanning />
       ) : (
         <>
       {loading ? (
