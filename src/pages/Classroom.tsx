@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { AddCourseDialog } from '@/components/classroom/AddCourseDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
+import SopLibraryPanel from '@/components/classroom/SopLibraryPanel'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import {
   DndContext,
