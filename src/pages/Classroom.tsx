@@ -258,7 +258,7 @@ export default function Classroom() {
         {[
           { label: 'Classroom', icon: BookOpen, action: () => setActiveTab('classroom'), active: activeTab === 'classroom' },
           { label: 'SOPs & Playbooks', icon: FileText, action: () => setActiveTab('sops'), active: activeTab === 'sops' },
-          { label: 'AI Chat', icon: MessageSquare, action: () => navigate('/ai-chat'), active: false },
+          { label: 'Family Protection Plan', icon: MessageSquare, action: () => setActiveTab('ai'), active: activeTab === 'ai' },
           { label: 'Trust Creation', icon: Shield, action: () => navigate('/trust-creation'), active: false },
           { label: 'Succession Planning', icon: Users, action: () => navigate('/succession-planning'), active: false },
         ].map(({ label, icon: Icon, action, active }) => (
