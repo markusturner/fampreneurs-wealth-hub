@@ -12,6 +12,8 @@ import { AddCourseDialog } from '@/components/classroom/AddCourseDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
 import SopLibraryPanel from '@/components/classroom/SopLibraryPanel'
 import AIChat from '@/pages/AIChat'
+import TrustCreation from '@/pages/TrustCreation'
+import SuccessionPlanning from '@/pages/SuccessionPlanning'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import {
   DndContext,
