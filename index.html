@@ -13,6 +13,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="/lovable-uploads/92bb920f-fc17-417c-a8a0-c07d39695833.png" type="image/png">
 
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function(OneSignal) {
+        await OneSignal.init({
+          appId: "d333dd1c-93b2-4d7f-abe1-7b768cfc1bc7",
+        });
+      });
+    </script>
+
     <meta property="og:type" content="website" />
     <meta property="og:title" content="TruHeirs — Where Family and Wealth Unite" />
     <meta property="og:description" content="The premium digital family office platform helping families build, protect, and pass on wealth across generations." />
