@@ -325,6 +325,8 @@ export default function Classroom() {
 
       <AddCourseDialog open={showAddCourse} onOpenChange={setShowAddCourse} onCreated={fetchCourses} />
       <EditCourseDialog course={editingCourse} open={!!editingCourse} onOpenChange={(open) => { if (!open) setEditingCourse(null) }} onUpdated={fetchCourses} />
+      </>
+    )}
     </div>
   )
 }
