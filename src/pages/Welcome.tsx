@@ -77,7 +77,7 @@ export default function Welcome() {
         </h1>
 
         <p className="text-[10px] sm:text-xs tracking-[0.35em] uppercase text-muted-foreground mb-6 sm:mb-8">
-          What are we choosing today?
+          WHAT ARE YOU FOCUSING ON TODAY?
         </p>
 
         <div className="w-32 sm:w-48 h-px bg-secondary mb-8 sm:mb-10" />
