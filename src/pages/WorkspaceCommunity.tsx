@@ -1673,15 +1673,20 @@ export default function WorkspaceCommunity() {
                                   className="h-7 gap-1 text-xs bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground"
                                   onClick={async () => {
                                     if (!editingPostContent.trim()) return;
-                                    const updateData: Record<string, unknown> = {
+                                    const updateData: {
+                                      content: string
+                                      category: string
+                                      title: string | null
+                                      created_at?: string
+                                    } = {
                                       content: editingPostContent.trim(),
                                       category: editingPostCategory,
                                       title: editingPostTitle.trim() || null,
-                                    };
+                                    }
                                     if (isOwner && editingPostDate) {
-                                      const originalTime = new Date(post.created_at);
-                                      const newDate = new Date(editingPostDate + 'T' + originalTime.toISOString().split('T')[1]);
-                                      updateData.created_at = newDate.toISOString();
+                                      const originalTime = new Date(post.created_at)
+                                      const newDate = new Date(editingPostDate + 'T' + originalTime.toISOString().split('T')[1])
+                                      updateData.created_at = newDate.toISOString()
                                     }
                                     const { error } = await supabase
                                       .from('community_posts')
