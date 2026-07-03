@@ -178,63 +178,6 @@ export function AppSidebar({ className }: { className?: string }) {
         <span className="font-montserrat font-bold text-lg text-sidebar-foreground">TruHeirs</span>
       </div>
 
-      {/* AI Chat Button — hidden for Lite */}
-      {!isLite && (
-        <div className="px-3 pb-2">
-          <Button
-            className={cn(
-              "w-full justify-start gap-2 rounded-xl font-semibold border-0",
-              currentPath.includes("/ai-chat")
-                ? "bg-[hsl(210,100%,58%)] text-white hover:bg-[hsl(210,100%,53%)] shadow-md shadow-[hsl(210,100%,58%)]/30"
-                : "bg-[hsl(210,100%,58%)]/10 text-[hsl(210,100%,58%)] hover:bg-[hsl(210,100%,58%)]/20"
-            )}
-            variant="ghost"
-            onClick={() => navigate('/ai-chat')}
-          >
-            <Bot className="h-4 w-4" />
-            AI Chat
-          </Button>
-
-        </div>
-      )}
-
-      {/* Trust Creation - hidden for invited family members and Lite */}
-      {!isFamilyMember && !isLite && (
-        <div className="px-3 pb-2">
-          <Button
-            className={cn(
-              "w-full justify-start gap-2 rounded-xl font-semibold border-0",
-              currentPath.includes("/trust-creation")
-                ? "bg-[hsl(43,100%,50%)] text-[hsl(270,80%,15%)] hover:bg-[hsl(43,100%,45%)] shadow-md shadow-[hsl(43,100%,50%)]/30"
-                : "bg-[hsl(43,100%,50%)]/15 text-[hsl(43,100%,50%)] hover:bg-[hsl(43,100%,50%)]/25"
-            )}
-            variant="ghost"
-            onClick={() => navigate('/trust-creation')}
-          >
-            <ScrollText className="h-4 w-4" />
-            Trust Creation
-          </Button>
-        </div>
-      )}
-
-      {/* Succession Planning - brand purple */}
-      {!isFamilyMember && !isLite && (
-        <div className="px-3 pb-3">
-          <Button
-            className={cn(
-              "w-full justify-start gap-2 rounded-xl font-semibold border-0 transition-colors",
-              currentPath.includes("/succession-planning")
-                ? "bg-[hsl(270,80%,50%)] text-white hover:bg-[hsl(270,80%,45%)] shadow-md shadow-[hsl(270,80%,50%)]/30"
-                : "bg-[hsl(270,80%,50%)]/15 text-[hsl(270,80%,70%)] hover:bg-[hsl(270,80%,50%)]/25"
-            )}
-            variant="ghost"
-            onClick={() => navigate('/succession-planning')}
-          >
-            <Sprout className="h-4 w-4" />
-            Succession Planning
-          </Button>
-        </div>
-      )}
 
 
       <ScrollArea className="flex-1 px-3 py-1">
