@@ -31,6 +31,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import type { ProgramId } from "@/lib/stripe-programs"
 
 interface NavItemProps {
@@ -216,20 +223,8 @@ export function AppSidebar({ className }: { className?: string }) {
           </>
         )}
 
-        {/* ADMIN — hidden for Lite */}
-        {(isAdmin || isOwner) && !isLite && (
-          <>
-            <div className="mb-1 mt-5">
-              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</p>
-            </div>
-            <div className="space-y-0.5">
-              <NavItem label="Admin Settings" icon={Shield} href="/admin-settings" active={isActive("/admin-settings")} />
-              <NavItem label="Client Retention" icon={HeartPulse} href="/client-retention" active={isActive("/client-retention") && !location.search.includes("tab=attendance")} />
-              <NavItem label="Attendance Log" icon={ClipboardList} href="/client-retention?tab=attendance" active={isActive("/client-retention") && location.search.includes("tab=attendance")} />
-            </div>
-          </>
-        )}
       </ScrollArea>
+
 
       {/* Bottom section */}
       <div className="p-3 space-y-3">
@@ -272,21 +267,45 @@ export function AppSidebar({ className }: { className?: string }) {
         </div>
 
         {/* Profile */}
-        <div className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-sidebar-accent/60 cursor-pointer transition-smooth" onClick={() => navigate("/profile-settings")}>
-          <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-accent/30">
-            {profile?.avatar_url ? (
-              <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-accent text-accent-foreground flex items-center justify-center text-xs font-bold">
-                {getInitials()}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div className="flex items-center gap-3 px-2 py-2.5 rounded-xl hover:bg-sidebar-accent/60 cursor-pointer transition-smooth">
+              <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-accent/30">
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-accent text-accent-foreground flex items-center justify-center text-xs font-bold">
+                    {getInitials()}
+                  </div>
+                )}
               </div>
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-sm font-medium truncate text-sidebar-foreground">{profile?.display_name || "User"}</p>
+                <p className="text-xs text-muted-foreground truncate">{profile?.family_role || "Member"}</p>
+              </div>
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="top" align="start" className="w-56">
+            <DropdownMenuItem onClick={() => navigate("/profile-settings")}>
+              <Users className="h-4 w-4 mr-2" /> Profile Settings
+            </DropdownMenuItem>
+            {(isAdmin || isOwner) && !isLite && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/admin-settings")}>
+                  <Shield className="h-4 w-4 mr-2" /> Admin Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/client-retention")}>
+                  <HeartPulse className="h-4 w-4 mr-2" /> Client Retention
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/client-retention?tab=attendance")}>
+                  <ClipboardList className="h-4 w-4 mr-2" /> Attendance Log
+                </DropdownMenuItem>
+              </>
             )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate text-sidebar-foreground">{profile?.display_name || "User"}</p>
-            <p className="text-xs text-muted-foreground truncate">{profile?.family_role || "Member"}</p>
-          </div>
-        </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
 
         <Button
           variant="ghost"
