@@ -10,6 +10,9 @@ import { AppSidebar } from "./AppSidebar"
 import { LockedPageOverlay } from "@/components/dashboard/LockedPageOverlay"
 import { Loader2 } from "lucide-react"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
+import { FamilyToggleBar } from "./FamilyToggleBar"
+
+const FAMILY_TOGGLE_ROUTES = ['/digital-family-office', '/family-constitution', '/calendar', '/members']
 
 // Routes that require TruHeirs subscription (not accessible without it)
 const TRUHEIRS_ROUTES = [
@@ -165,6 +168,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 
         {/* Page content */}
         <main className={`flex-1 ${location.pathname.startsWith('/classroom/') ? 'overflow-hidden' : 'overflow-auto pb-20 md:pb-0'}`}>
+          {FAMILY_TOGGLE_ROUTES.includes(location.pathname) && (
+            <div className="p-4 sm:p-6 lg:p-8 pb-0">
+              <FamilyToggleBar />
+            </div>
+          )}
           {isTruHeirsRoute && !hasTruHeirsAccess ? (
             <LockedPageOverlay locked={true} programFilter="fbu" title="Unlock TruHeirs">
               {children}

@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { OverviewSection } from "@/components/dashboard/overview-section"
 import { Loader2, Video, LayoutDashboard, Building2, Scroll, Calendar, Users } from 'lucide-react'
+import { FamilyToggleBar } from '@/components/layout/FamilyToggleBar'
 import { useUserRole } from "@/hooks/useUserRole"
 import { useTutorialVideo } from "@/hooks/useTutorialVideo"
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
@@ -87,32 +88,8 @@ const Dashboard = () => {
         </Button>
       </div>
 
-      {/* Quick nav toggles */}
-      <div className="flex flex-wrap gap-2">
-        {[
-          { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-          { label: 'Family Office', icon: Building2, path: '/digital-family-office' },
-          { label: 'Family Constitution', icon: Scroll, path: '/family-constitution' },
-          { label: 'Family Calendar', icon: Calendar, path: '/calendar' },
-          { label: 'Family Members', icon: Users, path: '/members' },
-        ].map(({ label, icon: Icon, path }) => {
-          const active = location.pathname === path
-          return (
-            <button
-              key={path}
-              onClick={() => navigate(path)}
-              className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
-                active
-                  ? 'bg-[#290a52] text-white border-[#290a52]'
-                  : 'bg-background text-foreground border-border hover:border-[#2eb2ff] hover:text-[#2eb2ff]'
-              }`}
-            >
-              <Icon className="h-3.5 w-3.5" />
-              {label}
-            </button>
-          )
-        })}
-      </div>
+      <FamilyToggleBar />
+
 
       <DashboardStats />
       <OverviewSection />
