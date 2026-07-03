@@ -7,7 +7,6 @@ import { useOwnerRole } from "@/hooks/useOwnerRole"
 import { useSubscription } from "@/hooks/useSubscription"
 import { StripePaymentModal } from "@/components/dashboard/StripePaymentModal"
 import {
-  Bot,
   LayoutDashboard,
   Calendar,
   MessageSquare,
@@ -21,8 +20,6 @@ import {
   LogOut,
   Search,
   Mail,
-  ScrollText,
-  Sprout,
   HeartPulse,
   ClipboardList,
 } from "lucide-react"
