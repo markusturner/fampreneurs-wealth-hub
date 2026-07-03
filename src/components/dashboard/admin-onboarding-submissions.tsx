@@ -100,15 +100,15 @@ export function AdminOnboardingSubmissions() {
     if (!editingSubmission) return
     setSaving(true)
     try {
-      const updateData: Record<string, string | null> = {}
-      EDITABLE_FIELDS.forEach(key => {
-        updateData[key] = editForm[key]?.trim() || null
-      })
+    const updateData = {} as any
+    EDITABLE_FIELDS.forEach(key => {
+      updateData[key] = editForm[key]?.trim() || null
+    })
 
-      const { error } = await supabase
-        .from('onboarding_responses')
-        .update(updateData)
-        .eq('id', editingSubmission.id)
+    const { error } = await supabase
+      .from('onboarding_responses')
+      .update(updateData)
+      .eq('id', editingSubmission.id)
 
       if (error) throw error
       toast({ title: 'Updated', description: 'Onboarding submission updated successfully.' })
