@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { AddCourseDialog } from '@/components/classroom/AddCourseDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
+import SopLibraryPanel from '@/components/classroom/SopLibraryPanel'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import {
   DndContext,
@@ -138,6 +139,7 @@ export default function Classroom() {
   const [loading, setLoading] = useState(true)
   const [showAddCourse, setShowAddCourse] = useState(false)
   const [editingCourse, setEditingCourse] = useState<Course | null>(null)
+  const [activeTab, setActiveTab] = useState<'classroom' | 'sops'>('classroom')
   const { isAdminOrOwner } = useIsAdminOrOwner()
   const { toast } = useToast()
 
@@ -253,15 +255,15 @@ export default function Classroom() {
       {/* Quick nav toggles */}
       <div className="flex flex-wrap gap-2">
         {[
-          { label: 'Classroom', icon: BookOpen, path: '/classroom', active: true },
-          { label: 'SOPs & Playbooks', icon: FileText, path: '/sops' },
-          { label: 'AI Chat', icon: MessageSquare, path: '/ai-chat' },
-          { label: 'Trust Creation', icon: Shield, path: '/trust-creation' },
-          { label: 'Succession Planning', icon: Users, path: '/succession-planning' },
-        ].map(({ label, icon: Icon, path, active }) => (
+          { label: 'Classroom', icon: BookOpen, action: () => setActiveTab('classroom'), active: activeTab === 'classroom' },
+          { label: 'SOPs & Playbooks', icon: FileText, action: () => setActiveTab('sops'), active: activeTab === 'sops' },
+          { label: 'AI Chat', icon: MessageSquare, action: () => navigate('/ai-chat'), active: false },
+          { label: 'Trust Creation', icon: Shield, action: () => navigate('/trust-creation'), active: false },
+          { label: 'Succession Planning', icon: Users, action: () => navigate('/succession-planning'), active: false },
+        ].map(({ label, icon: Icon, action, active }) => (
           <button
-            key={path}
-            onClick={() => navigate(path)}
+            key={label}
+            onClick={action}
             className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
               active
                 ? 'bg-[#290a52] text-white border-[#290a52]'
@@ -274,7 +276,10 @@ export default function Classroom() {
         ))}
       </div>
 
-
+      {activeTab === 'sops' ? (
+        <SopLibraryPanel />
+      ) : (
+        <>
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {[1, 2, 3].map(i => (
@@ -320,6 +325,8 @@ export default function Classroom() {
 
       <AddCourseDialog open={showAddCourse} onOpenChange={setShowAddCourse} onCreated={fetchCourses} />
       <EditCourseDialog course={editingCourse} open={!!editingCourse} onOpenChange={(open) => { if (!open) setEditingCourse(null) }} onUpdated={fetchCourses} />
+      </>
+    )}
     </div>
   )
 }
