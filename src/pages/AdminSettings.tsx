@@ -50,7 +50,7 @@ export function AdminSettings() {
     <div className="mx-auto py-3 md:py-6 px-3 sm:px-6 lg:px-8 space-y-4 md:space-y-6 pb-20 md:pb-6 max-w-[1800px]">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
-          <Button variant="ghost" size={isMobile ? "sm" : "icon"} onClick={() => navigate('/dashboard')} className="shrink-0">
+          <Button variant="ghost" size={isMobile ? "sm" : "icon"} onClick={() => navigate('/welcome')} className="shrink-0">
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="min-w-0 flex-1">
