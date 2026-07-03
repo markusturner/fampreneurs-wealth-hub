@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useAuth } from '@/contexts/AuthContext'
@@ -6,7 +6,10 @@ import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { NotificationBell } from '@/components/dashboard/notification-bell'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Loader2, ChevronDown, User, Shield, HeartPulse, ClipboardList, LogOut } from 'lucide-react'
+import { Loader2, ChevronDown, User, Shield, HeartPulse, ClipboardList, LogOut, Video } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { TutorialVideoModal } from '@/components/dashboard/tutorial-video-modal'
+import { useTutorialVideo } from '@/hooks/useTutorialVideo'
 import {
   DropdownMenu,
   DropdownMenuContent,
