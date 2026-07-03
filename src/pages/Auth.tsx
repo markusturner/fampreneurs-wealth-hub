@@ -71,7 +71,7 @@ export default function Auth() {
 
       if (data.user) {
         toast({ title: "Welcome back!", description: "Successfully signed in to your family dashboard." })
-        window.location.href = '/ai-chat'
+        window.location.href = '/welcome'
       }
     } catch (error) {
       toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" })

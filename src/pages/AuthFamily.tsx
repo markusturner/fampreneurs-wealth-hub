@@ -22,7 +22,7 @@ export default function AuthFamily() {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        window.location.href = '/ai-chat'
+        window.location.href = '/welcome'
       }
     }
     checkUser()
@@ -87,7 +87,7 @@ export default function AuthFamily() {
 
       if (data.user) {
         toast({ title: "Welcome back!", description: "Successfully signed in to your family dashboard." })
-        window.location.href = '/ai-chat'
+        window.location.href = '/welcome'
       }
     } catch (error) {
       toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" })
