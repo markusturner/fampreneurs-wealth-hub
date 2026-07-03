@@ -743,7 +743,7 @@ export default function AIChat({ embedded = false }: { embedded?: boolean }) {
   )
 
   return (
-    <div className={embedded ? "flex-1 w-full" : "flex h-[calc(100vh-3.5rem)] md:h-screen"}>
+    <div className={embedded ? "flex h-[calc(100vh-12rem)] min-h-[500px] w-full" : "flex h-[calc(100vh-3.5rem)] md:h-screen"}>
       {/* Sidebar */}
       {!embedded && renderSidebar()}
 
