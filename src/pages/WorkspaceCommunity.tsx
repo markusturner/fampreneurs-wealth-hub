@@ -1180,6 +1180,8 @@ export default function WorkspaceCommunity() {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Main Feed */}
           <div className="flex-1 min-w-0 space-y-4">
+            <BackToWelcome />
+
             {/* Community name header on mobile only */}
             <h2 className="text-lg font-bold lg:hidden">{programName}</h2>
 
