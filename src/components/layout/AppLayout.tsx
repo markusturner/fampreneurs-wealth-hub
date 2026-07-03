@@ -10,6 +10,9 @@ import { AppSidebar } from "./AppSidebar"
 import { LockedPageOverlay } from "@/components/dashboard/LockedPageOverlay"
 import { Loader2 } from "lucide-react"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
+import { FamilyToggleBar } from "./FamilyToggleBar"
+
+const FAMILY_TOGGLE_ROUTES = ['/digital-family-office', '/family-constitution', '/calendar', '/members']
 
 // Routes that require TruHeirs subscription (not accessible without it)
 const TRUHEIRS_ROUTES = [
