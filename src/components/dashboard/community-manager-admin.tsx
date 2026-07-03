@@ -64,9 +64,13 @@ export function CommunityManagerAdmin() {
 
   const toggle = async (field: 'enabled' | 'reply_enabled', value: boolean) => {
     if (!settings) return
+    const updateData: { enabled?: boolean; reply_enabled?: boolean; updated_at: string } = {
+      updated_at: new Date().toISOString()
+    }
+    updateData[field] = value
     const { error } = await supabase
       .from('community_manager_settings')
-      .update({ [field]: value, updated_at: new Date().toISOString() })
+      .update(updateData)
       .eq('id', settings.id)
     if (error) {
       toast({ title: 'Update failed', description: error.message, variant: 'destructive' })
