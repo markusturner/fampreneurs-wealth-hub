@@ -279,6 +279,8 @@ export default function Classroom() {
 
       {activeTab === 'sops' ? (
         <SopLibraryPanel />
+      ) : activeTab === 'ai' ? (
+        <AIChat />
       ) : (
         <>
       {loading ? (
