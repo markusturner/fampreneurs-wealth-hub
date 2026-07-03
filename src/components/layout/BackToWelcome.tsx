@@ -7,7 +7,7 @@ export function BackToWelcome() {
   return (
     <button
       onClick={() => navigate('/welcome')}
-      className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-sm hover:border-[#2eb2ff] hover:text-[#2eb2ff] transition-colors"
+      className="inline-flex items-center gap-1.5 rounded-full border border-[#ffb500] bg-background px-3 py-1.5 text-xs font-semibold text-[#290a52] shadow-sm hover:bg-[#ffb500] hover:text-[#290a52] transition-colors"
     >
       <Undo2 className="h-3.5 w-3.5" />
       Welcome
