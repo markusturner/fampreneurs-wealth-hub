@@ -56,15 +56,24 @@ export default function Welcome() {
         <meta property="og:url" content="https://truheirs.app/welcome" />
       </Helmet>
 
-      {/* Subtle dot pattern */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.08]"
-        style={{
-          backgroundImage: 'radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
-        }}
-      />
+      {/* Animated ambient background */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="th-blob th-blob-gold" />
+        <div className="th-blob th-blob-purple" />
+        <div className="th-blob th-blob-sky" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--background)/0.9)_55%,hsl(var(--background))_100%)]" />
+      </div>
+
+      <style>{`
+        @keyframes th-drift-1 { 0%,100% { transform: translate(-10%, -15%) scale(1);} 50% { transform: translate(15%, 10%) scale(1.15);} }
+        @keyframes th-drift-2 { 0%,100% { transform: translate(20%, 25%) scale(1.1);} 50% { transform: translate(-15%, -10%) scale(0.95);} }
+        @keyframes th-drift-3 { 0%,100% { transform: translate(30%, -20%) scale(0.9);} 50% { transform: translate(-25%, 20%) scale(1.1);} }
+        .th-blob { position:absolute; border-radius:9999px; filter: blur(120px); will-change: transform; }
+        .th-blob-gold { width:60vw; height:60vw; background:hsl(var(--secondary)); opacity:0.25; top:-10%; left:20%; animation: th-drift-1 22s ease-in-out infinite; }
+        .th-blob-purple { width:65vw; height:65vw; background:hsl(var(--foreground)); opacity:0.08; top:20%; left:-15%; animation: th-drift-2 26s ease-in-out infinite; }
+        .th-blob-sky { width:45vw; height:45vw; background:hsl(var(--accent)); opacity:0.2; bottom:-15%; right:-5%; animation: th-drift-3 30s ease-in-out infinite; }
+      `}</style>
+
 
       {/* Top-right utilities */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-8 flex items-center gap-3 z-20">
