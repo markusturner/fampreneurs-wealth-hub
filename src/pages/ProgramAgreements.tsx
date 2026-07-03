@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast'
 interface ProgramAgreement {
   id: string
   user_id: string
-  agreement_type: string
+  program_name: string
   full_name: string
   mailing_address: string | null
   signature_data: string | null
