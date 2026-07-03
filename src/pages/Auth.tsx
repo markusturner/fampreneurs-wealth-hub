@@ -100,13 +100,13 @@ export default function Auth() {
       </div>
 
       <style>{`
-        @keyframes th-drift-1 { 0%,100% { transform: translate(-10%, -15%) scale(1);} 50% { transform: translate(15%, 10%) scale(1.15);} }
-        @keyframes th-drift-2 { 0%,100% { transform: translate(20%, 25%) scale(1.1);} 50% { transform: translate(-15%, -10%) scale(0.95);} }
-        @keyframes th-drift-3 { 0%,100% { transform: translate(30%, -20%) scale(0.9);} 50% { transform: translate(-25%, 20%) scale(1.1);} }
+        @keyframes th-drift-1 { 0% { transform: translate(-30%, -35%) scale(1);} 33% { transform: translate(40%, 20%) scale(1.3);} 66% { transform: translate(-20%, 30%) scale(0.9);} 100% { transform: translate(-30%, -35%) scale(1);} }
+        @keyframes th-drift-2 { 0% { transform: translate(35%, 40%) scale(1.1);} 33% { transform: translate(-40%, -25%) scale(0.85);} 66% { transform: translate(25%, -30%) scale(1.25);} 100% { transform: translate(35%, 40%) scale(1.1);} }
+        @keyframes th-drift-3 { 0% { transform: translate(45%, -35%) scale(0.9);} 33% { transform: translate(-40%, 35%) scale(1.2);} 66% { transform: translate(30%, 25%) scale(1);} 100% { transform: translate(45%, -35%) scale(0.9);} }
         .th-blob { position:absolute; border-radius:9999px; filter: blur(120px); will-change: transform; }
-        .th-blob-gold { width:60vw; height:60vw; background:hsl(var(--secondary)); opacity:0.25; top:-10%; left:20%; animation: th-drift-1 22s ease-in-out infinite; }
-        .th-blob-purple { width:65vw; height:65vw; background:hsl(var(--foreground)); opacity:0.08; top:20%; left:-15%; animation: th-drift-2 26s ease-in-out infinite; }
-        .th-blob-sky { width:45vw; height:45vw; background:hsl(var(--accent)); opacity:0.2; bottom:-15%; right:-5%; animation: th-drift-3 30s ease-in-out infinite; }
+        .th-blob-gold { width:60vw; height:60vw; background:hsl(var(--secondary)); opacity:0.28; top:-10%; left:20%; animation: th-drift-1 14s ease-in-out infinite; }
+        .th-blob-purple { width:65vw; height:65vw; background:hsl(var(--foreground)); opacity:0.1; top:20%; left:-15%; animation: th-drift-2 16s ease-in-out infinite; }
+        .th-blob-sky { width:45vw; height:45vw; background:hsl(var(--accent)); opacity:0.22; bottom:-15%; right:-5%; animation: th-drift-3 18s ease-in-out infinite; }
       `}</style>
 
       <div className="relative z-10 w-full max-w-sm">
