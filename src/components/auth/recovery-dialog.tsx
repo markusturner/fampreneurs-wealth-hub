@@ -126,7 +126,7 @@ export function RecoveryDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="link" className="px-0 font-normal text-foreground dark:text-white">Forgot password or username?</Button>
+        <Button variant="link" className="px-0 font-normal text-accent hover:text-secondary">Forgot password or username?</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
