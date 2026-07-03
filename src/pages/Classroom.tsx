@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
 import { BackToWelcome } from '@/components/layout/BackToWelcome'
-import { Plus, BookOpen, Pencil, Trash2, GripVertical, MessageSquare, Shield, Users } from 'lucide-react'
+import { Plus, BookOpen, Pencil, Trash2, GripVertical, FileText, MessageSquare, Shield, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { AddCourseDialog } from '@/components/classroom/AddCourseDialog'
@@ -254,6 +254,7 @@ export default function Classroom() {
       <div className="flex flex-wrap gap-2">
         {[
           { label: 'Classroom', icon: BookOpen, path: '/classroom', active: true },
+          { label: 'SOPs & Playbooks', icon: FileText, path: '/sops' },
           { label: 'AI Chat', icon: MessageSquare, path: '/ai-chat' },
           { label: 'Trust Creation', icon: Shield, path: '/trust-creation' },
           { label: 'Succession Planning', icon: Users, path: '/succession-planning' },
