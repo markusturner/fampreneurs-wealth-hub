@@ -4,7 +4,14 @@ import { Helmet } from 'react-helmet-async'
 import { useAuth } from '@/contexts/AuthContext'
 import { NotificationBell } from '@/components/dashboard/notification-bell'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Loader2 } from 'lucide-react'
+import { Loader2, ChevronDown } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+
 
 export default function Welcome() {
   const { user, profile, loading } = useAuth()
@@ -83,12 +90,32 @@ export default function Welcome() {
         <div className="w-32 sm:w-48 h-px bg-secondary mb-8 sm:mb-10" />
 
         <nav className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0">
-          <button
-            onClick={() => navigate('/community')}
-            className="text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
-          >
-            Community
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="group inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2 outline-none">
+              Community
+              <ChevronDown className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="min-w-[240px] rounded-none border-border/60 bg-background/95 backdrop-blur">
+              <DropdownMenuItem
+                onClick={() => navigate('/workspace-community?program=tfv')}
+                className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 focus:text-accent"
+              >
+                The Family Vault
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => navigate('/workspace-community?program=tfba')}
+                className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 focus:text-accent"
+              >
+                The Family Business Accelerator
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => navigate('/workspace-community?program=tffm')}
+                className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 focus:text-accent"
+              >
+                The Succession Society
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <div className="hidden sm:block w-px h-4 bg-secondary mx-2" />
           <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" />
