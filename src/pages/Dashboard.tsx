@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { OverviewSection } from "@/components/dashboard/overview-section"
 import { Loader2, Video, LayoutDashboard, Building2, Scroll, Calendar, Users } from 'lucide-react'
+import { BackToWelcome } from '@/components/layout/BackToWelcome'
 import { FamilyToggleBar } from '@/components/layout/FamilyToggleBar'
 import { useUserRole } from "@/hooks/useUserRole"
 import { useTutorialVideo } from "@/hooks/useTutorialVideo"
@@ -70,6 +71,8 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-full overflow-hidden">
+      <BackToWelcome />
+
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>

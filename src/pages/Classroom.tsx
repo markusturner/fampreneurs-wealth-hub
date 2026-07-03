@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
+import { BackToWelcome } from '@/components/layout/BackToWelcome'
 import { Plus, BookOpen, Pencil, Trash2, GripVertical, FileText, ArrowRight, MessageSquare, Shield, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
@@ -243,6 +244,8 @@ export default function Classroom() {
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl space-y-4 sm:space-y-6">
+      <BackToWelcome />
+
       <div>
         <h1 className="text-xl sm:text-2xl font-bold">Classroom</h1>
         <p className="text-muted-foreground text-xs sm:text-sm">Access your courses and track your progress</p>

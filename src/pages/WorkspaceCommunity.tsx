@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/contexts/AuthContext'
+import { BackToWelcome } from '@/components/layout/BackToWelcome'
 import { supabase } from '@/integrations/supabase/client'
 import { uploadProgressStore } from '@/lib/uploadProgress'
 import { useToast } from '@/hooks/use-toast'
@@ -1179,6 +1180,8 @@ export default function WorkspaceCommunity() {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Main Feed */}
           <div className="flex-1 min-w-0 space-y-4">
+            <BackToWelcome />
+
             {/* Community name header on mobile only */}
             <h2 className="text-lg font-bold lg:hidden">{programName}</h2>
 
@@ -1672,15 +1675,20 @@ export default function WorkspaceCommunity() {
                                   className="h-7 gap-1 text-xs bg-[#ffb500] hover:bg-[#2eb2ff] text-foreground"
                                   onClick={async () => {
                                     if (!editingPostContent.trim()) return;
-                                    const updateData: Record<string, unknown> = {
+                                    const updateData: {
+                                      content: string
+                                      category: string
+                                      title: string | null
+                                      created_at?: string
+                                    } = {
                                       content: editingPostContent.trim(),
                                       category: editingPostCategory,
                                       title: editingPostTitle.trim() || null,
-                                    };
+                                    }
                                     if (isOwner && editingPostDate) {
-                                      const originalTime = new Date(post.created_at);
-                                      const newDate = new Date(editingPostDate + 'T' + originalTime.toISOString().split('T')[1]);
-                                      updateData.created_at = newDate.toISOString();
+                                      const originalTime = new Date(post.created_at)
+                                      const newDate = new Date(editingPostDate + 'T' + originalTime.toISOString().split('T')[1])
+                                      updateData.created_at = newDate.toISOString()
                                     }
                                     const { error } = await supabase
                                       .from('community_posts')
