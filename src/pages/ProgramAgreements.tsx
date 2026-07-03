@@ -43,7 +43,7 @@ export default function ProgramAgreements() {
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<ProgramAgreement | null>(null)
   const [editing, setEditing] = useState<ProgramAgreement | null>(null)
-  const [editForm, setEditForm] = useState({ full_name: '', mailing_address: '', agreement_type: '' })
+  const [editForm, setEditForm] = useState({ full_name: '', mailing_address: '', program_name: '' })
   const [saving, setSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<ProgramAgreement | null>(null)
   const [deleting, setDeleting] = useState(false)
