@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
-import { Plus, BookOpen, Pencil, Trash2, GripVertical, FileText, ArrowRight } from 'lucide-react'
+import { Plus, BookOpen, Pencil, Trash2, GripVertical, FileText, ArrowRight, MessageSquare, Shield, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { AddCourseDialog } from '@/components/classroom/AddCourseDialog'
@@ -246,6 +246,30 @@ export default function Classroom() {
       <div>
         <h1 className="text-xl sm:text-2xl font-bold">Classroom</h1>
         <p className="text-muted-foreground text-xs sm:text-sm">Access your courses and track your progress</p>
+      </div>
+
+      {/* Quick nav toggles */}
+      <div className="flex flex-wrap gap-2">
+        {[
+          { label: 'Classroom', icon: BookOpen, path: '/classroom', active: true },
+          { label: 'SOPs & Playbooks', icon: FileText, path: '/sops' },
+          { label: 'AI Chat', icon: MessageSquare, path: '/ai-chat' },
+          { label: 'Trust Creation', icon: Shield, path: '/trust-creation' },
+          { label: 'Succession Planning', icon: Users, path: '/succession-planning' },
+        ].map(({ label, icon: Icon, path, active }) => (
+          <button
+            key={path}
+            onClick={() => navigate(path)}
+            className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
+              active
+                ? 'bg-[#290a52] text-white border-[#290a52]'
+                : 'bg-background text-foreground border-border hover:border-[#2eb2ff] hover:text-[#2eb2ff]'
+            }`}
+          >
+            <Icon className="h-3.5 w-3.5" />
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* SOPs entry — gated to TFV / TFBA / Succession Society + admins */}
