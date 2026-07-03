@@ -13,7 +13,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog'
 import { useToast } from '@/hooks/use-toast'
-import { Plus, FileText, BookOpen, Pencil, Trash2, Lock } from 'lucide-react'
+import { Plus, FileText, Pencil, Trash2, Lock } from 'lucide-react'
 import { SOP_PROGRAM_CODES, programLabel, profileProgramCodes } from '@/lib/programs'
 import { cn } from '@/lib/utils'
 
@@ -137,20 +137,14 @@ export default function SopLibraryPanel() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col items-center text-center gap-3 py-4">
-        <div className="h-14 w-14 rounded-2xl bg-[#ffb500] flex items-center justify-center shadow-sm">
-          <BookOpen className="h-7 w-7 text-[#290a52]" />
-        </div>
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight">SOPs Library</h2>
-        <p className="text-muted-foreground text-sm md:text-base max-w-xl">
-          Step-by-step procedures, playbooks, and reference docs for the whole team.
-        </p>
-        {isAdminOrOwner && (
-          <Button onClick={() => setAddOpen(true)} className="mt-1 bg-[#ffb500] hover:bg-[#ffc733] text-[#290a52] font-semibold">
+      {isAdminOrOwner && (
+        <div className="flex justify-end">
+          <Button onClick={() => setAddOpen(true)} className="bg-[#ffb500] hover:bg-[#ffc733] text-[#290a52] font-semibold">
             <Plus className="h-4 w-4 mr-1.5" /> Add Document
           </Button>
-        )}
-      </div>
+        </div>
+      )}
+
 
       {loading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
