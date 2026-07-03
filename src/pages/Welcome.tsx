@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useAuth } from '@/contexts/AuthContext'
@@ -6,7 +6,10 @@ import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { NotificationBell } from '@/components/dashboard/notification-bell'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Loader2, ChevronDown, User, Shield, HeartPulse, ClipboardList, LogOut } from 'lucide-react'
+import { Loader2, ChevronDown, User, Shield, HeartPulse, ClipboardList, LogOut, Video } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { TutorialVideoModal } from '@/components/dashboard/tutorial-video-modal'
+import { useTutorialVideo } from '@/hooks/useTutorialVideo'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +24,8 @@ export default function Welcome() {
   const { isAdmin } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const navigate = useNavigate()
+  const [tutorialOpen, setTutorialOpen] = useState(false)
+  const { markAsWatched } = useTutorialVideo(user?.id || null)
 
   useEffect(() => {
     if (!loading && !user) {
@@ -77,6 +82,15 @@ export default function Welcome() {
 
       {/* Top-right utilities */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-8 flex items-center gap-3 z-20">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 shrink-0"
+          onClick={() => setTutorialOpen(true)}
+          title="Watch Tutorial Video"
+        >
+          <Video className="h-5 w-5" />
+        </Button>
         <NotificationBell />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -182,6 +196,16 @@ export default function Welcome() {
           </button>
         </nav>
       </div>
+
+      {user && tutorialOpen && (
+        <TutorialVideoModal
+          isOpen={tutorialOpen}
+          onClose={() => { markAsWatched(); setTutorialOpen(false); }}
+          onWatched={() => { markAsWatched(); setTutorialOpen(false); }}
+          onSkipped={() => { markAsWatched(); setTutorialOpen(false); }}
+          userId={user.id}
+        />
+      )}
     </main>
   )
 }

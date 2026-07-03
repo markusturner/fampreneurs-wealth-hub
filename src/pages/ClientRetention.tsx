@@ -17,6 +17,7 @@ import { toast } from "sonner"
 import { AlertTriangle, TrendingDown, TrendingUp, Heart, Loader2, Sparkles, Send, RefreshCw, StickyNote, Save, Trash2, ClipboardList } from "lucide-react"
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip as RTooltip, BarChart, Bar, Legend } from "recharts"
 import { CoachingCallAttendanceLog } from "@/components/dashboard/coaching-call-attendance-log"
+import { BackToWelcome } from "@/components/layout/BackToWelcome"
 
 type Status = "at_risk" | "slipping" | "stable" | "expansion_ready"
 
@@ -507,8 +508,9 @@ export default function ClientRetention() {
   const expansionList = stats.buckets.expansion_ready
 
   return (
-    <div className="container mx-auto py-4 sm:py-6 px-3 sm:px-4 max-w-7xl">
+    <div className="container mx-auto py-4 sm:py-6 px-3 sm:px-4 max-w-7xl space-y-4">
       <Helmet><title>{isAttendanceView ? 'Attendance Log' : 'Client Retention'} | TruHeirs Admin</title></Helmet>
+      <BackToWelcome />
 
       {isAttendanceView ? (
         <>

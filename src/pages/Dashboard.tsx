@@ -3,9 +3,9 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { OverviewSection } from "@/components/dashboard/overview-section"
-import { Loader2, Video, LayoutDashboard, Building2, Scroll, Calendar, Users } from 'lucide-react'
+import { Loader2, Video } from 'lucide-react'
 import { BackToWelcome } from '@/components/layout/BackToWelcome'
-import { FamilyToggleBar } from '@/components/layout/FamilyToggleBar'
+import { FamilyToggleBar, type FamilyTab } from '@/components/layout/FamilyToggleBar'
 import { useUserRole } from "@/hooks/useUserRole"
 import { useTutorialVideo } from "@/hooks/useTutorialVideo"
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
@@ -15,6 +15,10 @@ import { useSubscription } from "@/hooks/useSubscription"
 import { useIsAdminOrOwner } from "@/hooks/useIsAdminOrOwner"
 import { useOwnerRole } from "@/hooks/useOwnerRole"
 import { Button } from "@/components/ui/button"
+import Community from '@/pages/Community'
+import Documents from '@/pages/Documents'
+import CalendarPage from '@/pages/Calendar'
+import Members from '@/pages/Members'
 
 const Dashboard = () => {
   const { user, profile, loading } = useAuth()
@@ -25,6 +29,7 @@ const Dashboard = () => {
   const navigate = useNavigate()
   const { shouldShowTutorial, isLoading: tutorialLoading, markAsWatched } = useTutorialVideo(user?.id || null)
   const [manualTutorialOpen, setManualTutorialOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<FamilyTab>('dashboard')
 
   // Only show tutorial if user actually has TruHeirs access
   const hasTruHeirsAccess = isAdminOrOwner || isOwner || profile?.truheirs_access === true || subscriptionStatus.subscribed
@@ -93,12 +98,24 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <FamilyToggleBar />
+      <FamilyToggleBar value={activeTab} onChange={setActiveTab} />
 
+      {activeTab === 'dashboard' ? (
+        <>
+          <DashboardStats />
+          <OverviewSection />
+          <DashboardRecentActivity />
+        </>
+      ) : activeTab === 'office' ? (
+        <Community />
+      ) : activeTab === 'constitution' ? (
+        <Documents />
+      ) : activeTab === 'calendar' ? (
+        <CalendarPage />
+      ) : activeTab === 'members' ? (
+        <Members />
+      ) : null}
 
-      <DashboardStats />
-      <OverviewSection />
-      <DashboardRecentActivity />
       {user && (showTutorial || manualTutorialOpen) && (
         <TutorialVideoModal
           isOpen={showTutorial || manualTutorialOpen}

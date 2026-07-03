@@ -23,7 +23,7 @@ export function ProfileSettings() {
           <Button 
             variant="ghost" 
             size={isMobile ? "sm" : "icon"} 
-            onClick={() => navigate('/dashboard')}
+            onClick={() => navigate('/welcome')}
             className="shrink-0"
           >
             <ArrowLeft className="h-4 w-4" />
