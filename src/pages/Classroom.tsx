@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast'
 import { AddCourseDialog } from '@/components/classroom/AddCourseDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
 import SopLibraryPanel from '@/components/classroom/SopLibraryPanel'
+import AIChat from '@/pages/AIChat'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import {
   DndContext,
@@ -139,7 +140,7 @@ export default function Classroom() {
   const [loading, setLoading] = useState(true)
   const [showAddCourse, setShowAddCourse] = useState(false)
   const [editingCourse, setEditingCourse] = useState<Course | null>(null)
-  const [activeTab, setActiveTab] = useState<'classroom' | 'sops'>('classroom')
+  const [activeTab, setActiveTab] = useState<'classroom' | 'sops' | 'ai'>('classroom')
   const { isAdminOrOwner } = useIsAdminOrOwner()
   const { toast } = useToast()
 
@@ -257,7 +258,7 @@ export default function Classroom() {
         {[
           { label: 'Classroom', icon: BookOpen, action: () => setActiveTab('classroom'), active: activeTab === 'classroom' },
           { label: 'SOPs & Playbooks', icon: FileText, action: () => setActiveTab('sops'), active: activeTab === 'sops' },
-          { label: 'AI Chat', icon: MessageSquare, action: () => navigate('/ai-chat'), active: false },
+          { label: 'Family Protection Plan', icon: MessageSquare, action: () => setActiveTab('ai'), active: activeTab === 'ai' },
           { label: 'Trust Creation', icon: Shield, action: () => navigate('/trust-creation'), active: false },
           { label: 'Succession Planning', icon: Users, action: () => navigate('/succession-planning'), active: false },
         ].map(({ label, icon: Icon, action, active }) => (
@@ -278,6 +279,8 @@ export default function Classroom() {
 
       {activeTab === 'sops' ? (
         <SopLibraryPanel />
+      ) : activeTab === 'ai' ? (
+        <AIChat />
       ) : (
         <>
       {loading ? (
