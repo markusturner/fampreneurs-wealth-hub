@@ -82,6 +82,15 @@ export default function Welcome() {
 
       {/* Top-right utilities */}
       <div className="absolute top-4 right-4 sm:top-6 sm:right-8 flex items-center gap-3 z-20">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9 shrink-0"
+          onClick={() => setTutorialOpen(true)}
+          title="Watch Tutorial Video"
+        >
+          <Video className="h-5 w-5" />
+        </Button>
         <NotificationBell />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
