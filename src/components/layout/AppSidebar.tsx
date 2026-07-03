@@ -223,20 +223,8 @@ export function AppSidebar({ className }: { className?: string }) {
           </>
         )}
 
-        {/* ADMIN — hidden for Lite */}
-        {(isAdmin || isOwner) && !isLite && (
-          <>
-            <div className="mb-1 mt-5">
-              <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Admin</p>
-            </div>
-            <div className="space-y-0.5">
-              <NavItem label="Admin Settings" icon={Shield} href="/admin-settings" active={isActive("/admin-settings")} />
-              <NavItem label="Client Retention" icon={HeartPulse} href="/client-retention" active={isActive("/client-retention") && !location.search.includes("tab=attendance")} />
-              <NavItem label="Attendance Log" icon={ClipboardList} href="/client-retention?tab=attendance" active={isActive("/client-retention") && location.search.includes("tab=attendance")} />
-            </div>
-          </>
-        )}
       </ScrollArea>
+
 
       {/* Bottom section */}
       <div className="p-3 space-y-3">
