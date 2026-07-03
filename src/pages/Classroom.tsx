@@ -244,6 +244,8 @@ export default function Classroom() {
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl space-y-4 sm:space-y-6">
+      <BackToWelcome />
+
       <div>
         <h1 className="text-xl sm:text-2xl font-bold">Classroom</h1>
         <p className="text-muted-foreground text-xs sm:text-sm">Access your courses and track your progress</p>
