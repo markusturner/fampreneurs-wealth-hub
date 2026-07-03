@@ -59,6 +59,7 @@ import ProfilePhotoUpload from "./pages/ProfilePhotoUpload";
 import ResetPassword from "./pages/ResetPassword";
 import TrustDesignBooking from "./pages/TrustDesignBooking";
 import Apply from "./pages/Apply";
+import Welcome from "./pages/Welcome";
 
 import { initializeMobileServices } from "./lib/mobile";
 import "./index.css";
@@ -118,6 +119,7 @@ function AppWithNotifications() {
         <Route path="/profile-photo" element={<ProfilePhotoUpload />} />
         <Route path="/trust-design-booking" element={<TrustDesignBooking />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/welcome" element={<Welcome />} />
 
         {/* Authenticated routes - with sidebar */}
         <Route path="/dashboard" element={<WithLayout><Dashboard /></WithLayout>} />
