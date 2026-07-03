@@ -106,7 +106,7 @@ const DEFAULT_PERSONA_SETTINGS: Record<Persona, PersonaSettings> = {
   trust_writer: { instructions: '', files: [] },
 }
 
-export default function AIChat() {
+export default function AIChat({ embedded = false }: { embedded?: boolean }) {
   const [activePersona, setActivePersona] = useState<Persona>('rachel')
   const [selectedModel, setSelectedModel] = useState<string>('gpt-5')
   const [messages, setMessages] = useState<Message[]>([
