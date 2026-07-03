@@ -24,6 +24,8 @@ export default function Welcome() {
   const { isAdmin } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const navigate = useNavigate()
+  const [tutorialOpen, setTutorialOpen] = useState(false)
+  const { markAsWatched } = useTutorialVideo(user?.id || null)
 
   useEffect(() => {
     if (!loading && !user) {
