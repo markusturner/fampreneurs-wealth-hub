@@ -98,12 +98,24 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <FamilyToggleBar />
+      <FamilyToggleBar value={activeTab} onChange={setActiveTab} />
 
+      {activeTab === 'dashboard' ? (
+        <>
+          <DashboardStats />
+          <OverviewSection />
+          <DashboardRecentActivity />
+        </>
+      ) : activeTab === 'office' ? (
+        <Community />
+      ) : activeTab === 'constitution' ? (
+        <Documents />
+      ) : activeTab === 'calendar' ? (
+        <CalendarPage />
+      ) : activeTab === 'members' ? (
+        <Members />
+      ) : null}
 
-      <DashboardStats />
-      <OverviewSection />
-      <DashboardRecentActivity />
       {user && (showTutorial || manualTutorialOpen) && (
         <TutorialVideoModal
           isOpen={showTutorial || manualTutorialOpen}
