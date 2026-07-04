@@ -19,13 +19,47 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 
+const LAST_USED_KEY = 'truheirs:lastUsed'
+
+const COMMUNITY_LABELS: Record<string, string> = {
+  tfv: 'The Family Vault',
+  tfba: 'The Family Business Accelerator',
+  tffm: 'The Succession Society',
+}
+
+type LastUsed = { section: 'community' | 'content' | 'dashboard'; program?: string }
+
+function readLastUsed(): LastUsed | null {
+  try {
+    const raw = localStorage.getItem(LAST_USED_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
+function writeLastUsed(v: LastUsed) {
+  try { localStorage.setItem(LAST_USED_KEY, JSON.stringify(v)) } catch {}
+}
+
+function lastUsedLabel(l: LastUsed | null): string {
+  if (!l) return ''
+  if (l.section === 'community') return `Community${l.program && COMMUNITY_LABELS[l.program] ? ` — ${COMMUNITY_LABELS[l.program]}` : ''}`
+  if (l.section === 'content') return 'Content'
+  return 'Digital Family Office'
+}
+
 export default function Welcome() {
   const { user, profile, loading, signOut } = useAuth()
   const { isAdmin } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const navigate = useNavigate()
   const [tutorialOpen, setTutorialOpen] = useState(false)
+  const [lastUsed, setLastUsed] = useState<LastUsed | null>(() => readLastUsed())
   const { markAsWatched } = useTutorialVideo(user?.id || null)
+
+  const go = (section: LastUsed['section'], path: string, program?: string) => {
+    const v: LastUsed = { section, ...(program ? { program } : {}) }
+    writeLastUsed(v); setLastUsed(v); navigate(path)
+  }
 
   useEffect(() => {
     if (!loading && !user) {
