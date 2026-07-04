@@ -23,6 +23,7 @@ const PROGRAM_GROUP_MAP: Record<string, string> = {
 
 export function CommunityMembersList({ program }: { program: string }) {
   const [members, setMembers] = useState<MemberProfile[]>([])
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchMembers = async () => {
