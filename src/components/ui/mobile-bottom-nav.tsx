@@ -330,14 +330,14 @@ export function MobileBottomNav() {
                   className={cn(
                     "w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors",
                     isCurrentCommunity
-                      ? "bg-primary/10 text-primary"
+                      ? "bg-[#ffb500]/10 text-[#ffb500]"
                       : "text-foreground hover:bg-muted/50 active:bg-muted"
                   )}
                 >
                   <MessageSquare className="h-4 w-4 flex-shrink-0" />
                   <span className="flex-1 text-left">{community.label}</span>
                   {isCurrentCommunity && (
-                    <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">Active</span>
+                    <span className="text-[10px] font-medium text-[#ffb500] bg-[#ffb500]/10 px-2 py-0.5 rounded-full">Active</span>
                   )}
                   <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/50" />
                 </button>
