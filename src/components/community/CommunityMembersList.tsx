@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { supabase } from '@/integrations/supabase/client'
+import { MemberMessageDialog } from './MemberMessageDialog'
 
 interface MemberProfile {
   user_id: string
@@ -23,7 +23,7 @@ const PROGRAM_GROUP_MAP: Record<string, string> = {
 
 export function CommunityMembersList({ program }: { program: string }) {
   const [members, setMembers] = useState<MemberProfile[]>([])
-  const navigate = useNavigate()
+  const [selected, setSelected] = useState<MemberProfile | null>(null)
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -48,7 +48,6 @@ export function CommunityMembersList({ program }: { program: string }) {
         return
       }
 
-      // Only include users who have completed onboarding
       const { data: onboarded } = await supabase
         .from('onboarding_responses')
         .select('user_id')
@@ -69,27 +68,38 @@ export function CommunityMembersList({ program }: { program: string }) {
   if (members.length === 0) return null
 
   return (
-    <Card className="border-border/50">
-      <CardContent className="p-4">
-        <h4 className="font-semibold text-sm mb-3">Members ({members.length})</h4>
-        <ScrollArea className="h-80 pr-2">
-          <div className="space-y-1">
-            {members.map(member => (
-              <button
-                key={member.user_id}
-                onClick={() => navigate(`/messenger?user=${member.user_id}`)}
-                className="w-full flex items-center gap-2.5 rounded-md p-1.5 hover:bg-muted/60 transition-colors text-left"
-              >
-                <Avatar className="h-7 w-7">
-                  {member.avatar_url && <AvatarImage src={member.avatar_url} />}
-                  <AvatarFallback className="text-[10px]">{getInitials(member.display_name)}</AvatarFallback>
-                </Avatar>
-                <span className="text-sm truncate">{member.display_name || 'Member'}</span>
-              </button>
-            ))}
-          </div>
-        </ScrollArea>
-      </CardContent>
-    </Card>
+    <>
+      <Card className="border-border/50">
+        <CardContent className="p-4">
+          <h4 className="font-semibold text-sm mb-3">Members ({members.length})</h4>
+          <ScrollArea className="h-80 pr-2">
+            <div className="space-y-1">
+              {members.map(member => (
+                <button
+                  key={member.user_id}
+                  onClick={() => setSelected(member)}
+                  className="w-full flex items-center gap-2.5 rounded-md p-1.5 hover:bg-muted/60 transition-colors text-left"
+                >
+                  <Avatar className="h-7 w-7">
+                    {member.avatar_url && <AvatarImage src={member.avatar_url} />}
+                    <AvatarFallback className="text-[10px]">{getInitials(member.display_name)}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm truncate">{member.display_name || 'Member'}</span>
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+
+      <MemberMessageDialog
+        open={!!selected}
+        onOpenChange={(o) => { if (!o) setSelected(null) }}
+        recipientId={selected?.user_id ?? null}
+        recipientName={selected?.display_name ?? null}
+        recipientAvatar={selected?.avatar_url ?? null}
+      />
+    </>
   )
 }
+

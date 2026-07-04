@@ -1,8 +1,12 @@
 import { useNavigate } from 'react-router-dom'
 import { Undo2 } from 'lucide-react'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 export function BackToWelcome() {
   const navigate = useNavigate()
+  const isMobile = useIsMobile()
+
+  if (isMobile) return null
 
   return (
     <button
@@ -14,3 +18,4 @@ export function BackToWelcome() {
     </button>
   )
 }
+
