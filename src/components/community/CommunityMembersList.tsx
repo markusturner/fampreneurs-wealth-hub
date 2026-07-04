@@ -72,16 +72,20 @@ export function CommunityMembersList({ program }: { program: string }) {
     <Card className="border-border/50">
       <CardContent className="p-4">
         <h4 className="font-semibold text-sm mb-3">Members ({members.length})</h4>
-        <ScrollArea className="max-h-64">
-          <div className="space-y-2">
+        <ScrollArea className="h-80 pr-2">
+          <div className="space-y-1">
             {members.map(member => (
-              <div key={member.user_id} className="flex items-center gap-2.5">
+              <button
+                key={member.user_id}
+                onClick={() => navigate(`/messenger?user=${member.user_id}`)}
+                className="w-full flex items-center gap-2.5 rounded-md p-1.5 hover:bg-muted/60 transition-colors text-left"
+              >
                 <Avatar className="h-7 w-7">
                   {member.avatar_url && <AvatarImage src={member.avatar_url} />}
                   <AvatarFallback className="text-[10px]">{getInitials(member.display_name)}</AvatarFallback>
                 </Avatar>
                 <span className="text-sm truncate">{member.display_name || 'Member'}</span>
-              </div>
+              </button>
             ))}
           </div>
         </ScrollArea>
