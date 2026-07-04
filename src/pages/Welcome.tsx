@@ -19,13 +19,47 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 
+const LAST_USED_KEY = 'truheirs:lastUsed'
+
+const COMMUNITY_LABELS: Record<string, string> = {
+  tfv: 'The Family Vault',
+  tfba: 'The Family Business Accelerator',
+  tffm: 'The Succession Society',
+}
+
+type LastUsed = { section: 'community' | 'content' | 'dashboard'; program?: string }
+
+function readLastUsed(): LastUsed | null {
+  try {
+    const raw = localStorage.getItem(LAST_USED_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
+function writeLastUsed(v: LastUsed) {
+  try { localStorage.setItem(LAST_USED_KEY, JSON.stringify(v)) } catch {}
+}
+
+function lastUsedLabel(l: LastUsed | null): string {
+  if (!l) return ''
+  if (l.section === 'community') return `Community${l.program && COMMUNITY_LABELS[l.program] ? ` — ${COMMUNITY_LABELS[l.program]}` : ''}`
+  if (l.section === 'content') return 'Content'
+  return 'Digital Family Office'
+}
+
 export default function Welcome() {
   const { user, profile, loading, signOut } = useAuth()
   const { isAdmin } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const navigate = useNavigate()
   const [tutorialOpen, setTutorialOpen] = useState(false)
+  const [lastUsed, setLastUsed] = useState<LastUsed | null>(() => readLastUsed())
   const { markAsWatched } = useTutorialVideo(user?.id || null)
+
+  const go = (section: LastUsed['section'], path: string, program?: string) => {
+    const v: LastUsed = { section, ...(program ? { program } : {}) }
+    writeLastUsed(v); setLastUsed(v); navigate(path)
+  }
 
   useEffect(() => {
     if (!loading && !user) {
@@ -133,45 +167,47 @@ export default function Welcome() {
         <img
           src="/lovable-uploads/00df4658-d6df-420b-8c0d-7af68820837d.png"
           alt="TruHeirs"
-          className="h-24 sm:h-32 w-auto mb-8 sm:mb-10"
+          className="h-24 sm:h-32 w-auto mb-3 sm:mb-4"
         />
 
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-montserrat font-semibold tracking-[0.22em] uppercase text-foreground mb-4 sm:mb-5">
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-montserrat font-semibold tracking-[0.22em] uppercase text-foreground mb-3 sm:mb-4">
           Welcome back, {firstName}
         </h1>
 
-        <p className="text-[10px] sm:text-xs tracking-[0.35em] uppercase text-muted-foreground mb-6 sm:mb-8">
-          WHAT ARE YOU FOCUSING ON TODAY?
-        </p>
+        {lastUsed ? (
+          <p className="text-[11px] sm:text-sm text-muted-foreground max-w-xl mb-5 sm:mb-6 px-4">
+            Last time you were logged in, you were working on <span className="text-foreground font-medium">{lastUsedLabel(lastUsed)}</span>. Would you like to continue?
+          </p>
+        ) : (
+          <p className="text-[10px] sm:text-xs tracking-[0.35em] uppercase text-muted-foreground mb-5 sm:mb-6">
+            WHAT ARE YOU FOCUSING ON TODAY?
+          </p>
+        )}
 
-        <div className="w-32 sm:w-48 h-px bg-secondary mb-8 sm:mb-10" />
+        <div className="w-32 sm:w-48 h-px bg-secondary mb-6 sm:mb-8" />
 
         <nav className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0">
           <DropdownMenu>
             <DropdownMenuTrigger className="group inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2 outline-none">
               Community
+              {lastUsed?.section === 'community' && (
+                <span className="ml-1 rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+              )}
               <ChevronDown className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="min-w-[240px] rounded-none border-border/60 bg-background/95 backdrop-blur">
-              <DropdownMenuItem
-                onClick={() => navigate('/workspace-community?program=tfv')}
-                className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 hover:text-secondary focus:text-secondary data-[highlighted]:bg-transparent data-[highlighted]:text-secondary"
-              >
-                The Family Vault
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigate('/workspace-community?program=tfba')}
-                className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 hover:text-secondary focus:text-secondary data-[highlighted]:bg-transparent data-[highlighted]:text-secondary"
-              >
-                The Family Business Accelerator
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigate('/workspace-community?program=tffm')}
-                className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 hover:text-secondary focus:text-secondary data-[highlighted]:bg-transparent data-[highlighted]:text-secondary"
-              >
-                The Succession Society
-              </DropdownMenuItem>
-
+            <DropdownMenuContent align="center" className="min-w-[280px] rounded-none border-border/60 bg-background/95 backdrop-blur">
+              {(['tfv','tfba','tffm'] as const).map(prog => (
+                <DropdownMenuItem
+                  key={prog}
+                  onClick={() => go('community', `/workspace-community?program=${prog}`, prog)}
+                  className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 hover:text-secondary focus:text-secondary data-[highlighted]:bg-transparent data-[highlighted]:text-secondary gap-2"
+                >
+                  {COMMUNITY_LABELS[prog]}
+                  {lastUsed?.section === 'community' && lastUsed.program === prog && (
+                    <span className="rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+                  )}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -179,20 +215,26 @@ export default function Welcome() {
           <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" />
 
           <button
-            onClick={() => navigate('/classroom')}
-            className="text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
+            onClick={() => go('content', '/classroom')}
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
           >
             Content
+            {lastUsed?.section === 'content' && (
+              <span className="rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+            )}
           </button>
 
           <div className="hidden sm:block w-px h-4 bg-secondary mx-2" />
           <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" />
 
           <button
-            onClick={() => navigate('/dashboard')}
-            className="text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
+            onClick={() => go('dashboard', '/dashboard')}
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
           >
             Digital Family Office
+            {lastUsed?.section === 'dashboard' && (
+              <span className="rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+            )}
           </button>
         </nav>
       </div>

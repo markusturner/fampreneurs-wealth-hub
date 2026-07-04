@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { supabase } from '@/integrations/supabase/client'
@@ -138,11 +138,13 @@ function SortableCourseCard({ course, isAdminOrOwner, onEdit, onDelete, onClick 
 export default function Classroom() {
   const { user, profile } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const initialTab = (searchParams.get('tab') as any) || 'classroom'
   const [courses, setCourses] = useState<Course[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddCourse, setShowAddCourse] = useState(false)
   const [editingCourse, setEditingCourse] = useState<Course | null>(null)
-  const [activeTab, setActiveTab] = useState<'classroom' | 'sops' | 'ai' | 'trust' | 'succession'>('classroom')
+  const [activeTab, setActiveTab] = useState<'classroom' | 'sops' | 'ai' | 'trust' | 'succession'>(initialTab)
   const { isAdminOrOwner } = useIsAdminOrOwner()
   const { toast } = useToast()
 

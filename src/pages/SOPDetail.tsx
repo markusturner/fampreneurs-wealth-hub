@@ -154,8 +154,8 @@ export default function SOPDetail() {
 
       <div className="sticky top-0 z-20 backdrop-blur bg-background/85 border-b border-border">
         <div className="container mx-auto max-w-3xl px-4 py-2 flex items-center justify-between gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/sops')} className="text-muted-foreground hover:text-foreground -ml-2 h-8">
-            <ArrowLeft className="h-4 w-4 mr-1.5" /> SOPs
+          <Button variant="ghost" size="sm" onClick={() => navigate('/classroom?tab=sops')} className="text-muted-foreground hover:text-foreground -ml-2 h-8">
+            <ArrowLeft className="h-4 w-4 mr-1.5" /> Classroom
           </Button>
           {isAdminOrOwner && (
             editing ? (
