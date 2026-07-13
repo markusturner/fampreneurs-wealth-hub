@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { useSubscription } from '@/hooks/useSubscription'
+import { useUnreadDMCounts } from '@/hooks/useUnreadDMCounts'
 import { useState } from 'react'
 import {
   Sheet,
