@@ -168,12 +168,19 @@ export function MobileBottomNav() {
                 className="flex items-center justify-center"
               >
                 <div className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
+                  "relative flex items-center gap-2 px-3 py-2 rounded-full transition-all duration-300",
                   active
                     ? "bg-white text-[hsl(262,86%,19%)] shadow-lg"
                     : "text-white/70 hover:text-white active:scale-95"
                 )}>
-                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  <div className="relative">
+                    <Icon className="h-5 w-5 flex-shrink-0" />
+                    {item.name === 'Messages' && unreadDMTotal > 0 && (
+                      <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-[#ffb500] text-[#290a52] text-[9px] font-bold flex items-center justify-center leading-none">
+                        {unreadDMTotal > 99 ? '99+' : unreadDMTotal}
+                      </span>
+                    )}
+                  </div>
                   {active && (
                     <span className="text-xs font-semibold whitespace-nowrap animate-in slide-in-from-left-2 fade-in duration-300">
                       {item.name}
