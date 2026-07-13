@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { supabase } from '@/integrations/supabase/client'
 import { MemberMessageDialog } from './MemberMessageDialog'
+import { useUnreadDMCounts } from '@/hooks/useUnreadDMCounts'
 
 interface MemberProfile {
   user_id: string
