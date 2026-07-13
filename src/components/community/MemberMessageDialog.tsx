@@ -45,6 +45,13 @@ export function MemberMessageDialog({ open, onOpenChange, recipientId, recipient
         .order('created_at', { ascending: true })
       setMessages((data || []) as DM[])
       setLoading(false)
+      // Auto-mark received messages as read
+      await supabase
+        .from('direct_messages')
+        .update({ is_read: true })
+        .eq('receiver_id', user.id)
+        .eq('sender_id', recipientId)
+        .eq('is_read', false)
     })()
 
     const channel = supabase
