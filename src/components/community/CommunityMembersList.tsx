@@ -25,6 +25,16 @@ const PROGRAM_GROUP_MAP: Record<string, string> = {
 export function CommunityMembersList({ program }: { program: string }) {
   const [members, setMembers] = useState<MemberProfile[]>([])
   const [selected, setSelected] = useState<MemberProfile | null>(null)
+  const { bySender, markReadFromSender } = useUnreadDMCounts()
+
+  const openMember = (m: MemberProfile) => {
+    setSelected(m)
+    // Auto-mark all their unread DMs as read (desktop-only feature per spec,
+    // but harmless anywhere the popup is opened).
+    if (bySender[m.user_id]) {
+      markReadFromSender(m.user_id)
+    }
+  }
 
   useEffect(() => {
     const fetchMembers = async () => {
