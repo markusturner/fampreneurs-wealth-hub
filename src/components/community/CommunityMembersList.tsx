@@ -85,19 +85,27 @@ export function CommunityMembersList({ program }: { program: string }) {
           <h4 className="font-semibold text-sm mb-3">Members ({members.length})</h4>
           <ScrollArea className="h-80 pr-2">
             <div className="space-y-1">
-              {members.map(member => (
-                <button
-                  key={member.user_id}
-                  onClick={() => setSelected(member)}
-                  className="w-full flex items-center gap-2.5 rounded-md p-1.5 hover:bg-muted/60 transition-colors text-left"
-                >
-                  <Avatar className="h-7 w-7">
-                    {member.avatar_url && <AvatarImage src={member.avatar_url} />}
-                    <AvatarFallback className="text-[10px]">{getInitials(member.display_name)}</AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm truncate">{member.display_name || 'Member'}</span>
-                </button>
-              ))}
+              {members.map(member => {
+                const unread = bySender[member.user_id] || 0
+                return (
+                  <button
+                    key={member.user_id}
+                    onClick={() => openMember(member)}
+                    className="w-full flex items-center gap-2.5 rounded-md p-1.5 hover:bg-muted/60 transition-colors text-left"
+                  >
+                    <Avatar className="h-7 w-7">
+                      {member.avatar_url && <AvatarImage src={member.avatar_url} />}
+                      <AvatarFallback className="text-[10px]">{getInitials(member.display_name)}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm truncate flex-1">{member.display_name || 'Member'}</span>
+                    {unread > 0 && (
+                      <span className="hidden md:inline-flex min-w-[18px] h-[18px] px-1.5 rounded-full bg-[#ffb500] text-[#290a52] text-[10px] font-bold items-center justify-center leading-none">
+                        {unread > 99 ? '99+' : unread}
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
             </div>
           </ScrollArea>
         </CardContent>
