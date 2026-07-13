@@ -35,6 +35,7 @@ export function MobileBottomNav() {
   const { isAdmin, isFamilyMember } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const { subscriptionStatus } = useSubscription()
+  const { total: unreadDMTotal } = useUnreadDMCounts()
   const [moreOpen, setMoreOpen] = useState(false)
   const [communityPickerOpen, setCommunityPickerOpen] = useState(false)
 
