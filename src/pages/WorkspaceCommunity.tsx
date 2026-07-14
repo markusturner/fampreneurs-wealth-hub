@@ -367,7 +367,7 @@ export default function WorkspaceCommunity() {
     const setup = async () => {
       qualifiedUserIds = await getEligibleCommunityUserIds()
 
-      const channelName = `community-presence-${program}`
+      const channelName = `community-presence-${program}-${user.id}-${Math.random().toString(36).slice(2, 8)}`
       const channel = supabase.channel(channelName, {
         config: { presence: { key: user.id } },
       })

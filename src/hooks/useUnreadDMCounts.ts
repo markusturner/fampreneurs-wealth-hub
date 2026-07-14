@@ -42,7 +42,7 @@ export function useUnreadDMCounts() {
   useEffect(() => {
     if (!user?.id) return
     const channel = supabase
-      .channel(`dm-unread-${user.id}`)
+      .channel(`dm-unread-${user.id}-${Math.random().toString(36).slice(2, 8)}`)
       .on(
         'postgres_changes',
         {
