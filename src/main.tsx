@@ -44,6 +44,7 @@ import Help from "./pages/Help";
 import Contact from "./pages/Contact";
 import ContactSupport from "./pages/ContactSupport";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Security from "./pages/Security";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
 
@@ -111,6 +112,7 @@ function AppWithNotifications() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/thank-you" element={<ThankYou />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/security" element={<Security />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/onboarding-explanation" element={<OnboardingExplanation />} />
