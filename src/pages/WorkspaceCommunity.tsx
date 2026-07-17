@@ -204,6 +204,7 @@ export default function WorkspaceCommunity() {
   const commentImageRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const commentVideoRefs = useRef<Record<string, HTMLInputElement | null>>({})
   const commentAudioRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  const commentTextareaRefs = useRef<Record<string, HTMLTextAreaElement | null>>({})
 
   // Locked community popup - only opens when user clicks "Unlock Now"
   const [lockedPopupOpen, setLockedPopupOpen] = useState(false)
@@ -864,6 +865,11 @@ export default function WorkspaceCommunity() {
       setCommentImageFiles(prev => ({ ...prev, [postId]: null }))
       setCommentAudioFiles(prev => ({ ...prev, [postId]: null }))
       setCommentVideoFiles(prev => ({ ...prev, [postId]: null }))
+      const commentBox = commentTextareaRefs.current[postId]
+      if (commentBox) {
+        commentBox.style.height = ''
+        commentBox.scrollTop = 0
+      }
       await fetchCommentsForPost(postId)
       fetchPosts() // refresh comment count
     } catch (error) {
@@ -1824,7 +1830,11 @@ export default function WorkspaceCommunity() {
                                           </button>
                                         )}
                                       </div>
-                                      {comment.content && <p className="text-sm mt-0.5">{renderContentWithMentions(comment.content)}</p>}
+                                      {comment.content && (
+                                        <p className="text-sm mt-0.5 whitespace-pre-wrap break-words leading-relaxed">
+                                          {renderContentWithMentions(comment.content)}
+                                        </p>
+                                      )}
                                       {comment.image_url && (
                                         <img src={comment.image_url} alt="" className="rounded mt-2 max-h-40 object-cover" />
                                       )}
@@ -1850,6 +1860,7 @@ export default function WorkspaceCommunity() {
                                 <div className="flex-1 space-y-1.5">
                                   <div className="flex gap-1.5">
                                     <Textarea
+                                      ref={(el) => { commentTextareaRefs.current[post.id] = el }}
                                       placeholder="Write a comment..."
                                       value={commentText[post.id] || ''}
                                       onChange={(e) => {
