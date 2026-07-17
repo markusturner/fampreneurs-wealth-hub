@@ -92,7 +92,6 @@ Deno.serve(async (req) => {
     if (link) {
       // Deep link when the user taps the notification
       const tapUrl = link.startsWith("http") ? link : `https://truheirs.app${link.startsWith("/") ? link : `/${link}`}`;
-      (basePayload as any).url = tapUrl;
       (basePayload as any).app_url = tapUrl;
     }
 
