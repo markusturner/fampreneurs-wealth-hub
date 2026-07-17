@@ -1859,7 +1859,7 @@ export default function WorkspaceCommunity() {
                                         el.style.height = Math.min(el.scrollHeight, 300) + 'px'
                                       }}
                                       rows={1}
-                                      className="min-h-[36px] resize-none border bg-muted/50 rounded-lg px-3 py-2 focus-visible:ring-1 text-sm flex-1 overflow-hidden"
+                                      className="min-h-[36px] max-h-[300px] resize-none border bg-muted/50 rounded-lg px-3 py-2 focus-visible:ring-1 text-sm flex-1 overflow-y-auto"
                                       onKeyDown={(e) => {
                                         if (e.key === 'Enter' && !e.shiftKey) {
                                           e.preventDefault()
