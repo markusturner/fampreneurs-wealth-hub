@@ -90,9 +90,9 @@ async function initWithNatively(userId: string, notifications: AnyRec) {
     console.log(`[PUSH-CLIENT] Natively external_id linked: ${setExternal?.externalId || userId}`)
   }
 
-  const player = await nativelyCall(notifications, 'getOneSignalId')
-  const playerId = player?.playerId
+  const playerId = await waitForNativelyPlayerId(notifications)
   if (playerId) await savePushSubscription(userId, playerId, 'natively')
+  else console.warn('[PUSH-CLIENT] Natively did not return a OneSignal Player ID yet')
 }
 
 async function initWithOneSignalPlugin(userId: string, OneSignal: AnyRec) {
@@ -129,8 +129,9 @@ async function initWithOneSignalPlugin(userId: string, OneSignal: AnyRec) {
     console.warn('[PUSH-CLIENT] No known OneSignal external ID API present')
   }
 
-  const subscriptionId = await getOneSignalSubscriptionId(OneSignal)
+  const subscriptionId = await waitForOneSignalSubscriptionId(OneSignal)
   if (subscriptionId) await savePushSubscription(userId, subscriptionId, Capacitor.getPlatform())
+  else console.warn('[PUSH-CLIENT] OneSignal did not return a subscription id yet')
 }
 
 export async function removePushToken(_userId: string) {
@@ -193,6 +194,24 @@ async function getOneSignalSubscriptionId(OneSignal: AnyRec): Promise<string | n
     }
   } catch (error) {
     console.warn('[PUSH-CLIENT] Could not read OneSignal subscription id:', error)
+  }
+  return null
+}
+
+async function waitForNativelyPlayerId(notifications: AnyRec): Promise<string | null> {
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const player = await nativelyCall(notifications, 'getOneSignalId')
+    if (player?.playerId) return player.playerId
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+  }
+  return null
+}
+
+async function waitForOneSignalSubscriptionId(OneSignal: AnyRec): Promise<string | null> {
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const subscriptionId = await getOneSignalSubscriptionId(OneSignal)
+    if (subscriptionId) return subscriptionId
+    await new Promise((resolve) => setTimeout(resolve, 1000))
   }
   return null
 }
