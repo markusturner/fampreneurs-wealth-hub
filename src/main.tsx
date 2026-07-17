@@ -112,6 +112,7 @@ function AppWithNotifications() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/thank-you" element={<ThankYou />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/security" element={<Security />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
         <Route path="/onboarding-explanation" element={<OnboardingExplanation />} />
