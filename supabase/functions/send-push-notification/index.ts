@@ -58,13 +58,28 @@ Deno.serve(async (req) => {
     const badgeCount = countError ? 1 : (unreadBadgeCount ?? 1);
     console.log(`[PUSH] Badge count: ${badgeCount}`);
 
-    // Build OneSignal payload — target by External User ID (Supabase user_id)
-    const payload: Record<string, unknown> = {
+    const { data: savedSubscriptions, error: tokenError } = await supabase
+      .from("push_tokens")
+      .select("token, platform")
+      .eq("user_id", user_id)
+      .order("updated_at", { ascending: false });
+
+    if (tokenError) {
+      console.warn(`[PUSH] Could not read saved OneSignal subscriptions: ${tokenError.message}`);
+    }
+
+    const subscriptionIds = Array.from(
+      new Set((savedSubscriptions ?? []).map((row: any) => row.token).filter(Boolean))
+    );
+    console.log(`[PUSH] Saved subscription count=${subscriptionIds.length}`);
+
+    const basePayload: Record<string, unknown> = {
       app_id: appId,
-      include_aliases: { external_id: [user_id] },
-      target_channel: "push",
       headings: { en: title || "Notification" },
       contents: { en: message || "" },
+      priority: 10,
+      ios_interruption_level: "active",
+      ios_sound: "default",
       ios_badgeType: "SetTo",
       ios_badgeCount: badgeCount,
       data: {
@@ -76,50 +91,56 @@ Deno.serve(async (req) => {
 
     if (link) {
       // Deep link when the user taps the notification
-      (payload as any).url = link.startsWith("http") ? link : undefined;
-      (payload as any).app_url = link;
+      (basePayload as any).url = link.startsWith("http") ? link : undefined;
+      (basePayload as any).app_url = link;
     }
 
+    // First target by External User ID. If OneSignal has not attached the phone
+    // to that user yet, retry directly by the saved Subscription IDs from Natively.
+    const externalPayload: Record<string, unknown> = {
+      ...basePayload,
+      include_aliases: { external_id: [user_id] },
+      target_channel: "push",
+    };
+
     console.log(`[PUSH] POST OneSignal /notifications for external_id=${user_id}`);
-    const resp = await fetch("https://api.onesignal.com/notifications", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Key ${restKey}`,
-      },
-      body: JSON.stringify(payload),
-    });
+    let delivery = await sendOneSignal(restKey, externalPayload);
 
-    const respText = await resp.text();
-    let respJson: any = null;
-    try { respJson = JSON.parse(respText); } catch { /* keep text */ }
+    if (delivery.ok && (delivery.recipients ?? 0) === 0 && subscriptionIds.length > 0) {
+      console.warn(`[PUSH] External ID had 0 recipients; retrying ${subscriptionIds.length} saved subscription(s).`);
+      delivery = await sendOneSignal(restKey, {
+        ...basePayload,
+        include_subscription_ids: subscriptionIds,
+      });
+    }
 
-    console.log(`[PUSH] OneSignal status=${resp.status} body=${respText.substring(0, 500)}`);
+    console.log(`[PUSH] OneSignal status=${delivery.status} body=${delivery.text.substring(0, 500)}`);
 
-    if (!resp.ok) {
+    if (!delivery.ok) {
       return new Response(
         JSON.stringify({
           error: "OneSignal request failed",
-          status: resp.status,
-          details: respJson ?? respText,
+          status: delivery.status,
+          details: delivery.json ?? delivery.text,
         }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const recipients = respJson?.recipients ?? 0;
+    const recipients = delivery.recipients ?? 0;
     if (recipients === 0) {
-      console.warn(`[PUSH] OneSignal delivered to 0 recipients — external_id=${user_id} is not registered as a OneSignal subscription yet.`);
+      console.warn(`[PUSH] OneSignal delivered to 0 recipients — no subscribed phone matched this user yet.`);
     }
 
     return new Response(
       JSON.stringify({
         sent: recipients,
-        failed: 0,
-        total: recipients,
+        failed: recipients > 0 ? 0 : subscriptionIds.length || 1,
+        total: Math.max(recipients, subscriptionIds.length || 1),
         badge: badgeCount,
-        onesignal_id: respJson?.id ?? null,
-        results: respJson ?? null,
+        onesignal_id: delivery.json?.id ?? null,
+        results: delivery.json ?? null,
+        targeted_saved_subscriptions: subscriptionIds.length,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -131,3 +152,26 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+async function sendOneSignal(restKey: string, payload: Record<string, unknown>) {
+  const resp = await fetch("https://api.onesignal.com/notifications?c=push", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Key ${restKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const text = await resp.text();
+    let respJson: any = null;
+    try { respJson = JSON.parse(text); } catch { /* keep text */ }
+
+  return {
+    ok: resp.ok,
+    status: resp.status,
+    text,
+    json: respJson,
+    recipients: Number(respJson?.recipients ?? 0),
+  }
+}
