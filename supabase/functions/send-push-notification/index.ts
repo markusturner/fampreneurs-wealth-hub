@@ -167,11 +167,13 @@ async function sendOneSignal(restKey: string, payload: Record<string, unknown>) 
     let respJson: any = null;
     try { respJson = JSON.parse(text); } catch { /* keep text */ }
 
+  const recipients = Number(respJson?.recipients ?? 0) || (respJson?.id && !respJson?.errors ? 1 : 0);
+
   return {
     ok: resp.ok,
     status: resp.status,
     text,
     json: respJson,
-    recipients: Number(respJson?.recipients ?? 0),
+    recipients,
   }
 }
