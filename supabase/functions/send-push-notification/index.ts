@@ -91,8 +91,9 @@ Deno.serve(async (req) => {
 
     if (link) {
       // Deep link when the user taps the notification
-      (basePayload as any).url = link.startsWith("http") ? link : undefined;
-      (basePayload as any).app_url = link;
+      const tapUrl = link.startsWith("http") ? link : `https://truheirs.app${link.startsWith("/") ? link : `/${link}`}`;
+      (basePayload as any).url = tapUrl;
+      (basePayload as any).app_url = tapUrl;
     }
 
     // First target by External User ID. If OneSignal has not attached the phone
