@@ -1849,11 +1849,17 @@ export default function WorkspaceCommunity() {
                                 </Avatar>
                                 <div className="flex-1 space-y-1.5">
                                   <div className="flex gap-1.5">
-                                    <Input
+                                    <Textarea
                                       placeholder="Write a comment..."
                                       value={commentText[post.id] || ''}
-                                      onChange={(e) => setCommentText(prev => ({ ...prev, [post.id]: e.target.value }))}
-                                      className="h-8 text-sm flex-1"
+                                      onChange={(e) => {
+                                        setCommentText(prev => ({ ...prev, [post.id]: e.target.value }))
+                                        const el = e.currentTarget
+                                        el.style.height = 'auto'
+                                        el.style.height = Math.min(el.scrollHeight, 300) + 'px'
+                                      }}
+                                      rows={1}
+                                      className="min-h-[36px] resize-none border bg-muted/50 rounded-lg px-3 py-2 focus-visible:ring-1 text-sm flex-1 overflow-hidden"
                                       onKeyDown={(e) => {
                                         if (e.key === 'Enter' && !e.shiftKey) {
                                           e.preventDefault()
@@ -1861,7 +1867,7 @@ export default function WorkspaceCommunity() {
                                         }
                                       }}
                                     />
-                                    <Button size="sm" className="h-8 px-2" onClick={() => handleSubmitComment(post.id)}>
+                                    <Button size="sm" className="h-9 px-2 self-end" onClick={() => handleSubmitComment(post.id)}>
                                       <Send className="h-3.5 w-3.5" />
                                     </Button>
                                   </div>
