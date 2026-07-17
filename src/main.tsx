@@ -44,6 +44,7 @@ import Help from "./pages/Help";
 import Contact from "./pages/Contact";
 import ContactSupport from "./pages/ContactSupport";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Security from "./pages/Security";
 import TermsOfService from "./pages/TermsOfService";
 import CookiePolicy from "./pages/CookiePolicy";
 
