@@ -13,7 +13,7 @@ import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 
 export function ProfileSettings() {
   const { isAdminOrOwner } = useIsAdminOrOwner()
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const navigate = useNavigate()
   const isMobile = useIsMobile()
 
