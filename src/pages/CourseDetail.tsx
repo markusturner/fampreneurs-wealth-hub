@@ -1455,7 +1455,7 @@ export default function CourseDetail() {
                 allowFullScreen
               />
             ) : (
-              <video src={selectedLesson.video_url} controls className="w-full h-full" />
+              <video ref={lessonVideoRef} src={selectedLesson.video_url} controls className="w-full h-full" />
             )}
           </div>
         ) : (() => {
@@ -1470,6 +1470,17 @@ export default function CourseDetail() {
           }
           return null
         })()}
+
+        {/* Transcript & subtitle translator */}
+        {selectedLesson?.video_url && selectedLesson.id && (
+          <LessonTranscriptPanel
+            lessonId={selectedLesson.id}
+            videoUrl={selectedLesson.video_url}
+            videoRef={lessonVideoRef}
+            isAdminOrOwner={isAdminOrOwner}
+          />
+        )}
+
 
         {/* Instructor row */}
         <div className="flex items-center justify-between border-b border-border pb-4">
