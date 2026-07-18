@@ -87,13 +87,15 @@ const Security = () => {
             If we confirm a breach that affects your personal information, we will (a) contain and investigate the incident,
             (b) notify affected users by email within 72 hours of confirmation, (c) explain what data was involved and what
             steps to take, and (d) report to regulators where required by law. Notices will come from a truheirs.com address.
+            You can also report a suspected incident yourself from <b>Profile Settings → Security → Report incident</b>.
           </Item>
 
           <Item icon={ShieldCheck} title="8. What happens to my trust if my data is stolen after a breach?">
             Your legal trust document exists independently of the app — a data compromise does not invalidate or transfer
-            ownership of the trust. In a worst case we would help you re-secure your account (password reset, new 2FA,
-            revoked sessions) and, if any signed originals were exposed, coordinate with your trust attorney to reissue or
-            re-notarize the affected documents.
+            ownership of the trust. In a worst case we help you re-secure your account (password reset, new 2FA, revoked
+            sessions via the <b>Lock account</b> button in Profile Settings → Security) and, if any signed originals were
+            exposed, coordinate with your trust attorney to reissue or re-notarize the affected documents. Use the
+            <b> Request reissue</b> button in Profile Settings → Security to start that workflow.
           </Item>
 
           <Item icon={Shield} title="9. How bad could damage be if the website were hacked?">
@@ -106,16 +108,19 @@ const Security = () => {
           <Item icon={UserX} title="10. What about identity fraud if my trust falls into the wrong hands?">
             A copy of your trust document alone cannot be used to move assets — funding changes require notarized signatures
             and, for real estate or accounts, third-party verification with the custodian. If you ever suspect your documents
-            were exposed, contact support@truheirs.com immediately; we will lock your account, force a password + 2FA reset,
-            and connect you with your trust attorney to reissue the affected documents.
+            were exposed, use the <b>Lock account</b> button in Profile Settings → Security to sign out of every device
+            instantly, then email privacy@truheirs.com — we will force a password + 2FA reset and connect you with your
+            trust attorney to reissue the affected documents.
           </Item>
 
           <Item icon={Umbrella} title="11. What insurance protection do you offer?">
-            TruHeirs is actively evaluating cyber liability and technology E&amp;O coverage for the platform. Once a policy is
-            bound, this page will be updated with the carrier, coverage limits, and what it protects against. In the meantime,
-            all of the technical safeguards above are in place, and no coverage on our side replaces your own homeowners,
-            umbrella, or identity-theft policy for personal losses.
+            TruHeirs is actively evaluating cyber liability and technology E&amp;O coverage for the platform. A policy has not
+            yet been bound, so we do not want to overstate coverage. Once a policy is in force, this page will be updated
+            with the carrier, coverage limits, and what it protects against. In the meantime, all of the technical safeguards
+            above are in place, and no coverage on our side replaces your own homeowners, umbrella, or identity-theft policy
+            for personal losses.
           </Item>
+
         </div>
 
         <div className="text-center mt-12 py-8 border-t border-border">

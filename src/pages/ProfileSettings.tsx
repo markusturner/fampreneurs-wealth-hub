@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Settings, ArrowLeft, User, Link2, Shield } from 'lucide-react'
 import { TwoFactorSetup } from '@/components/auth/two-factor-setup'
+import { SecurityActions } from '@/components/auth/SecurityActions'
+
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
@@ -72,13 +74,15 @@ export function ProfileSettings() {
           <AccountSettings />
         </TabsContent>
 
-        <TabsContent value="security">
+        <TabsContent value="security" className="space-y-4">
           <TwoFactorSetup
             email={user?.email || ''}
             onComplete={() => {}}
             onSkip={() => {}}
           />
+          <SecurityActions />
         </TabsContent>
+
 
         <TabsContent value="affiliate">
           <AffiliateProgram />
