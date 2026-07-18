@@ -47,10 +47,14 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="account" className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isAdminOrOwner ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        <TabsList className={`grid w-full ${isAdminOrOwner ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <TabsTrigger value="account" className="flex items-center gap-1 md:gap-2 text-sm">
             <User className="h-4 w-4 shrink-0" />
             {isMobile ? "Account" : "Account Settings"}
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-1 md:gap-2 text-sm">
+            <Shield className="h-4 w-4 shrink-0" />
+            Security
           </TabsTrigger>
           <TabsTrigger value="affiliate" className="flex items-center gap-1 md:gap-2 text-sm">
             <Settings className="h-4 w-4 shrink-0" />
