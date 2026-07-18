@@ -72,6 +72,14 @@ export function ProfileSettings() {
           <AccountSettings />
         </TabsContent>
 
+        <TabsContent value="security">
+          <TwoFactorSetup
+            email={profile?.email || ''}
+            onComplete={() => {}}
+            onSkip={() => {}}
+          />
+        </TabsContent>
+
         <TabsContent value="affiliate">
           <AffiliateProgram />
         </TabsContent>
