@@ -74,7 +74,7 @@ export function ProfileSettings() {
 
         <TabsContent value="security">
           <TwoFactorSetup
-            email={profile?.email || ''}
+            email={user?.email || ''}
             onComplete={() => {}}
             onSkip={() => {}}
           />
