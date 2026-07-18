@@ -525,7 +525,14 @@ export default function Onboarding() {
           {currentFields.map(renderField)}
 
           <div className="flex justify-between pt-3 md:pt-4 flex-shrink-0">
-            <Button variant="outline" onClick={() => setStep(s => s - 1)} disabled={step === 0}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setStep(s => Math.max(0, s - 1))}
+              disabled={step === 0 || submitting}
+              className="border-2"
+              style={{ borderColor: '#290a52', color: '#290a52', backgroundColor: '#fff' }}
+            >
               <ArrowLeft className="h-4 w-4 mr-1" /> Back
             </Button>
 
