@@ -5,14 +5,15 @@ import { AffiliateLinksManager } from '@/components/dashboard/affiliate-links-ma
 import { AccountSettings } from '@/components/dashboard/account-settings'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Settings, ArrowLeft, User, Link2 } from 'lucide-react'
+import { Settings, ArrowLeft, User, Link2, Shield } from 'lucide-react'
+import { TwoFactorSetup } from '@/components/auth/two-factor-setup'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 
 export function ProfileSettings() {
   const { isAdminOrOwner } = useIsAdminOrOwner()
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const navigate = useNavigate()
   const isMobile = useIsMobile()
 
@@ -46,10 +47,14 @@ export function ProfileSettings() {
       </div>
 
       <Tabs defaultValue="account" className="space-y-4 md:space-y-6">
-        <TabsList className={`grid w-full ${isAdminOrOwner ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        <TabsList className={`grid w-full ${isAdminOrOwner ? 'grid-cols-4' : 'grid-cols-3'}`}>
           <TabsTrigger value="account" className="flex items-center gap-1 md:gap-2 text-sm">
             <User className="h-4 w-4 shrink-0" />
             {isMobile ? "Account" : "Account Settings"}
+          </TabsTrigger>
+          <TabsTrigger value="security" className="flex items-center gap-1 md:gap-2 text-sm">
+            <Shield className="h-4 w-4 shrink-0" />
+            Security
           </TabsTrigger>
           <TabsTrigger value="affiliate" className="flex items-center gap-1 md:gap-2 text-sm">
             <Settings className="h-4 w-4 shrink-0" />
@@ -65,6 +70,14 @@ export function ProfileSettings() {
 
         <TabsContent value="account">
           <AccountSettings />
+        </TabsContent>
+
+        <TabsContent value="security">
+          <TwoFactorSetup
+            email={user?.email || ''}
+            onComplete={() => {}}
+            onSkip={() => {}}
+          />
         </TabsContent>
 
         <TabsContent value="affiliate">
