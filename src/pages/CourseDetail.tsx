@@ -268,6 +268,7 @@ export default function CourseDetail() {
   const { toast } = useToast()
   const navigate = useNavigate()
   const { isAdminOrOwner } = useIsAdminOrOwner()
+  const lessonVideoRef = useRef<HTMLVideoElement | null>(null)
 
   const userPrograms = useMemo<ProgramCode[]>(() => profileProgramCodes(profile?.program_name), [profile?.program_name])
   const isProgramLocked = useCallback((required?: string[] | null) => {
