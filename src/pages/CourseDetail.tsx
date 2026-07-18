@@ -50,6 +50,7 @@ import { AddResourceDialog } from '@/components/classroom/AddResourceDialog'
 import { EditResourceDialog } from '@/components/classroom/EditResourceDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
+import { LessonTranscriptPanel } from '@/components/classroom/LessonTranscriptPanel'
 import { CourseComments } from '@/components/classroom/CourseComments'
 import { LessonRichTextEditor } from '@/components/classroom/LessonRichTextEditor'
 import {
