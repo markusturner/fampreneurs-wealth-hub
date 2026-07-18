@@ -902,11 +902,20 @@ export default function ProgramAgreement() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-xl">
-          <CardHeader className="text-center">
+          <CardHeader className="text-center relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setAgreementStep('signing')}
+              className="absolute left-2 top-2 gap-1"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back
+            </Button>
             <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-12 h-12 mx-auto mb-2 object-contain" />
             <CardTitle className="text-xl">Identity Verification</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">Complete these steps to verify your agreement</p>
           </CardHeader>
+
           <CardContent className="space-y-6">
             {/* Step 1: Human Verification */}
             <div className={`p-4 rounded-lg border ${humanVerified ? 'border-green-300 bg-green-50' : 'border-border'}`}>
