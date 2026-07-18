@@ -74,13 +74,15 @@ export function ProfileSettings() {
           <AccountSettings />
         </TabsContent>
 
-        <TabsContent value="security">
+        <TabsContent value="security" className="space-y-4">
           <TwoFactorSetup
             email={user?.email || ''}
             onComplete={() => {}}
             onSkip={() => {}}
           />
+          <SecurityActions />
         </TabsContent>
+
 
         <TabsContent value="affiliate">
           <AffiliateProgram />
