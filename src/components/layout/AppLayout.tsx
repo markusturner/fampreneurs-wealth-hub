@@ -93,7 +93,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   useEffect(() => {
     if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner) {
       if (onboardingCompleted === false) return
-      if (needsAgreement && agreementCompleted === false && location.pathname !== '/program-agreement' && location.pathname !== '/profile-photo') {
+      if (needsAgreement && agreementCompleted === false && location.pathname !== '/program-agreement' && location.pathname !== '/profile-photo' && location.pathname !== '/profile-settings') {
         navigate("/program-agreement")
       }
     }
