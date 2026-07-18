@@ -1044,11 +1044,20 @@ export default function ProgramAgreement() {
       <div className="w-full max-w-5xl flex gap-6">
         {/* Main Agreement Card */}
         <Card className="flex-1">
-          <CardHeader className="text-center">
+          <CardHeader className="text-center relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/onboarding')}
+              className="absolute left-2 top-2 gap-1"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back
+            </Button>
             <img src="/lovable-uploads/f9de210b-406b-4d7d-9a44-c0e6e5114825.png" alt="TruHeirs" className="w-12 h-12 mx-auto mb-2 object-contain" />
             <CardTitle className="text-2xl">Program Services Agreement</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">{displayAgreementKey}</p>
           </CardHeader>
+
           <CardContent className="space-y-6">
             {/* Auto-filled info */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-lg bg-muted/50 border">
