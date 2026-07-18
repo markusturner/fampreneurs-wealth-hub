@@ -50,6 +50,7 @@ import { AddResourceDialog } from '@/components/classroom/AddResourceDialog'
 import { EditResourceDialog } from '@/components/classroom/EditResourceDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
+import { LessonTranscriptPanel } from '@/components/classroom/LessonTranscriptPanel'
 import { CourseComments } from '@/components/classroom/CourseComments'
 import { LessonRichTextEditor } from '@/components/classroom/LessonRichTextEditor'
 import {
@@ -267,6 +268,7 @@ export default function CourseDetail() {
   const { toast } = useToast()
   const navigate = useNavigate()
   const { isAdminOrOwner } = useIsAdminOrOwner()
+  const lessonVideoRef = useRef<HTMLVideoElement | null>(null)
 
   const userPrograms = useMemo<ProgramCode[]>(() => profileProgramCodes(profile?.program_name), [profile?.program_name])
   const isProgramLocked = useCallback((required?: string[] | null) => {
@@ -1453,7 +1455,7 @@ export default function CourseDetail() {
                 allowFullScreen
               />
             ) : (
-              <video src={selectedLesson.video_url} controls className="w-full h-full" />
+              <video ref={lessonVideoRef} src={selectedLesson.video_url} controls className="w-full h-full" />
             )}
           </div>
         ) : (() => {
@@ -1468,6 +1470,17 @@ export default function CourseDetail() {
           }
           return null
         })()}
+
+        {/* Transcript & subtitle translator */}
+        {selectedLesson?.video_url && selectedLesson.id && (
+          <LessonTranscriptPanel
+            lessonId={selectedLesson.id}
+            videoUrl={selectedLesson.video_url}
+            videoRef={lessonVideoRef}
+            isAdminOrOwner={isAdminOrOwner}
+          />
+        )}
+
 
         {/* Instructor row */}
         <div className="flex items-center justify-between border-b border-border pb-4">

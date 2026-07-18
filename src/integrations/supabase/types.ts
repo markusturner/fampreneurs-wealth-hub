@@ -3521,6 +3521,53 @@ export type Database = {
           },
         ]
       }
+      lesson_transcripts: {
+        Row: {
+          created_at: string
+          error: string | null
+          full_text: string | null
+          id: string
+          is_source: boolean
+          language: string
+          lesson_id: string
+          segments: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          full_text?: string | null
+          id?: string
+          is_source?: boolean
+          language: string
+          lesson_id: string
+          segments?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          full_text?: string | null
+          id?: string
+          is_source?: boolean
+          language?: string
+          lesson_id?: string
+          segments?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_transcripts_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "course_videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meeting_reminders: {
         Row: {
           created_at: string

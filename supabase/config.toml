@@ -60,6 +60,14 @@ verify_jwt = false
 [functions.send-trust-email]
 verify_jwt = false
 
+[functions.transcribe-lesson]
+verify_jwt = false
+
+[functions.translate-lesson-transcript]
+verify_jwt = false
+
+
+
 [functions.fetch-trust-sheets]
 verify_jwt = false
 
