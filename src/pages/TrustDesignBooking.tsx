@@ -31,16 +31,19 @@ export default function TrustDesignBooking() {
   }, [user, navigate])
 
   useEffect(() => {
-    // Load Calendly widget script outside React's managed DOM
+    // Load LeadConnector form embed script
     const script = document.createElement('script')
-    script.src = 'https://assets.calendly.com/assets/external/widget.js'
+    script.src = 'https://link.msgsndr.com/js/form_embed.js'
     script.async = true
-    document.head.appendChild(script)
+    script.type = 'text/javascript'
+    document.body.appendChild(script)
     scriptRef.current = script
 
     const handleMessage = (e: MessageEvent) => {
-      if (e.data?.event === 'calendly.event_scheduled') {
-        console.log('[TrustDesignBooking] Calendly event_scheduled received')
+      const data = e.data
+      const type = typeof data === 'string' ? data : data?.type || data?.event
+      if (typeof type === 'string' && /appointment|booking|scheduled|form[_-]?submit/i.test(type)) {
+        console.log('[TrustDesignBooking] Booking event received:', type)
         markBookingComplete()
       }
     }
@@ -48,7 +51,6 @@ export default function TrustDesignBooking() {
 
     return () => {
       window.removeEventListener('message', handleMessage)
-      // Safe cleanup - script is in <head>, not managed by React
       try {
         if (scriptRef.current && scriptRef.current.parentNode) {
           scriptRef.current.parentNode.removeChild(scriptRef.current)
