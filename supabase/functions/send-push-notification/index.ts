@@ -95,22 +95,22 @@ Deno.serve(async (req) => {
       (basePayload as any).app_url = tapUrl;
     }
 
-    // First target by External User ID. If OneSignal has not attached the phone
-    // to that user yet, retry directly by the saved Subscription IDs from Natively.
-    const externalPayload: Record<string, unknown> = {
-      ...basePayload,
-      include_aliases: { external_id: [user_id] },
-      target_channel: "push",
-    };
-
-    console.log(`[PUSH] POST OneSignal /notifications for external_id=${user_id}`);
-    let delivery = await sendOneSignal(restKey, externalPayload);
-
-    if (delivery.ok && (delivery.recipients ?? 0) === 0 && subscriptionIds.length > 0) {
-      console.warn(`[PUSH] External ID had 0 recipients; retrying ${subscriptionIds.length} saved subscription(s).`);
+    // Prefer targeting saved Subscription IDs directly (from Natively) — this is
+    // the most reliable path. Fall back to External User ID alias only if we
+    // have no saved subscriptions for this user.
+    let delivery;
+    if (subscriptionIds.length > 0) {
+      console.log(`[PUSH] POST OneSignal /notifications for ${subscriptionIds.length} subscription_id(s)`);
       delivery = await sendOneSignal(restKey, {
         ...basePayload,
         include_subscription_ids: subscriptionIds,
+      });
+    } else {
+      console.log(`[PUSH] No saved subscriptions; targeting external_id=${user_id}`);
+      delivery = await sendOneSignal(restKey, {
+        ...basePayload,
+        include_aliases: { external_id: [user_id] },
+        target_channel: "push",
       });
     }
 
