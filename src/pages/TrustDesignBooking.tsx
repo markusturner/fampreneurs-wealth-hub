@@ -75,10 +75,11 @@ export default function TrustDesignBooking() {
         </CardHeader>
         <CardContent>
           <div ref={calendlyRef}>
-            <div 
-              className="calendly-inline-widget" 
-              data-url="https://calendly.com/turnermarkus50/private-trust-design?primary_color=290a52" 
-              style={{ minWidth: '320px', height: '700px' }}
+            <iframe
+              src="https://api.leadconnectorhq.com/widget/booking/57gmsk4ehRnukpLdEFxH"
+              style={{ width: '100%', border: 'none', overflow: 'hidden', minHeight: '700px' }}
+              scrolling="no"
+              id="jbuepPNPpLxO6qSzlAW9_1784489201296"
             />
           </div>
         </CardContent>
