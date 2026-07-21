@@ -83,6 +83,15 @@ export default function TrustDesignBooking() {
               id="jbuepPNPpLxO6qSzlAW9_1784489201296"
             />
           </div>
+          <div className="mt-6 flex flex-col items-center gap-2 border-t pt-6">
+            <p className="text-sm text-muted-foreground text-center">
+              Already booked your call? Click below to continue to your dashboard.
+            </p>
+            <Button onClick={markBookingComplete} size="lg" className="gap-2">
+              <CheckCircle2 className="h-4 w-4" />
+              I've booked my call
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
