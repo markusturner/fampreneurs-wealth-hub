@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Shield, Lock, Server, KeyRound, Trash2, FileText, AlertTriangle, ShieldCheck, UserX, Umbrella } from 'lucide-react';
+import { ArrowLeft, Shield, Lock, Server, KeyRound, Trash2, FileText, AlertTriangle, ShieldCheck, UserX, Umbrella, ClipboardCheck, Eye, Usb, BookOpen } from 'lucide-react';
 import { navigateToRoute } from '@/utils/navigation';
 
 const Item = ({ icon: Icon, title, children }: { icon: any; title: string; children: React.ReactNode }) => (
@@ -119,6 +119,34 @@ const Security = () => {
             with the carrier, coverage limits, and what it protects against. In the meantime, all of the technical safeguards
             above are in place, and no coverage on our side replaces your own homeowners, umbrella, or identity-theft policy
             for personal losses.
+          </Item>
+
+          <Item icon={Eye} title="12. Are admins who access my data logged and regularly reviewed?">
+            Yes. Every admin action inside the app (viewing submissions, editing records, changing roles, unlocking accounts)
+            is written to an audit log with the admin's user ID, timestamp, and IP. Direct database access on Supabase is also
+            logged at the platform level. Markus Turner reviews the admin audit log at least monthly and after any support
+            ticket that involved looking at customer data.
+          </Item>
+
+          <Item icon={ClipboardCheck} title="13. Are admins audited, and how often?">
+            Yes. Admin accounts and their role assignments are reviewed on a quarterly cadence: we confirm each admin still
+            needs the role, rotate credentials, and remove any accounts that are no longer active. Ad-hoc reviews also happen
+            immediately whenever an admin leaves, changes responsibility, or if suspicious activity is flagged in the log.
+          </Item>
+
+          <Item icon={Usb} title="14. Do you support hardware security keys (YubiKey, HSM, PIV/PKI smart cards)?">
+            Not yet. Today TruHeirs supports app-based TOTP two-factor authentication (Google Authenticator, Authy, 1Password,
+            etc.), which is phishing-resistant when paired with a strong password. Hardware security keys such as YubiKey and
+            other FIDO2/WebAuthn devices are on our roadmap; HSMs and PIV/PKI smart cards are reserved for enterprise
+            deployments and are not available on the standard consumer plan. If hardware-key support is important to you,
+            email privacy@truheirs.com and we will prioritize it.
+          </Item>
+
+          <Item icon={BookOpen} title="15. Do you have a formal security trust center page?">
+            This page is our security trust center. It brings together our security practices (encryption, access controls,
+            admin audits, incident response, MFA), links to the <button className="underline" style={{ color: '#290A52' }} onClick={() => navigateToRoute('/privacy-policy')}>Privacy Policy</button>, and explains the
+            controls Supabase provides at the platform layer. It is app-owner editable content, not an independent third-party
+            certification. Formal SOC 2 / ISO 27001 attestations are not yet in place; when they are, they will be linked here.
           </Item>
 
         </div>

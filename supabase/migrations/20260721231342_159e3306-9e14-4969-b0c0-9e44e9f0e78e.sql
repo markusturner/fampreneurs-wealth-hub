@@ -1,0 +1,1 @@
+UPDATE public.profiles SET trust_design_booked = true WHERE trust_design_booked IS NOT TRUE;
