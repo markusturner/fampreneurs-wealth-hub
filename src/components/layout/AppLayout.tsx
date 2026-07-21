@@ -110,7 +110,18 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementCompleted, needsAgreement, isAdminOrOwner, profile, navigate, location.pathname])
 
-  // Trust design booking is handled during onboarding — no in-app redirect needed.
+  // THEN trust design booking — only on very first login. Once trust_design_booked
+  // is true it stays true forever, so returning users are never sent here again.
+  useEffect(() => {
+    if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner && profile) {
+      if (onboardingCompleted === false) return
+      if (needsAgreement && agreementCompleted === false) return
+      if (!profile.profile_photo_uploaded) return
+      if (profile.trust_design_booked === false && location.pathname !== '/trust-design-booking') {
+        navigate("/trust-design-booking")
+      }
+    }
+  }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementCompleted, needsAgreement, isAdminOrOwner, profile, navigate, location.pathname])
 
   // Only block the WHOLE app on the very first auth load. After that, let pages
   // render while background hooks (subscription, roles, onboarding) refetch.
