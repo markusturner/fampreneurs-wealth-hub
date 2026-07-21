@@ -1,0 +1,1 @@
+UPDATE public.profiles SET trust_design_booked = true WHERE id = 'b767b3ee-f746-4b1b-a95e-b826db4109ae';
