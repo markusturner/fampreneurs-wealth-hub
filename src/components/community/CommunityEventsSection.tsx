@@ -304,7 +304,7 @@ export function CommunityEventsSection({ program }: Props) {
 function Section({
   title, events, canManage, onEdit, onDelete, empty, muted,
 }: {
-  title: string; events: CommunityEvent[]; canManage: boolean;
+  title: string; events: EventInstance[]; canManage: boolean;
   onEdit: (e: CommunityEvent) => void; onDelete: (e: CommunityEvent) => void;
   empty?: string; muted?: boolean;
 }) {
@@ -316,35 +316,50 @@ function Section({
         <p className="text-sm text-muted-foreground py-4">{empty}</p>
       ) : (
         <div className="space-y-2">
-          {events.map(ev => (
-            <Card key={ev.id} className={`border-border/60 ${muted ? 'opacity-70' : ''}`}>
-              <CardContent className="p-4 flex items-start gap-4">
-                <div className="flex flex-col items-center justify-center rounded-lg bg-[#290a52] text-white w-14 py-2 flex-shrink-0">
-                  <span className="text-[10px] uppercase tracking-wide">{format(new Date(ev.event_at), 'MMM')}</span>
-                  <span className="text-xl font-bold leading-none">{format(new Date(ev.event_at), 'd')}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate">{ev.title}</p>
-                  {ev.description && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{ev.description}</p>}
-                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{format(new Date(ev.event_at), 'h:mm a')} · {ev.duration_minutes}m</span>
-                    {ev.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{ev.location}</span>}
-                    {ev.join_url && (
-                      <a href={ev.join_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[#2eb2ff] hover:underline">
-                        <Video className="h-3 w-3" /> Join
-                      </a>
-                    )}
+          {events.map(ev => {
+            const when = new Date(ev.instance_at)
+            const recurringLabel =
+              ev.recurrence && ev.recurrence !== 'none'
+                ? ev.recurrence === 'biweekly' ? 'Every 2 weeks'
+                : ev.recurrence.charAt(0).toUpperCase() + ev.recurrence.slice(1)
+                : null
+            return (
+              <Card key={`${ev.id}-${ev.instance_at}`} className={`border-border/60 ${muted ? 'opacity-70' : ''}`}>
+                <CardContent className="p-4 flex items-start gap-4">
+                  <div className="flex flex-col items-center justify-center rounded-lg bg-[#290a52] text-white w-14 py-2 flex-shrink-0">
+                    <span className="text-[10px] uppercase tracking-wide">{format(when, 'MMM')}</span>
+                    <span className="text-xl font-bold leading-none">{format(when, 'd')}</span>
                   </div>
-                </div>
-                {canManage && (
-                  <div className="flex flex-col gap-1">
-                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => onEdit(ev)}><Pencil className="h-3.5 w-3.5" /></Button>
-                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive" onClick={() => onDelete(ev)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-sm truncate">{ev.title}</p>
+                      {recurringLabel && (
+                        <span className="text-[10px] uppercase tracking-wide bg-[#290a52]/10 text-[#290a52] px-1.5 py-0.5 rounded">
+                          {recurringLabel}
+                        </span>
+                      )}
+                    </div>
+                    {ev.description && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{ev.description}</p>}
+                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{format(when, 'h:mm a')} · {ev.duration_minutes}m</span>
+                      {ev.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{ev.location}</span>}
+                      {ev.join_url && (
+                        <a href={ev.join_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[#2eb2ff] hover:underline">
+                          <Video className="h-3 w-3" /> Join
+                        </a>
+                      )}
+                    </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                  {canManage && !ev.is_recurring_instance && (
+                    <div className="flex flex-col gap-1">
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => onEdit(ev)}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive" onClick={() => onDelete(ev)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
     </div>
