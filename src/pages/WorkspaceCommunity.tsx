@@ -1993,6 +1993,8 @@ export default function WorkspaceCommunity() {
                 ))
               )}
             </div>
+            </>
+            )}
           </div>
 
           {/* Right Sidebar - hidden on mobile */}
