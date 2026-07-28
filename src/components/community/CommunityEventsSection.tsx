@@ -6,11 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { CalendarDays, Clock, MapPin, Video, Plus, Trash2, Pencil, ExternalLink } from 'lucide-react'
+import { CalendarDays, Clock, MapPin, Video, Plus, Trash2, Pencil, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { useToast } from '@/hooks/use-toast'
-import { format, isPast } from 'date-fns'
+import { format, isPast, isSameDay, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, isSameMonth, isToday } from 'date-fns'
 
 type Recurrence = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly'
 
