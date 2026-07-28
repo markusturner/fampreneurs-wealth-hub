@@ -1761,7 +1761,7 @@ export default function WorkspaceCommunity() {
                                   )}
                                   {post.content && (
                                     <p className={`text-sm whitespace-pre-wrap break-words leading-relaxed ${shouldClamp ? 'line-clamp-3' : ''}`}>
-                                      {renderContentWithMentions(post.content)}
+                                      {renderContentWithMentions(post.content, post.author_name)}
                                     </p>
                                   )}
                                   {post.content && (lineCount > 3 || post.content.length > 280) && (
