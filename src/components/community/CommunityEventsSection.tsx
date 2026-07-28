@@ -12,6 +12,8 @@ import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { useToast } from '@/hooks/use-toast'
 import { format, isPast } from 'date-fns'
 
+type Recurrence = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly'
+
 interface CommunityEvent {
   id: string
   program: string
@@ -23,6 +25,8 @@ interface CommunityEvent {
   join_url: string | null
   cover_image_url: string | null
   created_by: string
+  recurrence: Recurrence
+  recurrence_end_date: string | null
 }
 
 interface Props { program: string }
@@ -30,6 +34,45 @@ interface Props { program: string }
 const emptyForm = {
   title: '', description: '', date: '', time: '',
   duration: 60, location: '', join_url: '',
+  recurrence: 'none' as Recurrence,
+  recurrence_mode: 'forever' as 'forever' | 'until',
+  recurrence_end_date: '',
+}
+
+function addRecurrence(date: Date, rec: Recurrence): Date {
+  const d = new Date(date)
+  switch (rec) {
+    case 'daily': d.setDate(d.getDate() + 1); break
+    case 'weekly': d.setDate(d.getDate() + 7); break
+    case 'biweekly': d.setDate(d.getDate() + 14); break
+    case 'monthly': d.setMonth(d.getMonth() + 1); break
+  }
+  return d
+}
+
+interface EventInstance extends CommunityEvent { instance_at: string; is_recurring_instance: boolean }
+
+function expandEvents(events: CommunityEvent[], horizonDays = 180): EventInstance[] {
+  const out: EventInstance[] = []
+  const horizon = new Date(); horizon.setDate(horizon.getDate() + horizonDays)
+  const past = new Date(); past.setDate(past.getDate() - 60)
+  for (const ev of events) {
+    if (!ev.recurrence || ev.recurrence === 'none') {
+      out.push({ ...ev, instance_at: ev.event_at, is_recurring_instance: false })
+      continue
+    }
+    const endBoundary = ev.recurrence_end_date ? new Date(`${ev.recurrence_end_date}T23:59:59`) : horizon
+    let cur = new Date(ev.event_at)
+    let i = 0
+    while (cur <= endBoundary && cur <= horizon && i < 500) {
+      if (cur >= past) {
+        out.push({ ...ev, instance_at: cur.toISOString(), is_recurring_instance: i > 0 })
+      }
+      cur = addRecurrence(cur, ev.recurrence)
+      i++
+    }
+  }
+  return out.sort((a, b) => a.instance_at.localeCompare(b.instance_at))
 }
 
 export function CommunityEventsSection({ program }: Props) {
@@ -74,6 +117,9 @@ export function CommunityEventsSection({ program }: Props) {
       duration: ev.duration_minutes,
       location: ev.location || '',
       join_url: ev.join_url || '',
+      recurrence: (ev.recurrence || 'none') as Recurrence,
+      recurrence_mode: ev.recurrence_end_date ? 'until' : 'forever',
+      recurrence_end_date: ev.recurrence_end_date || '',
     })
     setOpen(true)
   }
@@ -81,6 +127,10 @@ export function CommunityEventsSection({ program }: Props) {
   const save = async () => {
     if (!form.title || !form.date || !form.time) {
       toast({ title: 'Missing info', description: 'Title, date and time are required.', variant: 'destructive' })
+      return
+    }
+    if (form.recurrence !== 'none' && form.recurrence_mode === 'until' && !form.recurrence_end_date) {
+      toast({ title: 'Missing end date', description: 'Pick an end date or choose "Forever".', variant: 'destructive' })
       return
     }
     setSaving(true)
@@ -94,6 +144,11 @@ export function CommunityEventsSection({ program }: Props) {
       location: form.location || null,
       join_url: form.join_url || null,
       created_by: user?.id as string,
+      recurrence: form.recurrence,
+      recurrence_end_date:
+        form.recurrence !== 'none' && form.recurrence_mode === 'until' && form.recurrence_end_date
+          ? form.recurrence_end_date
+          : null,
     }
     const { error } = editing
       ? await supabase.from('community_events').update(payload).eq('id', editing.id)
@@ -109,15 +164,18 @@ export function CommunityEventsSection({ program }: Props) {
   }
 
   const remove = async (ev: CommunityEvent) => {
-    if (!confirm(`Delete "${ev.title}"?`)) return
+    const isRecurring = ev.recurrence && ev.recurrence !== 'none'
+    if (!confirm(`Delete "${ev.title}"${isRecurring ? ' and all its recurring instances' : ''}?`)) return
     const { error } = await supabase.from('community_events').delete().eq('id', ev.id)
     if (error) return toast({ title: 'Delete failed', description: error.message, variant: 'destructive' })
     toast({ title: 'Event deleted' })
     load()
   }
 
-  const upcoming = events.filter(e => !isPast(new Date(e.event_at)))
-  const past = events.filter(e => isPast(new Date(e.event_at))).reverse()
+  const instances = expandEvents(events)
+  const upcoming = instances.filter(e => !isPast(new Date(e.instance_at)))
+  const past = instances.filter(e => isPast(new Date(e.instance_at))).reverse()
+
 
   return (
     <div className="space-y-6">
@@ -183,6 +241,53 @@ export function CommunityEventsSection({ program }: Props) {
               <Label>Join URL</Label>
               <Input value={form.join_url} onChange={e => setForm({ ...form, join_url: e.target.value })} placeholder="https://..." />
             </div>
+            <div className="border-t pt-3 space-y-3">
+              <div>
+                <Label>Repeats</Label>
+                <select
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  value={form.recurrence}
+                  onChange={e => setForm({ ...form, recurrence: e.target.value as Recurrence })}
+                >
+                  <option value="none">Does not repeat</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="biweekly">Every 2 weeks</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+              {form.recurrence !== 'none' && (
+                <div className="space-y-2">
+                  <Label>Ends</Label>
+                  <div className="flex items-center gap-4 text-sm">
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="radio"
+                        checked={form.recurrence_mode === 'forever'}
+                        onChange={() => setForm({ ...form, recurrence_mode: 'forever' })}
+                      />
+                      Forever
+                    </label>
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="radio"
+                        checked={form.recurrence_mode === 'until'}
+                        onChange={() => setForm({ ...form, recurrence_mode: 'until' })}
+                      />
+                      Until
+                    </label>
+                    {form.recurrence_mode === 'until' && (
+                      <Input
+                        type="date"
+                        className="max-w-[180px]"
+                        value={form.recurrence_end_date}
+                        onChange={e => setForm({ ...form, recurrence_end_date: e.target.value })}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
@@ -199,7 +304,7 @@ export function CommunityEventsSection({ program }: Props) {
 function Section({
   title, events, canManage, onEdit, onDelete, empty, muted,
 }: {
-  title: string; events: CommunityEvent[]; canManage: boolean;
+  title: string; events: EventInstance[]; canManage: boolean;
   onEdit: (e: CommunityEvent) => void; onDelete: (e: CommunityEvent) => void;
   empty?: string; muted?: boolean;
 }) {
@@ -211,35 +316,50 @@ function Section({
         <p className="text-sm text-muted-foreground py-4">{empty}</p>
       ) : (
         <div className="space-y-2">
-          {events.map(ev => (
-            <Card key={ev.id} className={`border-border/60 ${muted ? 'opacity-70' : ''}`}>
-              <CardContent className="p-4 flex items-start gap-4">
-                <div className="flex flex-col items-center justify-center rounded-lg bg-[#290a52] text-white w-14 py-2 flex-shrink-0">
-                  <span className="text-[10px] uppercase tracking-wide">{format(new Date(ev.event_at), 'MMM')}</span>
-                  <span className="text-xl font-bold leading-none">{format(new Date(ev.event_at), 'd')}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate">{ev.title}</p>
-                  {ev.description && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{ev.description}</p>}
-                  <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                    <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{format(new Date(ev.event_at), 'h:mm a')} · {ev.duration_minutes}m</span>
-                    {ev.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{ev.location}</span>}
-                    {ev.join_url && (
-                      <a href={ev.join_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[#2eb2ff] hover:underline">
-                        <Video className="h-3 w-3" /> Join
-                      </a>
-                    )}
+          {events.map(ev => {
+            const when = new Date(ev.instance_at)
+            const recurringLabel =
+              ev.recurrence && ev.recurrence !== 'none'
+                ? ev.recurrence === 'biweekly' ? 'Every 2 weeks'
+                : ev.recurrence.charAt(0).toUpperCase() + ev.recurrence.slice(1)
+                : null
+            return (
+              <Card key={`${ev.id}-${ev.instance_at}`} className={`border-border/60 ${muted ? 'opacity-70' : ''}`}>
+                <CardContent className="p-4 flex items-start gap-4">
+                  <div className="flex flex-col items-center justify-center rounded-lg bg-[#290a52] text-white w-14 py-2 flex-shrink-0">
+                    <span className="text-[10px] uppercase tracking-wide">{format(when, 'MMM')}</span>
+                    <span className="text-xl font-bold leading-none">{format(when, 'd')}</span>
                   </div>
-                </div>
-                {canManage && (
-                  <div className="flex flex-col gap-1">
-                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => onEdit(ev)}><Pencil className="h-3.5 w-3.5" /></Button>
-                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive" onClick={() => onDelete(ev)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-sm truncate">{ev.title}</p>
+                      {recurringLabel && (
+                        <span className="text-[10px] uppercase tracking-wide bg-[#290a52]/10 text-[#290a52] px-1.5 py-0.5 rounded">
+                          {recurringLabel}
+                        </span>
+                      )}
+                    </div>
+                    {ev.description && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{ev.description}</p>}
+                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{format(when, 'h:mm a')} · {ev.duration_minutes}m</span>
+                      {ev.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{ev.location}</span>}
+                      {ev.join_url && (
+                        <a href={ev.join_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[#2eb2ff] hover:underline">
+                          <Video className="h-3 w-3" /> Join
+                        </a>
+                      )}
+                    </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                  {canManage && !ev.is_recurring_instance && (
+                    <div className="flex flex-col gap-1">
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => onEdit(ev)}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-destructive" onClick={() => onDelete(ev)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       )}
     </div>

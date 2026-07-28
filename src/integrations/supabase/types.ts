@@ -1167,6 +1167,8 @@ export type Database = {
           join_url: string | null
           location: string | null
           program: string
+          recurrence: string
+          recurrence_end_date: string | null
           title: string
           updated_at: string
         }
@@ -1181,6 +1183,8 @@ export type Database = {
           join_url?: string | null
           location?: string | null
           program: string
+          recurrence?: string
+          recurrence_end_date?: string | null
           title: string
           updated_at?: string
         }
@@ -1195,6 +1199,8 @@ export type Database = {
           join_url?: string | null
           location?: string | null
           program?: string
+          recurrence?: string
+          recurrence_end_date?: string | null
           title?: string
           updated_at?: string
         }
