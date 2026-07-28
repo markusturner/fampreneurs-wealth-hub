@@ -366,3 +366,117 @@ function Section({
     </div>
   )
 }
+
+function MonthCalendar({ instances }: { instances: EventInstance[] }) {
+  const [cursor, setCursor] = useState(() => startOfMonth(new Date()))
+  const [selected, setSelected] = useState<Date | null>(new Date())
+
+  const monthStart = startOfMonth(cursor)
+  const monthEnd = endOfMonth(cursor)
+  const gridStart = startOfWeek(monthStart, { weekStartsOn: 0 })
+  const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 0 })
+
+  const days: Date[] = []
+  for (let d = gridStart; d <= gridEnd; d = addDays(d, 1)) days.push(d)
+
+  const eventsByDay = new Map<string, EventInstance[]>()
+  for (const ev of instances) {
+    const key = format(new Date(ev.instance_at), 'yyyy-MM-dd')
+    const arr = eventsByDay.get(key) || []
+    arr.push(ev)
+    eventsByDay.set(key, arr)
+  }
+
+  const selectedKey = selected ? format(selected, 'yyyy-MM-dd') : ''
+  const selectedEvents = (eventsByDay.get(selectedKey) || []).sort(
+    (a, b) => a.instance_at.localeCompare(b.instance_at)
+  )
+
+  return (
+    <Card className="border-border/60">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-3">
+          <button
+            className="h-8 w-8 rounded-md hover:bg-muted inline-flex items-center justify-center"
+            onClick={() => setCursor(addMonths(cursor, -1))}
+            aria-label="Previous month"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <div className="text-sm font-semibold">{format(cursor, 'MMMM yyyy')}</div>
+          <button
+            className="h-8 w-8 rounded-md hover:bg-muted inline-flex items-center justify-center"
+            onClick={() => setCursor(addMonths(cursor, 1))}
+            aria-label="Next month"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="grid grid-cols-7 text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
+          {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+            <div key={d} className="text-center py-1">{d}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {days.map(day => {
+            const key = format(day, 'yyyy-MM-dd')
+            const dayEvents = eventsByDay.get(key) || []
+            const inMonth = isSameMonth(day, cursor)
+            const isSel = selected && isSameDay(day, selected)
+            const today = isToday(day)
+            return (
+              <button
+                key={key}
+                onClick={() => setSelected(day)}
+                className={`aspect-square rounded-md text-xs flex flex-col items-center justify-start p-1 transition-colors border ${
+                  isSel
+                    ? 'bg-[#290a52] text-white border-[#290a52]'
+                    : today
+                      ? 'border-[#290a52]/40 bg-[#290a52]/5'
+                      : 'border-transparent hover:bg-muted'
+                } ${inMonth ? '' : 'text-muted-foreground/50'}`}
+              >
+                <span className="font-medium leading-none pt-0.5">{format(day, 'd')}</span>
+                {dayEvents.length > 0 && (
+                  <span className="mt-auto flex gap-0.5 pb-0.5">
+                    {dayEvents.slice(0, 3).map((_, i) => (
+                      <span
+                        key={i}
+                        className={`h-1 w-1 rounded-full ${isSel ? 'bg-white' : 'bg-[#ffb500]'}`}
+                      />
+                    ))}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+        {selected && (
+          <div className="mt-4 border-t pt-3">
+            <p className="text-xs font-semibold text-muted-foreground mb-2">
+              {format(selected, 'EEEE, MMM d')}
+            </p>
+            {selectedEvents.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-2">No events this day.</p>
+            ) : (
+              <div className="space-y-1.5">
+                {selectedEvents.map(ev => (
+                  <div key={`${ev.id}-${ev.instance_at}`} className="flex items-center gap-2 text-xs">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#ffb500] flex-shrink-0" />
+                    <span className="font-medium">{format(new Date(ev.instance_at), 'h:mm a')}</span>
+                    <span className="truncate">{ev.title}</span>
+                    {ev.join_url && (
+                      <a href={ev.join_url} target="_blank" rel="noreferrer" className="ml-auto text-[#2eb2ff] hover:underline inline-flex items-center gap-1">
+                        <Video className="h-3 w-3" /> Join
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
