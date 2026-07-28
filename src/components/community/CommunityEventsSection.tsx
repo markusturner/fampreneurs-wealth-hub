@@ -12,6 +12,8 @@ import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { useToast } from '@/hooks/use-toast'
 import { format, isPast } from 'date-fns'
 
+type Recurrence = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly'
+
 interface CommunityEvent {
   id: string
   program: string
@@ -23,6 +25,8 @@ interface CommunityEvent {
   join_url: string | null
   cover_image_url: string | null
   created_by: string
+  recurrence: Recurrence
+  recurrence_end_date: string | null
 }
 
 interface Props { program: string }
@@ -30,6 +34,45 @@ interface Props { program: string }
 const emptyForm = {
   title: '', description: '', date: '', time: '',
   duration: 60, location: '', join_url: '',
+  recurrence: 'none' as Recurrence,
+  recurrence_mode: 'forever' as 'forever' | 'until',
+  recurrence_end_date: '',
+}
+
+function addRecurrence(date: Date, rec: Recurrence): Date {
+  const d = new Date(date)
+  switch (rec) {
+    case 'daily': d.setDate(d.getDate() + 1); break
+    case 'weekly': d.setDate(d.getDate() + 7); break
+    case 'biweekly': d.setDate(d.getDate() + 14); break
+    case 'monthly': d.setMonth(d.getMonth() + 1); break
+  }
+  return d
+}
+
+interface EventInstance extends CommunityEvent { instance_at: string; is_recurring_instance: boolean }
+
+function expandEvents(events: CommunityEvent[], horizonDays = 180): EventInstance[] {
+  const out: EventInstance[] = []
+  const horizon = new Date(); horizon.setDate(horizon.getDate() + horizonDays)
+  const past = new Date(); past.setDate(past.getDate() - 60)
+  for (const ev of events) {
+    if (!ev.recurrence || ev.recurrence === 'none') {
+      out.push({ ...ev, instance_at: ev.event_at, is_recurring_instance: false })
+      continue
+    }
+    const endBoundary = ev.recurrence_end_date ? new Date(`${ev.recurrence_end_date}T23:59:59`) : horizon
+    let cur = new Date(ev.event_at)
+    let i = 0
+    while (cur <= endBoundary && cur <= horizon && i < 500) {
+      if (cur >= past) {
+        out.push({ ...ev, instance_at: cur.toISOString(), is_recurring_instance: i > 0 })
+      }
+      cur = addRecurrence(cur, ev.recurrence)
+      i++
+    }
+  }
+  return out.sort((a, b) => a.instance_at.localeCompare(b.instance_at))
 }
 
 export function CommunityEventsSection({ program }: Props) {
