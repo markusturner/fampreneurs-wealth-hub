@@ -1,9 +1,9 @@
 import { useSearchParams } from 'react-router-dom'
 
-const TABS: { key: 'feed' | 'events' | 'leaderboard'; label: string }[] = [
-  { key: 'feed', label: 'Feed' },
-  { key: 'events', label: 'Events' },
-  { key: 'leaderboard', label: 'Leaderboard' },
+const TABS: { key: 'feed' | 'events' | 'leaderboard'; label: string; mobile: boolean }[] = [
+  { key: 'feed', label: 'Feed', mobile: true },
+  { key: 'events', label: 'Events', mobile: false },
+  { key: 'leaderboard', label: 'Leaderboard', mobile: true },
 ]
 
 export type CommunityView = 'feed' | 'events' | 'leaderboard'
