@@ -3443,6 +3443,72 @@ export type Database = {
         }
         Relationships: []
       }
+      invite_links: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          installment_amount: number | null
+          installment_frequency: string | null
+          invite_type: string
+          is_active: boolean
+          max_uses: number | null
+          note: string | null
+          payment_start_date: string | null
+          plan_type: string
+          program_name: string | null
+          role: string
+          token: string
+          total_amount: number | null
+          truheirs_access: boolean
+          updated_at: string
+          uses_count: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          installment_amount?: number | null
+          installment_frequency?: string | null
+          invite_type?: string
+          is_active?: boolean
+          max_uses?: number | null
+          note?: string | null
+          payment_start_date?: string | null
+          plan_type?: string
+          program_name?: string | null
+          role?: string
+          token: string
+          total_amount?: number | null
+          truheirs_access?: boolean
+          updated_at?: string
+          uses_count?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          installment_amount?: number | null
+          installment_frequency?: string | null
+          invite_type?: string
+          is_active?: boolean
+          max_uses?: number | null
+          note?: string | null
+          payment_start_date?: string | null
+          plan_type?: string
+          program_name?: string | null
+          role?: string
+          token?: string
+          total_amount?: number | null
+          truheirs_access?: boolean
+          updated_at?: string
+          uses_count?: number
+        }
+        Relationships: []
+      }
       legacy_meeting_uploads: {
         Row: {
           category: string
