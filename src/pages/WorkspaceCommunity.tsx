@@ -24,7 +24,8 @@ import {
   MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X,
   Mic, MicOff, Lock, Calendar, CreditCard, Play, Pencil, Check, Pin, PinOff, ListChecks
 } from 'lucide-react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
+import { MessageSquare, CalendarDays, Trophy } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
