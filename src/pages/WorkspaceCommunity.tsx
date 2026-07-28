@@ -916,9 +916,17 @@ export default function WorkspaceCommunity() {
       if (match.index > lastIndex) {
         parts.push(content.slice(lastIndex, match.index))
       }
+      const name = match[1]
+      // Skip placeholder token "@member" — legacy artifact, not a real mention
+      if (name.trim().toLowerCase() === 'member') {
+        // drop it entirely, collapse a trailing space if present
+        lastIndex = match.index + match[0].length
+        if (content[lastIndex] === ' ') lastIndex += 1
+        continue
+      }
       parts.push(
         <strong key={match.index} className="font-bold">
-          @{match[1]}
+          @{name}
         </strong>
       )
       lastIndex = match.index + match[0].length
