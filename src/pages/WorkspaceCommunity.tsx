@@ -905,7 +905,7 @@ export default function WorkspaceCommunity() {
     return `${Math.floor(days / 30)}mo`
   }
 
-  const renderContentWithMentions = (content: string) => {
+  const renderContentWithMentions = (content: string, authorName?: string) => {
     // Match @Name or @First Last (up to 3 words, no newlines)
     const mentionRegex = /@([A-Za-z]\w*(?:\s[A-Za-z]\w*){0,2})/g
     const parts: React.ReactNode[] = []
@@ -917,12 +917,17 @@ export default function WorkspaceCommunity() {
         parts.push(content.slice(lastIndex, match.index))
       }
       const name = match[1]
-      // Skip placeholder token "@member" — legacy artifact, not a real mention
       const firstWord = name.trim().split(/\s+/)[0].toLowerCase()
+      // Legacy placeholder "@member" — replace with the actual author's name
       if (firstWord === 'member') {
-        // keep any text after "member" (e.g. "@member I live" -> " I live")
         const rest = name.slice('member'.length)
-        if (match.index > lastIndex || rest) parts.push(rest)
+        const displayName = authorName || 'Member'
+        parts.push(
+          <strong key={match.index} className="font-bold">
+            @{displayName}
+          </strong>
+        )
+        if (rest) parts.push(rest)
         lastIndex = match.index + match[0].length
         continue
       }
@@ -1756,7 +1761,7 @@ export default function WorkspaceCommunity() {
                                   )}
                                   {post.content && (
                                     <p className={`text-sm whitespace-pre-wrap break-words leading-relaxed ${shouldClamp ? 'line-clamp-3' : ''}`}>
-                                      {renderContentWithMentions(post.content)}
+                                      {renderContentWithMentions(post.content, post.author_name)}
                                     </p>
                                   )}
                                   {post.content && (lineCount > 3 || post.content.length > 280) && (
@@ -1855,7 +1860,7 @@ export default function WorkspaceCommunity() {
                                       </div>
                                       {comment.content && (
                                         <p className="text-sm mt-0.5 whitespace-pre-wrap break-words leading-relaxed">
-                                          {renderContentWithMentions(comment.content)}
+                                          {renderContentWithMentions(comment.content, comment.author_name)}
                                         </p>
                                       )}
                                       {comment.image_url && (
