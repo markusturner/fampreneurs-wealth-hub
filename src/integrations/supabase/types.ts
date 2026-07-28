@@ -1155,6 +1155,51 @@ export type Database = {
           },
         ]
       }
+      community_events: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          duration_minutes: number
+          event_at: string
+          id: string
+          join_url: string | null
+          location: string | null
+          program: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          duration_minutes?: number
+          event_at: string
+          id?: string
+          join_url?: string | null
+          location?: string | null
+          program: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          duration_minutes?: number
+          event_at?: string
+          id?: string
+          join_url?: string | null
+          location?: string | null
+          program?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       community_groups: {
         Row: {
           associated_courses: string[] | null
