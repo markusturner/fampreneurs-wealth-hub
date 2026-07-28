@@ -68,31 +68,48 @@ export function CommunityLeaderboardSection({ program }: Props) {
 }
 
 async function fetchScores(program: string, sinceIso: string | null): Promise<Row[]> {
-  let postsQ = supabase
+  // Get post ids + authors in this program
+  const { data: posts } = await supabase
     .from('community_posts')
-    .select('user_id, likes_count, program, created_at')
+    .select('id, user_id')
     .eq('program', program)
-  if (sinceIso) postsQ = postsQ.gte('created_at', sinceIso)
-  const { data: posts } = await postsQ
+  const postIds = (posts || []).map(p => p.id)
+  const postAuthor: Record<string, string> = {}
+  ;(posts || []).forEach(p => { if (p.user_id) postAuthor[p.id] = p.user_id })
+
+  // Get comment ids + authors on those posts
+  let commentAuthor: Record<string, string> = {}
+  let commentIds: string[] = []
+  if (postIds.length) {
+    const { data: comments } = await supabase
+      .from('community_comments')
+      .select('id, user_id, post_id')
+      .in('post_id', postIds)
+    ;(comments || []).forEach(c => {
+      commentIds.push(c.id)
+      if (c.user_id) commentAuthor[c.id] = c.user_id
+    })
+  }
 
   const userScores = new Map<string, number>()
-  ;(posts || []).forEach(p => {
-    if (!p.user_id) return
-    userScores.set(p.user_id, (userScores.get(p.user_id) || 0) + (p.likes_count || 0))
-  })
+  const add = (uid: string) => userScores.set(uid, (userScores.get(uid) || 0) + 1)
 
-  const postIds = (posts || []).map(p => (p as any).id).filter(Boolean)
-  // include comment likes: fetch comments in this program's posts via post ids
-  let commentsQ = supabase
-    .from('community_comments')
-    .select('user_id, likes_count, created_at, post_id, community_posts!inner(program)')
-    .eq('community_posts.program', program)
-  if (sinceIso) commentsQ = commentsQ.gte('created_at', sinceIso)
-  const { data: comments } = await commentsQ
-  ;(comments || []).forEach((c: any) => {
-    if (!c.user_id) return
-    userScores.set(c.user_id, (userScores.get(c.user_id) || 0) + (c.likes_count || 0))
-  })
+  if (postIds.length) {
+    let q = supabase.from('community_reactions').select('post_id, created_at').in('post_id', postIds).not('post_id', 'is', null)
+    if (sinceIso) q = q.gte('created_at', sinceIso)
+    const { data } = await q
+    ;(data || []).forEach((r: any) => { const uid = postAuthor[r.post_id]; if (uid) add(uid) })
+  }
+  if (commentIds.length) {
+    let q = supabase.from('community_reactions').select('comment_id, created_at').in('comment_id', commentIds).not('comment_id', 'is', null)
+    if (sinceIso) q = q.gte('created_at', sinceIso)
+    const { data } = await q
+    ;(data || []).forEach((r: any) => { const uid = commentAuthor[r.comment_id]; if (uid) add(uid) })
+    let q2 = supabase.from('community_comment_reactions').select('comment_id, created_at').in('comment_id', commentIds)
+    if (sinceIso) q2 = q2.gte('created_at', sinceIso)
+    const { data: d2 } = await q2
+    ;(d2 || []).forEach((r: any) => { const uid = commentAuthor[r.comment_id]; if (uid) add(uid) })
+  }
 
   const ids = Array.from(userScores.keys())
   if (ids.length === 0) return []
