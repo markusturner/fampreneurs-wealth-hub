@@ -34,9 +34,7 @@ const emptyForm = {
 
 export function CommunityEventsSection({ program }: Props) {
   const { user } = useAuth()
-  const { isAdmin } = useUserRole()
-  const { isOwner } = useOwnerRole(user?.id ?? null)
-  const canManage = isAdmin || isOwner
+  const { isAdminOrOwner: canManage } = useIsAdminOrOwner()
   const { toast } = useToast()
 
   const [events, setEvents] = useState<CommunityEvent[]>([])
