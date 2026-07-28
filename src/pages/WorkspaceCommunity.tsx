@@ -1860,7 +1860,7 @@ export default function WorkspaceCommunity() {
                                       </div>
                                       {comment.content && (
                                         <p className="text-sm mt-0.5 whitespace-pre-wrap break-words leading-relaxed">
-                                          {renderContentWithMentions(comment.content)}
+                                          {renderContentWithMentions(comment.content, comment.author_name)}
                                         </p>
                                       )}
                                       {comment.image_url && (
