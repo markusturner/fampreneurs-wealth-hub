@@ -1872,16 +1872,14 @@ export default function WorkspaceCommunity() {
                                 </Avatar>
                                 <div className="flex-1 space-y-1.5">
                                   <div className="flex gap-1.5">
-                                    <Textarea
+                                    <MentionTextarea
                                       ref={(el) => { commentTextareaRefs.current[post.id] = el }}
                                       placeholder="Write a comment..."
                                       value={commentText[post.id] || ''}
-                                      onChange={(e) => {
-                                        setCommentText(prev => ({ ...prev, [post.id]: e.target.value }))
-                                        const el = e.currentTarget
-                                        el.style.height = 'auto'
-                                        el.style.height = Math.min(el.scrollHeight, 300) + 'px'
+                                      onChange={(v) => {
+                                        setCommentText(prev => ({ ...prev, [post.id]: v }))
                                       }}
+                                      program={program}
                                       rows={1}
                                       className="min-h-[36px] max-h-[300px] resize-none border bg-muted/50 rounded-lg px-3 py-2 focus-visible:ring-1 text-sm flex-1 overflow-y-auto"
                                       onKeyDown={(e) => {
