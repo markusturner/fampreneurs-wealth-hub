@@ -11,9 +11,10 @@ import { AdminTutorialVideoManager, AdminUpgradeVideoManager, AdminVideoManager 
 
 import { RolePermissionsManager } from '@/components/dashboard/role-permissions-manager'
 import { CommunityManagerAdmin } from '@/components/dashboard/community-manager-admin'
+import { AdminInviteLinks } from '@/components/dashboard/admin-invite-links'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Shield, Zap, Video, BarChart3, Lock, Loader2, MessageCircle } from 'lucide-react'
+import { ArrowLeft, Shield, Zap, Video, BarChart3, Lock, Loader2, MessageCircle, Link2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
@@ -92,6 +93,12 @@ export function AdminSettings() {
               </TabsTrigger>
             )}
             {(isAdmin || isOwner) && (
+              <TabsTrigger value="invites" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
+                <Link2 className="h-4 w-4 shrink-0" />
+                {isMobile ? "Invites" : "Invite Links"}
+              </TabsTrigger>
+            )}
+            {(isAdmin || isOwner) && (
               <TabsTrigger value="community-manager" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
                 <MessageCircle className="h-4 w-4 shrink-0" />
                 {isMobile ? "Manager" : "Community Manager"}
@@ -126,6 +133,11 @@ export function AdminSettings() {
         {(isAdmin || isOwner) && (
           <TabsContent value="metrics" className="space-y-6">
             <AdminAnalyticsOverview />
+          </TabsContent>
+        )}
+        {(isAdmin || isOwner) && (
+          <TabsContent value="invites" className="space-y-6">
+            <AdminInviteLinks />
           </TabsContent>
         )}
         {(isAdmin || isOwner) && (
