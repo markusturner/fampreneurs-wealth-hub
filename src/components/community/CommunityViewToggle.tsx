@@ -1,9 +1,9 @@
 import { useSearchParams } from 'react-router-dom'
 
-const TABS: { key: 'feed' | 'events' | 'leaderboard'; label: string }[] = [
-  { key: 'feed', label: 'Feed' },
-  { key: 'events', label: 'Events' },
-  { key: 'leaderboard', label: 'Leaderboard' },
+const TABS: { key: 'feed' | 'events' | 'leaderboard'; label: string; mobile: boolean }[] = [
+  { key: 'feed', label: 'Feed', mobile: true },
+  { key: 'events', label: 'Events', mobile: false },
+  { key: 'leaderboard', label: 'Leaderboard', mobile: true },
 ]
 
 export type CommunityView = 'feed' | 'events' | 'leaderboard'
@@ -19,6 +19,8 @@ export function CommunityViewToggle({ value, onChange }: { value: CommunityView;
               key={t.key}
               onClick={() => onChange(t.key)}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                !t.mobile ? 'hidden md:inline-flex' : ''
+              } ${
                 active
                   ? 'bg-background text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
