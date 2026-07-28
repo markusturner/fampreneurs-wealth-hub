@@ -129,6 +129,7 @@ export default function WorkspaceCommunity() {
   const { isAdmin } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
   const program = searchParams.get('program') || ''
   const postParam = searchParams.get('post') || ''
   const programName = PROGRAM_NAMES[program] || 'Community'
