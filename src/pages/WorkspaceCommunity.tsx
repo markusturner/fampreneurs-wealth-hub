@@ -24,7 +24,8 @@ import {
   MoreHorizontal, Settings, Filter, Users, Wifi, Camera, X,
   Mic, MicOff, Lock, Calendar, CreditCard, Play, Pencil, Check, Pin, PinOff, ListChecks
 } from 'lucide-react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
+import { MessageSquare, CalendarDays, Trophy } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -128,6 +129,7 @@ export default function WorkspaceCommunity() {
   const { isAdmin } = useUserRole()
   const { isOwner } = useOwnerRole(user?.id ?? null)
   const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
   const program = searchParams.get('program') || ''
   const postParam = searchParams.get('post') || ''
   const programName = PROGRAM_NAMES[program] || 'Community'
@@ -1187,6 +1189,29 @@ export default function WorkspaceCommunity() {
           {/* Main Feed */}
           <div className="flex-1 min-w-0 space-y-4">
             <BackToWelcome />
+
+            {/* Community section toggle */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: 'Feed', icon: MessageSquare, active: true, onClick: () => {} },
+                { label: 'Events', icon: CalendarDays, active: false, onClick: () => navigate('/calendar') },
+                { label: 'Leaderboard', icon: Trophy, active: false, onClick: () => navigate('/members') },
+              ].map(({ label, icon: Icon, active, onClick }) => (
+                <button
+                  key={label}
+                  onClick={onClick}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
+                    active
+                      ? 'bg-[#290a52] text-white border-[#290a52]'
+                      : 'bg-background text-foreground border-border hover:border-[#2eb2ff] hover:text-[#2eb2ff]'
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+
 
             {/* Community name header on mobile only */}
             <h2 className="text-lg font-bold lg:hidden">{programName}</h2>
