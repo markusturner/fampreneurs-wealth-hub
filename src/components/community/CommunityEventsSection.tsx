@@ -241,6 +241,53 @@ export function CommunityEventsSection({ program }: Props) {
               <Label>Join URL</Label>
               <Input value={form.join_url} onChange={e => setForm({ ...form, join_url: e.target.value })} placeholder="https://..." />
             </div>
+            <div className="border-t pt-3 space-y-3">
+              <div>
+                <Label>Repeats</Label>
+                <select
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  value={form.recurrence}
+                  onChange={e => setForm({ ...form, recurrence: e.target.value as Recurrence })}
+                >
+                  <option value="none">Does not repeat</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="biweekly">Every 2 weeks</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+              </div>
+              {form.recurrence !== 'none' && (
+                <div className="space-y-2">
+                  <Label>Ends</Label>
+                  <div className="flex items-center gap-4 text-sm">
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="radio"
+                        checked={form.recurrence_mode === 'forever'}
+                        onChange={() => setForm({ ...form, recurrence_mode: 'forever' })}
+                      />
+                      Forever
+                    </label>
+                    <label className="inline-flex items-center gap-2">
+                      <input
+                        type="radio"
+                        checked={form.recurrence_mode === 'until'}
+                        onChange={() => setForm({ ...form, recurrence_mode: 'until' })}
+                      />
+                      Until
+                    </label>
+                    {form.recurrence_mode === 'until' && (
+                      <Input
+                        type="date"
+                        className="max-w-[180px]"
+                        value={form.recurrence_end_date}
+                        onChange={e => setForm({ ...form, recurrence_end_date: e.target.value })}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
