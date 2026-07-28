@@ -138,6 +138,7 @@ export default function WorkspaceCommunity() {
   const postParam = searchParams.get('post') || ''
   const programName = PROGRAM_NAMES[program] || 'Community'
   const programDesc = PROGRAM_DESCRIPTIONS[program] || ''
+  const [communityView, setCommunityView] = useCommunityView()
 
   // If we have a post param but no program, look up the post's program and redirect
   useEffect(() => {
