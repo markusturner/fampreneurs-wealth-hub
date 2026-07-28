@@ -918,10 +918,12 @@ export default function WorkspaceCommunity() {
       }
       const name = match[1]
       // Skip placeholder token "@member" — legacy artifact, not a real mention
-      if (name.trim().toLowerCase() === 'member') {
-        // drop it entirely, collapse a trailing space if present
+      const firstWord = name.trim().split(/\s+/)[0].toLowerCase()
+      if (firstWord === 'member') {
+        // keep any text after "member" (e.g. "@member I live" -> " I live")
+        const rest = name.slice('member'.length)
+        if (match.index > lastIndex || rest) parts.push(rest)
         lastIndex = match.index + match[0].length
-        if (content[lastIndex] === ' ') lastIndex += 1
         continue
       }
       parts.push(
