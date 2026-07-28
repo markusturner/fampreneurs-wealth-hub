@@ -1309,10 +1309,11 @@ export default function WorkspaceCommunity() {
                     onChange={(e) => setNewPostTitle(e.target.value)}
                     className="border-0 px-0 text-base font-semibold placeholder:text-muted-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto py-2 mb-1"
                   />
-                  <Textarea
+                  <MentionTextarea
                     placeholder="Share something with the community..."
                     value={newPost}
-                    onChange={(e) => setNewPost(e.target.value)}
+                    onChange={(v) => setNewPost(v)}
+                    program={program}
                     className="border-0 px-0 resize-none min-h-[180px] focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground/40"
                     autoFocus
                   />
