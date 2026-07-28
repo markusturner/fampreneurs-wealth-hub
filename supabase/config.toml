@@ -1,5 +1,8 @@
 project_id = "tbofkvyezmpovoezjyyl"
 
+[functions.redeem-invite-link]
+verify_jwt = false
+
 [functions.send-push-notification]
 verify_jwt = false
 
