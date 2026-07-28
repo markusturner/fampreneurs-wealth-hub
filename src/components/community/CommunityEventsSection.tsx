@@ -117,6 +117,9 @@ export function CommunityEventsSection({ program }: Props) {
       duration: ev.duration_minutes,
       location: ev.location || '',
       join_url: ev.join_url || '',
+      recurrence: (ev.recurrence || 'none') as Recurrence,
+      recurrence_mode: ev.recurrence_end_date ? 'until' : 'forever',
+      recurrence_end_date: ev.recurrence_end_date || '',
     })
     setOpen(true)
   }
@@ -124,6 +127,10 @@ export function CommunityEventsSection({ program }: Props) {
   const save = async () => {
     if (!form.title || !form.date || !form.time) {
       toast({ title: 'Missing info', description: 'Title, date and time are required.', variant: 'destructive' })
+      return
+    }
+    if (form.recurrence !== 'none' && form.recurrence_mode === 'until' && !form.recurrence_end_date) {
+      toast({ title: 'Missing end date', description: 'Pick an end date or choose "Forever".', variant: 'destructive' })
       return
     }
     setSaving(true)
@@ -137,6 +144,11 @@ export function CommunityEventsSection({ program }: Props) {
       location: form.location || null,
       join_url: form.join_url || null,
       created_by: user?.id as string,
+      recurrence: form.recurrence,
+      recurrence_end_date:
+        form.recurrence !== 'none' && form.recurrence_mode === 'until' && form.recurrence_end_date
+          ? form.recurrence_end_date
+          : null,
     }
     const { error } = editing
       ? await supabase.from('community_events').update(payload).eq('id', editing.id)
@@ -152,15 +164,18 @@ export function CommunityEventsSection({ program }: Props) {
   }
 
   const remove = async (ev: CommunityEvent) => {
-    if (!confirm(`Delete "${ev.title}"?`)) return
+    const isRecurring = ev.recurrence && ev.recurrence !== 'none'
+    if (!confirm(`Delete "${ev.title}"${isRecurring ? ' and all its recurring instances' : ''}?`)) return
     const { error } = await supabase.from('community_events').delete().eq('id', ev.id)
     if (error) return toast({ title: 'Delete failed', description: error.message, variant: 'destructive' })
     toast({ title: 'Event deleted' })
     load()
   }
 
-  const upcoming = events.filter(e => !isPast(new Date(e.event_at)))
-  const past = events.filter(e => isPast(new Date(e.event_at))).reverse()
+  const instances = expandEvents(events)
+  const upcoming = instances.filter(e => !isPast(new Date(e.instance_at)))
+  const past = instances.filter(e => isPast(new Date(e.instance_at))).reverse()
+
 
   return (
     <div className="space-y-6">
