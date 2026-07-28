@@ -19,6 +19,8 @@ export function CommunityViewToggle({ value, onChange }: { value: CommunityView;
               key={t.key}
               onClick={() => onChange(t.key)}
               className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                !t.mobile ? 'hidden md:inline-flex' : ''
+              } ${
                 active
                   ? 'bg-background text-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
