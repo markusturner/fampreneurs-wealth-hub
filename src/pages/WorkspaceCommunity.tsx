@@ -3,6 +3,10 @@ import { StripePaymentModal } from '@/components/dashboard/StripePaymentModal'
 import { CommunityMembersList } from '@/components/community/CommunityMembersList'
 import { EmojiButton, GifButton, PollDraftEditor } from '@/components/community/PostComposerExtras'
 import { PollDisplay } from '@/components/community/PollDisplay'
+import { CommunityViewToggle, useCommunityView } from '@/components/community/CommunityViewToggle'
+import { CommunityEventsSection } from '@/components/community/CommunityEventsSection'
+import { CommunityLeaderboardSection } from '@/components/community/CommunityLeaderboardSection'
+import { MentionTextarea } from '@/components/community/MentionTextarea'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -134,6 +138,7 @@ export default function WorkspaceCommunity() {
   const postParam = searchParams.get('post') || ''
   const programName = PROGRAM_NAMES[program] || 'Community'
   const programDesc = PROGRAM_DESCRIPTIONS[program] || ''
+  const [communityView, setCommunityView] = useCommunityView()
 
   // If we have a post param but no program, look up the post's program and redirect
   useEffect(() => {
@@ -1190,29 +1195,18 @@ export default function WorkspaceCommunity() {
           <div className="flex-1 min-w-0 space-y-4">
             <BackToWelcome />
 
-            {/* Community section toggle */}
-            <div className="flex flex-wrap gap-2">
-              {[
-                { label: 'Feed', icon: MessageSquare, active: true, onClick: () => {} },
-                { label: 'Events', icon: CalendarDays, active: false, onClick: () => navigate('/calendar') },
-                { label: 'Leaderboard', icon: Trophy, active: false, onClick: () => navigate('/members') },
-              ].map(({ label, icon: Icon, active, onClick }) => (
-                <button
-                  key={label}
-                  onClick={onClick}
-                  className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
-                    active
-                      ? 'bg-[#290a52] text-white border-[#290a52]'
-                      : 'bg-background text-foreground border-border hover:border-[#2eb2ff] hover:text-[#2eb2ff]'
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {label}
-                </button>
-              ))}
-            </div>
+            {/* Community section toggle - sleek centered */}
+            <CommunityViewToggle value={communityView} onChange={setCommunityView} />
 
+            {communityView === 'events' && (
+              <CommunityEventsSection program={program} />
+            )}
+            {communityView === 'leaderboard' && (
+              <CommunityLeaderboardSection program={program} />
+            )}
 
+            {communityView === 'feed' && (
+            <>
             {/* Community name header on mobile only */}
             <h2 className="text-lg font-bold lg:hidden">{programName}</h2>
 
@@ -1315,10 +1309,11 @@ export default function WorkspaceCommunity() {
                     onChange={(e) => setNewPostTitle(e.target.value)}
                     className="border-0 px-0 text-base font-semibold placeholder:text-muted-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto py-2 mb-1"
                   />
-                  <Textarea
+                  <MentionTextarea
                     placeholder="Share something with the community..."
                     value={newPost}
-                    onChange={(e) => setNewPost(e.target.value)}
+                    onChange={(v) => setNewPost(v)}
+                    program={program}
                     className="border-0 px-0 resize-none min-h-[180px] focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground/40"
                     autoFocus
                   />
@@ -1443,18 +1438,11 @@ export default function WorkspaceCommunity() {
                       onChange={(e) => setNewPostTitle(e.target.value)}
                       className="h-9 border-0 bg-muted/50 rounded-lg px-4 text-sm font-semibold placeholder:text-muted-foreground/60 focus-visible:ring-1"
                     />
-                    <Textarea
+                    <MentionTextarea
                       placeholder="Write something..."
                       value={newPost}
-                      onChange={(e) => {
-                        setNewPost(e.target.value);
-                        e.target.style.height = 'auto';
-                        if (e.target.value) {
-                          e.target.style.height = e.target.scrollHeight + 'px';
-                        } else {
-                          e.target.style.height = '';
-                        }
-                      }}
+                      onChange={(v) => setNewPost(v)}
+                      program={program}
                       className="post-composer-textarea min-h-[44px] resize-none border-0 bg-muted/50 rounded-lg px-4 py-2.5 focus-visible:ring-1 text-sm overflow-hidden"
                       rows={1}
                     />
@@ -1884,16 +1872,14 @@ export default function WorkspaceCommunity() {
                                 </Avatar>
                                 <div className="flex-1 space-y-1.5">
                                   <div className="flex gap-1.5">
-                                    <Textarea
+                                    <MentionTextarea
                                       ref={(el) => { commentTextareaRefs.current[post.id] = el }}
                                       placeholder="Write a comment..."
                                       value={commentText[post.id] || ''}
-                                      onChange={(e) => {
-                                        setCommentText(prev => ({ ...prev, [post.id]: e.target.value }))
-                                        const el = e.currentTarget
-                                        el.style.height = 'auto'
-                                        el.style.height = Math.min(el.scrollHeight, 300) + 'px'
+                                      onChange={(v) => {
+                                        setCommentText(prev => ({ ...prev, [post.id]: v }))
                                       }}
+                                      program={program}
                                       rows={1}
                                       className="min-h-[36px] max-h-[300px] resize-none border bg-muted/50 rounded-lg px-3 py-2 focus-visible:ring-1 text-sm flex-1 overflow-y-auto"
                                       onKeyDown={(e) => {
@@ -1999,6 +1985,8 @@ export default function WorkspaceCommunity() {
                 ))
               )}
             </div>
+            </>
+            )}
           </div>
 
           {/* Right Sidebar - hidden on mobile */}
