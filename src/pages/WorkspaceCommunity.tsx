@@ -1438,18 +1438,11 @@ export default function WorkspaceCommunity() {
                       onChange={(e) => setNewPostTitle(e.target.value)}
                       className="h-9 border-0 bg-muted/50 rounded-lg px-4 text-sm font-semibold placeholder:text-muted-foreground/60 focus-visible:ring-1"
                     />
-                    <Textarea
+                    <MentionTextarea
                       placeholder="Write something..."
                       value={newPost}
-                      onChange={(e) => {
-                        setNewPost(e.target.value);
-                        e.target.style.height = 'auto';
-                        if (e.target.value) {
-                          e.target.style.height = e.target.scrollHeight + 'px';
-                        } else {
-                          e.target.style.height = '';
-                        }
-                      }}
+                      onChange={(v) => setNewPost(v)}
+                      program={program}
                       className="post-composer-textarea min-h-[44px] resize-none border-0 bg-muted/50 rounded-lg px-4 py-2.5 focus-visible:ring-1 text-sm overflow-hidden"
                       rows={1}
                     />
