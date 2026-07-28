@@ -26,15 +26,22 @@ type Row = { user_id: string; display_name: string; avatar_url: string | null; p
 type Range = '7' | '30' | 'all'
 
 export function CommunityLeaderboardSection({ program }: Props) {
-  const [rows7, setRows7] = useState<Row[]>([])
-  const [rows30, setRows30] = useState<Row[]>([])
-  const [rowsAll, setRowsAll] = useState<Row[]>([])
-  const [loading, setLoading] = useState(true)
+  const cacheKey = `lb-cache-v1:${program}`
+  const initial = (() => {
+    try {
+      const raw = localStorage.getItem(cacheKey)
+      if (raw) return JSON.parse(raw) as { rows7: Row[]; rows30: Row[]; rowsAll: Row[] }
+    } catch {}
+    return null
+  })()
+  const [rows7, setRows7] = useState<Row[]>(initial?.rows7 || [])
+  const [rows30, setRows30] = useState<Row[]>(initial?.rows30 || [])
+  const [rowsAll, setRowsAll] = useState<Row[]>(initial?.rowsAll || [])
+  const [loading, setLoading] = useState(!initial)
 
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      setLoading(true)
       const [d7, d30, dAll] = await Promise.all([
         fetchScores(program, subDays(new Date(), 7).toISOString()),
         fetchScores(program, subDays(new Date(), 30).toISOString()),
@@ -43,11 +50,13 @@ export function CommunityLeaderboardSection({ program }: Props) {
       if (cancelled) return
       setRows7(d7); setRows30(d30); setRowsAll(dAll)
       setLoading(false)
+      try { localStorage.setItem(cacheKey, JSON.stringify({ rows7: d7, rows30: d30, rowsAll: dAll })) } catch {}
     })()
     return () => { cancelled = true }
   }, [program])
 
   if (loading) return <p className="text-sm text-muted-foreground py-6 text-center">Loading leaderboard…</p>
+
 
   return (
     <div className="space-y-6">
