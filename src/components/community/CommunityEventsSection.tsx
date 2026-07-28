@@ -195,6 +195,7 @@ export function CommunityEventsSection({ program }: Props) {
         <p className="text-sm text-muted-foreground py-6 text-center">Loading events…</p>
       ) : (
         <>
+          <MonthCalendar instances={instances} />
           <Section title="Upcoming" events={upcoming} canManage={canManage} onEdit={openEdit} onDelete={remove} empty="No upcoming events yet." />
           {past.length > 0 && (
             <Section title="Past" events={past} canManage={canManage} onEdit={openEdit} onDelete={remove} muted />
