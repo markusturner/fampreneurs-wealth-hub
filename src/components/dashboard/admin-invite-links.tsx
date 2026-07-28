@@ -75,7 +75,7 @@ export function AdminInviteLinks() {
   useEffect(() => { load() }, [])
 
   const inviteUrl = (token: string) =>
-    `${window.location.origin}/invite/${token}`
+    `https://truheirs.app/invite/${token}`
 
   const copyLink = async (token: string) => {
     await navigator.clipboard.writeText(inviteUrl(token))
