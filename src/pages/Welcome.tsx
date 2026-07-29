@@ -184,6 +184,15 @@ export default function Welcome() {
           Welcome back, {firstName}
         </h1>
 
+        {profile?.program_name && (
+          <div className="mb-3 sm:mb-4 inline-flex items-center gap-2 rounded-full border border-[#ffb500]/40 bg-[#ffb500]/10 px-3 py-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#ffb500]" />
+            <span className="text-[10px] sm:text-xs tracking-[0.25em] uppercase font-semibold text-[#ffb500]">
+              {profile.program_name}
+            </span>
+          </div>
+        )}
+
         {lastUsed ? (
           <p className="text-[11px] sm:text-sm text-muted-foreground max-w-xl mb-5 sm:mb-6 px-4">
             Last time you were logged in, you were working on <span className="text-foreground font-medium">{lastUsedLabel(lastUsed)}</span>. Would you like to continue?
