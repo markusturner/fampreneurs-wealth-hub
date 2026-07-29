@@ -42,11 +42,7 @@ export function CommunityLeaderboardSection({ program }: Props) {
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      const [d7, d30, dAll] = await Promise.all([
-        fetchScores(program, subDays(new Date(), 7).toISOString()),
-        fetchScores(program, subDays(new Date(), 30).toISOString()),
-        fetchScores(program, null),
-      ])
+      const { rows7: d7, rows30: d30, rowsAll: dAll } = await fetchAllScores(program)
       if (cancelled) return
       setRows7(d7); setRows30(d30); setRowsAll(dAll)
       setLoading(false)
@@ -76,8 +72,11 @@ export function CommunityLeaderboardSection({ program }: Props) {
   )
 }
 
-async function fetchScores(program: string, sinceIso: string | null): Promise<Row[]> {
-  // Get post ids + authors in this program
+async function fetchAllScores(program: string): Promise<{ rows7: Row[]; rows30: Row[]; rowsAll: Row[] }> {
+  const since7 = subDays(new Date(), 7).getTime()
+  const since30 = subDays(new Date(), 30).getTime()
+
+  // Fetch posts, comments in this program in parallel
   const { data: posts } = await supabase
     .from('community_posts')
     .select('id, user_id')
@@ -86,7 +85,6 @@ async function fetchScores(program: string, sinceIso: string | null): Promise<Ro
   const postAuthor: Record<string, string> = {}
   ;(posts || []).forEach(p => { if (p.user_id) postAuthor[p.id] = p.user_id })
 
-  // Get comment ids + authors on those posts
   let commentAuthor: Record<string, string> = {}
   let commentIds: string[] = []
   if (postIds.length) {
@@ -100,40 +98,57 @@ async function fetchScores(program: string, sinceIso: string | null): Promise<Ro
     })
   }
 
-  const userScores = new Map<string, number>()
-  const add = (uid: string) => userScores.set(uid, (userScores.get(uid) || 0) + 1)
-
+  // Fetch ALL reactions once (no date filter), then compute the three windows in JS
+  const promises: Promise<any>[] = []
   if (postIds.length) {
-    let q = supabase.from('community_reactions').select('post_id, created_at').in('post_id', postIds).not('post_id', 'is', null)
-    if (sinceIso) q = q.gte('created_at', sinceIso)
-    const { data } = await q
-    ;(data || []).forEach((r: any) => { const uid = postAuthor[r.post_id]; if (uid) add(uid) })
+    promises.push(Promise.resolve(supabase.from('community_reactions').select('post_id, created_at').in('post_id', postIds).not('post_id', 'is', null)))
   }
   if (commentIds.length) {
-    let q = supabase.from('community_reactions').select('comment_id, created_at').in('comment_id', commentIds).not('comment_id', 'is', null)
-    if (sinceIso) q = q.gte('created_at', sinceIso)
-    const { data } = await q
-    ;(data || []).forEach((r: any) => { const uid = commentAuthor[r.comment_id]; if (uid) add(uid) })
-    let q2 = supabase.from('community_comment_reactions').select('comment_id, created_at').in('comment_id', commentIds)
-    if (sinceIso) q2 = q2.gte('created_at', sinceIso)
-    const { data: d2 } = await q2
-    ;(d2 || []).forEach((r: any) => { const uid = commentAuthor[r.comment_id]; if (uid) add(uid) })
+    promises.push(Promise.resolve(supabase.from('community_reactions').select('comment_id, created_at').in('comment_id', commentIds).not('comment_id', 'is', null)))
+    promises.push(Promise.resolve(supabase.from('community_comment_reactions').select('comment_id, created_at').in('comment_id', commentIds)))
   }
 
-  const ids = Array.from(userScores.keys())
-  if (ids.length === 0) return []
+  const results = await Promise.all(promises)
+
+  const s7 = new Map<string, number>()
+  const s30 = new Map<string, number>()
+  const sAll = new Map<string, number>()
+  const bump = (m: Map<string, number>, uid: string) => m.set(uid, (m.get(uid) || 0) + 1)
+
+  const addRow = (uid: string | undefined, createdAt: string) => {
+    if (!uid) return
+    bump(sAll, uid)
+    const t = new Date(createdAt).getTime()
+    if (t >= since30) bump(s30, uid)
+    if (t >= since7) bump(s7, uid)
+  }
+
+  let idx = 0
+  if (postIds.length) {
+    ;(results[idx++]?.data || []).forEach((r: any) => addRow(postAuthor[r.post_id], r.created_at))
+  }
+  if (commentIds.length) {
+    ;(results[idx++]?.data || []).forEach((r: any) => addRow(commentAuthor[r.comment_id], r.created_at))
+    ;(results[idx++]?.data || []).forEach((r: any) => addRow(commentAuthor[r.comment_id], r.created_at))
+  }
+
+  const allIds = Array.from(new Set([...sAll.keys()]))
+  if (allIds.length === 0) return { rows7: [], rows30: [], rowsAll: [] }
+
   const { data: profiles } = await supabase
     .from('profiles')
     .select('user_id, display_name, avatar_url')
-    .in('user_id', ids)
-  const rows: Row[] = (profiles || []).map(p => ({
-    user_id: p.user_id,
-    display_name: p.display_name || 'Member',
-    avatar_url: p.avatar_url,
-    points: userScores.get(p.user_id) || 0,
-  }))
-  return rows.sort((a, b) => b.points - a.points).slice(0, 20)
+    .in('user_id', allIds)
+  const pmap = new Map<string, { display_name: string; avatar_url: string | null }>()
+  ;(profiles || []).forEach((p: any) => pmap.set(p.user_id, { display_name: p.display_name || 'Member', avatar_url: p.avatar_url }))
+
+  const build = (m: Map<string, number>): Row[] => Array.from(m.entries())
+    .map(([user_id, points]) => ({ user_id, points, display_name: pmap.get(user_id)?.display_name || 'Member', avatar_url: pmap.get(user_id)?.avatar_url || null }))
+    .sort((a, b) => b.points - a.points).slice(0, 20)
+
+  return { rows7: build(s7), rows30: build(s30), rowsAll: build(sAll) }
 }
+
 
 function LeaderboardColumn({ title, rows }: { title: string; rows: Row[] }) {
   return (

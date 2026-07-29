@@ -605,13 +605,23 @@ export default function CourseDetail() {
     })()
   }, [selectedLesson?.id, isAdminOrOwner, userPrograms.join(',')])
 
+  const moduleRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
   const toggleModule = (id: string) => {
     setOpenModules(prev => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      const isOpen = prev.has(id)
+      // Exclusive open: closing collapses all; opening closes all others
+      const next = isOpen ? new Set<string>() : new Set<string>([id])
+      if (!isOpen) {
+        setTimeout(() => {
+          const el = moduleRefs.current[id]
+          el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 60)
+      }
       return next
     })
   }
+
 
   const toggleCompletion = async (lesson: Lesson) => {
     if (!user?.id || !courseId) return
@@ -878,7 +888,9 @@ export default function CourseDetail() {
                     </div>
                   </div>
                 )}
+                <div ref={(el) => { moduleRefs.current[mod.id] = el }} className="scroll-mt-20">
                 <Collapsible open={openModules.has(mod.id)} onOpenChange={() => toggleModule(mod.id)}>
+
                 {renamingModuleId === mod.id ? (
                   <div className="flex items-center gap-1 px-4 py-2">
                     <Input
@@ -980,6 +992,8 @@ export default function CourseDetail() {
                   )}
                 </CollapsibleContent>
               </Collapsible>
+                </div>
+
                   </>
                 )}
               </SortableModuleWrapper>

@@ -167,11 +167,12 @@ FOR CLIENTS OVER 680 credit score - We provide a done-for-you credit stacking as
 
 Payment Terms:
 
-Total Program Cost: The Family Business Accelerator - Regularly $9,000, but today for ONLY $7,500.
+Total Program Cost: The Family Business Accelerator - Regularly $12,000, but today for ONLY $9,000.
 
 Reduced sums may be offered as part of the promotions from time to time in which case the compensation will be altered to reflect the promotional price.
 
-If you are enrolling under a payment plan, the total investment is Nine Thousand Dollars ($9,000.00). An initial deposit of Three Thousand Dollars ($3,000.00) is required to secure your enrollment, followed by two (2) consecutive monthly payments of Three Thousand Dollars ($3,000.00) each.
+If you are enrolling under a payment plan, the total investment is Twelve Thousand Dollars ($12,000.00). An initial deposit of Four Thousand Dollars ($4,000.00) is required to secure your enrollment, followed by two (2) consecutive monthly payments of Four Thousand Dollars ($4,000.00) each.
+
 
 All payments are non refundable. The sign-up start time is considered to be at the time of signing this document. All sales are non-refundable and chargebacks are not allowed. All non-payment will result in a filing with UCC as a lien.
 
