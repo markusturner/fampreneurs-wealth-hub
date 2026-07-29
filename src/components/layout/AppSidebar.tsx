@@ -144,7 +144,7 @@ export function AppSidebar({ className }: { className?: string }) {
   // Admins/owners always have access. Users explicitly granted truheirs_access by admin (e.g. invited trustees)
   // also get full access without needing a Stripe subscription.
   const hasTruHeirsAccess = isAdmin || isOwner || profile?.truheirs_access === true || (subscriptionStatus.subscribed || subscriptionStatus.loading)
-  // TruHeirs Lite users (FBU community only) — hide AI Chat, Trust, Succession, DFO, Admin
+  // TruHeirs Lite users (FBU community only) — hide Trust, Succession, DFO, Admin
   const isLite = subscriptionStatus.isLite && !isAdmin && !isOwner && profile?.truheirs_access !== true
 
   const filteredSuggestions = SEARCH_SUGGESTIONS.filter(s => {
