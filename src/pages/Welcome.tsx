@@ -25,7 +25,6 @@ import {
 const LAST_USED_KEY = 'truheirs:lastUsed'
 
 const COMMUNITY_LABELS: Record<string, string> = {
-  fbu: 'Family Business University',
   tfv: 'The Family Vault',
   tfba: 'The Family Business Accelerator',
   tffm: 'The Succession Society',
