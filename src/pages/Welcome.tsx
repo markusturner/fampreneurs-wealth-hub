@@ -186,15 +186,6 @@ export default function Welcome() {
           Welcome back, {firstName}
         </h1>
 
-        {profile?.program_name && (
-          <div className="mb-3 sm:mb-4 inline-flex items-center gap-2 rounded-full bg-[#290a52] px-3.5 py-1.5 shadow-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#ffb500]" />
-            <span className="text-[10px] sm:text-xs tracking-[0.25em] uppercase font-semibold text-[#ffb500]">
-              {profile.program_name}
-            </span>
-          </div>
-        )}
-
         {lastUsed ? (
           <p className="text-[11px] sm:text-sm text-muted-foreground max-w-xl mb-5 sm:mb-6 px-4">
             Last time you were logged in, you were working on <span className="text-foreground font-medium">{lastUsedLabel(lastUsed)}</span>. Would you like to continue?
@@ -209,16 +200,21 @@ export default function Welcome() {
 
         {(() => {
           const userCodes = profileProgramCodes(profile?.program_name)
-          // Community dropdown only lists TFV/TFBA/TFFM (FBU has no community here)
           const communityCodes = (userCodes.filter(c => c !== 'fbu') as Array<Exclude<ProgramCode,'fbu'>>)
-          const availableCommunities = communityCodes.length > 0 ? communityCodes : (['tfv','tfba','tffm'] as const)
+          // Owner sees ALL communities; regular users see only their assigned ones
+          const availableCommunities = isOwner
+            ? (['tfv','tfba','tffm'] as const)
+            : (communityCodes.length > 0 ? communityCodes : (['tfv','tfba','tffm'] as const))
           const hasMultiple = availableCommunities.length > 1
+          const primaryLabel = hasMultiple
+            ? (profile?.program_name || 'Community')
+            : COMMUNITY_LABELS[availableCommunities[0]]
           return (
         <nav className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0">
           {hasMultiple ? (
           <DropdownMenu>
             <DropdownMenuTrigger className="group inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2 outline-none">
-              Community
+              {primaryLabel}
               {lastUsed?.section === 'community' && (
                 <span className="ml-1 rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
               )}
@@ -244,7 +240,7 @@ export default function Welcome() {
               onClick={() => go('community', `/workspace-community?program=${availableCommunities[0]}`, availableCommunities[0])}
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
             >
-              {COMMUNITY_LABELS[availableCommunities[0]]}
+              {primaryLabel}
               {lastUsed?.section === 'community' && (
                 <span className="ml-1 rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
               )}
