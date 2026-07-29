@@ -235,7 +235,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
         <Textarea value={form.special_notes} onChange={e => update("special_notes", e.target.value)} rows={2} />
       </div>
 
-      <Button onClick={handleGenerate} disabled={loading} className="gap-2 w-full sm:w-auto">
+      <Button onClick={handleGenerate} disabled={loading} variant="secondary" className="gap-2 w-full sm:w-auto">
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
         {loading ? "Building your plan..." : "Generate my Family Protection Plan"}
       </Button>
