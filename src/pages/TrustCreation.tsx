@@ -409,46 +409,47 @@ export default function TrustCreation() {
 
   // Main selection view
   return (
-    <div className="p-3 sm:p-4 space-y-3 max-w-6xl mx-auto h-[calc(100dvh-4rem)] overflow-hidden flex flex-col">
+    <div className="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
-            <FileText className="h-5 w-5 text-accent" />
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <FileText className="h-6 w-6 text-accent" />
             Trust Creation
             {trustAccess.is_pif && (
-              <Badge className="ml-2 bg-accent text-accent-foreground text-[10px] px-1.5 py-0">PIF — All Unlocked</Badge>
+              <Badge className="ml-2 bg-accent text-accent-foreground text-xs px-2 py-0.5">PIF — All Unlocked</Badge>
             )}
           </h1>
-          <p className="text-muted-foreground text-xs">Select a trust type or tool to get started.</p>
+          <p className="text-muted-foreground text-sm">Select a trust type or tool to get started.</p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => window.location.assign('/classroom')} className="gap-1.5 shrink-0">
           <ArrowLeft className="h-4 w-4" /> Back to Classroom
         </Button>
       </div>
 
-      <div className="flex-1 flex flex-col justify-around gap-3 min-h-0">
+      <div className="space-y-6">
         {/* Step 1 */}
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <Badge className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0">Step 1</Badge>
-            <h2 className="text-sm font-semibold text-foreground">Trust Name & Asset Inventory</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <Badge className="bg-accent text-accent-foreground text-xs px-2 py-0.5">Step 1</Badge>
+            <h2 className="text-base font-semibold text-foreground">Family Protection Plan, Trust Name & Asset Inventory</h2>
           </div>
-          <div className="grid gap-2 grid-cols-2">
-            {(['trust_name_translator', 'asset_inventory'] as SectionType[]).map(type => renderSectionCard(type))}
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
+            {(['family_protection_plan', 'trust_name_translator', 'asset_inventory'] as SectionType[]).map(type => renderSectionCard(type))}
           </div>
         </div>
 
         {/* Step 2 */}
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <Badge className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0">Step 2</Badge>
-            <h2 className="text-sm font-semibold text-foreground">Trust Forms</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <Badge className="bg-accent text-accent-foreground text-xs px-2 py-0.5">Step 2</Badge>
+            <h2 className="text-base font-semibold text-foreground">Trust Forms</h2>
           </div>
-          <div className="grid gap-2 grid-cols-3">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
             {TRUST_TYPES.map(type => renderSectionCard(type))}
           </div>
         </div>
+
 
         {/* Step 3 */}
         <div>
