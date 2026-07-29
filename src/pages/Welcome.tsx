@@ -202,9 +202,9 @@ export default function Welcome() {
           const userCodes = profileProgramCodes(profile?.program_name)
           const communityCodes = (userCodes.filter(c => c !== 'fbu') as Array<Exclude<ProgramCode,'fbu'>>)
           // Owners/admins see ALL communities as a dropdown; regular users see only their single assigned community
-          const availableCommunities: ReadonlyArray<Exclude<ProgramCode,'fbu'>> = (isOwner || isAdmin)
-            ? (['tfv','tfba','tffm'] as const)
-            : (communityCodes.length > 0 ? [communityCodes[0]] as const : (['tfv'] as const))
+          const availableCommunities: ReadonlyArray<Exclude<ProgramCode,'fbu'>> = communityCodes.length > 0
+            ? communityCodes
+            : ((isOwner || isAdmin) ? ['tfv','tfba','tffm'] as const : ['tfv'] as const)
           const hasMultiple = availableCommunities.length > 1
           const primaryLabel = hasMultiple
             ? 'Community'
@@ -225,12 +225,19 @@ export default function Welcome() {
                 <DropdownMenuItem
                   key={prog}
                   onClick={() => go('community', `/workspace-community?program=${prog}`, prog)}
-                  className="relative text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 hover:text-secondary focus:text-secondary data-[highlighted]:bg-transparent data-[highlighted]:text-secondary gap-2"
+                  className="text-[11px] tracking-[0.2em] uppercase font-medium py-3 hover:text-secondary focus:text-secondary data-[highlighted]:bg-transparent data-[highlighted]:text-secondary grid grid-cols-[auto_1fr_auto] items-center gap-2"
                 >
-                  {COMMUNITY_LABELS[prog]}
-                  {lastUsed?.section === 'community' && lastUsed.program === prog && (
-                    <span className="absolute right-3 rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
-                  )}
+                  <span className="invisible">
+                    {lastUsed?.section === 'community' && lastUsed.program === prog && (
+                      <span className="rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+                    )}
+                  </span>
+                  <span className="text-center">{COMMUNITY_LABELS[prog]}</span>
+                  <span>
+                    {lastUsed?.section === 'community' && lastUsed.program === prog && (
+                      <span className="rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+                    )}
+                  </span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
