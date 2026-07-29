@@ -51,6 +51,15 @@ function lastUsedLabel(l: LastUsed | null): string {
   return 'Digital Family Office'
 }
 
+const RACHEL_SUGGESTIONS = [
+  'Where is my Family Protection Plan?',
+  'How do I create my trust?',
+  'Where are the coaching call recordings?',
+  'How do I update my profile photo?',
+  'Where is the SOP Library?',
+]
+
+
 export default function Welcome() {
   const { user, profile, loading, signOut } = useAuth()
   const { isAdmin } = useUserRole()
