@@ -154,7 +154,6 @@ export function AdminAllUsersManagement() {
     return sorted
   }
   const [programOptions, setProgramOptions] = useState<string[]>([
-    'The Family Business University',
     'The Family Vault',
     'The Family Business Accelerator',
     'The Family Legacy: VIP Weekend',
