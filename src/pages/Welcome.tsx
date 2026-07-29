@@ -201,13 +201,13 @@ export default function Welcome() {
         {(() => {
           const userCodes = profileProgramCodes(profile?.program_name)
           const communityCodes = (userCodes.filter(c => c !== 'fbu') as Array<Exclude<ProgramCode,'fbu'>>)
-          // Owner sees ALL communities; regular users see only their assigned ones
-          const availableCommunities = isOwner
+          // Owners/admins see ALL communities as a dropdown; regular users see only their single assigned community
+          const availableCommunities: ReadonlyArray<Exclude<ProgramCode,'fbu'>> = (isOwner || isAdmin)
             ? (['tfv','tfba','tffm'] as const)
-            : (communityCodes.length > 0 ? communityCodes : (['tfv','tfba','tffm'] as const))
+            : (communityCodes.length > 0 ? [communityCodes[0]] as const : (['tfv'] as const))
           const hasMultiple = availableCommunities.length > 1
           const primaryLabel = hasMultiple
-            ? (profile?.program_name || 'Community')
+            ? 'Community'
             : COMMUNITY_LABELS[availableCommunities[0]]
           return (
         <nav className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0">
