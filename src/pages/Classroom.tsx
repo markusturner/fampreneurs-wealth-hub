@@ -248,6 +248,19 @@ export default function Classroom() {
     else toast({ title: 'Error', description: 'Failed to delete course', variant: 'destructive' })
   }
 
+  const trustCourses = courses.filter(c => !/succession/i.test(c.title))
+  const successionCourses = courses.filter(c => /succession/i.test(c.title))
+
+  const primaryTabs = [
+    { key: 'classroom', label: 'Classroom', icon: BookOpen },
+    { key: 'sops', label: 'SOP Library', icon: FileText },
+  ] as const
+  const toolTabs = [
+    { key: 'ai', label: 'Family Protection Plan Chat', icon: MessageSquare },
+    { key: 'trust', label: 'Trust Creation', icon: Shield },
+    { key: 'succession', label: 'Succession Planning', icon: Users },
+  ] as const
+
   return (
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl space-y-4 sm:space-y-6">
       <BackToWelcome />
@@ -257,28 +270,50 @@ export default function Classroom() {
         <p className="text-muted-foreground text-xs sm:text-sm">Access your courses and track your progress</p>
       </div>
 
-      {/* Quick nav toggles */}
-      <div className="flex flex-wrap gap-2">
-        {[
-          { label: 'Classroom', icon: BookOpen, action: () => setActiveTab('classroom'), active: activeTab === 'classroom' },
-          { label: 'SOPs & Playbooks', icon: FileText, action: () => setActiveTab('sops'), active: activeTab === 'sops' },
-          { label: 'Family Protection Plan Chat', icon: MessageSquare, action: () => setActiveTab('ai'), active: activeTab === 'ai' },
-          { label: 'Trust Creation', icon: Shield, action: () => setActiveTab('trust'), active: activeTab === 'trust' },
-          { label: 'Succession Planning', icon: Users, action: () => setActiveTab('succession'), active: activeTab === 'succession' },
-        ].map(({ label, icon: Icon, action, active }) => (
-          <button
-            key={label}
-            onClick={action}
-            className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
-              active
-                ? 'bg-[#290a52] text-white border-[#290a52]'
-                : 'bg-background text-foreground border-border hover:border-[#2eb2ff] hover:text-[#2eb2ff]'
-            }`}
-          >
-            <Icon className="h-3.5 w-3.5" />
-            {label}
-          </button>
-        ))}
+      {/* Sticky nav: content on the left, tools on the right */}
+      <div className="sticky top-0 z-30 -mx-3 sm:-mx-4 px-3 sm:px-4 py-2 bg-background/85 backdrop-blur border-b border-border">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {primaryTabs.map(({ key, label, icon: Icon }) => {
+              const active = activeTab === key
+              return (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key as any)}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
+                    active
+                      ? 'bg-[#290a52] text-white border-[#290a52]'
+                      : 'bg-background text-foreground border-border hover:border-[#2eb2ff] hover:text-[#2eb2ff]'
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 lg:pl-3 lg:border-l lg:border-border">
+            <span className="hidden lg:inline text-[10px] uppercase tracking-[0.2em] text-muted-foreground mr-1">Tools</span>
+            {toolTabs.map(({ key, label, icon: Icon }) => {
+              const active = activeTab === key
+              return (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key as any)}
+                  className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
+                    active
+                      ? 'bg-[#ffb500] text-[#290a52] border-[#ffb500]'
+                      : 'bg-background text-foreground border-border hover:border-[#ffb500] hover:text-[#290a52]'
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
       </div>
 
       {activeTab === 'sops' ? (
@@ -308,30 +343,62 @@ export default function Classroom() {
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={courses.map(c => c.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {courses.map((course) => (
-                <SortableCourseCard
-                  key={course.id}
-                  course={course}
-                  isAdminOrOwner={isAdminOrOwner}
-                  onEdit={setEditingCourse}
-                  onDelete={handleDelete}
-                  onClick={(id) => navigate(`/classroom/${id}`)}
-                />
-              ))}
-
-              {isAdminOrOwner && (
-                <Card
-                  className="overflow-hidden border-dashed cursor-pointer hover:border-[#2eb2ff] hover:bg-[#2eb2ff]/10 transition-colors"
-                  onClick={() => setShowAddCourse(true)}
-                >
-                  <CardContent className="h-full flex flex-col items-center justify-center p-8 min-h-[280px]">
-                    <Plus className="h-8 w-8 text-muted-foreground mb-2" />
-                    <span className="text-sm text-muted-foreground">New course</span>
-                  </CardContent>
-                </Card>
-              )}
+            {/* Trust Creation group */}
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex items-center gap-3">
+                <Shield className="h-4 w-4 text-[#290a52]" />
+                <h2 className="text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase text-[#290a52]">Trust Creation</h2>
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-[10px] text-muted-foreground">{trustCourses.length} {trustCourses.length === 1 ? 'course' : 'courses'}</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {trustCourses.map((course) => (
+                  <SortableCourseCard
+                    key={course.id}
+                    course={course}
+                    isAdminOrOwner={isAdminOrOwner}
+                    onEdit={setEditingCourse}
+                    onDelete={handleDelete}
+                    onClick={(id) => navigate(`/classroom/${id}`)}
+                  />
+                ))}
+                {isAdminOrOwner && (
+                  <Card
+                    className="overflow-hidden border-dashed cursor-pointer hover:border-[#2eb2ff] hover:bg-[#2eb2ff]/10 transition-colors"
+                    onClick={() => setShowAddCourse(true)}
+                  >
+                    <CardContent className="h-full flex flex-col items-center justify-center p-8 min-h-[280px]">
+                      <Plus className="h-8 w-8 text-muted-foreground mb-2" />
+                      <span className="text-sm text-muted-foreground">New course</span>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             </div>
+
+            {/* Sleek divider */}
+            {successionCourses.length > 0 && (
+              <div className="mt-8 sm:mt-10 space-y-3 sm:space-y-4">
+                <div className="flex items-center gap-3">
+                  <Users className="h-4 w-4 text-[#ffb500]" />
+                  <h2 className="text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase text-[#ffb500]">The Succession Society</h2>
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-[10px] text-muted-foreground">{successionCourses.length} {successionCourses.length === 1 ? 'course' : 'courses'}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {successionCourses.map((course) => (
+                    <SortableCourseCard
+                      key={course.id}
+                      course={course}
+                      isAdminOrOwner={isAdminOrOwner}
+                      onEdit={setEditingCourse}
+                      onDelete={handleDelete}
+                      onClick={(id) => navigate(`/classroom/${id}`)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </SortableContext>
         </DndContext>
       )}

@@ -133,18 +133,36 @@ export function CommunityEventsSection({ program }: Props) {
   const [form, setForm] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
 
+  const cacheKey = `truheirs:community_events:${program}`
+
   const load = async () => {
-    setLoading(true)
+    // Instant hydrate from cache
+    try {
+      const cached = localStorage.getItem(cacheKey)
+      if (cached) {
+        setEvents(JSON.parse(cached) as CommunityEvent[])
+        setLoading(false)
+      }
+    } catch {}
     const { data } = await supabase
       .from('community_events')
       .select('*')
       .eq('program', program)
       .order('event_at', { ascending: true })
-    setEvents((data || []) as CommunityEvent[])
+    const rows = (data || []) as CommunityEvent[]
+    setEvents(rows)
     setLoading(false)
+    try { localStorage.setItem(cacheKey, JSON.stringify(rows)) } catch {}
   }
 
-  useEffect(() => { if (program) load() }, [program])
+  useEffect(() => {
+    if (!program) return
+    // If we have cache, don't show loading spinner
+    try {
+      if (localStorage.getItem(cacheKey)) setLoading(false)
+    } catch {}
+    load()
+  }, [program])
 
   const openCreate = () => {
     setEditing(null)
