@@ -11,7 +11,6 @@ import { useToast } from '@/hooks/use-toast'
 import { AddCourseDialog } from '@/components/classroom/AddCourseDialog'
 import { EditCourseDialog } from '@/components/classroom/EditCourseDialog'
 import SopLibraryPanel from '@/components/classroom/SopLibraryPanel'
-import AIChat from '@/pages/AIChat'
 import TrustCreation from '@/pages/TrustCreation'
 import SuccessionPlanning from '@/pages/SuccessionPlanning'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
@@ -257,7 +256,6 @@ export default function Classroom() {
     { key: 'sops', label: 'SOP Library', icon: FileText },
   ] as const
   const toolTabs = [
-    { key: 'ai', label: 'Family Protection Plan Chat', icon: MessageSquare },
     { key: 'trust', label: 'Trust Creation', icon: Shield },
     { key: 'succession', label: 'Succession Planning', icon: Users },
   ] as const
@@ -324,10 +322,6 @@ export default function Classroom() {
 
       {activeTab === 'sops' ? (
         <SopLibraryPanel />
-      ) : activeTab === 'ai' ? (
-        <div className="max-w-4xl mx-auto w-full">
-          <AIChat embedded />
-        </div>
       ) : activeTab === 'trust' ? (
         <TrustCreation />
       ) : activeTab === 'succession' ? (

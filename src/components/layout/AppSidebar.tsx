@@ -119,7 +119,6 @@ const SEARCH_SUGGESTIONS = [
   { label: 'Family Constitution', path: '/family-constitution', requiresSubscription: true },
   { label: 'Calendar', path: '/calendar', requiresSubscription: true },
   { label: 'Members', path: '/members', requiresSubscription: true },
-  { label: 'AI Chat', path: '/ai-chat', requiresSubscription: false },
   { label: 'Community', path: '/workspace-community', requiresSubscription: false },
   { label: 'Classroom', path: '/classroom', requiresSubscription: false },
   { label: 'Messenger', path: '/messenger', requiresSubscription: false },

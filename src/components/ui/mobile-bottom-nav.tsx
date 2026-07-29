@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Mail, Calendar, MessageSquare, BookOpen, LayoutGrid, LayoutDashboard, Home, FileText, Users, Bot, Shield, ScrollText, Sprout, Settings, LogOut, ChevronRight, HeartPulse } from 'lucide-react'
+import { Mail, Calendar, MessageSquare, BookOpen, LayoutGrid, LayoutDashboard, Home, FileText, Users, Shield, ScrollText, Sprout, Settings, LogOut, ChevronRight, HeartPulse } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserRole } from '@/hooks/useUserRole'
@@ -106,7 +106,6 @@ export function MobileBottomNav() {
   
 
   const workspaceItems = [
-    { name: 'AI Chat', href: '/ai-chat', icon: Bot },
     ...(!isFamilyMember ? [{ name: 'Trust Creation', href: '/trust-creation', icon: ScrollText }] : []),
     ...(!isFamilyMember ? [{ name: 'Succession Planning', href: '/succession-planning', icon: Sprout }] : []),
     { name: 'Members', href: '/workspace-members', icon: Users },
