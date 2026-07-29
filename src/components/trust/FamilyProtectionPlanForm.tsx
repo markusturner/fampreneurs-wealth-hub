@@ -121,11 +121,8 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
   return (
     <div className="space-y-5 max-w-3xl mx-auto">
 
-      <p className="text-sm text-muted-foreground">
-        Answer these short questions. We will build a custom Family Protection Plan for you in seconds.
-      </p>
-
       <div className="grid gap-4 sm:grid-cols-2">
+
         <div className="space-y-2">
           <Label>1. Your full name</Label>
           <Input value={form.full_name} onChange={e => update("full_name", e.target.value)} placeholder="Jane Doe" />
