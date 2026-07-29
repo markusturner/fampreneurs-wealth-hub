@@ -148,7 +148,7 @@ export default function SuccessionPlanning() {
   }
 
   return (
-    <div className="p-3 sm:p-4 space-y-3 max-w-6xl mx-auto h-[calc(100dvh-4rem)] overflow-hidden flex flex-col">
+    <div className="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto">
       <Helmet>
         <title>Succession Planning | TruHeirs</title>
         <meta name="description" content="Plan your family's succession with a step-by-step done-for-you process." />
@@ -156,21 +156,21 @@ export default function SuccessionPlanning() {
 
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
-            <Award className="h-5 w-5 text-accent" />
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <Award className="h-6 w-6 text-accent" />
             Succession Planning
           </h1>
-          <p className="text-muted-foreground text-xs">Your step-by-step roadmap to a lasting family legacy.</p>
+          <p className="text-muted-foreground text-sm">Your step-by-step roadmap to a lasting family legacy.</p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => window.location.assign('/classroom')} className="gap-1.5 shrink-0">
           <ArrowLeft className="h-4 w-4" /> Back to Classroom
         </Button>
       </div>
 
-      <div className="flex-1 flex flex-col justify-around gap-3 min-h-0">
-        {renderStep('Origin Story', 1, STEP_1, 'grid-cols-2')}
-        {renderStep('Structure', 2, STEP_2, 'grid-cols-2 sm:grid-cols-5')}
-        {renderStep('Stewardship', 3, STEP_3, 'grid-cols-2 sm:grid-cols-5')}
+      <div className="space-y-6">
+        {renderStep('Origin Story', 1, STEP_1, 'grid-cols-1 sm:grid-cols-2')}
+        {renderStep('Structure', 2, STEP_2, 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5')}
+        {renderStep('Stewardship', 3, STEP_3, 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5')}
       </div>
     </div>
   )
