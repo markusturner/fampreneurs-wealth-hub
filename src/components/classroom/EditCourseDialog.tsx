@@ -90,10 +90,26 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
     if (!course || !title.trim()) return
     setLoading(true)
 
+    let finalImageUrl = imageUrl.trim() || null
+
+    if (imageFile) {
+      const filePath = `course-covers/${Date.now()}_${imageFile.name}`
+      const { error: uploadError } = await supabase.storage
+        .from('cover-photos')
+        .upload(filePath, imageFile)
+      if (uploadError) {
+        toast({ title: 'Image upload failed', description: uploadError.message, variant: 'destructive' })
+        setLoading(false)
+        return
+      }
+      const { data: publicUrlData } = supabase.storage.from('cover-photos').getPublicUrl(filePath)
+      finalImageUrl = publicUrlData.publicUrl
+    }
+
     const { error } = await supabase.from('courses').update({
       title: title.trim(),
       description: description.trim() || null,
-      image_url: imageUrl.trim() || null,
+      image_url: finalImageUrl,
       community_ids: selectedCommunityIds,
     }).eq('id', course.id)
 
