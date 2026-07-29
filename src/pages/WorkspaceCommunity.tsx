@@ -918,10 +918,10 @@ export default function WorkspaceCommunity() {
       }
       const name = match[1]
       const firstWord = name.trim().split(/\s+/)[0].toLowerCase()
-      // Legacy placeholder "@member" — replace with the actual author's name
+      // Legacy placeholder "@member" — replace with the current viewer's name
       if (firstWord === 'member') {
         const rest = name.slice('member'.length)
-        const displayName = authorName || 'Member'
+        const displayName = profile?.display_name || 'You'
         parts.push(
           <strong key={match.index} className="font-bold">
             @{displayName}
@@ -931,6 +931,7 @@ export default function WorkspaceCommunity() {
         lastIndex = match.index + match[0].length
         continue
       }
+
       parts.push(
         <strong key={match.index} className="font-bold">
           @{name}
