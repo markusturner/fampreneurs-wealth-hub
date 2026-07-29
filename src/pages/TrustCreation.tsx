@@ -6,14 +6,15 @@ import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
-import { Lock, FileText, Building2, Church, Home, Loader2, CheckCircle2, ArrowLeft, ShieldCheck, ClipboardList, Package, Users, AlertTriangle, ExternalLink } from "lucide-react"
+import { Lock, FileText, Building2, Church, Home, Loader2, CheckCircle2, ArrowLeft, ShieldCheck, ClipboardList, Package, Users, AlertTriangle, ExternalLink, Shield } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { TrustAssetUploads } from "@/components/trust/TrustAssetUploads"
 import { AssetInventoryForm } from "@/components/trust/AssetInventoryForm"
 import { TrustChecklistForm } from "@/components/trust/TrustChecklistForm"
 import { TrustNameTranslator } from "@/components/trust/TrustNameTranslator"
+import { FamilyProtectionPlanForm } from "@/components/trust/FamilyProtectionPlanForm"
 
-type SectionType = 'business' | 'ministry' | 'family' | 'asset_inventory' | 'trust_name_translator' | 'trust_asset_uploads'
+type SectionType = 'business' | 'ministry' | 'family' | 'asset_inventory' | 'trust_name_translator' | 'trust_asset_uploads' | 'family_protection_plan'
 
 interface TrustAccess {
   has_access: boolean
@@ -28,6 +29,11 @@ interface PageLock {
 }
 
 const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2; description: string; formUrl?: string; prepDocUrl?: string }> = {
+  family_protection_plan: {
+    label: "Family Protection Plan",
+    icon: Shield,
+    description: "Answer a few short questions and we'll build a custom Family Protection Plan document tailored to your family.",
+  },
   family: {
     label: "Family Trust",
     icon: Home,
@@ -188,7 +194,7 @@ export default function TrustCreation() {
   }
 
   const isUnlocked = (type: SectionType) => {
-    if (type === 'asset_inventory' || type === 'trust_name_translator' || type === 'trust_asset_uploads') return true
+    if (type === 'asset_inventory' || type === 'trust_name_translator' || type === 'trust_asset_uploads' || type === 'family_protection_plan') return true
     return trustAccess?.unlocked_trusts?.includes(type) ?? false
   }
 
@@ -223,31 +229,31 @@ export default function TrustCreation() {
         }`}
         onClick={() => !isDisabled && setSelectedSection(type)}
       >
-        <CardHeader className="text-center p-2 pb-1">
-          <div className="mx-auto mb-1 relative">
-            <Icon className={`h-6 w-6 ${locked ? "text-destructive" : submitted ? "text-accent" : unlocked ? "text-accent" : "text-muted-foreground"}`} />
-            {locked && <Lock className="h-3 w-3 absolute -top-1 -right-1 text-destructive" />}
-            {!locked && !unlocked && !submitted && <Lock className="h-3 w-3 absolute -top-1 -right-1 text-destructive" />}
-            {submitted && !locked && <ShieldCheck className="h-3 w-3 absolute -top-1 -right-1 text-accent" />}
+        <CardHeader className="text-center p-4 pb-2">
+          <div className="mx-auto mb-2 relative">
+            <Icon className={`h-10 w-10 ${locked ? "text-destructive" : submitted ? "text-accent" : unlocked ? "text-accent" : "text-muted-foreground"}`} />
+            {locked && <Lock className="h-4 w-4 absolute -top-1 -right-1 text-destructive" />}
+            {!locked && !unlocked && !submitted && <Lock className="h-4 w-4 absolute -top-1 -right-1 text-destructive" />}
+            {submitted && !locked && <ShieldCheck className="h-4 w-4 absolute -top-1 -right-1 text-accent" />}
           </div>
-          <CardTitle className="text-xs leading-tight">{info.label}</CardTitle>
+          <CardTitle className="text-sm leading-tight">{info.label}</CardTitle>
         </CardHeader>
-        <CardContent className="p-2 pt-0">
+        <CardContent className="p-4 pt-0">
           {locked ? (
-            <Badge variant="outline" className="w-full justify-center border-destructive/50 text-destructive text-[10px] px-1 py-0">
-              <Lock className="h-2.5 w-2.5 mr-1" /> {adminLockedExplicitly ? 'Admin Locked' : 'Locked'}
+            <Badge variant="outline" className="w-full justify-center border-destructive/50 text-destructive text-xs px-2 py-0.5">
+              <Lock className="h-3 w-3 mr-1" /> {adminLockedExplicitly ? 'Admin Locked' : 'Locked'}
             </Badge>
           ) : submitted ? (
-            <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-[10px] px-1 py-0">
-              <ShieldCheck className="h-2.5 w-2.5 mr-1" /> Submitted
+            <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-xs px-2 py-0.5">
+              <ShieldCheck className="h-3 w-3 mr-1" /> Submitted
             </Badge>
           ) : unlocked ? (
-            <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-[10px] px-1 py-0">
-              <CheckCircle2 className="h-2.5 w-2.5 mr-1" /> Unlocked
+            <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-xs px-2 py-0.5">
+              <CheckCircle2 className="h-3 w-3 mr-1" /> Unlocked
             </Badge>
           ) : (
-            <Badge variant="outline" className="w-full justify-center border-destructive/50 text-destructive text-[10px] px-1 py-0">
-              <Lock className="h-2.5 w-2.5 mr-1" /> Locked
+            <Badge variant="outline" className="w-full justify-center border-destructive/50 text-destructive text-xs px-2 py-0.5">
+              <Lock className="h-3 w-3 mr-1" /> Locked
             </Badge>
           )}
         </CardContent>
@@ -309,8 +315,8 @@ export default function TrustCreation() {
       )
     }
 
-    // Asset Inventory & Trust Checklist use React forms
-    if (selectedSection === 'asset_inventory' || selectedSection === 'trust_name_translator' || selectedSection === 'trust_asset_uploads') {
+    // Asset Inventory, Trust Checklist, Family Protection Plan use React forms
+    if (selectedSection === 'asset_inventory' || selectedSection === 'trust_name_translator' || selectedSection === 'trust_asset_uploads' || selectedSection === 'family_protection_plan') {
       return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-5xl mx-auto">
           <Button variant="ghost" onClick={() => setSelectedSection(null)} className="gap-2">
@@ -329,6 +335,8 @@ export default function TrustCreation() {
                 <AssetInventoryForm onSubmitted={handleFormSubmitted} />
               ) : selectedSection === 'trust_asset_uploads' ? (
                 <TrustAssetUploads onSubmitted={handleFormSubmitted} />
+              ) : selectedSection === 'family_protection_plan' ? (
+                <FamilyProtectionPlanForm onSubmitted={handleFormSubmitted} />
               ) : (
                 <TrustNameTranslator onSubmitted={handleFormSubmitted} />
               )}
@@ -401,54 +409,55 @@ export default function TrustCreation() {
 
   // Main selection view
   return (
-    <div className="p-3 sm:p-4 space-y-3 max-w-6xl mx-auto h-[calc(100dvh-4rem)] overflow-hidden flex flex-col">
+    <div className="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
-            <FileText className="h-5 w-5 text-accent" />
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <FileText className="h-6 w-6 text-accent" />
             Trust Creation
             {trustAccess.is_pif && (
-              <Badge className="ml-2 bg-accent text-accent-foreground text-[10px] px-1.5 py-0">PIF — All Unlocked</Badge>
+              <Badge className="ml-2 bg-accent text-accent-foreground text-xs px-2 py-0.5">PIF — All Unlocked</Badge>
             )}
           </h1>
-          <p className="text-muted-foreground text-xs">Select a trust type or tool to get started.</p>
+          <p className="text-muted-foreground text-sm">Select a trust type or tool to get started.</p>
         </div>
         <Button variant="ghost" size="sm" onClick={() => window.location.assign('/classroom')} className="gap-1.5 shrink-0">
           <ArrowLeft className="h-4 w-4" /> Back to Classroom
         </Button>
       </div>
 
-      <div className="flex-1 flex flex-col justify-around gap-3 min-h-0">
+      <div className="space-y-6">
         {/* Step 1 */}
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <Badge className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0">Step 1</Badge>
-            <h2 className="text-sm font-semibold text-foreground">Trust Name & Asset Inventory</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <Badge className="bg-accent text-accent-foreground text-xs px-2 py-0.5">Step 1</Badge>
+            <h2 className="text-base font-semibold text-foreground">Family Protection Plan, Trust Name & Asset Inventory</h2>
           </div>
-          <div className="grid gap-2 grid-cols-2">
-            {(['trust_name_translator', 'asset_inventory'] as SectionType[]).map(type => renderSectionCard(type))}
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
+            {(['family_protection_plan', 'trust_name_translator', 'asset_inventory'] as SectionType[]).map(type => renderSectionCard(type))}
           </div>
         </div>
 
         {/* Step 2 */}
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <Badge className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0">Step 2</Badge>
-            <h2 className="text-sm font-semibold text-foreground">Trust Forms</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <Badge className="bg-accent text-accent-foreground text-xs px-2 py-0.5">Step 2</Badge>
+            <h2 className="text-base font-semibold text-foreground">Trust Forms</h2>
           </div>
-          <div className="grid gap-2 grid-cols-3">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
             {TRUST_TYPES.map(type => renderSectionCard(type))}
           </div>
         </div>
 
+
         {/* Step 3 */}
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <Badge className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0">Step 3</Badge>
-            <h2 className="text-sm font-semibold text-foreground">Schedule B, Proof of Transfer & Complimentary Calls</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <Badge className="bg-accent text-accent-foreground text-xs px-2 py-0.5">Step 3</Badge>
+            <h2 className="text-base font-semibold text-foreground">Schedule B, Proof of Transfer & Complimentary Calls</h2>
           </div>
-          <div className="grid gap-2 grid-cols-3">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
             {(['trust_asset_uploads'] as SectionType[]).map(type => renderSectionCard(type))}
             {[
               {
@@ -465,17 +474,17 @@ export default function TrustCreation() {
                 onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}
                 className="cursor-pointer transition-all hover:shadow-md hover:border-accent"
               >
-                <CardHeader className="text-center p-2 pb-1">
-                  <div className="mx-auto mb-1">
-                    <Users className="h-6 w-6 text-accent" />
+                <CardHeader className="text-center p-4 pb-2">
+                  <div className="mx-auto mb-2">
+                    <Users className="h-10 w-10 text-accent" />
                   </div>
-                  <CardTitle className="text-xs leading-tight flex items-center justify-center gap-1">
+                  <CardTitle className="text-sm leading-tight flex items-center justify-center gap-1">
                     {item.title}
                     <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-2 pt-0">
-                  <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-[10px] px-1 py-0">
+                <CardContent className="p-4 pt-0">
+                  <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-xs px-2 py-0.5">
                     Complimentary
                   </Badge>
                 </CardContent>
