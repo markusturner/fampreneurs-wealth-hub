@@ -210,33 +210,41 @@ export default function Welcome() {
         </DropdownMenu>
       </div>
 
-      <div className="relative z-10 flex flex-col items-center text-center w-full max-w-4xl">
+      <div className={`relative z-10 flex flex-col items-center text-center w-full max-w-4xl transition-all duration-500 ease-out ${searchActive ? '-translate-y-4 sm:-translate-y-8' : ''}`}>
         <img
           src="/lovable-uploads/00df4658-d6df-420b-8c0d-7af68820837d.png"
           alt="TruHeirs"
-          className="h-24 sm:h-32 w-auto mb-3 sm:mb-4"
+          className={`w-auto transition-all duration-500 ease-out ${searchActive ? 'h-12 sm:h-16 mb-2' : 'h-24 sm:h-32 mb-3 sm:mb-4'}`}
         />
 
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-montserrat font-semibold tracking-[0.22em] uppercase text-foreground mb-3 sm:mb-4">
+        <h1 className={`font-montserrat font-semibold tracking-[0.22em] uppercase text-foreground transition-all duration-500 ease-out ${searchActive ? 'text-sm sm:text-base mb-2' : 'text-3xl sm:text-5xl md:text-6xl mb-3 sm:mb-4'}`}>
           Welcome back, {firstName}
         </h1>
 
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-secondary/50 bg-sidebar px-4 py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-secondary shadow-sm">
-          <Sparkles className="h-3.5 w-3.5 text-accent" />
-          <span>{programBadgeLabel}</span>
+        <div
+          className={`grid transition-all duration-500 ease-out w-full ${searchActive ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'}`}
+        >
+          <div className="overflow-hidden flex flex-col items-center">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-secondary/50 bg-sidebar px-4 py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-secondary shadow-sm">
+              <Sparkles className="h-3.5 w-3.5 text-accent" />
+              <span>{programBadgeLabel}</span>
+            </div>
+
+            {lastUsed ? (
+              <p className="text-[11px] sm:text-sm text-muted-foreground max-w-xl mb-5 sm:mb-6 px-4">
+                Last time you were logged in, you were working on <span className="text-foreground font-medium">{lastUsedLabel(lastUsed)}</span>. Would you like to continue?
+              </p>
+            ) : (
+              <p className="text-[10px] sm:text-xs tracking-[0.35em] uppercase text-muted-foreground mb-5 sm:mb-6">
+                WHAT ARE YOU FOCUSING ON TODAY?
+              </p>
+            )}
+          </div>
         </div>
 
-        {lastUsed ? (
-          <p className="text-[11px] sm:text-sm text-muted-foreground max-w-xl mb-5 sm:mb-6 px-4">
-            Last time you were logged in, you were working on <span className="text-foreground font-medium">{lastUsedLabel(lastUsed)}</span>. Would you like to continue?
-          </p>
-        ) : (
-          <p className="text-[10px] sm:text-xs tracking-[0.35em] uppercase text-muted-foreground mb-5 sm:mb-6">
-            WHAT ARE YOU FOCUSING ON TODAY?
-          </p>
-        )}
+        <div className={`w-32 sm:w-48 h-px bg-secondary transition-all duration-500 ${searchActive ? 'mb-4' : 'mb-6 sm:mb-8'}`} />
 
-        <div className="w-32 sm:w-48 h-px bg-secondary mb-6 sm:mb-8" />
+
 
         {(() => {
           const communityCodes = userCodes.filter(c => c !== 'fbu') as Array<Exclude<ProgramCode,'fbu'>>
