@@ -119,6 +119,10 @@ export function AdminInviteLinks() {
       max_uses = maxUsesInput === '' || isNaN(n) || n <= 0 ? null : n
     }
 
+    const effectiveProgram = programName === 'The Family Business Accelerator' && tfbaVariant === 'vip_weekend'
+      ? 'The Family Business Accelerator (VIP Weekend)'
+      : (programName || null)
+
     const { error } = await supabase.from('invite_links' as any).insert({
       token,
       created_by: user?.id,
@@ -126,7 +130,7 @@ export function AdminInviteLinks() {
       expires_at,
       max_uses,
       role,
-      program_name: programName || null,
+      program_name: effectiveProgram,
       truheirs_access: truheirsAccess,
       plan_type: planType,
       total_amount: planType !== 'free' ? Number(totalAmount) : null,
@@ -135,6 +139,7 @@ export function AdminInviteLinks() {
       payment_start_date: planType === 'payment_plan' ? paymentStartDate : null,
       note: note || null,
     })
+
 
     setCreating(false)
     if (error) return toast({ title: 'Failed', description: error.message, variant: 'destructive' })
