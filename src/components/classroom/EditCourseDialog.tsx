@@ -52,8 +52,25 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
       setDescription(course.description || '')
       setImageUrl(course.image_url || '')
       setSelectedCommunityIds(course.community_ids || [])
+      setImageFile(null)
+      setImagePreview(null)
     }
   }, [course])
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+  }
+
+  const clearImage = () => {
+    setImageFile(null)
+    setImagePreview(null)
+    setImageUrl('')
+  }
+
+
 
   useEffect(() => {
     if (open) {
