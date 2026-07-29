@@ -80,11 +80,11 @@ export default function SuccessionPlanning() {
 
   const renderStep = (title: string, step: number, items: ItemDef[], cols: string) => (
     <div>
-      <div className="flex items-center gap-2 mb-3">
-        <Badge className="bg-accent text-accent-foreground">Step {step}</Badge>
-        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+      <div className="flex items-center gap-2 mb-1.5">
+        <Badge className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0">Step {step}</Badge>
+        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
       </div>
-      <div className={`grid gap-4 ${cols}`}>
+      <div className={`grid gap-2 ${cols}`}>
         {items.map(item => (
           <SuccessionItemCard
             key={item.key}
@@ -148,25 +148,30 @@ export default function SuccessionPlanning() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-5xl mx-auto">
+    <div className="p-3 sm:p-4 space-y-3 max-w-6xl mx-auto h-[calc(100dvh-4rem)] overflow-hidden flex flex-col">
       <Helmet>
         <title>Succession Planning | TruHeirs</title>
         <meta name="description" content="Plan your family's succession with a step-by-step done-for-you process." />
       </Helmet>
 
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-3">
-          <Award className="h-7 w-7 text-accent" />
-          Succession Planning
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-          Your step-by-step roadmap to a lasting family legacy.
-        </p>
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <h1 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
+            <Award className="h-5 w-5 text-accent" />
+            Succession Planning
+          </h1>
+          <p className="text-muted-foreground text-xs">Your step-by-step roadmap to a lasting family legacy.</p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={() => window.location.assign('/classroom')} className="gap-1.5 shrink-0">
+          <ArrowLeft className="h-4 w-4" /> Back to Classroom
+        </Button>
       </div>
 
-      {renderStep('Origin Story', 1, STEP_1, 'sm:grid-cols-2')}
-      {renderStep('Structure', 2, STEP_2, 'sm:grid-cols-2 lg:grid-cols-3')}
-      {renderStep('Stewardship', 3, STEP_3, 'sm:grid-cols-2 lg:grid-cols-3')}
+      <div className="flex-1 flex flex-col justify-around gap-3 min-h-0">
+        {renderStep('Origin Story', 1, STEP_1, 'grid-cols-2')}
+        {renderStep('Structure', 2, STEP_2, 'grid-cols-2 sm:grid-cols-5')}
+        {renderStep('Stewardship', 3, STEP_3, 'grid-cols-2 sm:grid-cols-5')}
+      </div>
     </div>
   )
 }
