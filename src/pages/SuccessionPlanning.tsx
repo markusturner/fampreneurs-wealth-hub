@@ -80,11 +80,11 @@ export default function SuccessionPlanning() {
 
   const renderStep = (title: string, step: number, items: ItemDef[], cols: string) => (
     <div>
-      <div className="flex items-center gap-2 mb-1.5">
-        <Badge className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0">Step {step}</Badge>
-        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+      <div className="flex items-center gap-2 mb-3">
+        <Badge className="bg-accent text-accent-foreground text-xs px-2 py-0.5">Step {step}</Badge>
+        <h2 className="text-base font-semibold text-foreground">{title}</h2>
       </div>
-      <div className={`grid gap-2 ${cols}`}>
+      <div className={`grid gap-3 ${cols}`}>
         {items.map(item => (
           <SuccessionItemCard
             key={item.key}
