@@ -231,54 +231,32 @@ export default function Welcome() {
         <div className="w-32 sm:w-48 h-px bg-secondary mb-6 sm:mb-8" />
 
         {(() => {
-          const communityCodes = userCodes
+          const communityCodes = userCodes.filter(c => c !== 'fbu') as Array<Exclude<ProgramCode,'fbu'>>
           const isAdminOrOwner = isOwner || isAdmin
-          const availableCommunities: ReadonlyArray<ProgramCode> = isAdminOrOwner
-            ? ['fbu','tfv','tfba','tffm'] as const
-            : (communityCodes.length > 0 ? communityCodes.slice(0, 1) : ['fbu'] as const)
+          const availableCommunities: ReadonlyArray<Exclude<ProgramCode,'fbu'>> = isAdminOrOwner
+            ? ['tfv','tfba','tffm'] as const
+            : (communityCodes.length > 0 ? communityCodes.slice(0, 1) : ['tfv'] as const)
           const hasMultiple = isAdminOrOwner && availableCommunities.length > 1
-          const primaryLabel = hasMultiple
-            ? 'Community'
-            : 'Community'
           return (
+        <>
         <nav className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0">
           {hasMultiple ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger className="group inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2 outline-none">
-              {primaryLabel}
+            <button
+              onClick={() => setCommunityOpen(v => !v)}
+              className="group inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2 outline-none"
+            >
+              Community
               {lastUsed?.section === 'community' && (
                 <span className="ml-1 rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
               )}
-              <ChevronDown className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="min-w-[280px] rounded-none border-border/60 bg-background/95 backdrop-blur">
-              {availableCommunities.map(prog => (
-                <DropdownMenuItem
-                  key={prog}
-                  onClick={() => go('community', `/workspace-community?program=${prog}`, prog)}
-                  className="text-[11px] tracking-[0.2em] uppercase font-medium py-3 hover:text-secondary focus:text-secondary data-[highlighted]:bg-transparent data-[highlighted]:text-secondary grid grid-cols-[auto_1fr_auto] items-center gap-2"
-                >
-                  <span className="invisible">
-                    {lastUsed?.section === 'community' && lastUsed.program === prog && (
-                      <span className="rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
-                    )}
-                  </span>
-                  <span className="text-center">{COMMUNITY_LABELS[prog]}</span>
-                  <span>
-                    {lastUsed?.section === 'community' && lastUsed.program === prog && (
-                      <span className="rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
-                    )}
-                  </span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <ChevronDown className={`h-3 w-3 opacity-60 group-hover:opacity-100 transition-transform ${communityOpen ? 'rotate-180' : ''}`} />
+            </button>
           ) : (
             <button
               onClick={() => go('community', `/workspace-community?program=${availableCommunities[0]}`, availableCommunities[0])}
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
             >
-              {primaryLabel}
+              Community
               {lastUsed?.section === 'community' && (
                 <span className="ml-1 rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
               )}
@@ -312,6 +290,29 @@ export default function Welcome() {
             )}
           </button>
         </nav>
+        {hasMultiple && (
+          <div
+            className={`grid transition-all duration-300 ease-out w-full max-w-md ${communityOpen ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0 mt-0'}`}
+          >
+            <div className="overflow-hidden">
+              <div className="flex flex-col gap-1 rounded-xl border border-border/60 bg-background/70 backdrop-blur px-2 py-2">
+                {availableCommunities.map(prog => (
+                  <button
+                    key={prog}
+                    onClick={() => { setCommunityOpen(false); go('community', `/workspace-community?program=${prog}`, prog) }}
+                    className="relative w-full text-center text-[11px] tracking-[0.2em] uppercase font-medium py-2.5 rounded-lg hover:text-secondary hover:bg-secondary/5 transition-colors"
+                  >
+                    {COMMUNITY_LABELS[prog]}
+                    {lastUsed?.section === 'community' && lastUsed.program === prog && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        </>
           )
         })()}
 
