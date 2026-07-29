@@ -389,15 +389,41 @@ You acknowledge and agree to all charges associated with this program and you wi
 
 By their signatures below, the parties hereby understand and agree to all terms and conditions of this agreement.`
 
+export const VIP_WEEKEND_AGREEMENT = `VIP Weekend Agreement
+
+Thank you for choosing The Fampreneurs VIP Weekend experience — an exclusive in-person intensive designed to accelerate your family business, wealth, and legacy planning in just one weekend.
+
+This Agreement is entered into on this date ______________________________, by and between _________________________________ ("Client"), and VNCI, LLC ("The Fampreneurs").
+
+Section 1. Program Details
+Program: The Family Business Accelerator — VIP Weekend Add-On.
+The Client receives priority in-person access to The Fampreneurs during the VIP Weekend, including hot-seat coaching, private strategy sessions, and networking with the founding team.
+
+Section 2. Payment
+The Client agrees to the VIP Weekend fee outlined at checkout. All sales are final. No refunds will be issued for the VIP Weekend experience.
+
+Section 3. Attendance
+The Client is responsible for their own travel, lodging, and meals unless otherwise specified. Missed sessions are not refundable and cannot be transferred.
+
+Section 4. Conduct
+The Client agrees to conduct themselves professionally and respectfully during the VIP Weekend. The Fampreneurs reserve the right to remove any attendee whose behavior is deemed disruptive.
+
+Section 5. Chargebacks
+The Client acknowledges and agrees to all charges associated with the VIP Weekend and will not initiate a chargeback. Chargebacks constitute fraud and will be pursued legally.
+
+By signing below, the parties agree to all terms and conditions of this agreement.`
+
 export const AGREEMENT_TEXT_MAP: Record<string, string> = {
   'The Family Vault': TFV_AGREEMENT,
   'The Family Business Accelerator': TFBA_AGREEMENT,
+  'The Family Business Accelerator (VIP Weekend)': VIP_WEEKEND_AGREEMENT,
   'The Family Fortune Mastermind': TFFM_AGREEMENT,
 }
 
 export function getAgreementTextByProgram(programName: string | null | undefined): string | null {
   if (!programName) return null
   const n = programName.trim().toLowerCase()
+  if (n.includes('vip weekend') || n.includes('vip_weekend')) return VIP_WEEKEND_AGREEMENT
   if (n === 'tfv' || n.includes('vault')) return TFV_AGREEMENT
   if (n === 'tfba' || n.includes('accelerator')) return TFBA_AGREEMENT
   if (n === 'tffm' || n.includes('mastermind') || n.includes('fortune')) return TFFM_AGREEMENT
@@ -405,3 +431,4 @@ export function getAgreementTextByProgram(programName: string | null | undefined
   if (AGREEMENT_TEXT_MAP[programName]) return AGREEMENT_TEXT_MAP[programName]
   return null
 }
+

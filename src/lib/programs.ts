@@ -15,6 +15,16 @@ export function programLabel(code: string): string {
   return PROGRAM_OPTIONS.find(p => p.code === code)?.label || code.toUpperCase()
 }
 
+// Strip variant suffix like " (VIP Weekend)" so classification still works
+export function stripProgramVariant(name?: string | null): string {
+  return (name || '').replace(/\s*\(([^)]+)\)\s*$/,'').trim()
+}
+
+export function getProgramVariant(name?: string | null): string | null {
+  const m = (name || '').match(/\(([^)]+)\)\s*$/)
+  return m ? m[1].trim() : null
+}
+
 // Map a profile.program_name (long string, possibly comma-separated) to program codes
 export function profileProgramCodes(programName?: string | null): ProgramCode[] {
   if (!programName) return []
@@ -27,6 +37,7 @@ export function profileProgramCodes(programName?: string | null): ProgramCode[] 
     'The Succession Society': 'tffm',
   }
   return programName.split(',')
-    .map(s => map[s.trim()])
+    .map(s => map[stripProgramVariant(s)])
     .filter(Boolean) as ProgramCode[]
 }
+

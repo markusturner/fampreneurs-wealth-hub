@@ -54,6 +54,7 @@ export function AdminInviteLinks() {
   const [maxUsesInput, setMaxUsesInput] = useState<string>('1')
   const [role, setRole] = useState<RoleType>('family_member')
   const [programName, setProgramName] = useState('')
+  const [tfbaVariant, setTfbaVariant] = useState<'standard' | 'vip_weekend'>('standard')
   const [truheirsAccess, setTruheirsAccess] = useState(true)
   const [planType, setPlanType] = useState<PlanType>('free')
   const [totalAmount, setTotalAmount] = useState('')
@@ -61,6 +62,7 @@ export function AdminInviteLinks() {
   const [installmentFrequency, setInstallmentFrequency] = useState<'monthly' | 'weekly' | 'biweekly'>('monthly')
   const [paymentStartDate, setPaymentStartDate] = useState('')
   const [note, setNote] = useState('')
+
 
   const load = async () => {
     setLoading(true)
@@ -117,6 +119,10 @@ export function AdminInviteLinks() {
       max_uses = maxUsesInput === '' || isNaN(n) || n <= 0 ? null : n
     }
 
+    const effectiveProgram = programName === 'The Family Business Accelerator' && tfbaVariant === 'vip_weekend'
+      ? 'The Family Business Accelerator (VIP Weekend)'
+      : (programName || null)
+
     const { error } = await supabase.from('invite_links' as any).insert({
       token,
       created_by: user?.id,
@@ -124,7 +130,7 @@ export function AdminInviteLinks() {
       expires_at,
       max_uses,
       role,
-      program_name: programName || null,
+      program_name: effectiveProgram,
       truheirs_access: truheirsAccess,
       plan_type: planType,
       total_amount: planType !== 'free' ? Number(totalAmount) : null,
@@ -133,6 +139,7 @@ export function AdminInviteLinks() {
       payment_start_date: planType === 'payment_plan' ? paymentStartDate : null,
       note: note || null,
     })
+
 
     setCreating(false)
     if (error) return toast({ title: 'Failed', description: error.message, variant: 'destructive' })
@@ -217,8 +224,26 @@ export function AdminInviteLinks() {
                   {PROGRAM_OPTIONS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                 </SelectContent>
               </Select>
+              {programName === 'The Family Business Accelerator' && (
+                <div className="pt-2">
+                  <Label className="text-xs text-muted-foreground">Sub-option</Label>
+                  <Select value={tfbaVariant} onValueChange={(v) => setTfbaVariant(v as 'standard' | 'vip_weekend')}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="standard">Standard (Accelerator only)</SelectItem>
+                      <SelectItem value="vip_weekend">VIP Weekend (sends VIP Weekend Agreement)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    VIP Weekend still joins the Accelerator program, but the invitee signs the VIP Weekend agreement.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
+
+
+
 
           <div className="flex items-center justify-between rounded-lg border p-3">
             <div>

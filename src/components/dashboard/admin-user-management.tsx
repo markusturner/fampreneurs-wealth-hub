@@ -24,8 +24,10 @@ export function AdminUserManagement() {
   const [bulkEmails, setBulkEmails] = useState('')
   const [role, setRole] = useState<UserRole>('family_member')
   const [programName, setProgramName] = useState('')
+  const [tfbaVariant, setTfbaVariant] = useState<'standard' | 'vip_weekend'>('standard')
   const [truHeirsAccess, setTruHeirsAccess] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
+
 
   const [planType, setPlanType] = useState<'free' | 'paid_in_full' | 'payment_plan'>('paid_in_full')
   const [totalAmount, setTotalAmount] = useState('')
@@ -81,17 +83,21 @@ export function AdminUserManagement() {
 
     for (const email of emails) {
       try {
+        const effectiveProgram = programName === 'The Family Business Accelerator' && tfbaVariant === 'vip_weekend'
+          ? 'The Family Business Accelerator (VIP Weekend)'
+          : (programName || undefined)
         const { data, error } = await supabase.functions.invoke('create-user-with-credentials', {
           body: {
             email,
             firstName: 'Invited',
             lastName: 'User',
             role,
-            programName: programName || undefined,
+            programName: effectiveProgram,
             truHeirsAccess,
             isBulkInvite: true,
           },
         })
+
 
         if (error || data?.success === false || data?.error) {
           throw new Error(data?.error || error?.message || 'Failed')
@@ -221,7 +227,23 @@ export function AdminUserManagement() {
               ))}
             </SelectContent>
           </Select>
+          {programName === 'The Family Business Accelerator' && (
+            <div className="pt-2 space-y-1">
+              <Label className="text-xs text-muted-foreground">Sub-option</Label>
+              <Select value={tfbaVariant} onValueChange={(v) => setTfbaVariant(v as 'standard' | 'vip_weekend')} disabled={isLoading}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">Standard (Accelerator only)</SelectItem>
+                  <SelectItem value="vip_weekend">VIP Weekend (sends VIP Weekend Agreement)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                VIP Weekend still joins the Accelerator program, but the invitee signs the VIP Weekend agreement.
+              </p>
+            </div>
+          )}
         </div>
+
 
         <div className="flex items-center justify-between py-2">
           <div className="space-y-0.5">
