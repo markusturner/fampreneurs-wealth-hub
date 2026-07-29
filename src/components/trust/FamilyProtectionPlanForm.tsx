@@ -31,6 +31,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
   const [loading, setLoading] = useState(false)
   const [planText, setPlanText] = useState<string | null>(null)
   const [documentUrl, setDocumentUrl] = useState<string | null>(null)
+  const [submittedAt, setSubmittedAt] = useState<Date | null>(null)
 
   const [form, setForm] = useState({
     full_name: "",
@@ -77,6 +78,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       if (error) throw error
       setPlanText(data.plan_text || null)
       setDocumentUrl(data.document_url || null)
+      setSubmittedAt(new Date())
       toast({ title: "Plan created", description: "Your Family Protection Plan is ready." })
       onSubmitted?.()
     } catch (err: any) {
@@ -94,6 +96,11 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
           <ShieldCheck className="h-5 w-5" />
           <span className="font-semibold">Your Family Protection Plan is ready</span>
         </div>
+        {submittedAt && (
+          <p className="text-xs text-muted-foreground">
+            Submitted {submittedAt.toLocaleString()}
+          </p>
+        )}
         {documentUrl && (
           <Button asChild className="gap-2">
             <a href={documentUrl} target="_blank" rel="noopener noreferrer">
@@ -104,7 +111,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
         <div className="rounded-lg border bg-muted/30 p-4 max-h-[60vh] overflow-y-auto whitespace-pre-wrap text-sm">
           {planText}
         </div>
-        <Button variant="outline" onClick={() => { setPlanText(null); setDocumentUrl(null) }}>
+        <Button variant="outline" onClick={() => { setPlanText(null); setDocumentUrl(null); setSubmittedAt(null) }}>
           Start over
         </Button>
       </div>
@@ -113,11 +120,9 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
 
   return (
     <div className="space-y-5 max-w-3xl mx-auto">
-      <p className="text-sm text-muted-foreground">
-        Answer these short questions. We will build a custom Family Protection Plan for you in seconds.
-      </p>
 
       <div className="grid gap-4 sm:grid-cols-2">
+
         <div className="space-y-2">
           <Label>1. Your full name</Label>
           <Input value={form.full_name} onChange={e => update("full_name", e.target.value)} placeholder="Jane Doe" />
