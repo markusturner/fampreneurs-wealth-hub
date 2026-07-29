@@ -1886,7 +1886,7 @@ export function AdminAllUsersManagement() {
                     {/* Trust Creation Divider */}
                     <TableCell className="bg-[#290a52]/5 border-l-2 border-[#290a52]/40" />
                     {/* Trust Submission Date Columns */}
-                    {['trust_name_translator', 'asset_inventory', 'family', 'ministry', 'business'].map(trustType => {
+                    {['family_protection_plan', 'trust_name_translator', 'asset_inventory', 'family', 'ministry', 'business'].map(trustType => {
                       const dateStr = (user as any).trust_sub_dates?.[trustType]
                       return (
                         <TableCell key={trustType}>
