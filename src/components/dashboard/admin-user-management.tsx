@@ -83,17 +83,21 @@ export function AdminUserManagement() {
 
     for (const email of emails) {
       try {
+        const effectiveProgram = programName === 'The Family Business Accelerator' && tfbaVariant === 'vip_weekend'
+          ? 'The Family Business Accelerator (VIP Weekend)'
+          : (programName || undefined)
         const { data, error } = await supabase.functions.invoke('create-user-with-credentials', {
           body: {
             email,
             firstName: 'Invited',
             lastName: 'User',
             role,
-            programName: programName || undefined,
+            programName: effectiveProgram,
             truHeirsAccess,
             isBulkInvite: true,
           },
         })
+
 
         if (error || data?.success === false || data?.error) {
           throw new Error(data?.error || error?.message || 'Failed')
