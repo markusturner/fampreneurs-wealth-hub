@@ -298,10 +298,15 @@ export default function Classroom() {
             <span className="hidden lg:inline text-[10px] uppercase tracking-[0.2em] text-muted-foreground mr-1">Tools</span>
             {toolTabs.map(({ key, label, icon: Icon }) => {
               const active = activeTab === key
+              const handleClick = () => {
+                if (key === 'trust') { navigate('/trust-creation'); return }
+                if (key === 'succession') { navigate('/succession-planning'); return }
+                setActiveTab(key as any)
+              }
               return (
                 <button
                   key={key}
-                  onClick={() => setActiveTab(key as any)}
+                  onClick={handleClick}
                   className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-colors ${
                     active
                       ? 'bg-[#ffb500] text-[#290a52] border-[#ffb500]'
