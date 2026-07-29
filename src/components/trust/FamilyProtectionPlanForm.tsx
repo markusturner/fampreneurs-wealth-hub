@@ -31,6 +31,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
   const [loading, setLoading] = useState(false)
   const [planText, setPlanText] = useState<string | null>(null)
   const [documentUrl, setDocumentUrl] = useState<string | null>(null)
+  const [submittedAt, setSubmittedAt] = useState<Date | null>(null)
 
   const [form, setForm] = useState({
     full_name: "",
