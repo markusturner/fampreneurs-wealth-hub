@@ -837,7 +837,6 @@ export default function WorkspaceCalendar() {
               <p className="text-xs text-muted-foreground mb-2">Which communities should see this event?</p>
               <div className="space-y-2">
                 {[
-                  { id: 'fbu', label: 'Family Business University', short: 'FBU' },
                   { id: 'tfv', label: 'The Family Vault', short: 'TFV' },
                   { id: 'tfba', label: 'The Family Business Accelerator', short: 'TFBA' },
                   { id: 'tffm', label: 'The Family Fortune Mastermind', short: 'TFFM' },
