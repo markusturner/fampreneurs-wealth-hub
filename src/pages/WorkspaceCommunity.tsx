@@ -263,9 +263,11 @@ export default function WorkspaceCommunity() {
         const postLikes = (likes || []).filter(l => l.post_id === post.id)
         const postComments = (comments || []).filter(c => c.post_id === post.id)
         
-        // Use stored category, fallback to content detection
-        let category = (post as any).category || 'discussion'
-        if (category === 'discussion') {
+        // Always trust the stored category chosen by the author.
+        // Only auto-detect when no category was ever set (legacy posts).
+        let category = (post as any).category
+        if (!category) {
+          category = 'discussion'
           const content = post.content.toLowerCase()
           if (content.includes('#win') || content.includes('🏆')) category = 'wins'
           else if (content.includes('#update') || content.includes('📣')) category = 'updates'
