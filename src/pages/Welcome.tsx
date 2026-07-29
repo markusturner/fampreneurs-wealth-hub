@@ -76,7 +76,7 @@ export default function Welcome() {
     // On mobile, skip the welcome screen and go straight to the user's community
     if (!loading && user && profile && typeof window !== 'undefined' && window.innerWidth < 768) {
       const pn = (profile?.program_name || '').toLowerCase()
-      let slug = 'fbu'
+      let slug = 'tfv'
       if (pn.includes('vault')) slug = 'tfv'
       else if (pn.includes('accelerator')) slug = 'tfba'
       else if (pn.includes('mastermind') || pn.includes('fortune') || pn.includes('succession')) slug = 'tffm'
