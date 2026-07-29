@@ -6,7 +6,6 @@ import { NavHeader } from "@/components/dashboard/nav-header"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { InvestmentChart } from "@/components/dashboard/investment-chart"
 import { AssetAllocation } from "@/components/dashboard/asset-allocation"
-import { AIChat } from "@/components/dashboard/ai-chat"
 import { FamilyMemberDashboard } from "@/components/dashboard/family-member-dashboard"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -95,10 +94,6 @@ const Index = () => {
           <div className="order-2 lg:col-span-2">
           </div>
 
-          {/* AI Chat */}
-          <div className="order-3">
-            <AIChat />
-          </div>
         </div>
       </main>
       
