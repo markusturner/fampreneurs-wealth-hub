@@ -918,19 +918,22 @@ export default function WorkspaceCommunity() {
       }
       const name = match[1]
       const firstWord = name.trim().split(/\s+/)[0].toLowerCase()
-      // Legacy placeholder "@member" — replace with the current viewer's name
-      if (firstWord === 'member') {
-        const rest = name.slice('member'.length)
-        const displayName = profile?.display_name || 'You'
+      const viewerName = profile?.display_name || 'You'
+      const isLegacyMember = firstWord === 'member'
+      const isSelfTag = authorName && name.trim().toLowerCase() === authorName.trim().toLowerCase()
+      // Legacy placeholder "@member" OR poster tagging themselves — treat as tagging the viewer
+      if (isLegacyMember || isSelfTag) {
+        const rest = isLegacyMember ? name.slice('member'.length) : ''
         parts.push(
           <strong key={match.index} className="font-bold">
-            @{displayName}
+            @{viewerName}
           </strong>
         )
         if (rest) parts.push(rest)
         lastIndex = match.index + match[0].length
         continue
       }
+
 
       parts.push(
         <strong key={match.index} className="font-bold">
