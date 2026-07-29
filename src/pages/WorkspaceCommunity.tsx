@@ -923,7 +923,7 @@ export default function WorkspaceCommunity() {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary underline hover:no-underline break-all"
+          className="text-blue-600 underline hover:text-blue-800 hover:no-underline break-all"
           onClick={(e) => e.stopPropagation()}
         >
           {url}
