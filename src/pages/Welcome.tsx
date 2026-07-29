@@ -10,6 +10,7 @@ import { Loader2, ChevronDown, User, Shield, HeartPulse, ClipboardList, LogOut, 
 import { Button } from '@/components/ui/button'
 import { TutorialVideoModal } from '@/components/dashboard/tutorial-video-modal'
 import { useTutorialVideo } from '@/hooks/useTutorialVideo'
+import { profileProgramCodes, programLabel, type ProgramCode } from '@/lib/programs'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+
 
 
 const LAST_USED_KEY = 'truheirs:lastUsed'
