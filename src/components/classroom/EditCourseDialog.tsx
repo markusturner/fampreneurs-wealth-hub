@@ -43,6 +43,8 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
   const [communityGroups, setCommunityGroups] = useState<CommunityGroup[]>([])
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   useEffect(() => {
     if (course) {
