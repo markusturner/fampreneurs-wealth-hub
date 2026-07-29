@@ -155,9 +155,28 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
             <Textarea value={description} onChange={e => setDescription(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Cover Image URL</Label>
-            <Input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." />
+            <Label>Cover Image</Label>
+            {(imagePreview || imageUrl) ? (
+              <div className="relative w-full h-36 rounded-md overflow-hidden border border-border">
+                <img src={imagePreview || imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={clearImage}
+                  className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full p-1 hover:bg-background transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-border rounded-md cursor-pointer hover:border-primary/50 transition-colors bg-muted/30">
+                <ImageIcon className="h-8 w-8 text-muted-foreground mb-2" />
+                <span className="text-sm text-muted-foreground">Click to upload cover photo</span>
+                <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+              </label>
+            )}
+            <Input value={imageUrl} onChange={e => { setImageUrl(e.target.value); setImageFile(null); setImagePreview(null) }} placeholder="Or paste image URL" />
           </div>
+
 
           <div className="space-y-2">
             <Label>Community Access</Label>
