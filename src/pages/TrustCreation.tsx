@@ -401,87 +401,89 @@ export default function TrustCreation() {
 
   // Main selection view
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-5xl mx-auto">
+    <div className="p-3 sm:p-4 space-y-3 max-w-6xl mx-auto h-[calc(100dvh-4rem)] overflow-hidden flex flex-col">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-3">
-          <FileText className="h-7 w-7 text-accent" />
-          Trust Creation
-        </h1>
-        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-          Select a trust type or tool to get started.
-        </p>
-        {trustAccess.is_pif && (
-          <Badge className="mt-2 bg-accent text-accent-foreground">All Trusts Unlocked (Paid in Full)</Badge>
-        )}
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <h1 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
+            <FileText className="h-5 w-5 text-accent" />
+            Trust Creation
+            {trustAccess.is_pif && (
+              <Badge className="ml-2 bg-accent text-accent-foreground text-[10px] px-1.5 py-0">PIF — All Unlocked</Badge>
+            )}
+          </h1>
+          <p className="text-muted-foreground text-xs">Select a trust type or tool to get started.</p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={() => window.location.assign('/classroom')} className="gap-1.5 shrink-0">
+          <ArrowLeft className="h-4 w-4" /> Back to Classroom
+        </Button>
       </div>
 
-      {/* Step 1 - Trust Name Translator & Asset Inventory */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Badge className="bg-accent text-accent-foreground">Step 1</Badge>
-          <h2 className="text-lg font-semibold text-foreground">Trust Name & Asset Inventory</h2>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {(['trust_name_translator', 'asset_inventory'] as SectionType[]).map(type => renderSectionCard(type))}
-        </div>
-      </div>
-
-      {/* Step 2 - Trust Forms */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Badge className="bg-accent text-accent-foreground">Step 2</Badge>
-          <h2 className="text-lg font-semibold text-foreground">Trust Forms</h2>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-3">
-          {TRUST_TYPES.map(type => renderSectionCard(type))}
-        </div>
-      </div>
-
-      {/* Step 3 - Schedule B & Legacy Meeting */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Badge className="bg-accent text-accent-foreground">Step 3</Badge>
-          <h2 className="text-lg font-semibold text-foreground">Schedule B & Proof of Transfer</h2>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-1">
-          {(['trust_asset_uploads'] as SectionType[]).map(type => renderSectionCard(type))}
+      <div className="flex-1 flex flex-col justify-around gap-3 min-h-0">
+        {/* Step 1 */}
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <Badge className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0">Step 1</Badge>
+            <h2 className="text-sm font-semibold text-foreground">Trust Name & Asset Inventory</h2>
+          </div>
+          <div className="grid gap-2 grid-cols-2">
+            {(['trust_name_translator', 'asset_inventory'] as SectionType[]).map(type => renderSectionCard(type))}
+          </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 mt-4">
-          {[
-            {
-              title: "Complimentary Call w/ Trust Attorney Domonique Price",
-              description: "Book your complimentary estate planning consultation with Trust Attorney Domonique Price.",
-              url: "https://calendly.com/dprice-2/estateplanning-withprice?month=2023-08",
-            },
-            {
-              title: "Complimentary Call w/ Hasani Houston",
-              description: "Book your complimentary wealth consultation with Hasani Houston.",
-              url: "https://calendly.com/hzhouston12/wealth-consultation-famp",
-            },
-          ].map((item) => (
-            <Card
-              key={item.url}
-              onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}
-              className="cursor-pointer transition-all hover:shadow-md hover:border-accent"
-            >
-              <CardHeader>
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-accent" />
-                    <CardTitle className="text-base">{item.title}</CardTitle>
+        {/* Step 2 */}
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <Badge className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0">Step 2</Badge>
+            <h2 className="text-sm font-semibold text-foreground">Trust Forms</h2>
+          </div>
+          <div className="grid gap-2 grid-cols-3">
+            {TRUST_TYPES.map(type => renderSectionCard(type))}
+          </div>
+        </div>
+
+        {/* Step 3 */}
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <Badge className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0">Step 3</Badge>
+            <h2 className="text-sm font-semibold text-foreground">Schedule B, Proof of Transfer & Complimentary Calls</h2>
+          </div>
+          <div className="grid gap-2 grid-cols-3">
+            {(['trust_asset_uploads'] as SectionType[]).map(type => renderSectionCard(type))}
+            {[
+              {
+                title: "Call w/ Attorney Domonique Price",
+                url: "https://calendly.com/dprice-2/estateplanning-withprice?month=2023-08",
+              },
+              {
+                title: "Call w/ Hasani Houston",
+                url: "https://calendly.com/hzhouston12/wealth-consultation-famp",
+              },
+            ].map((item) => (
+              <Card
+                key={item.url}
+                onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}
+                className="cursor-pointer transition-all hover:shadow-md hover:border-accent"
+              >
+                <CardHeader className="text-center p-2 pb-1">
+                  <div className="mx-auto mb-1">
+                    <Users className="h-6 w-6 text-accent" />
                   </div>
-                  <ExternalLink className="h-4 w-4 text-muted-foreground shrink-0" />
-                </div>
-                <CardDescription>{item.description}</CardDescription>
-              </CardHeader>
-            </Card>
-          ))}
+                  <CardTitle className="text-xs leading-tight flex items-center justify-center gap-1">
+                    {item.title}
+                    <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0" />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-2 pt-0">
+                  <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-[10px] px-1 py-0">
+                    Complimentary
+                  </Badge>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
-
-
     </div>
   )
 }
