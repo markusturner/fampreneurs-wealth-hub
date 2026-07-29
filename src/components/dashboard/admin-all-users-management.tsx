@@ -1627,6 +1627,7 @@ export function AdminAllUsersManagement() {
                     <TableHead className="bg-background"><button type="button" onClick={() => handleSort('program')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Program <span className="text-xs opacity-60">{sortColumn === 'program' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
                     <TableHead className="bg-background"><button type="button" onClick={() => handleSort('satisfaction')} className="flex items-center gap-1 hover:text-foreground w-full text-left">Satisfaction <span className="text-xs opacity-60">{sortColumn === 'satisfaction' ? (sortDirection === 'asc' ? '▲' : '▼') : '⇅'}</span></button></TableHead>
                     <TableHead className="min-w-[140px] bg-[#290a52]/10 text-[#290a52] font-semibold border-l-2 border-[#290a52]/40">Trust Creation</TableHead>
+                    <TableHead className="min-w-[120px] bg-background">Family Protection Plan</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Name Selected</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Asset Inventory</TableHead>
                     <TableHead className="min-w-[100px] bg-background">Family Trust</TableHead>
