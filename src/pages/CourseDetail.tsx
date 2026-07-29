@@ -992,6 +992,8 @@ export default function CourseDetail() {
                   )}
                 </CollapsibleContent>
               </Collapsible>
+                </div>
+
                   </>
                 )}
               </SortableModuleWrapper>
