@@ -888,7 +888,9 @@ export default function CourseDetail() {
                     </div>
                   </div>
                 )}
+                <div ref={(el) => { moduleRefs.current[mod.id] = el }} className="scroll-mt-20">
                 <Collapsible open={openModules.has(mod.id)} onOpenChange={() => toggleModule(mod.id)}>
+
                 {renamingModuleId === mod.id ? (
                   <div className="flex items-center gap-1 px-4 py-2">
                     <Input
