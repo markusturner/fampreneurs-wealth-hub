@@ -24,7 +24,6 @@ const PROGRAM_SLUGS: Record<string, { slug: string; label: string }> = {
 }
 
 const ALL_COMMUNITIES = [
-  { slug: 'fbu', label: 'Family Business University' },
   { slug: 'tfv', label: 'The Family Vault' },
   { slug: 'tfba', label: 'The Family Business Accelerator' },
   { slug: 'tffm', label: 'The Succession Society' },
