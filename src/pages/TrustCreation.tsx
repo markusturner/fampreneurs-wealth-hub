@@ -323,13 +323,14 @@ export default function TrustCreation() {
             <ArrowLeft className="h-4 w-4" /> Back to Trust Selection
           </Button>
           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2">
+            <CardHeader className={`pb-3 ${selectedSection === 'family_protection_plan' ? 'text-center' : ''}`}>
+              <CardTitle className={`flex items-center gap-2 ${selectedSection === 'family_protection_plan' ? 'justify-center' : ''}`}>
                 {(() => { const Icon = info.icon; return <Icon className="h-5 w-5 text-accent" /> })()}
                 {info.label}
               </CardTitle>
-              <CardDescription>{info.description}</CardDescription>
+              <CardDescription className={selectedSection === 'family_protection_plan' ? 'max-w-2xl mx-auto' : ''}>{info.description}</CardDescription>
             </CardHeader>
+
             <CardContent>
               {selectedSection === 'asset_inventory' ? (
                 <AssetInventoryForm onSubmitted={handleFormSubmitted} />
