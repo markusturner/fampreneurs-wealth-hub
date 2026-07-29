@@ -187,7 +187,7 @@ export default function Welcome() {
         </h1>
 
         {profile?.program_name && (
-          <div className="mb-3 sm:mb-4 inline-flex items-center gap-2 rounded-full border border-[#ffb500]/40 bg-[#ffb500]/10 px-3 py-1">
+          <div className="mb-3 sm:mb-4 inline-flex items-center gap-2 rounded-full bg-[#290a52] px-3.5 py-1.5 shadow-sm">
             <span className="h-1.5 w-1.5 rounded-full bg-[#ffb500]" />
             <span className="text-[10px] sm:text-xs tracking-[0.25em] uppercase font-semibold text-[#ffb500]">
               {profile.program_name}
@@ -207,7 +207,15 @@ export default function Welcome() {
 
         <div className="w-32 sm:w-48 h-px bg-secondary mb-6 sm:mb-8" />
 
+        {(() => {
+          const userCodes = profileProgramCodes(profile?.program_name)
+          // Community dropdown only lists TFV/TFBA/TFFM (FBU has no community here)
+          const communityCodes = (userCodes.filter(c => c !== 'fbu') as Array<Exclude<ProgramCode,'fbu'>>)
+          const availableCommunities = communityCodes.length > 0 ? communityCodes : (['tfv','tfba','tffm'] as const)
+          const hasMultiple = availableCommunities.length > 1
+          return (
         <nav className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0">
+          {hasMultiple ? (
           <DropdownMenu>
             <DropdownMenuTrigger className="group inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2 outline-none">
               Community
@@ -217,7 +225,7 @@ export default function Welcome() {
               <ChevronDown className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="min-w-[280px] rounded-none border-border/60 bg-background/95 backdrop-blur">
-              {(['tfv','tfba','tffm'] as const).map(prog => (
+              {availableCommunities.map(prog => (
                 <DropdownMenuItem
                   key={prog}
                   onClick={() => go('community', `/workspace-community?program=${prog}`, prog)}
@@ -231,6 +239,18 @@ export default function Welcome() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          ) : (
+            <button
+              onClick={() => go('community', `/workspace-community?program=${availableCommunities[0]}`, availableCommunities[0])}
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
+            >
+              {COMMUNITY_LABELS[availableCommunities[0]]}
+              {lastUsed?.section === 'community' && (
+                <span className="ml-1 rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+              )}
+            </button>
+          )}
+
 
           <div className="hidden sm:block w-px h-4 bg-secondary mx-2" />
           <div className="sm:hidden w-12 h-px bg-secondary/60 my-1" />
