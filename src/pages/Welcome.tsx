@@ -73,7 +73,20 @@ export default function Welcome() {
   const [rachelLoading, setRachelLoading] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
   const [answerAtBottom, setAnswerAtBottom] = useState(false)
+  const [answerScrollable, setAnswerScrollable] = useState(false)
+  const answerRef = useRef<HTMLDivElement | null>(null)
   const searchActive = searchFocused || rachelLoading || !!rachelAnswer || rachelQuestion.trim().length > 0
+
+  useEffect(() => {
+    const el = answerRef.current
+    if (!el) { setAnswerScrollable(false); return }
+    const check = () => setAnswerScrollable(el.scrollHeight - el.clientHeight > 24)
+    check()
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [rachelAnswer])
+
   const { markAsWatched } = useTutorialVideo(user?.id || null)
 
 
