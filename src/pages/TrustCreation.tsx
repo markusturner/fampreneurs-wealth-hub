@@ -229,31 +229,31 @@ export default function TrustCreation() {
         }`}
         onClick={() => !isDisabled && setSelectedSection(type)}
       >
-        <CardHeader className="text-center p-2 pb-1">
-          <div className="mx-auto mb-1 relative">
-            <Icon className={`h-6 w-6 ${locked ? "text-destructive" : submitted ? "text-accent" : unlocked ? "text-accent" : "text-muted-foreground"}`} />
-            {locked && <Lock className="h-3 w-3 absolute -top-1 -right-1 text-destructive" />}
-            {!locked && !unlocked && !submitted && <Lock className="h-3 w-3 absolute -top-1 -right-1 text-destructive" />}
-            {submitted && !locked && <ShieldCheck className="h-3 w-3 absolute -top-1 -right-1 text-accent" />}
+        <CardHeader className="text-center p-4 pb-2">
+          <div className="mx-auto mb-2 relative">
+            <Icon className={`h-10 w-10 ${locked ? "text-destructive" : submitted ? "text-accent" : unlocked ? "text-accent" : "text-muted-foreground"}`} />
+            {locked && <Lock className="h-4 w-4 absolute -top-1 -right-1 text-destructive" />}
+            {!locked && !unlocked && !submitted && <Lock className="h-4 w-4 absolute -top-1 -right-1 text-destructive" />}
+            {submitted && !locked && <ShieldCheck className="h-4 w-4 absolute -top-1 -right-1 text-accent" />}
           </div>
-          <CardTitle className="text-xs leading-tight">{info.label}</CardTitle>
+          <CardTitle className="text-sm leading-tight">{info.label}</CardTitle>
         </CardHeader>
-        <CardContent className="p-2 pt-0">
+        <CardContent className="p-4 pt-0">
           {locked ? (
-            <Badge variant="outline" className="w-full justify-center border-destructive/50 text-destructive text-[10px] px-1 py-0">
-              <Lock className="h-2.5 w-2.5 mr-1" /> {adminLockedExplicitly ? 'Admin Locked' : 'Locked'}
+            <Badge variant="outline" className="w-full justify-center border-destructive/50 text-destructive text-xs px-2 py-0.5">
+              <Lock className="h-3 w-3 mr-1" /> {adminLockedExplicitly ? 'Admin Locked' : 'Locked'}
             </Badge>
           ) : submitted ? (
-            <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-[10px] px-1 py-0">
-              <ShieldCheck className="h-2.5 w-2.5 mr-1" /> Submitted
+            <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-xs px-2 py-0.5">
+              <ShieldCheck className="h-3 w-3 mr-1" /> Submitted
             </Badge>
           ) : unlocked ? (
-            <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-[10px] px-1 py-0">
-              <CheckCircle2 className="h-2.5 w-2.5 mr-1" /> Unlocked
+            <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-xs px-2 py-0.5">
+              <CheckCircle2 className="h-3 w-3 mr-1" /> Unlocked
             </Badge>
           ) : (
-            <Badge variant="outline" className="w-full justify-center border-destructive/50 text-destructive text-[10px] px-1 py-0">
-              <Lock className="h-2.5 w-2.5 mr-1" /> Locked
+            <Badge variant="outline" className="w-full justify-center border-destructive/50 text-destructive text-xs px-2 py-0.5">
+              <Lock className="h-3 w-3 mr-1" /> Locked
             </Badge>
           )}
         </CardContent>
