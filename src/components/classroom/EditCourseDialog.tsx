@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
-import { Trash2 } from 'lucide-react'
+import { Trash2, X, ImageIcon } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
