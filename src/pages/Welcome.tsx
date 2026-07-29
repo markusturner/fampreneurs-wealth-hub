@@ -19,6 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import ReactMarkdown from 'react-markdown'
 
 
 
@@ -342,8 +343,32 @@ export default function Welcome() {
             </Button>
           </div>
           {rachelAnswer && (
-            <div className="mt-3 rounded-xl bg-muted/60 px-4 py-3 text-xs sm:text-sm leading-relaxed text-foreground">
-              {rachelAnswer}
+            <div className="mt-3 rounded-xl bg-muted/60 px-4 py-3 text-xs sm:text-sm leading-relaxed text-foreground prose prose-sm max-w-none [&_p]:my-2 [&_a]:text-secondary [&_a]:font-medium [&_a]:underline">
+              <ReactMarkdown
+                components={{
+                  a: ({ href, children, ...props }) => {
+                    const isInternal = !!href && href.startsWith('/')
+                    return (
+                      <a
+                        href={href}
+                        onClick={(e) => {
+                          if (isInternal) {
+                            e.preventDefault()
+                            navigate(href!)
+                          }
+                        }}
+                        target={isInternal ? undefined : '_blank'}
+                        rel={isInternal ? undefined : 'noopener noreferrer'}
+                        {...props}
+                      >
+                        {children}
+                      </a>
+                    )
+                  },
+                }}
+              >
+                {rachelAnswer}
+              </ReactMarkdown>
             </div>
           )}
         </section>
