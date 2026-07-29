@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useAuth } from '@/contexts/AuthContext'
@@ -73,7 +73,20 @@ export default function Welcome() {
   const [rachelLoading, setRachelLoading] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
   const [answerAtBottom, setAnswerAtBottom] = useState(false)
+  const [answerScrollable, setAnswerScrollable] = useState(false)
+  const answerRef = useRef<HTMLDivElement | null>(null)
   const searchActive = searchFocused || rachelLoading || !!rachelAnswer || rachelQuestion.trim().length > 0
+
+  useEffect(() => {
+    const el = answerRef.current
+    if (!el) { setAnswerScrollable(false); return }
+    const check = () => setAnswerScrollable(el.scrollHeight - el.clientHeight > 24)
+    check()
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [rachelAnswer])
+
   const { markAsWatched } = useTutorialVideo(user?.id || null)
 
 
@@ -386,11 +399,14 @@ export default function Welcome() {
           {rachelAnswer && (
             <div className="relative mt-3">
               <div
+                ref={answerRef}
                 onScroll={(e) => {
                   const el = e.currentTarget
                   setAnswerAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 24)
                 }}
-                className="max-h-[45vh] overflow-y-auto rounded-xl bg-muted/60 px-4 py-3 text-xs sm:text-sm leading-relaxed text-foreground prose prose-sm max-w-none [&_p]:my-2 [&_a]:text-secondary [&_a]:font-medium [&_a]:underline"
+                onWheel={(e) => e.stopPropagation()}
+                style={{ WebkitOverflowScrolling: 'touch' }}
+                className="max-h-[45vh] overflow-y-auto overscroll-contain touch-pan-y rounded-xl bg-muted/60 px-4 pt-3 pb-10 text-left text-xs sm:text-sm leading-relaxed text-foreground prose prose-sm max-w-none [&_p]:my-2 [&_a]:text-secondary [&_a]:font-medium [&_a]:underline"
               >
                 <ReactMarkdown
                   components={{
@@ -419,10 +435,18 @@ export default function Welcome() {
                 </ReactMarkdown>
               </div>
               <div
-                className={`pointer-events-none absolute inset-x-0 bottom-0 h-20 rounded-b-xl bg-gradient-to-t from-background via-background/80 to-transparent backdrop-blur-[2px] transition-opacity duration-300 ${answerAtBottom ? 'opacity-0' : 'opacity-100'}`}
+                className={`pointer-events-none absolute inset-x-0 bottom-0 h-24 rounded-b-xl transition-opacity duration-500 ease-out ${answerAtBottom || !answerScrollable ? 'opacity-0' : 'opacity-100'}`}
+                style={{
+                  backdropFilter: 'blur(3px)',
+                  WebkitBackdropFilter: 'blur(3px)',
+                  maskImage: 'linear-gradient(to top, black 0%, black 30%, transparent 100%)',
+                  WebkitMaskImage: 'linear-gradient(to top, black 0%, black 30%, transparent 100%)',
+                  background: 'linear-gradient(to top, hsl(var(--background)) 0%, hsl(var(--background) / 0.6) 55%, transparent 100%)',
+                }}
               />
             </div>
           )}
+
         </section>
 
       </div>

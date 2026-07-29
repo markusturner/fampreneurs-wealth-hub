@@ -337,7 +337,8 @@ export default function TrustCreation() {
               ) : selectedSection === 'trust_asset_uploads' ? (
                 <TrustAssetUploads onSubmitted={handleFormSubmitted} />
               ) : selectedSection === 'family_protection_plan' ? (
-                <FamilyProtectionPlanForm onSubmitted={handleFormSubmitted} />
+                <FamilyProtectionPlanForm onSubmitted={fetchSubmissions} />
+
               ) : (
                 <TrustNameTranslator onSubmitted={handleFormSubmitted} />
               )}
