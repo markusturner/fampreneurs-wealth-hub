@@ -57,6 +57,7 @@ export default function Welcome() {
   const navigate = useNavigate()
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [lastUsed, setLastUsed] = useState<LastUsed | null>(() => readLastUsed())
+  const [communityOpen, setCommunityOpen] = useState(false)
   const [rachelQuestion, setRachelQuestion] = useState('')
   const [rachelAnswer, setRachelAnswer] = useState('')
   const [rachelLoading, setRachelLoading] = useState(false)
