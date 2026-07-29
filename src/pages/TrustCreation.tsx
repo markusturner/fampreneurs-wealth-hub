@@ -453,11 +453,11 @@ export default function TrustCreation() {
 
         {/* Step 3 */}
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <Badge className="bg-accent text-accent-foreground text-[10px] px-1.5 py-0">Step 3</Badge>
-            <h2 className="text-sm font-semibold text-foreground">Schedule B, Proof of Transfer & Complimentary Calls</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <Badge className="bg-accent text-accent-foreground text-xs px-2 py-0.5">Step 3</Badge>
+            <h2 className="text-base font-semibold text-foreground">Schedule B, Proof of Transfer & Complimentary Calls</h2>
           </div>
-          <div className="grid gap-2 grid-cols-3">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3">
             {(['trust_asset_uploads'] as SectionType[]).map(type => renderSectionCard(type))}
             {[
               {
@@ -474,17 +474,17 @@ export default function TrustCreation() {
                 onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}
                 className="cursor-pointer transition-all hover:shadow-md hover:border-accent"
               >
-                <CardHeader className="text-center p-2 pb-1">
-                  <div className="mx-auto mb-1">
-                    <Users className="h-6 w-6 text-accent" />
+                <CardHeader className="text-center p-4 pb-2">
+                  <div className="mx-auto mb-2">
+                    <Users className="h-10 w-10 text-accent" />
                   </div>
-                  <CardTitle className="text-xs leading-tight flex items-center justify-center gap-1">
+                  <CardTitle className="text-sm leading-tight flex items-center justify-center gap-1">
                     {item.title}
                     <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0" />
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="p-2 pt-0">
-                  <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-[10px] px-1 py-0">
+                <CardContent className="p-4 pt-0">
+                  <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-xs px-2 py-0.5">
                     Complimentary
                   </Badge>
                 </CardContent>
