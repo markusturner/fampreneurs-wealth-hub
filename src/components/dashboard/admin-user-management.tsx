@@ -227,7 +227,23 @@ export function AdminUserManagement() {
               ))}
             </SelectContent>
           </Select>
+          {programName === 'The Family Business Accelerator' && (
+            <div className="pt-2 space-y-1">
+              <Label className="text-xs text-muted-foreground">Sub-option</Label>
+              <Select value={tfbaVariant} onValueChange={(v) => setTfbaVariant(v as 'standard' | 'vip_weekend')} disabled={isLoading}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">Standard (Accelerator only)</SelectItem>
+                  <SelectItem value="vip_weekend">VIP Weekend (sends VIP Weekend Agreement)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                VIP Weekend still joins the Accelerator program, but the invitee signs the VIP Weekend agreement.
+              </p>
+            </div>
+          )}
         </div>
+
 
         <div className="flex items-center justify-between py-2">
           <div className="space-y-0.5">
