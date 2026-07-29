@@ -212,8 +212,8 @@ export default function Welcome() {
           Welcome back, {firstName}
         </h1>
 
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/15 px-4 py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-foreground shadow-sm">
-          <Sparkles className="h-3.5 w-3.5 text-secondary" />
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-secondary/50 bg-primary px-4 py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-secondary shadow-sm">
+          <Sparkles className="h-3.5 w-3.5 text-accent" />
           <span>{programBadgeLabel}</span>
         </div>
 
