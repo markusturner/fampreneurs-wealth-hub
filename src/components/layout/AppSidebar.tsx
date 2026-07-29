@@ -39,6 +39,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { ProgramId } from "@/lib/stripe-programs"
+import { profileProgramCodes, type ProgramCode } from "@/lib/programs"
+
+const COMMUNITY_OPTIONS: { code: ProgramCode; label: string }[] = [
+  { code: 'fbu', label: 'Family Business University' },
+  { code: 'tfv', label: 'The Family Vault' },
+  { code: 'tfba', label: 'The Family Business Accelerator' },
+  { code: 'tffm', label: 'The Succession Society' },
+]
 
 interface NavItemProps {
   label: string
@@ -146,6 +154,8 @@ export function AppSidebar({ className }: { className?: string }) {
   const hasTruHeirsAccess = isAdmin || isOwner || profile?.truheirs_access === true || (subscriptionStatus.subscribed || subscriptionStatus.loading)
   // TruHeirs Lite users (FBU community only) — hide Trust, Succession, DFO, Admin
   const isLite = subscriptionStatus.isLite && !isAdmin && !isOwner && profile?.truheirs_access !== true
+  const profileCommunityCodes = profileProgramCodes(profile?.program_name)
+  const primaryCommunityCode = profileCommunityCodes[0] || 'fbu'
 
   const filteredSuggestions = SEARCH_SUGGESTIONS.filter(s => {
     // Filter by access
@@ -193,11 +203,25 @@ export function AppSidebar({ className }: { className?: string }) {
               <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Community</p>
             </div>
             <div className="space-y-0.5">
-              <NavItem label="Community" icon={MessageSquare} defaultOpen={currentPath.includes("/workspace-community")}>
-                <SubNavItem label="The Family Vault" href="/workspace-community?program=tfv" active={currentPath === "/workspace-community" && location.search.includes("program=tfv")} />
-                <SubNavItem label="The Family Business Accelerator" href="/workspace-community?program=tfba" active={currentPath === "/workspace-community" && location.search.includes("program=tfba")} />
-                <SubNavItem label="The Succession Society" href="/workspace-community?program=tffm" active={currentPath === "/workspace-community" && location.search.includes("program=tffm")} />
-              </NavItem>
+              {(isAdmin || isOwner) ? (
+                <NavItem label="Community" icon={MessageSquare} defaultOpen={currentPath.includes("/workspace-community")}>
+                  {COMMUNITY_OPTIONS.map((community) => (
+                    <SubNavItem
+                      key={community.code}
+                      label={community.label}
+                      href={`/workspace-community?program=${community.code}`}
+                      active={currentPath === "/workspace-community" && location.search.includes(`program=${community.code}`)}
+                    />
+                  ))}
+                </NavItem>
+              ) : (
+                <NavItem
+                  label="Community"
+                  icon={MessageSquare}
+                  href={`/workspace-community?program=${primaryCommunityCode}`}
+                  active={currentPath === "/workspace-community"}
+                />
+              )}
               <NavItem label="Classroom" icon={BookOpen} href="/classroom" active={isActive("/classroom")} />
               <NavItem label="Members" icon={Users} href="/workspace-members" active={isActive("/workspace-members")} />
               <NavItem label="Calendar" icon={Calendar} href="/workspace-calendar" active={isActive("/workspace-calendar")} />
