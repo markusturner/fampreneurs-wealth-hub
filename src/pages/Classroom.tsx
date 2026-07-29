@@ -248,8 +248,9 @@ export default function Classroom() {
     else toast({ title: 'Error', description: 'Failed to delete course', variant: 'destructive' })
   }
 
-  const trustCourses = courses.filter(c => !/succession/i.test(c.title))
-  const successionCourses = courses.filter(c => /succession/i.test(c.title))
+  const SUCCESSION_SOCIETY_ID = '3948275b-06bf-4731-a89f-e0850e26f0e4'
+  const successionCourses = courses.filter(c => (c.community_ids || []).includes(SUCCESSION_SOCIETY_ID))
+  const trustCourses = courses.filter(c => !(c.community_ids || []).includes(SUCCESSION_SOCIETY_ID))
 
   const primaryTabs = [
     { key: 'classroom', label: 'Classroom', icon: BookOpen },
