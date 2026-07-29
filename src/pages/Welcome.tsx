@@ -332,13 +332,15 @@ export default function Welcome() {
           )
         })()}
 
-        <section className="mt-6 sm:mt-8 w-full max-w-md text-left">
+        <section className={`w-full max-w-md text-left transition-all duration-500 ease-out ${searchActive ? 'mt-4' : 'mt-6 sm:mt-8'}`}>
           <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 pl-3 pr-1 py-1 shadow-sm backdrop-blur transition focus-within:border-secondary/60 focus-within:shadow-md">
             <Search className="h-3.5 w-3.5 text-secondary shrink-0" />
             <input
               type="text"
               value={rachelQuestion}
               onChange={(event) => setRachelQuestion(event.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   event.preventDefault()
@@ -351,42 +353,69 @@ export default function Welcome() {
             <Button
               size="icon"
               className="h-7 w-7 rounded-full"
-              onClick={askRachel}
+              onClick={() => askRachel()}
               disabled={!rachelQuestion.trim() || rachelLoading}
             >
               {rachelLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
             </Button>
           </div>
+
+          {searchActive && !rachelAnswer && !rachelLoading && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {RACHEL_SUGGESTIONS.map(s => (
+                <button
+                  key={s}
+                  onMouseDown={(e) => { e.preventDefault(); askRachel(s) }}
+                  className="rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-[11px] text-muted-foreground hover:text-foreground hover:border-secondary/60 transition-colors"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
           {rachelAnswer && (
-            <div className="mt-3 rounded-xl bg-muted/60 px-4 py-3 text-xs sm:text-sm leading-relaxed text-foreground prose prose-sm max-w-none [&_p]:my-2 [&_a]:text-secondary [&_a]:font-medium [&_a]:underline">
-              <ReactMarkdown
-                components={{
-                  a: ({ href, children, ...props }) => {
-                    const isInternal = !!href && href.startsWith('/')
-                    return (
-                      <a
-                        href={href}
-                        onClick={(e) => {
-                          if (isInternal) {
-                            e.preventDefault()
-                            navigate(href!)
-                          }
-                        }}
-                        target={isInternal ? undefined : '_blank'}
-                        rel={isInternal ? undefined : 'noopener noreferrer'}
-                        {...props}
-                      >
-                        {children}
-                      </a>
-                    )
-                  },
+            <div className="relative mt-3">
+              <div
+                onScroll={(e) => {
+                  const el = e.currentTarget
+                  setAnswerAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 24)
                 }}
+                className="max-h-[45vh] overflow-y-auto rounded-xl bg-muted/60 px-4 py-3 text-xs sm:text-sm leading-relaxed text-foreground prose prose-sm max-w-none [&_p]:my-2 [&_a]:text-secondary [&_a]:font-medium [&_a]:underline"
               >
-                {rachelAnswer}
-              </ReactMarkdown>
+                <ReactMarkdown
+                  components={{
+                    a: ({ href, children, ...props }) => {
+                      const isInternal = !!href && href.startsWith('/')
+                      return (
+                        <a
+                          href={href}
+                          onClick={(e) => {
+                            if (isInternal) {
+                              e.preventDefault()
+                              navigate(href!)
+                            }
+                          }}
+                          target={isInternal ? undefined : '_blank'}
+                          rel={isInternal ? undefined : 'noopener noreferrer'}
+                          {...props}
+                        >
+                          {children}
+                        </a>
+                      )
+                    },
+                  }}
+                >
+                  {rachelAnswer}
+                </ReactMarkdown>
+              </div>
+              <div
+                className={`pointer-events-none absolute inset-x-0 bottom-0 h-20 rounded-b-xl bg-gradient-to-t from-background via-background/80 to-transparent backdrop-blur-[2px] transition-opacity duration-300 ${answerAtBottom ? 'opacity-0' : 'opacity-100'}`}
+              />
             </div>
           )}
         </section>
+
       </div>
 
       {user && tutorialOpen && (
