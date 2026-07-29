@@ -42,7 +42,6 @@ import type { ProgramId } from "@/lib/stripe-programs"
 import { profileProgramCodes, type ProgramCode } from "@/lib/programs"
 
 const COMMUNITY_OPTIONS: { code: ProgramCode; label: string }[] = [
-  { code: 'fbu', label: 'Family Business University' },
   { code: 'tfv', label: 'The Family Vault' },
   { code: 'tfba', label: 'The Family Business Accelerator' },
   { code: 'tffm', label: 'The Succession Society' },

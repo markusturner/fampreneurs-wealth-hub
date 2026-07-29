@@ -18,7 +18,6 @@ type PlanType = 'free' | 'paid_in_full' | 'payment_plan'
 type RoleType = 'trustee' | 'family_office_member' | 'family_member'
 
 const PROGRAM_OPTIONS = [
-  'Family Business University',
   'The Family Vault',
   'The Family Business Accelerator',
   'The Family Fortune Mastermind',

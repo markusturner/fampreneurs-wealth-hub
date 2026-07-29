@@ -25,7 +25,6 @@ import {
 const LAST_USED_KEY = 'truheirs:lastUsed'
 
 const COMMUNITY_LABELS: Record<string, string> = {
-  fbu: 'Family Business University',
   tfv: 'The Family Vault',
   tfba: 'The Family Business Accelerator',
   tffm: 'The Succession Society',
@@ -58,6 +57,7 @@ export default function Welcome() {
   const navigate = useNavigate()
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [lastUsed, setLastUsed] = useState<LastUsed | null>(() => readLastUsed())
+  const [communityOpen, setCommunityOpen] = useState(false)
   const [rachelQuestion, setRachelQuestion] = useState('')
   const [rachelAnswer, setRachelAnswer] = useState('')
   const [rachelLoading, setRachelLoading] = useState(false)
@@ -76,7 +76,7 @@ export default function Welcome() {
     // On mobile, skip the welcome screen and go straight to the user's community
     if (!loading && user && profile && typeof window !== 'undefined' && window.innerWidth < 768) {
       const pn = (profile?.program_name || '').toLowerCase()
-      let slug = 'fbu'
+      let slug = 'tfv'
       if (pn.includes('vault')) slug = 'tfv'
       else if (pn.includes('accelerator')) slug = 'tfba'
       else if (pn.includes('mastermind') || pn.includes('fortune') || pn.includes('succession')) slug = 'tffm'
@@ -213,8 +213,8 @@ export default function Welcome() {
           Welcome back, {firstName}
         </h1>
 
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/15 px-4 py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-foreground shadow-sm">
-          <Sparkles className="h-3.5 w-3.5 text-secondary" />
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-secondary/50 bg-primary px-4 py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-secondary shadow-sm">
+          <Sparkles className="h-3.5 w-3.5 text-accent" />
           <span>{programBadgeLabel}</span>
         </div>
 
@@ -231,54 +231,32 @@ export default function Welcome() {
         <div className="w-32 sm:w-48 h-px bg-secondary mb-6 sm:mb-8" />
 
         {(() => {
-          const communityCodes = userCodes
+          const communityCodes = userCodes.filter(c => c !== 'fbu') as Array<Exclude<ProgramCode,'fbu'>>
           const isAdminOrOwner = isOwner || isAdmin
-          const availableCommunities: ReadonlyArray<ProgramCode> = isAdminOrOwner
-            ? ['fbu','tfv','tfba','tffm'] as const
-            : (communityCodes.length > 0 ? communityCodes.slice(0, 1) : ['fbu'] as const)
+          const availableCommunities: ReadonlyArray<Exclude<ProgramCode,'fbu'>> = isAdminOrOwner
+            ? ['tfv','tfba','tffm'] as const
+            : (communityCodes.length > 0 ? communityCodes.slice(0, 1) : ['tfv'] as const)
           const hasMultiple = isAdminOrOwner && availableCommunities.length > 1
-          const primaryLabel = hasMultiple
-            ? 'Community'
-            : 'Community'
           return (
+        <>
         <nav className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0">
           {hasMultiple ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger className="group inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2 outline-none">
-              {primaryLabel}
+            <button
+              onClick={() => setCommunityOpen(v => !v)}
+              className="group inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2 outline-none"
+            >
+              Community
               {lastUsed?.section === 'community' && (
                 <span className="ml-1 rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
               )}
-              <ChevronDown className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="min-w-[280px] rounded-none border-border/60 bg-background/95 backdrop-blur">
-              {availableCommunities.map(prog => (
-                <DropdownMenuItem
-                  key={prog}
-                  onClick={() => go('community', `/workspace-community?program=${prog}`, prog)}
-                  className="text-[11px] tracking-[0.2em] uppercase font-medium py-3 hover:text-secondary focus:text-secondary data-[highlighted]:bg-transparent data-[highlighted]:text-secondary grid grid-cols-[auto_1fr_auto] items-center gap-2"
-                >
-                  <span className="invisible">
-                    {lastUsed?.section === 'community' && lastUsed.program === prog && (
-                      <span className="rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
-                    )}
-                  </span>
-                  <span className="text-center">{COMMUNITY_LABELS[prog]}</span>
-                  <span>
-                    {lastUsed?.section === 'community' && lastUsed.program === prog && (
-                      <span className="rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
-                    )}
-                  </span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <ChevronDown className={`h-3 w-3 opacity-60 group-hover:opacity-100 transition-transform ${communityOpen ? 'rotate-180' : ''}`} />
+            </button>
           ) : (
             <button
               onClick={() => go('community', `/workspace-community?program=${availableCommunities[0]}`, availableCommunities[0])}
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm tracking-[0.2em] uppercase font-medium text-foreground hover:text-accent transition-colors px-4 py-2"
             >
-              {primaryLabel}
+              Community
               {lastUsed?.section === 'community' && (
                 <span className="ml-1 rounded-full bg-secondary/20 text-secondary text-[8px] sm:text-[9px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
               )}
@@ -312,39 +290,59 @@ export default function Welcome() {
             )}
           </button>
         </nav>
+        {hasMultiple && (
+          <div
+            className={`grid transition-all duration-300 ease-out w-full max-w-md ${communityOpen ? 'grid-rows-[1fr] opacity-100 mt-4' : 'grid-rows-[0fr] opacity-0 mt-0'}`}
+          >
+            <div className="overflow-hidden">
+              <div className="flex flex-col gap-1 rounded-xl border border-border/60 bg-background/70 backdrop-blur px-2 py-2">
+                {availableCommunities.map(prog => (
+                  <button
+                    key={prog}
+                    onClick={() => { setCommunityOpen(false); go('community', `/workspace-community?program=${prog}`, prog) }}
+                    className="relative w-full text-center text-[11px] tracking-[0.2em] uppercase font-medium py-2.5 rounded-lg hover:text-secondary hover:bg-secondary/5 transition-colors"
+                  >
+                    {COMMUNITY_LABELS[prog]}
+                    {lastUsed?.section === 'community' && lastUsed.program === prog && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        </>
           )
         })()}
 
-        <section className="mt-8 sm:mt-10 w-full max-w-2xl rounded-2xl border border-border/70 bg-background/80 p-3 sm:p-4 text-left shadow-sm backdrop-blur">
-          <div className="mb-3 flex items-center gap-2 px-1">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/20 text-secondary">
-              <Search className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Ask Rachel</p>
-              <p className="text-xs text-muted-foreground">Search your family office assistant</p>
-            </div>
-          </div>
-          <div className="flex items-end gap-2 rounded-xl border border-border bg-card p-2">
-            <textarea
+        <section className="mt-6 sm:mt-8 w-full max-w-md text-left">
+          <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 pl-3 pr-1 py-1 shadow-sm backdrop-blur transition focus-within:border-secondary/60 focus-within:shadow-md">
+            <Search className="h-3.5 w-3.5 text-secondary shrink-0" />
+            <input
+              type="text"
               value={rachelQuestion}
               onChange={(event) => setRachelQuestion(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
+                if (event.key === 'Enter') {
                   event.preventDefault()
                   askRachel()
                 }
               }}
-              rows={1}
               placeholder="Ask Rachel anything..."
-              className="min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground"
+              className="flex-1 bg-transparent px-1 py-1 text-xs sm:text-sm outline-none placeholder:text-muted-foreground"
             />
-            <Button size="icon" className="h-10 w-10 rounded-full" onClick={askRachel} disabled={!rachelQuestion.trim() || rachelLoading}>
-              {rachelLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            <Button
+              size="icon"
+              className="h-7 w-7 rounded-full"
+              onClick={askRachel}
+              disabled={!rachelQuestion.trim() || rachelLoading}
+            >
+              {rachelLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
             </Button>
           </div>
           {rachelAnswer && (
-            <div className="mt-3 rounded-xl bg-muted/60 px-4 py-3 text-sm leading-relaxed text-foreground">
+            <div className="mt-3 rounded-xl bg-muted/60 px-4 py-3 text-xs sm:text-sm leading-relaxed text-foreground">
               {rachelAnswer}
             </div>
           )}
