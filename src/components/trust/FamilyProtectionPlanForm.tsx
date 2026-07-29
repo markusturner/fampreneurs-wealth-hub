@@ -112,7 +112,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
   }
 
   return (
-    <div className="space-y-5 max-w-3xl">
+    <div className="space-y-5 max-w-3xl mx-auto">
       <p className="text-sm text-muted-foreground">
         Answer these short questions. We will build a custom Family Protection Plan for you in seconds.
       </p>
