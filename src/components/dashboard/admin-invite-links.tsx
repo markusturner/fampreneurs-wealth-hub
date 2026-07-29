@@ -54,6 +54,7 @@ export function AdminInviteLinks() {
   const [maxUsesInput, setMaxUsesInput] = useState<string>('1')
   const [role, setRole] = useState<RoleType>('family_member')
   const [programName, setProgramName] = useState('')
+  const [tfbaVariant, setTfbaVariant] = useState<'standard' | 'vip_weekend'>('standard')
   const [truheirsAccess, setTruheirsAccess] = useState(true)
   const [planType, setPlanType] = useState<PlanType>('free')
   const [totalAmount, setTotalAmount] = useState('')
@@ -61,6 +62,7 @@ export function AdminInviteLinks() {
   const [installmentFrequency, setInstallmentFrequency] = useState<'monthly' | 'weekly' | 'biweekly'>('monthly')
   const [paymentStartDate, setPaymentStartDate] = useState('')
   const [note, setNote] = useState('')
+
 
   const load = async () => {
     setLoading(true)
