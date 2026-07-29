@@ -29,6 +29,11 @@ interface PageLock {
 }
 
 const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2; description: string; formUrl?: string; prepDocUrl?: string }> = {
+  family_protection_plan: {
+    label: "Family Protection Plan",
+    icon: Shield,
+    description: "Answer a few short questions and we'll build a custom Family Protection Plan document tailored to your family.",
+  },
   family: {
     label: "Family Trust",
     icon: Home,
