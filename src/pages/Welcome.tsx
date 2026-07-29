@@ -51,6 +51,15 @@ function lastUsedLabel(l: LastUsed | null): string {
   return 'Digital Family Office'
 }
 
+const RACHEL_SUGGESTIONS = [
+  'Where is my Family Protection Plan?',
+  'How do I create my trust?',
+  'Where are the coaching call recordings?',
+  'How do I update my profile photo?',
+  'Where is the SOP Library?',
+]
+
+
 export default function Welcome() {
   const { user, profile, loading, signOut } = useAuth()
   const { isAdmin } = useUserRole()
@@ -62,7 +71,11 @@ export default function Welcome() {
   const [rachelQuestion, setRachelQuestion] = useState('')
   const [rachelAnswer, setRachelAnswer] = useState('')
   const [rachelLoading, setRachelLoading] = useState(false)
+  const [searchFocused, setSearchFocused] = useState(false)
+  const [answerAtBottom, setAnswerAtBottom] = useState(false)
+  const searchActive = searchFocused || rachelLoading || !!rachelAnswer || rachelQuestion.trim().length > 0
   const { markAsWatched } = useTutorialVideo(user?.id || null)
+
 
   const go = (section: LastUsed['section'], path: string, program?: string) => {
     const v: LastUsed = { section, ...(program ? { program } : {}) }
@@ -94,9 +107,12 @@ export default function Welcome() {
     ? userCodes.map(code => programLabel(code)).join(' • ')
     : (profile?.program_name || 'TruHeirs Member')
 
-  const askRachel = async () => {
-    const message = rachelQuestion.trim()
+  const askRachel = async (preset?: string) => {
+    const message = (preset ?? rachelQuestion).trim()
+    if (preset) setRachelQuestion(preset)
     if (!message || rachelLoading) return
+    setAnswerAtBottom(false)
+
     setRachelLoading(true)
     setRachelAnswer('')
     try {
@@ -203,33 +219,41 @@ export default function Welcome() {
         </DropdownMenu>
       </div>
 
-      <div className="relative z-10 flex flex-col items-center text-center w-full max-w-4xl">
+      <div className={`relative z-10 flex flex-col items-center text-center w-full max-w-4xl transition-all duration-500 ease-out ${searchActive ? '-translate-y-4 sm:-translate-y-8' : ''}`}>
         <img
           src="/lovable-uploads/00df4658-d6df-420b-8c0d-7af68820837d.png"
           alt="TruHeirs"
-          className="h-24 sm:h-32 w-auto mb-3 sm:mb-4"
+          className={`w-auto transition-all duration-500 ease-out ${searchActive ? 'h-12 sm:h-16 mb-2' : 'h-24 sm:h-32 mb-3 sm:mb-4'}`}
         />
 
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-montserrat font-semibold tracking-[0.22em] uppercase text-foreground mb-3 sm:mb-4">
+        <h1 className={`font-montserrat font-semibold tracking-[0.22em] uppercase text-foreground transition-all duration-500 ease-out ${searchActive ? 'text-sm sm:text-base mb-2' : 'text-3xl sm:text-5xl md:text-6xl mb-3 sm:mb-4'}`}>
           Welcome back, {firstName}
         </h1>
 
-        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-secondary/50 bg-sidebar px-4 py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-secondary shadow-sm">
-          <Sparkles className="h-3.5 w-3.5 text-accent" />
-          <span>{programBadgeLabel}</span>
+        <div
+          className={`grid transition-all duration-500 ease-out w-full ${searchActive ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'}`}
+        >
+          <div className="overflow-hidden flex flex-col items-center">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-secondary/50 bg-sidebar px-4 py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-secondary shadow-sm">
+              <Sparkles className="h-3.5 w-3.5 text-accent" />
+              <span>{programBadgeLabel}</span>
+            </div>
+
+            {lastUsed ? (
+              <p className="text-[11px] sm:text-sm text-muted-foreground max-w-xl mb-5 sm:mb-6 px-4">
+                Last time you were logged in, you were working on <span className="text-foreground font-medium">{lastUsedLabel(lastUsed)}</span>. Would you like to continue?
+              </p>
+            ) : (
+              <p className="text-[10px] sm:text-xs tracking-[0.35em] uppercase text-muted-foreground mb-5 sm:mb-6">
+                WHAT ARE YOU FOCUSING ON TODAY?
+              </p>
+            )}
+          </div>
         </div>
 
-        {lastUsed ? (
-          <p className="text-[11px] sm:text-sm text-muted-foreground max-w-xl mb-5 sm:mb-6 px-4">
-            Last time you were logged in, you were working on <span className="text-foreground font-medium">{lastUsedLabel(lastUsed)}</span>. Would you like to continue?
-          </p>
-        ) : (
-          <p className="text-[10px] sm:text-xs tracking-[0.35em] uppercase text-muted-foreground mb-5 sm:mb-6">
-            WHAT ARE YOU FOCUSING ON TODAY?
-          </p>
-        )}
+        <div className={`w-32 sm:w-48 h-px bg-secondary transition-all duration-500 ${searchActive ? 'mb-4' : 'mb-6 sm:mb-8'}`} />
 
-        <div className="w-32 sm:w-48 h-px bg-secondary mb-6 sm:mb-8" />
+
 
         {(() => {
           const communityCodes = userCodes.filter(c => c !== 'fbu') as Array<Exclude<ProgramCode,'fbu'>>
@@ -317,13 +341,15 @@ export default function Welcome() {
           )
         })()}
 
-        <section className="mt-6 sm:mt-8 w-full max-w-md text-left">
+        <section className={`w-full max-w-md text-left transition-all duration-500 ease-out ${searchActive ? 'mt-4' : 'mt-6 sm:mt-8'}`}>
           <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 pl-3 pr-1 py-1 shadow-sm backdrop-blur transition focus-within:border-secondary/60 focus-within:shadow-md">
             <Search className="h-3.5 w-3.5 text-secondary shrink-0" />
             <input
               type="text"
               value={rachelQuestion}
               onChange={(event) => setRachelQuestion(event.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   event.preventDefault()
@@ -336,42 +362,69 @@ export default function Welcome() {
             <Button
               size="icon"
               className="h-7 w-7 rounded-full"
-              onClick={askRachel}
+              onClick={() => askRachel()}
               disabled={!rachelQuestion.trim() || rachelLoading}
             >
               {rachelLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
             </Button>
           </div>
+
+          {searchActive && !rachelAnswer && !rachelLoading && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {RACHEL_SUGGESTIONS.map(s => (
+                <button
+                  key={s}
+                  onMouseDown={(e) => { e.preventDefault(); askRachel(s) }}
+                  className="rounded-full border border-border/70 bg-background/70 px-3 py-1.5 text-[11px] text-muted-foreground hover:text-foreground hover:border-secondary/60 transition-colors"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
           {rachelAnswer && (
-            <div className="mt-3 rounded-xl bg-muted/60 px-4 py-3 text-xs sm:text-sm leading-relaxed text-foreground prose prose-sm max-w-none [&_p]:my-2 [&_a]:text-secondary [&_a]:font-medium [&_a]:underline">
-              <ReactMarkdown
-                components={{
-                  a: ({ href, children, ...props }) => {
-                    const isInternal = !!href && href.startsWith('/')
-                    return (
-                      <a
-                        href={href}
-                        onClick={(e) => {
-                          if (isInternal) {
-                            e.preventDefault()
-                            navigate(href!)
-                          }
-                        }}
-                        target={isInternal ? undefined : '_blank'}
-                        rel={isInternal ? undefined : 'noopener noreferrer'}
-                        {...props}
-                      >
-                        {children}
-                      </a>
-                    )
-                  },
+            <div className="relative mt-3">
+              <div
+                onScroll={(e) => {
+                  const el = e.currentTarget
+                  setAnswerAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 24)
                 }}
+                className="max-h-[45vh] overflow-y-auto rounded-xl bg-muted/60 px-4 py-3 text-xs sm:text-sm leading-relaxed text-foreground prose prose-sm max-w-none [&_p]:my-2 [&_a]:text-secondary [&_a]:font-medium [&_a]:underline"
               >
-                {rachelAnswer}
-              </ReactMarkdown>
+                <ReactMarkdown
+                  components={{
+                    a: ({ href, children, ...props }) => {
+                      const isInternal = !!href && href.startsWith('/')
+                      return (
+                        <a
+                          href={href}
+                          onClick={(e) => {
+                            if (isInternal) {
+                              e.preventDefault()
+                              navigate(href!)
+                            }
+                          }}
+                          target={isInternal ? undefined : '_blank'}
+                          rel={isInternal ? undefined : 'noopener noreferrer'}
+                          {...props}
+                        >
+                          {children}
+                        </a>
+                      )
+                    },
+                  }}
+                >
+                  {rachelAnswer}
+                </ReactMarkdown>
+              </div>
+              <div
+                className={`pointer-events-none absolute inset-x-0 bottom-0 h-20 rounded-b-xl bg-gradient-to-t from-background via-background/80 to-transparent backdrop-blur-[2px] transition-opacity duration-300 ${answerAtBottom ? 'opacity-0' : 'opacity-100'}`}
+              />
             </div>
           )}
         </section>
+
       </div>
 
       {user && tutorialOpen && (

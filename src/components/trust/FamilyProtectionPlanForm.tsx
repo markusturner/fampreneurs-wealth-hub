@@ -7,7 +7,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, ShieldCheck, ExternalLink, Sparkles } from "lucide-react"
+import { Loader2, ShieldCheck, ExternalLink, Sparkles, Download } from "lucide-react"
+import ReactMarkdown from "react-markdown"
+
 
 interface Props {
   onSubmitted?: () => void
@@ -89,34 +91,147 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
     }
   }
 
+  const downloadPdf = async () => {
+    if (!planText) return
+    const { default: jsPDF } = await import("jspdf")
+    const doc = new jsPDF({ unit: "pt", format: "letter" })
+    const pageW = doc.internal.pageSize.getWidth()
+    const pageH = doc.internal.pageSize.getHeight()
+    const margin = 56
+    let y = margin
+
+    const newPageIfNeeded = (needed: number) => {
+      if (y + needed > pageH - margin) {
+        doc.addPage()
+        y = margin
+      }
+    }
+
+    // Cover header
+    doc.setFillColor(41, 10, 82)
+    doc.rect(0, 0, pageW, 92, "F")
+    doc.setTextColor(255, 181, 0)
+    doc.setFont("helvetica", "bold")
+    doc.setFontSize(20)
+    doc.text("Family Protection Plan", margin, 46)
+    doc.setTextColor(255, 255, 255)
+    doc.setFont("helvetica", "normal")
+    doc.setFontSize(11)
+    doc.text(`${form.family_name || "Your"} Family${form.state ? ` • ${form.state}` : ""}`, margin, 68)
+    y = 128
+
+    doc.setTextColor(90, 90, 90)
+    doc.setFontSize(9)
+    doc.text(`Prepared for ${form.full_name || "you"} • ${(submittedAt ?? new Date()).toLocaleDateString()}`, margin, y)
+    y += 24
+
+    const lines = planText.split("\n")
+    for (const raw of lines) {
+      const line = raw.trimEnd()
+      if (!line.trim()) { y += 8; continue }
+
+      const heading = line.match(/^(#{1,6})\s+(.*)$/)
+      const bold = line.match(/^\*\*(.+)\*\*:?$/)
+      const bullet = line.match(/^\s*[-*•]\s+(.*)$/)
+      const numbered = line.match(/^\s*(\d+)[.)]\s+(.*)$/)
+
+      const clean = (t: string) => t.replace(/\*\*/g, "").replace(/\*/g, "").replace(/`/g, "")
+
+      if (heading || bold) {
+        const text = clean(heading ? heading[2] : bold![1])
+        newPageIfNeeded(34)
+        y += 10
+        doc.setTextColor(41, 10, 82)
+        doc.setFont("helvetica", "bold")
+        doc.setFontSize(13)
+        const wrapped = doc.splitTextToSize(text, pageW - margin * 2)
+        doc.text(wrapped, margin, y)
+        y += wrapped.length * 16 + 4
+        doc.setDrawColor(255, 181, 0)
+        doc.setLineWidth(1.5)
+        doc.line(margin, y - 2, margin + 46, y - 2)
+        y += 10
+        continue
+      }
+
+      doc.setTextColor(30, 30, 30)
+      doc.setFont("helvetica", "normal")
+      doc.setFontSize(10.5)
+
+      if (bullet || numbered) {
+        const marker = bullet ? "•" : `${numbered![1]}.`
+        const text = clean(bullet ? bullet[1] : numbered![2])
+        const wrapped = doc.splitTextToSize(text, pageW - margin * 2 - 18)
+        newPageIfNeeded(wrapped.length * 14)
+        doc.text(marker, margin, y)
+        doc.text(wrapped, margin + 18, y)
+        y += wrapped.length * 14 + 3
+        continue
+      }
+
+      const wrapped = doc.splitTextToSize(clean(line), pageW - margin * 2)
+      newPageIfNeeded(wrapped.length * 14)
+      doc.text(wrapped, margin, y)
+      y += wrapped.length * 14 + 4
+    }
+
+    const pages = doc.getNumberOfPages()
+    for (let i = 1; i <= pages; i++) {
+      doc.setPage(i)
+      doc.setFontSize(8)
+      doc.setTextColor(140, 140, 140)
+      doc.text(`TruHeirs • Family Protection Plan • Page ${i} of ${pages}`, margin, pageH - 28)
+    }
+
+    doc.save(`${(form.family_name || "Family").replace(/\s+/g, "-")}-Protection-Plan.pdf`)
+  }
+
   if (planText) {
     return (
       <div className="space-y-4 max-w-3xl mx-auto">
-        <div className="flex items-center gap-2 text-emerald-600">
+        <div className="flex items-center justify-center gap-2 text-emerald-600">
           <ShieldCheck className="h-5 w-5" />
           <span className="font-semibold">Your Family Protection Plan is ready</span>
         </div>
         {submittedAt && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground text-center">
             Submitted {submittedAt.toLocaleString()}
           </p>
         )}
-        {documentUrl && (
-          <Button asChild className="gap-2">
-            <a href={documentUrl} target="_blank" rel="noopener noreferrer">
-              Open in Google Docs <ExternalLink className="h-4 w-4" />
-            </a>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button onClick={downloadPdf} variant="secondary" className="gap-2">
+            <Download className="h-4 w-4" /> Download PDF
           </Button>
-        )}
-        <div className="rounded-lg border bg-muted/30 p-4 max-h-[60vh] overflow-y-auto whitespace-pre-wrap text-sm">
-          {planText}
+          {documentUrl && (
+            <Button asChild variant="outline" className="gap-2">
+              <a href={documentUrl} target="_blank" rel="noopener noreferrer">
+                Open in Google Docs <ExternalLink className="h-4 w-4" />
+              </a>
+            </Button>
+          )}
         </div>
-        <Button variant="outline" onClick={() => { setPlanText(null); setDocumentUrl(null); setSubmittedAt(null) }}>
-          Start over
-        </Button>
+
+        <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+          <div className="bg-sidebar px-5 py-4">
+            <h3 className="text-lg font-semibold text-secondary">Family Protection Plan</h3>
+            <p className="text-xs text-secondary/80">
+              {(form.family_name || "Your")} Family{form.state ? ` • ${form.state}` : ""}
+            </p>
+          </div>
+          <div className="max-h-[60vh] overflow-y-auto px-5 py-4 text-sm leading-relaxed prose prose-sm max-w-none [&_h1]:text-base [&_h2]:text-base [&_h3]:text-sm [&_h1]:mt-4 [&_h2]:mt-4 [&_h3]:mt-3 [&_p]:my-2">
+            <ReactMarkdown>{planText}</ReactMarkdown>
+          </div>
+        </div>
+
+        <div className="text-center">
+          <Button variant="outline" onClick={() => { setPlanText(null); setDocumentUrl(null); setSubmittedAt(null) }}>
+            Start over
+          </Button>
+        </div>
       </div>
     )
   }
+
 
   return (
     <div className="space-y-5 max-w-3xl mx-auto">
