@@ -395,6 +395,13 @@ function Section({
                           <Video className="h-3 w-3" /> Join
                         </a>
                       )}
+                      <a href={googleCalUrl(ev)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[#290a52] hover:underline">
+                        <CalendarDays className="h-3 w-3" /> Google
+                      </a>
+                      <button type="button" onClick={() => downloadIcs(ev)} className="inline-flex items-center gap-1 text-[#290a52] hover:underline">
+                        <CalendarDays className="h-3 w-3" /> Apple / .ics
+                      </button>
+
                     </div>
                   </div>
                   {canManage && !ev.is_recurring_instance && (
