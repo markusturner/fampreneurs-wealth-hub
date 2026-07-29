@@ -52,6 +52,52 @@ function addRecurrence(date: Date, rec: Recurrence): Date {
 
 interface EventInstance extends CommunityEvent { instance_at: string; is_recurring_instance: boolean }
 
+function toGoogleUTC(d: Date) {
+  return d.toISOString().replace(/[-:]|\.\d{3}/g, '')
+}
+
+function googleCalUrl(ev: { title: string; description?: string | null; location?: string | null; join_url?: string | null; instance_at: string; duration_minutes: number }) {
+  const start = new Date(ev.instance_at)
+  const end = new Date(start.getTime() + (ev.duration_minutes || 60) * 60000)
+  const details = [ev.description || '', ev.join_url ? `Join: ${ev.join_url}` : ''].filter(Boolean).join('\n\n')
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: ev.title,
+    dates: `${toGoogleUTC(start)}/${toGoogleUTC(end)}`,
+    details,
+    location: ev.location || ev.join_url || '',
+  })
+  return `https://calendar.google.com/calendar/render?${params.toString()}`
+}
+
+function downloadIcs(ev: { title: string; description?: string | null; location?: string | null; join_url?: string | null; instance_at: string; duration_minutes: number; id: string }) {
+  const start = new Date(ev.instance_at)
+  const end = new Date(start.getTime() + (ev.duration_minutes || 60) * 60000)
+  const fmt = (d: Date) => toGoogleUTC(d)
+  const esc = (s: string) => s.replace(/([,;\\])/g, '\\$1').replace(/\n/g, '\\n')
+  const desc = [ev.description || '', ev.join_url ? `Join: ${ev.join_url}` : ''].filter(Boolean).join('\n\n')
+  const ics = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//TruHeirs//Community Events//EN',
+    'BEGIN:VEVENT',
+    `UID:${ev.id}-${start.getTime()}@truheirs.app`,
+    `DTSTAMP:${fmt(new Date())}`,
+    `DTSTART:${fmt(start)}`,
+    `DTEND:${fmt(end)}`,
+    `SUMMARY:${esc(ev.title)}`,
+    `DESCRIPTION:${esc(desc)}`,
+    `LOCATION:${esc(ev.location || ev.join_url || '')}`,
+    'END:VEVENT', 'END:VCALENDAR',
+  ].join('\r\n')
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${ev.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.ics`
+  document.body.appendChild(a); a.click(); document.body.removeChild(a)
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}
+
+
 function expandEvents(events: CommunityEvent[], horizonDays = 180): EventInstance[] {
   const out: EventInstance[] = []
   const horizon = new Date(); horizon.setDate(horizon.getDate() + horizonDays)
