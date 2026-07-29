@@ -135,6 +135,7 @@ export default function AIChat({ embedded = false }: { embedded?: boolean }) {
 
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [personaEngaged, setPersonaEngaged] = useState(false)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [projects, setProjects] = useState<ChatProject[]>([])
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
@@ -802,36 +803,62 @@ export default function AIChat({ embedded = false }: { embedded?: boolean }) {
         {/* Main content */}
         <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
           {!hasConversation ? (
-             <div className="flex flex-col items-center justify-center flex-1 w-full max-w-2xl mx-auto px-4 gap-4">
-               <div className="w-full gradient-hero rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden">
-                <div className="absolute inset-0 bg-white/5 backdrop-blur-sm rounded-2xl" />
-                <div className="relative z-10">
-                   <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
-                     Welcome back{displayName ? `, ${displayName.split(' ')[0]}!` : '!'}
-                   </h1>
-                  <p className="text-white/70 mt-1 text-sm sm:text-base">
-                    What would you like to create today?
-                  </p>
-                </div>
-              </div>
-              
-              <div className={`w-full max-w-2xl grid ${presets.length === 1 ? 'grid-cols-1' : presets.length === 2 ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'} gap-2`}>
-                {presets.map((preset, i) => (
-                  <button
-                    key={i}
-                    onClick={() => sendMessage(preset.prompt)}
-                    className="text-left p-3 rounded-xl border bg-card hover:bg-muted/50 transition-colors text-sm"
-                    disabled={isLoading}
-                  >
-                    <span className="font-medium">{preset.label}</span>
-                  </button>
-                ))}
-              </div>
-              
-              <div className="w-full max-w-2xl">
-                {renderInputBar()}
-              </div>
-            </div>
+             <div className="flex flex-col items-center justify-center flex-1 w-full max-w-2xl mx-auto px-4 gap-6">
+               {/* Hero title - shrinks when a persona is actively selected */}
+               <div className="text-center transition-all duration-500">
+                 <p className="text-[10px] sm:text-xs tracking-[0.35em] uppercase text-muted-foreground mb-2">TruHeirs</p>
+                 <h1
+                   className={`font-serif transition-all duration-500 ${
+                     personaEngaged
+                       ? 'text-2xl sm:text-3xl'
+                       : 'text-4xl sm:text-6xl'
+                   }`}
+                 >
+                   <span className="text-foreground">Family </span>
+                   <span className="italic" style={{ color: '#ffb500' }}>Protection Plan</span>
+                 </h1>
+               </div>
+
+               {/* Persona nav — sleek, minimal, centered */}
+               <div className="flex items-center justify-center gap-3 sm:gap-6 flex-wrap">
+                 {PERSONAS.map((p, idx) => {
+                   const isActive = activePersona === p.id
+                   return (
+                     <div key={p.id} className="flex items-center gap-3 sm:gap-6">
+                       {idx > 0 && <span className="text-muted-foreground/40">|</span>}
+                       <button
+                         onClick={() => { setPersonaEngaged(true); switchPersona(p.id) }}
+                         className={`text-[10px] sm:text-xs tracking-[0.25em] uppercase font-semibold transition-colors ${
+                           isActive ? '' : 'text-muted-foreground hover:text-foreground'
+                         }`}
+                         style={isActive ? { color: p.activeColor } : undefined}
+                       >
+                         {p.label}
+                       </button>
+                     </div>
+                   )
+                 })}
+               </div>
+
+               {presets.length > 0 && (
+                 <div className={`w-full max-w-2xl grid ${presets.length === 1 ? 'grid-cols-1' : presets.length === 2 ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'} gap-2`}>
+                   {presets.map((preset, i) => (
+                     <button
+                       key={i}
+                       onClick={() => sendMessage(preset.prompt)}
+                       className="text-left p-3 rounded-xl border bg-card hover:bg-muted/50 transition-colors text-sm"
+                       disabled={isLoading}
+                     >
+                       <span className="font-medium">{preset.label}</span>
+                     </button>
+                   ))}
+                 </div>
+               )}
+
+               <div className="w-full max-w-2xl">
+                 {renderInputBar()}
+               </div>
+             </div>
           ) : (
             <>
               <ScrollArea className="flex-1 w-full" ref={scrollAreaRef}>
