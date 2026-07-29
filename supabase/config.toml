@@ -91,3 +91,6 @@ verify_jwt = false
 
 [functions.giphy-search]
 verify_jwt = true
+
+[functions.generate-family-protection-plan]
+verify_jwt = true
