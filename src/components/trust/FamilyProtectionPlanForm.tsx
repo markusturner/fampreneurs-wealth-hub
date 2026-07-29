@@ -89,7 +89,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
 
   if (planText) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 max-w-3xl mx-auto">
         <div className="flex items-center gap-2 text-emerald-600">
           <ShieldCheck className="h-5 w-5" />
           <span className="font-semibold">Your Family Protection Plan is ready</span>
