@@ -316,36 +316,33 @@ export default function Welcome() {
           )
         })()}
 
-        <section className="mt-8 sm:mt-10 w-full max-w-2xl rounded-2xl border border-border/70 bg-background/80 p-3 sm:p-4 text-left shadow-sm backdrop-blur">
-          <div className="mb-3 flex items-center gap-2 px-1">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/20 text-secondary">
-              <Search className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Ask Rachel</p>
-              <p className="text-xs text-muted-foreground">Search your family office assistant</p>
-            </div>
-          </div>
-          <div className="flex items-end gap-2 rounded-xl border border-border bg-card p-2">
-            <textarea
+        <section className="mt-6 sm:mt-8 w-full max-w-md text-left">
+          <div className="flex items-center gap-2 rounded-full border border-border/70 bg-background/80 pl-3 pr-1 py-1 shadow-sm backdrop-blur transition focus-within:border-secondary/60 focus-within:shadow-md">
+            <Search className="h-3.5 w-3.5 text-secondary shrink-0" />
+            <input
+              type="text"
               value={rachelQuestion}
               onChange={(event) => setRachelQuestion(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
+                if (event.key === 'Enter') {
                   event.preventDefault()
                   askRachel()
                 }
               }}
-              rows={1}
               placeholder="Ask Rachel anything..."
-              className="min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground"
+              className="flex-1 bg-transparent px-1 py-1 text-xs sm:text-sm outline-none placeholder:text-muted-foreground"
             />
-            <Button size="icon" className="h-10 w-10 rounded-full" onClick={askRachel} disabled={!rachelQuestion.trim() || rachelLoading}>
-              {rachelLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            <Button
+              size="icon"
+              className="h-7 w-7 rounded-full"
+              onClick={askRachel}
+              disabled={!rachelQuestion.trim() || rachelLoading}
+            >
+              {rachelLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
             </Button>
           </div>
           {rachelAnswer && (
-            <div className="mt-3 rounded-xl bg-muted/60 px-4 py-3 text-sm leading-relaxed text-foreground">
+            <div className="mt-3 rounded-xl bg-muted/60 px-4 py-3 text-xs sm:text-sm leading-relaxed text-foreground">
               {rachelAnswer}
             </div>
           )}
