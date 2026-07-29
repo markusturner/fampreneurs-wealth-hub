@@ -7,7 +7,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, ShieldCheck, ExternalLink, Sparkles } from "lucide-react"
+import { Loader2, ShieldCheck, ExternalLink, Sparkles, Download } from "lucide-react"
+import ReactMarkdown from "react-markdown"
+
 
 interface Props {
   onSubmitted?: () => void
