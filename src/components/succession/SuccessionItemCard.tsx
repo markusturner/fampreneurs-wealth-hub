@@ -25,23 +25,22 @@ export function SuccessionItemCard({ label, description, icon: Icon, status, bad
   const StatusIcon = meta.icon
   return (
     <Card
-      className="cursor-pointer transition-all duration-200 hover:border-accent hover:shadow-lg hover:shadow-accent/10"
+      className="cursor-pointer transition-all duration-200 hover:border-accent hover:shadow-md hover:shadow-accent/10"
       onClick={onClick}
     >
-      <CardHeader className="text-center pb-2">
-        <div className="mx-auto mb-2">
-          <Icon className="h-10 w-10 text-accent" />
+      <CardHeader className="text-center p-2 pb-1">
+        <div className="mx-auto mb-1">
+          <Icon className="h-6 w-6 text-accent" />
         </div>
-        <CardTitle className="text-base">{label}</CardTitle>
+        <CardTitle className="text-xs leading-tight">{label}</CardTitle>
         {badge && (
-          <Badge variant="outline" className="mx-auto mt-1 border-[#290a52]/40 text-[#290a52]">{badge}</Badge>
+          <Badge variant="outline" className="mx-auto mt-1 border-[#290a52]/40 text-[#290a52] text-[10px] px-1.5 py-0">{badge}</Badge>
         )}
       </CardHeader>
-      <CardContent>
-        <p className="text-xs text-muted-foreground text-center min-h-[2.5rem]">{description}</p>
+      <CardContent className="p-2 pt-0">
         {doneForYou && (
-          <Badge variant="outline" className={`w-full justify-center mt-3 ${meta.className}`}>
-            <StatusIcon className="h-3 w-3 mr-1" /> {meta.label}
+          <Badge variant="outline" className={`w-full justify-center text-[10px] px-1 py-0 ${meta.className}`}>
+            <StatusIcon className="h-2.5 w-2.5 mr-1" /> {meta.label}
           </Badge>
         )}
       </CardContent>
