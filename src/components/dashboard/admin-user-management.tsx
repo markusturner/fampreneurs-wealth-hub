@@ -24,8 +24,10 @@ export function AdminUserManagement() {
   const [bulkEmails, setBulkEmails] = useState('')
   const [role, setRole] = useState<UserRole>('family_member')
   const [programName, setProgramName] = useState('')
+  const [tfbaVariant, setTfbaVariant] = useState<'standard' | 'vip_weekend'>('standard')
   const [truHeirsAccess, setTruHeirsAccess] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
+
 
   const [planType, setPlanType] = useState<'free' | 'paid_in_full' | 'payment_plan'>('paid_in_full')
   const [totalAmount, setTotalAmount] = useState('')
