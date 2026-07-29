@@ -315,8 +315,8 @@ export default function TrustCreation() {
       )
     }
 
-    // Asset Inventory & Trust Checklist use React forms
-    if (selectedSection === 'asset_inventory' || selectedSection === 'trust_name_translator' || selectedSection === 'trust_asset_uploads') {
+    // Asset Inventory, Trust Checklist, Family Protection Plan use React forms
+    if (selectedSection === 'asset_inventory' || selectedSection === 'trust_name_translator' || selectedSection === 'trust_asset_uploads' || selectedSection === 'family_protection_plan') {
       return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-5xl mx-auto">
           <Button variant="ghost" onClick={() => setSelectedSection(null)} className="gap-2">
@@ -335,6 +335,8 @@ export default function TrustCreation() {
                 <AssetInventoryForm onSubmitted={handleFormSubmitted} />
               ) : selectedSection === 'trust_asset_uploads' ? (
                 <TrustAssetUploads onSubmitted={handleFormSubmitted} />
+              ) : selectedSection === 'family_protection_plan' ? (
+                <FamilyProtectionPlanForm onSubmitted={handleFormSubmitted} />
               ) : (
                 <TrustNameTranslator onSubmitted={handleFormSubmitted} />
               )}
