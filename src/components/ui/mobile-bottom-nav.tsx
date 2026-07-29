@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { Mail, Calendar, MessageSquare, BookOpen, LayoutGrid, LayoutDashboard, Home, FileText, Users, Bot, Shield, ScrollText, Sprout, Settings, LogOut, ChevronRight, HeartPulse } from 'lucide-react'
+import { Mail, Calendar, MessageSquare, BookOpen, LayoutGrid, LayoutDashboard, Home, FileText, Users, Shield, ScrollText, Sprout, Settings, LogOut, ChevronRight, HeartPulse } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUserRole } from '@/hooks/useUserRole'
@@ -7,6 +7,7 @@ import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { useSubscription } from '@/hooks/useSubscription'
 import { useUnreadDMCounts } from '@/hooks/useUnreadDMCounts'
 import { useState } from 'react'
+import { profileProgramCodes } from '@/lib/programs'
 import {
   Sheet,
   SheetContent,
@@ -18,14 +19,15 @@ const PROGRAM_SLUGS: Record<string, { slug: string; label: string }> = {
   'The Family Business University': { slug: 'fbu', label: 'Family Business University' },
   'The Family Vault': { slug: 'tfv', label: 'The Family Vault' },
   'The Family Business Accelerator': { slug: 'tfba', label: 'The Family Business Accelerator' },
-  'The Family Fortune Mastermind': { slug: 'tffm', label: 'The Family Fortune Mastermind' },
+  'The Family Fortune Mastermind': { slug: 'tffm', label: 'The Succession Society' },
+  'The Succession Society': { slug: 'tffm', label: 'The Succession Society' },
 }
 
 const ALL_COMMUNITIES = [
   { slug: 'fbu', label: 'Family Business University' },
   { slug: 'tfv', label: 'The Family Vault' },
   { slug: 'tfba', label: 'The Family Business Accelerator' },
-  { slug: 'tffm', label: 'The Family Fortune Mastermind' },
+  { slug: 'tffm', label: 'The Succession Society' },
 ]
 
 export function MobileBottomNav() {
@@ -50,9 +52,11 @@ export function MobileBottomNav() {
   // Derive the user's program slug for auto-routing
   const programName = profile?.program_name?.toLowerCase() || ''
   let programSlug = 'fbu'
-  if (programName.includes('vault')) programSlug = 'tfv'
+  const profileCodes = profileProgramCodes(profile?.program_name)
+  if (profileCodes.length > 0) programSlug = profileCodes[0]
+  else if (programName.includes('vault')) programSlug = 'tfv'
   else if (programName.includes('accelerator')) programSlug = 'tfba'
-  else if (programName.includes('mastermind') || programName.includes('fortune')) programSlug = 'tffm'
+  else if (programName.includes('mastermind') || programName.includes('fortune') || programName.includes('succession')) programSlug = 'tffm'
 
   // Determine which communities the user can access
   const getUserCommunities = () => {
@@ -71,13 +75,13 @@ export function MobileBottomNav() {
     // Fallback to derived slug
     if (accessible.size === 0) accessible.add(programSlug)
 
-    return ALL_COMMUNITIES.filter(c => accessible.has(c.slug))
+    return ALL_COMMUNITIES.filter(c => accessible.has(c.slug)).slice(0, 1)
   }
 
   const userCommunities = getUserCommunities()
 
   const handleCommunityClick = (e?: React.MouseEvent) => {
-    if (userCommunities.length > 1) {
+    if ((isAdmin || isOwner) && userCommunities.length > 1) {
       e?.preventDefault()
       setCommunityPickerOpen(true)
     }
@@ -106,7 +110,6 @@ export function MobileBottomNav() {
   
 
   const workspaceItems = [
-    { name: 'AI Chat', href: '/ai-chat', icon: Bot },
     ...(!isFamilyMember ? [{ name: 'Trust Creation', href: '/trust-creation', icon: ScrollText }] : []),
     ...(!isFamilyMember ? [{ name: 'Succession Planning', href: '/succession-planning', icon: Sprout }] : []),
     { name: 'Members', href: '/workspace-members', icon: Users },
@@ -137,7 +140,7 @@ export function MobileBottomNav() {
             const active = (item as any).isCommunity ? isCommunityActive : isActive(item.href)
             const Icon = item.icon
 
-            if ((item as any).isCommunity && userCommunities.length > 1) {
+            if ((item as any).isCommunity && (isAdmin || isOwner) && userCommunities.length > 1) {
               return (
                 <button
                   key={item.name}

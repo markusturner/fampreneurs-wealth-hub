@@ -39,7 +39,7 @@ export function AdminPushTest() {
   const { user } = useAuth()
   const [title, setTitle] = useState('🔔 Test Push Notification')
   const [message, setMessage] = useState('This is a test push from Admin Settings.')
-  const [link, setLink] = useState('/ai-chat')
+  const [link, setLink] = useState('/welcome')
   const [tokens, setTokens] = useState<PushTokenRow[]>([])
   const [loadingTokens, setLoadingTokens] = useState(true)
   const [sending, setSending] = useState(false)
@@ -232,7 +232,7 @@ export function AdminPushTest() {
               id="push-link"
               value={link}
               onChange={(e) => setLink(e.target.value)}
-              placeholder="/ai-chat"
+              placeholder="/welcome"
             />
           </div>
           <Button onClick={handleSend} disabled={sending || !user?.id} className="w-full sm:w-auto">

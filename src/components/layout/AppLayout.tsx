@@ -36,7 +36,6 @@ const LITE_BLOCKED_ROUTES = [
   '/members',
   '/family-constitution/setup',
   '/investments',
-  '/ai-chat',
   '/trust-creation',
   '/succession-planning',
   '/admin-settings',

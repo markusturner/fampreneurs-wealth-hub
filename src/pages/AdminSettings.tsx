@@ -126,7 +126,7 @@ export function AdminSettings() {
             <AdminVideoManager
               settingKey="workspace_video_url"
               title="Workspace Tutorial Video"
-              description="Tutorial video shown on the AI Chat / Workspace page to help users learn the workspace tools"
+              description="Tutorial video shown on the Workspace page to help users learn the workspace tools"
             />
           </TabsContent>
         )}

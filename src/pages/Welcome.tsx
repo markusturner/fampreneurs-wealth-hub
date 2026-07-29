@@ -6,11 +6,12 @@ import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { NotificationBell } from '@/components/dashboard/notification-bell'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Loader2, ChevronDown, User, Shield, HeartPulse, ClipboardList, LogOut, Video } from 'lucide-react'
+import { Loader2, ChevronDown, User, Shield, HeartPulse, ClipboardList, LogOut, Video, Search, Sparkles, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { TutorialVideoModal } from '@/components/dashboard/tutorial-video-modal'
 import { useTutorialVideo } from '@/hooks/useTutorialVideo'
 import { profileProgramCodes, programLabel, type ProgramCode } from '@/lib/programs'
+import { supabase } from '@/integrations/supabase/client'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,7 @@ import {
 const LAST_USED_KEY = 'truheirs:lastUsed'
 
 const COMMUNITY_LABELS: Record<string, string> = {
+  fbu: 'Family Business University',
   tfv: 'The Family Vault',
   tfba: 'The Family Business Accelerator',
   tffm: 'The Succession Society',
@@ -56,6 +58,9 @@ export default function Welcome() {
   const navigate = useNavigate()
   const [tutorialOpen, setTutorialOpen] = useState(false)
   const [lastUsed, setLastUsed] = useState<LastUsed | null>(() => readLastUsed())
+  const [rachelQuestion, setRachelQuestion] = useState('')
+  const [rachelAnswer, setRachelAnswer] = useState('')
+  const [rachelLoading, setRachelLoading] = useState(false)
   const { markAsWatched } = useTutorialVideo(user?.id || null)
 
   const go = (section: LastUsed['section'], path: string, program?: string) => {
@@ -83,6 +88,28 @@ export default function Welcome() {
   const displayName = profile?.display_name || profile?.first_name || 'Member'
   const initials = `${profile?.first_name?.[0] || ''}${profile?.last_name?.[0] || ''}`.toUpperCase() || 'ME'
   const avatarUrl = profile?.avatar_url
+  const userCodes = profileProgramCodes(profile?.program_name)
+  const programBadgeLabel = userCodes.length > 0
+    ? userCodes.map(code => programLabel(code)).join(' • ')
+    : (profile?.program_name || 'TruHeirs Member')
+
+  const askRachel = async () => {
+    const message = rachelQuestion.trim()
+    if (!message || rachelLoading) return
+    setRachelLoading(true)
+    setRachelAnswer('')
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-chat', {
+        body: { message, persona: 'rachel', instructions: '' }
+      })
+      if (error) throw error
+      setRachelAnswer(data?.response || 'Rachel could not answer right now. Please try again.')
+    } catch {
+      setRachelAnswer('Rachel could not answer right now. Please try again.')
+    } finally {
+      setRachelLoading(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -186,6 +213,11 @@ export default function Welcome() {
           Welcome back, {firstName}
         </h1>
 
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-secondary/40 bg-secondary/15 px-4 py-1.5 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-foreground shadow-sm">
+          <Sparkles className="h-3.5 w-3.5 text-secondary" />
+          <span>{programBadgeLabel}</span>
+        </div>
+
         {lastUsed ? (
           <p className="text-[11px] sm:text-sm text-muted-foreground max-w-xl mb-5 sm:mb-6 px-4">
             Last time you were logged in, you were working on <span className="text-foreground font-medium">{lastUsedLabel(lastUsed)}</span>. Would you like to continue?
@@ -199,16 +231,15 @@ export default function Welcome() {
         <div className="w-32 sm:w-48 h-px bg-secondary mb-6 sm:mb-8" />
 
         {(() => {
-          const userCodes = profileProgramCodes(profile?.program_name)
-          const communityCodes = (userCodes.filter(c => c !== 'fbu') as Array<Exclude<ProgramCode,'fbu'>>)
-          // Owners/admins see ALL communities as a dropdown; regular users see only their single assigned community
-          const availableCommunities: ReadonlyArray<Exclude<ProgramCode,'fbu'>> = communityCodes.length > 0
-            ? communityCodes
-            : ((isOwner || isAdmin) ? ['tfv','tfba','tffm'] as const : ['tfv'] as const)
-          const hasMultiple = availableCommunities.length > 1
+          const communityCodes = userCodes
+          const isAdminOrOwner = isOwner || isAdmin
+          const availableCommunities: ReadonlyArray<ProgramCode> = isAdminOrOwner
+            ? ['fbu','tfv','tfba','tffm'] as const
+            : (communityCodes.length > 0 ? communityCodes.slice(0, 1) : ['fbu'] as const)
+          const hasMultiple = isAdminOrOwner && availableCommunities.length > 1
           const primaryLabel = hasMultiple
             ? 'Community'
-            : COMMUNITY_LABELS[availableCommunities[0]]
+            : 'Community'
           return (
         <nav className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-0">
           {hasMultiple ? (
@@ -283,6 +314,41 @@ export default function Welcome() {
         </nav>
           )
         })()}
+
+        <section className="mt-8 sm:mt-10 w-full max-w-2xl rounded-2xl border border-border/70 bg-background/80 p-3 sm:p-4 text-left shadow-sm backdrop-blur">
+          <div className="mb-3 flex items-center gap-2 px-1">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/20 text-secondary">
+              <Search className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Ask Rachel</p>
+              <p className="text-xs text-muted-foreground">Search your family office assistant</p>
+            </div>
+          </div>
+          <div className="flex items-end gap-2 rounded-xl border border-border bg-card p-2">
+            <textarea
+              value={rachelQuestion}
+              onChange={(event) => setRachelQuestion(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault()
+                  askRachel()
+                }
+              }}
+              rows={1}
+              placeholder="Ask Rachel anything..."
+              className="min-h-10 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground"
+            />
+            <Button size="icon" className="h-10 w-10 rounded-full" onClick={askRachel} disabled={!rachelQuestion.trim() || rachelLoading}>
+              {rachelLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            </Button>
+          </div>
+          {rachelAnswer && (
+            <div className="mt-3 rounded-xl bg-muted/60 px-4 py-3 text-sm leading-relaxed text-foreground">
+              {rachelAnswer}
+            </div>
+          )}
+        </section>
       </div>
 
       {user && tutorialOpen && (
