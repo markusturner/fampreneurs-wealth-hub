@@ -62,7 +62,11 @@ export default function Welcome() {
   const [rachelQuestion, setRachelQuestion] = useState('')
   const [rachelAnswer, setRachelAnswer] = useState('')
   const [rachelLoading, setRachelLoading] = useState(false)
+  const [searchFocused, setSearchFocused] = useState(false)
+  const [answerAtBottom, setAnswerAtBottom] = useState(false)
+  const searchActive = searchFocused || rachelLoading || !!rachelAnswer || rachelQuestion.trim().length > 0
   const { markAsWatched } = useTutorialVideo(user?.id || null)
+
 
   const go = (section: LastUsed['section'], path: string, program?: string) => {
     const v: LastUsed = { section, ...(program ? { program } : {}) }
