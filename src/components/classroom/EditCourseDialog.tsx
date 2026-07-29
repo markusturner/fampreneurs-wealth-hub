@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useNavigate } from 'react-router-dom'
-import { Trash2 } from 'lucide-react'
+import { Trash2, X, ImageIcon } from 'lucide-react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +43,8 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
   const [communityGroups, setCommunityGroups] = useState<CommunityGroup[]>([])
   const [loading, setLoading] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   useEffect(() => {
     if (course) {
@@ -50,8 +52,25 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
       setDescription(course.description || '')
       setImageUrl(course.image_url || '')
       setSelectedCommunityIds(course.community_ids || [])
+      setImageFile(null)
+      setImagePreview(null)
     }
   }, [course])
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+  }
+
+  const clearImage = () => {
+    setImageFile(null)
+    setImagePreview(null)
+    setImageUrl('')
+  }
+
+
 
   useEffect(() => {
     if (open) {
@@ -71,10 +90,26 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
     if (!course || !title.trim()) return
     setLoading(true)
 
+    let finalImageUrl = imageUrl.trim() || null
+
+    if (imageFile) {
+      const filePath = `course-covers/${Date.now()}_${imageFile.name}`
+      const { error: uploadError } = await supabase.storage
+        .from('cover-photos')
+        .upload(filePath, imageFile)
+      if (uploadError) {
+        toast({ title: 'Image upload failed', description: uploadError.message, variant: 'destructive' })
+        setLoading(false)
+        return
+      }
+      const { data: publicUrlData } = supabase.storage.from('cover-photos').getPublicUrl(filePath)
+      finalImageUrl = publicUrlData.publicUrl
+    }
+
     const { error } = await supabase.from('courses').update({
       title: title.trim(),
       description: description.trim() || null,
-      image_url: imageUrl.trim() || null,
+      image_url: finalImageUrl,
       community_ids: selectedCommunityIds,
     }).eq('id', course.id)
 
@@ -120,9 +155,28 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
             <Textarea value={description} onChange={e => setDescription(e.target.value)} />
           </div>
           <div className="space-y-2">
-            <Label>Cover Image URL</Label>
-            <Input value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://..." />
+            <Label>Cover Image</Label>
+            {(imagePreview || imageUrl) ? (
+              <div className="relative w-full h-36 rounded-md overflow-hidden border border-border">
+                <img src={imagePreview || imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                <button
+                  type="button"
+                  onClick={clearImage}
+                  className="absolute top-2 right-2 bg-background/80 backdrop-blur-sm rounded-full p-1 hover:bg-background transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-border rounded-md cursor-pointer hover:border-primary/50 transition-colors bg-muted/30">
+                <ImageIcon className="h-8 w-8 text-muted-foreground mb-2" />
+                <span className="text-sm text-muted-foreground">Click to upload cover photo</span>
+                <input type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+              </label>
+            )}
+            <Input value={imageUrl} onChange={e => { setImageUrl(e.target.value); setImageFile(null); setImagePreview(null) }} placeholder="Or paste image URL" />
           </div>
+
 
           <div className="space-y-2">
             <Label>Community Access</Label>
