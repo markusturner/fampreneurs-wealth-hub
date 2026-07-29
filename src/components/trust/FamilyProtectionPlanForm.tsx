@@ -78,6 +78,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       if (error) throw error
       setPlanText(data.plan_text || null)
       setDocumentUrl(data.document_url || null)
+      setSubmittedAt(new Date())
       toast({ title: "Plan created", description: "Your Family Protection Plan is ready." })
       onSubmitted?.()
     } catch (err: any) {
