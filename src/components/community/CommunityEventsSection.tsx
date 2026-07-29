@@ -535,6 +535,13 @@ function MonthCalendar({ instances }: { instances: EventInstance[] }) {
                         <Video className="h-3 w-3" /> Join
                       </a>
                     )}
+                    <a href={googleCalUrl(ev)} target="_blank" rel="noreferrer" className={`${ev.join_url ? '' : 'ml-auto'} text-[#290a52] hover:underline inline-flex items-center gap-1`}>
+                      <CalendarDays className="h-3 w-3" /> Google
+                    </a>
+                    <button type="button" onClick={() => downloadIcs(ev)} className="text-[#290a52] hover:underline inline-flex items-center gap-1">
+                      <CalendarDays className="h-3 w-3" /> .ics
+                    </button>
+
                   </div>
                 ))}
               </div>
