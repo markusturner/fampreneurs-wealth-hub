@@ -98,9 +98,12 @@ export default function Welcome() {
     ? userCodes.map(code => programLabel(code)).join(' • ')
     : (profile?.program_name || 'TruHeirs Member')
 
-  const askRachel = async () => {
-    const message = rachelQuestion.trim()
+  const askRachel = async (preset?: string) => {
+    const message = (preset ?? rachelQuestion).trim()
+    if (preset) setRachelQuestion(preset)
     if (!message || rachelLoading) return
+    setAnswerAtBottom(false)
+
     setRachelLoading(true)
     setRachelAnswer('')
     try {
