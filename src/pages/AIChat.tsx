@@ -135,6 +135,7 @@ export default function AIChat({ embedded = false }: { embedded?: boolean }) {
 
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [personaEngaged, setPersonaEngaged] = useState(false)
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [projects, setProjects] = useState<ChatProject[]>([])
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
