@@ -905,6 +905,37 @@ export default function WorkspaceCommunity() {
     return `${Math.floor(days / 30)}mo`
   }
 
+  const linkifyText = (text: string, keyPrefix: string): React.ReactNode[] => {
+    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi
+    const out: React.ReactNode[] = []
+    let last = 0
+    let m
+    while ((m = urlRegex.exec(text)) !== null) {
+      if (m.index > last) out.push(text.slice(last, m.index))
+      const raw = m[0]
+      const trailMatch = raw.match(/[.,!?;:)\]]+$/)
+      const trail = trailMatch ? trailMatch[0] : ''
+      const url = trail ? raw.slice(0, -trail.length) : raw
+      const href = url.startsWith('http') ? url : `https://${url}`
+      out.push(
+        <a
+          key={`${keyPrefix}-${m.index}`}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary underline hover:no-underline break-all"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {url}
+        </a>
+      )
+      if (trail) out.push(trail)
+      last = m.index + raw.length
+    }
+    if (last < text.length) out.push(text.slice(last))
+    return out
+  }
+
   const renderContentWithMentions = (content: string, authorName?: string) => {
     // Match @Name or @First Last (up to 3 words, no newlines)
     const mentionRegex = /@([A-Za-z]\w*(?:\s[A-Za-z]\w*){0,2})/g
@@ -912,9 +943,13 @@ export default function WorkspaceCommunity() {
     let lastIndex = 0
     let match
 
+    const pushText = (text: string, key: string) => {
+      linkifyText(text, key).forEach(n => parts.push(n))
+    }
+
     while ((match = mentionRegex.exec(content)) !== null) {
       if (match.index > lastIndex) {
-        parts.push(content.slice(lastIndex, match.index))
+        pushText(content.slice(lastIndex, match.index), `t-${lastIndex}`)
       }
       const name = match[1]
       const firstWord = name.trim().split(/\s+/)[0].toLowerCase()
@@ -944,10 +979,10 @@ export default function WorkspaceCommunity() {
     }
 
     if (lastIndex < content.length) {
-      parts.push(content.slice(lastIndex))
+      pushText(content.slice(lastIndex), `t-end-${lastIndex}`)
     }
 
-    return parts.length > 0 ? parts : content
+    return parts.length > 0 ? parts : linkifyText(content, 'all')
   }
 
   const extractMentions = (content: string): string[] => {
