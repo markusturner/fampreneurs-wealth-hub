@@ -25,6 +25,7 @@ import {
 const LAST_USED_KEY = 'truheirs:lastUsed'
 
 const COMMUNITY_LABELS: Record<string, string> = {
+  fbu: 'Family Business University',
   tfv: 'The Family Vault',
   tfba: 'The Family Business Accelerator',
   tffm: 'The Succession Society',
@@ -230,11 +231,11 @@ export default function Welcome() {
         <div className="w-32 sm:w-48 h-px bg-secondary mb-6 sm:mb-8" />
 
         {(() => {
-          const communityCodes = (userCodes.filter(c => c !== 'fbu') as Array<Exclude<ProgramCode,'fbu'>>)
+          const communityCodes = userCodes
           const isAdminOrOwner = isOwner || isAdmin
-          const availableCommunities: ReadonlyArray<Exclude<ProgramCode,'fbu'>> = isAdminOrOwner
-            ? ['tfv','tfba','tffm'] as const
-            : (communityCodes.length > 0 ? communityCodes.slice(0, 1) : ['tfv'] as const)
+          const availableCommunities: ReadonlyArray<ProgramCode> = isAdminOrOwner
+            ? ['fbu','tfv','tfba','tffm'] as const
+            : (communityCodes.length > 0 ? communityCodes.slice(0, 1) : ['fbu'] as const)
           const hasMultiple = isAdminOrOwner && availableCommunities.length > 1
           const primaryLabel = hasMultiple
             ? 'Community'
