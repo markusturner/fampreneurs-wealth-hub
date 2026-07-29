@@ -278,6 +278,8 @@ export default function Welcome() {
             )}
           </button>
         </nav>
+          )
+        })()}
       </div>
 
       {user && tutorialOpen && (
