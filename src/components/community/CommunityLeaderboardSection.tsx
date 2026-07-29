@@ -101,12 +101,13 @@ async function fetchAllScores(program: string): Promise<{ rows7: Row[]; rows30: 
   // Fetch ALL reactions once (no date filter), then compute the three windows in JS
   const promises: Promise<any>[] = []
   if (postIds.length) {
-    promises.push(supabase.from('community_reactions').select('post_id, created_at').in('post_id', postIds).not('post_id', 'is', null))
+    promises.push(Promise.resolve(supabase.from('community_reactions').select('post_id, created_at').in('post_id', postIds).not('post_id', 'is', null)))
   }
   if (commentIds.length) {
-    promises.push(supabase.from('community_reactions').select('comment_id, created_at').in('comment_id', commentIds).not('comment_id', 'is', null))
-    promises.push(supabase.from('community_comment_reactions').select('comment_id, created_at').in('comment_id', commentIds))
+    promises.push(Promise.resolve(supabase.from('community_reactions').select('comment_id, created_at').in('comment_id', commentIds).not('comment_id', 'is', null)))
+    promises.push(Promise.resolve(supabase.from('community_comment_reactions').select('comment_id, created_at').in('comment_id', commentIds)))
   }
+
   const results = await Promise.all(promises)
 
   const s7 = new Map<string, number>()
