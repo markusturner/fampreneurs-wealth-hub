@@ -225,11 +225,11 @@ export default function Welcome() {
                 <DropdownMenuItem
                   key={prog}
                   onClick={() => go('community', `/workspace-community?program=${prog}`, prog)}
-                  className="text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 hover:text-secondary focus:text-secondary data-[highlighted]:bg-transparent data-[highlighted]:text-secondary gap-2"
+                  className="relative text-[11px] tracking-[0.2em] uppercase font-medium justify-center py-3 hover:text-secondary focus:text-secondary data-[highlighted]:bg-transparent data-[highlighted]:text-secondary gap-2"
                 >
                   {COMMUNITY_LABELS[prog]}
                   {lastUsed?.section === 'community' && lastUsed.program === prog && (
-                    <span className="rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
+                    <span className="absolute right-3 rounded-full bg-secondary/20 text-secondary text-[8px] tracking-[0.15em] uppercase px-2 py-0.5 font-semibold">Last used</span>
                   )}
                 </DropdownMenuItem>
               ))}
