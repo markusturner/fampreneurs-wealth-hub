@@ -20,7 +20,6 @@ interface CommunityGroup {
 }
 
 const WORKSPACE_COMMUNITY_NAMES = [
-  'Family Business University',
   'The Family Vault',
   'The Family Business Accelerator',
   'The Family Fortune Mastermind',
