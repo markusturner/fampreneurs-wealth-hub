@@ -908,8 +908,8 @@ export function CoachingCallAttendanceLog() {
                 <TableRow>
                   <TableHead className="w-10">
                     <Checkbox
-                      checked={sortedRows.length > 0 && sortedRows.every(r => selectedIds.includes(r.id))}
-                      onCheckedChange={(v) => setSelectedIds(v ? sortedRows.map(r => r.id) : [])}
+                      checked={pagedRows.length > 0 && pagedRows.every(r => selectedIds.includes(r.id))}
+                      onCheckedChange={(v) => setSelectedIds(v ? pagedRows.map(r => r.id) : [])}
                       aria-label="Select all"
                     />
                   </TableHead>
