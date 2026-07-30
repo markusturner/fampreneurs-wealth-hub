@@ -492,7 +492,7 @@ export function CoachingCallAttendanceLog() {
               <Calendar className="h-4 w-4" /> Coaching Call Attendance Log
             </CardTitle>
             <CardDescription>
-              {stats.total} records · {stats.attended} attended · {stats.missed} missed · {stats.manual} manual
+              {stats.total} records · {stats.attended} attended · {stats.missed} missed · {stats.manual} manual · {stats.deleted} deleted
             </CardDescription>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -505,19 +505,24 @@ export function CoachingCallAttendanceLog() {
                 className="pl-8 h-9"
               />
             </div>
-            <Select value={filterSource} onValueChange={(v) => setFilterSource(v as any)}>
+            <Select value={view} onValueChange={(v) => { setView(v as any); setSelectedIds([]) }}>
               <SelectTrigger className="h-9 w-[130px]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All sources</SelectItem>
-                <SelectItem value="auto">Automated</SelectItem>
-                <SelectItem value="fathom">Fathom</SelectItem>
-                <SelectItem value="manual">Manual</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="deleted">Deleted</SelectItem>
               </SelectContent>
             </Select>
+            <Button size="sm" variant={showFilters ? 'default' : 'outline'} onClick={() => setShowFilters(v => !v)}>
+              <SlidersHorizontal className="h-4 w-4 mr-1" /> Filters
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => exportCsv(selectedIds.length ? sortedRows.filter(r => selectedIds.includes(r.id)) : sortedRows)}>
+              <Download className="h-4 w-4 mr-1" /> {selectedIds.length ? `Export ${selectedIds.length}` : 'Export all'}
+            </Button>
             <Button size="sm" variant="outline" onClick={handleScanFathom} disabled={scanning}>
               {scanning ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
               Scan Fathom
             </Button>
+
 
             <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm() }}>
               <DialogTrigger asChild>
