@@ -643,6 +643,71 @@ export function CoachingCallAttendanceLog() {
             </Dialog>
           </div>
         </div>
+        {showFilters && (
+          <div className="mt-3 rounded-md border bg-muted/30 p-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <div>
+              <Label className="text-xs">Source</Label>
+              <Select value={filterSource} onValueChange={(v) => setFilterSource(v as any)}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All sources</SelectItem>
+                  <SelectItem value="auto">Automated</SelectItem>
+                  <SelectItem value="fathom">Fathom</SelectItem>
+                  <SelectItem value="manual">Manual</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Status</Label>
+              <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as any)}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="attended">Attended</SelectItem>
+                  <SelectItem value="missed">Missed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Session type</Label>
+              <Select value={filterType} onValueChange={(v) => setFilterType(v as any)}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All types</SelectItem>
+                  <SelectItem value="individual">1-1</SelectItem>
+                  <SelectItem value="group">Group</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Coach</Label>
+              <Select value={filterCoach} onValueChange={setFilterCoach}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All coaches</SelectItem>
+                  {coachOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">From</Label>
+              <Input type="date" className="h-9" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">To</Label>
+              <Input type="date" className="h-9" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">Min duration (min)</Label>
+              <Input type="number" min={0} className="h-9" value={filterMinDuration} onChange={(e) => setFilterMinDuration(e.target.value)} placeholder="0" />
+            </div>
+            <div className="flex items-end">
+              <Button size="sm" variant="ghost" onClick={clearFilters}>
+                <X className="h-3.5 w-3.5 mr-1" /> Clear filters
+              </Button>
+            </div>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -650,21 +715,35 @@ export function CoachingCallAttendanceLog() {
             <Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading attendance…
           </div>
         ) : sortedRows.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-6 text-center">No attendance records yet. Use "Log attendance" to add one.</p>
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            {view === 'deleted' ? 'No deleted logs.' : 'No attendance records yet. Use "Log attendance" to add one.'}
+          </p>
         ) : (
           <>
           {selectedIds.length > 0 && (
             <div className="flex items-center gap-2 mb-3 rounded-md border bg-muted/40 px-3 py-2 flex-wrap">
               <span className="text-sm font-medium">{selectedIds.length} selected</span>
-              <Button size="sm" variant="outline" onClick={openBulkEdit}>
-                <Pencil className="h-3.5 w-3.5 mr-1" /> Edit selected
+              {view === 'active' && (
+                <Button size="sm" variant="outline" onClick={openBulkEdit}>
+                  <Pencil className="h-3.5 w-3.5 mr-1" /> Edit selected
+                </Button>
+              )}
+              {view === 'deleted' && (
+                <Button size="sm" variant="outline" onClick={handleBulkRestore}>
+                  <Undo2 className="h-3.5 w-3.5 mr-1" /> Restore selected
+                </Button>
+              )}
+              <Button size="sm" variant="outline" onClick={() => exportCsv(sortedRows.filter(r => selectedIds.includes(r.id)))}>
+                <Download className="h-3.5 w-3.5 mr-1" /> Export selected
               </Button>
-              <Button size="sm" variant="outline" className="text-red-600 border-red-300 hover:bg-red-50" onClick={handleBulkDelete} disabled={bulkDeleting}>
-                {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 mr-1" />} Delete selected
+              <Button size="sm" variant="outline" className="text-red-600 border-red-300 hover:bg-red-50" onClick={() => setConfirmBulkDelete(true)} disabled={bulkDeleting}>
+                {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 mr-1" />}
+                {view === 'deleted' ? 'Delete forever' : 'Delete selected'}
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>Clear</Button>
             </div>
           )}
+
           <ScrollArea className="w-full whitespace-nowrap">
             <Table>
               <TableHeader>
