@@ -9,7 +9,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Loader2, Calendar, Search, Plus, Trash2, UserPlus, Check, ChevronsUpDown, X } from 'lucide-react'
+import { Loader2, Calendar, Search, Plus, Trash2, UserPlus, Check, ChevronsUpDown, X, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { supabase } from '@/integrations/supabase/client'
@@ -40,6 +40,8 @@ export function CoachingCallAttendanceLog() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterSource, setFilterSource] = useState<'all' | 'auto' | 'manual'>('all')
+  const [sortKey, setSortKey] = useState<'member' | 'session' | 'coach' | 'date' | 'attendance' | 'duration' | null>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [members, setMembers] = useState<MemberOption[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -183,11 +185,74 @@ export function CoachingCallAttendanceLog() {
     })
   }, [rows, search, filterSource])
 
+  const sortedRows = useMemo(() => {
+    if (!sortKey) return filtered
+    const sorted = [...filtered]
+    const multiplier = sortDirection === 'asc' ? 1 : -1
+    sorted.sort((a, b) => {
+      let comparison = 0
+      switch (sortKey) {
+        case 'member': {
+          const aVal = (a.user_name || a.user_email || '').toLowerCase()
+          const bVal = (b.user_name || b.user_email || '').toLowerCase()
+          comparison = aVal.localeCompare(bVal)
+          break
+        }
+        case 'session': {
+          const aVal = (a.session_title || '').toLowerCase()
+          const bVal = (b.session_title || '').toLowerCase()
+          comparison = aVal.localeCompare(bVal)
+          break
+        }
+        case 'coach': {
+          const aVal = (a.coach_name || '').toLowerCase()
+          const bVal = (b.coach_name || '').toLowerCase()
+          comparison = aVal.localeCompare(bVal)
+          break
+        }
+        case 'date': {
+          const aVal = a.session_date ? new Date(a.session_date).getTime() : 0
+          const bVal = b.session_date ? new Date(b.session_date).getTime() : 0
+          comparison = aVal - bVal
+          break
+        }
+        case 'attendance': {
+          const aVal = a.attended ? 1 : 0
+          const bVal = b.attended ? 1 : 0
+          comparison = aVal - bVal
+          break
+        }
+        case 'duration': {
+          const aVal = a.attendance_duration_minutes ?? -1
+          const bVal = b.attendance_duration_minutes ?? -1
+          comparison = aVal - bVal
+          break
+        }
+      }
+      return comparison * multiplier
+    })
+    return sorted
+  }, [filtered, sortKey, sortDirection])
+
   const stats = useMemo(() => {
     const attended = rows.filter(r => r.attended).length
     const manual = rows.filter(r => r.source === 'manual').length
     return { total: rows.length, attended, missed: rows.length - attended, manual }
   }, [rows])
+
+  const toggleSort = (key: typeof sortKey) => {
+    if (sortKey === key) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortKey(key)
+      setSortDirection('asc')
+    }
+  }
+
+  const SortIcon = ({ column }: { column: typeof sortKey }) => {
+    if (sortKey !== column) return <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+    return sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+  }
 
   return (
     <Card>
@@ -344,25 +409,37 @@ export function CoachingCallAttendanceLog() {
           <div className="flex items-center justify-center py-10 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading attendance…
           </div>
-        ) : filtered.length === 0 ? (
+        ) : sortedRows.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">No attendance records yet. Use "Log attendance" to add one.</p>
         ) : (
           <ScrollArea className="w-full whitespace-nowrap">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Session</TableHead>
-                  <TableHead>Coach</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('member')}>
+                    <div className="flex items-center gap-1">Member <SortIcon column="member" /></div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('session')}>
+                    <div className="flex items-center gap-1">Session <SortIcon column="session" /></div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('coach')}>
+                    <div className="flex items-center gap-1">Coach <SortIcon column="coach" /></div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('date')}>
+                    <div className="flex items-center gap-1">Date <SortIcon column="date" /></div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('attendance')}>
+                    <div className="flex items-center gap-1">Status <SortIcon column="attendance" /></div>
+                  </TableHead>
                   <TableHead>Source</TableHead>
-                  <TableHead className="text-right">Duration</TableHead>
+                  <TableHead className="text-right cursor-pointer select-none" onClick={() => toggleSort('duration')}>
+                    <div className="flex items-center justify-end gap-1">Duration <SortIcon column="duration" /></div>
+                  </TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map(r => (
+                {sortedRows.map(r => (
                   <TableRow key={r.id}>
                     <TableCell>
                       <div className="font-medium">{r.user_name}</div>
