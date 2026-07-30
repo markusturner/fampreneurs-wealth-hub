@@ -9,7 +9,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Loader2, Calendar, Search, Plus, Trash2, UserPlus, Check, ChevronsUpDown, X, ArrowUpDown, ArrowDown, ArrowUp, Pencil, RefreshCw, Download, Undo2, SlidersHorizontal } from 'lucide-react'
+import { Loader2, Calendar, Search, Plus, Trash2, UserPlus, Check, ChevronsUpDown, X, ArrowUpDown, ArrowDown, ArrowUp, Pencil, RefreshCw, Download, Undo2, SlidersHorizontal, Upload, AlertTriangle } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
@@ -36,6 +36,42 @@ interface AttendanceRow {
 
 interface MemberOption { user_id: string; name: string; email: string }
 
+interface ImportRow {
+  line: number
+  email: string
+  user_id: string | null
+  member_name: string
+  session_title: string
+  coach_name: string
+  session_date: string
+  attended: boolean
+  duration: number | null
+  notes: string
+  errors: string[]
+}
+
+const IMPORT_HEADERS = ['email', 'session', 'coach', 'date', 'status', 'duration', 'notes']
+
+function parseCsvText(text: string): string[][] {
+  const rows: string[][] = []
+  let row: string[] = []
+  let field = ''
+  let quoted = false
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i]
+    if (quoted) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++ } else quoted = false
+      } else field += c
+    } else if (c === '"') quoted = true
+    else if (c === ',') { row.push(field); field = '' }
+    else if (c === '\n') { row.push(field); rows.push(row); row = []; field = '' }
+    else if (c !== '\r') field += c
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row) }
+  return rows.filter(r => r.some(v => v.trim() !== ''))
+}
+
 export function CoachingCallAttendanceLog() {
   const { user } = useAuth()
   const [rows, setRows] = useState<AttendanceRow[]>([])
@@ -51,6 +87,10 @@ export function CoachingCallAttendanceLog() {
   const [filterTo, setFilterTo] = useState('')
   const [filterMinDuration, setFilterMinDuration] = useState('')
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
+  const [importOpen, setImportOpen] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const [importFileName, setImportFileName] = useState('')
+  const [importPreview, setImportPreview] = useState<ImportRow[]>([])
   const [sortKey, setSortKey] = useState<'member' | 'session' | 'coach' | 'date' | 'attendance' | 'duration' | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [members, setMembers] = useState<MemberOption[]>([])
@@ -337,6 +377,111 @@ export function CoachingCallAttendanceLog() {
     toast.success(`Exported ${list.length} logs`)
   }
 
+  const downloadTemplate = () => {
+    const csv = `${IMPORT_HEADERS.join(',')}\nmember@example.com,1-1 Coaching Call,Markus Turner,${new Date().toISOString().slice(0, 10)},attended,45,Great session\n`
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'attendance-import-template.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImportFile = async (file: File | null) => {
+    if (!file) return
+    setImportFileName(file.name)
+    const text = await file.text()
+    const table = parseCsvText(text)
+    if (table.length < 2) { toast.error('CSV needs a header row and at least one record'); setImportPreview([]); return }
+
+    const header = table[0].map(h => h.trim().toLowerCase())
+    const idx = (name: string) => header.indexOf(name)
+    const missing = ['email', 'session', 'date'].filter(h => idx(h) === -1)
+    if (missing.length) {
+      toast.error(`Missing required column(s): ${missing.join(', ')}`)
+      setImportPreview([])
+      return
+    }
+
+    const byEmail = new Map(members.map(m => [m.email.toLowerCase(), m]))
+    const parsed: ImportRow[] = table.slice(1).map((cells, i) => {
+      const get = (name: string) => (idx(name) === -1 ? '' : (cells[idx(name)] ?? '').trim())
+      const email = get('email').toLowerCase()
+      const member = byEmail.get(email)
+      const session_title = get('session')
+      const session_date = get('date')
+      const statusRaw = get('status').toLowerCase()
+      const durationRaw = get('duration')
+      const errors: string[] = []
+
+      if (!email) errors.push('Email is required')
+      else if (!member) errors.push('No member matches this email')
+      if (!session_title) errors.push('Session title is required')
+      else if (session_title.length > 200) errors.push('Session title is too long')
+      const validDate = /^\d{4}-\d{2}-\d{2}$/.test(session_date) && !Number.isNaN(Date.parse(session_date))
+      if (!validDate) errors.push('Date must be YYYY-MM-DD')
+      if (statusRaw && !['attended', 'missed', 'true', 'false', 'yes', 'no'].includes(statusRaw)) errors.push('Status must be attended or missed')
+      let duration: number | null = null
+      if (durationRaw) {
+        const n = Number(durationRaw)
+        if (!Number.isFinite(n) || n < 0 || n > 1440) errors.push('Duration must be 0–1440 minutes')
+        else duration = Math.round(n)
+      }
+      const notes = get('notes').slice(0, 1000)
+
+      return {
+        line: i + 2,
+        email,
+        user_id: member?.user_id ?? null,
+        member_name: member?.name ?? '—',
+        session_title,
+        coach_name: get('coach'),
+        session_date,
+        attended: !['missed', 'false', 'no'].includes(statusRaw),
+        duration,
+        notes,
+        errors,
+      }
+    })
+
+    setImportPreview(parsed)
+    const bad = parsed.filter(p => p.errors.length).length
+    toast.success(`${parsed.length - bad} row${parsed.length - bad === 1 ? '' : 's'} ready${bad ? `, ${bad} with errors` : ''}`)
+  }
+
+  const handleImportSave = async () => {
+    const valid = importPreview.filter(p => p.errors.length === 0)
+    if (valid.length === 0) { toast.error('No valid rows to import'); return }
+    setImporting(true)
+    try {
+      const payload = valid.map(v => ({
+        user_id: v.user_id,
+        session_id: null,
+        session_type: v.session_title.toLowerCase().includes('1-1') ? 'individual' : 'group',
+        attended: v.attended,
+        attendance_duration_minutes: v.duration,
+        manual_session_title: v.session_title,
+        manual_coach_name: v.coach_name || null,
+        manual_session_date: v.session_date,
+        source: 'manual',
+        notes: v.notes || null,
+        logged_by: user?.id ?? null,
+      }))
+      const { error } = await supabase.from('session_attendance').insert(payload as any)
+      if (error) throw error
+      toast.success(`Imported ${payload.length} attendance records`)
+      setImportOpen(false)
+      setImportPreview([])
+      setImportFileName('')
+      load()
+    } catch (e: any) {
+      toast.error('Import failed: ' + (e?.message ?? e))
+    } finally {
+      setImporting(false)
+    }
+  }
+
+
 
   const openBulkEdit = () => {
     setBTitle(''); setBCoach(''); setBDate(''); setBStatus('keep'); setBDuration('')
@@ -517,6 +662,9 @@ export function CoachingCallAttendanceLog() {
             </Button>
             <Button size="sm" variant="outline" onClick={() => exportCsv(selectedIds.length ? sortedRows.filter(r => selectedIds.includes(r.id)) : sortedRows)}>
               <Download className="h-4 w-4 mr-1" /> {selectedIds.length ? `Export ${selectedIds.length}` : 'Export all'}
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload className="h-4 w-4 mr-1" /> Import CSV
             </Button>
             <Button size="sm" variant="outline" onClick={handleScanFathom} disabled={scanning}>
               {scanning ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
@@ -951,6 +1099,84 @@ export function CoachingCallAttendanceLog() {
             <Button variant="ghost" onClick={() => setBulkOpen(false)}>Cancel</Button>
             <Button onClick={handleBulkUpdate} disabled={bulkSaving} className="bg-[#ffb500] text-[#290a52] hover:bg-[#e6a300]">
               {bulkSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null} Apply to {selectedIds.length}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={importOpen} onOpenChange={(o) => { setImportOpen(o); if (!o) { setImportPreview([]); setImportFileName('') } }}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Import attendance from CSV</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Columns: <span className="font-medium">email, session, coach, date (YYYY-MM-DD), status (attended/missed), duration, notes</span>. Email, session and date are required.
+            </p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Input type="file" accept=".csv,text/csv" className="h-9 max-w-xs" onChange={(e) => handleImportFile(e.target.files?.[0] ?? null)} />
+              <Button size="sm" variant="outline" onClick={downloadTemplate}>
+                <Download className="h-4 w-4 mr-1" /> Template
+              </Button>
+              {importFileName && <span className="text-xs text-muted-foreground">{importFileName}</span>}
+            </div>
+
+            {importPreview.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 text-sm">
+                  <Badge variant="outline" className="border-green-400 text-green-700">{importPreview.filter(p => !p.errors.length).length} valid</Badge>
+                  {importPreview.some(p => p.errors.length > 0) && (
+                    <Badge variant="outline" className="border-red-300 text-red-600">
+                      <AlertTriangle className="h-3 w-3 mr-1" />{importPreview.filter(p => p.errors.length).length} with errors (skipped)
+                    </Badge>
+                  )}
+                </div>
+                <ScrollArea className="h-[320px] w-full rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>#</TableHead>
+                        <TableHead>Member</TableHead>
+                        <TableHead>Session</TableHead>
+                        <TableHead>Coach</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Duration</TableHead>
+                        <TableHead>Issues</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {importPreview.map(p => (
+                        <TableRow key={p.line} className={p.errors.length ? 'bg-red-50/60' : ''}>
+                          <TableCell className="text-muted-foreground">{p.line}</TableCell>
+                          <TableCell>
+                            <div className="font-medium">{p.member_name}</div>
+                            <div className="text-xs text-muted-foreground">{p.email || '—'}</div>
+                          </TableCell>
+                          <TableCell>{p.session_title || '—'}</TableCell>
+                          <TableCell>{p.coach_name || '—'}</TableCell>
+                          <TableCell>{p.session_date || '—'}</TableCell>
+                          <TableCell>{p.attended ? 'Attended' : 'Missed'}</TableCell>
+                          <TableCell className="text-right tabular-nums">{p.duration != null ? `${p.duration}m` : '—'}</TableCell>
+                          <TableCell className="text-xs text-red-600">{p.errors.join('; ') || '—'}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setImportOpen(false)}>Cancel</Button>
+            <Button
+              onClick={handleImportSave}
+              disabled={importing || importPreview.filter(p => !p.errors.length).length === 0}
+              className="bg-[#ffb500] text-[#290a52] hover:bg-[#e6a300]"
+            >
+              {importing ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              Import {importPreview.filter(p => !p.errors.length).length} rows
             </Button>
           </DialogFooter>
         </DialogContent>
