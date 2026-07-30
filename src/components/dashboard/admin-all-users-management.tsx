@@ -1939,7 +1939,11 @@ export function AdminAllUsersManagement() {
                       </div>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      {editingFinanceUserId === user.user_id && editingFinanceField === 'contract_value' ? (
+                      {isPartnerSecondary ? (
+                        <span className="text-xs text-emerald-600 italic">
+                          {partnerPrimaryUser?.program_contract_value ? `$${Number(partnerPrimaryUser.program_contract_value).toLocaleString()} (shared)` : 'shared'}
+                        </span>
+                      ) : editingFinanceUserId === user.user_id && editingFinanceField === 'contract_value' ? (
                         <div className="flex items-center gap-1">
                           <Input value={editingFinanceValue} onChange={e => setEditingFinanceValue(e.target.value)} className="h-7 w-24 text-xs" onKeyDown={e => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>{savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
@@ -1952,7 +1956,11 @@ export function AdminAllUsersManagement() {
                       )}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      {editingFinanceUserId === user.user_id && editingFinanceField === 'cash_collected' ? (
+                      {isPartnerSecondary ? (
+                        <span className="text-xs text-emerald-600 italic">
+                          {partnerPrimaryUser?.program_cash_collected ? `$${Number(partnerPrimaryUser.program_cash_collected).toLocaleString()} (shared)` : 'shared'}
+                        </span>
+                      ) : editingFinanceUserId === user.user_id && editingFinanceField === 'cash_collected' ? (
                         <div className="flex items-center gap-1">
                           <Input value={editingFinanceValue} onChange={e => setEditingFinanceValue(e.target.value)} className="h-7 w-24 text-xs" onKeyDown={e => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>{savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
@@ -1965,10 +1973,13 @@ export function AdminAllUsersManagement() {
                       )}
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-xs">
-                      {user.program_contract_value && user.program_cash_collected
+                      {isPartnerSecondary
+                        ? <span className="text-emerald-600 italic">shared</span>
+                        : user.program_contract_value && user.program_cash_collected
                         ? `$${(Number(user.program_contract_value) - Number(user.program_cash_collected)).toLocaleString()}`
                         : '—'}
                     </TableCell>
+
                     <TableCell className="whitespace-nowrap text-xs">{user.program_name || '—'}</TableCell>
                     {/* Satisfaction Score */}
                     <TableCell>
