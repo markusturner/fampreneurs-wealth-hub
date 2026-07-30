@@ -144,13 +144,16 @@ export function AdminAnalyticsOverview() {
       // Program metrics from contract data
       const programProfiles = profiles?.filter(p => p.program_name) || []
       // Linked partners share one contract — count their money only once per partner group
-      const seenPartnerGroups = new Set<string>()
-      const financeProfiles = programProfiles.filter((p: any) => {
-        if (!p.partner_group_id) return true
-        if (seenPartnerGroups.has(p.partner_group_id)) return false
-        seenPartnerGroups.add(p.partner_group_id)
-        return true
-      })
+      const partnerGroupBest: Record<string, any> = {}
+      const financeProfiles: any[] = []
+      for (const p of programProfiles as any[]) {
+        if (!p.partner_group_id) { financeProfiles.push(p); continue }
+        const current = partnerGroupBest[p.partner_group_id]
+        if (!current || (Number(p.program_contract_value) || 0) > (Number(current.program_contract_value) || 0)) {
+          partnerGroupBest[p.partner_group_id] = p
+        }
+      }
+      financeProfiles.push(...Object.values(partnerGroupBest))
       const programContractValue = financeProfiles.reduce((sum, p) => sum + ((p as any).program_contract_value || 0), 0)
       const programCashCollected = financeProfiles.reduce((sum, p) => sum + ((p as any).program_cash_collected || 0), 0)
       const programRemaining = programContractValue - programCashCollected
