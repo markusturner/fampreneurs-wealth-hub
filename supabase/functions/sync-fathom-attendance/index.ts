@@ -103,7 +103,6 @@ Deno.serve(async (req) => {
     let pages = 0
     do {
       const url = new URL('https://api.fathom.ai/external/v1/meetings')
-      url.searchParams.set('created_after', since)
       url.searchParams.set('calendar_invitees_domains_type', 'all')
       url.searchParams.set('limit', '100')
       if (cursor) url.searchParams.set('cursor', cursor)
@@ -121,7 +120,8 @@ Deno.serve(async (req) => {
           { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         )
       }
-      for (const m of json.items ?? []) {
+      const pageItems = json.items ?? json.meetings ?? json.data ?? []
+      for (const m of pageItems) {
         totalFetched++
         const title = `${m.meeting_title ?? ''} ${m.title ?? ''}`.trim()
         const inviteeArr = Array.isArray(m.calendar_invitees) ? m.calendar_invitees : []
@@ -138,6 +138,7 @@ Deno.serve(async (req) => {
         }
         const start = m.recording_start_time ?? m.scheduled_start_time ?? m.created_at
         const end = m.recording_end_time ?? m.scheduled_end_time
+        if (start && new Date(start).getTime() < new Date(since).getTime()) continue
         const durationMinutes = start && end ? Math.max(1, Math.round((new Date(end).getTime() - new Date(start).getTime()) / 60000)) : null
         if (!isAccountabilityCall(title, transcriptText)) {
           if (skippedTitles.length < 25) skippedTitles.push(title || '(untitled)')
