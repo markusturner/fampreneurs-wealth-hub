@@ -353,9 +353,15 @@ export function CoachingCallAttendanceLog() {
               <SelectContent>
                 <SelectItem value="all">All sources</SelectItem>
                 <SelectItem value="auto">Automated</SelectItem>
+                <SelectItem value="fathom">Fathom</SelectItem>
                 <SelectItem value="manual">Manual</SelectItem>
               </SelectContent>
             </Select>
+            <Button size="sm" variant="outline" onClick={handleScanFathom} disabled={scanning}>
+              {scanning ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+              Scan Fathom
+            </Button>
+
             <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm() }}>
               <DialogTrigger asChild>
                 <Button size="sm" className="bg-[#290a52] text-white hover:bg-[#1d0639]">
