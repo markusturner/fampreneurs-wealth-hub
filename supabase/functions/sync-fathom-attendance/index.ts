@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
       }
       cursor = json.next_cursor ?? undefined
       pages++
-    } while (cursor && pages < 10)
+    } while (cursor && pages < 40 && Date.now() < deadline)
 
     // 2) Load members
     const { data: profiles } = await supabase
