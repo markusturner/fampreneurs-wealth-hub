@@ -92,8 +92,7 @@ Deno.serve(async (req) => {
       const url = new URL('https://api.fathom.ai/external/v1/meetings')
       url.searchParams.set('created_after', since)
       url.searchParams.set('calendar_invitees_domains_type', 'all')
-      url.searchParams.set('include_transcript', 'true')
-      url.searchParams.set('limit', '50')
+      url.searchParams.set('limit', '100')
       if (cursor) url.searchParams.set('cursor', cursor)
       const json = await fathomJson(url, key)
       if (!json) break
