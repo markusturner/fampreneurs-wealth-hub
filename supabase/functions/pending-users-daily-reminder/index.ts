@@ -25,11 +25,12 @@ Deno.serve(async (req) => {
 
     if (error) throw error;
 
-    const todayStart = new Date(new Date().toISOString().slice(0, 10) + "T00:00:00.000Z").toISOString();
+    // Weekly cadence: skip anyone reminded in the last 7 days
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const { data: alreadySent } = await supabase
       .from("pending_user_reminder_log")
       .select("user_id")
-      .gte("sent_at", todayStart);
+      .gte("sent_at", weekAgo);
     const sentToday = new Set((alreadySent || []).map((r: any) => r.user_id));
 
     const results: any[] = [];
@@ -40,7 +41,16 @@ Deno.serve(async (req) => {
       const html = `<!doctype html><html><body style="font-family:Inter,Arial,sans-serif;background:#f6f3ec;padding:24px;color:#290a52;">
   <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;padding:32px;">
     <h1 style="color:#290a52;margin:0 0 12px;font-size:22px;">Hi ${name}, finish setting up your TruHeirs account 👋</h1>
-    <p style="font-size:15px;line-height:1.5;">We noticed you haven't finished your profile yet. It only takes a few minutes and unlocks everything inside TruHeirs.</p>
+    <p style="font-size:15px;line-height:1.5;">You have not joined the TruHeirs community yet. It only takes a few minutes, and you get access to your courses, coaching calls, and the member community.</p>
+    <div style="background:#f6f3ec;border-radius:12px;padding:16px;margin:20px 0;">
+      <p style="margin:0 0 8px;font-weight:700;font-size:14px;">How to sign in</p>
+      <ol style="margin:0;padding-left:18px;font-size:14px;line-height:1.6;">
+        <li>Go to <a href="https://truheirs.app/auth" style="color:#2eb2ff;">truheirs.app/auth</a></li>
+        <li>Use this email as your username: <strong>${u.email}</strong></li>
+        <li>Enter the temporary password we sent you. Lost it? Click "Forgot password" to make a new one.</li>
+        <li>Finish the short setup steps to join your community.</li>
+      </ol>
+    </div>
     <p style="text-align:center;margin:28px 0;">
       <a href="https://truheirs.app/auth" style="background:#ffb500;color:#290a52;text-decoration:none;font-weight:700;padding:14px 28px;border-radius:999px;display:inline-block;">Finish My Setup</a>
     </p>
@@ -53,7 +63,7 @@ Deno.serve(async (req) => {
         await resend.emails.send({
           from: "TruHeirs <hello@truheirs.app>",
           to: [u.email],
-          subject: "Finish setting up your TruHeirs account",
+          subject: "Reminder: join the TruHeirs community",
           html,
         });
         await supabase.from("pending_user_reminder_log").insert({

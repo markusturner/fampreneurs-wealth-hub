@@ -166,7 +166,7 @@ export default function Surveys() {
   return (
     <div className="container mx-auto max-w-5xl py-4 md:py-8 px-3 sm:px-4 space-y-6 pb-20 md:pb-8">
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/profile-settings')}>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/welcome')}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="min-w-0">
