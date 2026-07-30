@@ -531,10 +531,11 @@ export function CoachingCallAttendanceLog() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={r.source === 'manual' ? 'border-[#ffb500] text-[#290a52]' : 'text-muted-foreground'}>
-                        {r.source === 'manual' ? 'Manual' : 'Auto'}
+                      <Badge variant="outline" className={r.source === 'manual' ? 'border-[#ffb500] text-[#290a52]' : r.source === 'fathom' ? 'border-[#2eb2ff] text-[#0b6ea8]' : 'text-muted-foreground'}>
+                        {r.source === 'manual' ? 'Manual' : r.source === 'fathom' ? 'Fathom' : 'Auto'}
                       </Badge>
                     </TableCell>
+
                     <TableCell className="text-right tabular-nums">
                       {r.attendance_duration_minutes != null ? `${r.attendance_duration_minutes}m` : '—'}
                     </TableCell>
