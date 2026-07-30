@@ -244,13 +244,14 @@ async function hydrateFathomMeetings(meetings: FathomMeeting[]): Promise<{ meeti
   if (!key || meetings.length === 0) return { meetings, complete: true, rateLimited: false }
   // Cap work per client: only hydrate the most recent meetings, in small
   // batches. Hydrating everything at once blows the worker memory/CPU limit.
-  const MAX_HYDRATE = 12
+  const MAX_HYDRATE = 6
   const BATCH = 3
   const target = [...meetings]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, MAX_HYDRATE)
   const detailed: { meeting: FathomMeeting; complete: boolean; rateLimited: boolean }[] = []
   for (let i = 0; i < target.length; i += BATCH) {
+    if (outOfTime()) break
     const chunk = await Promise.all(target.slice(i, i + BATCH).map((m) => {
     if (!m.id) return Promise.resolve({ meeting: m, complete: true, rateLimited: false })
     const cached = _fathomDetailsCache.get(m.id)
