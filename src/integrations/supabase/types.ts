@@ -5183,6 +5183,154 @@ export type Database = {
         }
         Relationships: []
       }
+      survey_answers: {
+        Row: {
+          answer_number: number | null
+          answer_text: string | null
+          created_at: string
+          id: string
+          question_id: string
+          submission_id: string
+        }
+        Insert: {
+          answer_number?: number | null
+          answer_text?: string | null
+          created_at?: string
+          id?: string
+          question_id: string
+          submission_id: string
+        }
+        Update: {
+          answer_number?: number | null
+          answer_text?: string | null
+          created_at?: string
+          id?: string
+          question_id?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "survey_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_answers_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "survey_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      survey_questions: {
+        Row: {
+          created_at: string
+          id: string
+          options: Json
+          position: number
+          question_text: string
+          question_type: string
+          required: boolean
+          section: string | null
+          survey_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          options?: Json
+          position?: number
+          question_text: string
+          question_type?: string
+          required?: boolean
+          section?: string | null
+          survey_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          options?: Json
+          position?: number
+          question_text?: string
+          question_type?: string
+          required?: boolean
+          section?: string | null
+          survey_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_questions_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      survey_submissions: {
+        Row: {
+          id: string
+          submitted_at: string
+          survey_id: string
+          user_id: string
+          week_of: string
+        }
+        Insert: {
+          id?: string
+          submitted_at?: string
+          survey_id: string
+          user_id: string
+          week_of?: string
+        }
+        Update: {
+          id?: string
+          submitted_at?: string
+          survey_id?: string
+          user_id?: string
+          week_of?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_submissions_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surveys: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_weekly: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_weekly?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_weekly?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       transaction_categories: {
         Row: {
           category_type: string

@@ -94,3 +94,9 @@ verify_jwt = true
 
 [functions.generate-family-protection-plan]
 verify_jwt = true
+
+[functions.send-weekly-survey]
+verify_jwt = false
+
+[functions.analyze-survey-results]
+verify_jwt = true

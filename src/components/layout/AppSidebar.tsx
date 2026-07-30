@@ -10,8 +10,7 @@ import {
   BookOpen,
   Calendar,
   ChevronDown,
-  ClipboardList,
-  FileText,
+  ClipboardList, FileText,
   HeartPulse,
   Home,
   LayoutDashboard,
@@ -322,6 +321,9 @@ export function AppSidebar({ className }: { className?: string }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/client-retention?tab=attendance")}>
                   <ClipboardList className="h-4 w-4 mr-2" /> Attendance Log
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/surveys")}>
+                  <FileText className="h-4 w-4 mr-2" /> Surveys
                 </DropdownMenuItem>
               </>
             )}

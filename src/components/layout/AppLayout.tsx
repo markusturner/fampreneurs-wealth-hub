@@ -11,6 +11,7 @@ import { LockedPageOverlay } from "@/components/dashboard/LockedPageOverlay"
 import { Loader2 } from "lucide-react"
 import { NotificationBell } from "@/components/dashboard/notification-bell"
 import { FamilyToggleBar } from "./FamilyToggleBar"
+import { WeeklySurveyPopup } from "@/components/surveys/WeeklySurveyPopup"
 
 const FAMILY_TOGGLE_ROUTES = ['/digital-family-office', '/family-constitution', '/calendar', '/members']
 
@@ -176,6 +177,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           )}
         </main>
       </div>
+      <WeeklySurveyPopup />
     </div>
   )
 }

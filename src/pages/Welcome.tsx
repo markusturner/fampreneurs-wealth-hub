@@ -6,7 +6,7 @@ import { useUserRole } from '@/hooks/useUserRole'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
 import { NotificationBell } from '@/components/dashboard/notification-bell'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Loader2, ChevronDown, User, Shield, HeartPulse, ClipboardList, LogOut, Video, Search, Sparkles, Send } from 'lucide-react'
+import { Loader2, ChevronDown, User, Shield, HeartPulse, ClipboardList, FileText, LogOut, Video, Search, Sparkles, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { TutorialVideoModal } from '@/components/dashboard/tutorial-video-modal'
 import { useTutorialVideo } from '@/hooks/useTutorialVideo'
@@ -221,6 +221,9 @@ export default function Welcome() {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/client-retention?tab=attendance')}>
                   <ClipboardList className="h-4 w-4 mr-2" /> Attendance Log
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/surveys')}>
+                  <FileText className="h-4 w-4 mr-2" /> Surveys
                 </DropdownMenuItem>
               </>
             )}
