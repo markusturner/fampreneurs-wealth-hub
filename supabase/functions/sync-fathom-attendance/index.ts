@@ -148,6 +148,25 @@ Deno.serve(async (req) => {
       if (full) byName.set(full, p)
     }
 
+    // 2b) Coaches / admins are excluded from attendance — only clients get logged
+    const { data: coachRows } = await supabase.from('coaches').select('full_name, email')
+    const { data: staffRoles } = await supabase.from('user_roles').select('user_id').in('role', ['admin', 'owner'])
+    const coachEmails = new Set<string>()
+    const coachNames = new Set<string>()
+    const staffUserIds = new Set<string>((staffRoles ?? []).map((r: any) => r.user_id))
+    for (const c of coachRows ?? []) {
+      if (c.email) coachEmails.add(String(c.email).toLowerCase())
+      if (c.full_name) coachNames.add(String(c.full_name).trim().toLowerCase())
+      const p = c.email ? byEmail.get(String(c.email).toLowerCase()) : null
+      if (p) staffUserIds.add(p.user_id)
+      const pn = c.full_name ? byName.get(String(c.full_name).trim().toLowerCase()) : null
+      if (pn) staffUserIds.add(pn.user_id)
+    }
+    const isStaff = (userId: string, email?: string, name?: string) =>
+      staffUserIds.has(userId) ||
+      (email ? coachEmails.has(email.toLowerCase()) : false) ||
+      (name ? coachNames.has(name.trim().toLowerCase()) : false)
+
     // 3) Build attendance rows
     const rows: any[] = []
     const seen = new Set<string>()
