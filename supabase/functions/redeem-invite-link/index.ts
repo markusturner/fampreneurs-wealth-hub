@@ -173,7 +173,7 @@ serve(async (req) => {
         program_name: invite.program_name || null,
         truheirs_access: invite.truheirs_access,
       } as any)
-      .eq("id", userId);
+      .eq("user_id", userId);
 
     // Payment plan
     if (invite.plan_type !== "free" && invite.total_amount) {
@@ -185,7 +185,7 @@ serve(async (req) => {
           program_contract_value: total,
           program_cash_collected: cashCollected,
         } as any)
-        .eq("id", userId);
+        .eq("user_id", userId);
 
       await admin.from("user_payment_plans" as any).insert({
         user_id: userId,

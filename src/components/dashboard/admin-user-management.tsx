@@ -117,7 +117,7 @@ export function AdminUserManagement() {
               program_contract_value: total,
               program_cash_collected: cashCollected,
             } as any)
-            .eq('id', userId)
+            .eq('user_id', userId)
 
           await supabase
             .from('user_payment_plans' as any)
