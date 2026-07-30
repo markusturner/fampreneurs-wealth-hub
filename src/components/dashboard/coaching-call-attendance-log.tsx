@@ -258,6 +258,62 @@ export function CoachingCallAttendanceLog() {
     setRows(prev => prev.filter(r => r.id !== id))
   }
 
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return
+    if (!window.confirm(`Delete ${selectedIds.length} selected log${selectedIds.length === 1 ? '' : 's'}?`)) return
+    setBulkDeleting(true)
+    try {
+      const { error } = await supabase.from('session_attendance').delete().in('id', selectedIds)
+      if (error) throw error
+      setRows(prev => prev.filter(r => !selectedIds.includes(r.id)))
+      toast.success(`Deleted ${selectedIds.length} logs`)
+      setSelectedIds([])
+    } catch (e: any) {
+      toast.error('Delete failed: ' + (e?.message ?? e))
+    } finally {
+      setBulkDeleting(false)
+    }
+  }
+
+  const openBulkEdit = () => {
+    setBTitle(''); setBCoach(''); setBDate(''); setBStatus('keep'); setBDuration('')
+    setBulkOpen(true)
+  }
+
+  const handleBulkUpdate = async () => {
+    if (selectedIds.length === 0) return
+    const patch: any = {}
+    if (bTitle.trim()) {
+      patch.manual_session_title = bTitle.trim()
+      patch.session_type = bTitle.toLowerCase().includes('1-1') ? 'individual' : 'group'
+    }
+    if (bCoach.trim()) patch.manual_coach_name = bCoach.trim()
+    if (bDate) patch.manual_session_date = bDate
+    if (bStatus !== 'keep') patch.attended = bStatus === 'attended'
+    if (bDuration) patch.attendance_duration_minutes = Number(bDuration)
+    if (Object.keys(patch).length === 0) { toast.error('Change at least one field'); return }
+    setBulkSaving(true)
+    try {
+      const { error } = await supabase.from('session_attendance').update(patch).in('id', selectedIds)
+      if (error) throw error
+      setRows(prev => prev.map(r => selectedIds.includes(r.id) ? {
+        ...r,
+        session_title: patch.manual_session_title ?? r.session_title,
+        coach_name: patch.manual_coach_name ?? r.coach_name,
+        session_date: patch.manual_session_date ?? r.session_date,
+        attended: patch.attended !== undefined ? patch.attended : r.attended,
+        attendance_duration_minutes: patch.attendance_duration_minutes ?? r.attendance_duration_minutes,
+      } : r))
+      toast.success(`Updated ${selectedIds.length} logs`)
+      setBulkOpen(false)
+      setSelectedIds([])
+    } catch (e: any) {
+      toast.error('Could not update: ' + (e?.message ?? e))
+    } finally {
+      setBulkSaving(false)
+    }
+  }
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     return rows.filter(r => {
