@@ -139,7 +139,7 @@ export function CoachingCallAttendanceLog() {
       const rows = fUserIds.map(uid => ({
         user_id: uid,
         session_id: null,
-        session_type: 'manual',
+        session_type: fTitle.toLowerCase().includes('1-1') ? 'individual' : 'group',
         attended: fAttended,
         attendance_duration_minutes: fDuration ? Number(fDuration) : null,
         manual_session_title: fTitle.trim(),
