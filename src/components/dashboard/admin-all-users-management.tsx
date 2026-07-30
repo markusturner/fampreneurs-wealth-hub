@@ -107,6 +107,8 @@ export function AdminAllUsersManagement() {
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
   const [resendingCredentialsId, setResendingCredentialsId] = useState<string | null>(null)
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
+  const [linkingPartners, setLinkingPartners] = useState(false)
+
   const [bulkResending, setBulkResending] = useState(false)
   const [bulkDeleting, setBulkDeleting] = useState(false)
   const [sortColumn, setSortColumn] = useState<string | null>(null)
