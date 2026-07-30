@@ -1849,12 +1849,20 @@ export function AdminAllUsersManagement() {
                       return t ? (t.display_name || `${t.first_name || ''} ${t.last_name || ''}`.trim()) : null
                     })()
                   : null
+                const isPartner = !!(user as any).partner_group_id
+                const isPartnerSecondary = isPartner && !(user as any).is_partner_primary
+                const partnerNames = isPartner
+                  ? users
+                      .filter((u: any) => u.partner_group_id === (user as any).partner_group_id && u.user_id !== user.user_id)
+                      .map((u: any) => u.display_name || `${u.first_name || ''} ${u.last_name || ''}`.trim())
+                      .filter(Boolean)
+                  : []
                 return (
-                  <TableRow key={user.user_id} className={isFamilyMember && hasTrustee ? 'border-l-2 border-l-secondary/60' : ''}>
-                    <TableCell className={`w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : 'bg-background'}`}>
+                  <TableRow key={user.user_id} className={isFamilyMember && hasTrustee ? 'border-l-2 border-l-secondary/60' : isPartner ? 'border-l-2 border-l-emerald-500' : ''}>
+                    <TableCell className={`w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : isPartner ? 'bg-emerald-50' : 'bg-background'}`}>
                       <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
                     </TableCell>
-                    <TableCell className={`font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : 'bg-background'}`}>
+                    <TableCell className={`font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : isPartner ? 'bg-emerald-50' : 'bg-background'}`}>
                       <div className={isFamilyMember && hasTrustee ? 'pl-5 flex items-center gap-2' : ''}>
                         {isFamilyMember && hasTrustee && (
                           <span className="text-secondary text-sm font-medium">↳</span>
@@ -1864,21 +1872,30 @@ export function AdminAllUsersManagement() {
                           {trusteeName && (
                             <p className={`text-[10px] leading-tight italic ${isFamilyMember && hasTrustee ? 'text-sidebar-foreground/70' : 'text-muted-foreground'}`}>under {trusteeName}</p>
                           )}
+                          {isPartner && partnerNames.length > 0 && (
+                            <p className="text-[10px] leading-tight italic text-emerald-600">partner of {partnerNames.join(', ')}</p>
+                          )}
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className={`min-w-[280px] sticky left-[200px] z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : 'bg-background'}`}>
+                    <TableCell className={`min-w-[280px] sticky left-[200px] z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : isPartner ? 'bg-emerald-50' : 'bg-background'}`}>
                       {renderContractTimeline(user)}
                     </TableCell>
                     <TableCell className="min-w-[120px]">
-                      <Badge variant="outline" className="text-xs" style={{ 
-                        backgroundColor: user.membership_type === 'family_member' ? '#ffb500' : user.is_admin ? '#ef4444' : '#2eb2ff',
-                        color: '#1a1a2e', 
-                        borderColor: user.membership_type === 'family_member' ? '#ffb500' : user.is_admin ? '#ef4444' : '#2eb2ff'
-                      }}>
-                        {user.is_admin ? 'Admin' : user.membership_type === 'family_member' ? 'Family Member' : 'Trustee'}
-                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <Badge variant="outline" className="text-xs" style={{ 
+                          backgroundColor: user.membership_type === 'family_member' ? '#ffb500' : user.is_admin ? '#ef4444' : '#2eb2ff',
+                          color: '#1a1a2e', 
+                          borderColor: user.membership_type === 'family_member' ? '#ffb500' : user.is_admin ? '#ef4444' : '#2eb2ff'
+                        }}>
+                          {user.is_admin ? 'Admin' : user.membership_type === 'family_member' ? 'Family Member' : 'Trustee'}
+                        </Badge>
+                        {isPartner && (
+                          <Badge variant="outline" className="text-xs bg-emerald-500 text-white border-emerald-500">Partner</Badge>
+                        )}
+                      </div>
                     </TableCell>
+
                     <TableCell className="whitespace-nowrap">
                       {editingPhoneUserId === user.user_id ? (
                         <div className="flex items-center gap-1">
