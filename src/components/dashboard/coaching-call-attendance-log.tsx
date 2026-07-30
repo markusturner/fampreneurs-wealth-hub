@@ -36,6 +36,42 @@ interface AttendanceRow {
 
 interface MemberOption { user_id: string; name: string; email: string }
 
+interface ImportRow {
+  line: number
+  email: string
+  user_id: string | null
+  member_name: string
+  session_title: string
+  coach_name: string
+  session_date: string
+  attended: boolean
+  duration: number | null
+  notes: string
+  errors: string[]
+}
+
+const IMPORT_HEADERS = ['email', 'session', 'coach', 'date', 'status', 'duration', 'notes']
+
+function parseCsvText(text: string): string[][] {
+  const rows: string[][] = []
+  let row: string[] = []
+  let field = ''
+  let quoted = false
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i]
+    if (quoted) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++ } else quoted = false
+      } else field += c
+    } else if (c === '"') quoted = true
+    else if (c === ',') { row.push(field); field = '' }
+    else if (c === '\n') { row.push(field); rows.push(row); row = []; field = '' }
+    else if (c !== '\r') field += c
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row) }
+  return rows.filter(r => r.some(v => v.trim() !== ''))
+}
+
 export function CoachingCallAttendanceLog() {
   const { user } = useAuth()
   const [rows, setRows] = useState<AttendanceRow[]>([])
