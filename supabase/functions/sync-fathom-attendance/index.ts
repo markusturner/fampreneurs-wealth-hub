@@ -77,8 +77,9 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json().catch(() => ({}))
-    const days = Math.min(Math.max(Number(body?.days ?? 90), 1), 365)
+    const days = Math.min(Math.max(Number(body?.days ?? 365), 1), 365)
     const since = new Date(Date.now() - days * 86400000).toISOString()
+    const deadline = Date.now() + 110000
 
     // 1) Pull meetings
     const meetings: Meeting[] = []
@@ -124,7 +125,7 @@ Deno.serve(async (req) => {
       }
       cursor = json.next_cursor ?? undefined
       pages++
-    } while (cursor && pages < 10)
+    } while (cursor && pages < 40 && Date.now() < deadline)
 
     // 2) Load members
     const { data: profiles } = await supabase
