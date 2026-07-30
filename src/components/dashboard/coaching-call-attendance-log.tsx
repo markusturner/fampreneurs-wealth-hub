@@ -955,7 +955,27 @@ export function CoachingCallAttendanceLog() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={confirmBulkDelete} onOpenChange={setConfirmBulkDelete}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{view === 'deleted' ? 'Permanently delete logs?' : 'Delete selected logs?'}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {view === 'deleted'
+              ? `This will permanently remove ${selectedIds.length} log${selectedIds.length === 1 ? '' : 's'}. This cannot be undone.`
+              : `${selectedIds.length} log${selectedIds.length === 1 ? '' : 's'} will move to Deleted. You can restore them later.`}
+          </p>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setConfirmBulkDelete(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleBulkDelete} disabled={bulkDeleting}>
+              {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null} Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
+
 
   )
 }
