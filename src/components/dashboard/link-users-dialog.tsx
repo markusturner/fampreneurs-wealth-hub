@@ -86,12 +86,31 @@ export function LinkUsersDialog({ open, onOpenChange, userId, userName, onSaved 
     if (!userId) return
     setSaving(true)
     try {
+      // Shared partner group so linked users sit together with a Partner badge
+      const { data: existingGroupRow } = await supabase
+        .from('profiles')
+        .select('partner_group_id')
+        .in('user_id', [userId, ...linkedIds])
+        .not('partner_group_id', 'is', null)
+        .limit(1)
+        .maybeSingle()
+      const groupId = linkedIds.length > 0
+        ? ((existingGroupRow as any)?.partner_group_id || crypto.randomUUID())
+        : null
+
       // 1) Write canonical list on me
       const { error: e1 } = await supabase
         .from('profiles')
-        .update({ linked_user_ids: linkedIds } as any)
+        .update({ linked_user_ids: linkedIds, partner_group_id: groupId } as any)
         .eq('user_id', userId)
       if (e1) throw e1
+
+      if (linkedIds.length > 0) {
+        await supabase
+          .from('profiles')
+          .update({ partner_group_id: groupId } as any)
+          .in('user_id', linkedIds)
+      }
 
       // 2) Mirror on every linked user (add me)
       for (const other of linkedIds) {
