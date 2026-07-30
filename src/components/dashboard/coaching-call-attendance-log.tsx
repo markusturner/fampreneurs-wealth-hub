@@ -660,6 +660,7 @@ export function CoachingCallAttendanceLog() {
             </Table>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
+          </>
         )}
       </CardContent>
 
