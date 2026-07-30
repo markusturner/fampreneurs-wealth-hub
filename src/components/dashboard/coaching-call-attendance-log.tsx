@@ -107,7 +107,8 @@ export function CoachingCallAttendanceLog() {
   const loadMembers = async () => {
     const { data } = await supabase
       .from('profiles')
-      .select('user_id, email, first_name, last_name, display_name')
+      .select('user_id, email, first_name, last_name, display_name, program_name')
+      .ilike('program_name', '%Accelerator%')
       .order('first_name', { ascending: true })
       .limit(2000)
     setMembers(
