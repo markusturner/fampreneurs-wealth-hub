@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS skip_onboarding boolean NOT NULL DEFAULT false;
