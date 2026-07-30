@@ -69,6 +69,20 @@ export function CoachingCallAttendanceLog() {
   const [eNotes, setENotes] = useState('')
   const [scanning, setScanning] = useState(false)
 
+  // bulk selection state
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [bulkOpen, setBulkOpen] = useState(false)
+  const [bulkSaving, setBulkSaving] = useState(false)
+  const [bulkDeleting, setBulkDeleting] = useState(false)
+  const [bTitle, setBTitle] = useState('')
+  const [bCoach, setBCoach] = useState('')
+  const [bDate, setBDate] = useState('')
+  const [bStatus, setBStatus] = useState<'keep' | 'attended' | 'missed'>('keep')
+  const [bDuration, setBDuration] = useState('')
+
+  const toggleSelect = (id: string) =>
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+
   const openEdit = (r: AttendanceRow) => {
     setEditRow(r)
     setETitle(r.session_title ?? '')
