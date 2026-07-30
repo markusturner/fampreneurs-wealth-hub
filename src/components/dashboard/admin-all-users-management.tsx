@@ -747,6 +747,47 @@ export function AdminAllUsersManagement() {
     }
   }
 
+  // Link selected users as partners (shared contract value / cash collected)
+  const handleLinkPartners = async () => {
+    const ids = Array.from(selectedUserIds)
+    if (ids.length < 2) {
+      toast({ title: 'Select at least 2 users', description: 'Pick the partners you want to link together.', variant: 'destructive' })
+      return
+    }
+    setLinkingPartners(true)
+    try {
+      const existing = users.find((u: any) => ids.includes(u.user_id) && (u as any).partner_group_id) as any
+      const groupId = existing?.partner_group_id || crypto.randomUUID()
+      const { error } = await supabase.from('profiles').update({ partner_group_id: groupId } as any).in('user_id', ids)
+      if (error) throw error
+      toast({ title: 'Partners linked', description: `${ids.length} users now share one contract value and cash collected.` })
+      setSelectedUserIds(new Set())
+      await fetchUsers()
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message || 'Failed to link partners', variant: 'destructive' })
+    } finally {
+      setLinkingPartners(false)
+    }
+  }
+
+  const handleUnlinkPartners = async () => {
+    const ids = Array.from(selectedUserIds)
+    if (ids.length === 0) return
+    setLinkingPartners(true)
+    try {
+      const { error } = await supabase.from('profiles').update({ partner_group_id: null } as any).in('user_id', ids)
+      if (error) throw error
+      toast({ title: 'Partners unlinked' })
+      setSelectedUserIds(new Set())
+      await fetchUsers()
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message || 'Failed to unlink', variant: 'destructive' })
+    } finally {
+      setLinkingPartners(false)
+    }
+  }
+
+
   const handleBulkResendCredentials = async () => {
     if (selectedUserIds.size === 0) return
     setBulkResending(true)
