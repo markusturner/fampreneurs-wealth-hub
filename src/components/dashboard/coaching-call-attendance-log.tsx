@@ -606,6 +606,16 @@ export function CoachingCallAttendanceLog() {
     return sorted
   }, [filtered, sortKey, sortDirection])
 
+  const PAGE_SIZE = 5
+  const [page, setPage] = useState(1)
+  const totalPages = Math.max(1, Math.ceil(sortedRows.length / PAGE_SIZE))
+  useEffect(() => { setPage(1) }, [search, filterSource, view, filterStatus, filterType, filterCoach, filterFrom, filterTo, filterMinDuration, sortKey, sortDirection])
+  useEffect(() => { if (page > totalPages) setPage(totalPages) }, [page, totalPages])
+  const pagedRows = useMemo(
+    () => sortedRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [sortedRows, page]
+  )
+
   const stats = useMemo(() => {
     const active = rows.filter(r => !r.deleted_at)
     const attended = active.filter(r => r.attended).length
@@ -898,8 +908,8 @@ export function CoachingCallAttendanceLog() {
                 <TableRow>
                   <TableHead className="w-10">
                     <Checkbox
-                      checked={sortedRows.length > 0 && sortedRows.every(r => selectedIds.includes(r.id))}
-                      onCheckedChange={(v) => setSelectedIds(v ? sortedRows.map(r => r.id) : [])}
+                      checked={pagedRows.length > 0 && pagedRows.every(r => selectedIds.includes(r.id))}
+                      onCheckedChange={(v) => setSelectedIds(v ? pagedRows.map(r => r.id) : [])}
                       aria-label="Select all"
                     />
                   </TableHead>
@@ -926,7 +936,7 @@ export function CoachingCallAttendanceLog() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedRows.map(r => (
+                {pagedRows.map(r => (
                   <TableRow key={r.id} data-state={selectedIds.includes(r.id) ? 'selected' : undefined}>
                     <TableCell>
                       <Checkbox
@@ -987,6 +997,18 @@ export function CoachingCallAttendanceLog() {
             </Table>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
+          <div className="flex items-center justify-between pt-3">
+            <div className="text-xs text-muted-foreground">
+              {sortedRows.length === 0
+                ? 'No logs'
+                : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, sortedRows.length)} of ${sortedRows.length}`}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Previous</Button>
+              <span className="text-xs text-muted-foreground">Page {page} of {totalPages}</span>
+              <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Next</Button>
+            </div>
+          </div>
           </>
         )}
       </CardContent>
