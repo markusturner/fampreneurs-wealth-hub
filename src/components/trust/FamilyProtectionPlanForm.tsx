@@ -49,6 +49,11 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
     top_goals: "",
     family_mission: "",
     assets: [] as string[],
+    asset_purposes: "",
+    foreign_assets: "no",
+    foreign_assets_detail: "",
+    has_heirs: "yes",
+    heirs_alternative_notes: "",
     trustee_name: "",
     successor_trustee: "",
     trust_protector: "",
@@ -267,7 +272,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
           <Input type="number" min="0" value={form.kids_count} onChange={e => update("kids_count", e.target.value)} placeholder="0" />
         </div>
         <div className="space-y-2">
-          <Label>6. How risky is your situation right now?</Label>
+          <Label>6. How risky does your situation feel to you right now? (We will tell you your real risk level in your plan.)</Label>
           <RadioGroup value={form.exposure_level} onValueChange={v => update("exposure_level", v)} className="flex gap-4">
             {["low","medium","high"].map(o => (
               <div key={o} className="flex items-center gap-2"><RadioGroupItem value={o} id={`e-${o}`} /><Label htmlFor={`e-${o}`} className="capitalize">{o}</Label></div>
@@ -336,7 +341,39 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>14. Do you already know who should hold each trust position (Trustee, Successor Trustee, Trust Protector)?</Label>
+        <Label>14. For each item you checked, what is its purpose? Will it stay the same or change over time?</Label>
+        <p className="text-xs text-muted-foreground">
+          This helps us pick the right trust for each asset. Example: your personal home usually never changes, so it fits well inside an irrevocable trust. A short-term rental or a property you may sell, refinance, or move soon may fit better in a revocable trust.
+        </p>
+        <Textarea value={form.asset_purposes} onChange={e => update("asset_purposes", e.target.value)} rows={4} placeholder="Home — we live here forever, never selling&#10;Airbnb condo — may sell in 2 years&#10;LLC — growing, may add partners" />
+      </div>
+
+      <div className="space-y-2">
+        <Label>15. Do you own any assets outside of the United States?</Label>
+        <RadioGroup value={form.foreign_assets} onValueChange={v => update("foreign_assets", v)} className="flex flex-wrap gap-4">
+          {[["yes","Yes"],["no","No"],["unsure","Not sure"]].map(([v,l]) => (
+            <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`fa-${v}`} /><Label htmlFor={`fa-${v}`}>{l}</Label></div>
+          ))}
+        </RadioGroup>
+        {form.foreign_assets !== "no" && (
+          <Textarea value={form.foreign_assets_detail} onChange={e => update("foreign_assets_detail", e.target.value)} rows={2} placeholder="Land in Ghana, bank account in Mexico, condo in Portugal..." />
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label>16. Do you have family or someone you plan to pass your wealth down to?</Label>
+        <RadioGroup value={form.has_heirs} onValueChange={v => update("has_heirs", v)} className="flex flex-wrap gap-4">
+          {[["yes","Yes"],["unsure","I am not sure"],["no","No, I do not have anyone"]].map(([v,l]) => (
+            <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`hh-${v}`} /><Label htmlFor={`hh-${v}`}>{l}</Label></div>
+          ))}
+        </RadioGroup>
+        {form.has_heirs !== "yes" && (
+          <Textarea value={form.heirs_alternative_notes} onChange={e => update("heirs_alternative_notes", e.target.value)} rows={2} placeholder="Causes, churches, charities, close friends, or missions you care about..." />
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label>17. Do you already know who should hold each trust position (Trustee, Successor Trustee, Trust Protector)?</Label>
         <RadioGroup value={form.knows_roles} onValueChange={v => update("knows_roles", v)} className="flex flex-wrap gap-4">
           {[["yes","Yes, I know"],["some","I know some"],["no","No, please help me pick"]].map(([v,l]) => (
             <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`kr-${v}`} /><Label htmlFor={`kr-${v}`}>{l}</Label></div>
@@ -346,9 +383,10 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>15. List the people you trust most. Be very descriptive. Add their full name, how they are related to you, and one strength (money smart, level-headed, organized, etc.)</Label>
+        <Label>18. List the people you trust most. Be very descriptive. Add their full name, how they are related to you, and one strength (money smart, level-headed, organized, etc.)</Label>
         <Textarea value={form.trusted_people} onChange={e => update("trusted_people", e.target.value)} rows={3} placeholder="Maria Doe — sister — great with money&#10;John Smith — best friend — very fair and calm&#10;Pastor Ray — mentor — trusted, no money ties to us" />
       </div>
+
 
       {form.knows_roles !== "no" && (
         <div className="grid gap-4 sm:grid-cols-2">
@@ -369,23 +407,24 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
 
 
       <div className="space-y-2">
-        <Label>16. Does your trust own anything that grows money (business, rentals, investments, cash-value life insurance)?</Label>
+        <Label>19. Will the trust you are creating hold anything that grows money (business, rentals, investments, cash-value life insurance)?</Label>
         <RadioGroup value={form.growth_assets} onValueChange={v => update("growth_assets", v)} className="flex flex-wrap gap-4">
-          {[["yes","Yes"],["some","A little"],["no","No"],["unsure","Not sure"]].map(([v,l]) => (
+          {[["yes","Yes, I plan to"],["some","Maybe a little"],["no","No"],["unsure","Not sure yet"]].map(([v,l]) => (
             <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`g-${v}`} /><Label htmlFor={`g-${v}`}>{l}</Label></div>
           ))}
         </RadioGroup>
       </div>
 
       <div className="space-y-2">
-        <Label>17. If yes, what are they? If no, what could you add in the next 12 months?</Label>
+        <Label>20. If yes, what would they be? If no, what could you add in the next 12 months?</Label>
         <Textarea value={form.growth_assets_detail} onChange={e => update("growth_assets_detail", e.target.value)} rows={2} placeholder="Rental duplex, my LLC, index funds, whole life policy..." />
       </div>
 
       <div className="space-y-2">
-        <Label>18. Anything special we should know? (health, special needs, blended family, etc.)</Label>
+        <Label>21. Anything special we should know? (health, special needs, blended family, etc.)</Label>
         <Textarea value={form.special_notes} onChange={e => update("special_notes", e.target.value)} rows={2} />
       </div>
+
 
       <p className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
         <strong>Disclaimer:</strong> This plan is for education only. It is not legal, tax, or financial advice. No attorney-client relationship is created. Please review your plan with a licensed attorney and tax professional in your state before you act on it.
