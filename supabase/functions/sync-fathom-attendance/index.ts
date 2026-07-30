@@ -98,6 +98,7 @@ Deno.serve(async (req) => {
       const json = await fathomJson(url, key)
       if (!json) break
       for (const m of json.items ?? []) {
+        totalFetched++
         const title = `${m.meeting_title ?? ''} ${m.title ?? ''}`.trim()
         const inviteeArr = Array.isArray(m.calendar_invitees) ? m.calendar_invitees : []
         const transcriptArr = Array.isArray(m.transcript) ? m.transcript : []
