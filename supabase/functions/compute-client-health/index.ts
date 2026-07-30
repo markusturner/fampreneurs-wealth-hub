@@ -360,6 +360,8 @@ function clientMeetingScore(meeting: FathomMeeting, fullName: string, email: str
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
+  _deadlineAt = Date.now() + 110_000
+
   try {
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
