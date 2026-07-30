@@ -369,7 +369,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
 
 
       <div className="space-y-2">
-        <Label>17. Does your trust own anything that grows money (business, rentals, investments, cash-value life insurance)?</Label>
+        <Label>16. Does your trust own anything that grows money (business, rentals, investments, cash-value life insurance)?</Label>
         <RadioGroup value={form.growth_assets} onValueChange={v => update("growth_assets", v)} className="flex flex-wrap gap-4">
           {[["yes","Yes"],["some","A little"],["no","No"],["unsure","Not sure"]].map(([v,l]) => (
             <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`g-${v}`} /><Label htmlFor={`g-${v}`}>{l}</Label></div>
@@ -378,12 +378,12 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>18. If yes, what are they? If no, what could you add in the next 12 months?</Label>
+        <Label>17. If yes, what are they? If no, what could you add in the next 12 months?</Label>
         <Textarea value={form.growth_assets_detail} onChange={e => update("growth_assets_detail", e.target.value)} rows={2} placeholder="Rental duplex, my LLC, index funds, whole life policy..." />
       </div>
 
       <div className="space-y-2">
-        <Label>19. Anything special we should know? (health, special needs, blended family, etc.)</Label>
+        <Label>18. Anything special we should know? (health, special needs, blended family, etc.)</Label>
         <Textarea value={form.special_notes} onChange={e => update("special_notes", e.target.value)} rows={2} />
       </div>
 
