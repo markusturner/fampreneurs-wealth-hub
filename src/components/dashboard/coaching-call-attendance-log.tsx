@@ -263,28 +263,80 @@ export function CoachingCallAttendanceLog() {
   }
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('session_attendance').delete().eq('id', id)
+    const stamp = new Date().toISOString()
+    const { error } = await supabase.from('session_attendance').update({ deleted_at: stamp } as any).eq('id', id)
     if (error) { toast.error('Delete failed'); return }
-    toast.success('Removed')
-    setRows(prev => prev.filter(r => r.id !== id))
+    toast.success('Moved to deleted')
+    setRows(prev => prev.map(r => r.id === id ? { ...r, deleted_at: stamp } : r))
+  }
+
+  const handleRestore = async (id: string) => {
+    const { error } = await supabase.from('session_attendance').update({ deleted_at: null } as any).eq('id', id)
+    if (error) { toast.error('Restore failed'); return }
+    toast.success('Log restored')
+    setRows(prev => prev.map(r => r.id === id ? { ...r, deleted_at: null } : r))
+  }
+
+  const handleBulkRestore = async () => {
+    if (selectedIds.length === 0) return
+    try {
+      const { error } = await supabase.from('session_attendance').update({ deleted_at: null } as any).in('id', selectedIds)
+      if (error) throw error
+      setRows(prev => prev.map(r => selectedIds.includes(r.id) ? { ...r, deleted_at: null } : r))
+      toast.success(`Restored ${selectedIds.length} logs`)
+      setSelectedIds([])
+    } catch (e: any) {
+      toast.error('Restore failed: ' + (e?.message ?? e))
+    }
   }
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return
-    if (!window.confirm(`Delete ${selectedIds.length} selected log${selectedIds.length === 1 ? '' : 's'}?`)) return
     setBulkDeleting(true)
     try {
-      const { error } = await supabase.from('session_attendance').delete().in('id', selectedIds)
-      if (error) throw error
-      setRows(prev => prev.filter(r => !selectedIds.includes(r.id)))
-      toast.success(`Deleted ${selectedIds.length} logs`)
+      if (view === 'deleted') {
+        const { error } = await supabase.from('session_attendance').delete().in('id', selectedIds)
+        if (error) throw error
+        setRows(prev => prev.filter(r => !selectedIds.includes(r.id)))
+        toast.success(`Permanently deleted ${selectedIds.length} logs`)
+      } else {
+        const stamp = new Date().toISOString()
+        const { error } = await supabase.from('session_attendance').update({ deleted_at: stamp } as any).in('id', selectedIds)
+        if (error) throw error
+        setRows(prev => prev.map(r => selectedIds.includes(r.id) ? { ...r, deleted_at: stamp } : r))
+        toast.success(`Moved ${selectedIds.length} logs to deleted`)
+      }
       setSelectedIds([])
+      setConfirmBulkDelete(false)
     } catch (e: any) {
       toast.error('Delete failed: ' + (e?.message ?? e))
     } finally {
       setBulkDeleting(false)
     }
   }
+
+  const exportCsv = (list: AttendanceRow[]) => {
+    if (list.length === 0) { toast.error('Nothing to export'); return }
+    const head = ['Member', 'Email', 'Session', 'Coach', 'Date', 'Status', 'Source', 'Duration (min)', 'Notes']
+    const esc = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`
+    const csv = [
+      head.join(','),
+      ...list.map(r => [
+        r.user_name, r.user_email, r.session_title, r.coach_name ?? '',
+        r.session_date ? new Date(r.session_date).toLocaleDateString() : '',
+        r.attended ? 'Attended' : 'Missed',
+        r.source, r.attendance_duration_minutes ?? '', r.notes ?? '',
+      ].map(esc).join(',')),
+    ].join('\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `attendance-log-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success(`Exported ${list.length} logs`)
+  }
+
 
   const openBulkEdit = () => {
     setBTitle(''); setBCoach(''); setBDate(''); setBStatus('keep'); setBDuration('')
