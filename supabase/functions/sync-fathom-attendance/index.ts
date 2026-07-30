@@ -151,6 +151,7 @@ Deno.serve(async (req) => {
     // 3) Build attendance rows
     const rows: any[] = []
     const seen = new Set<string>()
+    const unmatched: string[] = []
     for (const m of meetings) {
       const matched = new Map<string, any>()
       for (const inv of m.invitees) {
