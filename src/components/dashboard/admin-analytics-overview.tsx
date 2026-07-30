@@ -100,7 +100,7 @@ export function AdminAnalyticsOverview() {
 
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, membership_type, created_at, program_name, truheirs_access, program_contract_value, program_cash_collected')
+        .select('user_id, membership_type, created_at, program_name, truheirs_access, program_contract_value, program_cash_collected, partner_group_id')
 
       const totalMembers = profiles?.length || 0
       const paidMembers = subscribers?.filter(s => s.subscribed === true).length || 0
@@ -143,8 +143,19 @@ export function AdminAnalyticsOverview() {
 
       // Program metrics from contract data
       const programProfiles = profiles?.filter(p => p.program_name) || []
-      const programContractValue = programProfiles.reduce((sum, p) => sum + ((p as any).program_contract_value || 0), 0)
-      const programCashCollected = programProfiles.reduce((sum, p) => sum + ((p as any).program_cash_collected || 0), 0)
+      // Linked partners share one contract — count their money only once per partner group
+      const partnerGroupBest: Record<string, any> = {}
+      const financeProfiles: any[] = []
+      for (const p of programProfiles as any[]) {
+        if (!p.partner_group_id) { financeProfiles.push(p); continue }
+        const current = partnerGroupBest[p.partner_group_id]
+        if (!current || (Number(p.program_contract_value) || 0) > (Number(current.program_contract_value) || 0)) {
+          partnerGroupBest[p.partner_group_id] = p
+        }
+      }
+      financeProfiles.push(...Object.values(partnerGroupBest))
+      const programContractValue = financeProfiles.reduce((sum, p) => sum + ((p as any).program_contract_value || 0), 0)
+      const programCashCollected = financeProfiles.reduce((sum, p) => sum + ((p as any).program_cash_collected || 0), 0)
       const programRemaining = programContractValue - programCashCollected
       programPaidCount = programProfiles.length
 

@@ -4446,6 +4446,7 @@ export type Database = {
           membership_type: string | null
           needs_profile_completion: boolean | null
           occupation: string | null
+          partner_group_id: string | null
           phone: string | null
           profile_photo_uploaded: boolean
           program_cash_collected: number | null
@@ -4501,6 +4502,7 @@ export type Database = {
           membership_type?: string | null
           needs_profile_completion?: boolean | null
           occupation?: string | null
+          partner_group_id?: string | null
           phone?: string | null
           profile_photo_uploaded?: boolean
           program_cash_collected?: number | null
@@ -4556,6 +4558,7 @@ export type Database = {
           membership_type?: string | null
           needs_profile_completion?: boolean | null
           occupation?: string | null
+          partner_group_id?: string | null
           phone?: string | null
           profile_photo_uploaded?: boolean
           program_cash_collected?: number | null

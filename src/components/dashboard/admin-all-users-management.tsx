@@ -107,6 +107,8 @@ export function AdminAllUsersManagement() {
   const [previewUser, setPreviewUser] = useState<UserProfile | null>(null)
   const [resendingCredentialsId, setResendingCredentialsId] = useState<string | null>(null)
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
+  const [linkingPartners, setLinkingPartners] = useState(false)
+
   const [bulkResending, setBulkResending] = useState(false)
   const [bulkDeleting, setBulkDeleting] = useState(false)
   const [sortColumn, setSortColumn] = useState<string | null>(null)
@@ -338,13 +340,35 @@ export function AdminAllUsersManagement() {
         return nameA.localeCompare(nameB)
       })
       
-      // Build final list: each trustee followed by their family members
+      // Determine the primary of each partner group (highest contract value, then earliest join)
+      const partnerPrimary: Record<string, string> = {}
+      for (const t of trustees as any[]) {
+        const gid = t.partner_group_id
+        if (!gid) continue
+        const current = partnerPrimary[gid]
+        if (!current) { partnerPrimary[gid] = t.user_id; continue }
+        const currentUser = trustees.find((u: any) => u.user_id === current) as any
+        const better =
+          (Number(t.program_contract_value) || 0) > (Number(currentUser?.program_contract_value) || 0) ||
+          ((Number(t.program_contract_value) || 0) === (Number(currentUser?.program_contract_value) || 0) &&
+            new Date(t.created_at).getTime() < new Date(currentUser?.created_at || 0).getTime())
+        if (better) partnerPrimary[gid] = t.user_id
+      }
+
+      for (const t of trustees as any[]) {
+        t.is_partner_primary = t.partner_group_id ? partnerPrimary[t.partner_group_id] === t.user_id : false
+        t.is_partner_linked = !!t.partner_group_id
+      }
+
+      // Build final list: each trustee (with linked partners right after) followed by their family members
       const sorted: any[] = []
       const placedFamilyMembers = new Set<string>()
-      
-      for (const trustee of trustees) {
+      const placedTrustees = new Set<string>()
+
+      const pushTrusteeBlock = (trustee: any) => {
+        if (placedTrustees.has(trustee.user_id)) return
+        placedTrustees.add(trustee.user_id)
         sorted.push(trustee)
-        // Find family members belonging to this trustee
         const children = familyMembers
           .filter((fm: any) => fm.trustee_user_id === trustee.user_id)
           .sort((a: any, b: any) => getUserDisplayName(a).localeCompare(getUserDisplayName(b)))
@@ -353,12 +377,29 @@ export function AdminAllUsersManagement() {
           placedFamilyMembers.add(child.user_id)
         }
       }
-      
+
+      for (const trustee of trustees as any[]) {
+        if (placedTrustees.has(trustee.user_id)) continue
+        if (trustee.partner_group_id && !trustee.is_partner_primary) {
+          // emit the primary first so linked partners stay together
+          const primary = trustees.find((u: any) => u.user_id === partnerPrimary[trustee.partner_group_id])
+          if (primary) pushTrusteeBlock(primary)
+        }
+        pushTrusteeBlock(trustee)
+        if (trustee.partner_group_id) {
+          const partners = (trustees as any[])
+            .filter((u: any) => u.partner_group_id === trustee.partner_group_id && !placedTrustees.has(u.user_id))
+            .sort((a: any, b: any) => getUserDisplayName(a).localeCompare(getUserDisplayName(b)))
+          for (const p of partners) pushTrusteeBlock(p)
+        }
+      }
+
       // Add any orphan family members (no matched trustee) at the end
       const orphans = familyMembers
         .filter((fm: any) => !placedFamilyMembers.has(fm.user_id))
         .sort((a: any, b: any) => getUserDisplayName(a).localeCompare(getUserDisplayName(b)))
       sorted.push(...orphans)
+
       
       setUsers(sorted)
       setFilteredUsers(sorted)
@@ -707,6 +748,47 @@ export function AdminAllUsersManagement() {
       setSelectedUserIds(new Set(filteredUsers.map(u => u.user_id)))
     }
   }
+
+  // Link selected users as partners (shared contract value / cash collected)
+  const handleLinkPartners = async () => {
+    const ids = Array.from(selectedUserIds)
+    if (ids.length < 2) {
+      toast({ title: 'Select at least 2 users', description: 'Pick the partners you want to link together.', variant: 'destructive' })
+      return
+    }
+    setLinkingPartners(true)
+    try {
+      const existing = users.find((u: any) => ids.includes(u.user_id) && (u as any).partner_group_id) as any
+      const groupId = existing?.partner_group_id || crypto.randomUUID()
+      const { error } = await supabase.from('profiles').update({ partner_group_id: groupId } as any).in('user_id', ids)
+      if (error) throw error
+      toast({ title: 'Partners linked', description: `${ids.length} users now share one contract value and cash collected.` })
+      setSelectedUserIds(new Set())
+      await fetchUsers()
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message || 'Failed to link partners', variant: 'destructive' })
+    } finally {
+      setLinkingPartners(false)
+    }
+  }
+
+  const handleUnlinkPartners = async () => {
+    const ids = Array.from(selectedUserIds)
+    if (ids.length === 0) return
+    setLinkingPartners(true)
+    try {
+      const { error } = await supabase.from('profiles').update({ partner_group_id: null } as any).in('user_id', ids)
+      if (error) throw error
+      toast({ title: 'Partners unlinked' })
+      setSelectedUserIds(new Set())
+      await fetchUsers()
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message || 'Failed to unlink', variant: 'destructive' })
+    } finally {
+      setLinkingPartners(false)
+    }
+  }
+
 
   const handleBulkResendCredentials = async () => {
     if (selectedUserIds.size === 0) return
@@ -1404,6 +1486,14 @@ export function AdminAllUsersManagement() {
                     <ShieldCheck className="h-3 w-3 mr-1" />
                     Trust Access
                   </Button>
+                  <Button size="sm" variant="outline" className="border-emerald-500 text-emerald-600 hover:bg-emerald-50" onClick={handleLinkPartners} disabled={linkingPartners}>
+                    {linkingPartners ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
+                    Link as Partners
+                  </Button>
+                  <Button size="sm" variant="ghost" className="text-emerald-600" onClick={handleUnlinkPartners} disabled={linkingPartners}>
+                    Unlink
+                  </Button>
+
                   <Button size="sm" variant="destructive" onClick={handleBulkDelete} disabled={bulkDeleting}>
                     {bulkDeleting ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Trash2 className="h-3 w-3 mr-1" />}
                     Delete
@@ -1759,12 +1849,24 @@ export function AdminAllUsersManagement() {
                       return t ? (t.display_name || `${t.first_name || ''} ${t.last_name || ''}`.trim()) : null
                     })()
                   : null
+                const isPartner = !!(user as any).partner_group_id
+                const isPartnerSecondary = isPartner && !(user as any).is_partner_primary
+                const partnerPrimaryUser: any = isPartnerSecondary
+                  ? users.find((u: any) => u.partner_group_id === (user as any).partner_group_id && (u as any).is_partner_primary)
+                  : null
+
+                const partnerNames = isPartner
+                  ? users
+                      .filter((u: any) => u.partner_group_id === (user as any).partner_group_id && u.user_id !== user.user_id)
+                      .map((u: any) => u.display_name || `${u.first_name || ''} ${u.last_name || ''}`.trim())
+                      .filter(Boolean)
+                  : []
                 return (
-                  <TableRow key={user.user_id} className={isFamilyMember && hasTrustee ? 'border-l-2 border-l-secondary/60' : ''}>
-                    <TableCell className={`w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : 'bg-background'}`}>
+                  <TableRow key={user.user_id} className={isFamilyMember && hasTrustee ? 'border-l-2 border-l-secondary/60' : isPartner ? 'border-l-2 border-l-emerald-500' : ''}>
+                    <TableCell className={`w-[40px] min-w-[40px] max-w-[40px] sticky left-0 z-10 ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : isPartner ? 'bg-emerald-50' : 'bg-background'}`}>
                       <Checkbox checked={selectedUserIds.has(user.user_id)} onCheckedChange={() => toggleSelectUser(user.user_id)} />
                     </TableCell>
-                    <TableCell className={`font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : 'bg-background'}`}>
+                    <TableCell className={`font-medium whitespace-nowrap min-w-[160px] sticky left-[40px] z-10 ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : isPartner ? 'bg-emerald-50' : 'bg-background'}`}>
                       <div className={isFamilyMember && hasTrustee ? 'pl-5 flex items-center gap-2' : ''}>
                         {isFamilyMember && hasTrustee && (
                           <span className="text-secondary text-sm font-medium">↳</span>
@@ -1774,21 +1876,30 @@ export function AdminAllUsersManagement() {
                           {trusteeName && (
                             <p className={`text-[10px] leading-tight italic ${isFamilyMember && hasTrustee ? 'text-sidebar-foreground/70' : 'text-muted-foreground'}`}>under {trusteeName}</p>
                           )}
+                          {isPartner && partnerNames.length > 0 && (
+                            <p className="text-[10px] leading-tight italic text-emerald-600">partner of {partnerNames.join(', ')}</p>
+                          )}
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className={`min-w-[280px] sticky left-[200px] z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : 'bg-background'}`}>
+                    <TableCell className={`min-w-[280px] sticky left-[200px] z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)] ${isFamilyMember && hasTrustee ? 'bg-sidebar text-sidebar-foreground' : isPartner ? 'bg-emerald-50' : 'bg-background'}`}>
                       {renderContractTimeline(user)}
                     </TableCell>
                     <TableCell className="min-w-[120px]">
-                      <Badge variant="outline" className="text-xs" style={{ 
-                        backgroundColor: user.membership_type === 'family_member' ? '#ffb500' : user.is_admin ? '#ef4444' : '#2eb2ff',
-                        color: '#1a1a2e', 
-                        borderColor: user.membership_type === 'family_member' ? '#ffb500' : user.is_admin ? '#ef4444' : '#2eb2ff'
-                      }}>
-                        {user.is_admin ? 'Admin' : user.membership_type === 'family_member' ? 'Family Member' : 'Trustee'}
-                      </Badge>
+                      <div className="flex items-center gap-1">
+                        <Badge variant="outline" className="text-xs" style={{ 
+                          backgroundColor: user.membership_type === 'family_member' ? '#ffb500' : user.is_admin ? '#ef4444' : '#2eb2ff',
+                          color: '#1a1a2e', 
+                          borderColor: user.membership_type === 'family_member' ? '#ffb500' : user.is_admin ? '#ef4444' : '#2eb2ff'
+                        }}>
+                          {user.is_admin ? 'Admin' : user.membership_type === 'family_member' ? 'Family Member' : 'Trustee'}
+                        </Badge>
+                        {isPartner && (
+                          <Badge variant="outline" className="text-xs bg-emerald-500 text-white border-emerald-500">Partner</Badge>
+                        )}
+                      </div>
                     </TableCell>
+
                     <TableCell className="whitespace-nowrap">
                       {editingPhoneUserId === user.user_id ? (
                         <div className="flex items-center gap-1">
@@ -1832,7 +1943,11 @@ export function AdminAllUsersManagement() {
                       </div>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      {editingFinanceUserId === user.user_id && editingFinanceField === 'contract_value' ? (
+                      {isPartnerSecondary ? (
+                        <span className="text-xs text-emerald-600 italic">
+                          {partnerPrimaryUser?.program_contract_value ? `$${Number(partnerPrimaryUser.program_contract_value).toLocaleString()} (shared)` : 'shared'}
+                        </span>
+                      ) : editingFinanceUserId === user.user_id && editingFinanceField === 'contract_value' ? (
                         <div className="flex items-center gap-1">
                           <Input value={editingFinanceValue} onChange={e => setEditingFinanceValue(e.target.value)} className="h-7 w-24 text-xs" onKeyDown={e => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>{savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
@@ -1845,7 +1960,11 @@ export function AdminAllUsersManagement() {
                       )}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      {editingFinanceUserId === user.user_id && editingFinanceField === 'cash_collected' ? (
+                      {isPartnerSecondary ? (
+                        <span className="text-xs text-emerald-600 italic">
+                          {partnerPrimaryUser?.program_cash_collected ? `$${Number(partnerPrimaryUser.program_cash_collected).toLocaleString()} (shared)` : 'shared'}
+                        </span>
+                      ) : editingFinanceUserId === user.user_id && editingFinanceField === 'cash_collected' ? (
                         <div className="flex items-center gap-1">
                           <Input value={editingFinanceValue} onChange={e => setEditingFinanceValue(e.target.value)} className="h-7 w-24 text-xs" onKeyDown={e => e.key === 'Enter' && handleSaveFinance(user.user_id)} />
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => handleSaveFinance(user.user_id)} disabled={savingFinance}>{savingFinance ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3 text-green-600" />}</Button>
@@ -1858,10 +1977,13 @@ export function AdminAllUsersManagement() {
                       )}
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-xs">
-                      {user.program_contract_value && user.program_cash_collected
+                      {isPartnerSecondary
+                        ? <span className="text-emerald-600 italic">shared</span>
+                        : user.program_contract_value && user.program_cash_collected
                         ? `$${(Number(user.program_contract_value) - Number(user.program_cash_collected)).toLocaleString()}`
                         : '—'}
                     </TableCell>
+
                     <TableCell className="whitespace-nowrap text-xs">{user.program_name || '—'}</TableCell>
                     {/* Satisfaction Score */}
                     <TableCell>
