@@ -191,6 +191,7 @@ export function CoachingCallAttendanceLog() {
           source: a.source ?? 'auto',
           notes: a.notes ?? null,
           created_at: a.created_at,
+          deleted_at: a.deleted_at ?? null,
           user_name: name,
           user_email: p?.email ?? '',
           session_title: s?.title ?? a.manual_session_title ?? 'Untitled session',
