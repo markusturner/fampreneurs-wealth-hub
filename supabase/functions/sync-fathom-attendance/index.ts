@@ -17,21 +17,34 @@ interface Meeting {
   host: string
 }
 
-async function fathomJson(url: URL, key: string) {
+interface FathomResponse {
+  json: any | null
+  status: number
+  body: string
+}
+
+async function fathomJson(url: URL, key: string): Promise<FathomResponse> {
+  let lastStatus = 0
+  let lastBody = ''
   for (let attempt = 0; attempt < 3; attempt++) {
     let res: Response | null = null
     try {
       res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, Accept: 'application/json' } })
     } catch (_e) { /* retry */ }
-    if (res?.ok) return await res.json().catch(() => null)
+    if (res?.ok) {
+      return { json: await res.json().catch(() => null), status: res.status, body: '' }
+    }
     const status = res?.status ?? 0
+    lastStatus = status
+    lastBody = res ? await res.text().catch(() => '') : ''
     if (![0, 429, 500, 502, 503, 504].includes(status)) {
-      console.error('fathom error', status, res ? await res.text().catch(() => '') : '')
-      return null
+      console.error('fathom list error', status, lastBody)
+      return { json: null, status, body: lastBody }
     }
     await new Promise((r) => setTimeout(r, 500 * Math.pow(2, attempt)))
   }
-  return null
+  console.error('fathom list failed after retries', lastStatus, lastBody)
+  return { json: null, status: lastStatus, body: lastBody }
 }
 
 // An "accountability call" is a coaching / accountability session — not a sales call.
@@ -94,8 +107,20 @@ Deno.serve(async (req) => {
       url.searchParams.set('calendar_invitees_domains_type', 'all')
       url.searchParams.set('limit', '100')
       if (cursor) url.searchParams.set('cursor', cursor)
-      const json = await fathomJson(url, key)
-      if (!json) break
+      let response = await fathomJson(url, key)
+      // Some Fathom accounts reject the optional invitee-domain filter. Retry
+      // the first page with only the documented date and pagination fields.
+      if (!response.json && pages === 0 && response.status >= 400 && response.status < 500 && response.status !== 429) {
+        url.searchParams.delete('calendar_invitees_domains_type')
+        response = await fathomJson(url, key)
+      }
+      const json = response.json
+      if (!json) {
+        return new Response(
+          JSON.stringify({ error: 'Fathom could not return meetings', status: response.status, detail: response.body.slice(0, 300) }),
+          { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        )
+      }
       for (const m of json.items ?? []) {
         totalFetched++
         const title = `${m.meeting_title ?? ''} ${m.title ?? ''}`.trim()
