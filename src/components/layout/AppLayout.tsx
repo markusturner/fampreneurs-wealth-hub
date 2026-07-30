@@ -75,9 +75,12 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [user, loading, navigate])
 
+  // Users granted free access skip the whole onboarding funnel
+  const skipOnboarding = (profile as any)?.skip_onboarding === true
+
   // ONBOARDING EXPLANATION — show explanation first if not seen (non-admin only)
   useEffect(() => {
-    if (!loading && !onboardingLoading && !roleLoading && user && !isAdminOrOwner) {
+    if (!loading && !onboardingLoading && !roleLoading && user && !isAdminOrOwner && !skipOnboarding) {
       if (onboardingCompleted === false) {
         const explained = localStorage.getItem(`onboarding_explained_${user.id}`)
         if (!explained && location.pathname !== '/onboarding-explanation' && location.pathname !== '/onboarding') {
@@ -87,7 +90,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         }
       }
     }
-  }, [user, loading, onboardingLoading, roleLoading, onboardingCompleted, isAdminOrOwner, navigate, location.pathname])
+  }, [user, loading, onboardingLoading, roleLoading, onboardingCompleted, isAdminOrOwner, skipOnboarding, navigate, location.pathname])
 
   // THEN agreement — only redirect to agreement AFTER onboarding is done
   useEffect(() => {
