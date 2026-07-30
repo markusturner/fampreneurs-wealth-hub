@@ -32,7 +32,7 @@ const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2;
   family_protection_plan: {
     label: "Family Protection Plan",
     icon: Shield,
-    description: "Answer a few short questions and we'll build a custom Family Protection Plan document tailored to your family.",
+    description: "Answer a few short questions and we'll build a custom Family Protection Plan document tailored to your family. This is for education only — not legal, tax, or financial advice. Please review it with a licensed attorney.",
   },
   family: {
     label: "Family Trust",
