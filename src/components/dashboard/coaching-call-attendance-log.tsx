@@ -564,7 +564,67 @@ export function CoachingCallAttendanceLog() {
           </ScrollArea>
         )}
       </CardContent>
+
+      <Dialog open={!!editRow} onOpenChange={(o) => { if (!o) setEditRow(null) }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Pencil className="h-4 w-4" /> Edit Attendance Log</DialogTitle>
+          </DialogHeader>
+          {editRow && (
+            <div className="space-y-3">
+              <div className="text-sm">
+                <div className="font-medium">{editRow.user_name}</div>
+                <div className="text-xs text-muted-foreground">{editRow.user_email}</div>
+              </div>
+              <div>
+                <Label className="text-xs">Session type</Label>
+                <Select value={eTitle} onValueChange={setETitle}>
+                  <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Group Coaching">Group Coaching</SelectItem>
+                    <SelectItem value="1-1 Coaching Call">1-1 Coaching Call</SelectItem>
+                    {eTitle && !['Group Coaching', '1-1 Coaching Call'].includes(eTitle) && (
+                      <SelectItem value={eTitle}>{eTitle}</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Coach</Label>
+                  <Input value={eCoach} onChange={(e) => setECoach(e.target.value)} placeholder="Coach name" />
+                </div>
+                <div>
+                  <Label className="text-xs">Date</Label>
+                  <Input type="date" value={eDate} onChange={(e) => setEDate(e.target.value)} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 items-end">
+                <div>
+                  <Label className="text-xs">Duration (min)</Label>
+                  <Input type="number" min={0} value={eDuration} onChange={(e) => setEDuration(e.target.value)} placeholder="60" />
+                </div>
+                <div className="flex items-center gap-2 pb-2">
+                  <Switch checked={eAttended} onCheckedChange={setEAttended} id="edit-att" />
+                  <Label htmlFor="edit-att" className="text-sm">{eAttended ? 'Attended' : 'Missed'}</Label>
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">Notes (optional)</Label>
+                <Input value={eNotes} onChange={(e) => setENotes(e.target.value)} placeholder="Anything to remember" />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditRow(null)}>Cancel</Button>
+            <Button onClick={handleUpdate} disabled={editSaving} className="bg-[#ffb500] text-[#290a52] hover:bg-[#e6a300]">
+              {editSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null} Save changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
+
   )
 }
 
