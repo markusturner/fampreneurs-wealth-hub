@@ -4852,8 +4852,14 @@ export type Database = {
           id: string
           joined_at: string | null
           left_at: string | null
-          session_id: string
+          logged_by: string | null
+          manual_coach_name: string | null
+          manual_session_date: string | null
+          manual_session_title: string | null
+          notes: string | null
+          session_id: string | null
           session_type: string
+          source: string
           updated_at: string
           user_id: string
         }
@@ -4864,8 +4870,14 @@ export type Database = {
           id?: string
           joined_at?: string | null
           left_at?: string | null
-          session_id: string
+          logged_by?: string | null
+          manual_coach_name?: string | null
+          manual_session_date?: string | null
+          manual_session_title?: string | null
+          notes?: string | null
+          session_id?: string | null
           session_type: string
+          source?: string
           updated_at?: string
           user_id: string
         }
@@ -4876,8 +4888,14 @@ export type Database = {
           id?: string
           joined_at?: string | null
           left_at?: string | null
-          session_id?: string
+          logged_by?: string | null
+          manual_coach_name?: string | null
+          manual_session_date?: string | null
+          manual_session_title?: string | null
+          notes?: string | null
+          session_id?: string | null
           session_type?: string
+          source?: string
           updated_at?: string
           user_id?: string
         }
