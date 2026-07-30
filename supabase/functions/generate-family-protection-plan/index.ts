@@ -55,6 +55,8 @@ serve(async (req) => {
 8. Solutions & Recommended Next Steps
    - Give clear fixes for EVERY risk you named in section 3 and for the growth gap in section 5. Number them and put the most urgent first.
 9. Special Considerations
+10. Important Disclaimer
+   - End the document with this exact text as its own section: "This Family Protection Plan is for education only. It is not legal, tax, or financial advice, and no attorney-client relationship is created by it. Laws change and vary by state. Please review this plan with a licensed estate-planning attorney and a tax professional in your state before you act on anything in it."
 
 Keep the whole document under 1,400 words. Use headings and short paragraphs or bullet points. Speak directly to the family ("You and your family..."). Be honest and direct about risk without scaring them, and always pair a risk with a solution.
 
