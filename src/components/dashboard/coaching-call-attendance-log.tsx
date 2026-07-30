@@ -462,9 +462,11 @@ export function CoachingCallAttendanceLog() {
   }, [filtered, sortKey, sortDirection])
 
   const stats = useMemo(() => {
-    const attended = rows.filter(r => r.attended).length
-    const manual = rows.filter(r => r.source === 'manual').length
-    return { total: rows.length, attended, missed: rows.length - attended, manual }
+    const active = rows.filter(r => !r.deleted_at)
+    const attended = active.filter(r => r.attended).length
+    const manual = active.filter(r => r.source === 'manual').length
+    const deleted = rows.length - active.length
+    return { total: active.length, attended, missed: active.length - attended, manual, deleted }
   }, [rows])
 
   const toggleSort = (key: typeof sortKey) => {
