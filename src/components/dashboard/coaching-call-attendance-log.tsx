@@ -57,6 +57,78 @@ export function CoachingCallAttendanceLog() {
   const [fDuration, setFDuration] = useState<string>('')
   const [fNotes, setFNotes] = useState('')
 
+  // edit state
+  const [editRow, setEditRow] = useState<AttendanceRow | null>(null)
+  const [editSaving, setEditSaving] = useState(false)
+  const [eTitle, setETitle] = useState('')
+  const [eCoach, setECoach] = useState('')
+  const [eDate, setEDate] = useState('')
+  const [eAttended, setEAttended] = useState(true)
+  const [eDuration, setEDuration] = useState('')
+  const [eNotes, setENotes] = useState('')
+  const [scanning, setScanning] = useState(false)
+
+  const openEdit = (r: AttendanceRow) => {
+    setEditRow(r)
+    setETitle(r.session_title ?? '')
+    setECoach(r.coach_name ?? '')
+    setEDate(r.session_date ? String(r.session_date).slice(0, 10) : '')
+    setEAttended(r.attended)
+    setEDuration(r.attendance_duration_minutes != null ? String(r.attendance_duration_minutes) : '')
+    setENotes(r.notes ?? '')
+  }
+
+  const handleUpdate = async () => {
+    if (!editRow) return
+    if (!eTitle.trim()) { toast.error('Add a session title'); return }
+    setEditSaving(true)
+    try {
+      const patch: any = {
+        attended: eAttended,
+        attendance_duration_minutes: eDuration ? Number(eDuration) : null,
+        manual_session_title: eTitle.trim(),
+        manual_coach_name: eCoach.trim() || null,
+        manual_session_date: eDate || null,
+        notes: eNotes.trim() || null,
+        session_type: eTitle.toLowerCase().includes('1-1') ? 'individual' : 'group',
+      }
+      const { error } = await supabase.from('session_attendance').update(patch).eq('id', editRow.id)
+      if (error) throw error
+      setRows(prev => prev.map(r => r.id === editRow.id ? {
+        ...r,
+        attended: eAttended,
+        attendance_duration_minutes: eDuration ? Number(eDuration) : null,
+        session_title: eTitle.trim(),
+        coach_name: eCoach.trim() || null,
+        session_date: eDate || null,
+        notes: eNotes.trim() || null,
+      } : r))
+      toast.success('Log updated')
+      setEditRow(null)
+    } catch (e: any) {
+      toast.error('Could not update: ' + (e?.message ?? e))
+    } finally {
+      setEditSaving(false)
+    }
+  }
+
+  const handleScanFathom = async () => {
+    setScanning(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-fathom-attendance', { body: { days: 90 } })
+      if (error) throw error
+      if ((data as any)?.error) throw new Error((data as any).error)
+      const d: any = data
+      toast.success(`Scanned ${d?.meetings_scanned ?? 0} accountability calls · ${d?.inserted ?? 0} new records`)
+      load()
+    } catch (e: any) {
+      toast.error('Fathom scan failed: ' + (e?.message ?? e))
+    } finally {
+      setScanning(false)
+    }
+  }
+
+
   const load = async () => {
     setLoading(true)
     try {
