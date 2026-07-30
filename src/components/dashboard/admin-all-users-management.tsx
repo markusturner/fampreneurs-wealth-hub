@@ -1486,6 +1486,14 @@ export function AdminAllUsersManagement() {
                     <ShieldCheck className="h-3 w-3 mr-1" />
                     Trust Access
                   </Button>
+                  <Button size="sm" variant="outline" className="border-emerald-500 text-emerald-600 hover:bg-emerald-50" onClick={handleLinkPartners} disabled={linkingPartners}>
+                    {linkingPartners ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : null}
+                    Link as Partners
+                  </Button>
+                  <Button size="sm" variant="ghost" className="text-emerald-600" onClick={handleUnlinkPartners} disabled={linkingPartners}>
+                    Unlink
+                  </Button>
+
                   <Button size="sm" variant="destructive" onClick={handleBulkDelete} disabled={bulkDeleting}>
                     {bulkDeleting ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Trash2 className="h-3 w-3 mr-1" />}
                     Delete
