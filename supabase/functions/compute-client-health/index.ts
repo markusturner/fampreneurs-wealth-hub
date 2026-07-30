@@ -284,9 +284,11 @@ async function hydrateFathomMeetings(meetings: FathomMeeting[]): Promise<{ meeti
     }))
     detailed.push(...chunk)
   }
+  const hydratedIds = new Set(detailed.map((d) => d.meeting.id))
+  const remaining = target.filter((m) => !hydratedIds.has(m.id))
   return {
-    meetings: detailed.map((d) => d.meeting),
-    complete: detailed.every((d) => d.complete),
+    meetings: [...detailed.map((d) => d.meeting), ...remaining],
+    complete: remaining.length === 0 && detailed.every((d) => d.complete),
     rateLimited: detailed.some((d) => d.rateLimited),
   }
 }
