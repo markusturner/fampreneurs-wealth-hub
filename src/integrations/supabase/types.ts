@@ -4849,6 +4849,7 @@ export type Database = {
           attendance_duration_minutes: number | null
           attended: boolean
           created_at: string
+          deleted_at: string | null
           external_ref: string | null
           id: string
           joined_at: string | null
@@ -4868,6 +4869,7 @@ export type Database = {
           attendance_duration_minutes?: number | null
           attended?: boolean
           created_at?: string
+          deleted_at?: string | null
           external_ref?: string | null
           id?: string
           joined_at?: string | null
@@ -4887,6 +4889,7 @@ export type Database = {
           attendance_duration_minutes?: number | null
           attended?: boolean
           created_at?: string
+          deleted_at?: string | null
           external_ref?: string | null
           id?: string
           joined_at?: string | null
