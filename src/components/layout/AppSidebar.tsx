@@ -11,7 +11,6 @@ import {
   Calendar,
   ChevronDown,
   ClipboardList, FileText,
-  FileText,
   HeartPulse,
   Home,
   LayoutDashboard,
