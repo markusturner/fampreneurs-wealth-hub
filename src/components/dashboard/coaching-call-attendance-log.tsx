@@ -561,10 +561,30 @@ export function CoachingCallAttendanceLog() {
         ) : sortedRows.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">No attendance records yet. Use "Log attendance" to add one.</p>
         ) : (
+          <>
+          {selectedIds.length > 0 && (
+            <div className="flex items-center gap-2 mb-3 rounded-md border bg-muted/40 px-3 py-2 flex-wrap">
+              <span className="text-sm font-medium">{selectedIds.length} selected</span>
+              <Button size="sm" variant="outline" onClick={openBulkEdit}>
+                <Pencil className="h-3.5 w-3.5 mr-1" /> Edit selected
+              </Button>
+              <Button size="sm" variant="outline" className="text-red-600 border-red-300 hover:bg-red-50" onClick={handleBulkDelete} disabled={bulkDeleting}>
+                {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 mr-1" />} Delete selected
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>Clear</Button>
+            </div>
+          )}
           <ScrollArea className="w-full whitespace-nowrap">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={sortedRows.length > 0 && sortedRows.every(r => selectedIds.includes(r.id))}
+                      onCheckedChange={(v) => setSelectedIds(v ? sortedRows.map(r => r.id) : [])}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
                   <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('member')}>
                     <div className="flex items-center gap-1">Member <SortIcon column="member" /></div>
                   </TableHead>
@@ -589,7 +609,14 @@ export function CoachingCallAttendanceLog() {
               </TableHeader>
               <TableBody>
                 {sortedRows.map(r => (
-                  <TableRow key={r.id}>
+                  <TableRow key={r.id} data-state={selectedIds.includes(r.id) ? 'selected' : undefined}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.includes(r.id)}
+                        onCheckedChange={() => toggleSelect(r.id)}
+                        aria-label="Select row"
+                      />
+                    </TableCell>
                     <TableCell>
                       <div className="font-medium">{r.user_name}</div>
                       <div className="text-xs text-muted-foreground">{r.user_email}</div>
