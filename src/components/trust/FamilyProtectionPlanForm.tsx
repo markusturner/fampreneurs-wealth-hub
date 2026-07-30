@@ -53,7 +53,12 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
     successor_trustee: "",
     trust_protector: "",
     beneficiaries: "",
+    knows_roles: "no",
+    trusted_people: "",
+    growth_assets: "unsure",
+    growth_assets_detail: "",
     special_notes: "",
+
   })
 
   const update = (k: string, v: any) => setForm(prev => ({ ...prev, [k]: v }))
@@ -331,29 +336,59 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
         </div>
       </div>
 
+      <div className="space-y-2">
+        <Label>14. Do you already know who should hold each trust position (Trustee, Successor Trustee, Trust Protector)?</Label>
+        <RadioGroup value={form.knows_roles} onValueChange={v => update("knows_roles", v)} className="flex flex-wrap gap-4">
+          {[["yes","Yes, I know"],["some","I know some"],["no","No, please help me pick"]].map(([v,l]) => (
+            <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`kr-${v}`} /><Label htmlFor={`kr-${v}`}>{l}</Label></div>
+          ))}
+        </RadioGroup>
+        <p className="text-xs text-muted-foreground">There are no wrong answers. We will explain what each job does and why it matters in your plan.</p>
+      </div>
+
+      <div className="space-y-2">
+        <Label>15. List the people you trust most. Add their name, how they are related, and one strength (money smart, level-headed, organized, etc.)</Label>
+        <Textarea value={form.trusted_people} onChange={e => update("trusted_people", e.target.value)} rows={3} placeholder="Maria Doe — sister — great with money&#10;John Smith — best friend — very fair and calm&#10;Pastor Ray — mentor — trusted, no money ties to us" />
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>14. Who will be your Trustee?</Label>
-          <Input value={form.trustee_name} onChange={e => update("trustee_name", e.target.value)} placeholder="Full name" />
+          <Label>16. Your Trustee (leave blank if you want us to pick)</Label>
+          <Input value={form.trustee_name} onChange={e => update("trustee_name", e.target.value)} placeholder="Full name or leave blank" />
         </div>
         <div className="space-y-2">
-          <Label>15. Who will be your Successor Trustee?</Label>
-          <Input value={form.successor_trustee} onChange={e => update("successor_trustee", e.target.value)} placeholder="Full name" />
+          <Label>17. Your Successor Trustee (leave blank if unsure)</Label>
+          <Input value={form.successor_trustee} onChange={e => update("successor_trustee", e.target.value)} placeholder="Full name or leave blank" />
         </div>
         <div className="space-y-2">
-          <Label>16. Who will be your Trust Protector?</Label>
-          <Input value={form.trust_protector} onChange={e => update("trust_protector", e.target.value)} placeholder="Full name" />
+          <Label>18. Your Trust Protector (leave blank if unsure)</Label>
+          <Input value={form.trust_protector} onChange={e => update("trust_protector", e.target.value)} placeholder="Full name or leave blank" />
         </div>
         <div className="space-y-2">
-          <Label>17. Who are your beneficiaries?</Label>
+          <Label>19. Who are your beneficiaries?</Label>
           <Input value={form.beneficiaries} onChange={e => update("beneficiaries", e.target.value)} placeholder="Names, separated by commas" />
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label>18. Anything special we should know? (health, special needs, blended family, etc.)</Label>
+        <Label>20. Does your trust own anything that grows money (business, rentals, investments, cash-value life insurance)?</Label>
+        <RadioGroup value={form.growth_assets} onValueChange={v => update("growth_assets", v)} className="flex flex-wrap gap-4">
+          {[["yes","Yes"],["some","A little"],["no","No"],["unsure","Not sure"]].map(([v,l]) => (
+            <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`g-${v}`} /><Label htmlFor={`g-${v}`}>{l}</Label></div>
+          ))}
+        </RadioGroup>
+      </div>
+
+      <div className="space-y-2">
+        <Label>21. If yes, what are they? If no, what could you add in the next 12 months?</Label>
+        <Textarea value={form.growth_assets_detail} onChange={e => update("growth_assets_detail", e.target.value)} rows={2} placeholder="Rental duplex, my LLC, index funds, whole life policy..." />
+      </div>
+
+      <div className="space-y-2">
+        <Label>22. Anything special we should know? (health, special needs, blended family, etc.)</Label>
         <Textarea value={form.special_notes} onChange={e => update("special_notes", e.target.value)} rows={2} />
       </div>
+
 
       <Button onClick={handleGenerate} disabled={loading} variant="secondary" className="gap-2 w-full sm:w-auto">
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}

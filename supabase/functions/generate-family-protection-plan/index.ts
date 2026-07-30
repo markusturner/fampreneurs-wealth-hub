@@ -31,21 +31,36 @@ serve(async (req) => {
 
     const systemPrompt = `You are an estate-planning writer. You create clear, kind, easy-to-read Family Protection Plans written at a 7th-grade reading level. Use short sentences. Avoid legal jargon. When you must use a legal term, explain it in plain words in parentheses.`;
 
-    const userPrompt = `Create a custom Family Protection Plan document for this family. Use the answers below. Structure it with these sections and clear headings:
+    const userPrompt = `Create a custom Family Protection Plan document for this family. Use the answers below. Structure it with these exact sections and clear headings:
 
 1. Family Overview
 2. Our Mission & Top Goals
-3. Exposure & Risk Assessment (based on their answers)
+3. Your Risk Level (Legend)
+   - First print this legend exactly, as a list:
+     - Level 1 — Low Risk: Few assets exposed. Simple fixes.
+     - Level 2 — Guarded: Some gaps. Fix within 6-12 months.
+     - Level 3 — Elevated: Real exposure. Fix within 90 days.
+     - Level 4 — High Risk: Assets could be lost now. Fix within 30 days.
+     - Level 5 — Critical: One lawsuit, death, or illness could wipe you out. Fix now.
+   - Then state: "Your Risk Level: X — <name>" and explain in detail WHY they are at that level, naming the exact risk types that apply to them (lawsuit/liability risk, probate risk, estate & tax risk, business risk, real estate risk, divorce or blended-family risk, incapacity risk, creditor risk, and heir-readiness risk). For each risk that applies, say what could actually happen to their family in plain words.
 4. Assets We Are Protecting
-5. Trust Structure & Positions (Trustee, Successor Trustee, Trust Protector)
-6. Beneficiaries
-7. Recommended Next Steps (3-6 concrete action items based on their exposure level and assets)
-8. Special Considerations
+5. Growth Risk: Why a Trust With No Growth Asset Loses
+   - Explain that a trust holding only "sitting" assets slowly loses value to inflation, taxes, and upkeep, so heirs inherit less than expected.
+   - Use their answers about growth assets. If they have none or are unsure, explain the danger clearly and give 3-5 growth options they can place inside the trust (business interest, rental property, dividend/index investments, cash-value life insurance, private lending).
+6. Trust Structure & Positions
+   - Explain in simple words what a Trustee, Successor Trustee, and Trust Protector each do, and why each one is needed.
+   - ASSIGN a specific person to each role. If they named someone, use that name and say why they fit. If they left a role blank or said they were unsure, choose the best fit from their "trusted_people" list and explain your reasoning. If no good fit exists, recommend the type of person or a professional trustee.
+   - Do not leave any role empty.
+7. Beneficiaries
+8. Solutions & Recommended Next Steps
+   - Give clear fixes for EVERY risk you named in section 3 and for the growth gap in section 5. Number them and put the most urgent first.
+9. Special Considerations
 
-Keep the whole document under 900 words. Use headings and short paragraphs or bullet points. Speak directly to the family ("You and your family...").
+Keep the whole document under 1,400 words. Use headings and short paragraphs or bullet points. Speak directly to the family ("You and your family..."). Be honest and direct about risk without scaring them, and always pair a risk with a solution.
 
 Family answers:
 ${JSON.stringify(form_data, null, 2)}`;
+
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
