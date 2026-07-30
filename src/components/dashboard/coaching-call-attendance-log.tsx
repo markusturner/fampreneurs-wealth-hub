@@ -240,6 +240,20 @@ export function CoachingCallAttendanceLog() {
     return { total: rows.length, attended, missed: rows.length - attended, manual }
   }, [rows])
 
+  const toggleSort = (key: typeof sortKey) => {
+    if (sortKey === key) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortKey(key)
+      setSortDirection('asc')
+    }
+  }
+
+  const SortIcon = ({ column }: { column: typeof sortKey }) => {
+    if (sortKey !== column) return <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+    return sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+  }
+
   return (
     <Card>
       <CardHeader>
