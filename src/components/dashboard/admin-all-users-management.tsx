@@ -1851,6 +1851,10 @@ export function AdminAllUsersManagement() {
                   : null
                 const isPartner = !!(user as any).partner_group_id
                 const isPartnerSecondary = isPartner && !(user as any).is_partner_primary
+                const partnerPrimaryUser: any = isPartnerSecondary
+                  ? users.find((u: any) => u.partner_group_id === (user as any).partner_group_id && (u as any).is_partner_primary)
+                  : null
+
                 const partnerNames = isPartner
                   ? users
                       .filter((u: any) => u.partner_group_id === (user as any).partner_group_id && u.user_id !== user.user_id)
