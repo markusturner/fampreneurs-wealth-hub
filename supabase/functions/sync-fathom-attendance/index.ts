@@ -115,7 +115,10 @@ Deno.serve(async (req) => {
         const start = m.recording_start_time ?? m.scheduled_start_time ?? m.created_at
         const end = m.recording_end_time ?? m.scheduled_end_time
         const durationMinutes = start && end ? Math.max(1, Math.round((new Date(end).getTime() - new Date(start).getTime()) / 60000)) : null
-        if (!isAccountabilityCall(title, transcriptText)) continue
+        if (!isAccountabilityCall(title, transcriptText)) {
+          if (skippedTitles.length < 25) skippedTitles.push(title || '(untitled)')
+          continue
+        }
         meetings.push({
           id: String(m.recording_id ?? m.id ?? ''),
           title: title || 'Accountability Call',
