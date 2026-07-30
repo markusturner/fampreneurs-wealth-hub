@@ -663,6 +663,9 @@ export function CoachingCallAttendanceLog() {
             <Button size="sm" variant="outline" onClick={() => exportCsv(selectedIds.length ? sortedRows.filter(r => selectedIds.includes(r.id)) : sortedRows)}>
               <Download className="h-4 w-4 mr-1" /> {selectedIds.length ? `Export ${selectedIds.length}` : 'Export all'}
             </Button>
+            <Button size="sm" variant="outline" onClick={() => setImportOpen(true)}>
+              <Upload className="h-4 w-4 mr-1" /> Import CSV
+            </Button>
             <Button size="sm" variant="outline" onClick={handleScanFathom} disabled={scanning}>
               {scanning ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
               Scan Fathom
