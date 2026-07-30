@@ -185,6 +185,55 @@ export function CoachingCallAttendanceLog() {
     })
   }, [rows, search, filterSource])
 
+  const sortedRows = useMemo(() => {
+    if (!sortKey) return filtered
+    const sorted = [...filtered]
+    const multiplier = sortDirection === 'asc' ? 1 : -1
+    sorted.sort((a, b) => {
+      let comparison = 0
+      switch (sortKey) {
+        case 'member': {
+          const aVal = (a.user_name || a.user_email || '').toLowerCase()
+          const bVal = (b.user_name || b.user_email || '').toLowerCase()
+          comparison = aVal.localeCompare(bVal)
+          break
+        }
+        case 'session': {
+          const aVal = (a.session_title || '').toLowerCase()
+          const bVal = (b.session_title || '').toLowerCase()
+          comparison = aVal.localeCompare(bVal)
+          break
+        }
+        case 'coach': {
+          const aVal = (a.coach_name || '').toLowerCase()
+          const bVal = (b.coach_name || '').toLowerCase()
+          comparison = aVal.localeCompare(bVal)
+          break
+        }
+        case 'date': {
+          const aVal = a.session_date ? new Date(a.session_date).getTime() : 0
+          const bVal = b.session_date ? new Date(b.session_date).getTime() : 0
+          comparison = aVal - bVal
+          break
+        }
+        case 'attendance': {
+          const aVal = a.attended ? 1 : 0
+          const bVal = b.attended ? 1 : 0
+          comparison = aVal - bVal
+          break
+        }
+        case 'duration': {
+          const aVal = a.attendance_duration_minutes ?? -1
+          const bVal = b.attendance_duration_minutes ?? -1
+          comparison = aVal - bVal
+          break
+        }
+      }
+      return comparison * multiplier
+    })
+    return sorted
+  }, [filtered, sortKey, sortDirection])
+
   const stats = useMemo(() => {
     const attended = rows.filter(r => r.attended).length
     const manual = rows.filter(r => r.source === 'manual').length
