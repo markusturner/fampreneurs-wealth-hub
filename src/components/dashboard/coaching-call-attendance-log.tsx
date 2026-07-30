@@ -305,7 +305,13 @@ export function CoachingCallAttendanceLog() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-xs">Coach</Label>
-                      <Input value={fCoach} onChange={(e) => setFCoach(e.target.value)} placeholder="Coach name" />
+                      <Select value={fCoach} onValueChange={setFCoach}>
+                        <SelectTrigger><SelectValue placeholder="Select coach" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Attorney Price">Attorney Price</SelectItem>
+                          <SelectItem value="Markus Turner">Markus Turner</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
                       <Label className="text-xs">Date</Label>
