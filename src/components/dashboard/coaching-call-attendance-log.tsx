@@ -159,7 +159,7 @@ export function CoachingCallAttendanceLog() {
     try {
       const { data: attendance } = await supabase
         .from('session_attendance')
-        .select('id, user_id, session_id, attended, attendance_duration_minutes, source, notes, manual_session_title, manual_coach_name, manual_session_date, created_at')
+        .select('id, user_id, session_id, attended, attendance_duration_minutes, source, notes, manual_session_title, manual_coach_name, manual_session_date, created_at, deleted_at')
         .order('created_at', { ascending: false })
         .limit(1000)
 
