@@ -57,7 +57,7 @@ async function fathomJson(url: URL, key: string): Promise<FathomResponse> {
 }
 
 // An "accountability call" is a coaching / accountability session — not a sales call.
-const ACCOUNTABILITY_HINTS = ['accountability', 'coaching', '1-1', '1:1', 'one on one', 'check-in', 'check in']
+const ACCOUNTABILITY_HINTS = ['accountability', 'coaching', '1-1', '1:1', 'one on one', 'one-on-one', 'check-in', 'check in']
 const SALES_HINTS = [
   'family business accelerator',
   'fba',
@@ -76,7 +76,19 @@ function isAccountabilityCall(title: string, transcript: string): boolean {
   // Only log calls explicitly named as accountability / coaching sessions.
   if (!ACCOUNTABILITY_HINTS.some((h) => t.includes(h))) return false
   const tr = transcript.toLowerCase()
-  const salesTalk = ['book a call', 'booking a call', 'get you booked', 'schedule a call with', 'the investment is', 'payment plan today']
+  const salesTalk = [
+    'book a call',
+    'booking a call',
+    'book your call',
+    'get you booked',
+    'schedule a call',
+    'scheduled a call',
+    'the investment is',
+    'payment plan today',
+    'pay in full',
+    'enroll today',
+    'sign up today',
+  ]
   if (salesTalk.some((p) => tr.includes(p))) return false
   return true
 }
@@ -122,12 +134,14 @@ Deno.serve(async (req) => {
     do {
       const url = new URL('https://api.fathom.ai/external/v1/meetings')
       url.searchParams.set('calendar_invitees_domains_type', 'all')
+      url.searchParams.set('include_transcript', 'true')
       url.searchParams.set('limit', '100')
       if (cursor) url.searchParams.set('cursor', cursor)
       let response = await fathomJson(url, key)
-      // Some Fathom accounts reject the optional invitee-domain filter. Retry
-      // the first page with only the documented date and pagination fields.
+      // OAuth Fathom connections cannot include transcripts. Fall back to the
+      // title-only response, while retaining the strict coaching-title filter.
       if (!response.json && pages === 0 && response.status >= 400 && response.status < 500 && response.status !== 429) {
+        url.searchParams.delete('include_transcript')
         url.searchParams.delete('calendar_invitees_domains_type')
         response = await fathomJson(url, key)
       }
@@ -141,7 +155,9 @@ Deno.serve(async (req) => {
       const pageItems = json.items ?? json.meetings ?? json.data ?? []
       for (const m of pageItems) {
         totalFetched++
-        const title = `${m.meeting_title ?? ''} ${m.title ?? ''}`.trim()
+        const calendarTitle = String(m.meeting_title ?? '').trim()
+        const recordingTitle = String(m.title ?? '').trim()
+        const title = calendarTitle || recordingTitle
         const inviteeArr = Array.isArray(m.calendar_invitees) ? m.calendar_invitees : []
         const transcriptArr = Array.isArray(m.transcript) ? m.transcript : []
         const speakerNames = new Set<string>()
@@ -263,7 +279,9 @@ Deno.serve(async (req) => {
         rows.push({
           user_id: userId,
           session_id: null,
-          session_type: matched.size <= 1 ? 'individual' : 'group',
+          // Each client is always represented by their own attendance row,
+          // including when several clients joined the same coaching call.
+          session_type: 'individual',
           attended: true,
           attendance_duration_minutes: m.durationMinutes,
           manual_session_title: m.title,
