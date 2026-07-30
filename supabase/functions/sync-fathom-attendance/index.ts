@@ -58,17 +58,26 @@ async function fathomJson(url: URL, key: string): Promise<FathomResponse> {
 
 // An "accountability call" is a coaching / accountability session — not a sales call.
 const ACCOUNTABILITY_HINTS = ['accountability', 'coaching', '1-1', '1:1', 'one on one', 'check-in', 'check in']
-const SALES_HINTS = ['sales', 'discovery', 'intro call', 'strategy session', 'onboarding call', 'consult']
+const SALES_HINTS = [
+  'family business accelerator',
+  'fba',
+  'sales',
+  'discovery',
+  'intro call',
+  'strategy session',
+  'onboarding call',
+  'consult',
+]
 
 function isAccountabilityCall(title: string, transcript: string): boolean {
   const t = title.toLowerCase()
+  // Sales meetings (including Family Business Accelerator calls) never count.
   if (SALES_HINTS.some((h) => t.includes(h))) return false
+  // Only log calls explicitly named as accountability / coaching sessions.
+  if (!ACCOUNTABILITY_HINTS.some((h) => t.includes(h))) return false
   const tr = transcript.toLowerCase()
-  // Sales meetings talk about booking calls / signing up — exclude those.
   const salesTalk = ['book a call', 'booking a call', 'get you booked', 'schedule a call with', 'the investment is', 'payment plan today']
   if (salesTalk.some((p) => tr.includes(p))) return false
-  // Title hints are a strong yes; otherwise fall back to "not a sales call"
-  // so real coaching calls with generic titles still get logged.
   return true
 }
 
