@@ -338,13 +338,35 @@ export function AdminAllUsersManagement() {
         return nameA.localeCompare(nameB)
       })
       
-      // Build final list: each trustee followed by their family members
+      // Determine the primary of each partner group (highest contract value, then earliest join)
+      const partnerPrimary: Record<string, string> = {}
+      for (const t of trustees as any[]) {
+        const gid = t.partner_group_id
+        if (!gid) continue
+        const current = partnerPrimary[gid]
+        if (!current) { partnerPrimary[gid] = t.user_id; continue }
+        const currentUser = trustees.find((u: any) => u.user_id === current) as any
+        const better =
+          (Number(t.program_contract_value) || 0) > (Number(currentUser?.program_contract_value) || 0) ||
+          ((Number(t.program_contract_value) || 0) === (Number(currentUser?.program_contract_value) || 0) &&
+            new Date(t.created_at).getTime() < new Date(currentUser?.created_at || 0).getTime())
+        if (better) partnerPrimary[gid] = t.user_id
+      }
+
+      for (const t of trustees as any[]) {
+        t.is_partner_primary = t.partner_group_id ? partnerPrimary[t.partner_group_id] === t.user_id : false
+        t.is_partner_linked = !!t.partner_group_id
+      }
+
+      // Build final list: each trustee (with linked partners right after) followed by their family members
       const sorted: any[] = []
       const placedFamilyMembers = new Set<string>()
-      
-      for (const trustee of trustees) {
+      const placedTrustees = new Set<string>()
+
+      const pushTrusteeBlock = (trustee: any) => {
+        if (placedTrustees.has(trustee.user_id)) return
+        placedTrustees.add(trustee.user_id)
         sorted.push(trustee)
-        // Find family members belonging to this trustee
         const children = familyMembers
           .filter((fm: any) => fm.trustee_user_id === trustee.user_id)
           .sort((a: any, b: any) => getUserDisplayName(a).localeCompare(getUserDisplayName(b)))
@@ -353,12 +375,29 @@ export function AdminAllUsersManagement() {
           placedFamilyMembers.add(child.user_id)
         }
       }
-      
+
+      for (const trustee of trustees as any[]) {
+        if (placedTrustees.has(trustee.user_id)) continue
+        if (trustee.partner_group_id && !trustee.is_partner_primary) {
+          // emit the primary first so linked partners stay together
+          const primary = trustees.find((u: any) => u.user_id === partnerPrimary[trustee.partner_group_id])
+          if (primary) pushTrusteeBlock(primary)
+        }
+        pushTrusteeBlock(trustee)
+        if (trustee.partner_group_id) {
+          const partners = (trustees as any[])
+            .filter((u: any) => u.partner_group_id === trustee.partner_group_id && !placedTrustees.has(u.user_id))
+            .sort((a: any, b: any) => getUserDisplayName(a).localeCompare(getUserDisplayName(b)))
+          for (const p of partners) pushTrusteeBlock(p)
+        }
+      }
+
       // Add any orphan family members (no matched trustee) at the end
       const orphans = familyMembers
         .filter((fm: any) => !placedFamilyMembers.has(fm.user_id))
         .sort((a: any, b: any) => getUserDisplayName(a).localeCompare(getUserDisplayName(b)))
       sorted.push(...orphans)
+
       
       setUsers(sorted)
       setFilteredUsers(sorted)
