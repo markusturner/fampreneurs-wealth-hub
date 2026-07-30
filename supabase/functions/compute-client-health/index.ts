@@ -111,11 +111,17 @@ let _fathomInflight: Promise<FathomListResult> | null = null
 const _fathomDetailsCache = new Map<string, Promise<{ meeting: FathomMeeting; complete: boolean; rateLimited: boolean }>>()
 const FATHOM_TTL_MS = 60 * 60 * 1000
 
+// Global request budget. The platform kills the worker at 150s, so stop all
+// optional external work well before that and return what we already have.
+let _deadlineAt = Number.MAX_SAFE_INTEGER
+const outOfTime = () => Date.now() > _deadlineAt
+
 async function fathomJson(url: URL, key: string): Promise<{ ok: boolean; status: number; json: any; body: string; rateLimited: boolean }> {
   let lastStatus = 0
   let lastBody = ''
   let rateLimited = false
-  for (let attempt = 0; attempt < 7; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (outOfTime()) break
     let res: Response | null = null
     try {
       res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
