@@ -137,8 +137,8 @@ async function fathomJson(url: URL, key: string): Promise<{ ok: boolean; status:
     if (lastStatus === 429) rateLimited = true
     if (![0, 429, 500, 502, 503, 504].includes(lastStatus)) break
     const retryAfter = res?.headers.get('Retry-After')
-    const retryMs = retryAfter && !Number.isNaN(Number(retryAfter)) ? Number(retryAfter) * 1000 : 1000 * Math.pow(2, attempt)
-    await new Promise((r) => setTimeout(r, Math.min(15000, retryMs)))
+    const retryMs = retryAfter && !Number.isNaN(Number(retryAfter)) ? Number(retryAfter) * 1000 : 500 * Math.pow(2, attempt)
+    await new Promise((r) => setTimeout(r, Math.min(2000, retryMs)))
   }
   return { ok: false, status: lastStatus, json: null, body: lastBody, rateLimited }
 }
