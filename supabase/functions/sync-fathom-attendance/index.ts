@@ -41,11 +41,12 @@ const SALES_HINTS = ['sales', 'discovery', 'intro call', 'strategy session', 'on
 function isAccountabilityCall(title: string, transcript: string): boolean {
   const t = title.toLowerCase()
   if (SALES_HINTS.some((h) => t.includes(h))) return false
-  if (!ACCOUNTABILITY_HINTS.some((h) => t.includes(h))) return false
   const tr = transcript.toLowerCase()
   // Sales meetings talk about booking calls / signing up — exclude those.
   const salesTalk = ['book a call', 'booking a call', 'get you booked', 'schedule a call with', 'the investment is', 'payment plan today']
   if (salesTalk.some((p) => tr.includes(p))) return false
+  // Title hints are a strong yes; otherwise fall back to "not a sales call"
+  // so real coaching calls with generic titles still get logged.
   return true
 }
 
@@ -83,6 +84,8 @@ Deno.serve(async (req) => {
 
     // 1) Pull meetings
     const meetings: Meeting[] = []
+    const skippedTitles: string[] = []
+    let totalFetched = 0
     let cursor: string | undefined
     let pages = 0
     do {
@@ -95,6 +98,7 @@ Deno.serve(async (req) => {
       const json = await fathomJson(url, key)
       if (!json) break
       for (const m of json.items ?? []) {
+        totalFetched++
         const title = `${m.meeting_title ?? ''} ${m.title ?? ''}`.trim()
         const inviteeArr = Array.isArray(m.calendar_invitees) ? m.calendar_invitees : []
         const transcriptArr = Array.isArray(m.transcript) ? m.transcript : []
@@ -111,7 +115,10 @@ Deno.serve(async (req) => {
         const start = m.recording_start_time ?? m.scheduled_start_time ?? m.created_at
         const end = m.recording_end_time ?? m.scheduled_end_time
         const durationMinutes = start && end ? Math.max(1, Math.round((new Date(end).getTime() - new Date(start).getTime()) / 60000)) : null
-        if (!isAccountabilityCall(title, transcriptText)) continue
+        if (!isAccountabilityCall(title, transcriptText)) {
+          if (skippedTitles.length < 25) skippedTitles.push(title || '(untitled)')
+          continue
+        }
         meetings.push({
           id: String(m.recording_id ?? m.id ?? ''),
           title: title || 'Accountability Call',
@@ -144,6 +151,7 @@ Deno.serve(async (req) => {
     // 3) Build attendance rows
     const rows: any[] = []
     const seen = new Set<string>()
+    const unmatched: string[] = []
     for (const m of meetings) {
       const matched = new Map<string, any>()
       for (const inv of m.invitees) {
@@ -158,6 +166,9 @@ Deno.serve(async (req) => {
       for (const nm of m.speakerNames) {
         const p = byName.get(nm.trim().toLowerCase())
         if (p) matched.set(p.user_id, p)
+      }
+      if (matched.size === 0 && unmatched.length < 25) {
+        unmatched.push(`${m.title}: ${[...m.invitees.map((i) => i.email || i.name), ...m.speakerNames].join(', ')}`)
       }
       for (const [userId] of matched) {
         const ref = `fathom:${m.id}`
@@ -190,8 +201,17 @@ Deno.serve(async (req) => {
       inserted = data?.length ?? 0
     }
 
+    console.log('fathom sync', { totalFetched, kept: meetings.length, rows: rows.length, inserted, skippedTitles, unmatched })
     return new Response(
-      JSON.stringify({ success: true, meetings_scanned: meetings.length, rows_considered: rows.length, inserted }),
+      JSON.stringify({
+        success: true,
+        total_fetched: totalFetched,
+        meetings_scanned: meetings.length,
+        rows_considered: rows.length,
+        inserted,
+        skipped_titles: skippedTitles,
+        unmatched_participants: unmatched,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (e: any) {
