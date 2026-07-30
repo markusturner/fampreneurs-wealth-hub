@@ -374,23 +374,24 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
 
 
       <div className="space-y-2">
-        <Label>16. Does your trust own anything that grows money (business, rentals, investments, cash-value life insurance)?</Label>
+        <Label>19. Will the trust you are creating hold anything that grows money (business, rentals, investments, cash-value life insurance)?</Label>
         <RadioGroup value={form.growth_assets} onValueChange={v => update("growth_assets", v)} className="flex flex-wrap gap-4">
-          {[["yes","Yes"],["some","A little"],["no","No"],["unsure","Not sure"]].map(([v,l]) => (
+          {[["yes","Yes, I plan to"],["some","Maybe a little"],["no","No"],["unsure","Not sure yet"]].map(([v,l]) => (
             <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`g-${v}`} /><Label htmlFor={`g-${v}`}>{l}</Label></div>
           ))}
         </RadioGroup>
       </div>
 
       <div className="space-y-2">
-        <Label>17. If yes, what are they? If no, what could you add in the next 12 months?</Label>
+        <Label>20. If yes, what would they be? If no, what could you add in the next 12 months?</Label>
         <Textarea value={form.growth_assets_detail} onChange={e => update("growth_assets_detail", e.target.value)} rows={2} placeholder="Rental duplex, my LLC, index funds, whole life policy..." />
       </div>
 
       <div className="space-y-2">
-        <Label>18. Anything special we should know? (health, special needs, blended family, etc.)</Label>
+        <Label>21. Anything special we should know? (health, special needs, blended family, etc.)</Label>
         <Textarea value={form.special_notes} onChange={e => update("special_notes", e.target.value)} rows={2} />
       </div>
+
 
       <p className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
         <strong>Disclaimer:</strong> This plan is for education only. It is not legal, tax, or financial advice. No attorney-client relationship is created. Please review your plan with a licensed attorney and tax professional in your state before you act on it.
