@@ -42,7 +42,6 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
     marital_status: "single",
     kids_count: "",
     top_worry: "",
-    exposure_level: "medium",
     owns_home: "no",
     owns_business: "no",
     net_worth_range: "under_250k",
