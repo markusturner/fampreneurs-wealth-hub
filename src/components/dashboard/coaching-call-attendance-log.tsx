@@ -47,6 +47,7 @@ export function CoachingCallAttendanceLog() {
   // form state
   const [fUserIds, setFUserIds] = useState<string[]>([])
   const [memberPopoverOpen, setMemberPopoverOpen] = useState(false)
+  const [memberSearch, setMemberSearch] = useState('')
   const [fTitle, setFTitle] = useState('')
   const [fCoach, setFCoach] = useState('')
   const [fDate, setFDate] = useState<string>(new Date().toISOString().slice(0, 10))
@@ -231,46 +232,40 @@ export function CoachingCallAttendanceLog() {
                 <div className="space-y-3">
                   <div>
                     <Label className="text-xs">Members</Label>
-                    <Popover open={memberPopoverOpen} onOpenChange={setMemberPopoverOpen}>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" role="combobox" className="w-full justify-between font-normal">
-                          <span className="truncate">
-                            {fUserIds.length === 0
-                              ? 'Select members'
-                              : `${fUserIds.length} selected`}
-                          </span>
-                          <ChevronsUpDown className="h-4 w-4 opacity-50 shrink-0" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search members…" />
-                          <CommandList>
-                            <CommandEmpty>No members found.</CommandEmpty>
-                            <CommandGroup>
-                              {members.map(m => {
-                                const checked = fUserIds.includes(m.user_id)
-                                return (
-                                  <CommandItem
-                                    key={m.user_id}
-                                    value={`${m.name} ${m.email}`}
-                                    onSelect={() => {
-                                      setFUserIds(prev => prev.includes(m.user_id)
-                                        ? prev.filter(id => id !== m.user_id)
-                                        : [...prev, m.user_id])
-                                    }}
-                                  >
-                                    <Check className={`mr-2 h-4 w-4 ${checked ? 'opacity-100' : 'opacity-0'}`} />
-                                    <span className="truncate">{m.name}</span>
-                                    <span className="ml-2 text-xs text-muted-foreground truncate">{m.email}</span>
-                                  </CommandItem>
-                                )
-                              })}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                    <Input
+                      value={memberSearch}
+                      onChange={(e) => setMemberSearch(e.target.value)}
+                      placeholder="Search members…"
+                      className="h-9 mb-2"
+                    />
+                    <div className="max-h-48 overflow-y-auto rounded-md border divide-y">
+                      {members
+                        .filter(m => {
+                          const q = memberSearch.trim().toLowerCase()
+                          if (!q) return true
+                          return m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q)
+                        })
+                        .map(m => {
+                          const checked = fUserIds.includes(m.user_id)
+                          return (
+                            <button
+                              type="button"
+                              key={m.user_id}
+                              onClick={() => setFUserIds(prev => prev.includes(m.user_id)
+                                ? prev.filter(id => id !== m.user_id)
+                                : [...prev, m.user_id])}
+                              className={`w-full flex items-center px-2 py-2 text-left text-sm hover:bg-muted ${checked ? 'bg-muted/60' : ''}`}
+                            >
+                              <Check className={`mr-2 h-4 w-4 shrink-0 ${checked ? 'opacity-100' : 'opacity-0'}`} />
+                              <span className="truncate">{m.name}</span>
+                              <span className="ml-2 text-xs text-muted-foreground truncate">{m.email}</span>
+                            </button>
+                          )
+                        })}
+                      {members.length === 0 && (
+                        <div className="px-2 py-3 text-sm text-muted-foreground">No members found.</div>
+                      )}
+                    </div>
                     {fUserIds.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {fUserIds.map(uid => {
