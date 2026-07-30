@@ -167,6 +167,9 @@ Deno.serve(async (req) => {
         const p = byName.get(nm.trim().toLowerCase())
         if (p) matched.set(p.user_id, p)
       }
+      if (matched.size === 0 && unmatched.length < 25) {
+        unmatched.push(`${m.title}: ${[...m.invitees.map((i) => i.email || i.name), ...m.speakerNames].join(', ')}`)
+      }
       for (const [userId] of matched) {
         const ref = `fathom:${m.id}`
         const dedupe = `${userId}|${ref}`
