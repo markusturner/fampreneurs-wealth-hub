@@ -84,6 +84,8 @@ Deno.serve(async (req) => {
 
     // 1) Pull meetings
     const meetings: Meeting[] = []
+    const skippedTitles: string[] = []
+    let totalFetched = 0
     let cursor: string | undefined
     let pages = 0
     do {
