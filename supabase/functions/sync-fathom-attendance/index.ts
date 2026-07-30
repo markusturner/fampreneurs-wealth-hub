@@ -23,6 +23,15 @@ interface FathomResponse {
   body: string
 }
 
+function normalizeName(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
 async function fathomJson(url: URL, key: string): Promise<FathomResponse> {
   let lastStatus = 0
   let lastBody = ''
@@ -167,10 +176,19 @@ Deno.serve(async (req) => {
 
     const byEmail = new Map<string, any>()
     const byName = new Map<string, any>()
+    const profilesByName: Array<{ profile: any; normalizedName: string }> = []
     for (const p of profiles ?? []) {
       if (p.email) byEmail.set(String(p.email).toLowerCase(), p)
       const full = (p.display_name || `${p.first_name ?? ''} ${p.last_name ?? ''}`).trim().toLowerCase()
-      if (full) byName.set(full, p)
+      if (full) {
+        byName.set(full, p)
+        const normalizedName = normalizeName(full)
+        // Require at least a first and last name so common single words cannot
+        // accidentally attach a recording to the wrong member.
+        if (normalizedName.split(' ').length >= 2 && normalizedName.length >= 6) {
+          profilesByName.push({ profile: p, normalizedName })
+        }
+      }
     }
 
     // 2b) Coaches / admins are excluded from attendance — only clients get logged
@@ -214,6 +232,16 @@ Deno.serve(async (req) => {
       }
       for (const nm of m.speakerNames) {
         add(byName.get(nm.trim().toLowerCase()), undefined, nm)
+      }
+      // Fathom's meeting-list endpoint often returns only the recorder's email,
+      // while the client's full name remains in the accountability call title.
+      // Match that exact normalized full name so those historical calls can be
+      // backfilled without assigning one client's call to another member.
+      const normalizedTitle = ` ${normalizeName(m.title)} `
+      for (const candidate of profilesByName) {
+        if (normalizedTitle.includes(` ${candidate.normalizedName} `)) {
+          add(candidate.profile, candidate.profile.email, candidate.normalizedName)
+        }
       }
       if (matched.size === 0 && unmatched.length < 25) {
         unmatched.push(`${m.title}: ${[...m.invitees.map((i) => i.email || i.name), ...m.speakerNames].join(', ')}`)
