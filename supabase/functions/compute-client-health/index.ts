@@ -148,7 +148,7 @@ function transcriptToText(raw: any): { text: string; speakers: string; speakerEm
     if (speakerEmail) speakerEmailSet.add(speakerEmail)
     return `${sp}: ${t?.text ?? ''}`
   }).join('\n')
-  return { text, speakers: Array.from(speakerSet).join(', '), speakerEmails: Array.from(speakerEmailSet).join(' ') }
+  return { text: text.slice(0, 20000), speakers: Array.from(speakerSet).join(', '), speakerEmails: Array.from(speakerEmailSet).join(' ') }
 }
 
 function summaryToText(raw: any): string {
@@ -168,7 +168,7 @@ async function listFathomMeetings(): Promise<FathomListResult> {
     let requestFailed = false
     let rateLimited = false
     try {
-      const since = new Date(Date.now() - 730 * 86400000).toISOString()
+      const since = new Date(Date.now() - 365 * 86400000).toISOString()
       let cursor: string | undefined
       let pages = 0
       do {
@@ -215,7 +215,7 @@ async function listFathomMeetings(): Promise<FathomListResult> {
 
       cursor = json?.next_cursor ?? undefined
       pages++
-      } while (cursor && pages < 300)
+      } while (cursor && pages < 30)
       complete = !requestFailed && !cursor
     } catch (e) {
       console.error('fathom fetch failed', e)
@@ -236,7 +236,16 @@ async function listFathomMeetings(): Promise<FathomListResult> {
 async function hydrateFathomMeetings(meetings: FathomMeeting[]): Promise<{ meetings: FathomMeeting[]; complete: boolean; rateLimited: boolean }> {
   const key = Deno.env.get('FATHOM_API_KEY')
   if (!key || meetings.length === 0) return { meetings, complete: true, rateLimited: false }
-  const detailed = await Promise.all(meetings.map((m) => {
+  // Cap work per client: only hydrate the most recent meetings, in small
+  // batches. Hydrating everything at once blows the worker memory/CPU limit.
+  const MAX_HYDRATE = 12
+  const BATCH = 3
+  const target = [...meetings]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, MAX_HYDRATE)
+  const detailed: { meeting: FathomMeeting; complete: boolean; rateLimited: boolean }[] = []
+  for (let i = 0; i < target.length; i += BATCH) {
+    const chunk = await Promise.all(target.slice(i, i + BATCH).map((m) => {
     if (!m.id) return Promise.resolve({ meeting: m, complete: true, rateLimited: false })
     const cached = _fathomDetailsCache.get(m.id)
     if (cached) return cached
@@ -265,7 +274,9 @@ async function hydrateFathomMeetings(meetings: FathomMeeting[]): Promise<{ meeti
     })()
     _fathomDetailsCache.set(m.id, task)
     return task
-  }))
+    }))
+    detailed.push(...chunk)
+  }
   return {
     meetings: detailed.map((d) => d.meeting),
     complete: detailed.every((d) => d.complete),
