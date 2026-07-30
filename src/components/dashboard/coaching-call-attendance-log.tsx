@@ -936,7 +936,7 @@ export function CoachingCallAttendanceLog() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedRows.map(r => (
+                {pagedRows.map(r => (
                   <TableRow key={r.id} data-state={selectedIds.includes(r.id) ? 'selected' : undefined}>
                     <TableCell>
                       <Checkbox
