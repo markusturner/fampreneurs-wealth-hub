@@ -94,29 +94,29 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   // THEN agreement — only redirect to agreement AFTER onboarding is done
   useEffect(() => {
-    if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner) {
+    if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner && !skipOnboarding) {
       if (onboardingCompleted === false) return
       if (needsAgreement && agreementCompleted === false && location.pathname !== '/program-agreement' && location.pathname !== '/profile-photo' && location.pathname !== '/profile-settings') {
         navigate("/program-agreement")
       }
     }
-  }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementCompleted, needsAgreement, isAdminOrOwner, navigate, location.pathname])
+  }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementCompleted, needsAgreement, isAdminOrOwner, skipOnboarding, navigate, location.pathname])
 
   // THEN profile photo — only after onboarding AND agreement are done
   useEffect(() => {
-    if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner && profile) {
+    if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner && !skipOnboarding && profile) {
       if (onboardingCompleted === false) return
       if (needsAgreement && agreementCompleted === false) return
       if (!profile.profile_photo_uploaded && location.pathname !== '/profile-photo' && location.pathname !== '/program-agreement') {
         navigate("/profile-photo")
       }
     }
-  }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementCompleted, needsAgreement, isAdminOrOwner, profile, navigate, location.pathname])
+  }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementCompleted, needsAgreement, isAdminOrOwner, skipOnboarding, profile, navigate, location.pathname])
 
   // THEN trust design booking — only on very first login. Once trust_design_booked
   // is true it stays true forever, so returning users are never sent here again.
   useEffect(() => {
-    if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner && profile) {
+    if (!loading && !onboardingLoading && !agreementLoading && !roleLoading && user && !isAdminOrOwner && !skipOnboarding && profile) {
       if (onboardingCompleted === false) return
       if (needsAgreement && agreementCompleted === false) return
       if (!profile.profile_photo_uploaded) return
@@ -124,7 +124,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         navigate("/trust-design-booking")
       }
     }
-  }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementCompleted, needsAgreement, isAdminOrOwner, profile, navigate, location.pathname])
+  }, [user, loading, onboardingLoading, agreementLoading, roleLoading, onboardingCompleted, agreementCompleted, needsAgreement, isAdminOrOwner, skipOnboarding, profile, navigate, location.pathname])
 
   // Only block the WHOLE app on the very first auth load. After that, let pages
   // render while background hooks (subscription, roles, onboarding) refetch.
