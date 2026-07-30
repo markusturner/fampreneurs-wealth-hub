@@ -606,6 +606,16 @@ export function CoachingCallAttendanceLog() {
     return sorted
   }, [filtered, sortKey, sortDirection])
 
+  const PAGE_SIZE = 5
+  const [page, setPage] = useState(1)
+  const totalPages = Math.max(1, Math.ceil(sortedRows.length / PAGE_SIZE))
+  useEffect(() => { setPage(1) }, [search, filterSource, view, filterStatus, filterType, filterCoach, filterFrom, filterTo, filterMinDuration, sortKey, sortDirection])
+  useEffect(() => { if (page > totalPages) setPage(totalPages) }, [page, totalPages])
+  const pagedRows = useMemo(
+    () => sortedRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [sortedRows, page]
+  )
+
   const stats = useMemo(() => {
     const active = rows.filter(r => !r.deleted_at)
     const attended = active.filter(r => r.attended).length
