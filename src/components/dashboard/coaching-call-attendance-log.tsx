@@ -180,7 +180,7 @@ export function CoachingCallAttendanceLog() {
   const handleScanFathom = async () => {
     setScanning(true)
     try {
-      const { data, error } = await supabase.functions.invoke('sync-fathom-attendance', { body: { days: 90 } })
+      const { data, error } = await supabase.functions.invoke('sync-fathom-attendance', { body: { days: 365 } })
       if (error) throw error
       if ((data as any)?.error) throw new Error((data as any).error)
       const d: any = data
