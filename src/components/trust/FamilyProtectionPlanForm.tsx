@@ -52,7 +52,6 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
     trustee_name: "",
     successor_trustee: "",
     trust_protector: "",
-    beneficiaries: "",
     knows_roles: "no",
     trusted_people: "",
     growth_assets: "unsure",
@@ -347,7 +346,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>15. List the people you trust most. Add their name, how they are related, and one strength (money smart, level-headed, organized, etc.)</Label>
+        <Label>15. List the people you trust most. Be very descriptive. Add their full name, how they are related to you, and one strength (money smart, level-headed, organized, etc.)</Label>
         <Textarea value={form.trusted_people} onChange={e => update("trusted_people", e.target.value)} rows={3} placeholder="Maria Doe — sister — great with money&#10;John Smith — best friend — very fair and calm&#10;Pastor Ray — mentor — trusted, no money ties to us" />
       </div>
 
@@ -368,10 +367,6 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
         </div>
       )}
 
-      <div className="space-y-2">
-        <Label>16. Who are your beneficiaries?</Label>
-        <Input value={form.beneficiaries} onChange={e => update("beneficiaries", e.target.value)} placeholder="Names, separated by commas" />
-      </div>
 
       <div className="space-y-2">
         <Label>17. Does your trust own anything that grows money (business, rentals, investments, cash-value life insurance)?</Label>
