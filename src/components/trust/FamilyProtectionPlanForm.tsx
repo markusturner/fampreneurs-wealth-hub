@@ -42,7 +42,6 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
     marital_status: "single",
     kids_count: "",
     top_worry: "",
-    exposure_level: "medium",
     owns_home: "no",
     owns_business: "no",
     net_worth_range: "under_250k",
@@ -271,31 +270,23 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
           <Label>5. How many kids do you have?</Label>
           <Input type="number" min="0" value={form.kids_count} onChange={e => update("kids_count", e.target.value)} placeholder="0" />
         </div>
-        <div className="space-y-2">
-          <Label>6. How risky does your situation feel to you right now? (We will tell you your real risk level in your plan.)</Label>
-          <RadioGroup value={form.exposure_level} onValueChange={v => update("exposure_level", v)} className="flex gap-4">
-            {["low","medium","high"].map(o => (
-              <div key={o} className="flex items-center gap-2"><RadioGroupItem value={o} id={`e-${o}`} /><Label htmlFor={`e-${o}`} className="capitalize">{o}</Label></div>
-            ))}
-          </RadioGroup>
-        </div>
       </div>
 
       <div className="space-y-2">
-        <Label>7. What is your biggest worry about your family's future?</Label>
+        <Label>6. What is your biggest worry about your family's future?</Label>
         <Textarea value={form.top_worry} onChange={e => update("top_worry", e.target.value)} placeholder="Losing what we built, taxes, lawsuits, kids not being ready..." rows={2} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>8. Do you own a home?</Label>
+          <Label>7. Do you own a home?</Label>
           <RadioGroup value={form.owns_home} onValueChange={v => update("owns_home", v)} className="flex gap-4">
             <div className="flex items-center gap-2"><RadioGroupItem value="yes" id="h-yes" /><Label htmlFor="h-yes">Yes</Label></div>
             <div className="flex items-center gap-2"><RadioGroupItem value="no" id="h-no" /><Label htmlFor="h-no">No</Label></div>
           </RadioGroup>
         </div>
         <div className="space-y-2">
-          <Label>9. Do you own a business?</Label>
+          <Label>8. Do you own a business?</Label>
           <RadioGroup value={form.owns_business} onValueChange={v => update("owns_business", v)} className="flex gap-4">
             <div className="flex items-center gap-2"><RadioGroupItem value="yes" id="b-yes" /><Label htmlFor="b-yes">Yes</Label></div>
             <div className="flex items-center gap-2"><RadioGroupItem value="no" id="b-no" /><Label htmlFor="b-no">No</Label></div>
@@ -304,7 +295,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>10. About how much is your family worth today?</Label>
+        <Label>9. About how much is your family worth today?</Label>
         <RadioGroup value={form.net_worth_range} onValueChange={v => update("net_worth_range", v)} className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {[
             ["under_250k","Under $250k"],
@@ -319,17 +310,17 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>11. What are your top 3 goals for your family?</Label>
+        <Label>10. What are your top 3 goals for your family?</Label>
         <Textarea value={form.top_goals} onChange={e => update("top_goals", e.target.value)} placeholder="1. Keep our home safe...&#10;2. Pay for kids' college...&#10;3. Start a family business..." rows={3} />
       </div>
 
       <div className="space-y-2">
-        <Label>12. Your family mission (one clear sentence)</Label>
+        <Label>11. Your family mission (one clear sentence)</Label>
         <Textarea value={form.family_mission} onChange={e => update("family_mission", e.target.value)} placeholder="We build wealth, faith, and freedom for every generation." rows={2} />
       </div>
 
       <div className="space-y-2">
-        <Label>13. What do you want to protect? (check all that apply)</Label>
+        <Label>12. What do you want to protect? (check all that apply)</Label>
         <div className="grid grid-cols-2 gap-2">
           {ASSET_OPTIONS.map(a => (
             <div key={a} className="flex items-center gap-2">
@@ -341,7 +332,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>14. For each item you checked, what is its purpose? Will it stay the same or change over time?</Label>
+        <Label>13. For each item you checked, what is its purpose? Will it stay the same or change over time?</Label>
         <p className="text-xs text-muted-foreground">
           This helps us pick the right trust for each asset. Example: your personal home usually never changes, so it fits well inside an irrevocable trust. A short-term rental or a property you may sell, refinance, or move soon may fit better in a revocable trust.
         </p>
@@ -349,7 +340,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>15. Do you own any assets outside of the United States?</Label>
+        <Label>14. Do you own any assets outside of the United States?</Label>
         <RadioGroup value={form.foreign_assets} onValueChange={v => update("foreign_assets", v)} className="flex flex-wrap gap-4">
           {[["yes","Yes"],["no","No"],["unsure","Not sure"]].map(([v,l]) => (
             <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`fa-${v}`} /><Label htmlFor={`fa-${v}`}>{l}</Label></div>
@@ -361,7 +352,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>16. Do you have family or someone you plan to pass your wealth down to?</Label>
+        <Label>15. Do you have family or someone you plan to pass your wealth down to?</Label>
         <RadioGroup value={form.has_heirs} onValueChange={v => update("has_heirs", v)} className="flex flex-wrap gap-4">
           {[["yes","Yes"],["unsure","I am not sure"],["no","No, I do not have anyone"]].map(([v,l]) => (
             <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`hh-${v}`} /><Label htmlFor={`hh-${v}`}>{l}</Label></div>
@@ -373,7 +364,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>17. Do you already know who should hold each trust position (Trustee, Successor Trustee, Trust Protector)?</Label>
+        <Label>16. Do you already know who should hold each trust position (Trustee, Successor Trustee, Trust Protector)?</Label>
         <RadioGroup value={form.knows_roles} onValueChange={v => update("knows_roles", v)} className="flex flex-wrap gap-4">
           {[["yes","Yes, I know"],["some","I know some"],["no","No, please help me pick"]].map(([v,l]) => (
             <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`kr-${v}`} /><Label htmlFor={`kr-${v}`}>{l}</Label></div>
@@ -383,7 +374,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>18. List the people you trust most. Be very descriptive. Add their full name, how they are related to you, and one strength (money smart, level-headed, organized, etc.)</Label>
+        <Label>17. List the people you trust most. Be very descriptive. Add their full name, how they are related to you, and one strength (money smart, level-headed, organized, etc.)</Label>
         <Textarea value={form.trusted_people} onChange={e => update("trusted_people", e.target.value)} rows={3} placeholder="Maria Doe — sister — great with money&#10;John Smith — best friend — very fair and calm&#10;Pastor Ray — mentor — trusted, no money ties to us" />
       </div>
 
@@ -407,7 +398,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
 
 
       <div className="space-y-2">
-        <Label>19. Will the trust you are creating hold anything that grows money (business, rentals, investments, cash-value life insurance)?</Label>
+        <Label>18. Will the trust you are creating in the future hold anything that grows money (business, rentals, investments, cash-value life insurance)?</Label>
         <RadioGroup value={form.growth_assets} onValueChange={v => update("growth_assets", v)} className="flex flex-wrap gap-4">
           {[["yes","Yes, I plan to"],["some","Maybe a little"],["no","No"],["unsure","Not sure yet"]].map(([v,l]) => (
             <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`g-${v}`} /><Label htmlFor={`g-${v}`}>{l}</Label></div>
@@ -416,12 +407,12 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>20. If yes, what would they be? If no, what could you add in the next 12 months?</Label>
+        <Label>19. If yes, what would they be? If no, what could you add in the next 12 months?</Label>
         <Textarea value={form.growth_assets_detail} onChange={e => update("growth_assets_detail", e.target.value)} rows={2} placeholder="Rental duplex, my LLC, index funds, whole life policy..." />
       </div>
 
       <div className="space-y-2">
-        <Label>21. Anything special we should know? (health, special needs, blended family, etc.)</Label>
+        <Label>20. Anything special we should know? (health, special needs, blended family, etc.)</Label>
         <Textarea value={form.special_notes} onChange={e => update("special_notes", e.target.value)} rows={2} />
       </div>
 
