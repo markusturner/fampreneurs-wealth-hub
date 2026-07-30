@@ -341,7 +341,39 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>14. Do you already know who should hold each trust position (Trustee, Successor Trustee, Trust Protector)?</Label>
+        <Label>14. For each item you checked, what is its purpose? Will it stay the same or change over time?</Label>
+        <p className="text-xs text-muted-foreground">
+          This helps us pick the right trust for each asset. Example: your personal home usually never changes, so it fits well inside an irrevocable trust. A short-term rental or a property you may sell, refinance, or move soon may fit better in a revocable trust.
+        </p>
+        <Textarea value={form.asset_purposes} onChange={e => update("asset_purposes", e.target.value)} rows={4} placeholder="Home — we live here forever, never selling&#10;Airbnb condo — may sell in 2 years&#10;LLC — growing, may add partners" />
+      </div>
+
+      <div className="space-y-2">
+        <Label>15. Do you own any assets outside of the United States?</Label>
+        <RadioGroup value={form.foreign_assets} onValueChange={v => update("foreign_assets", v)} className="flex flex-wrap gap-4">
+          {[["yes","Yes"],["no","No"],["unsure","Not sure"]].map(([v,l]) => (
+            <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`fa-${v}`} /><Label htmlFor={`fa-${v}`}>{l}</Label></div>
+          ))}
+        </RadioGroup>
+        {form.foreign_assets !== "no" && (
+          <Textarea value={form.foreign_assets_detail} onChange={e => update("foreign_assets_detail", e.target.value)} rows={2} placeholder="Land in Ghana, bank account in Mexico, condo in Portugal..." />
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label>16. Do you have family or someone you plan to pass your wealth down to?</Label>
+        <RadioGroup value={form.has_heirs} onValueChange={v => update("has_heirs", v)} className="flex flex-wrap gap-4">
+          {[["yes","Yes"],["unsure","I am not sure"],["no","No, I do not have anyone"]].map(([v,l]) => (
+            <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`hh-${v}`} /><Label htmlFor={`hh-${v}`}>{l}</Label></div>
+          ))}
+        </RadioGroup>
+        {form.has_heirs !== "yes" && (
+          <Textarea value={form.heirs_alternative_notes} onChange={e => update("heirs_alternative_notes", e.target.value)} rows={2} placeholder="Causes, churches, charities, close friends, or missions you care about..." />
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label>17. Do you already know who should hold each trust position (Trustee, Successor Trustee, Trust Protector)?</Label>
         <RadioGroup value={form.knows_roles} onValueChange={v => update("knows_roles", v)} className="flex flex-wrap gap-4">
           {[["yes","Yes, I know"],["some","I know some"],["no","No, please help me pick"]].map(([v,l]) => (
             <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`kr-${v}`} /><Label htmlFor={`kr-${v}`}>{l}</Label></div>
@@ -351,9 +383,10 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>15. List the people you trust most. Be very descriptive. Add their full name, how they are related to you, and one strength (money smart, level-headed, organized, etc.)</Label>
+        <Label>18. List the people you trust most. Be very descriptive. Add their full name, how they are related to you, and one strength (money smart, level-headed, organized, etc.)</Label>
         <Textarea value={form.trusted_people} onChange={e => update("trusted_people", e.target.value)} rows={3} placeholder="Maria Doe — sister — great with money&#10;John Smith — best friend — very fair and calm&#10;Pastor Ray — mentor — trusted, no money ties to us" />
       </div>
+
 
       {form.knows_roles !== "no" && (
         <div className="grid gap-4 sm:grid-cols-2">
