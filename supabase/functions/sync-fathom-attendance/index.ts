@@ -173,18 +173,22 @@ Deno.serve(async (req) => {
     const unmatched: string[] = []
     for (const m of meetings) {
       const matched = new Map<string, any>()
+      const add = (p: any, email?: string, name?: string) => {
+        if (!p) return
+        if (isStaff(p.user_id, email ?? p.email, name)) return
+        matched.set(p.user_id, p)
+      }
       for (const inv of m.invitees) {
+        if (isStaff('', inv.email, inv.name)) continue
         const p = inv.email ? byEmail.get(inv.email) : null
         const p2 = p ?? (inv.name ? byName.get(inv.name.trim().toLowerCase()) : null)
-        if (p2) matched.set(p2.user_id, p2)
+        add(p2, inv.email, inv.name)
       }
       for (const em of m.speakerEmails) {
-        const p = byEmail.get(em)
-        if (p) matched.set(p.user_id, p)
+        add(byEmail.get(em), em)
       }
       for (const nm of m.speakerNames) {
-        const p = byName.get(nm.trim().toLowerCase())
-        if (p) matched.set(p.user_id, p)
+        add(byName.get(nm.trim().toLowerCase()), undefined, nm)
       }
       if (matched.size === 0 && unmatched.length < 25) {
         unmatched.push(`${m.title}: ${[...m.invitees.map((i) => i.email || i.name), ...m.speakerNames].join(', ')}`)
@@ -197,7 +201,7 @@ Deno.serve(async (req) => {
         rows.push({
           user_id: userId,
           session_id: null,
-          session_type: matched.size <= 2 ? 'individual' : 'group',
+          session_type: matched.size <= 1 ? 'individual' : 'group',
           attended: true,
           attendance_duration_minutes: m.durationMinutes,
           manual_session_title: m.title,
@@ -209,6 +213,7 @@ Deno.serve(async (req) => {
         })
       }
     }
+
 
     let inserted = 0
     if (rows.length) {
