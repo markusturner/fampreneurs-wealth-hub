@@ -997,6 +997,18 @@ export function CoachingCallAttendanceLog() {
             </Table>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
+          <div className="flex items-center justify-between pt-3">
+            <div className="text-xs text-muted-foreground">
+              {sortedRows.length === 0
+                ? 'No logs'
+                : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, sortedRows.length)} of ${sortedRows.length}`}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(p => Math.max(1, p - 1))}>Previous</Button>
+              <span className="text-xs text-muted-foreground">Page {page} of {totalPages}</span>
+              <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))}>Next</Button>
+            </div>
+          </div>
           </>
         )}
       </CardContent>
