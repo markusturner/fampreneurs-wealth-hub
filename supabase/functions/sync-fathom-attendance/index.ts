@@ -41,11 +41,12 @@ const SALES_HINTS = ['sales', 'discovery', 'intro call', 'strategy session', 'on
 function isAccountabilityCall(title: string, transcript: string): boolean {
   const t = title.toLowerCase()
   if (SALES_HINTS.some((h) => t.includes(h))) return false
-  if (!ACCOUNTABILITY_HINTS.some((h) => t.includes(h))) return false
   const tr = transcript.toLowerCase()
   // Sales meetings talk about booking calls / signing up — exclude those.
   const salesTalk = ['book a call', 'booking a call', 'get you booked', 'schedule a call with', 'the investment is', 'payment plan today']
   if (salesTalk.some((p) => tr.includes(p))) return false
+  // Title hints are a strong yes; otherwise fall back to "not a sales call"
+  // so real coaching calls with generic titles still get logged.
   return true
 }
 
