@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { Loader2, Calendar, Search, Plus, Trash2, UserPlus, Check, ChevronsUpDown, X, ArrowUpDown, ArrowDown, ArrowUp, Pencil, RefreshCw } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/contexts/AuthContext'
@@ -67,6 +68,20 @@ export function CoachingCallAttendanceLog() {
   const [eDuration, setEDuration] = useState('')
   const [eNotes, setENotes] = useState('')
   const [scanning, setScanning] = useState(false)
+
+  // bulk selection state
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [bulkOpen, setBulkOpen] = useState(false)
+  const [bulkSaving, setBulkSaving] = useState(false)
+  const [bulkDeleting, setBulkDeleting] = useState(false)
+  const [bTitle, setBTitle] = useState('')
+  const [bCoach, setBCoach] = useState('')
+  const [bDate, setBDate] = useState('')
+  const [bStatus, setBStatus] = useState<'keep' | 'attended' | 'missed'>('keep')
+  const [bDuration, setBDuration] = useState('')
+
+  const toggleSelect = (id: string) =>
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
 
   const openEdit = (r: AttendanceRow) => {
     setEditRow(r)
@@ -241,6 +256,62 @@ export function CoachingCallAttendanceLog() {
     if (error) { toast.error('Delete failed'); return }
     toast.success('Removed')
     setRows(prev => prev.filter(r => r.id !== id))
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return
+    if (!window.confirm(`Delete ${selectedIds.length} selected log${selectedIds.length === 1 ? '' : 's'}?`)) return
+    setBulkDeleting(true)
+    try {
+      const { error } = await supabase.from('session_attendance').delete().in('id', selectedIds)
+      if (error) throw error
+      setRows(prev => prev.filter(r => !selectedIds.includes(r.id)))
+      toast.success(`Deleted ${selectedIds.length} logs`)
+      setSelectedIds([])
+    } catch (e: any) {
+      toast.error('Delete failed: ' + (e?.message ?? e))
+    } finally {
+      setBulkDeleting(false)
+    }
+  }
+
+  const openBulkEdit = () => {
+    setBTitle(''); setBCoach(''); setBDate(''); setBStatus('keep'); setBDuration('')
+    setBulkOpen(true)
+  }
+
+  const handleBulkUpdate = async () => {
+    if (selectedIds.length === 0) return
+    const patch: any = {}
+    if (bTitle.trim()) {
+      patch.manual_session_title = bTitle.trim()
+      patch.session_type = bTitle.toLowerCase().includes('1-1') ? 'individual' : 'group'
+    }
+    if (bCoach.trim()) patch.manual_coach_name = bCoach.trim()
+    if (bDate) patch.manual_session_date = bDate
+    if (bStatus !== 'keep') patch.attended = bStatus === 'attended'
+    if (bDuration) patch.attendance_duration_minutes = Number(bDuration)
+    if (Object.keys(patch).length === 0) { toast.error('Change at least one field'); return }
+    setBulkSaving(true)
+    try {
+      const { error } = await supabase.from('session_attendance').update(patch).in('id', selectedIds)
+      if (error) throw error
+      setRows(prev => prev.map(r => selectedIds.includes(r.id) ? {
+        ...r,
+        session_title: patch.manual_session_title ?? r.session_title,
+        coach_name: patch.manual_coach_name ?? r.coach_name,
+        session_date: patch.manual_session_date ?? r.session_date,
+        attended: patch.attended !== undefined ? patch.attended : r.attended,
+        attendance_duration_minutes: patch.attendance_duration_minutes ?? r.attendance_duration_minutes,
+      } : r))
+      toast.success(`Updated ${selectedIds.length} logs`)
+      setBulkOpen(false)
+      setSelectedIds([])
+    } catch (e: any) {
+      toast.error('Could not update: ' + (e?.message ?? e))
+    } finally {
+      setBulkSaving(false)
+    }
   }
 
   const filtered = useMemo(() => {
@@ -490,10 +561,30 @@ export function CoachingCallAttendanceLog() {
         ) : sortedRows.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">No attendance records yet. Use "Log attendance" to add one.</p>
         ) : (
+          <>
+          {selectedIds.length > 0 && (
+            <div className="flex items-center gap-2 mb-3 rounded-md border bg-muted/40 px-3 py-2 flex-wrap">
+              <span className="text-sm font-medium">{selectedIds.length} selected</span>
+              <Button size="sm" variant="outline" onClick={openBulkEdit}>
+                <Pencil className="h-3.5 w-3.5 mr-1" /> Edit selected
+              </Button>
+              <Button size="sm" variant="outline" className="text-red-600 border-red-300 hover:bg-red-50" onClick={handleBulkDelete} disabled={bulkDeleting}>
+                {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 mr-1" />} Delete selected
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>Clear</Button>
+            </div>
+          )}
           <ScrollArea className="w-full whitespace-nowrap">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <Checkbox
+                      checked={sortedRows.length > 0 && sortedRows.every(r => selectedIds.includes(r.id))}
+                      onCheckedChange={(v) => setSelectedIds(v ? sortedRows.map(r => r.id) : [])}
+                      aria-label="Select all"
+                    />
+                  </TableHead>
                   <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('member')}>
                     <div className="flex items-center gap-1">Member <SortIcon column="member" /></div>
                   </TableHead>
@@ -518,7 +609,14 @@ export function CoachingCallAttendanceLog() {
               </TableHeader>
               <TableBody>
                 {sortedRows.map(r => (
-                  <TableRow key={r.id}>
+                  <TableRow key={r.id} data-state={selectedIds.includes(r.id) ? 'selected' : undefined}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.includes(r.id)}
+                        onCheckedChange={() => toggleSelect(r.id)}
+                        aria-label="Select row"
+                      />
+                    </TableCell>
                     <TableCell>
                       <div className="font-medium">{r.user_name}</div>
                       <div className="text-xs text-muted-foreground">{r.user_email}</div>
@@ -562,6 +660,7 @@ export function CoachingCallAttendanceLog() {
             </Table>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
+          </>
         )}
       </CardContent>
 
@@ -619,6 +718,60 @@ export function CoachingCallAttendanceLog() {
             <Button variant="ghost" onClick={() => setEditRow(null)}>Cancel</Button>
             <Button onClick={handleUpdate} disabled={editSaving} className="bg-[#ffb500] text-[#290a52] hover:bg-[#e6a300]">
               {editSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null} Save changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Pencil className="h-4 w-4" /> Edit {selectedIds.length} Logs</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">Leave a field blank to keep its current value.</p>
+            <div>
+              <Label className="text-xs">Session type</Label>
+              <Select value={bTitle} onValueChange={setBTitle}>
+                <SelectTrigger><SelectValue placeholder="Keep current" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Group Coaching">Group Coaching</SelectItem>
+                  <SelectItem value="1-1 Coaching Call">1-1 Coaching Call</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Coach</Label>
+                <Input value={bCoach} onChange={(e) => setBCoach(e.target.value)} placeholder="Keep current" />
+              </div>
+              <div>
+                <Label className="text-xs">Date</Label>
+                <Input type="date" value={bDate} onChange={(e) => setBDate(e.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Duration (min)</Label>
+                <Input type="number" min={0} value={bDuration} onChange={(e) => setBDuration(e.target.value)} placeholder="Keep current" />
+              </div>
+              <div>
+                <Label className="text-xs">Status</Label>
+                <Select value={bStatus} onValueChange={(v) => setBStatus(v as any)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="keep">Keep current</SelectItem>
+                    <SelectItem value="attended">Attended</SelectItem>
+                    <SelectItem value="missed">Missed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setBulkOpen(false)}>Cancel</Button>
+            <Button onClick={handleBulkUpdate} disabled={bulkSaving} className="bg-[#ffb500] text-[#290a52] hover:bg-[#e6a300]">
+              {bulkSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null} Apply to {selectedIds.length}
             </Button>
           </DialogFooter>
         </DialogContent>
