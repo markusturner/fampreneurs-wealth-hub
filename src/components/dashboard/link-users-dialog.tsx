@@ -139,7 +139,7 @@ export function LinkUsersDialog({ open, onOpenChange, userId, userName, onSaved 
         const cleaned = (row.linked_user_ids as string[]).filter((x) => x !== userId)
         await supabase
           .from('profiles')
-          .update({ linked_user_ids: cleaned } as any)
+          .update({ linked_user_ids: cleaned, partner_group_id: cleaned.length > 0 ? undefined : null } as any)
           .eq('user_id', row.user_id)
       }
 
