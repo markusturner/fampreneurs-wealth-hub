@@ -168,7 +168,7 @@ export default function SopLibraryPanel() {
             {visibleSops.map((sop, index) => (
               <div
                 key={sop.id}
-                className="relative"
+                className="relative h-[220px]"
                 onDragOver={(e) => {
                   if (!isAdminOrOwner || !draggingId) return
                   e.preventDefault()

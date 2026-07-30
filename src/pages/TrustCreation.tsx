@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useSearchParams, useNavigate } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -424,7 +424,7 @@ export default function TrustCreation() {
           </h1>
           <p className="text-muted-foreground text-sm">Select a trust type or tool to get started.</p>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => window.location.assign('/classroom')} className="gap-1.5 shrink-0">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/classroom')} className="gap-1.5 shrink-0">
           <ArrowLeft className="h-4 w-4" /> Back to Classroom
         </Button>
       </div>
