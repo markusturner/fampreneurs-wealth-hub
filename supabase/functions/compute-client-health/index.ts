@@ -111,11 +111,17 @@ let _fathomInflight: Promise<FathomListResult> | null = null
 const _fathomDetailsCache = new Map<string, Promise<{ meeting: FathomMeeting; complete: boolean; rateLimited: boolean }>>()
 const FATHOM_TTL_MS = 60 * 60 * 1000
 
+// Global request budget. The platform kills the worker at 150s, so stop all
+// optional external work well before that and return what we already have.
+let _deadlineAt = Number.MAX_SAFE_INTEGER
+const outOfTime = () => Date.now() > _deadlineAt
+
 async function fathomJson(url: URL, key: string): Promise<{ ok: boolean; status: number; json: any; body: string; rateLimited: boolean }> {
   let lastStatus = 0
   let lastBody = ''
   let rateLimited = false
-  for (let attempt = 0; attempt < 7; attempt++) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (outOfTime()) break
     let res: Response | null = null
     try {
       res = await fetch(url.toString(), { headers: { 'X-Api-Key': key, 'Accept': 'application/json' } })
@@ -131,8 +137,8 @@ async function fathomJson(url: URL, key: string): Promise<{ ok: boolean; status:
     if (lastStatus === 429) rateLimited = true
     if (![0, 429, 500, 502, 503, 504].includes(lastStatus)) break
     const retryAfter = res?.headers.get('Retry-After')
-    const retryMs = retryAfter && !Number.isNaN(Number(retryAfter)) ? Number(retryAfter) * 1000 : 1000 * Math.pow(2, attempt)
-    await new Promise((r) => setTimeout(r, Math.min(15000, retryMs)))
+    const retryMs = retryAfter && !Number.isNaN(Number(retryAfter)) ? Number(retryAfter) * 1000 : 500 * Math.pow(2, attempt)
+    await new Promise((r) => setTimeout(r, Math.min(2000, retryMs)))
   }
   return { ok: false, status: lastStatus, json: null, body: lastBody, rateLimited }
 }
@@ -238,13 +244,14 @@ async function hydrateFathomMeetings(meetings: FathomMeeting[]): Promise<{ meeti
   if (!key || meetings.length === 0) return { meetings, complete: true, rateLimited: false }
   // Cap work per client: only hydrate the most recent meetings, in small
   // batches. Hydrating everything at once blows the worker memory/CPU limit.
-  const MAX_HYDRATE = 12
+  const MAX_HYDRATE = 6
   const BATCH = 3
   const target = [...meetings]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, MAX_HYDRATE)
   const detailed: { meeting: FathomMeeting; complete: boolean; rateLimited: boolean }[] = []
   for (let i = 0; i < target.length; i += BATCH) {
+    if (outOfTime()) break
     const chunk = await Promise.all(target.slice(i, i + BATCH).map((m) => {
     if (!m.id) return Promise.resolve({ meeting: m, complete: true, rateLimited: false })
     const cached = _fathomDetailsCache.get(m.id)
@@ -277,9 +284,11 @@ async function hydrateFathomMeetings(meetings: FathomMeeting[]): Promise<{ meeti
     }))
     detailed.push(...chunk)
   }
+  const hydratedIds = new Set(detailed.map((d) => d.meeting.id))
+  const remaining = target.filter((m) => !hydratedIds.has(m.id))
   return {
-    meetings: detailed.map((d) => d.meeting),
-    complete: detailed.every((d) => d.complete),
+    meetings: [...detailed.map((d) => d.meeting), ...remaining],
+    complete: remaining.length === 0 && detailed.every((d) => d.complete),
     rateLimited: detailed.some((d) => d.rateLimited),
   }
 }
@@ -350,6 +359,8 @@ function clientMeetingScore(meeting: FathomMeeting, fullName: string, email: str
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+
+  _deadlineAt = Date.now() + 110_000
 
   try {
     const supabase = createClient(
@@ -668,7 +679,7 @@ Deno.serve(async (req) => {
     // -------- Auto-draft retention messages only when explicitly requested --------
     let includeDrafts = false
     try { includeDrafts = (await req.clone().json().catch(() => ({})))?.include_drafts === true } catch {}
-    const lovableKey = includeDrafts ? Deno.env.get('LOVABLE_API_KEY') : null
+    const lovableKey = includeDrafts && !outOfTime() ? Deno.env.get('LOVABLE_API_KEY') : null
     if (lovableKey) {
       const PROMPTS: Record<string, string> = {
         at_risk: 'Client is at risk of churning. Write a short, warm, empathetic check-in (3-5 sentences). Acknowledge they have been quiet, ask how they are personally, offer a no-pressure 15-min call. Sign off "— Markus".',
