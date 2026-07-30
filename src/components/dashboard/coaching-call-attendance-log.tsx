@@ -9,7 +9,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Loader2, Calendar, Search, Plus, Trash2, UserPlus, Check, ChevronsUpDown, X, ArrowUpDown, ArrowDown, ArrowUp, Pencil, RefreshCw } from 'lucide-react'
+import { Loader2, Calendar, Search, Plus, Trash2, UserPlus, Check, ChevronsUpDown, X, ArrowUpDown, ArrowDown, ArrowUp, Pencil, RefreshCw, Download, Undo2, SlidersHorizontal } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
@@ -26,6 +26,7 @@ interface AttendanceRow {
   source: string
   notes: string | null
   created_at: string
+  deleted_at: string | null
   user_name: string
   user_email: string
   session_title: string
@@ -40,7 +41,16 @@ export function CoachingCallAttendanceLog() {
   const [rows, setRows] = useState<AttendanceRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [filterSource, setFilterSource] = useState<'all' | 'auto' | 'manual'>('all')
+  const [filterSource, setFilterSource] = useState<'all' | 'auto' | 'manual' | 'fathom'>('all')
+  const [view, setView] = useState<'active' | 'deleted'>('active')
+  const [showFilters, setShowFilters] = useState(false)
+  const [filterStatus, setFilterStatus] = useState<'all' | 'attended' | 'missed'>('all')
+  const [filterType, setFilterType] = useState<'all' | 'individual' | 'group'>('all')
+  const [filterCoach, setFilterCoach] = useState<string>('all')
+  const [filterFrom, setFilterFrom] = useState('')
+  const [filterTo, setFilterTo] = useState('')
+  const [filterMinDuration, setFilterMinDuration] = useState('')
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
   const [sortKey, setSortKey] = useState<'member' | 'session' | 'coach' | 'date' | 'attendance' | 'duration' | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [members, setMembers] = useState<MemberOption[]>([])
@@ -149,7 +159,7 @@ export function CoachingCallAttendanceLog() {
     try {
       const { data: attendance } = await supabase
         .from('session_attendance')
-        .select('id, user_id, session_id, attended, attendance_duration_minutes, source, notes, manual_session_title, manual_coach_name, manual_session_date, created_at')
+        .select('id, user_id, session_id, attended, attendance_duration_minutes, source, notes, manual_session_title, manual_coach_name, manual_session_date, created_at, deleted_at')
         .order('created_at', { ascending: false })
         .limit(1000)
 
@@ -181,6 +191,7 @@ export function CoachingCallAttendanceLog() {
           source: a.source ?? 'auto',
           notes: a.notes ?? null,
           created_at: a.created_at,
+          deleted_at: a.deleted_at ?? null,
           user_name: name,
           user_email: p?.email ?? '',
           session_title: s?.title ?? a.manual_session_title ?? 'Untitled session',
@@ -252,28 +263,80 @@ export function CoachingCallAttendanceLog() {
   }
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from('session_attendance').delete().eq('id', id)
+    const stamp = new Date().toISOString()
+    const { error } = await supabase.from('session_attendance').update({ deleted_at: stamp } as any).eq('id', id)
     if (error) { toast.error('Delete failed'); return }
-    toast.success('Removed')
-    setRows(prev => prev.filter(r => r.id !== id))
+    toast.success('Moved to deleted')
+    setRows(prev => prev.map(r => r.id === id ? { ...r, deleted_at: stamp } : r))
+  }
+
+  const handleRestore = async (id: string) => {
+    const { error } = await supabase.from('session_attendance').update({ deleted_at: null } as any).eq('id', id)
+    if (error) { toast.error('Restore failed'); return }
+    toast.success('Log restored')
+    setRows(prev => prev.map(r => r.id === id ? { ...r, deleted_at: null } : r))
+  }
+
+  const handleBulkRestore = async () => {
+    if (selectedIds.length === 0) return
+    try {
+      const { error } = await supabase.from('session_attendance').update({ deleted_at: null } as any).in('id', selectedIds)
+      if (error) throw error
+      setRows(prev => prev.map(r => selectedIds.includes(r.id) ? { ...r, deleted_at: null } : r))
+      toast.success(`Restored ${selectedIds.length} logs`)
+      setSelectedIds([])
+    } catch (e: any) {
+      toast.error('Restore failed: ' + (e?.message ?? e))
+    }
   }
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return
-    if (!window.confirm(`Delete ${selectedIds.length} selected log${selectedIds.length === 1 ? '' : 's'}?`)) return
     setBulkDeleting(true)
     try {
-      const { error } = await supabase.from('session_attendance').delete().in('id', selectedIds)
-      if (error) throw error
-      setRows(prev => prev.filter(r => !selectedIds.includes(r.id)))
-      toast.success(`Deleted ${selectedIds.length} logs`)
+      if (view === 'deleted') {
+        const { error } = await supabase.from('session_attendance').delete().in('id', selectedIds)
+        if (error) throw error
+        setRows(prev => prev.filter(r => !selectedIds.includes(r.id)))
+        toast.success(`Permanently deleted ${selectedIds.length} logs`)
+      } else {
+        const stamp = new Date().toISOString()
+        const { error } = await supabase.from('session_attendance').update({ deleted_at: stamp } as any).in('id', selectedIds)
+        if (error) throw error
+        setRows(prev => prev.map(r => selectedIds.includes(r.id) ? { ...r, deleted_at: stamp } : r))
+        toast.success(`Moved ${selectedIds.length} logs to deleted`)
+      }
       setSelectedIds([])
+      setConfirmBulkDelete(false)
     } catch (e: any) {
       toast.error('Delete failed: ' + (e?.message ?? e))
     } finally {
       setBulkDeleting(false)
     }
   }
+
+  const exportCsv = (list: AttendanceRow[]) => {
+    if (list.length === 0) { toast.error('Nothing to export'); return }
+    const head = ['Member', 'Email', 'Session', 'Coach', 'Date', 'Status', 'Source', 'Duration (min)', 'Notes']
+    const esc = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`
+    const csv = [
+      head.join(','),
+      ...list.map(r => [
+        r.user_name, r.user_email, r.session_title, r.coach_name ?? '',
+        r.session_date ? new Date(r.session_date).toLocaleDateString() : '',
+        r.attended ? 'Attended' : 'Missed',
+        r.source, r.attendance_duration_minutes ?? '', r.notes ?? '',
+      ].map(esc).join(',')),
+    ].join('\n')
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `attendance-log-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+    toast.success(`Exported ${list.length} logs`)
+  }
+
 
   const openBulkEdit = () => {
     setBTitle(''); setBCoach(''); setBDate(''); setBStatus('keep'); setBDuration('')
@@ -314,10 +377,25 @@ export function CoachingCallAttendanceLog() {
     }
   }
 
+  const coachOptions = useMemo(
+    () => Array.from(new Set(rows.map(r => r.coach_name).filter(Boolean) as string[])).sort(),
+    [rows]
+  )
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     return rows.filter(r => {
+      if (view === 'deleted' ? !r.deleted_at : !!r.deleted_at) return false
       if (filterSource !== 'all' && r.source !== filterSource) return false
+      if (filterStatus !== 'all' && r.attended !== (filterStatus === 'attended')) return false
+      if (filterType !== 'all') {
+        const isIndividual = r.session_title.toLowerCase().includes('1-1')
+        if (filterType === 'individual' ? !isIndividual : isIndividual) return false
+      }
+      if (filterCoach !== 'all' && (r.coach_name ?? '') !== filterCoach) return false
+      if (filterFrom && (!r.session_date || String(r.session_date).slice(0, 10) < filterFrom)) return false
+      if (filterTo && (!r.session_date || String(r.session_date).slice(0, 10) > filterTo)) return false
+      if (filterMinDuration && (r.attendance_duration_minutes ?? 0) < Number(filterMinDuration)) return false
       if (!q) return true
       return (
         r.user_name.toLowerCase().includes(q) ||
@@ -326,7 +404,13 @@ export function CoachingCallAttendanceLog() {
         (r.coach_name ?? '').toLowerCase().includes(q)
       )
     })
-  }, [rows, search, filterSource])
+  }, [rows, search, filterSource, view, filterStatus, filterType, filterCoach, filterFrom, filterTo, filterMinDuration])
+
+  const clearFilters = () => {
+    setFilterStatus('all'); setFilterType('all'); setFilterCoach('all')
+    setFilterFrom(''); setFilterTo(''); setFilterMinDuration(''); setFilterSource('all')
+  }
+
 
   const sortedRows = useMemo(() => {
     if (!sortKey) return filtered
@@ -378,9 +462,11 @@ export function CoachingCallAttendanceLog() {
   }, [filtered, sortKey, sortDirection])
 
   const stats = useMemo(() => {
-    const attended = rows.filter(r => r.attended).length
-    const manual = rows.filter(r => r.source === 'manual').length
-    return { total: rows.length, attended, missed: rows.length - attended, manual }
+    const active = rows.filter(r => !r.deleted_at)
+    const attended = active.filter(r => r.attended).length
+    const manual = active.filter(r => r.source === 'manual').length
+    const deleted = rows.length - active.length
+    return { total: active.length, attended, missed: active.length - attended, manual, deleted }
   }, [rows])
 
   const toggleSort = (key: typeof sortKey) => {
@@ -406,7 +492,7 @@ export function CoachingCallAttendanceLog() {
               <Calendar className="h-4 w-4" /> Coaching Call Attendance Log
             </CardTitle>
             <CardDescription>
-              {stats.total} records · {stats.attended} attended · {stats.missed} missed · {stats.manual} manual
+              {stats.total} records · {stats.attended} attended · {stats.missed} missed · {stats.manual} manual · {stats.deleted} deleted
             </CardDescription>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -419,19 +505,24 @@ export function CoachingCallAttendanceLog() {
                 className="pl-8 h-9"
               />
             </div>
-            <Select value={filterSource} onValueChange={(v) => setFilterSource(v as any)}>
+            <Select value={view} onValueChange={(v) => { setView(v as any); setSelectedIds([]) }}>
               <SelectTrigger className="h-9 w-[130px]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All sources</SelectItem>
-                <SelectItem value="auto">Automated</SelectItem>
-                <SelectItem value="fathom">Fathom</SelectItem>
-                <SelectItem value="manual">Manual</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="deleted">Deleted</SelectItem>
               </SelectContent>
             </Select>
+            <Button size="sm" variant={showFilters ? 'default' : 'outline'} onClick={() => setShowFilters(v => !v)}>
+              <SlidersHorizontal className="h-4 w-4 mr-1" /> Filters
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => exportCsv(selectedIds.length ? sortedRows.filter(r => selectedIds.includes(r.id)) : sortedRows)}>
+              <Download className="h-4 w-4 mr-1" /> {selectedIds.length ? `Export ${selectedIds.length}` : 'Export all'}
+            </Button>
             <Button size="sm" variant="outline" onClick={handleScanFathom} disabled={scanning}>
               {scanning ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
               Scan Fathom
             </Button>
+
 
             <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm() }}>
               <DialogTrigger asChild>
@@ -552,6 +643,71 @@ export function CoachingCallAttendanceLog() {
             </Dialog>
           </div>
         </div>
+        {showFilters && (
+          <div className="mt-3 rounded-md border bg-muted/30 p-3 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <div>
+              <Label className="text-xs">Source</Label>
+              <Select value={filterSource} onValueChange={(v) => setFilterSource(v as any)}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All sources</SelectItem>
+                  <SelectItem value="auto">Automated</SelectItem>
+                  <SelectItem value="fathom">Fathom</SelectItem>
+                  <SelectItem value="manual">Manual</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Status</Label>
+              <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as any)}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="attended">Attended</SelectItem>
+                  <SelectItem value="missed">Missed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Session type</Label>
+              <Select value={filterType} onValueChange={(v) => setFilterType(v as any)}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All types</SelectItem>
+                  <SelectItem value="individual">1-1</SelectItem>
+                  <SelectItem value="group">Group</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Coach</Label>
+              <Select value={filterCoach} onValueChange={setFilterCoach}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All coaches</SelectItem>
+                  {coachOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">From</Label>
+              <Input type="date" className="h-9" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">To</Label>
+              <Input type="date" className="h-9" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">Min duration (min)</Label>
+              <Input type="number" min={0} className="h-9" value={filterMinDuration} onChange={(e) => setFilterMinDuration(e.target.value)} placeholder="0" />
+            </div>
+            <div className="flex items-end">
+              <Button size="sm" variant="ghost" onClick={clearFilters}>
+                <X className="h-3.5 w-3.5 mr-1" /> Clear filters
+              </Button>
+            </div>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -559,21 +715,35 @@ export function CoachingCallAttendanceLog() {
             <Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading attendance…
           </div>
         ) : sortedRows.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-6 text-center">No attendance records yet. Use "Log attendance" to add one.</p>
+          <p className="text-sm text-muted-foreground py-6 text-center">
+            {view === 'deleted' ? 'No deleted logs.' : 'No attendance records yet. Use "Log attendance" to add one.'}
+          </p>
         ) : (
           <>
           {selectedIds.length > 0 && (
             <div className="flex items-center gap-2 mb-3 rounded-md border bg-muted/40 px-3 py-2 flex-wrap">
               <span className="text-sm font-medium">{selectedIds.length} selected</span>
-              <Button size="sm" variant="outline" onClick={openBulkEdit}>
-                <Pencil className="h-3.5 w-3.5 mr-1" /> Edit selected
+              {view === 'active' && (
+                <Button size="sm" variant="outline" onClick={openBulkEdit}>
+                  <Pencil className="h-3.5 w-3.5 mr-1" /> Edit selected
+                </Button>
+              )}
+              {view === 'deleted' && (
+                <Button size="sm" variant="outline" onClick={handleBulkRestore}>
+                  <Undo2 className="h-3.5 w-3.5 mr-1" /> Restore selected
+                </Button>
+              )}
+              <Button size="sm" variant="outline" onClick={() => exportCsv(sortedRows.filter(r => selectedIds.includes(r.id)))}>
+                <Download className="h-3.5 w-3.5 mr-1" /> Export selected
               </Button>
-              <Button size="sm" variant="outline" className="text-red-600 border-red-300 hover:bg-red-50" onClick={handleBulkDelete} disabled={bulkDeleting}>
-                {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 mr-1" />} Delete selected
+              <Button size="sm" variant="outline" className="text-red-600 border-red-300 hover:bg-red-50" onClick={() => setConfirmBulkDelete(true)} disabled={bulkDeleting}>
+                {bulkDeleting ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <Trash2 className="h-3.5 w-3.5 mr-1" />}
+                {view === 'deleted' ? 'Delete forever' : 'Delete selected'}
               </Button>
               <Button size="sm" variant="ghost" onClick={() => setSelectedIds([])}>Clear</Button>
             </div>
           )}
+
           <ScrollArea className="w-full whitespace-nowrap">
             <Table>
               <TableHeader>
@@ -645,14 +815,23 @@ export function CoachingCallAttendanceLog() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
-                        <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-[#290a52]" onClick={() => openEdit(r)}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-red-600" onClick={() => handleDelete(r.id)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        {r.deleted_at ? (
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-[#290a52]" onClick={() => handleRestore(r.id)}>
+                            <Undo2 className="h-3.5 w-3.5" />
+                          </Button>
+                        ) : (
+                          <>
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-[#290a52]" onClick={() => openEdit(r)}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-red-600" onClick={() => handleDelete(r.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
+
 
                   </TableRow>
                 ))}
@@ -776,7 +955,27 @@ export function CoachingCallAttendanceLog() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={confirmBulkDelete} onOpenChange={setConfirmBulkDelete}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{view === 'deleted' ? 'Permanently delete logs?' : 'Delete selected logs?'}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {view === 'deleted'
+              ? `This will permanently remove ${selectedIds.length} log${selectedIds.length === 1 ? '' : 's'}. This cannot be undone.`
+              : `${selectedIds.length} log${selectedIds.length === 1 ? '' : 's'} will move to Deleted. You can restore them later.`}
+          </p>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setConfirmBulkDelete(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleBulkDelete} disabled={bulkDeleting}>
+              {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null} Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
+
 
   )
 }
