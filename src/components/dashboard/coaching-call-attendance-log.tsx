@@ -409,25 +409,37 @@ export function CoachingCallAttendanceLog() {
           <div className="flex items-center justify-center py-10 text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin mr-2" /> Loading attendance…
           </div>
-        ) : filtered.length === 0 ? (
+        ) : sortedRows.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">No attendance records yet. Use "Log attendance" to add one.</p>
         ) : (
           <ScrollArea className="w-full whitespace-nowrap">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Session</TableHead>
-                  <TableHead>Coach</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('member')}>
+                    <div className="flex items-center gap-1">Member <SortIcon column="member" /></div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('session')}>
+                    <div className="flex items-center gap-1">Session <SortIcon column="session" /></div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('coach')}>
+                    <div className="flex items-center gap-1">Coach <SortIcon column="coach" /></div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('date')}>
+                    <div className="flex items-center gap-1">Date <SortIcon column="date" /></div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer select-none" onClick={() => toggleSort('attendance')}>
+                    <div className="flex items-center gap-1">Status <SortIcon column="attendance" /></div>
+                  </TableHead>
                   <TableHead>Source</TableHead>
-                  <TableHead className="text-right">Duration</TableHead>
+                  <TableHead className="text-right cursor-pointer select-none" onClick={() => toggleSort('duration')}>
+                    <div className="flex items-center justify-end gap-1">Duration <SortIcon column="duration" /></div>
+                  </TableHead>
                   <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map(r => (
+                {sortedRows.map(r => (
                   <TableRow key={r.id}>
                     <TableCell>
                       <div className="font-medium">{r.user_name}</div>
