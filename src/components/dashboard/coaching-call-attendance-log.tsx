@@ -26,6 +26,7 @@ interface AttendanceRow {
   source: string
   notes: string | null
   created_at: string
+  deleted_at: string | null
   user_name: string
   user_email: string
   session_title: string
@@ -40,7 +41,16 @@ export function CoachingCallAttendanceLog() {
   const [rows, setRows] = useState<AttendanceRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [filterSource, setFilterSource] = useState<'all' | 'auto' | 'manual'>('all')
+  const [filterSource, setFilterSource] = useState<'all' | 'auto' | 'manual' | 'fathom'>('all')
+  const [view, setView] = useState<'active' | 'deleted'>('active')
+  const [showFilters, setShowFilters] = useState(false)
+  const [filterStatus, setFilterStatus] = useState<'all' | 'attended' | 'missed'>('all')
+  const [filterType, setFilterType] = useState<'all' | 'individual' | 'group'>('all')
+  const [filterCoach, setFilterCoach] = useState<string>('all')
+  const [filterFrom, setFilterFrom] = useState('')
+  const [filterTo, setFilterTo] = useState('')
+  const [filterMinDuration, setFilterMinDuration] = useState('')
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false)
   const [sortKey, setSortKey] = useState<'member' | 'session' | 'coach' | 'date' | 'attendance' | 'duration' | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [members, setMembers] = useState<MemberOption[]>([])
