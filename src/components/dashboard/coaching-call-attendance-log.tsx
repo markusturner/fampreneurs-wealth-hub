@@ -377,10 +377,25 @@ export function CoachingCallAttendanceLog() {
     }
   }
 
+  const coachOptions = useMemo(
+    () => Array.from(new Set(rows.map(r => r.coach_name).filter(Boolean) as string[])).sort(),
+    [rows]
+  )
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     return rows.filter(r => {
+      if (view === 'deleted' ? !r.deleted_at : !!r.deleted_at) return false
       if (filterSource !== 'all' && r.source !== filterSource) return false
+      if (filterStatus !== 'all' && r.attended !== (filterStatus === 'attended')) return false
+      if (filterType !== 'all') {
+        const isIndividual = r.session_title.toLowerCase().includes('1-1')
+        if (filterType === 'individual' ? !isIndividual : isIndividual) return false
+      }
+      if (filterCoach !== 'all' && (r.coach_name ?? '') !== filterCoach) return false
+      if (filterFrom && (!r.session_date || String(r.session_date).slice(0, 10) < filterFrom)) return false
+      if (filterTo && (!r.session_date || String(r.session_date).slice(0, 10) > filterTo)) return false
+      if (filterMinDuration && (r.attendance_duration_minutes ?? 0) < Number(filterMinDuration)) return false
       if (!q) return true
       return (
         r.user_name.toLowerCase().includes(q) ||
@@ -389,7 +404,13 @@ export function CoachingCallAttendanceLog() {
         (r.coach_name ?? '').toLowerCase().includes(q)
       )
     })
-  }, [rows, search, filterSource])
+  }, [rows, search, filterSource, view, filterStatus, filterType, filterCoach, filterFrom, filterTo, filterMinDuration])
+
+  const clearFilters = () => {
+    setFilterStatus('all'); setFilterType('all'); setFilterCoach('all')
+    setFilterFrom(''); setFilterTo(''); setFilterMinDuration(''); setFilterSource('all')
+  }
+
 
   const sortedRows = useMemo(() => {
     if (!sortKey) return filtered
