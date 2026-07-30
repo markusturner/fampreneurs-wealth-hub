@@ -201,8 +201,17 @@ Deno.serve(async (req) => {
       inserted = data?.length ?? 0
     }
 
+    console.log('fathom sync', { totalFetched, kept: meetings.length, rows: rows.length, inserted, skippedTitles, unmatched })
     return new Response(
-      JSON.stringify({ success: true, meetings_scanned: meetings.length, rows_considered: rows.length, inserted }),
+      JSON.stringify({
+        success: true,
+        total_fetched: totalFetched,
+        meetings_scanned: meetings.length,
+        rows_considered: rows.length,
+        inserted,
+        skipped_titles: skippedTitles,
+        unmatched_participants: unmatched,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (e: any) {
