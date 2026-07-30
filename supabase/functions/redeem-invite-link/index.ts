@@ -172,6 +172,9 @@ serve(async (req) => {
         mailing_address: zipCode || null,
         program_name: invite.program_name || null,
         truheirs_access: invite.truheirs_access,
+        // Free access = no onboarding funnel
+        skip_onboarding: invite.plan_type === "free" || invite.plan_type === "n" || !invite.plan_type,
+        trust_design_booked: invite.plan_type === "free" || invite.plan_type === "n" || !invite.plan_type ? true : undefined,
       } as any)
       .eq("user_id", userId);
 

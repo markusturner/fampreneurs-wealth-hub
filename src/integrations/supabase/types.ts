@@ -4453,6 +4453,7 @@ export type Database = {
           program_contract_value: number | null
           program_name: string | null
           satisfaction_score: number | null
+          skip_onboarding: boolean
           state: string | null
           street_address: string | null
           stripe_subscription_id: string | null
@@ -4509,6 +4510,7 @@ export type Database = {
           program_contract_value?: number | null
           program_name?: string | null
           satisfaction_score?: number | null
+          skip_onboarding?: boolean
           state?: string | null
           street_address?: string | null
           stripe_subscription_id?: string | null
@@ -4565,6 +4567,7 @@ export type Database = {
           program_contract_value?: number | null
           program_name?: string | null
           satisfaction_score?: number | null
+          skip_onboarding?: boolean
           state?: string | null
           street_address?: string | null
           stripe_subscription_id?: string | null

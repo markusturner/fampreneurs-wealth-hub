@@ -103,6 +103,13 @@ export function AdminUserManagement() {
         }
 
         const userId = data?.userId
+        if (userId && planType === 'free') {
+          // Free access users skip the onboarding funnel entirely
+          await supabase
+            .from('profiles')
+            .update({ skip_onboarding: true, trust_design_booked: true } as any)
+            .eq('user_id', userId)
+        }
         if (userId && planType !== 'free') {
           const nextPaymentDue = planType === 'payment_plan' && paymentStartDate
             ? paymentStartDate
