@@ -815,14 +815,23 @@ export function CoachingCallAttendanceLog() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-end gap-1">
-                        <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-[#290a52]" onClick={() => openEdit(r)}>
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-red-600" onClick={() => handleDelete(r.id)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        {r.deleted_at ? (
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-[#290a52]" onClick={() => handleRestore(r.id)}>
+                            <Undo2 className="h-3.5 w-3.5" />
+                          </Button>
+                        ) : (
+                          <>
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-[#290a52]" onClick={() => openEdit(r)}>
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-red-600" onClick={() => handleDelete(r.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
+
 
                   </TableRow>
                 ))}
