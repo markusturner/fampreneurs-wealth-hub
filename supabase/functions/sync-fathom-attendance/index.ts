@@ -148,24 +148,47 @@ Deno.serve(async (req) => {
       if (full) byName.set(full, p)
     }
 
+    // 2b) Coaches / admins are excluded from attendance — only clients get logged
+    const { data: coachRows } = await supabase.from('coaches').select('full_name, email')
+    const { data: staffRoles } = await supabase.from('user_roles').select('user_id').in('role', ['admin', 'owner'])
+    const coachEmails = new Set<string>()
+    const coachNames = new Set<string>()
+    const staffUserIds = new Set<string>((staffRoles ?? []).map((r: any) => r.user_id))
+    for (const c of coachRows ?? []) {
+      if (c.email) coachEmails.add(String(c.email).toLowerCase())
+      if (c.full_name) coachNames.add(String(c.full_name).trim().toLowerCase())
+      const p = c.email ? byEmail.get(String(c.email).toLowerCase()) : null
+      if (p) staffUserIds.add(p.user_id)
+      const pn = c.full_name ? byName.get(String(c.full_name).trim().toLowerCase()) : null
+      if (pn) staffUserIds.add(pn.user_id)
+    }
+    const isStaff = (userId: string, email?: string, name?: string) =>
+      staffUserIds.has(userId) ||
+      (email ? coachEmails.has(email.toLowerCase()) : false) ||
+      (name ? coachNames.has(name.trim().toLowerCase()) : false)
+
     // 3) Build attendance rows
     const rows: any[] = []
     const seen = new Set<string>()
     const unmatched: string[] = []
     for (const m of meetings) {
       const matched = new Map<string, any>()
+      const add = (p: any, email?: string, name?: string) => {
+        if (!p) return
+        if (isStaff(p.user_id, email ?? p.email, name)) return
+        matched.set(p.user_id, p)
+      }
       for (const inv of m.invitees) {
+        if (isStaff('', inv.email, inv.name)) continue
         const p = inv.email ? byEmail.get(inv.email) : null
         const p2 = p ?? (inv.name ? byName.get(inv.name.trim().toLowerCase()) : null)
-        if (p2) matched.set(p2.user_id, p2)
+        add(p2, inv.email, inv.name)
       }
       for (const em of m.speakerEmails) {
-        const p = byEmail.get(em)
-        if (p) matched.set(p.user_id, p)
+        add(byEmail.get(em), em)
       }
       for (const nm of m.speakerNames) {
-        const p = byName.get(nm.trim().toLowerCase())
-        if (p) matched.set(p.user_id, p)
+        add(byName.get(nm.trim().toLowerCase()), undefined, nm)
       }
       if (matched.size === 0 && unmatched.length < 25) {
         unmatched.push(`${m.title}: ${[...m.invitees.map((i) => i.email || i.name), ...m.speakerNames].join(', ')}`)
@@ -178,7 +201,7 @@ Deno.serve(async (req) => {
         rows.push({
           user_id: userId,
           session_id: null,
-          session_type: matched.size <= 2 ? 'individual' : 'group',
+          session_type: matched.size <= 1 ? 'individual' : 'group',
           attended: true,
           attendance_duration_minutes: m.durationMinutes,
           manual_session_title: m.title,
@@ -190,6 +213,7 @@ Deno.serve(async (req) => {
         })
       }
     }
+
 
     let inserted = 0
     if (rows.length) {
