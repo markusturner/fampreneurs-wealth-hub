@@ -29,7 +29,12 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const systemPrompt = `You are an estate-planning writer. You create clear, kind, easy-to-read Family Protection Plans written at a 7th-grade reading level. Use short sentences. Avoid legal jargon. When you must use a legal term, explain it in plain words in parentheses.`;
+    const systemPrompt = `You are an estate-planning writer for TruHeirs. TruHeirs specializes in IRREVOCABLE trusts. You create clear, kind, easy-to-read Family Protection Plans written at a 7th-grade reading level. Use short sentences. Avoid legal jargon. When you must use a legal term, explain it in plain words in parentheses.
+
+Important rules you must always follow:
+- The family's own guess about how risky they are is only a feeling. YOU decide and state their true risk level based on everything they submitted, and explain plainly why it is higher or lower than they thought.
+- TruHeirs handles irrevocable trusts. Whenever an asset or situation calls for a REVOCABLE trust, say so and tell them to speak with our TruHeirs trust attorney to draw up those revocable documents.
+- If they did not check "Life insurance" in their asset list, tell them to speak with our private TruHeirs insurance agent, and explain which policy types make sense for their income class and needs: convertible term (our top recommendation), IUL, and whole life — recommend one, two, or all three with reasons.`;
 
     const userPrompt = `Create a custom Family Protection Plan document for this family. Use the answers below. Structure it with these exact sections and clear headings:
 
@@ -42,23 +47,34 @@ serve(async (req) => {
      - Level 3 — Elevated: Real exposure. Fix within 90 days.
      - Level 4 — High Risk: Assets could be lost now. Fix within 30 days.
      - Level 5 — Critical: One lawsuit, death, or illness could wipe you out. Fix now.
-   - Then state: "Your Risk Level: X — <name>" and explain in detail WHY they are at that level, naming the exact risk types that apply to them (lawsuit/liability risk, probate risk, estate & tax risk, business risk, real estate risk, divorce or blended-family risk, incapacity risk, creditor risk, and heir-readiness risk). For each risk that applies, say what could actually happen to their family in plain words.
+   - YOU assign the level. Do not simply repeat their own "exposure_level" answer — they usually do not know how risky they truly are. Compare: "You told us you feel <their answer> risk. Based on what you shared, your real level is X." Then explain in detail WHY, naming the exact risk types that apply to them (lawsuit/liability risk, probate risk, estate & tax risk, business risk, real estate risk, divorce or blended-family risk, incapacity risk, creditor risk, cross-border risk, and heir-readiness risk). For each risk that applies, say what could actually happen to their family in plain words.
 4. Assets We Are Protecting
-5. Growth Risk: Why a Trust With No Growth Asset Loses
+5. Which Trust Fits Each Asset (Irrevocable vs. Revocable)
+   - Explain both in simple words: an irrevocable trust cannot be easily changed, which is what gives strong protection from lawsuits, creditors, probate, and estate tax. A revocable trust can be changed anytime, so it is better for assets that will likely change, sell, or move — but it gives far less protection.
+   - Go asset by asset using their "assets" and "asset_purposes" answers. For each one, recommend irrevocable or revocable and say why (example: a personal home they will never sell fits an irrevocable trust; a short-term rental they may sell or refinance may fit a revocable trust).
+   - TruHeirs specializes in irrevocable trusts. For every asset you place in a revocable trust, clearly say: "Bring this one to the TruHeirs trust attorney so they can draw up the revocable documents for you."
+6. Assets Outside the United States
+   - Use their "foreign_assets" answers. If yes or unsure, explain that foreign assets often do not transfer into a U.S. trust the same way, may face a second probate in that country, and may carry extra tax reporting. Tell them to review these with the TruHeirs trust attorney and a cross-border tax pro. If they have none, keep this section to one or two sentences.
+7. Growth Risk: Why a Trust With No Growth Asset Loses
    - Explain that a trust holding only "sitting" assets slowly loses value to inflation, taxes, and upkeep, so heirs inherit less than expected.
    - Use their answers about growth assets. If they have none or are unsure, explain the danger clearly and give 3-5 growth options they can place inside the trust (business interest, rental property, dividend/index investments, cash-value life insurance, private lending).
-6. Trust Structure & Positions
+8. Insurance Check
+   - If "Life insurance" is NOT in their checked assets, say plainly that this is a major gap: without it, the family may have to sell assets to cover taxes, debts, or lost income. Tell them to connect with our private TruHeirs insurance agent.
+   - Then explain the choices for their income class and net worth: convertible term (our top recommendation — low cost now, can convert to permanent later without a new health exam), IUL (growth tied to an index with a floor, good for higher earners who have maxed other accounts), and whole life (fixed, guaranteed, best for legacy and trust funding). Recommend one, two, or all three for THIS family and say why.
+   - If they already have life insurance, confirm it and explain how to make the trust the owner/beneficiary so the payout is protected.
+9. Trust Structure & Positions
    - Explain in simple words what a Trustee, Successor Trustee, and Trust Protector each do, and why each one is needed.
    - ASSIGN a specific person to each role. If they named someone, use that name and say why they fit. If they left a role blank or said they were unsure, choose the best fit from their "trusted_people" list and explain your reasoning. If no good fit exists, recommend the type of person or a professional trustee.
    - Do not leave any role empty.
-7. Beneficiaries
-8. Solutions & Recommended Next Steps
-   - Give clear fixes for EVERY risk you named in section 3 and for the growth gap in section 5. Number them and put the most urgent first.
-9. Special Considerations
-10. Important Disclaimer
+10. Beneficiaries
+   - Use their "has_heirs" and "heirs_alternative_notes" answers. If they said no or unsure, do NOT skip this. Explain warmly that a legacy does not require children, and lay out their real options: a charity or nonprofit, a church or ministry, a scholarship fund, a donor-advised fund, a private family foundation, close friends or chosen family, nieces/nephews/godchildren, a pet trust, or naming a cause as the remainder beneficiary. Explain what each option means in plain words and which fit their answers best.
+11. Solutions & Recommended Next Steps
+   - Give clear fixes for EVERY risk you named in section 3, every revocable-trust item from section 5, the foreign asset items, the growth gap, and the insurance gap. Number them and put the most urgent first.
+12. Special Considerations
+13. Important Disclaimer
    - End the document with this exact text as its own section: "This Family Protection Plan is for education only. It is not legal, tax, or financial advice, and no attorney-client relationship is created by it. Laws change and vary by state. Please review this plan with a licensed estate-planning attorney and a tax professional in your state before you act on anything in it."
 
-Keep the whole document under 1,400 words. Use headings and short paragraphs or bullet points. Speak directly to the family ("You and your family..."). Be honest and direct about risk without scaring them, and always pair a risk with a solution.
+Keep the whole document under 2,000 words. Use headings and short paragraphs or bullet points. Speak directly to the family ("You and your family..."). Be honest and direct about risk without scaring them, and always pair a risk with a solution.
 
 Family answers:
 ${JSON.stringify(form_data, null, 2)}`;
