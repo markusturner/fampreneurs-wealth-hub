@@ -1104,6 +1104,84 @@ export function CoachingCallAttendanceLog() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={importOpen} onOpenChange={(o) => { setImportOpen(o); if (!o) { setImportPreview([]); setImportFileName('') } }}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Import attendance from CSV</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Columns: <span className="font-medium">email, session, coach, date (YYYY-MM-DD), status (attended/missed), duration, notes</span>. Email, session and date are required.
+            </p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Input type="file" accept=".csv,text/csv" className="h-9 max-w-xs" onChange={(e) => handleImportFile(e.target.files?.[0] ?? null)} />
+              <Button size="sm" variant="outline" onClick={downloadTemplate}>
+                <Download className="h-4 w-4 mr-1" /> Template
+              </Button>
+              {importFileName && <span className="text-xs text-muted-foreground">{importFileName}</span>}
+            </div>
+
+            {importPreview.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 text-sm">
+                  <Badge variant="outline" className="border-green-400 text-green-700">{importPreview.filter(p => !p.errors.length).length} valid</Badge>
+                  {importPreview.some(p => p.errors.length > 0) && (
+                    <Badge variant="outline" className="border-red-300 text-red-600">
+                      <AlertTriangle className="h-3 w-3 mr-1" />{importPreview.filter(p => p.errors.length).length} with errors (skipped)
+                    </Badge>
+                  )}
+                </div>
+                <ScrollArea className="h-[320px] w-full rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>#</TableHead>
+                        <TableHead>Member</TableHead>
+                        <TableHead>Session</TableHead>
+                        <TableHead>Coach</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Duration</TableHead>
+                        <TableHead>Issues</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {importPreview.map(p => (
+                        <TableRow key={p.line} className={p.errors.length ? 'bg-red-50/60' : ''}>
+                          <TableCell className="text-muted-foreground">{p.line}</TableCell>
+                          <TableCell>
+                            <div className="font-medium">{p.member_name}</div>
+                            <div className="text-xs text-muted-foreground">{p.email || '—'}</div>
+                          </TableCell>
+                          <TableCell>{p.session_title || '—'}</TableCell>
+                          <TableCell>{p.coach_name || '—'}</TableCell>
+                          <TableCell>{p.session_date || '—'}</TableCell>
+                          <TableCell>{p.attended ? 'Attended' : 'Missed'}</TableCell>
+                          <TableCell className="text-right tabular-nums">{p.duration != null ? `${p.duration}m` : '—'}</TableCell>
+                          <TableCell className="text-xs text-red-600">{p.errors.join('; ') || '—'}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+              </>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setImportOpen(false)}>Cancel</Button>
+            <Button
+              onClick={handleImportSave}
+              disabled={importing || importPreview.filter(p => !p.errors.length).length === 0}
+              className="bg-[#ffb500] text-[#290a52] hover:bg-[#e6a300]"
+            >
+              {importing ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              Import {importPreview.filter(p => !p.errors.length).length} rows
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={confirmBulkDelete} onOpenChange={setConfirmBulkDelete}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
