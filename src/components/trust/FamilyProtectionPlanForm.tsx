@@ -351,27 +351,30 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
         <Textarea value={form.trusted_people} onChange={e => update("trusted_people", e.target.value)} rows={3} placeholder="Maria Doe — sister — great with money&#10;John Smith — best friend — very fair and calm&#10;Pastor Ray — mentor — trusted, no money ties to us" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label>16. Your Trustee (leave blank if you want us to pick)</Label>
-          <Input value={form.trustee_name} onChange={e => update("trustee_name", e.target.value)} placeholder="Full name or leave blank" />
+      {form.knows_roles !== "no" && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Your Trustee (leave blank if you want us to pick)</Label>
+            <Input value={form.trustee_name} onChange={e => update("trustee_name", e.target.value)} placeholder="Full name or leave blank" />
+          </div>
+          <div className="space-y-2">
+            <Label>Your Successor Trustee (leave blank if unsure)</Label>
+            <Input value={form.successor_trustee} onChange={e => update("successor_trustee", e.target.value)} placeholder="Full name or leave blank" />
+          </div>
+          <div className="space-y-2">
+            <Label>Your Trust Protector (leave blank if unsure)</Label>
+            <Input value={form.trust_protector} onChange={e => update("trust_protector", e.target.value)} placeholder="Full name or leave blank" />
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label>17. Your Successor Trustee (leave blank if unsure)</Label>
-          <Input value={form.successor_trustee} onChange={e => update("successor_trustee", e.target.value)} placeholder="Full name or leave blank" />
-        </div>
-        <div className="space-y-2">
-          <Label>18. Your Trust Protector (leave blank if unsure)</Label>
-          <Input value={form.trust_protector} onChange={e => update("trust_protector", e.target.value)} placeholder="Full name or leave blank" />
-        </div>
-        <div className="space-y-2">
-          <Label>19. Who are your beneficiaries?</Label>
-          <Input value={form.beneficiaries} onChange={e => update("beneficiaries", e.target.value)} placeholder="Names, separated by commas" />
-        </div>
+      )}
+
+      <div className="space-y-2">
+        <Label>16. Who are your beneficiaries?</Label>
+        <Input value={form.beneficiaries} onChange={e => update("beneficiaries", e.target.value)} placeholder="Names, separated by commas" />
       </div>
 
       <div className="space-y-2">
-        <Label>20. Does your trust own anything that grows money (business, rentals, investments, cash-value life insurance)?</Label>
+        <Label>17. Does your trust own anything that grows money (business, rentals, investments, cash-value life insurance)?</Label>
         <RadioGroup value={form.growth_assets} onValueChange={v => update("growth_assets", v)} className="flex flex-wrap gap-4">
           {[["yes","Yes"],["some","A little"],["no","No"],["unsure","Not sure"]].map(([v,l]) => (
             <div key={v} className="flex items-center gap-2"><RadioGroupItem value={v} id={`g-${v}`} /><Label htmlFor={`g-${v}`}>{l}</Label></div>
@@ -380,14 +383,19 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
       </div>
 
       <div className="space-y-2">
-        <Label>21. If yes, what are they? If no, what could you add in the next 12 months?</Label>
+        <Label>18. If yes, what are they? If no, what could you add in the next 12 months?</Label>
         <Textarea value={form.growth_assets_detail} onChange={e => update("growth_assets_detail", e.target.value)} rows={2} placeholder="Rental duplex, my LLC, index funds, whole life policy..." />
       </div>
 
       <div className="space-y-2">
-        <Label>22. Anything special we should know? (health, special needs, blended family, etc.)</Label>
+        <Label>19. Anything special we should know? (health, special needs, blended family, etc.)</Label>
         <Textarea value={form.special_notes} onChange={e => update("special_notes", e.target.value)} rows={2} />
       </div>
+
+      <p className="rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+        <strong>Disclaimer:</strong> This plan is for education only. It is not legal, tax, or financial advice. No attorney-client relationship is created. Please review your plan with a licensed attorney and tax professional in your state before you act on it.
+      </p>
+
 
 
       <Button onClick={handleGenerate} disabled={loading} variant="secondary" className="gap-2 w-full sm:w-auto">
