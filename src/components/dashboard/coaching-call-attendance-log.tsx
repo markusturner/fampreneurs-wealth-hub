@@ -40,6 +40,8 @@ export function CoachingCallAttendanceLog() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterSource, setFilterSource] = useState<'all' | 'auto' | 'manual'>('all')
+  const [sortKey, setSortKey] = useState<'member' | 'session' | 'coach' | 'date' | 'attendance' | 'duration' | null>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const [members, setMembers] = useState<MemberOption[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [saving, setSaving] = useState(false)
