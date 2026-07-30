@@ -722,6 +722,60 @@ export function CoachingCallAttendanceLog() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Pencil className="h-4 w-4" /> Edit {selectedIds.length} Logs</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">Leave a field blank to keep its current value.</p>
+            <div>
+              <Label className="text-xs">Session type</Label>
+              <Select value={bTitle} onValueChange={setBTitle}>
+                <SelectTrigger><SelectValue placeholder="Keep current" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Group Coaching">Group Coaching</SelectItem>
+                  <SelectItem value="1-1 Coaching Call">1-1 Coaching Call</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Coach</Label>
+                <Input value={bCoach} onChange={(e) => setBCoach(e.target.value)} placeholder="Keep current" />
+              </div>
+              <div>
+                <Label className="text-xs">Date</Label>
+                <Input type="date" value={bDate} onChange={(e) => setBDate(e.target.value)} />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Duration (min)</Label>
+                <Input type="number" min={0} value={bDuration} onChange={(e) => setBDuration(e.target.value)} placeholder="Keep current" />
+              </div>
+              <div>
+                <Label className="text-xs">Status</Label>
+                <Select value={bStatus} onValueChange={(v) => setBStatus(v as any)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="keep">Keep current</SelectItem>
+                    <SelectItem value="attended">Attended</SelectItem>
+                    <SelectItem value="missed">Missed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setBulkOpen(false)}>Cancel</Button>
+            <Button onClick={handleBulkUpdate} disabled={bulkSaving} className="bg-[#ffb500] text-[#290a52] hover:bg-[#e6a300]">
+              {bulkSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null} Apply to {selectedIds.length}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
 
   )
