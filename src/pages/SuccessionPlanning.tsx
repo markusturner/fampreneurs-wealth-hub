@@ -55,6 +55,7 @@ const STEP_3: ItemDef[] = [
 const ALL_ITEMS = [...STEP_1, ...STEP_2, ...STEP_3]
 
 export default function SuccessionPlanning() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [progress, setProgress] = useState<Record<string, { status: ProgressStatus; notes: string | null }>>({})
   const [loading, setLoading] = useState(true)

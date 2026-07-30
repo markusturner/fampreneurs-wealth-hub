@@ -82,6 +82,7 @@ const getSubmissionLimit = (type: SectionType): number => {
 }
 
 export default function TrustCreation() {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initialType = searchParams.get("type") as SectionType | null
   const { user } = useAuth()
