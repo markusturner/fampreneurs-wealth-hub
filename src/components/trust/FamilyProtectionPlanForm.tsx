@@ -272,7 +272,7 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
           <Input type="number" min="0" value={form.kids_count} onChange={e => update("kids_count", e.target.value)} placeholder="0" />
         </div>
         <div className="space-y-2">
-          <Label>6. How risky is your situation right now?</Label>
+          <Label>6. How risky does your situation feel to you right now? (We will tell you your real risk level in your plan.)</Label>
           <RadioGroup value={form.exposure_level} onValueChange={v => update("exposure_level", v)} className="flex gap-4">
             {["low","medium","high"].map(o => (
               <div key={o} className="flex items-center gap-2"><RadioGroupItem value={o} id={`e-${o}`} /><Label htmlFor={`e-${o}`} className="capitalize">{o}</Label></div>
