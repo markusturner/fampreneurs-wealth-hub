@@ -168,7 +168,7 @@ export default function SopLibraryPanel() {
             {visibleSops.map((sop, index) => (
               <div
                 key={sop.id}
-                className="relative"
+                className="relative h-[220px]"
                 onDragOver={(e) => {
                   if (!isAdminOrOwner || !draggingId) return
                   e.preventDefault()
@@ -194,7 +194,7 @@ export default function SopLibraryPanel() {
                   onDragEnd={() => { setDraggingId(null); setDropIndex(null) }}
                   onClick={() => navigate(`/sops/${sop.id}`)}
                   className={cn(
-                    "group relative text-left rounded-xl border border-border bg-card hover:border-[#ffb500]/50 hover:shadow-md transition-all p-5 min-h-[150px] flex flex-col w-full",
+                    "group relative text-left rounded-xl border border-border bg-card hover:border-[#ffb500]/50 hover:shadow-md transition-all p-5 h-full overflow-hidden flex flex-col w-full",
                     isAdminOrOwner && "cursor-grab active:cursor-grabbing",
                     draggingId === sop.id && "opacity-40"
                   )}

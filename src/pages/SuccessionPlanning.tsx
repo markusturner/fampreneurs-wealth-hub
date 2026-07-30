@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Helmet } from "react-helmet-async"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -54,6 +55,7 @@ const STEP_3: ItemDef[] = [
 const ALL_ITEMS = [...STEP_1, ...STEP_2, ...STEP_3]
 
 export default function SuccessionPlanning() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [progress, setProgress] = useState<Record<string, { status: ProgressStatus; notes: string | null }>>({})
   const [loading, setLoading] = useState(true)
@@ -162,7 +164,7 @@ export default function SuccessionPlanning() {
           </h1>
           <p className="text-muted-foreground text-sm">Your step-by-step roadmap to a lasting family legacy.</p>
         </div>
-        <Button variant="ghost" size="sm" onClick={() => window.location.assign('/classroom')} className="gap-1.5 shrink-0">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/classroom')} className="gap-1.5 shrink-0">
           <ArrowLeft className="h-4 w-4" /> Back to Classroom
         </Button>
       </div>
