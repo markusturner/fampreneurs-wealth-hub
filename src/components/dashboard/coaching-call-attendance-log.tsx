@@ -9,7 +9,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
-import { Loader2, Calendar, Search, Plus, Trash2, UserPlus, Check, ChevronsUpDown, X, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react'
+import { Loader2, Calendar, Search, Plus, Trash2, UserPlus, Check, ChevronsUpDown, X, ArrowUpDown, ArrowDown, ArrowUp, Pencil, RefreshCw } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { supabase } from '@/integrations/supabase/client'
@@ -56,6 +56,78 @@ export function CoachingCallAttendanceLog() {
   const [fAttended, setFAttended] = useState(true)
   const [fDuration, setFDuration] = useState<string>('')
   const [fNotes, setFNotes] = useState('')
+
+  // edit state
+  const [editRow, setEditRow] = useState<AttendanceRow | null>(null)
+  const [editSaving, setEditSaving] = useState(false)
+  const [eTitle, setETitle] = useState('')
+  const [eCoach, setECoach] = useState('')
+  const [eDate, setEDate] = useState('')
+  const [eAttended, setEAttended] = useState(true)
+  const [eDuration, setEDuration] = useState('')
+  const [eNotes, setENotes] = useState('')
+  const [scanning, setScanning] = useState(false)
+
+  const openEdit = (r: AttendanceRow) => {
+    setEditRow(r)
+    setETitle(r.session_title ?? '')
+    setECoach(r.coach_name ?? '')
+    setEDate(r.session_date ? String(r.session_date).slice(0, 10) : '')
+    setEAttended(r.attended)
+    setEDuration(r.attendance_duration_minutes != null ? String(r.attendance_duration_minutes) : '')
+    setENotes(r.notes ?? '')
+  }
+
+  const handleUpdate = async () => {
+    if (!editRow) return
+    if (!eTitle.trim()) { toast.error('Add a session title'); return }
+    setEditSaving(true)
+    try {
+      const patch: any = {
+        attended: eAttended,
+        attendance_duration_minutes: eDuration ? Number(eDuration) : null,
+        manual_session_title: eTitle.trim(),
+        manual_coach_name: eCoach.trim() || null,
+        manual_session_date: eDate || null,
+        notes: eNotes.trim() || null,
+        session_type: eTitle.toLowerCase().includes('1-1') ? 'individual' : 'group',
+      }
+      const { error } = await supabase.from('session_attendance').update(patch).eq('id', editRow.id)
+      if (error) throw error
+      setRows(prev => prev.map(r => r.id === editRow.id ? {
+        ...r,
+        attended: eAttended,
+        attendance_duration_minutes: eDuration ? Number(eDuration) : null,
+        session_title: eTitle.trim(),
+        coach_name: eCoach.trim() || null,
+        session_date: eDate || null,
+        notes: eNotes.trim() || null,
+      } : r))
+      toast.success('Log updated')
+      setEditRow(null)
+    } catch (e: any) {
+      toast.error('Could not update: ' + (e?.message ?? e))
+    } finally {
+      setEditSaving(false)
+    }
+  }
+
+  const handleScanFathom = async () => {
+    setScanning(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-fathom-attendance', { body: { days: 90 } })
+      if (error) throw error
+      if ((data as any)?.error) throw new Error((data as any).error)
+      const d: any = data
+      toast.success(`Scanned ${d?.meetings_scanned ?? 0} accountability calls · ${d?.inserted ?? 0} new records`)
+      load()
+    } catch (e: any) {
+      toast.error('Fathom scan failed: ' + (e?.message ?? e))
+    } finally {
+      setScanning(false)
+    }
+  }
+
 
   const load = async () => {
     setLoading(true)
@@ -281,9 +353,15 @@ export function CoachingCallAttendanceLog() {
               <SelectContent>
                 <SelectItem value="all">All sources</SelectItem>
                 <SelectItem value="auto">Automated</SelectItem>
+                <SelectItem value="fathom">Fathom</SelectItem>
                 <SelectItem value="manual">Manual</SelectItem>
               </SelectContent>
             </Select>
+            <Button size="sm" variant="outline" onClick={handleScanFathom} disabled={scanning}>
+              {scanning ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+              Scan Fathom
+            </Button>
+
             <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm() }}>
               <DialogTrigger asChild>
                 <Button size="sm" className="bg-[#290a52] text-white hover:bg-[#1d0639]">
@@ -459,18 +537,25 @@ export function CoachingCallAttendanceLog() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={r.source === 'manual' ? 'border-[#ffb500] text-[#290a52]' : 'text-muted-foreground'}>
-                        {r.source === 'manual' ? 'Manual' : 'Auto'}
+                      <Badge variant="outline" className={r.source === 'manual' ? 'border-[#ffb500] text-[#290a52]' : r.source === 'fathom' ? 'border-[#2eb2ff] text-[#0b6ea8]' : 'text-muted-foreground'}>
+                        {r.source === 'manual' ? 'Manual' : r.source === 'fathom' ? 'Fathom' : 'Auto'}
                       </Badge>
                     </TableCell>
+
                     <TableCell className="text-right tabular-nums">
                       {r.attendance_duration_minutes != null ? `${r.attendance_duration_minutes}m` : '—'}
                     </TableCell>
                     <TableCell>
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-red-600" onClick={() => handleDelete(r.id)}>
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-[#290a52]" onClick={() => openEdit(r)}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-red-600" onClick={() => handleDelete(r.id)}>
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </TableCell>
+
                   </TableRow>
                 ))}
               </TableBody>
@@ -479,7 +564,67 @@ export function CoachingCallAttendanceLog() {
           </ScrollArea>
         )}
       </CardContent>
+
+      <Dialog open={!!editRow} onOpenChange={(o) => { if (!o) setEditRow(null) }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Pencil className="h-4 w-4" /> Edit Attendance Log</DialogTitle>
+          </DialogHeader>
+          {editRow && (
+            <div className="space-y-3">
+              <div className="text-sm">
+                <div className="font-medium">{editRow.user_name}</div>
+                <div className="text-xs text-muted-foreground">{editRow.user_email}</div>
+              </div>
+              <div>
+                <Label className="text-xs">Session type</Label>
+                <Select value={eTitle} onValueChange={setETitle}>
+                  <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Group Coaching">Group Coaching</SelectItem>
+                    <SelectItem value="1-1 Coaching Call">1-1 Coaching Call</SelectItem>
+                    {eTitle && !['Group Coaching', '1-1 Coaching Call'].includes(eTitle) && (
+                      <SelectItem value={eTitle}>{eTitle}</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Coach</Label>
+                  <Input value={eCoach} onChange={(e) => setECoach(e.target.value)} placeholder="Coach name" />
+                </div>
+                <div>
+                  <Label className="text-xs">Date</Label>
+                  <Input type="date" value={eDate} onChange={(e) => setEDate(e.target.value)} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3 items-end">
+                <div>
+                  <Label className="text-xs">Duration (min)</Label>
+                  <Input type="number" min={0} value={eDuration} onChange={(e) => setEDuration(e.target.value)} placeholder="60" />
+                </div>
+                <div className="flex items-center gap-2 pb-2">
+                  <Switch checked={eAttended} onCheckedChange={setEAttended} id="edit-att" />
+                  <Label htmlFor="edit-att" className="text-sm">{eAttended ? 'Attended' : 'Missed'}</Label>
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">Notes (optional)</Label>
+                <Input value={eNotes} onChange={(e) => setENotes(e.target.value)} placeholder="Anything to remember" />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setEditRow(null)}>Cancel</Button>
+            <Button onClick={handleUpdate} disabled={editSaving} className="bg-[#ffb500] text-[#290a52] hover:bg-[#e6a300]">
+              {editSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null} Save changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
+
   )
 }
 

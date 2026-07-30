@@ -1,0 +1,2 @@
+ALTER TABLE public.session_attendance ADD COLUMN IF NOT EXISTS external_ref text;
+CREATE UNIQUE INDEX IF NOT EXISTS session_attendance_user_external_ref_key ON public.session_attendance (user_id, external_ref) WHERE external_ref IS NOT NULL;
