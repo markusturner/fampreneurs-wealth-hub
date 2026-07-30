@@ -377,6 +377,111 @@ export function CoachingCallAttendanceLog() {
     toast.success(`Exported ${list.length} logs`)
   }
 
+  const downloadTemplate = () => {
+    const csv = `${IMPORT_HEADERS.join(',')}\nmember@example.com,1-1 Coaching Call,Markus Turner,${new Date().toISOString().slice(0, 10)},attended,45,Great session\n`
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'attendance-import-template.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleImportFile = async (file: File | null) => {
+    if (!file) return
+    setImportFileName(file.name)
+    const text = await file.text()
+    const table = parseCsvText(text)
+    if (table.length < 2) { toast.error('CSV needs a header row and at least one record'); setImportPreview([]); return }
+
+    const header = table[0].map(h => h.trim().toLowerCase())
+    const idx = (name: string) => header.indexOf(name)
+    const missing = ['email', 'session', 'date'].filter(h => idx(h) === -1)
+    if (missing.length) {
+      toast.error(`Missing required column(s): ${missing.join(', ')}`)
+      setImportPreview([])
+      return
+    }
+
+    const byEmail = new Map(members.map(m => [m.email.toLowerCase(), m]))
+    const parsed: ImportRow[] = table.slice(1).map((cells, i) => {
+      const get = (name: string) => (idx(name) === -1 ? '' : (cells[idx(name)] ?? '').trim())
+      const email = get('email').toLowerCase()
+      const member = byEmail.get(email)
+      const session_title = get('session')
+      const session_date = get('date')
+      const statusRaw = get('status').toLowerCase()
+      const durationRaw = get('duration')
+      const errors: string[] = []
+
+      if (!email) errors.push('Email is required')
+      else if (!member) errors.push('No member matches this email')
+      if (!session_title) errors.push('Session title is required')
+      else if (session_title.length > 200) errors.push('Session title is too long')
+      const validDate = /^\d{4}-\d{2}-\d{2}$/.test(session_date) && !Number.isNaN(Date.parse(session_date))
+      if (!validDate) errors.push('Date must be YYYY-MM-DD')
+      if (statusRaw && !['attended', 'missed', 'true', 'false', 'yes', 'no'].includes(statusRaw)) errors.push('Status must be attended or missed')
+      let duration: number | null = null
+      if (durationRaw) {
+        const n = Number(durationRaw)
+        if (!Number.isFinite(n) || n < 0 || n > 1440) errors.push('Duration must be 0–1440 minutes')
+        else duration = Math.round(n)
+      }
+      const notes = get('notes').slice(0, 1000)
+
+      return {
+        line: i + 2,
+        email,
+        user_id: member?.user_id ?? null,
+        member_name: member?.name ?? '—',
+        session_title,
+        coach_name: get('coach'),
+        session_date,
+        attended: !['missed', 'false', 'no'].includes(statusRaw),
+        duration,
+        notes,
+        errors,
+      }
+    })
+
+    setImportPreview(parsed)
+    const bad = parsed.filter(p => p.errors.length).length
+    toast.success(`${parsed.length - bad} row${parsed.length - bad === 1 ? '' : 's'} ready${bad ? `, ${bad} with errors` : ''}`)
+  }
+
+  const handleImportSave = async () => {
+    const valid = importPreview.filter(p => p.errors.length === 0)
+    if (valid.length === 0) { toast.error('No valid rows to import'); return }
+    setImporting(true)
+    try {
+      const payload = valid.map(v => ({
+        user_id: v.user_id,
+        session_id: null,
+        session_type: v.session_title.toLowerCase().includes('1-1') ? 'individual' : 'group',
+        attended: v.attended,
+        attendance_duration_minutes: v.duration,
+        manual_session_title: v.session_title,
+        manual_coach_name: v.coach_name || null,
+        manual_session_date: v.session_date,
+        source: 'manual',
+        notes: v.notes || null,
+        logged_by: user?.id ?? null,
+      }))
+      const { error } = await supabase.from('session_attendance').insert(payload as any)
+      if (error) throw error
+      toast.success(`Imported ${payload.length} attendance records`)
+      setImportOpen(false)
+      setImportPreview([])
+      setImportFileName('')
+      load()
+    } catch (e: any) {
+      toast.error('Import failed: ' + (e?.message ?? e))
+    } finally {
+      setImporting(false)
+    }
+  }
+
+
 
   const openBulkEdit = () => {
     setBTitle(''); setBCoach(''); setBDate(''); setBStatus('keep'); setBDuration('')
