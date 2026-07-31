@@ -295,6 +295,30 @@ export function AdminAnalyticsOverview() {
             </CardContent>
           </Card>
 
+          {/* Client Success Rates */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="border-[#290a52]/30">
+              <CardContent className="pt-6">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client Success Rate — Trust Creation</p>
+                <div className="text-3xl font-bold mt-1" style={{ color: '#290a52' }}>{metrics.trustSuccessRate}%</div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {metrics.trustSuccessCount} of {metrics.totalMembers} members submitted a trust form
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="border-[#2eb2ff]/30">
+              <CardContent className="pt-6">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client Success Rate — Succession Planning</p>
+                <div className="text-3xl font-bold mt-1" style={{ color: '#2eb2ff' }}>{metrics.successionSuccessRate}%</div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {metrics.successionSuccessCount} of {metrics.totalMembers} members completed succession items
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+
+
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <MetricCard 
               title="Total Members" 
