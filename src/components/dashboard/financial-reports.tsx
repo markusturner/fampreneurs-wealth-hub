@@ -392,7 +392,7 @@ export function FinancialReports() {
 
   // Always show live data pulled from the user's accounts and statements
   const displayData = financialData
-  const isShowingDemo = false
+  
 
 
   return (
