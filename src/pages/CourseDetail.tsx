@@ -1425,7 +1425,7 @@ export default function CourseDetail() {
               <div className="h-4 w-4/6 bg-muted rounded" />
             </div>
           </div>
-          {/* Calendly booking overlay */}
+          {/* Booking overlay (same single booking call used in onboarding) */}
           <div className="relative z-10 w-full max-w-3xl mx-auto px-4 md:px-6 py-8 space-y-4">
             <div className="rounded-2xl border border-border bg-card shadow-xl p-5 md:p-6 space-y-4 text-center">
               <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#290a52' }}>
@@ -1435,13 +1435,15 @@ export default function CourseDetail() {
                 <h2 className="text-xl font-bold" style={{ color: '#290a52' }}>This lesson is locked</h2>
                 <p className="text-sm text-muted-foreground mt-1">Book a call to unlock access to this program.</p>
               </div>
-              <div
-                className="calendly-inline-widget mx-auto"
-                data-url="https://calendly.com/turnermarkus50/the-succession-society?primary_color=290a52"
-                style={{ minWidth: '320px', height: '700px' }}
+              <iframe
+                src="https://api.leadconnectorhq.com/widget/booking/57gmsk4ehRnukpLdEFxH"
+                style={{ width: '100%', border: 'none', overflow: 'hidden', minHeight: '700px' }}
+                scrolling="no"
+                title="Book a call"
               />
             </div>
           </div>
+
         </div>
       )
     }
