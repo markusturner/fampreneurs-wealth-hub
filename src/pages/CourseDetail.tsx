@@ -723,33 +723,8 @@ export default function CourseDetail() {
     return isProgramLocked((selectedLesson as any).required_programs)
   }, [selectedLesson, modules, isProgramLocked])
 
-  // Inject Calendly script once when a locked lesson is shown
-  useEffect(() => {
-    if (!selectedLessonLocked) return
-    const id = 'calendly-widget-script'
-    const initWidgets = () => {
-      const w: any = window as any
-      if (!w.Calendly) return
-      document.querySelectorAll('.calendly-inline-widget').forEach((el: any) => {
-        if (el.dataset.processed === 'true') return
-        const url = el.getAttribute('data-url')
-        if (!url) return
-        el.innerHTML = ''
-        w.Calendly.initInlineWidget({ url, parentElement: el })
-        el.dataset.processed = 'true'
-      })
-    }
-    if (document.getElementById(id)) {
-      setTimeout(initWidgets, 50)
-      return
-    }
-    const s = document.createElement('script')
-    s.id = id
-    s.src = 'https://assets.calendly.com/assets/external/widget.js'
-    s.async = true
-    s.onload = () => setTimeout(initWidgets, 50)
-    document.body.appendChild(s)
-  }, [selectedLessonLocked, selectedLesson?.id])
+  // Booking widget is a plain iframe embed — no external script needed
+
 
 
 
@@ -1425,7 +1400,7 @@ export default function CourseDetail() {
               <div className="h-4 w-4/6 bg-muted rounded" />
             </div>
           </div>
-          {/* Calendly booking overlay */}
+          {/* Booking overlay (same single booking call used in onboarding) */}
           <div className="relative z-10 w-full max-w-3xl mx-auto px-4 md:px-6 py-8 space-y-4">
             <div className="rounded-2xl border border-border bg-card shadow-xl p-5 md:p-6 space-y-4 text-center">
               <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: '#290a52' }}>
@@ -1435,13 +1410,15 @@ export default function CourseDetail() {
                 <h2 className="text-xl font-bold" style={{ color: '#290a52' }}>This lesson is locked</h2>
                 <p className="text-sm text-muted-foreground mt-1">Book a call to unlock access to this program.</p>
               </div>
-              <div
-                className="calendly-inline-widget mx-auto"
-                data-url="https://calendly.com/turnermarkus50/the-succession-society?primary_color=290a52"
-                style={{ minWidth: '320px', height: '700px' }}
+              <iframe
+                src="https://api.leadconnectorhq.com/widget/booking/57gmsk4ehRnukpLdEFxH"
+                style={{ width: '100%', border: 'none', overflow: 'hidden', minHeight: '700px' }}
+                scrolling="no"
+                title="Book a call"
               />
             </div>
           </div>
+
         </div>
       )
     }
