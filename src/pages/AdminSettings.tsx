@@ -1,5 +1,4 @@
 import { useAuth } from '@/contexts/AuthContext'
-import { Tabs as _T } from '@/components/ui/tabs'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AdminUserManagement } from '@/components/dashboard/admin-user-management'
 import { AdminMassNotification } from '@/components/dashboard/admin-mass-notification'
