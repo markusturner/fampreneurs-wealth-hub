@@ -1,0 +1,1 @@
+UPDATE public.profiles SET trust_design_booked = true WHERE email IN ('stevekserrano@gmail.com','holly.noonan@gmail.com');
