@@ -63,6 +63,9 @@ const METRICS_CACHE_KEY = 'admin_analytics_metrics_v1'
 
 const EMPTY_METRICS: SubscriptionMetrics = {
   totalMembers: 0,
+  truheirsMembers: 0,
+  tfbaMembers: 0,
+  tssMembers: 0,
   paidMembers: 0,
   mrr: 0,
   mrrTruheirs: 0,
