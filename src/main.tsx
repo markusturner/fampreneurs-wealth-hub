@@ -39,6 +39,7 @@ import Search from "./pages/Search";
 import Onboarding from "./pages/Onboarding";
 import ProfileSettings from "./pages/ProfileSettings";
 import AdminSettings from "./pages/AdminSettings";
+import ClientMetrics from "./pages/ClientMetrics";
 import ClientRetention from "./pages/ClientRetention";
 import Surveys from "./pages/Surveys";
 import TutorialVideos from "./pages/TutorialVideos";
