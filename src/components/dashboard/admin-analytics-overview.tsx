@@ -7,6 +7,7 @@ import { AdminGrowthCharts } from './admin-growth-charts'
 import { AdminCourseCompletion } from './admin-course-completion'
 import { AdminSopHeatmap } from './admin-sop-heatmap'
 import { AdminTopReason } from './admin-top-reason'
+import { profileProgramCodes } from '@/lib/programs'
 
 interface MetricCardProps {
   title: string
@@ -35,6 +36,9 @@ function MetricCard({ title, value, subtitle, icon, highlight }: MetricCardProps
 
 interface SubscriptionMetrics {
   totalMembers: number
+  truheirsMembers: number
+  tfbaMembers: number
+  tssMembers: number
   paidMembers: number
   mrr: number
   mrrTruheirs: number
@@ -60,6 +64,9 @@ const METRICS_CACHE_KEY = 'admin_analytics_metrics_v1'
 
 const EMPTY_METRICS: SubscriptionMetrics = {
   totalMembers: 0,
+  truheirsMembers: 0,
+  tfbaMembers: 0,
+  tssMembers: 0,
   paidMembers: 0,
   mrr: 0,
   mrrTruheirs: 0,
@@ -124,8 +131,23 @@ export function AdminAnalyticsOverview() {
         .from('profiles')
         .select('user_id, membership_type, created_at, program_name, truheirs_access, program_contract_value, program_cash_collected, partner_group_id')
 
-      const totalMembers = profiles?.length || 0
+      // Program membership counts (TruHeirs paid, TFBA, The Succession Society)
+      const paidUserIds = new Set(
+        (subscribers || []).filter((s: any) => s.subscribed === true).map((s: any) => s.user_id)
+      )
+      const truheirsMembers = (profiles || []).filter(
+        (p: any) => p.truheirs_access && paidUserIds.has(p.user_id)
+      ).length
+      const tfbaMembers = (profiles || []).filter((p: any) =>
+        profileProgramCodes(p.program_name).includes('tfba')
+      ).length
+      const tssMembers = (profiles || []).filter((p: any) =>
+        profileProgramCodes(p.program_name).includes('tffm')
+      ).length
+
+      const totalMembers = truheirsMembers + tfbaMembers + tssMembers
       const paidMembers = subscribers?.filter(s => s.subscribed === true).length || 0
+
 
       const calcMrrForSub = (sub: any) => {
         const tier = sub.subscription_tier
@@ -236,6 +258,9 @@ export function AdminAnalyticsOverview() {
 
       const next: SubscriptionMetrics = {
         totalMembers,
+        truheirsMembers,
+        tfbaMembers,
+        tssMembers,
         paidMembers,
         mrr: Math.round(mrr),
         mrrTruheirs: Math.round(mrrTruheirs),
@@ -311,8 +336,31 @@ export function AdminAnalyticsOverview() {
             </CardContent>
           </Card>
 
+          {/* Members by program */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <MetricCard
+              title="TruHeirs Paid Members"
+              value={metrics.truheirsMembers}
+              subtitle="Active TruHeirs subscriptions"
+              icon={<Users className="h-4 w-4 text-muted-foreground" />}
+            />
+            <MetricCard
+              title="TFBA Members"
+              value={metrics.tfbaMembers}
+              subtitle="The Family Business Accelerator"
+              icon={<Users className="h-4 w-4 text-muted-foreground" />}
+            />
+            <MetricCard
+              title="TSS Members"
+              value={metrics.tssMembers}
+              subtitle="The Succession Society"
+              icon={<Users className="h-4 w-4 text-muted-foreground" />}
+            />
+          </div>
+
           {/* Client Success Rates */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
             <Card className="border-[#290a52]/30">
               <CardContent className="pt-6">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client Success Rate — Trust Creation</p>
@@ -339,7 +387,7 @@ export function AdminAnalyticsOverview() {
             <MetricCard 
               title="Total Members" 
               value={metrics.totalMembers} 
-              subtitle="All registered users"
+              subtitle="TruHeirs paid + TFBA + TSS"
               icon={<Users className="h-4 w-4 text-muted-foreground" />}
             />
             <MetricCard 
