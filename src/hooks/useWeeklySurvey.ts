@@ -35,6 +35,19 @@ export function lastFridayNineEastern(now = new Date()) {
   return new Date(d.getTime() + 4 * 60 * 60 * 1000)
 }
 
+/** True only during Friday 9:00am -> 11:59pm US Eastern */
+export function isSurveyWindowOpen(now = new Date()) {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    weekday: 'short',
+    hour: 'numeric',
+    hour12: false,
+  }).formatToParts(now)
+  const weekday = parts.find(p => p.type === 'weekday')?.value
+  const hour = Number(parts.find(p => p.type === 'hour')?.value ?? '0')
+  return weekday === 'Fri' && hour >= 9
+}
+
 export function useWeeklySurvey() {
   const { user } = useAuth()
   const [survey, setSurvey] = useState<Survey | null>(null)
