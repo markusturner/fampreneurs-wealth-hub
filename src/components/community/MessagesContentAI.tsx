@@ -321,22 +321,20 @@ export function MessagesContentAI() {
     return (
       <div className="space-y-6">
         <div className="text-center space-y-3">
-          <BrainCircuit className="h-16 w-16 mx-auto" color="#2eb2ff" />
-          <h2 className="text-3xl font-bold">AI Experts</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Get instant expert advice from our AI specialists. Click any expert to start chatting.
           </p>
-          <Badge variant="default" className="text-sm px-4 py-2">
-            <Sparkles className="h-4 w-4 mr-2" />
-            Available 24/7
-          </Badge>
-          {isAdminOrOwner && (
-            <div>
-              <Button onClick={() => setAddExpertOpen(true)} className="mt-2 gap-2 bg-[#ffb500] hover:bg-[#ffc733] text-[#290a52] font-semibold">
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <Badge variant="default" className="text-sm px-4 py-2">
+              <Sparkles className="h-4 w-4 mr-2" />
+              Available 24/7
+            </Badge>
+            {isAdminOrOwner && (
+              <Button onClick={() => setAddExpertOpen(true)} className="gap-2 bg-[#ffb500] hover:bg-[#ffc733] text-[#290a52] font-semibold">
                 <Plus className="h-4 w-4" /> Add Expert
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-7xl mx-auto">
