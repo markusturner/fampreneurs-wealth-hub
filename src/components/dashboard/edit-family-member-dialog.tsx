@@ -142,9 +142,11 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
     onUpdate({
       id: member.id,
       ...formData,
+      generation: formData.generation ? Number(formData.generation) : null,
       trust_positions: finalTrustPositions,
       governance_branch: formData.governance_branch && formData.governance_branch !== 'none' ? formData.governance_branch : null
     })
+
   }
 
   if (!member) return null
