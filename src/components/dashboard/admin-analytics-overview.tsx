@@ -50,6 +50,10 @@ interface SubscriptionMetrics {
   programContractValue: number
   programCashCollected: number
   programRemaining: number
+  trustSuccessRate: number
+  trustSuccessCount: number
+  successionSuccessRate: number
+  successionSuccessCount: number
 }
 
 export function AdminAnalyticsOverview() {
