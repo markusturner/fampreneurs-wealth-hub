@@ -32,7 +32,10 @@ const Dashboard = () => {
   const navigate = useNavigate()
   const { shouldShowTutorial, isLoading: tutorialLoading, markAsWatched } = useTutorialVideo(user?.id || null)
   const [manualTutorialOpen, setManualTutorialOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<FamilyTab>('dashboard')
+  const [activeTab, setActiveTab] = useState<FamilyTab>(
+    typeof window !== 'undefined' && window.location.pathname === '/handoff' ? 'handoff' : 'dashboard'
+  )
+
   const [govTab, setGovTab] = useState<'constitution' | 'calendar' | 'members'>('constitution')
 
 
