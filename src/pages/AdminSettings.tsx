@@ -13,7 +13,7 @@ import { CommunityManagerAdmin } from '@/components/dashboard/community-manager-
 import { AdminInviteLinks } from '@/components/dashboard/admin-invite-links'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Shield, Zap, Video, BarChart3, Lock, Loader2, MessageCircle, Link2 } from 'lucide-react'
+import { ArrowLeft, Shield, Zap, Video, Lock, Loader2, MessageCircle, Link2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
