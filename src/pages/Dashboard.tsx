@@ -10,6 +10,8 @@ import { useUserRole } from "@/hooks/useUserRole"
 import { useTutorialVideo } from "@/hooks/useTutorialVideo"
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { supabase } from "@/integrations/supabase/client"
+import { profileProgramCodes } from "@/lib/programs"
+import { LockedPageOverlay } from "@/components/dashboard/LockedPageOverlay"
 
 import { useSubscription } from "@/hooks/useSubscription"
 import { useIsAdminOrOwner } from "@/hooks/useIsAdminOrOwner"
@@ -43,6 +45,12 @@ const Dashboard = () => {
   // Only show tutorial if user actually has TruHeirs access
   const hasTruHeirsAccess = isAdminOrOwner || isOwner || profile?.truheirs_access === true || subscriptionStatus.subscribed
   const showTutorial = shouldShowTutorial && hasTruHeirsAccess
+
+  // Governance + Handoff are Succession Society (succession planning) only
+  const inSuccessionProgram =
+    profileProgramCodes(profile?.program_name).includes('tffm') ||
+    subscriptionStatus.programs?.includes('tffm')
+  const successionLocked = !(isAdminOrOwner || isOwner || inSuccessionProgram)
 
   const handleTutorialSkipped = async () => {
     if (!user?.id) return;
@@ -123,32 +131,36 @@ const Dashboard = () => {
       ) : activeTab === 'office' ? (
         <Community />
       ) : activeTab === 'governance' ? (
-        <div className="space-y-4">
-          <div className="flex justify-center">
-            <div className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1 shadow-sm">
-              {([
-                { key: 'constitution', label: 'Constitution' },
-                { key: 'calendar', label: 'Calendar' },
-                { key: 'members', label: 'Members' },
-              ] as const).map(({ key, label }) => (
-                <button
-                  key={key}
-                  onClick={() => setGovTab(key)}
-                  className={`rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
-                    govTab === key
-                      ? 'bg-foreground text-primary shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+        <LockedPageOverlay locked={successionLocked} programFilter="tffm" title="Succession Society Only">
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1 shadow-sm">
+                {([
+                  { key: 'constitution', label: 'Constitution' },
+                  { key: 'calendar', label: 'Calendar' },
+                  { key: 'members', label: 'Members' },
+                ] as const).map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setGovTab(key)}
+                    className={`rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                      govTab === key
+                        ? 'bg-foreground text-primary shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
+            {govTab === 'constitution' ? <Documents /> : govTab === 'calendar' ? <CalendarPage /> : <Members />}
           </div>
-          {govTab === 'constitution' ? <Documents /> : govTab === 'calendar' ? <CalendarPage /> : <Members />}
-        </div>
+        </LockedPageOverlay>
       ) : activeTab === 'handoff' ? (
-        <HandoffPanel />
+        <LockedPageOverlay locked={successionLocked} programFilter="tffm" title="Succession Society Only">
+          <HandoffPanel />
+        </LockedPageOverlay>
       ) : null}
 
 
