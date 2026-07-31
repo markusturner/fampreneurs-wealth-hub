@@ -213,6 +213,9 @@ export default function Welcome() {
             {(isAdmin || isOwner) && (
               <>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/client-metrics')}>
+                  <BarChart3 className="h-4 w-4 mr-2" /> Client Metrics
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/admin-settings')}>
                   <Shield className="h-4 w-4 mr-2" /> Admin Settings
                 </DropdownMenuItem>
