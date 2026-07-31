@@ -33,6 +33,8 @@ import {
   X,
   Edit
 } from 'lucide-react'
+import { ENTITY_OPTIONS, getProtectionLevel, PROTECTION_CLASS, PROTECTION_LABEL } from '@/lib/entities'
+
 
 interface ConnectedAccount {
   id: string
