@@ -1,5 +1,4 @@
 import { useAuth } from '@/contexts/AuthContext'
-import { AdminAnalyticsOverview } from '@/components/dashboard/admin-analytics-overview'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { AdminUserManagement } from '@/components/dashboard/admin-user-management'
 import { AdminMassNotification } from '@/components/dashboard/admin-mass-notification'
@@ -14,7 +13,7 @@ import { CommunityManagerAdmin } from '@/components/dashboard/community-manager-
 import { AdminInviteLinks } from '@/components/dashboard/admin-invite-links'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Shield, Zap, Video, BarChart3, Lock, Loader2, MessageCircle, Link2 } from 'lucide-react'
+import { ArrowLeft, Shield, Zap, Video, Lock, Loader2, MessageCircle, Link2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useOwnerRole } from '@/hooks/useOwnerRole'
@@ -65,62 +64,71 @@ export function AdminSettings() {
         </Badge>
       </div>
 
-  <Tabs defaultValue={isAdmin ? "admin" : (isOwner ? "metrics" : "metrics")} className="space-y-4 md:space-y-6">
+      <Tabs defaultValue={isAdmin ? "users" : "content"} className="space-y-4 md:space-y-6">
         <div className="overflow-x-auto scrollbar-hide -mx-3 px-3">
-          <TabsList className="inline-flex w-auto min-w-full md:min-w-0 h-auto">
+          <TabsList className="inline-flex w-auto min-w-full md:min-w-0 h-auto gap-1 p-1 rounded-xl bg-muted/60">
             {isAdmin && (
-              <TabsTrigger value="admin" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
+              <TabsTrigger value="users" className={`flex items-center gap-2 rounded-lg ${isMobile ? 'flex-col py-2.5 px-3 text-xs' : 'text-sm px-4 py-2'}`}>
                 <Shield className="h-4 w-4 shrink-0" />
-                {isMobile ? "Admin" : "Admin Panel"}
+                Users
               </TabsTrigger>
             )}
             {(isAdmin || isOwner) && (
-              <TabsTrigger value="metrics" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
-                <BarChart3 className="h-4 w-4 shrink-0" />
-                Metrics
-              </TabsTrigger>
-            )}
-            {isOwner && (
-              <TabsTrigger value="zapier" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
-                <Zap className="h-4 w-4 shrink-0" />
-                {isMobile ? "Zapier" : "Zapier Integration"}
-              </TabsTrigger>
-            )}
-            {(isAdmin || isOwner) && (
-              <TabsTrigger value="tutorial" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
-                <Video className="h-4 w-4 shrink-0" />
-                {isMobile ? "Tutorial" : "Tutorial Video"}
-              </TabsTrigger>
-            )}
-            {(isAdmin || isOwner) && (
-              <TabsTrigger value="invites" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
+              <TabsTrigger value="invites" className={`flex items-center gap-2 rounded-lg ${isMobile ? 'flex-col py-2.5 px-3 text-xs' : 'text-sm px-4 py-2'}`}>
                 <Link2 className="h-4 w-4 shrink-0" />
-                {isMobile ? "Invites" : "Invite Links"}
+                Invites
               </TabsTrigger>
             )}
             {(isAdmin || isOwner) && (
-              <TabsTrigger value="community-manager" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
+              <TabsTrigger value="community" className={`flex items-center gap-2 rounded-lg ${isMobile ? 'flex-col py-2.5 px-3 text-xs' : 'text-sm px-4 py-2'}`}>
                 <MessageCircle className="h-4 w-4 shrink-0" />
-                {isMobile ? "Manager" : "Community Manager"}
+                Community
+              </TabsTrigger>
+            )}
+            {(isAdmin || isOwner) && (
+              <TabsTrigger value="content" className={`flex items-center gap-2 rounded-lg ${isMobile ? 'flex-col py-2.5 px-3 text-xs' : 'text-sm px-4 py-2'}`}>
+                <Video className="h-4 w-4 shrink-0" />
+                Content
               </TabsTrigger>
             )}
             {isOwner && (
-              <TabsTrigger value="permissions" className={`flex items-center gap-1 md:gap-2 ${isMobile ? 'flex-col py-3 px-3 text-xs' : 'text-sm'}`}>
+              <TabsTrigger value="integrations" className={`flex items-center gap-2 rounded-lg ${isMobile ? 'flex-col py-2.5 px-3 text-xs' : 'text-sm px-4 py-2'}`}>
+                <Zap className="h-4 w-4 shrink-0" />
+                Integrations
+              </TabsTrigger>
+            )}
+            {isOwner && (
+              <TabsTrigger value="permissions" className={`flex items-center gap-2 rounded-lg ${isMobile ? 'flex-col py-2.5 px-3 text-xs' : 'text-sm px-4 py-2'}`}>
                 <Lock className="h-4 w-4 shrink-0" />
-                {isMobile ? "Roles" : "Role Permissions"}
+                Roles
               </TabsTrigger>
             )}
           </TabsList>
         </div>
 
-        {isOwner && user?.id && (
-          <TabsContent value="zapier" className="space-y-6">
-            <ZapierIntegration userId={user.id} />
-            <ApiKeyManager userId={user.id} />
+        {isAdmin && (
+          <TabsContent value="users" className="space-y-6">
+            <AdminAllUsersManagement />
           </TabsContent>
         )}
+
         {(isAdmin || isOwner) && (
-          <TabsContent value="tutorial" className="space-y-6">
+          <TabsContent value="invites" className="space-y-6">
+            <AdminInviteLinks />
+            <AdminUserManagement />
+          </TabsContent>
+        )}
+
+        {(isAdmin || isOwner) && (
+          <TabsContent value="community" className="space-y-6">
+            <CommunityManagerAdmin />
+            <AdminMassNotification />
+            <AdminPushTest />
+          </TabsContent>
+        )}
+
+        {(isAdmin || isOwner) && (
+          <TabsContent value="content" className="space-y-6">
             <AdminTutorialVideoManager />
             <AdminUpgradeVideoManager />
             <AdminVideoManager
@@ -130,31 +138,16 @@ export function AdminSettings() {
             />
           </TabsContent>
         )}
-        {(isAdmin || isOwner) && (
-          <TabsContent value="metrics" className="space-y-6">
-            <AdminAnalyticsOverview />
+
+        {isOwner && user?.id && (
+          <TabsContent value="integrations" className="space-y-6">
+            <ZapierIntegration userId={user.id} />
+            <ApiKeyManager userId={user.id} />
           </TabsContent>
         )}
-        {(isAdmin || isOwner) && (
-          <TabsContent value="invites" className="space-y-6">
-            <AdminInviteLinks />
-          </TabsContent>
-        )}
-        {(isAdmin || isOwner) && (
-          <TabsContent value="community-manager" className="space-y-6">
-            <CommunityManagerAdmin />
-          </TabsContent>
-        )}
+
         {isOwner && (
           <TabsContent value="permissions"><RolePermissionsManager /></TabsContent>
-        )}
-        {isAdmin && (
-          <TabsContent value="admin" className="space-y-6">
-            <AdminAllUsersManagement />
-            <AdminUserManagement />
-            <AdminMassNotification />
-            <AdminPushTest />
-          </TabsContent>
         )}
       </Tabs>
     </div>

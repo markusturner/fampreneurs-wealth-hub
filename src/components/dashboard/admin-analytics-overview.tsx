@@ -50,6 +50,10 @@ interface SubscriptionMetrics {
   programContractValue: number
   programCashCollected: number
   programRemaining: number
+  trustSuccessRate: number
+  trustSuccessCount: number
+  successionSuccessRate: number
+  successionSuccessCount: number
 }
 
 export function AdminAnalyticsOverview() {
@@ -70,6 +74,10 @@ export function AdminAnalyticsOverview() {
     programContractValue: 0,
     programCashCollected: 0,
     programRemaining: 0,
+    trustSuccessRate: 0,
+    trustSuccessCount: 0,
+    successionSuccessRate: 0,
+    successionSuccessCount: 0,
   })
   const [loading, setLoading] = useState(true)
   const [landingPageVisitors, setLandingPageVisitors] = useState(0)
@@ -193,6 +201,25 @@ export function AdminAnalyticsOverview() {
       const totalTrialsStarted = trialsInProgress + convertedFromTrial
       const trialConversionRate = totalTrialsStarted > 0 ? (convertedFromTrial / totalTrialsStarted) * 100 : 0
 
+      // Client Success Rates
+      const { data: trustRows } = await supabase
+        .from('trust_submissions')
+        .select('user_id, status')
+      const { data: successionRows } = await supabase
+        .from('succession_progress')
+        .select('user_id, status')
+
+      const trustUsers = new Set((trustRows || []).map((r: any) => r.user_id))
+      const successionUsers = new Set(
+        (successionRows || [])
+          .filter((r: any) => String(r.status || '').toLowerCase() === 'completed' || String(r.status || '').toLowerCase() === 'complete' || String(r.status || '').toLowerCase() === 'done')
+          .map((r: any) => r.user_id)
+      )
+      const trustSuccessCount = trustUsers.size
+      const successionSuccessCount = successionUsers.size
+      const trustSuccessRate = totalMembers > 0 ? (trustSuccessCount / totalMembers) * 100 : 0
+      const successionSuccessRate = totalMembers > 0 ? (successionSuccessCount / totalMembers) * 100 : 0
+
       setMetrics({
         totalMembers,
         paidMembers,
@@ -210,6 +237,10 @@ export function AdminAnalyticsOverview() {
         programContractValue,
         programCashCollected,
         programRemaining,
+        trustSuccessRate: Number(trustSuccessRate.toFixed(1)),
+        trustSuccessCount,
+        successionSuccessRate: Number(successionSuccessRate.toFixed(1)),
+        successionSuccessCount,
       })
     } catch (error) {
       console.error('Error fetching metrics:', error)
@@ -263,6 +294,30 @@ export function AdminAnalyticsOverview() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Client Success Rates */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card className="border-[#290a52]/30">
+              <CardContent className="pt-6">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client Success Rate — Trust Creation</p>
+                <div className="text-3xl font-bold mt-1" style={{ color: '#290a52' }}>{metrics.trustSuccessRate}%</div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {metrics.trustSuccessCount} of {metrics.totalMembers} members submitted a trust form
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="border-[#2eb2ff]/30">
+              <CardContent className="pt-6">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client Success Rate — Succession Planning</p>
+                <div className="text-3xl font-bold mt-1" style={{ color: '#2eb2ff' }}>{metrics.successionSuccessRate}%</div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {metrics.successionSuccessCount} of {metrics.totalMembers} members completed succession items
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <MetricCard 

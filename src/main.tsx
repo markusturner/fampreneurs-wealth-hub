@@ -39,6 +39,7 @@ import Search from "./pages/Search";
 import Onboarding from "./pages/Onboarding";
 import ProfileSettings from "./pages/ProfileSettings";
 import AdminSettings from "./pages/AdminSettings";
+import ClientMetrics from "./pages/ClientMetrics";
 import ClientRetention from "./pages/ClientRetention";
 import Surveys from "./pages/Surveys";
 import TutorialVideos from "./pages/TutorialVideos";
@@ -150,6 +151,7 @@ function AppWithNotifications() {
         <Route path="/investments" element={<WithLayout><Investments /></WithLayout>} />
         <Route path="/profile-settings" element={<WithLayout><ProfileSettings /></WithLayout>} />
         <Route path="/admin-settings" element={<WithLayout><AdminSettings /></WithLayout>} />
+        <Route path="/client-metrics" element={<WithLayout><ClientMetrics /></WithLayout>} />
         <Route path="/client-retention" element={<WithLayout><ClientRetention /></WithLayout>} />
         <Route path="/surveys" element={<WithLayout><Surveys /></WithLayout>} />
         <Route path="/tutorial-videos" element={<WithLayout><TutorialVideos /></WithLayout>} />
