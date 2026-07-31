@@ -1107,8 +1107,6 @@ export function TransactionMonitoring() {
                             title: "Statement Deleted",
                             description: "Upload and associated transactions have been removed"
                           })
-
-                          await fetchConnectedAccountsAndTransactions()
                         } catch (error: any) {
                           console.error('Delete error:', error)
                           toast({
