@@ -10,6 +10,7 @@ import { useUserRole } from "@/hooks/useUserRole"
 import { useTutorialVideo } from "@/hooks/useTutorialVideo"
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { supabase } from "@/integrations/supabase/client"
+import { profileProgramCodes } from "@/lib/programs"
 
 import { useSubscription } from "@/hooks/useSubscription"
 import { useIsAdminOrOwner } from "@/hooks/useIsAdminOrOwner"
