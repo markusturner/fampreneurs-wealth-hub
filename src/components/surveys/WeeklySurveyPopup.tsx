@@ -1,11 +1,17 @@
+import { useLocation } from 'react-router-dom'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { SurveyForm } from './SurveyForm'
-import { useWeeklySurvey } from '@/hooks/useWeeklySurvey'
+import { useWeeklySurvey, isSurveyWindowOpen } from '@/hooks/useWeeklySurvey'
+
+const HIDDEN_ROUTES = ['/onboarding', '/onboarding-explanation', '/program-agreement', '/profile-photo', '/trust-design-booking', '/auth']
 
 export function WeeklySurveyPopup() {
   const { survey, questions, needsSubmission, loading, dismiss, refresh } = useWeeklySurvey()
+  const location = useLocation()
 
+  if (HIDDEN_ROUTES.some(r => location.pathname.startsWith(r))) return null
+  if (!isSurveyWindowOpen()) return null
   if (loading || !survey || !needsSubmission || questions.length === 0) return null
 
   return (
