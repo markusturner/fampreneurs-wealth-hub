@@ -199,7 +199,25 @@ export function AdminAnalyticsOverview() {
       ).length || 0
       
       const totalTrialsStarted = trialsInProgress + convertedFromTrial
-      const trialConversionRate = totalTrialsStarted > 0 ? (convertedFromTrial / totalTrialsStarted) * 100 : 0
+
+      // Client Success Rates
+      const { data: trustRows } = await supabase
+        .from('trust_submissions')
+        .select('user_id, status')
+      const { data: successionRows } = await supabase
+        .from('succession_progress')
+        .select('user_id, status')
+
+      const trustUsers = new Set((trustRows || []).map((r: any) => r.user_id))
+      const successionUsers = new Set(
+        (successionRows || [])
+          .filter((r: any) => String(r.status || '').toLowerCase() === 'completed' || String(r.status || '').toLowerCase() === 'complete' || String(r.status || '').toLowerCase() === 'done')
+          .map((r: any) => r.user_id)
+      )
+      const trustSuccessCount = trustUsers.size
+      const successionSuccessCount = successionUsers.size
+      const trustSuccessRate = totalMembers > 0 ? (trustSuccessCount / totalMembers) * 100 : 0
+      const successionSuccessRate = totalMembers > 0 ? (successionSuccessCount / totalMembers) * 100 : 0
 
       setMetrics({
         totalMembers,
@@ -218,6 +236,10 @@ export function AdminAnalyticsOverview() {
         programContractValue,
         programCashCollected,
         programRemaining,
+        trustSuccessRate: Number(trustSuccessRate.toFixed(1)),
+        trustSuccessCount,
+        successionSuccessRate: Number(successionSuccessRate.toFixed(1)),
+        successionSuccessCount,
       })
     } catch (error) {
       console.error('Error fetching metrics:', error)
