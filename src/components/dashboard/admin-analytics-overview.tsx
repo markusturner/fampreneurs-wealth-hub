@@ -234,7 +234,7 @@ export function AdminAnalyticsOverview() {
       const trustSuccessRate = totalMembers > 0 ? (trustSuccessCount / totalMembers) * 100 : 0
       const successionSuccessRate = totalMembers > 0 ? (successionSuccessCount / totalMembers) * 100 : 0
 
-      setMetrics({
+      const next: SubscriptionMetrics = {
         totalMembers,
         paidMembers,
         mrr: Math.round(mrr),
@@ -255,7 +255,9 @@ export function AdminAnalyticsOverview() {
         trustSuccessCount,
         successionSuccessRate: Number(successionSuccessRate.toFixed(1)),
         successionSuccessCount,
-      })
+      }
+      setMetrics(next)
+      try { localStorage.setItem(METRICS_CACHE_KEY, JSON.stringify(next)) } catch { /* ignore */ }
     } catch (error) {
       console.error('Error fetching metrics:', error)
     } finally {
