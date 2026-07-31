@@ -130,32 +130,36 @@ const Dashboard = () => {
       ) : activeTab === 'office' ? (
         <Community />
       ) : activeTab === 'governance' ? (
-        <div className="space-y-4">
-          <div className="flex justify-center">
-            <div className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1 shadow-sm">
-              {([
-                { key: 'constitution', label: 'Constitution' },
-                { key: 'calendar', label: 'Calendar' },
-                { key: 'members', label: 'Members' },
-              ] as const).map(({ key, label }) => (
-                <button
-                  key={key}
-                  onClick={() => setGovTab(key)}
-                  className={`rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
-                    govTab === key
-                      ? 'bg-foreground text-primary shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+        <LockedPageOverlay locked={successionLocked} programFilter="tffm" title="Succession Society Only">
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <div className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1 shadow-sm">
+                {([
+                  { key: 'constitution', label: 'Constitution' },
+                  { key: 'calendar', label: 'Calendar' },
+                  { key: 'members', label: 'Members' },
+                ] as const).map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => setGovTab(key)}
+                    className={`rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                      govTab === key
+                        ? 'bg-foreground text-primary shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
+            {govTab === 'constitution' ? <Documents /> : govTab === 'calendar' ? <CalendarPage /> : <Members />}
           </div>
-          {govTab === 'constitution' ? <Documents /> : govTab === 'calendar' ? <CalendarPage /> : <Members />}
-        </div>
+        </LockedPageOverlay>
       ) : activeTab === 'handoff' ? (
-        <HandoffPanel />
+        <LockedPageOverlay locked={successionLocked} programFilter="tffm" title="Succession Society Only">
+          <HandoffPanel />
+        </LockedPageOverlay>
       ) : null}
 
 
