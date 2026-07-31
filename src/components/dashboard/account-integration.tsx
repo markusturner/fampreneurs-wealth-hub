@@ -419,10 +419,12 @@ export function AccountIntegration() {
           provider: selectedAccount.provider,
           account_subtype: selectedAccount.account_subtype || null,
           investment_type: selectedAccount.investment_type || null,
+          owner_entity: selectedAccount.owner_entity || null,
           manual_balance_override: selectedAccount.manual_balance_override || false,
           manual_balance_amount: selectedAccount.manual_balance_override ? 
             (selectedAccount.manual_balance_amount || 0) : null
         }
+
 
         const { error } = await supabase
           .from('connected_accounts')
