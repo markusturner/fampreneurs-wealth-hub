@@ -383,78 +383,104 @@ export default function Members() {
                 </CardContent>
               </Card>
             ) : (
-              familyMembers.map((member) => (
-                <Card key={member.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setViewingMember(member)}>
-                  <CardContent className="p-2 sm:p-3 md:p-4">
-                    <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4">
-                      <div className="flex items-center gap-3 sm:items-start">
-                        <Checkbox
-                          checked={selectedMembers.has(member.id)}
-                          onCheckedChange={() => toggleSelectMember(member.id)}
-                          className="mt-1"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
-                          <AvatarImage src="" />
-                          <AvatarFallback className="bg-primary/10 text-xs sm:text-sm">
-                            {member.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="font-semibold text-sm sm:text-base truncate">{member.full_name}</h3>
-                            {member.family_position === 'Head of Family' && <Crown className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 flex-shrink-0" />}
-                            {getStatusBadge(member)}
-                          </div>
-                          <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
-                            {member.family_position && <Badge variant="secondary" className="text-xs">{member.family_position}</Badge>}
-                            {member.relationship_to_family && <span className="text-xs">• {member.relationship_to_family}</span>}
-                            {inviterNames[member.added_by] && (
-                              <span className="text-xs">• Invited by <span className="font-medium">{inviterNames[member.added_by]}</span></span>
-                            )}
-                          </div>
-                          {/* Live relative timestamp */}
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1" key={now.getTime()}>
-                            <Clock className="h-3 w-3" />
-                            <span>Active {getRelativeTime(getMostRecentActivity(member))}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 sm:ml-auto sm:flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                        {member.email && (
-                          <Button variant="outline" size="sm" onClick={() => handleResendInvitation(member)} className="text-xs h-8 px-2" disabled={!!member.joined_at}>
-                            <Mail className="h-3 w-3 sm:mr-1" />
-                            <span className="hidden sm:inline">{member.joined_at ? 'Accepted' : 'Resend'}</span>
-                          </Button>
-                        )}
-                        <Button variant="ghost" size="sm" onClick={() => setEditingMember(member)} className="h-8 w-8 p-0">
-                          <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteFamilyMember(member.id)} className="h-8 w-8 p-0">
-                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {member.trust_positions && member.trust_positions.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-3">
-                        {member.trust_positions.map(position => (
-                          <Badge key={position} variant="outline" className={`text-xs ${getTrustPositionColor(position)}`}>{position}</Badge>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground mt-3">
-                      {member.email && <div className="flex items-center gap-1 min-w-0"><Mail className="h-3 w-3 flex-shrink-0" /><span className="truncate">{member.email}</span></div>}
-                      {member.phone && <div className="flex items-center gap-1"><Phone className="h-3 w-3 flex-shrink-0" /><span>{member.phone}</span></div>}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+              <Card>
+                <CardContent className="p-0 overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b bg-muted/40 text-xs text-muted-foreground">
+                        <th className="w-10 p-3"></th>
+                        <th className="p-3 text-left font-medium">Member</th>
+                        <th className="p-3 text-left font-medium">Generation</th>
+                        <th className="p-3 text-left font-medium">Access</th>
+                        <th className="p-3 text-left font-medium">Contact</th>
+                        <th className="p-3 text-right font-medium">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {familyMembers.map((member) => {
+                        const gen = getGeneration(member)
+                        return (
+                          <tr
+                            key={member.id}
+                            className="border-b last:border-0 hover:bg-muted/40 cursor-pointer"
+                            onClick={() => setViewingMember(member)}
+                          >
+                            <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                              <Checkbox
+                                checked={selectedMembers.has(member.id)}
+                                onCheckedChange={() => toggleSelectMember(member.id)}
+                              />
+                            </td>
+                            <td className="p-3">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <Avatar className="h-9 w-9 flex-shrink-0">
+                                  <AvatarFallback className="bg-primary/10 text-xs">
+                                    {member.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-medium truncate">{member.full_name}</span>
+                                    {member.family_position === 'Head of Family' && <Crown className="h-3 w-3 text-yellow-500 flex-shrink-0" />}
+                                  </div>
+                                  <p className="text-xs text-muted-foreground truncate">
+                                    {member.family_position}
+                                    {member.relationship_to_family ? ` • ${member.relationship_to_family}` : ''}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              <div className="flex flex-col gap-0.5">
+                                <Badge variant="outline" className={`w-fit text-xs ${GEN_COLORS[gen.level] || ''}`}>
+                                  G{gen.level}
+                                </Badge>
+                                <span className="text-[11px] text-muted-foreground whitespace-nowrap">{gen.label}</span>
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              <div className="flex flex-col gap-1">
+                                {getStatusBadge(member)}
+                                <span className="text-[11px] text-muted-foreground">{getAccessLevel(member)}</span>
+                              </div>
+                            </td>
+                            <td className="p-3">
+                              <div className="text-xs text-muted-foreground space-y-0.5">
+                                {member.email && (
+                                  <div className="flex items-center gap-1 min-w-0"><Mail className="h-3 w-3 flex-shrink-0" /><span className="truncate max-w-[180px]">{member.email}</span></div>
+                                )}
+                                {member.phone && (
+                                  <div className="flex items-center gap-1"><Phone className="h-3 w-3 flex-shrink-0" /><span>{member.phone}</span></div>
+                                )}
+                                <div className="flex items-center gap-1"><Clock className="h-3 w-3 flex-shrink-0" /><span>{getRelativeTime(getMostRecentActivity(member))}</span></div>
+                              </div>
+                            </td>
+                            <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center justify-end gap-1">
+                                {member.email && (
+                                  <Button variant="outline" size="sm" onClick={() => handleResendInvitation(member)} className="text-xs h-8 px-2" disabled={!!member.joined_at}>
+                                    <Mail className="h-3 w-3" />
+                                  </Button>
+                                )}
+                                <Button variant="ghost" size="sm" onClick={() => setEditingMember(member)} className="h-8 w-8 p-0">
+                                  <Edit className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => handleDeleteFamilyMember(member.id)} className="h-8 w-8 p-0">
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </CardContent>
+              </Card>
             )}
           </div>
         </div>
+
 
         {/* Member Profile Dialog */}
         <Dialog open={!!viewingMember} onOpenChange={() => setViewingMember(null)}>
