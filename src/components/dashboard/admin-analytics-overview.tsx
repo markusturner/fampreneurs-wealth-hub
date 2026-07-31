@@ -258,6 +258,9 @@ export function AdminAnalyticsOverview() {
 
       const next: SubscriptionMetrics = {
         totalMembers,
+        truheirsMembers,
+        tfbaMembers,
+        tssMembers,
         paidMembers,
         mrr: Math.round(mrr),
         mrrTruheirs: Math.round(mrrTruheirs),
