@@ -286,13 +286,6 @@ export default function Community() {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-6 space-y-6 max-w-7xl">
-        <div className="animate-fade-in">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Digital Family Office</h1>
-          <p className="text-lg text-muted-foreground">
-            Complete financial ecosystem management and wealth tracking
-          </p>
-        </div>
-
         <Tabs defaultValue="accounts" className="space-y-6 animate-fade-in">
           {/* Responsive Tab Navigation */}
           <div className="w-full">
