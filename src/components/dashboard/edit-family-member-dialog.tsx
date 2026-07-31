@@ -84,8 +84,10 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
     trust_positions: [] as string[],
     governance_position: '',
     governance_branch: '',
+    generation: '',
     notes: ''
   })
+
   const [newTrustPosition, setNewTrustPosition] = useState('')
   const [trustSelectValue, setTrustSelectValue] = useState('')
 
