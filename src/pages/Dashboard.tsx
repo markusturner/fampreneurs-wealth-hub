@@ -89,14 +89,15 @@ const Dashboard = () => {
         </Button>
       </div>
 
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      <div className="flex items-center justify-center gap-4">
+        <div className="text-center">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
           <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Your financial overview, key metrics, and recent activity at a glance.
           </p>
         </div>
       </div>
+
 
       <div className="py-2">
         <FamilyToggleBar value={activeTab} onChange={setActiveTab} />
