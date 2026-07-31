@@ -117,6 +117,7 @@ const Dashboard = () => {
         <>
           <DashboardStats />
           <AssetProtectionSection />
+          <OwnershipMap />
           <OverviewSection />
         </>
       ) : activeTab === 'office' ? (
