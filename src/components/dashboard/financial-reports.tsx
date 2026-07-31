@@ -44,10 +44,18 @@ export function FinancialReports() {
   })
 
   useEffect(() => {
-    if (user) {
-      fetchTransactions()
-    }
+    if (!user) return
+    fetchTransactions()
+
+    const channel = supabase
+      .channel('financial-reports-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'account_transactions', filter: `user_id=eq.${user.id}` }, () => fetchTransactions())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bank_statement_transactions', filter: `user_id=eq.${user.id}` }, () => fetchTransactions())
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
   }, [user, selectedPeriod])
+
 
   const fetchTransactions = async () => {
     if (!user) return
@@ -382,29 +390,20 @@ export function FinancialReports() {
     )
   }
 
-  // Use demo data if no transactions exist
-  const displayData = transactions.length === 0 ? {
-    income: { 'Salary': 5000, 'Investment Income': 1000 },
-    expenses: { 'Rent': 1200, 'Groceries': 350, 'Utilities': 85 },
-    assets: { 'Cash & Bank Accounts': 6000 },
-    liabilities: {},
-    totalIncome: 6000,
-    totalExpenses: 1635,
-    netIncome: 4365
-  } : financialData
+  // Always show live data pulled from the user's accounts and statements
+  const displayData = financialData
+  
 
-  const isShowingDemo = transactions.length === 0
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold">Financial Reports</h2>
-          {isShowingDemo && (
-            <Badge variant="secondary" className="text-xs">
-              Demo Data
-            </Badge>
-          )}
+          <Badge variant="secondary" className="text-xs">
+            {transactions.length > 0 ? `Live • ${transactions.length} transactions` : 'Live • no data yet'}
+          </Badge>
+
         </div>
         <div className="flex items-center gap-4">
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>

@@ -19,6 +19,9 @@ import Community from '@/pages/Community'
 import Documents from '@/pages/Documents'
 import CalendarPage from '@/pages/Calendar'
 import Members from '@/pages/Members'
+import { AssetProtectionSection } from '@/components/dashboard/asset-protection-section'
+import { HandoffPanel } from '@/components/dashboard/handoff-panel'
+
 
 const Dashboard = () => {
   const { user, profile, loading } = useAuth()
@@ -29,7 +32,12 @@ const Dashboard = () => {
   const navigate = useNavigate()
   const { shouldShowTutorial, isLoading: tutorialLoading, markAsWatched } = useTutorialVideo(user?.id || null)
   const [manualTutorialOpen, setManualTutorialOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<FamilyTab>('dashboard')
+  const [activeTab, setActiveTab] = useState<FamilyTab>(
+    typeof window !== 'undefined' && window.location.pathname === '/handoff' ? 'handoff' : 'dashboard'
+  )
+
+  const [govTab, setGovTab] = useState<'constitution' | 'calendar' | 'members'>('constitution')
+
 
   // Only show tutorial if user actually has TruHeirs access
   const hasTruHeirsAccess = isAdminOrOwner || isOwner || profile?.truheirs_access === true || subscriptionStatus.subscribed
@@ -107,17 +115,40 @@ const Dashboard = () => {
       {activeTab === 'dashboard' ? (
         <>
           <DashboardStats />
+          <AssetProtectionSection />
           <OverviewSection />
         </>
       ) : activeTab === 'office' ? (
         <Community />
-      ) : activeTab === 'constitution' ? (
-        <Documents />
-      ) : activeTab === 'calendar' ? (
-        <CalendarPage />
-      ) : activeTab === 'members' ? (
-        <Members />
+      ) : activeTab === 'governance' ? (
+        <div className="space-y-4">
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1 shadow-sm">
+              {([
+                { key: 'constitution', label: 'Constitution' },
+                { key: 'calendar', label: 'Calendar' },
+                { key: 'members', label: 'Members' },
+              ] as const).map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setGovTab(key)}
+                  className={`rounded-full px-4 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                    govTab === key
+                      ? 'bg-foreground text-primary shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {govTab === 'constitution' ? <Documents /> : govTab === 'calendar' ? <CalendarPage /> : <Members />}
+        </div>
+      ) : activeTab === 'handoff' ? (
+        <HandoffPanel />
       ) : null}
+
 
       {user && (showTutorial || manualTutorialOpen) && (
         <TutorialVideoModal

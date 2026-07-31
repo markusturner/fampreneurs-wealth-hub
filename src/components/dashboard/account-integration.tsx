@@ -33,6 +33,8 @@ import {
   X,
   Edit
 } from 'lucide-react'
+import { ENTITY_OPTIONS, getProtectionLevel, PROTECTION_CLASS, PROTECTION_LABEL } from '@/lib/entities'
+
 
 interface ConnectedAccount {
   id: string
@@ -53,6 +55,8 @@ interface ConnectedAccount {
   day_change_percent?: number
   manual_balance_override?: boolean
   manual_balance_amount?: number
+  owner_entity?: string | null
+
 }
 
 export function AccountIntegration() {
@@ -177,8 +181,10 @@ export function AccountIntegration() {
     day_change: Number(account.day_change || 0),
     day_change_percent: Number(account.day_change_percent || 0),
     manual_balance_override: account.manual_balance_override,
-    manual_balance_amount: Number(account.manual_balance_amount || 0)
+    manual_balance_amount: Number(account.manual_balance_amount || 0),
+    owner_entity: account.owner_entity ?? null
   })
+
 
   const fetchConnectedAccounts = async () => {
     try {
@@ -415,10 +421,12 @@ export function AccountIntegration() {
           provider: selectedAccount.provider,
           account_subtype: selectedAccount.account_subtype || null,
           investment_type: selectedAccount.investment_type || null,
+          owner_entity: selectedAccount.owner_entity || null,
           manual_balance_override: selectedAccount.manual_balance_override || false,
           manual_balance_amount: selectedAccount.manual_balance_override ? 
             (selectedAccount.manual_balance_amount || 0) : null
         }
+
 
         const { error } = await supabase
           .from('connected_accounts')
@@ -1325,7 +1333,19 @@ export function AccountIntegration() {
                       <p className="text-xs sm:text-sm text-muted-foreground capitalize truncate">
                         {account.provider} • {account.type}
                       </p>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        <Badge variant="outline" className="text-[10px]">
+                          {account.owner_entity || 'No entity assigned'}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] ${PROTECTION_CLASS[getProtectionLevel(account.owner_entity)]}`}
+                        >
+                          {PROTECTION_LABEL[getProtectionLevel(account.owner_entity)]}
+                        </Badge>
+                      </div>
                     </div>
+
                   </div>
 
                   {/* Right section - Balance, status, and actions */}
@@ -1537,6 +1557,27 @@ export function AccountIntegration() {
                   onChange={(e) => setSelectedAccount(prev => prev ? { ...prev, provider: e.target.value } : null)}
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-entity">Owning Entity</Label>
+                <Select
+                  value={selectedAccount.owner_entity || ''}
+                  onValueChange={(value) => setSelectedAccount(prev => prev ? { ...prev, owner_entity: value } : null)}
+                >
+                  <SelectTrigger id="edit-entity">
+                    <SelectValue placeholder="Assign this account to an entity" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    {ENTITY_OPTIONS.map(opt => (
+                      <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Drives the protection score on your dashboard.
+                </p>
+              </div>
+
 
               {(selectedAccount.type === 'investment' || selectedAccount.type === 'brokerage') && (
                 <>

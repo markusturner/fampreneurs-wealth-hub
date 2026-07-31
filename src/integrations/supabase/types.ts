@@ -1590,6 +1590,7 @@ export type Database = {
           manual_balance_amount: number | null
           manual_balance_override: boolean | null
           metadata: Json | null
+          owner_entity: string | null
           plaid_access_token: string | null
           plaid_item_id: string | null
           provider: string
@@ -1618,6 +1619,7 @@ export type Database = {
           manual_balance_amount?: number | null
           manual_balance_override?: boolean | null
           metadata?: Json | null
+          owner_entity?: string | null
           plaid_access_token?: string | null
           plaid_item_id?: string | null
           provider: string
@@ -1646,6 +1648,7 @@ export type Database = {
           manual_balance_amount?: number | null
           manual_balance_override?: boolean | null
           metadata?: Json | null
+          owner_entity?: string | null
           plaid_access_token?: string | null
           plaid_item_id?: string | null
           provider?: string
@@ -2327,6 +2330,7 @@ export type Database = {
           encrypted_notes: string | null
           family_position: string | null
           full_name: string
+          generation: number | null
           governance_branch: string | null
           id: string
           invitation_sent_at: string | null
@@ -2358,6 +2362,7 @@ export type Database = {
           encrypted_notes?: string | null
           family_position?: string | null
           full_name: string
+          generation?: number | null
           governance_branch?: string | null
           id?: string
           invitation_sent_at?: string | null
@@ -2389,6 +2394,7 @@ export type Database = {
           encrypted_notes?: string | null
           family_position?: string | null
           full_name?: string
+          generation?: number | null
           governance_branch?: string | null
           id?: string
           invitation_sent_at?: string | null
@@ -3383,6 +3389,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      handoff_settings: {
+        Row: {
+          checkin_interval_days: number
+          checklist: Json
+          created_at: string
+          grace_period_days: number
+          id: string
+          last_checkin_at: string
+          release_enabled: boolean
+          successor_email: string | null
+          successor_name: string | null
+          successor_phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          checkin_interval_days?: number
+          checklist?: Json
+          created_at?: string
+          grace_period_days?: number
+          id?: string
+          last_checkin_at?: string
+          release_enabled?: boolean
+          successor_email?: string | null
+          successor_name?: string | null
+          successor_phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          checkin_interval_days?: number
+          checklist?: Json
+          created_at?: string
+          grace_period_days?: number
+          id?: string
+          last_checkin_at?: string
+          release_enabled?: boolean
+          successor_email?: string | null
+          successor_name?: string | null
+          successor_phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       individual_coaching_sessions: {
         Row: {

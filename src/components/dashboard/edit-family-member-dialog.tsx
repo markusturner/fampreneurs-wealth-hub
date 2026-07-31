@@ -20,6 +20,8 @@ interface FamilyMember {
   birthday: string | null
   trust_positions: string[] | null
   governance_branch?: string | null
+  generation?: number | null
+
   status: string | null
   is_invited: boolean | null
   notes: string | null
@@ -82,8 +84,10 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
     trust_positions: [] as string[],
     governance_position: '',
     governance_branch: '',
+    generation: '',
     notes: ''
   })
+
   const [newTrustPosition, setNewTrustPosition] = useState('')
   const [trustSelectValue, setTrustSelectValue] = useState('')
 
@@ -99,7 +103,9 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
         trust_positions: member.trust_positions || [],
         governance_position: member.trust_positions?.find(pos => governancePositions.includes(pos)) || 'none',
         governance_branch: member.governance_branch || '',
+        generation: member.generation != null ? String(member.generation) : '',
         notes: member.notes || ''
+
       })
     }
   }, [member])
@@ -136,9 +142,11 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
     onUpdate({
       id: member.id,
       ...formData,
+      generation: formData.generation ? Number(formData.generation) : null,
       trust_positions: finalTrustPositions,
       governance_branch: formData.governance_branch && formData.governance_branch !== 'none' ? formData.governance_branch : null
     })
+
   }
 
   if (!member) return null
@@ -216,6 +224,25 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="generation">Generation</Label>
+              <Select
+                value={formData.generation}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, generation: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Auto from family position" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border z-50">
+                  <SelectItem value="1">G1 — Founding generation</SelectItem>
+                  <SelectItem value="2">G2 — Second generation</SelectItem>
+                  <SelectItem value="3">G3 — Third generation</SelectItem>
+                  <SelectItem value="4">G4 — Fourth generation</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
           </div>
 
           <Card className="border-primary/20 bg-primary/5">

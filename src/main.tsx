@@ -145,6 +145,8 @@ function AppWithNotifications() {
         <Route path="/family-constitution/setup" element={<WithLayout><FamilyConstitutionSetup /></WithLayout>} />
         <Route path="/calendar" element={<WithLayout><Calendar /></WithLayout>} />
         <Route path="/members" element={<WithLayout><Members /></WithLayout>} />
+        <Route path="/handoff" element={<WithLayout><Dashboard /></WithLayout>} />
+
         <Route path="/investments" element={<WithLayout><Investments /></WithLayout>} />
         <Route path="/profile-settings" element={<WithLayout><ProfileSettings /></WithLayout>} />
         <Route path="/admin-settings" element={<WithLayout><AdminSettings /></WithLayout>} />
