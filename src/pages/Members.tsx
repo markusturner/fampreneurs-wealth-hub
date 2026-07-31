@@ -372,11 +372,6 @@ export default function Members() {
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 max-w-5xl">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Members</h1>
-          <p className="text-sm text-muted-foreground">Manage your family and professional team members</p>
-        </div>
-
         <div className="space-y-4 sm:space-y-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
