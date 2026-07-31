@@ -19,6 +19,9 @@ import Community from '@/pages/Community'
 import Documents from '@/pages/Documents'
 import CalendarPage from '@/pages/Calendar'
 import Members from '@/pages/Members'
+import { AssetProtectionSection } from '@/components/dashboard/asset-protection-section'
+import { HandoffPanel } from '@/components/dashboard/handoff-panel'
+
 
 const Dashboard = () => {
   const { user, profile, loading } = useAuth()
