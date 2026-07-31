@@ -224,6 +224,25 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="generation">Generation</Label>
+              <Select
+                value={formData.generation}
+                onValueChange={(value) => setFormData(prev => ({ ...prev, generation: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Auto from family position" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border z-50">
+                  <SelectItem value="1">G1 — Founding generation</SelectItem>
+                  <SelectItem value="2">G2 — Second generation</SelectItem>
+                  <SelectItem value="3">G3 — Third generation</SelectItem>
+                  <SelectItem value="4">G4 — Fourth generation</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
           </div>
 
           <Card className="border-primary/20 bg-primary/5">
