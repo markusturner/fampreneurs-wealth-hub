@@ -57,6 +57,8 @@ export function useWeeklySurvey() {
 
   const load = async () => {
     if (!user?.id) { setLoading(false); return }
+    if (!isSurveyWindowOpen()) { setNeedsSubmission(false); setLoading(false); return }
+
     try {
       const { data: s } = await supabase
         .from('surveys')
