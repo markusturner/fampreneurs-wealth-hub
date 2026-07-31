@@ -387,7 +387,7 @@ export function AdminAnalyticsOverview() {
             <MetricCard 
               title="Total Members" 
               value={metrics.totalMembers} 
-              subtitle="All registered users"
+              subtitle="TruHeirs paid + TFBA + TSS"
               icon={<Users className="h-4 w-4 text-muted-foreground" />}
             />
             <MetricCard 
