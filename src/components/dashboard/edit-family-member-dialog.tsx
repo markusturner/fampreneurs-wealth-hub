@@ -20,6 +20,8 @@ interface FamilyMember {
   birthday: string | null
   trust_positions: string[] | null
   governance_branch?: string | null
+  generation?: number | null
+
   status: string | null
   is_invited: boolean | null
   notes: string | null
