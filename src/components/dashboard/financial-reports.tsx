@@ -382,18 +382,10 @@ export function FinancialReports() {
     )
   }
 
-  // Use demo data if no transactions exist
-  const displayData = transactions.length === 0 ? {
-    income: { 'Salary': 5000, 'Investment Income': 1000 },
-    expenses: { 'Rent': 1200, 'Groceries': 350, 'Utilities': 85 },
-    assets: { 'Cash & Bank Accounts': 6000 },
-    liabilities: {},
-    totalIncome: 6000,
-    totalExpenses: 1635,
-    netIncome: 4365
-  } : financialData
+  // Always show live data pulled from the user's accounts and statements
+  const displayData = financialData
+  const isShowingDemo = false
 
-  const isShowingDemo = transactions.length === 0
 
   return (
     <div className="space-y-6">
