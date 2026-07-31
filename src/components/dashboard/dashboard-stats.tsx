@@ -122,90 +122,81 @@ export function DashboardStats() {
     }).format(amount)
   }
 
-  const iconGradients = [
-    "from-emerald-400 to-emerald-600",
-    "from-sky-400 to-blue-600",
-    "from-amber-400 to-orange-500",
-    "from-rose-400 to-pink-600",
-    "from-cyan-400 to-teal-600",
-  ]
+  const hero = {
+    title: "Total Portfolio Value",
+    value: hasFinancialData ? formatCurrency(combinedTotal) : "$0",
+    change: hasFinancialData ? formatCurrency(portfolioData.dayChange) : "Connect accounts",
+    trend: portfolioData.dayChange >= 0 ? "up" : "down",
+    icon: DollarSign,
+    description: hasFinancialData ? "Connected accounts & investments" : "Connect accounts to see your value",
+  }
 
   const stats = [
     {
-      title: "Total Portfolio Value",
-      value: hasFinancialData ? formatCurrency(combinedTotal) : "$0",
-      change: hasFinancialData ? formatCurrency(portfolioData.dayChange) : "Connect accounts",
-      trend: portfolioData.dayChange >= 0 ? "up" : "down",
-      icon: DollarSign,
-      description: hasFinancialData ? "From connected accounts & investments" : "Connect accounts to see portfolio value",
-    },
-    {
-      title: "Active Investments",
+      title: "Investments",
       value: connectedAccountsCount > 0 ? `${portfolioData.activeInvestments + connectedAccountsCount}` : "0",
-      change: connectedAccountsCount > 0 ? `${connectedAccountsCount} accounts` : "No accounts",
-      trend: "up",
       icon: PieChart,
-      description: connectedAccountsCount > 0 ? `${connectedAccountsCount} connected accounts` : "Connect accounts to track investments",
     },
     {
-      title: "Family Office Members",
+      title: "Office Members",
       value: familyOfficeMemberCount.toString(),
-      change: familyOfficeMemberCount > 0 ? "+1" : "0",
-      trend: "up",
       icon: Users,
-      description: "Active team members",
     },
     {
       title: "Family Members",
       value: familyMemberCount.toString(),
-      change: familyMemberCount > 0 ? "+1" : "0",
-      trend: "up",
       icon: UserPlus,
-      description: "Family network",
     },
     {
-      title: "Family Documents",
+      title: "Documents",
       value: documentCount.toString(),
-      change: documentCount > 0 ? "+5" : "0",
-      trend: "up",
       icon: FileText,
-      description: "Managed documents",
-    }
+    },
   ]
 
+  const TrendIcon = hero.trend === "up" ? ArrowUpRight : ArrowDownRight
+
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
-      {stats.map((stat, idx) => {
-        const Icon = stat.icon
-        const TrendIcon = stat.trend === "up" ? ArrowUpRight : ArrowDownRight
-        
-        return (
-          <div key={stat.title} className="glass-card rounded-2xl p-4 sm:p-5 hover:shadow-medium transition-smooth group">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                {stat.title}
-              </p>
-              <div className={`p-2 rounded-xl bg-gradient-to-br ${iconGradients[idx]} shadow-lg`}>
-                <Icon className="h-4 w-4 text-white" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-2xl font-bold text-foreground">
-                {stat.value}
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-secondary/10 text-secondary border-0">
-                  <TrendIcon className="h-3 w-3 mr-0.5" />
-                  {stat.change}
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground leading-snug">
-                {stat.description}
-              </p>
-            </div>
+    <div className="grid gap-4 lg:grid-cols-3">
+      {/* Primary metric */}
+      <div className="glass-card rounded-2xl p-5 sm:p-6 lg:col-span-1">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="p-2 rounded-xl bg-primary/10">
+            <hero.icon className="h-4 w-4 text-primary" />
           </div>
-        )
-      })}
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            {hero.title}
+          </p>
+        </div>
+        <div className="text-3xl font-bold text-foreground">{hero.value}</div>
+        <div className="mt-2 flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs px-2 py-0.5 border-0">
+            <TrendIcon className="h-3 w-3 mr-0.5" />
+            {hero.change}
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2">{hero.description}</p>
+      </div>
+
+      {/* Supporting metrics, quiet and compact */}
+      <div className="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {stats.map((stat) => {
+          const Icon = stat.icon
+          return (
+            <div
+              key={stat.title}
+              className="glass-card rounded-2xl p-4 flex flex-col justify-between transition-smooth hover:shadow-medium"
+            >
+              <Icon className="h-4 w-4 text-muted-foreground" />
+              <div className="mt-4">
+                <div className="text-2xl font-bold text-foreground leading-none">{stat.value}</div>
+                <p className="text-xs text-muted-foreground mt-1.5">{stat.title}</p>
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
+

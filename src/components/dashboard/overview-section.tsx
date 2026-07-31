@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
 import { Checkbox } from '@/components/ui/checkbox'
 import { 
   TrendingUp, 
@@ -572,34 +574,30 @@ WEALTH BUILDING (After $10k+/month steady):
         </Card>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <Card>
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-base sm:text-lg">Portfolio Performance</CardTitle>
-            <CardDescription className="text-sm">This year vs last year performance</CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <InvestmentChart 
-              accountsData={connectedAccounts} 
-              totalValue={getTotalNetWorth()} 
-            />
-          </CardContent>
-        </Card>
+      {/* Charts — one at a time to keep the page short */}
+      <Card>
+        <CardContent className="p-4 sm:p-6">
+          <Tabs defaultValue="performance">
+            <TabsList className="mb-4">
+              <TabsTrigger value="performance">Performance</TabsTrigger>
+              <TabsTrigger value="allocation">Allocation</TabsTrigger>
+            </TabsList>
+            <TabsContent value="performance">
+              <InvestmentChart
+                accountsData={connectedAccounts}
+                totalValue={getTotalNetWorth()}
+              />
+            </TabsContent>
+            <TabsContent value="allocation">
+              <AssetAllocation
+                accountsData={connectedAccounts}
+                totalBalance={getAccountsBalance()}
+              />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader className="p-4 sm:p-6">
-            <CardTitle className="text-base sm:text-lg">Account Allocation</CardTitle>
-            <CardDescription className="text-sm">Current account distribution</CardDescription>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <AssetAllocation 
-              accountsData={connectedAccounts}
-              totalBalance={getAccountsBalance()} 
-            />
-          </CardContent>
-        </Card>
-      </div>
     </div>
   )
 }
