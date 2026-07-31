@@ -37,7 +37,16 @@ export function ClientMetrics() {
         </Badge>
       </div>
 
-      <AdminAnalyticsOverview />
+      {allowed ? (
+        <AdminAnalyticsOverview />
+      ) : rolesLoading ? (
+        <div className="flex items-center justify-center gap-2 py-8">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          <p className="text-muted-foreground">Loading client metrics...</p>
+        </div>
+      ) : (
+        <p className="text-muted-foreground text-center py-8">You don't have access to this page.</p>
+      )}
     </div>
   )
 }
