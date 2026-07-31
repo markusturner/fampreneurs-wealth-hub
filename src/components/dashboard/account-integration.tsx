@@ -179,8 +179,10 @@ export function AccountIntegration() {
     day_change: Number(account.day_change || 0),
     day_change_percent: Number(account.day_change_percent || 0),
     manual_balance_override: account.manual_balance_override,
-    manual_balance_amount: Number(account.manual_balance_amount || 0)
+    manual_balance_amount: Number(account.manual_balance_amount || 0),
+    owner_entity: account.owner_entity ?? null
   })
+
 
   const fetchConnectedAccounts = async () => {
     try {
