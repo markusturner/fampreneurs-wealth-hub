@@ -74,6 +74,10 @@ export function AdminAnalyticsOverview() {
     programContractValue: 0,
     programCashCollected: 0,
     programRemaining: 0,
+    trustSuccessRate: 0,
+    trustSuccessCount: 0,
+    successionSuccessRate: 0,
+    successionSuccessCount: 0,
   })
   const [loading, setLoading] = useState(true)
   const [landingPageVisitors, setLandingPageVisitors] = useState(0)
