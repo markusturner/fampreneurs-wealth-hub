@@ -20,6 +20,7 @@ import Documents from '@/pages/Documents'
 import CalendarPage from '@/pages/Calendar'
 import Members from '@/pages/Members'
 import { AssetProtectionSection } from '@/components/dashboard/asset-protection-section'
+import { OwnershipMap } from '@/components/dashboard/ownership-map'
 import { HandoffPanel } from '@/components/dashboard/handoff-panel'
 
 
@@ -116,6 +117,7 @@ const Dashboard = () => {
         <>
           <DashboardStats />
           <AssetProtectionSection />
+          <OwnershipMap />
           <OverviewSection />
         </>
       ) : activeTab === 'office' ? (
