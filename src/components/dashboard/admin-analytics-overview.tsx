@@ -7,6 +7,7 @@ import { AdminGrowthCharts } from './admin-growth-charts'
 import { AdminCourseCompletion } from './admin-course-completion'
 import { AdminSopHeatmap } from './admin-sop-heatmap'
 import { AdminTopReason } from './admin-top-reason'
+import { profileProgramCodes } from '@/lib/programs'
 
 interface MetricCardProps {
   title: string
