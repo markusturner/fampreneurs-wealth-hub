@@ -103,7 +103,9 @@ export function EditFamilyMemberDialog({ member, onClose, onUpdate }: EditFamily
         trust_positions: member.trust_positions || [],
         governance_position: member.trust_positions?.find(pos => governancePositions.includes(pos)) || 'none',
         governance_branch: member.governance_branch || '',
+        generation: member.generation != null ? String(member.generation) : '',
         notes: member.notes || ''
+
       })
     }
   }, [member])
