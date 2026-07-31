@@ -35,6 +35,9 @@ function MetricCard({ title, value, subtitle, icon, highlight }: MetricCardProps
 
 interface SubscriptionMetrics {
   totalMembers: number
+  truheirsMembers: number
+  tfbaMembers: number
+  tssMembers: number
   paidMembers: number
   mrr: number
   mrrTruheirs: number
