@@ -199,6 +199,7 @@ export function AdminAnalyticsOverview() {
       ).length || 0
       
       const totalTrialsStarted = trialsInProgress + convertedFromTrial
+      const trialConversionRate = totalTrialsStarted > 0 ? (convertedFromTrial / totalTrialsStarted) * 100 : 0
 
       // Client Success Rates
       const { data: trustRows } = await supabase
