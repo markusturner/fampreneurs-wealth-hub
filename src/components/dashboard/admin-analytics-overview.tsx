@@ -336,8 +336,31 @@ export function AdminAnalyticsOverview() {
             </CardContent>
           </Card>
 
+          {/* Members by program */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <MetricCard
+              title="TruHeirs Paid Members"
+              value={metrics.truheirsMembers}
+              subtitle="Active TruHeirs subscriptions"
+              icon={<Users className="h-4 w-4 text-muted-foreground" />}
+            />
+            <MetricCard
+              title="TFBA Members"
+              value={metrics.tfbaMembers}
+              subtitle="The Family Business Accelerator"
+              icon={<Users className="h-4 w-4 text-muted-foreground" />}
+            />
+            <MetricCard
+              title="TSS Members"
+              value={metrics.tssMembers}
+              subtitle="The Succession Society"
+              icon={<Users className="h-4 w-4 text-muted-foreground" />}
+            />
+          </div>
+
           {/* Client Success Rates */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
             <Card className="border-[#290a52]/30">
               <CardContent className="pt-6">
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client Success Rate — Trust Creation</p>
