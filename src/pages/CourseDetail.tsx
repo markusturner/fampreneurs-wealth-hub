@@ -723,33 +723,8 @@ export default function CourseDetail() {
     return isProgramLocked((selectedLesson as any).required_programs)
   }, [selectedLesson, modules, isProgramLocked])
 
-  // Inject Calendly script once when a locked lesson is shown
-  useEffect(() => {
-    if (!selectedLessonLocked) return
-    const id = 'calendly-widget-script'
-    const initWidgets = () => {
-      const w: any = window as any
-      if (!w.Calendly) return
-      document.querySelectorAll('.calendly-inline-widget').forEach((el: any) => {
-        if (el.dataset.processed === 'true') return
-        const url = el.getAttribute('data-url')
-        if (!url) return
-        el.innerHTML = ''
-        w.Calendly.initInlineWidget({ url, parentElement: el })
-        el.dataset.processed = 'true'
-      })
-    }
-    if (document.getElementById(id)) {
-      setTimeout(initWidgets, 50)
-      return
-    }
-    const s = document.createElement('script')
-    s.id = id
-    s.src = 'https://assets.calendly.com/assets/external/widget.js'
-    s.async = true
-    s.onload = () => setTimeout(initWidgets, 50)
-    document.body.appendChild(s)
-  }, [selectedLessonLocked, selectedLesson?.id])
+  // Booking widget is a plain iframe embed — no external script needed
+
 
 
 
