@@ -56,30 +56,44 @@ interface SubscriptionMetrics {
   successionSuccessCount: number
 }
 
+const METRICS_CACHE_KEY = 'admin_analytics_metrics_v1'
+
+const EMPTY_METRICS: SubscriptionMetrics = {
+  totalMembers: 0,
+  paidMembers: 0,
+  mrr: 0,
+  mrrTruheirs: 0,
+  mrrProgram: 0,
+  ltgp: 0,
+  churn: 0,
+  signups: 0,
+  conversionRate: 0,
+  trialsInProgress: 0,
+  trialConversionRate: 0,
+  truheirdPaidCount: 0,
+  programPaidCount: 0,
+  programContractValue: 0,
+  programCashCollected: 0,
+  programRemaining: 0,
+  trustSuccessRate: 0,
+  trustSuccessCount: 0,
+  successionSuccessRate: 0,
+  successionSuccessCount: 0,
+}
+
+function readCachedMetrics(): SubscriptionMetrics | null {
+  try {
+    const raw = localStorage.getItem(METRICS_CACHE_KEY)
+    return raw ? { ...EMPTY_METRICS, ...JSON.parse(raw) } : null
+  } catch {
+    return null
+  }
+}
+
 export function AdminAnalyticsOverview() {
-  const [metrics, setMetrics] = useState<SubscriptionMetrics>({
-    totalMembers: 0,
-    paidMembers: 0,
-    mrr: 0,
-    mrrTruheirs: 0,
-    mrrProgram: 0,
-    ltgp: 0,
-    churn: 0,
-    signups: 0,
-    conversionRate: 0,
-    trialsInProgress: 0,
-    trialConversionRate: 0,
-    truheirdPaidCount: 0,
-    programPaidCount: 0,
-    programContractValue: 0,
-    programCashCollected: 0,
-    programRemaining: 0,
-    trustSuccessRate: 0,
-    trustSuccessCount: 0,
-    successionSuccessRate: 0,
-    successionSuccessCount: 0,
-  })
-  const [loading, setLoading] = useState(true)
+  const cached = readCachedMetrics()
+  const [metrics, setMetrics] = useState<SubscriptionMetrics>(cached ?? EMPTY_METRICS)
+  const [loading, setLoading] = useState(!cached)
   const [landingPageVisitors, setLandingPageVisitors] = useState(0)
 
   useEffect(() => {
@@ -88,7 +102,7 @@ export function AdminAnalyticsOverview() {
 
   const fetchMetrics = async () => {
     try {
-      setLoading(true)
+
 
       const thirtyDaysAgo = new Date()
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
@@ -220,7 +234,7 @@ export function AdminAnalyticsOverview() {
       const trustSuccessRate = totalMembers > 0 ? (trustSuccessCount / totalMembers) * 100 : 0
       const successionSuccessRate = totalMembers > 0 ? (successionSuccessCount / totalMembers) * 100 : 0
 
-      setMetrics({
+      const next: SubscriptionMetrics = {
         totalMembers,
         paidMembers,
         mrr: Math.round(mrr),
@@ -241,7 +255,9 @@ export function AdminAnalyticsOverview() {
         trustSuccessCount,
         successionSuccessRate: Number(successionSuccessRate.toFixed(1)),
         successionSuccessCount,
-      })
+      }
+      setMetrics(next)
+      try { localStorage.setItem(METRICS_CACHE_KEY, JSON.stringify(next)) } catch { /* ignore */ }
     } catch (error) {
       console.error('Error fetching metrics:', error)
     } finally {
