@@ -1544,6 +1544,27 @@ export function AccountIntegration() {
                 />
               </div>
 
+              <div className="space-y-2">
+                <Label htmlFor="edit-entity">Owning Entity</Label>
+                <Select
+                  value={selectedAccount.owner_entity || ''}
+                  onValueChange={(value) => setSelectedAccount(prev => prev ? { ...prev, owner_entity: value } : null)}
+                >
+                  <SelectTrigger id="edit-entity">
+                    <SelectValue placeholder="Assign this account to an entity" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    {ENTITY_OPTIONS.map(opt => (
+                      <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Drives the protection score on your dashboard.
+                </p>
+              </div>
+
+
               {(selectedAccount.type === 'investment' || selectedAccount.type === 'brokerage') && (
                 <>
                   <div className="space-y-2">
