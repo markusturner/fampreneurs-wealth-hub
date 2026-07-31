@@ -15,24 +15,9 @@ export function ClientMetrics() {
   const { isAdmin, isLoading: adminLoading } = useUserRole()
   const { isOwner, isLoading: ownerLoading } = useOwnerRole(user?.id || null)
 
-  if (adminLoading || ownerLoading) {
-    return (
-      <div className="container mx-auto py-6 px-4 text-center">
-        <div className="flex items-center justify-center gap-2">
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          <p className="text-muted-foreground">Loading client metrics...</p>
-        </div>
-      </div>
-    )
-  }
+  const rolesLoading = adminLoading || ownerLoading
+  const allowed = isAdmin || isOwner
 
-  if (!isAdmin && !isOwner) {
-    return (
-      <div className="container mx-auto py-6 px-4 text-center">
-        <p className="text-muted-foreground">You don't have access to this page.</p>
-      </div>
-    )
-  }
 
   return (
     <div className="mx-auto py-3 md:py-6 px-3 sm:px-6 lg:px-8 space-y-4 md:space-y-6 pb-20 md:pb-6 max-w-[1800px]">
