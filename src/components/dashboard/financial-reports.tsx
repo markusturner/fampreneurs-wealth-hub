@@ -400,11 +400,10 @@ export function FinancialReports() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="flex items-center gap-3">
           <h2 className="text-2xl font-bold">Financial Reports</h2>
-          {isShowingDemo && (
-            <Badge variant="secondary" className="text-xs">
-              Demo Data
-            </Badge>
-          )}
+          <Badge variant="secondary" className="text-xs">
+            {transactions.length > 0 ? `Live • ${transactions.length} transactions` : 'Live • no data yet'}
+          </Badge>
+
         </div>
         <div className="flex items-center gap-4">
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
