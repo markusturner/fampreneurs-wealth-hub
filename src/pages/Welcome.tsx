@@ -239,6 +239,9 @@ export default function Welcome() {
         <img
           src="/lovable-uploads/00df4658-d6df-420b-8c0d-7af68820837d.png"
           alt="TruHeirs"
+          loading="eager"
+          decoding="sync"
+          fetchPriority="high"
           className={`w-auto transition-all duration-500 ease-out ${searchActive ? 'h-12 sm:h-16 mb-2' : 'h-24 sm:h-32 mb-3 sm:mb-4'}`}
         />
 
