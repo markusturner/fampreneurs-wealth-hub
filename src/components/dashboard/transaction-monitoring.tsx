@@ -1077,43 +1077,48 @@ export function TransactionMonitoring() {
                       size="sm"
                       onClick={async () => {
                         try {
-                          // Delete from storage if it exists
-                          if (s.storage_path || s.file_path) {
-                            await supabase.storage
-                              .from('bank-statements')
-                              .remove([s.storage_path || s.file_path])
-                          }
-                          
-                          // Delete from database
-                          const { error } = await supabase
-                            .from('bank_statement_uploads')
-                            .delete()
-                            .eq('id', s.id)
-                          
-                          if (error) throw error
-                          
-                          // Also delete associated transactions
+                          // Remove child transactions first
                           await supabase
                             .from('bank_statement_transactions')
                             .delete()
                             .eq('bank_statement_id', s.id)
-                          
+
+                          // Delete the upload record
+                          const { data: deleted, error } = await supabase
+                            .from('bank_statement_uploads')
+                            .delete()
+                            .eq('id', s.id)
+                            .select('id')
+
+                          if (error) throw error
+                          if (!deleted || deleted.length === 0) {
+                            throw new Error('You do not have permission to delete this statement')
+                          }
+
+                          // Best-effort storage cleanup
+                          const path = (s as any).storage_path || (s as any).file_path
+                          if (path) {
+                            await supabase.storage.from('bank-statements').remove([path])
+                          }
+
+                          setUploadedStatements(prev => prev.filter((u: any) => u.id !== s.id))
+
                           toast({
                             title: "Statement Deleted",
                             description: "Upload and associated transactions have been removed"
                           })
-                          
-                          // Refresh the data
+
                           await fetchConnectedAccountsAndTransactions()
-                        } catch (error) {
+                        } catch (error: any) {
                           console.error('Delete error:', error)
                           toast({
                             title: "Delete Failed",
-                            description: "Could not delete the statement",
+                            description: error?.message || "Could not delete the statement",
                             variant: "destructive"
                           })
                         }
                       }}
+
                       className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
                     >
                       <Trash2 className="h-3 w-3" />
