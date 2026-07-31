@@ -44,8 +44,9 @@ export function isSurveyWindowOpen(now = new Date()) {
     hour12: false,
   }).formatToParts(now)
   const weekday = parts.find(p => p.type === 'weekday')?.value
-  const hour = Number(parts.find(p => p.type === 'hour')?.value ?? '0')
-  return weekday === 'Fri' && hour >= 9
+  const rawHour = Number(parts.find(p => p.type === 'hour')?.value ?? '0')
+  const hour = rawHour === 24 ? 0 : rawHour // Intl reports midnight as "24"
+  return weekday === 'Fri' && hour >= 9 && hour <= 23
 }
 
 export function useWeeklySurvey() {

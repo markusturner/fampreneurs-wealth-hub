@@ -120,7 +120,10 @@ export function AppLayout({ children }: AppLayoutProps) {
       if (onboardingCompleted === false) return
       if (needsAgreement && agreementCompleted === false) return
       if (!profile.profile_photo_uploaded) return
-      if (profile.trust_design_booked === false && location.pathname !== '/trust-design-booking') {
+      // Only prompt the booking once per session so a widget hiccup can't lock a user out.
+      const alreadyPrompted = sessionStorage.getItem(`trust_design_prompted_${user.id}`) === '1'
+      if (profile.trust_design_booked === false && !alreadyPrompted && location.pathname !== '/trust-design-booking') {
+        sessionStorage.setItem(`trust_design_prompted_${user.id}`, '1')
         navigate("/trust-design-booking")
       }
     }
