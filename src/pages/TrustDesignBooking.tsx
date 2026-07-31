@@ -41,10 +41,12 @@ export default function TrustDesignBooking() {
     scriptRef.current = script
 
     const handleMessage = (e: MessageEvent) => {
-      const data = e.data
-      const type = typeof data === 'string' ? data : data?.type || data?.event
-      if (typeof type === 'string' && /appointment|booking|scheduled|form[_-]?submit/i.test(type)) {
-        console.log('[TrustDesignBooking] Booking event received:', type)
+      const origin = String(e.origin || '')
+      const fromBookingWidget = /leadconnectorhq|msgsndr/i.test(origin)
+      const payload = typeof e.data === 'string' ? e.data : JSON.stringify(e.data ?? '')
+      const looksLikeBooking = /appointment|booking|slot[_-]?selected|scheduled|form[_-]?submit|submitted|complete/i.test(payload)
+      if ((fromBookingWidget && looksLikeBooking) || (!fromBookingWidget && /appointment|booking|scheduled|form[_-]?submit/i.test(payload))) {
+        console.log('[TrustDesignBooking] Booking event received:', payload.slice(0, 120))
         markBookingComplete()
       }
     }
