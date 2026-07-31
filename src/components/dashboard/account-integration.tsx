@@ -1333,7 +1333,19 @@ export function AccountIntegration() {
                       <p className="text-xs sm:text-sm text-muted-foreground capitalize truncate">
                         {account.provider} • {account.type}
                       </p>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        <Badge variant="outline" className="text-[10px]">
+                          {account.owner_entity || 'No entity assigned'}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] ${PROTECTION_CLASS[getProtectionLevel(account.owner_entity)]}`}
+                        >
+                          {PROTECTION_LABEL[getProtectionLevel(account.owner_entity)]}
+                        </Badge>
+                      </div>
                     </div>
+
                   </div>
 
                   {/* Right section - Balance, status, and actions */}
