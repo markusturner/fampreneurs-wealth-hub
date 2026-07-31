@@ -33,6 +33,45 @@ interface FamilyMember {
   joined_at: string | null
   invitation_sent_at: string | null
   last_accessed: string | null
+  generation?: number | null
+}
+
+const GEN_POSITION_MAP: Record<string, number> = {
+  'Grandparent': 1,
+  'Parent': 1,
+  'Head of Family': 1,
+  'Spouse/Partner': 1,
+  'Sibling': 1,
+  'Child': 2,
+  'Grandchild': 3,
+  'Other Relative': 2,
+}
+
+const GEN_LABELS: Record<number, string> = {
+  1: 'Founding',
+  2: 'Second',
+  3: 'Third',
+  4: 'Fourth',
+}
+
+const GEN_COLORS: Record<number, string> = {
+  1: 'bg-amber-100 text-amber-800 border-amber-200',
+  2: 'bg-blue-100 text-blue-800 border-blue-200',
+  3: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  4: 'bg-purple-100 text-purple-800 border-purple-200',
+}
+
+function getGeneration(member: FamilyMember): { level: number; label: string } {
+  const level = member.generation ?? GEN_POSITION_MAP[member.family_position] ?? 2
+  return { level, label: `${GEN_LABELS[level] || 'Later'} generation` }
+}
+
+function getAccessLevel(member: FamilyMember): string {
+  const positions = member.trust_positions || []
+  if (positions.includes('Trustee') || positions.includes('Protector')) return 'Full access'
+  if (positions.includes('Beneficiary')) return 'Limited access'
+  if (positions.length > 0) return 'Committee access'
+  return 'View only'
 }
 
 function getRelativeTime(dateStr: string | null): string {
@@ -43,6 +82,7 @@ function getRelativeTime(dateStr: string | null): string {
     return 'Unknown'
   }
 }
+
 
 // Simple daily activity chart for last 7 days
 function DailyActivityChart({ memberId }: { memberId: string }) {
