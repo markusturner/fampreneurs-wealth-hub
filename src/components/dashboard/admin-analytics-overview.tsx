@@ -130,8 +130,23 @@ export function AdminAnalyticsOverview() {
         .from('profiles')
         .select('user_id, membership_type, created_at, program_name, truheirs_access, program_contract_value, program_cash_collected, partner_group_id')
 
-      const totalMembers = profiles?.length || 0
+      // Program membership counts (TruHeirs paid, TFBA, The Succession Society)
+      const paidUserIds = new Set(
+        (subscribers || []).filter((s: any) => s.subscribed === true).map((s: any) => s.user_id)
+      )
+      const truheirsMembers = (profiles || []).filter(
+        (p: any) => p.truheirs_access && paidUserIds.has(p.user_id)
+      ).length
+      const tfbaMembers = (profiles || []).filter((p: any) =>
+        profileProgramCodes(p.program_name).includes('tfba')
+      ).length
+      const tssMembers = (profiles || []).filter((p: any) =>
+        profileProgramCodes(p.program_name).includes('tffm')
+      ).length
+
+      const totalMembers = truheirsMembers + tfbaMembers + tssMembers
       const paidMembers = subscribers?.filter(s => s.subscribed === true).length || 0
+
 
       const calcMrrForSub = (sub: any) => {
         const tier = sub.subscription_tier
