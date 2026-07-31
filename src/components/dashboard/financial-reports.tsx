@@ -44,10 +44,18 @@ export function FinancialReports() {
   })
 
   useEffect(() => {
-    if (user) {
-      fetchTransactions()
-    }
+    if (!user) return
+    fetchTransactions()
+
+    const channel = supabase
+      .channel('financial-reports-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'account_transactions', filter: `user_id=eq.${user.id}` }, () => fetchTransactions())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bank_statement_transactions', filter: `user_id=eq.${user.id}` }, () => fetchTransactions())
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
   }, [user, selectedPeriod])
+
 
   const fetchTransactions = async () => {
     if (!user) return
