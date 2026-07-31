@@ -305,6 +305,8 @@ export default function Members() {
           relationship_to_family: updatedMember.relationship_to_family,
           trust_positions: updatedMember.trust_positions,
           governance_branch: (updatedMember as any).governance_branch,
+          generation: (updatedMember as any).generation ?? null,
+
           notes: updatedMember.notes,
           updated_at: new Date().toISOString()
         })
