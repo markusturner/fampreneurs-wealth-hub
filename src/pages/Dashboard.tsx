@@ -44,6 +44,12 @@ const Dashboard = () => {
   const hasTruHeirsAccess = isAdminOrOwner || isOwner || profile?.truheirs_access === true || subscriptionStatus.subscribed
   const showTutorial = shouldShowTutorial && hasTruHeirsAccess
 
+  // Governance + Handoff are Succession Society (succession planning) only
+  const inSuccessionProgram =
+    profileProgramCodes(profile?.program_name).includes('tffm') ||
+    subscriptionStatus.programs?.includes('tffm')
+  const successionLocked = !(isAdminOrOwner || isOwner || inSuccessionProgram)
+
   const handleTutorialSkipped = async () => {
     if (!user?.id) return;
     try {
