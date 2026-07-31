@@ -10,7 +10,7 @@ import { useUserRole } from "@/hooks/useUserRole"
 import { useTutorialVideo } from "@/hooks/useTutorialVideo"
 import { TutorialVideoModal } from "@/components/dashboard/tutorial-video-modal"
 import { supabase } from "@/integrations/supabase/client"
-import { DashboardRecentActivity } from "@/components/dashboard/dashboard-recent-activity"
+
 import { useSubscription } from "@/hooks/useSubscription"
 import { useIsAdminOrOwner } from "@/hooks/useIsAdminOrOwner"
 import { useOwnerRole } from "@/hooks/useOwnerRole"
@@ -108,7 +108,6 @@ const Dashboard = () => {
         <>
           <DashboardStats />
           <OverviewSection />
-          <DashboardRecentActivity />
         </>
       ) : activeTab === 'office' ? (
         <Community />
