@@ -98,7 +98,10 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <FamilyToggleBar value={activeTab} onChange={setActiveTab} />
+      <div className="py-2">
+        <FamilyToggleBar value={activeTab} onChange={setActiveTab} />
+      </div>
+
 
       {activeTab === 'dashboard' ? (
         <>
