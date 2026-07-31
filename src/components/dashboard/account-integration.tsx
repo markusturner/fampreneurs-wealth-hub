@@ -53,6 +53,8 @@ interface ConnectedAccount {
   day_change_percent?: number
   manual_balance_override?: boolean
   manual_balance_amount?: number
+  owner_entity?: string | null
+
 }
 
 export function AccountIntegration() {
