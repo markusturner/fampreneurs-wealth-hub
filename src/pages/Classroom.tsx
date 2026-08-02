@@ -14,6 +14,8 @@ import SopLibraryPanel from '@/components/classroom/SopLibraryPanel'
 import TrustCreation from '@/pages/TrustCreation'
 import SuccessionPlanning from '@/pages/SuccessionPlanning'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
+import { useSubscription } from '@/hooks/useSubscription'
+import { profileProgramCodes } from '@/lib/programs'
 import {
   DndContext,
   closestCenter,
@@ -145,7 +147,19 @@ export default function Classroom() {
   const [editingCourse, setEditingCourse] = useState<Course | null>(null)
   const [activeTab, setActiveTab] = useState<'classroom' | 'sops' | 'ai' | 'trust' | 'succession'>(initialTab)
   const { isAdminOrOwner } = useIsAdminOrOwner()
+  const { subscriptionStatus } = useSubscription()
   const { toast } = useToast()
+
+  // Program access: TFV/TFBA => Trust Creation, TFFM => Succession Planning
+  const programCodes = [
+    ...profileProgramCodes(profile?.program_name),
+    ...(subscriptionStatus.programs || []),
+  ]
+  const inSuccessionProgram = programCodes.includes('tffm')
+  const inTrustProgram = programCodes.includes('tfv') || programCodes.includes('tfba')
+  const canSeeTrust = isAdminOrOwner || inTrustProgram
+  const canSeeSuccession = isAdminOrOwner || inSuccessionProgram
+
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -248,17 +262,20 @@ export default function Classroom() {
   }
 
   const SUCCESSION_SOCIETY_ID = '3948275b-06bf-4731-a89f-e0850e26f0e4'
-  const successionCourses = courses.filter(c => (c.community_ids || []).includes(SUCCESSION_SOCIETY_ID))
-  const trustCourses = courses.filter(c => !(c.community_ids || []).includes(SUCCESSION_SOCIETY_ID))
+  const allSuccessionCourses = courses.filter(c => (c.community_ids || []).includes(SUCCESSION_SOCIETY_ID))
+  const allTrustCourses = courses.filter(c => !(c.community_ids || []).includes(SUCCESSION_SOCIETY_ID))
+  const successionCourses = canSeeSuccession ? allSuccessionCourses : []
+  const trustCourses = canSeeTrust ? allTrustCourses : []
 
   const primaryTabs = [
     { key: 'classroom', label: 'Classroom', icon: BookOpen },
     { key: 'sops', label: 'SOP Library', icon: FileText },
   ] as const
   const toolTabs = [
-    { key: 'trust', label: 'Trust Creation', icon: Shield },
-    { key: 'succession', label: 'Succession Planning', icon: Users },
-  ] as const
+    ...(canSeeTrust ? [{ key: 'trust' as const, label: 'Trust Creation', icon: Shield }] : []),
+    ...(canSeeSuccession ? [{ key: 'succession' as const, label: 'Succession Planning', icon: Users }] : []),
+  ]
+
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl space-y-4 sm:space-y-6">
@@ -292,6 +309,7 @@ export default function Classroom() {
             })}
           </div>
 
+          {toolTabs.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 lg:pl-3 lg:border-l lg:border-border">
             <span className="hidden lg:inline text-[10px] uppercase tracking-[0.2em] text-muted-foreground mr-1">Tools</span>
             {toolTabs.map(({ key, label, icon: Icon }) => {
@@ -317,6 +335,8 @@ export default function Classroom() {
               )
             })}
           </div>
+          )}
+
         </div>
       </div>
 
@@ -344,7 +364,9 @@ export default function Classroom() {
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={courses.map(c => c.id)} strategy={rectSortingStrategy}>
             {/* Trust Creation group */}
+            {(trustCourses.length > 0 || isAdminOrOwner) && (
             <div className="space-y-3 sm:space-y-4">
+
               <div className="flex items-center gap-3">
                 <Shield className="h-4 w-4 text-[#290a52]" />
                 <h2 className="text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase text-[#290a52]">Trust Creation</h2>
@@ -375,6 +397,8 @@ export default function Classroom() {
                 )}
               </div>
             </div>
+            )}
+
 
             {/* Sleek divider */}
             {successionCourses.length > 0 && (
