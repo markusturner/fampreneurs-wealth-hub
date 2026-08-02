@@ -309,6 +309,7 @@ export default function Classroom() {
             })}
           </div>
 
+          {toolTabs.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 lg:pl-3 lg:border-l lg:border-border">
             <span className="hidden lg:inline text-[10px] uppercase tracking-[0.2em] text-muted-foreground mr-1">Tools</span>
             {toolTabs.map(({ key, label, icon: Icon }) => {
