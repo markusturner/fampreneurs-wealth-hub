@@ -147,7 +147,19 @@ export default function Classroom() {
   const [editingCourse, setEditingCourse] = useState<Course | null>(null)
   const [activeTab, setActiveTab] = useState<'classroom' | 'sops' | 'ai' | 'trust' | 'succession'>(initialTab)
   const { isAdminOrOwner } = useIsAdminOrOwner()
+  const { subscriptionStatus } = useSubscription()
   const { toast } = useToast()
+
+  // Program access: TFV/TFBA => Trust Creation, TFFM => Succession Planning
+  const programCodes = [
+    ...profileProgramCodes(profile?.program_name),
+    ...(subscriptionStatus.programs || []),
+  ]
+  const inSuccessionProgram = programCodes.includes('tffm')
+  const inTrustProgram = programCodes.includes('tfv') || programCodes.includes('tfba')
+  const canSeeTrust = isAdminOrOwner || inTrustProgram || (!inSuccessionProgram && !inTrustProgram)
+  const canSeeSuccession = isAdminOrOwner || inSuccessionProgram
+
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
