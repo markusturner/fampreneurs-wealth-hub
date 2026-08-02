@@ -361,7 +361,9 @@ export default function Classroom() {
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={courses.map(c => c.id)} strategy={rectSortingStrategy}>
             {/* Trust Creation group */}
+            {(trustCourses.length > 0 || isAdminOrOwner) && (
             <div className="space-y-3 sm:space-y-4">
+
               <div className="flex items-center gap-3">
                 <Shield className="h-4 w-4 text-[#290a52]" />
                 <h2 className="text-xs sm:text-sm font-semibold tracking-[0.2em] uppercase text-[#290a52]">Trust Creation</h2>
