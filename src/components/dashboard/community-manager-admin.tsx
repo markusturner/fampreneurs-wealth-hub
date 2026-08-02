@@ -68,12 +68,13 @@ export function CommunityManagerAdmin() {
       updated_at: new Date().toISOString()
     }
     updateData[field] = value
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('community_manager_settings')
       .update(updateData)
       .eq('id', settings.id)
-    if (error) {
-      toast({ title: 'Update failed', description: error.message, variant: 'destructive' })
+      .select()
+    if (error || !data || data.length === 0) {
+      toast({ title: 'Update failed', description: error?.message || 'No permission to change this setting.', variant: 'destructive' })
       return
     }
     setSettings({ ...settings, [field]: value })
