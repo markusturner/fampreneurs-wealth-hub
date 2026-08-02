@@ -262,17 +262,20 @@ export default function Classroom() {
   }
 
   const SUCCESSION_SOCIETY_ID = '3948275b-06bf-4731-a89f-e0850e26f0e4'
-  const successionCourses = courses.filter(c => (c.community_ids || []).includes(SUCCESSION_SOCIETY_ID))
-  const trustCourses = courses.filter(c => !(c.community_ids || []).includes(SUCCESSION_SOCIETY_ID))
+  const allSuccessionCourses = courses.filter(c => (c.community_ids || []).includes(SUCCESSION_SOCIETY_ID))
+  const allTrustCourses = courses.filter(c => !(c.community_ids || []).includes(SUCCESSION_SOCIETY_ID))
+  const successionCourses = canSeeSuccession ? allSuccessionCourses : []
+  const trustCourses = canSeeTrust ? allTrustCourses : []
 
   const primaryTabs = [
     { key: 'classroom', label: 'Classroom', icon: BookOpen },
     { key: 'sops', label: 'SOP Library', icon: FileText },
   ] as const
   const toolTabs = [
-    { key: 'trust', label: 'Trust Creation', icon: Shield },
-    { key: 'succession', label: 'Succession Planning', icon: Users },
-  ] as const
+    ...(canSeeTrust ? [{ key: 'trust' as const, label: 'Trust Creation', icon: Shield }] : []),
+    ...(canSeeSuccession ? [{ key: 'succession' as const, label: 'Succession Planning', icon: Users }] : []),
+  ]
+
 
   return (
     <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-6xl space-y-4 sm:space-y-6">
