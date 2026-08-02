@@ -392,7 +392,9 @@ export default function Classroom() {
                     </CardContent>
                   </Card>
                 )}
-              </div>
+            </div>
+            )}
+
             </div>
 
             {/* Sleek divider */}
