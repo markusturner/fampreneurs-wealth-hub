@@ -157,7 +157,7 @@ export default function Classroom() {
   ]
   const inSuccessionProgram = programCodes.includes('tffm')
   const inTrustProgram = programCodes.includes('tfv') || programCodes.includes('tfba')
-  const canSeeTrust = isAdminOrOwner || inTrustProgram || (!inSuccessionProgram && !inTrustProgram)
+  const canSeeTrust = isAdminOrOwner || inTrustProgram
   const canSeeSuccession = isAdminOrOwner || inSuccessionProgram
 
 
