@@ -335,6 +335,8 @@ export default function Classroom() {
               )
             })}
           </div>
+          )}
+
         </div>
       </div>
 
