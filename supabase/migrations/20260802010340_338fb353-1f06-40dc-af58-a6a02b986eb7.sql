@@ -1,0 +1,2 @@
+GRANT SELECT ON public.invite_links TO authenticated;
+CREATE POLICY "Admins can view invite links" ON public.invite_links FOR SELECT TO authenticated USING (is_current_user_admin() OR is_current_user_owner());
