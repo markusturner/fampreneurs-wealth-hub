@@ -1261,7 +1261,7 @@ export default function WorkspaceCommunity() {
               <CommunityLeaderboardSection program={program} />
             )}
 
-            {communityView === 'feed' && (
+            {(communityView === 'feed' || (communityView === 'events' && program === 'tfv')) && (
             <>
             {/* Community name header on mobile only */}
             <h2 className="text-lg font-bold lg:hidden">{programName}</h2>
