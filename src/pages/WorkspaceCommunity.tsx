@@ -1252,16 +1252,16 @@ export default function WorkspaceCommunity() {
             <BackToWelcome />
 
             {/* Community section toggle - sleek centered */}
-            <CommunityViewToggle value={communityView} onChange={setCommunityView} />
+            <CommunityViewToggle value={communityView === 'events' && program === 'tfv' ? 'feed' : communityView} onChange={setCommunityView} hideEvents={program === 'tfv'} />
 
-            {communityView === 'events' && (
+            {communityView === 'events' && program !== 'tfv' && (
               <CommunityEventsSection program={program} />
             )}
             {communityView === 'leaderboard' && (
               <CommunityLeaderboardSection program={program} />
             )}
 
-            {communityView === 'feed' && (
+            {(communityView === 'feed' || (communityView === 'events' && program === 'tfv')) && (
             <>
             {/* Community name header on mobile only */}
             <h2 className="text-lg font-bold lg:hidden">{programName}</h2>

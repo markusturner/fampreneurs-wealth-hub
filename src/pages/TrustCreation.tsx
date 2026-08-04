@@ -475,19 +475,19 @@ export default function TrustCreation() {
               <Card
                 key={item.url}
                 onClick={() => window.open(item.url, "_blank", "noopener,noreferrer")}
-                className="cursor-pointer transition-all hover:shadow-md hover:border-accent"
+                className="cursor-pointer transition-all border-2 border-[#2eb2ff] bg-[#2eb2ff]/10 hover:bg-[#2eb2ff]/20 hover:shadow-lg hover:shadow-[#2eb2ff]/30 hover:-translate-y-0.5"
               >
                 <CardHeader className="text-center p-4 pb-2">
                   <div className="mx-auto mb-2">
-                    <Users className="h-10 w-10 text-accent" />
+                    <Users className="h-10 w-10 text-[#2eb2ff]" />
                   </div>
                   <CardTitle className="text-sm leading-tight flex items-center justify-center gap-1">
                     {item.title}
-                    <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <ExternalLink className="h-3 w-3 text-[#2eb2ff] shrink-0" />
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
-                  <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-xs px-2 py-0.5">
+                  <Badge className="w-full justify-center bg-[#2eb2ff] text-white hover:bg-[#2eb2ff] text-xs px-2 py-0.5">
                     Complimentary
                   </Badge>
                 </CardContent>
