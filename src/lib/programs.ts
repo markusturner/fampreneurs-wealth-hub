@@ -11,6 +11,19 @@ export const PROGRAM_OPTIONS: { code: ProgramCode; label: string }[] = [
 
 export const SOP_PROGRAM_CODES: ProgramCode[] = ['tfv', 'tfba', 'tffm']
 
+const SHORT_LABELS: Record<string, string> = {
+  fbu: 'FBU',
+  tfv: 'TFV',
+  tfba: 'PEA',
+  tffm: 'TFFM',
+}
+
+// Short display label for a program code (internal code stays 'tfba')
+export function programShortLabel(code?: string | null): string {
+  if (!code) return ''
+  return SHORT_LABELS[code.toLowerCase()] || code.toUpperCase()
+}
+
 export function programLabel(code: string): string {
   return PROGRAM_OPTIONS.find(p => p.code === code)?.label || code.toUpperCase()
 }

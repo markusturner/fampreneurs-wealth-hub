@@ -50,7 +50,7 @@ export const PROGRAMS: Program[] = [
   {
     id: 'tfba',
     name: 'The Private Estate Accelerator',
-    shortName: 'TFBA',
+    shortName: 'PEA',
     pricing: [
       { label: '$7,500 (Paid in Full)', price_id: 'price_1T1dl0KKuJwlPZFrnPpruCYU', amount: 750000, interval: 'One-Time', mode: 'payment' },
       { label: '$3,000/mo for 3 months', price_id: 'price_1T1dlOKKuJwlPZFrx1Ppbyz4', amount: 300000, interval: '3-Month Plan', mode: 'subscription' },
