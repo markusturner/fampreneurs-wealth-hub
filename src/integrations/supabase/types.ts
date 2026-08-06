@@ -3550,14 +3550,19 @@ export type Database = {
       }
       invite_links: {
         Row: {
+          access_mode: string
+          access_pin_hash: string | null
           created_at: string
           created_by: string | null
+          direct_email: string | null
           expires_at: string | null
+          failed_attempts: number
           id: string
           installment_amount: number | null
           installment_frequency: string | null
           invite_type: string
           is_active: boolean
+          locked_until: string | null
           max_uses: number | null
           note: string | null
           payment_start_date: string | null
@@ -3571,14 +3576,19 @@ export type Database = {
           uses_count: number
         }
         Insert: {
+          access_mode?: string
+          access_pin_hash?: string | null
           created_at?: string
           created_by?: string | null
+          direct_email?: string | null
           expires_at?: string | null
+          failed_attempts?: number
           id?: string
           installment_amount?: number | null
           installment_frequency?: string | null
           invite_type?: string
           is_active?: boolean
+          locked_until?: string | null
           max_uses?: number | null
           note?: string | null
           payment_start_date?: string | null
@@ -3592,14 +3602,19 @@ export type Database = {
           uses_count?: number
         }
         Update: {
+          access_mode?: string
+          access_pin_hash?: string | null
           created_at?: string
           created_by?: string | null
+          direct_email?: string | null
           expires_at?: string | null
+          failed_attempts?: number
           id?: string
           installment_amount?: number | null
           installment_frequency?: string | null
           invite_type?: string
           is_active?: boolean
+          locked_until?: string | null
           max_uses?: number | null
           note?: string | null
           payment_start_date?: string | null

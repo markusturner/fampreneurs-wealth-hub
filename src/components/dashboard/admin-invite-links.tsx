@@ -61,6 +61,10 @@ export function AdminInviteLinks() {
   const [installmentFrequency, setInstallmentFrequency] = useState<'monthly' | 'weekly' | 'biweekly'>('monthly')
   const [paymentStartDate, setPaymentStartDate] = useState('')
   const [note, setNote] = useState('')
+  const [accessMode, setAccessMode] = useState<'signup' | 'direct'>('signup')
+  const [directEmail, setDirectEmail] = useState('')
+  const [accessPin, setAccessPin] = useState('')
+
 
 
   const load = async () => {
@@ -104,6 +108,9 @@ export function AdminInviteLinks() {
     if (planType === 'payment_plan' && (!installmentAmount || !paymentStartDate)) {
       return toast({ title: 'Missing payment plan info', description: 'Fill installment amount and start date.', variant: 'destructive' })
     }
+    if (accessMode === 'direct' && (!directEmail.trim() || accessPin.trim().length < 4)) {
+      return toast({ title: 'Missing info', description: 'Enter their email and an access code of at least 4 digits.', variant: 'destructive' })
+    }
 
     setCreating(true)
     const token = makeToken(10)
@@ -122,6 +129,12 @@ export function AdminInviteLinks() {
       ? 'The Family Business Accelerator (VIP Weekend)'
       : (programName || null)
 
+    let access_pin_hash: string | null = null
+    if (accessMode === 'direct') {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${token}:${accessPin.trim()}`))
+      access_pin_hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
+    }
+
     const { error } = await supabase.from('invite_links' as any).insert({
       token,
       created_by: user?.id,
@@ -137,17 +150,28 @@ export function AdminInviteLinks() {
       installment_frequency: planType === 'payment_plan' ? installmentFrequency : null,
       payment_start_date: planType === 'payment_plan' ? paymentStartDate : null,
       note: note || null,
+      access_mode: accessMode,
+      direct_email: accessMode === 'direct' ? directEmail.trim().toLowerCase() : null,
+      access_pin_hash,
     })
 
 
     setCreating(false)
     if (error) return toast({ title: 'Failed', description: error.message, variant: 'destructive' })
 
-    toast({ title: 'Invite link created', description: 'Copy the link and share it.' })
+    toast({
+      title: 'Invite link created',
+      description: accessMode === 'direct'
+        ? `Share the link and the access code ${accessPin.trim()} with them.`
+        : 'Copy the link and share it.',
+    })
     setNote('')
     setTotalAmount('')
     setInstallmentAmount('')
     setPaymentStartDate('')
+    setDirectEmail('')
+    setAccessPin('')
+
     load()
   }
 
@@ -164,7 +188,34 @@ export function AdminInviteLinks() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="rounded-lg border p-4 space-y-3 bg-muted/30">
+            <Label>Access Style</Label>
+            <Select value={accessMode} onValueChange={(v) => setAccessMode(v as 'signup' | 'direct')}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="signup">Sign-up form (they create an account)</SelectItem>
+                <SelectItem value="direct">Instant access (no login — code only)</SelectItem>
+              </SelectContent>
+            </Select>
+            {accessMode === 'direct' && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Their Email (account it opens)</Label>
+                  <Input type="email" value={directEmail} onChange={(e) => setDirectEmail(e.target.value)} placeholder="grandpa@example.com" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Access Code (4–8 digits)</Label>
+                  <Input value={accessPin} onChange={(e) => setAccessPin(e.target.value)} placeholder="e.g. 4821" />
+                </div>
+                <p className="text-xs text-muted-foreground sm:col-span-2">
+                  They click the link, type this code, and land on the welcome page — no password. The code locks out for 15 minutes after 5 wrong tries, and you can revoke the link anytime.
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
+
             <div className="space-y-2">
               <Label>Link Type</Label>
               <Select value={inviteType} onValueChange={(v) => setInviteType(v as InviteType)}>

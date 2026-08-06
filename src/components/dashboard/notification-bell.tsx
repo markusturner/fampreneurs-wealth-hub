@@ -57,6 +57,16 @@ export function NotificationBell() {
       return
     }
 
+    const type = notification.notification_type || ''
+    const refId = notification.reference_id || null
+
+    // Post / comment / reaction / mention → open the exact post
+    const postTypes = ['post', 'community_post', 'community_comment', 'comment', 'community_reaction', 'reaction', 'mention', 'post_mention', 'like']
+    if (postTypes.includes(type) && refId) {
+      navigate(`/workspace-community?post=${refId}`)
+      return
+    }
+
     // Use data-driven link when available
     if (notification.link) {
       navigate(notification.link)
@@ -69,18 +79,31 @@ export function NotificationBell() {
       'family_message': '/community',
       'group_message': '/community',
       'message': '/messenger',
+      'direct_message': '/messenger',
       'meeting_scheduled': '/workspace-calendar',
+      'meeting_created': '/workspace-calendar',
       'community_post': '/workspace-community',
+      'post': '/workspace-community',
+      'comment': '/workspace-community',
+      'community_comment': '/workspace-community',
+      'community_reaction': '/workspace-community',
+      'reaction': '/workspace-community',
+      'mention': '/workspace-community',
       'course_created': '/classroom',
       'new_member': '/workspace-members',
       'trust_created': '/workspace-community?program=tfv',
+      'announcement': '/welcome',
     }
 
-    const route = fallbackRoutes[notification.notification_type]
-    if (route) {
-      navigate(route)
+    if (type === 'message' || type === 'direct_message') {
+      navigate(notification.sender_id ? `/messenger?user=${notification.sender_id}` : '/messenger')
+      return
     }
+
+    const route = fallbackRoutes[type]
+    navigate(route || '/welcome')
   }
+
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
