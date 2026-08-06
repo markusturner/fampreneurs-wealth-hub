@@ -25,7 +25,7 @@ interface Props {
 // Only the four workspace community programs (matches the sidebar)
 const WORKSPACE_COMMUNITY_NAMES = [
   'The Family Vault',
-  'The Family Business Accelerator',
+  'The Private Estate Accelerator',
   'The Family Fortune Mastermind',
 ]
 

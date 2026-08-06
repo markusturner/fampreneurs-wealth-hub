@@ -15,7 +15,7 @@ type UserRole = 'trustee' | 'family_office_member' | 'family_member'
 
 const PROGRAM_OPTIONS = [
   'The Family Vault',
-  'The Family Business Accelerator',
+  'The Private Estate Accelerator',
   'The Family Fortune Mastermind',
 ]
 
@@ -82,8 +82,8 @@ export function AdminUserManagement() {
 
     for (const email of emails) {
       try {
-        const effectiveProgram = programName === 'The Family Business Accelerator' && tfbaVariant === 'vip_weekend'
-          ? 'The Family Business Accelerator (VIP Weekend)'
+        const effectiveProgram = programName === 'The Private Estate Accelerator' && tfbaVariant === 'vip_weekend'
+          ? 'The Private Estate Accelerator (VIP Weekend)'
           : (programName || undefined)
         const { data, error } = await supabase.functions.invoke('create-user-with-credentials', {
           body: {
@@ -233,7 +233,7 @@ export function AdminUserManagement() {
               ))}
             </SelectContent>
           </Select>
-          {programName === 'The Family Business Accelerator' && (
+          {programName === 'The Private Estate Accelerator' && (
             <div className="pt-2 space-y-1">
               <Label className="text-xs text-muted-foreground">Sub-option</Label>
               <Select value={tfbaVariant} onValueChange={(v) => setTfbaVariant(v as 'standard' | 'vip_weekend')} disabled={isLoading}>

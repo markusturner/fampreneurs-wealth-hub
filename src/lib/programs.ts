@@ -5,7 +5,7 @@ export type ProgramCode = 'fbu' | 'tfv' | 'tfba' | 'tffm'
 export const PROGRAM_OPTIONS: { code: ProgramCode; label: string }[] = [
   { code: 'fbu', label: 'Family Business University' },
   { code: 'tfv', label: 'The Family Vault' },
-  { code: 'tfba', label: 'The Family Business Accelerator' },
+  { code: 'tfba', label: 'The Private Estate Accelerator' },
   { code: 'tffm', label: 'The Succession Society' },
 ]
 
@@ -32,7 +32,7 @@ export function profileProgramCodes(programName?: string | null): ProgramCode[] 
     'The Family Business University': 'fbu',
     'Family Business University': 'fbu',
     'The Family Vault': 'tfv',
-    'The Family Business Accelerator': 'tfba',
+    'The Private Estate Accelerator': 'tfba',
     'The Family Fortune Mastermind': 'tffm',
     'The Succession Society': 'tffm',
   }

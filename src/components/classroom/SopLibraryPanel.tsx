@@ -129,7 +129,7 @@ export default function SopLibraryPanel() {
         <Lock className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
         <h3 className="text-lg font-bold mb-2">SOPs Library Locked</h3>
         <p className="text-muted-foreground text-sm">
-          Standard Operating Procedures are available for members of <strong>The Family Vault</strong>, <strong>The Family Business Accelerator</strong>, and <strong>The Succession Society</strong>.
+          Standard Operating Procedures are available for members of <strong>The Family Vault</strong>, <strong>The Private Estate Accelerator</strong>, and <strong>The Succession Society</strong>.
         </p>
       </div>
     )

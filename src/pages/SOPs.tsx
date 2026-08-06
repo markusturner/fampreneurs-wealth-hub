@@ -135,7 +135,7 @@ export default function SOPs() {
           <Lock className="h-10 w-10 mx-auto text-muted-foreground mb-4" />
           <h1 className="text-2xl font-bold mb-2">SOPs Library Locked</h1>
           <p className="text-muted-foreground text-sm">
-            Standard Operating Procedures are available for members of <strong>The Family Vault</strong>, <strong>The Family Business Accelerator</strong>, and <strong>The Succession Society</strong>.
+            Standard Operating Procedures are available for members of <strong>The Family Vault</strong>, <strong>The Private Estate Accelerator</strong>, and <strong>The Succession Society</strong>.
           </p>
           <Button variant="ghost" size="sm" onClick={() => navigate('/classroom')} className="mt-6">
             <ArrowLeft className="h-4 w-4 mr-1.5" /> Back to Classroom

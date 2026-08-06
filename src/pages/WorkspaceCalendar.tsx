@@ -138,7 +138,7 @@ export default function WorkspaceCalendar() {
       const nameToShortId: Record<string, string> = {
         'Family Business University': 'fbu',
         'The Family Vault': 'tfv',
-        'The Family Business Accelerator': 'tfba',
+        'The Private Estate Accelerator': 'tfba',
         'The Family Fortune Mastermind': 'tffm',
         'The Family Legacy: VIP Weekend': 'tflvip',
       }
@@ -838,7 +838,7 @@ export default function WorkspaceCalendar() {
               <div className="space-y-2">
                 {[
                   { id: 'tfv', label: 'The Family Vault', short: 'TFV' },
-                  { id: 'tfba', label: 'The Family Business Accelerator', short: 'TFBA' },
+                  { id: 'tfba', label: 'The Private Estate Accelerator', short: 'TFBA' },
                   { id: 'tffm', label: 'The Family Fortune Mastermind', short: 'TFFM' },
                 ].map(community => (
                   <div key={community.id} className="rounded-lg border border-border hover:bg-muted/50 transition-colors overflow-hidden">

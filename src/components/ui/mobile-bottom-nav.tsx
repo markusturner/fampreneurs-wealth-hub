@@ -18,14 +18,14 @@ const PROGRAM_SLUGS: Record<string, { slug: string; label: string }> = {
   'Family Business University': { slug: 'fbu', label: 'Family Business University' },
   'The Family Business University': { slug: 'fbu', label: 'Family Business University' },
   'The Family Vault': { slug: 'tfv', label: 'The Family Vault' },
-  'The Family Business Accelerator': { slug: 'tfba', label: 'The Family Business Accelerator' },
+  'The Private Estate Accelerator': { slug: 'tfba', label: 'The Private Estate Accelerator' },
   'The Family Fortune Mastermind': { slug: 'tffm', label: 'The Succession Society' },
   'The Succession Society': { slug: 'tffm', label: 'The Succession Society' },
 }
 
 const ALL_COMMUNITIES = [
   { slug: 'tfv', label: 'The Family Vault' },
-  { slug: 'tfba', label: 'The Family Business Accelerator' },
+  { slug: 'tfba', label: 'The Private Estate Accelerator' },
   { slug: 'tffm', label: 'The Succession Society' },
 ]
 

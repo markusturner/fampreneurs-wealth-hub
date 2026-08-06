@@ -34,7 +34,7 @@ const handler = async (req: Request): Promise<Response> => {
     const programServiceAgreements = {
       "The Family Legacy: VIP Weekend": "The Family Legacy: VIP Weekend Program Services Agreement",
       "The Family Vault": "The Family Vault Program Services Agreement", 
-      "The Family Business Accelerator": "The Family Business Accelerator Program Services Agreement"
+      "The Private Estate Accelerator": "The Private Estate Accelerator Program Services Agreement"
     }
 
     const serviceAgreementTemplate = programServiceAgreements[programName as keyof typeof programServiceAgreements]

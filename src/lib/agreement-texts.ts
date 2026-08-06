@@ -145,7 +145,7 @@ To gain the most benefit from The Fampreneurs' Mentorship program you agree to t
 
 Section 1. Program Guidelines and Payment Details
 
-Program: The Family Business Accelerator Program.
+Program: The Private Estate Accelerator Program.
 
 Program Details:
 
@@ -167,7 +167,7 @@ FOR CLIENTS OVER 680 credit score - We provide a done-for-you credit stacking as
 
 Payment Terms:
 
-Total Program Cost: The Family Business Accelerator - Regularly $12,000, but today for ONLY $9,000.
+Total Program Cost: The Private Estate Accelerator - Regularly $12,000, but today for ONLY $9,000.
 
 Reduced sums may be offered as part of the promotions from time to time in which case the compensation will be altered to reflect the promotional price.
 
@@ -235,7 +235,7 @@ Coaching with The Fampreneurs. You will attend a bi-weekly live virtual training
 
 Section 10. Refund and Cancellation Policies
 
-The Fampreneurs clearly state that there are no refunds and all sales are final for education training in The Family Business Accelerator Program.
+The Fampreneurs clearly state that there are no refunds and all sales are final for education training in The Private Estate Accelerator Program.
 
 Section 11. Chargebacks
 
@@ -396,7 +396,7 @@ Thank you for choosing The Fampreneurs VIP Weekend experience — an exclusive i
 This Agreement is entered into on this date ______________________________, by and between _________________________________ ("Client"), and VNCI, LLC ("The Fampreneurs").
 
 Section 1. Program Details
-Program: The Family Business Accelerator — VIP Weekend Add-On.
+Program: The Private Estate Accelerator — VIP Weekend Add-On.
 The Client receives priority in-person access to The Fampreneurs during the VIP Weekend, including hot-seat coaching, private strategy sessions, and networking with the founding team.
 
 Section 2. Payment
@@ -471,8 +471,8 @@ By their signatures below, the parties hereby understand and agree to all terms 
 
 export const AGREEMENT_TEXT_MAP: Record<string, string> = {
   'The Family Vault': TFV_AGREEMENT,
-  'The Family Business Accelerator': TFBA_AGREEMENT,
-  'The Family Business Accelerator (VIP Weekend)': VIP_WEEKEND_AGREEMENT,
+  'The Private Estate Accelerator': TFBA_AGREEMENT,
+  'The Private Estate Accelerator (VIP Weekend)': VIP_WEEKEND_AGREEMENT,
   'The Family Fortune Mastermind': TFFM_AGREEMENT,
   'The Family Business University': FBU_AGREEMENT,
 }

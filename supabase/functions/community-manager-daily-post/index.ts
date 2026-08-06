@@ -10,7 +10,7 @@ const PROGRAMS = ["fbu", "tfv", "tfba", "tffm"];
 const PROGRAM_NAMES: Record<string, string> = {
   fbu: "Family Business University",
   tfv: "The Family Vault",
-  tfba: "The Family Business Accelerator",
+  tfba: "The Private Estate Accelerator",
   tffm: "The Family Fortune Mastermind",
 };
 

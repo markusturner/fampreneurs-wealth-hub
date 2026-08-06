@@ -347,7 +347,7 @@ export function AdminAnalyticsOverview() {
             <MetricCard
               title="TFBA Members"
               value={metrics.tfbaMembers}
-              subtitle="The Family Business Accelerator"
+              subtitle="The Private Estate Accelerator"
               icon={<Users className="h-4 w-4 text-muted-foreground" />}
             />
             <MetricCard
