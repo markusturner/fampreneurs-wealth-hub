@@ -832,18 +832,52 @@ export function CoachingCallAttendanceLog() {
                           <Button type="button" size="sm" onClick={saveNewCoach}>Add</Button>
                           <Button type="button" size="sm" variant="ghost" onClick={() => { setAddingCoach(false); setNewCoach('') }}>×</Button>
                         </div>
+                      ) : managingCoaches ? (
+                        <div className="rounded-md border p-2 space-y-1 max-h-48 overflow-y-auto">
+                          {allCoaches.length === 0 && <p className="text-xs text-muted-foreground">No coaches yet</p>}
+                          {allCoaches.map(c => (
+                            <div key={c} className="flex items-center gap-2">
+                              {editingCoach === c ? (
+                                <>
+                                  <Input
+                                    autoFocus
+                                    className="h-8"
+                                    value={editCoachName}
+                                    onChange={(e) => setEditCoachName(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); renameCoach(c) } }}
+                                  />
+                                  <Button type="button" size="sm" onClick={() => renameCoach(c)}>Save</Button>
+                                  <Button type="button" size="sm" variant="ghost" onClick={() => setEditingCoach(null)}>×</Button>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="flex-1 text-sm truncate">{c}</span>
+                                  <Button type="button" size="sm" variant="ghost" onClick={() => { setEditingCoach(c); setEditCoachName(c) }}>Edit</Button>
+                                  <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => removeCoach(c)}>Delete</Button>
+                                </>
+                              )}
+                            </div>
+                          ))}
+                          <Button type="button" size="sm" variant="outline" className="w-full mt-1" onClick={() => { setManagingCoaches(false); setEditingCoach(null) }}>Done</Button>
+                        </div>
                       ) : (
                         <Select
                           value={fCoach}
-                          onValueChange={(v) => { if (v === '__add__') { setAddingCoach(true) } else { setFCoach(v) } }}
+                          onValueChange={(v) => {
+                            if (v === '__add__') setAddingCoach(true)
+                            else if (v === '__manage__') setManagingCoaches(true)
+                            else setFCoach(v)
+                          }}
                         >
                           <SelectTrigger><SelectValue placeholder="Select coach" /></SelectTrigger>
                           <SelectContent>
                             {allCoaches.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                             <SelectItem value="__add__">+ Add coach…</SelectItem>
+                            <SelectItem value="__manage__">✎ Edit / delete coaches…</SelectItem>
                           </SelectContent>
                         </Select>
                       )}
+
                     </div>
 
                     <div>
