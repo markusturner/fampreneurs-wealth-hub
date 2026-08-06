@@ -67,14 +67,14 @@ const handler = async (req: Request): Promise<Response> => {
     // Extract program from tags or custom fields
     let detectedProgram = null
 
-    // Check tags first
+    // Check tags first (accept both old and new program names from GoHighLevel)
     if (contact.tags && contact.tags.length > 0) {
       for (const tag of contact.tags) {
         if (tag.includes("Family Vault")) {
           detectedProgram = "The Family Vault"
           break
-        } else if (tag.includes("Family Business Accelerator")) {
-          detectedProgram = "The Family Business Accelerator"
+        } else if (tag.includes("Private Estate Accelerator") || tag.includes("Family Business Accelerator")) {
+          detectedProgram = "The Private Estate Accelerator"
           break
         } else if (tag.includes("Family Legacy")) {
           detectedProgram = "The Family Legacy: VIP Weekend"
