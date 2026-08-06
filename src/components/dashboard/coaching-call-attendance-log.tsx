@@ -531,24 +531,57 @@ export function CoachingCallAttendanceLog() {
   const [customCoaches, setCustomCoaches] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('attendance_custom_coaches') || '[]') } catch { return [] }
   })
+  const [hiddenCoaches, setHiddenCoaches] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('attendance_hidden_coaches') || '[]') } catch { return [] }
+  })
   const [addingCoach, setAddingCoach] = useState(false)
   const [newCoach, setNewCoach] = useState('')
+  const [managingCoaches, setManagingCoaches] = useState(false)
+  const [editingCoach, setEditingCoach] = useState<string | null>(null)
+  const [editCoachName, setEditCoachName] = useState('')
 
   const allCoaches = useMemo(
-    () => Array.from(new Set([...DEFAULT_COACHES, ...customCoaches, ...coachOptions])).sort(),
-    [customCoaches, coachOptions]
+    () => Array.from(new Set([...DEFAULT_COACHES, ...customCoaches, ...coachOptions]))
+      .filter(c => !hiddenCoaches.includes(c))
+      .sort(),
+    [customCoaches, coachOptions, hiddenCoaches]
   )
+
+  const persistCustom = (next: string[]) => {
+    setCustomCoaches(next)
+    localStorage.setItem('attendance_custom_coaches', JSON.stringify(next))
+  }
+  const persistHidden = (next: string[]) => {
+    setHiddenCoaches(next)
+    localStorage.setItem('attendance_hidden_coaches', JSON.stringify(next))
+  }
 
   const saveNewCoach = () => {
     const name = newCoach.trim()
     if (!name) return
-    const next = Array.from(new Set([...customCoaches, name]))
-    setCustomCoaches(next)
-    localStorage.setItem('attendance_custom_coaches', JSON.stringify(next))
+    persistCustom(Array.from(new Set([...customCoaches, name])))
+    persistHidden(hiddenCoaches.filter(h => h !== name))
     setFCoach(name)
     setNewCoach('')
     setAddingCoach(false)
   }
+
+  const renameCoach = (oldName: string) => {
+    const name = editCoachName.trim()
+    if (!name || name === oldName) { setEditingCoach(null); return }
+    persistCustom(Array.from(new Set([...customCoaches.filter(c => c !== oldName), name])))
+    persistHidden(Array.from(new Set([...hiddenCoaches.filter(h => h !== name), oldName])))
+    if (fCoach === oldName) setFCoach(name)
+    setEditingCoach(null)
+    setEditCoachName('')
+  }
+
+  const removeCoach = (name: string) => {
+    persistCustom(customCoaches.filter(c => c !== name))
+    persistHidden(Array.from(new Set([...hiddenCoaches, name])))
+    if (fCoach === name) setFCoach('')
+  }
+
 
 
   const filtered = useMemo(() => {
@@ -799,18 +832,52 @@ export function CoachingCallAttendanceLog() {
                           <Button type="button" size="sm" onClick={saveNewCoach}>Add</Button>
                           <Button type="button" size="sm" variant="ghost" onClick={() => { setAddingCoach(false); setNewCoach('') }}>×</Button>
                         </div>
+                      ) : managingCoaches ? (
+                        <div className="rounded-md border p-2 space-y-1 max-h-48 overflow-y-auto">
+                          {allCoaches.length === 0 && <p className="text-xs text-muted-foreground">No coaches yet</p>}
+                          {allCoaches.map(c => (
+                            <div key={c} className="flex items-center gap-2">
+                              {editingCoach === c ? (
+                                <>
+                                  <Input
+                                    autoFocus
+                                    className="h-8"
+                                    value={editCoachName}
+                                    onChange={(e) => setEditCoachName(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); renameCoach(c) } }}
+                                  />
+                                  <Button type="button" size="sm" onClick={() => renameCoach(c)}>Save</Button>
+                                  <Button type="button" size="sm" variant="ghost" onClick={() => setEditingCoach(null)}>×</Button>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="flex-1 text-sm truncate">{c}</span>
+                                  <Button type="button" size="sm" variant="ghost" onClick={() => { setEditingCoach(c); setEditCoachName(c) }}>Edit</Button>
+                                  <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => removeCoach(c)}>Delete</Button>
+                                </>
+                              )}
+                            </div>
+                          ))}
+                          <Button type="button" size="sm" variant="outline" className="w-full mt-1" onClick={() => { setManagingCoaches(false); setEditingCoach(null) }}>Done</Button>
+                        </div>
                       ) : (
                         <Select
                           value={fCoach}
-                          onValueChange={(v) => { if (v === '__add__') { setAddingCoach(true) } else { setFCoach(v) } }}
+                          onValueChange={(v) => {
+                            if (v === '__add__') setAddingCoach(true)
+                            else if (v === '__manage__') setManagingCoaches(true)
+                            else setFCoach(v)
+                          }}
                         >
                           <SelectTrigger><SelectValue placeholder="Select coach" /></SelectTrigger>
                           <SelectContent>
                             {allCoaches.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                             <SelectItem value="__add__">+ Add coach…</SelectItem>
+                            <SelectItem value="__manage__">✎ Edit / delete coaches…</SelectItem>
                           </SelectContent>
                         </Select>
                       )}
+
                     </div>
 
                     <div>
