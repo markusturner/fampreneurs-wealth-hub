@@ -87,6 +87,15 @@ serve(async (req) => {
           </p>
         </div>
 
+        ${agreementText ? `
+        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 20px; background: #fafafa;">
+          <h3 style="color: #290a52; margin-top: 0;">Full Agreement Copy</h3>
+          <div style="font-family: 'Georgia', serif; font-size: 14px; color: #333; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word;">
+            ${escapeHtml(agreementText)}
+          </div>
+        </div>
+        ` : ''}
+
         <p style="font-size: 13px; color: #888; text-align: center;">
           This email confirms that ${fullName} has signed the ${programName} Program Services Agreement.
           Please keep this email for your records.
