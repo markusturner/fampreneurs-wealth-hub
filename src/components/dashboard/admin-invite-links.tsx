@@ -188,7 +188,34 @@ export function AdminInviteLinks() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="rounded-lg border p-4 space-y-3 bg-muted/30">
+            <Label>Access Style</Label>
+            <Select value={accessMode} onValueChange={(v) => setAccessMode(v as 'signup' | 'direct')}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="signup">Sign-up form (they create an account)</SelectItem>
+                <SelectItem value="direct">Instant access (no login — code only)</SelectItem>
+              </SelectContent>
+            </Select>
+            {accessMode === 'direct' && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Their Email (account it opens)</Label>
+                  <Input type="email" value={directEmail} onChange={(e) => setDirectEmail(e.target.value)} placeholder="grandpa@example.com" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Access Code (4–8 digits)</Label>
+                  <Input value={accessPin} onChange={(e) => setAccessPin(e.target.value)} placeholder="e.g. 4821" />
+                </div>
+                <p className="text-xs text-muted-foreground sm:col-span-2">
+                  They click the link, type this code, and land on the welcome page — no password. The code locks out for 15 minutes after 5 wrong tries, and you can revoke the link anytime.
+                </p>
+              </div>
+            )}
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
+
             <div className="space-y-2">
               <Label>Link Type</Label>
               <Select value={inviteType} onValueChange={(v) => setInviteType(v as InviteType)}>
