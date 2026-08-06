@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
+import { getAgreementTextByProgram } from '@/lib/agreement-texts'
 import { Loader2, Users, Search, Pencil, Trash2, Eye, UserCog, Mail, Plus, X, Crown, DollarSign, ArrowLeft, ChevronRight, CheckSquare, Phone, Check, FileText, StickyNote, Calendar, Clock, Star, Trophy, MessageSquare, ShieldCheck, Lock, Unlock, Download, Upload, Image, Link2 } from 'lucide-react'
 import { LinkUsersDialog } from './link-users-dialog'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -50,7 +51,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { ChevronDown } from 'lucide-react'
-import { getAgreementTextByProgram } from '@/lib/agreement-texts'
 
 // Map program_name -> community_groups.name (matches DB trigger logic)
 const PROGRAM_TO_COMMUNITY_NAME: Record<string, string> = {
@@ -1113,6 +1113,7 @@ export function AdminAllUsersManagement() {
     setResendingAgreementId(agreement.id)
     try {
       const programLabel = agreement.program_name || agreement.agreement_type || 'Program'
+      const agreementText = getAgreementTextByProgram(programLabel)
       const { error } = await supabase.functions.invoke('send-agreement-email', {
         body: {
           agreementId: agreement.id,
@@ -1122,6 +1123,7 @@ export function AdminAllUsersManagement() {
           agreementDate: agreement.agreement_date || agreement.signed_at?.split('T')[0],
           mailingAddress: agreement.mailing_address,
           signatureData: agreement.signature_data,
+          agreementText,
         }
       })
       if (error) throw error
@@ -1132,6 +1134,7 @@ export function AdminAllUsersManagement() {
       setResendingAgreementId(null)
     }
   }
+
   const handleSaveFinance = async (userId: string) => {
     setSavingFinance(true)
     try {

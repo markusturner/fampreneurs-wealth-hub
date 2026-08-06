@@ -32,7 +32,7 @@ serve(async (req) => {
       })
     }
 
-    const { agreementId, recipientEmail, fullName, programName, agreementDate, mailingAddress, signatureData } = await req.json()
+    const { agreementId, recipientEmail, fullName, programName, agreementDate, mailingAddress, signatureData, agreementText } = await req.json()
 
     if (!recipientEmail || !fullName || !programName) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -50,10 +50,19 @@ serve(async (req) => {
       })
     }
 
+    // Escape HTML in user-provided text before rendering
+    const escapeHtml = (text: string) =>
+      String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+
     // Build a signature display
     const signatureHtml = signatureData?.startsWith('data:image')
       ? `<img src="${signatureData}" alt="Signature" style="max-height:60px; border:1px solid #ccc; padding:4px; border-radius:4px;" />`
-      : `<p style="font-family: 'Brush Script MT', cursive; font-size:24px; color:#290a52;">${signatureData || fullName}</p>`
+      : `<p style="font-family: 'Brush Script MT', cursive; font-size:24px; color:#290a52;">${escapeHtml(signatureData || fullName)}</p>`
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; padding: 20px;">
@@ -77,6 +86,15 @@ serve(async (req) => {
             Signed on: ${agreementDate || new Date().toISOString().split('T')[0]}
           </p>
         </div>
+
+        ${agreementText ? `
+        <div style="border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 20px; background: #fafafa;">
+          <h3 style="color: #290a52; margin-top: 0;">Full Agreement Copy</h3>
+          <div style="font-family: 'Georgia', serif; font-size: 14px; color: #333; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word;">
+            ${escapeHtml(agreementText)}
+          </div>
+        </div>
+        ` : ''}
 
         <p style="font-size: 13px; color: #888; text-align: center;">
           This email confirms that ${fullName} has signed the ${programName} Program Services Agreement.

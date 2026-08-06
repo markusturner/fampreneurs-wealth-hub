@@ -800,11 +800,13 @@ export default function ProgramAgreement() {
             agreementDate: new Date().toISOString().split('T')[0],
             mailingAddress: address || 'Not provided',
             signatureData,
+            agreementText,
           },
         })
       } catch (emailErr) {
         console.error('Failed to send agreement email:', emailErr)
       }
+
 
       // Notify admins/owners about the agreement
       try {
