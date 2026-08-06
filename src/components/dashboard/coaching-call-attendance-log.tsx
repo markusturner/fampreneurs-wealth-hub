@@ -527,6 +527,30 @@ export function CoachingCallAttendanceLog() {
     [rows]
   )
 
+  const DEFAULT_COACHES = ['Attorney Price', 'Markus Turner']
+  const [customCoaches, setCustomCoaches] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('attendance_custom_coaches') || '[]') } catch { return [] }
+  })
+  const [addingCoach, setAddingCoach] = useState(false)
+  const [newCoach, setNewCoach] = useState('')
+
+  const allCoaches = useMemo(
+    () => Array.from(new Set([...DEFAULT_COACHES, ...customCoaches, ...coachOptions])).sort(),
+    [customCoaches, coachOptions]
+  )
+
+  const saveNewCoach = () => {
+    const name = newCoach.trim()
+    if (!name) return
+    const next = Array.from(new Set([...customCoaches, name]))
+    setCustomCoaches(next)
+    localStorage.setItem('attendance_custom_coaches', JSON.stringify(next))
+    setFCoach(name)
+    setNewCoach('')
+    setAddingCoach(false)
+  }
+
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     return rows.filter(r => {
