@@ -104,6 +104,36 @@ export default function InviteAccept() {
               Sign in <ArrowRight className="h-4 w-4" />
             </button>
           </div>
+        ) : invite?.access_mode === 'direct' ? (
+          <>
+            <div className="text-center mb-6">
+              <h1 className="text-xl font-semibold">Enter your access code</h1>
+              <p className="text-xs text-muted-foreground mt-1">
+                Type the code you were given to go straight into TruHeirs. No password needed.
+              </p>
+            </div>
+            <form onSubmit={directSubmit} className="space-y-3">
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="Access code"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                required
+                disabled={submitting}
+                className={`${inputCls} text-center tracking-[0.4em] text-lg`}
+              />
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full h-11 rounded-md font-semibold disabled:opacity-50"
+                style={{ backgroundColor: '#ffb500', color: '#290a52' }}
+              >
+                {submitting ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : 'Enter TruHeirs'}
+              </button>
+            </form>
+          </>
         ) : (
           <>
             <div className="text-center mb-6">
@@ -112,6 +142,7 @@ export default function InviteAccept() {
                 {invite?.program_name ? `Program: ${invite.program_name}` : 'Join the TruHeirs community'}
               </p>
             </div>
+
 
             <form onSubmit={submit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
