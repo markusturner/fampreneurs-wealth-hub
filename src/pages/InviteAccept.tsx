@@ -20,6 +20,36 @@ export default function InviteAccept() {
   const [zipCode, setZipCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
+  const [pin, setPin] = useState('')
+
+  const directSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSubmitting(true)
+    const { data, error } = await supabase.functions.invoke('redeem-invite-link', {
+      body: { action: 'direct_access', token, pin },
+    })
+    if (error || !data?.success) {
+      setSubmitting(false)
+      toast({
+        title: 'Could not get you in',
+        description: data?.error || error?.message || 'Please check your code.',
+        variant: 'destructive',
+      })
+      return
+    }
+    const { error: otpErr } = await supabase.auth.verifyOtp({
+      email: data.email,
+      token: data.hashedToken,
+      type: 'magiclink',
+    })
+    setSubmitting(false)
+    if (otpErr) {
+      toast({ title: 'Could not sign you in', description: otpErr.message, variant: 'destructive' })
+      return
+    }
+    navigate('/welcome')
+  }
+
 
   useEffect(() => {
     (async () => {
