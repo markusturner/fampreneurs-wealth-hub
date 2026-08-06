@@ -534,7 +534,6 @@ export function CoachingCallAttendanceLog() {
   const [hiddenCoaches, setHiddenCoaches] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('attendance_hidden_coaches') || '[]') } catch { return [] }
   })
-  const [addingCoach, setAddingCoach] = useState(false)
   const [newCoach, setNewCoach] = useState('')
   const [managingCoaches, setManagingCoaches] = useState(false)
   const [editingCoach, setEditingCoach] = useState<string | null>(null)
@@ -563,7 +562,7 @@ export function CoachingCallAttendanceLog() {
     persistHidden(hiddenCoaches.filter(h => h !== name))
     setFCoach(name)
     setNewCoach('')
-    setAddingCoach(false)
+    toast.success(`${name} added`)
   }
 
   const renameCoach = (oldName: string) => {
@@ -817,70 +816,87 @@ export function CoachingCallAttendanceLog() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className={managingCoaches ? 'col-span-2' : undefined}>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
                       <Label className="text-xs">Coach</Label>
-                      {addingCoach ? (
-                        <div className="flex gap-2">
-                          <Input
-                            autoFocus
-                            value={newCoach}
-                            onChange={(e) => setNewCoach(e.target.value)}
-                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); saveNewCoach() } }}
-                            placeholder="New coach name"
-                          />
-                          <Button type="button" size="sm" onClick={saveNewCoach}>Add</Button>
-                          <Button type="button" size="sm" variant="ghost" onClick={() => { setAddingCoach(false); setNewCoach('') }}>×</Button>
-                        </div>
-                      ) : managingCoaches ? (
-                        <div className="rounded-md border divide-y max-h-56 overflow-y-auto">
-                          {allCoaches.length === 0 && <p className="p-3 text-xs text-muted-foreground">No coaches yet</p>}
-                          {allCoaches.map(c => (
-                            <div key={c} className="flex items-center gap-2 px-3 py-2">
-                              {editingCoach === c ? (
-                                <>
-                                  <Input
-                                    autoFocus
-                                    className="h-8 flex-1"
-                                    value={editCoachName}
-                                    onChange={(e) => setEditCoachName(e.target.value)}
-                                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); renameCoach(c) } }}
-                                  />
-                                  <Button type="button" size="sm" className="h-8" onClick={() => renameCoach(c)}>Save</Button>
-                                  <Button type="button" size="sm" variant="ghost" className="h-8" onClick={() => setEditingCoach(null)}>Cancel</Button>
-                                </>
-                              ) : (
-                                <>
-                                  <span className="flex-1 text-sm">{c}</span>
-                                  <Button type="button" size="sm" variant="ghost" className="h-8 px-2" onClick={() => { setEditingCoach(c); setEditCoachName(c) }}>Edit</Button>
-                                  <Button type="button" size="sm" variant="ghost" className="h-8 px-2 text-destructive hover:text-destructive" onClick={() => removeCoach(c)}>Delete</Button>
-                                </>
-                              )}
-                            </div>
-                          ))}
-                          <div className="p-2">
-                            <Button type="button" size="sm" variant="outline" className="w-full" onClick={() => { setManagingCoaches(false); setEditingCoach(null) }}>Done</Button>
-                          </div>
-                        </div>
-                      ) : (
-
+                      <div className="flex gap-2">
                         <Select
                           value={fCoach}
-                          onValueChange={(v) => {
-                            if (v === '__add__') setAddingCoach(true)
-                            else if (v === '__manage__') setManagingCoaches(true)
-                            else setFCoach(v)
-                          }}
+                          onValueChange={setFCoach}
                         >
-                          <SelectTrigger><SelectValue placeholder="Select coach" /></SelectTrigger>
+                          <SelectTrigger className="min-w-0 flex-1"><SelectValue placeholder="Select coach" /></SelectTrigger>
                           <SelectContent>
                             {allCoaches.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                            <SelectItem value="__add__">+ Add coach…</SelectItem>
-                            <SelectItem value="__manage__">✎ Edit / delete coaches…</SelectItem>
                           </SelectContent>
                         </Select>
-                      )}
+                        <Button type="button" variant="outline" size="icon" onClick={() => setManagingCoaches(true)} title="Manage coaches" aria-label="Manage coaches">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </div>
 
+                      <Dialog open={managingCoaches} onOpenChange={setManagingCoaches}>
+                        <DialogContent className="sm:max-w-lg">
+                          <DialogHeader>
+                            <DialogTitle>Manage coaches</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-5 py-2">
+                            <div className="space-y-2">
+                              <Label htmlFor="new-coach-name">Add a coach</Label>
+                              <div className="flex gap-2">
+                                <Input
+                                  id="new-coach-name"
+                                  autoFocus
+                                  className="h-11 flex-1"
+                                  value={newCoach}
+                                  onChange={(e) => setNewCoach(e.target.value)}
+                                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); saveNewCoach() } }}
+                                  placeholder="Enter the coach's full name"
+                                />
+                                <Button type="button" className="h-11 shrink-0" onClick={saveNewCoach} disabled={!newCoach.trim()}>
+                                  <Plus className="mr-2 h-4 w-4" /> Add coach
+                                </Button>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>Current coaches</Label>
+                              <div className="max-h-72 overflow-y-auto rounded-md border divide-y">
+                                {allCoaches.length === 0 && <p className="p-4 text-sm text-muted-foreground">No coaches added yet.</p>}
+                                {allCoaches.map(c => (
+                                  <div key={c} className="flex min-h-14 items-center gap-2 px-3 py-2">
+                                    {editingCoach === c ? (
+                                      <>
+                                        <Input
+                                          autoFocus
+                                          className="h-10 flex-1"
+                                          value={editCoachName}
+                                          onChange={(e) => setEditCoachName(e.target.value)}
+                                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); renameCoach(c) } }}
+                                        />
+                                        <Button type="button" size="sm" onClick={() => renameCoach(c)}>Save</Button>
+                                        <Button type="button" size="sm" variant="ghost" onClick={() => setEditingCoach(null)}>Cancel</Button>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <span className="min-w-0 flex-1 truncate text-sm font-medium">{c}</span>
+                                        <Button type="button" size="icon" variant="ghost" onClick={() => { setEditingCoach(c); setEditCoachName(c) }} title={`Edit ${c}`} aria-label={`Edit ${c}`}>
+                                          <Pencil className="h-4 w-4" />
+                                        </Button>
+                                        <Button type="button" size="icon" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => removeCoach(c)} title={`Delete ${c}`} aria-label={`Delete ${c}`}>
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button type="button" onClick={() => { setManagingCoaches(false); setEditingCoach(null) }}>Done</Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </div>
 
                     <div>
