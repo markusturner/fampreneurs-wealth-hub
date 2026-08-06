@@ -61,6 +61,10 @@ export function AdminInviteLinks() {
   const [installmentFrequency, setInstallmentFrequency] = useState<'monthly' | 'weekly' | 'biweekly'>('monthly')
   const [paymentStartDate, setPaymentStartDate] = useState('')
   const [note, setNote] = useState('')
+  const [accessMode, setAccessMode] = useState<'signup' | 'direct'>('signup')
+  const [directEmail, setDirectEmail] = useState('')
+  const [accessPin, setAccessPin] = useState('')
+
 
 
   const load = async () => {
