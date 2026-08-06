@@ -38,10 +38,10 @@ export default function InviteAccept() {
       return
     }
     const { error: otpErr } = await supabase.auth.verifyOtp({
-      email: data.email,
-      token: data.hashedToken,
+      token_hash: data.hashedToken,
       type: 'magiclink',
     })
+
     setSubmitting(false)
     if (otpErr) {
       toast({ title: 'Could not sign you in', description: otpErr.message, variant: 'destructive' })
