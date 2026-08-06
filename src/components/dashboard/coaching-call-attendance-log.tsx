@@ -787,14 +787,32 @@ export function CoachingCallAttendanceLog() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-xs">Coach</Label>
-                      <Select value={fCoach} onValueChange={setFCoach}>
-                        <SelectTrigger><SelectValue placeholder="Select coach" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Attorney Price">Attorney Price</SelectItem>
-                          <SelectItem value="Markus Turner">Markus Turner</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      {addingCoach ? (
+                        <div className="flex gap-2">
+                          <Input
+                            autoFocus
+                            value={newCoach}
+                            onChange={(e) => setNewCoach(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); saveNewCoach() } }}
+                            placeholder="New coach name"
+                          />
+                          <Button type="button" size="sm" onClick={saveNewCoach}>Add</Button>
+                          <Button type="button" size="sm" variant="ghost" onClick={() => { setAddingCoach(false); setNewCoach('') }}>×</Button>
+                        </div>
+                      ) : (
+                        <Select
+                          value={fCoach}
+                          onValueChange={(v) => { if (v === '__add__') { setAddingCoach(true) } else { setFCoach(v) } }}
+                        >
+                          <SelectTrigger><SelectValue placeholder="Select coach" /></SelectTrigger>
+                          <SelectContent>
+                            {allCoaches.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                            <SelectItem value="__add__">+ Add coach…</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
                     </div>
+
                     <div>
                       <Label className="text-xs">Date</Label>
                       <Input type="date" value={fDate} onChange={(e) => setFDate(e.target.value)} />
