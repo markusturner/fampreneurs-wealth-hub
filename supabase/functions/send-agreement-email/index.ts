@@ -50,10 +50,19 @@ serve(async (req) => {
       })
     }
 
+    // Escape HTML in user-provided text before rendering
+    const escapeHtml = (text: string) =>
+      String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+
     // Build a signature display
     const signatureHtml = signatureData?.startsWith('data:image')
       ? `<img src="${signatureData}" alt="Signature" style="max-height:60px; border:1px solid #ccc; padding:4px; border-radius:4px;" />`
-      : `<p style="font-family: 'Brush Script MT', cursive; font-size:24px; color:#290a52;">${signatureData || fullName}</p>`
+      : `<p style="font-family: 'Brush Script MT', cursive; font-size:24px; color:#290a52;">${escapeHtml(signatureData || fullName)}</p>`
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; padding: 20px;">
