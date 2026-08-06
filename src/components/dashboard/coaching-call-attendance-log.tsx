@@ -818,7 +818,7 @@ export function CoachingCallAttendanceLog() {
                     </Select>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div>
+                    <div className={managingCoaches ? 'col-span-2' : undefined}>
                       <Label className="text-xs">Coach</Label>
                       {addingCoach ? (
                         <div className="flex gap-2">
@@ -833,34 +833,37 @@ export function CoachingCallAttendanceLog() {
                           <Button type="button" size="sm" variant="ghost" onClick={() => { setAddingCoach(false); setNewCoach('') }}>×</Button>
                         </div>
                       ) : managingCoaches ? (
-                        <div className="rounded-md border p-2 space-y-1 max-h-48 overflow-y-auto">
-                          {allCoaches.length === 0 && <p className="text-xs text-muted-foreground">No coaches yet</p>}
+                        <div className="rounded-md border divide-y max-h-56 overflow-y-auto">
+                          {allCoaches.length === 0 && <p className="p-3 text-xs text-muted-foreground">No coaches yet</p>}
                           {allCoaches.map(c => (
-                            <div key={c} className="flex items-center gap-2">
+                            <div key={c} className="flex items-center gap-2 px-3 py-2">
                               {editingCoach === c ? (
                                 <>
                                   <Input
                                     autoFocus
-                                    className="h-8"
+                                    className="h-8 flex-1"
                                     value={editCoachName}
                                     onChange={(e) => setEditCoachName(e.target.value)}
                                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); renameCoach(c) } }}
                                   />
-                                  <Button type="button" size="sm" onClick={() => renameCoach(c)}>Save</Button>
-                                  <Button type="button" size="sm" variant="ghost" onClick={() => setEditingCoach(null)}>×</Button>
+                                  <Button type="button" size="sm" className="h-8" onClick={() => renameCoach(c)}>Save</Button>
+                                  <Button type="button" size="sm" variant="ghost" className="h-8" onClick={() => setEditingCoach(null)}>Cancel</Button>
                                 </>
                               ) : (
                                 <>
-                                  <span className="flex-1 text-sm truncate">{c}</span>
-                                  <Button type="button" size="sm" variant="ghost" onClick={() => { setEditingCoach(c); setEditCoachName(c) }}>Edit</Button>
-                                  <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => removeCoach(c)}>Delete</Button>
+                                  <span className="flex-1 text-sm">{c}</span>
+                                  <Button type="button" size="sm" variant="ghost" className="h-8 px-2" onClick={() => { setEditingCoach(c); setEditCoachName(c) }}>Edit</Button>
+                                  <Button type="button" size="sm" variant="ghost" className="h-8 px-2 text-destructive hover:text-destructive" onClick={() => removeCoach(c)}>Delete</Button>
                                 </>
                               )}
                             </div>
                           ))}
-                          <Button type="button" size="sm" variant="outline" className="w-full mt-1" onClick={() => { setManagingCoaches(false); setEditingCoach(null) }}>Done</Button>
+                          <div className="p-2">
+                            <Button type="button" size="sm" variant="outline" className="w-full" onClick={() => { setManagingCoaches(false); setEditingCoach(null) }}>Done</Button>
+                          </div>
                         </div>
                       ) : (
+
                         <Select
                           value={fCoach}
                           onValueChange={(v) => {
