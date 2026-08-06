@@ -1113,6 +1113,7 @@ export function AdminAllUsersManagement() {
     setResendingAgreementId(agreement.id)
     try {
       const programLabel = agreement.program_name || agreement.agreement_type || 'Program'
+      const agreementText = getAgreementTextByProgram(programLabel)
       const { error } = await supabase.functions.invoke('send-agreement-email', {
         body: {
           agreementId: agreement.id,
@@ -1122,6 +1123,7 @@ export function AdminAllUsersManagement() {
           agreementDate: agreement.agreement_date || agreement.signed_at?.split('T')[0],
           mailingAddress: agreement.mailing_address,
           signatureData: agreement.signature_data,
+          agreementText,
         }
       })
       if (error) throw error
@@ -1132,6 +1134,7 @@ export function AdminAllUsersManagement() {
       setResendingAgreementId(null)
     }
   }
+
   const handleSaveFinance = async (userId: string) => {
     setSavingFinance(true)
     try {
