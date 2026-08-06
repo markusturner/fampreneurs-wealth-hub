@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "@/contexts/AuthContext"
 import { useUserRole } from "@/hooks/useUserRole"
 import { useOwnerRole } from "@/hooks/useOwnerRole"
+import { programShortLabel } from "@/lib/programs"
 import { supabase } from "@/integrations/supabase/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -527,7 +528,7 @@ export default function ClientRetention() {
       <header className="mb-4 sm:mb-6 flex items-start sm:items-center justify-between flex-wrap gap-3">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Client Retention</h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">Health pulse across every active TFV, TFBA & TFFM client.</p>
+          <p className="text-xs sm:text-sm text-muted-foreground">Health pulse across every active TFV, PEA & TFFM client.</p>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           <div className="flex items-center gap-2 text-sm">
@@ -592,7 +593,7 @@ export default function ClientRetention() {
                     </CardTitle>
                     {selected && (
                       <p className="text-xs text-muted-foreground mt-0.5 break-all sm:break-normal">
-                        {selected.email} · {selected.program?.toUpperCase()} · Score {selected.score}/10
+                        {selected.email} · {programShortLabel(selected.program)} · Score {selected.score}/10
                       </p>
                     )}
                   </div>
@@ -798,7 +799,7 @@ export default function ClientRetention() {
                       <span className="text-sm font-medium">{c.full_name}</span>
                       <Badge variant="outline" className="text-purple-700 border-purple-300">{c.score}/10</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">{c.program?.toUpperCase()} · ${c.arr_value.toLocaleString()} ARR</p>
+                    <p className="text-xs text-muted-foreground mt-1">{programShortLabel(c.program)} · ${c.arr_value.toLocaleString()} ARR</p>
                   </button>
                 ))}
               </CardContent>
@@ -817,7 +818,7 @@ export default function ClientRetention() {
                       <span className="text-sm font-medium">{c.full_name}</span>
                       <Badge variant="outline" className="text-emerald-700 border-emerald-300">{c.score}/10</Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">{c.program?.toUpperCase()}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{programShortLabel(c.program)}</p>
                   </button>
                 ))}
               </CardContent>

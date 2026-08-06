@@ -838,7 +838,7 @@ export default function WorkspaceCalendar() {
               <div className="space-y-2">
                 {[
                   { id: 'tfv', label: 'The Family Vault', short: 'TFV' },
-                  { id: 'tfba', label: 'The Private Estate Accelerator', short: 'TFBA' },
+                  { id: 'tfba', label: 'The Private Estate Accelerator', short: 'PEA' },
                   { id: 'tffm', label: 'The Family Fortune Mastermind', short: 'TFFM' },
                 ].map(community => (
                   <div key={community.id} className="rounded-lg border border-border hover:bg-muted/50 transition-colors overflow-hidden">
