@@ -43,7 +43,7 @@ import { profileProgramCodes, type ProgramCode } from "@/lib/programs"
 
 const COMMUNITY_OPTIONS: { code: ProgramCode; label: string }[] = [
   { code: 'tfv', label: 'The Family Vault' },
-  { code: 'tfba', label: 'The Family Business Accelerator' },
+  { code: 'tfba', label: 'The Private Estate Accelerator' },
   { code: 'tffm', label: 'The Succession Society' },
 ]
 

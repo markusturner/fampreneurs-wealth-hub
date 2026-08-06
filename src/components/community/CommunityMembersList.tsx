@@ -18,7 +18,7 @@ interface MemberProfile {
 const PROGRAM_GROUP_MAP: Record<string, string> = {
   fbu: 'Family Business University',
   tfv: 'The Family Vault',
-  tfba: 'The Family Business Accelerator',
+  tfba: 'The Private Estate Accelerator',
   tffm: 'The Family Fortune Mastermind',
 }
 

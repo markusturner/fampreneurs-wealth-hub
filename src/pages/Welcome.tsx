@@ -27,7 +27,7 @@ const LAST_USED_KEY = 'truheirs:lastUsed'
 
 const COMMUNITY_LABELS: Record<string, string> = {
   tfv: 'The Family Vault',
-  tfba: 'The Family Business Accelerator',
+  tfba: 'The Private Estate Accelerator',
   tffm: 'The Succession Society',
 }
 

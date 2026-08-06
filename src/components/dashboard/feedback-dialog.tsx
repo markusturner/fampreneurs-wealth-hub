@@ -241,7 +241,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
           <RatingScale
             value={overallExperienceRating}
             onChange={setOverallExperienceRating}
-            label="How would you rate your overall experience in The Family Business Accelerator? *"
+            label="How would you rate your overall experience in The Private Estate Accelerator? *"
             description="10 being 'Excellent! I would recommend to others' and 1 being 'Needs work. I would not recommend.'"
           />
 

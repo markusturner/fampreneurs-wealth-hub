@@ -97,7 +97,7 @@ type PendingVideoUpload = {
 const PROGRAM_NAMES: Record<string, string> = {
   fbu: 'Family Business University',
   tfv: 'The Family Vault',
-  tfba: 'The Family Business Accelerator',
+  tfba: 'The Private Estate Accelerator',
   tffm: 'The Family Fortune Mastermind',
 }
 
@@ -222,7 +222,7 @@ export default function WorkspaceCommunity() {
     'Family Business University': 'fbu',
     'The Family Business University': 'fbu',
     'The Family Vault': 'tfv',
-    'The Family Business Accelerator': 'tfba',
+    'The Private Estate Accelerator': 'tfba',
     'The Family Fortune Mastermind': 'tffm',
   }
   // Support multi-program assignments stored as comma-separated strings

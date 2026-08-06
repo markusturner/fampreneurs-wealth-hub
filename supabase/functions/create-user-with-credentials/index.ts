@@ -229,7 +229,7 @@ const handler = async (req: Request): Promise<Response> => {
       const PROGRAM_TO_GROUP: Record<string, string> = {
         "The Family Business University": "Family Business University",
         "The Family Vault": "The Family Vault",
-        "The Family Business Accelerator": "The Family Business Accelerator",
+        "The Private Estate Accelerator": "The Private Estate Accelerator",
         "The Family Legacy: VIP Weekend": "The Family Legacy: VIP Weekend",
         "The Family Fortune Mastermind": "The Family Fortune Mastermind",
       };

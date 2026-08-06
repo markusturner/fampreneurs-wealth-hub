@@ -278,7 +278,7 @@ export default function TrustCreation() {
             <Lock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <CardTitle>Trust Creation Access Required</CardTitle>
             <CardDescription>
-              Trust Creation is available exclusively for <strong>The Family Vault (TFV)</strong> and <strong>The Family Business Accelerator (TFBA)</strong> program members.
+              Trust Creation is available exclusively for <strong>The Family Vault (TFV)</strong> and <strong>The Private Estate Accelerator (TFBA)</strong> program members.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center">

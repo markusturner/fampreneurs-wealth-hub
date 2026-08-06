@@ -19,7 +19,7 @@ type RoleType = 'trustee' | 'family_office_member' | 'family_member'
 
 const PROGRAM_OPTIONS = [
   'The Family Vault',
-  'The Family Business Accelerator',
+  'The Private Estate Accelerator',
   'The Family Fortune Mastermind',
 ]
 
@@ -125,8 +125,8 @@ export function AdminInviteLinks() {
       max_uses = maxUsesInput === '' || isNaN(n) || n <= 0 ? null : n
     }
 
-    const effectiveProgram = programName === 'The Family Business Accelerator' && tfbaVariant === 'vip_weekend'
-      ? 'The Family Business Accelerator (VIP Weekend)'
+    const effectiveProgram = programName === 'The Private Estate Accelerator' && tfbaVariant === 'vip_weekend'
+      ? 'The Private Estate Accelerator (VIP Weekend)'
       : (programName || null)
 
     let access_pin_hash: string | null = null
@@ -274,7 +274,7 @@ export function AdminInviteLinks() {
                   {PROGRAM_OPTIONS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                 </SelectContent>
               </Select>
-              {programName === 'The Family Business Accelerator' && (
+              {programName === 'The Private Estate Accelerator' && (
                 <div className="pt-2">
                   <Label className="text-xs text-muted-foreground">Sub-option</Label>
                   <Select value={tfbaVariant} onValueChange={(v) => setTfbaVariant(v as 'standard' | 'vip_weekend')}>

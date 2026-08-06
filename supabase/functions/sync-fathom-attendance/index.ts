@@ -71,7 +71,7 @@ const SALES_HINTS = [
 
 function isAccountabilityCall(title: string, transcript: string): boolean {
   const t = title.toLowerCase()
-  // Sales meetings (including Family Business Accelerator calls) never count.
+  // Sales meetings (including Private Estate Accelerator calls) never count.
   if (SALES_HINTS.some((h) => t.includes(h))) return false
   // Only log calls explicitly named as accountability / coaching sessions.
   if (!ACCOUNTABILITY_HINTS.some((h) => t.includes(h))) return false

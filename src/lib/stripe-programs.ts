@@ -49,7 +49,7 @@ export const PROGRAMS: Program[] = [
   },
   {
     id: 'tfba',
-    name: 'The Family Business Accelerator',
+    name: 'The Private Estate Accelerator',
     shortName: 'TFBA',
     pricing: [
       { label: '$7,500 (Paid in Full)', price_id: 'price_1T1dl0KKuJwlPZFrnPpruCYU', amount: 750000, interval: 'One-Time', mode: 'payment' },
