@@ -32,7 +32,7 @@ serve(async (req) => {
       })
     }
 
-    const { agreementId, recipientEmail, fullName, programName, agreementDate, mailingAddress, signatureData } = await req.json()
+    const { agreementId, recipientEmail, fullName, programName, agreementDate, mailingAddress, signatureData, agreementText } = await req.json()
 
     if (!recipientEmail || !fullName || !programName) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
