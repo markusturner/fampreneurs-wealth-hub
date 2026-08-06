@@ -40,15 +40,16 @@ serve(async (req) => {
       })
     }
 
-    const apiKey = Deno.env.get("GOHIGHLEVEL_API_KEY")
-    const locationId = Deno.env.get("GOHIGHLEVEL_LOCATION_ID")
+    const resendKey = Deno.env.get("RESEND_API_KEY")
+    const fromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "noreply@truheirs.app"
 
-    if (!apiKey || !locationId) {
-      console.error("GoHighLevel credentials not configured")
+    if (!resendKey) {
+      console.error("RESEND_API_KEY not configured")
       return new Response(JSON.stringify({ error: 'Email service not configured' }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
+
 
     // Escape HTML in user-provided text before rendering
     const escapeHtml = (text: string) =>
