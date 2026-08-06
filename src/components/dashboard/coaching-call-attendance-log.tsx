@@ -531,24 +531,57 @@ export function CoachingCallAttendanceLog() {
   const [customCoaches, setCustomCoaches] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem('attendance_custom_coaches') || '[]') } catch { return [] }
   })
+  const [hiddenCoaches, setHiddenCoaches] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('attendance_hidden_coaches') || '[]') } catch { return [] }
+  })
   const [addingCoach, setAddingCoach] = useState(false)
   const [newCoach, setNewCoach] = useState('')
+  const [managingCoaches, setManagingCoaches] = useState(false)
+  const [editingCoach, setEditingCoach] = useState<string | null>(null)
+  const [editCoachName, setEditCoachName] = useState('')
 
   const allCoaches = useMemo(
-    () => Array.from(new Set([...DEFAULT_COACHES, ...customCoaches, ...coachOptions])).sort(),
-    [customCoaches, coachOptions]
+    () => Array.from(new Set([...DEFAULT_COACHES, ...customCoaches, ...coachOptions]))
+      .filter(c => !hiddenCoaches.includes(c))
+      .sort(),
+    [customCoaches, coachOptions, hiddenCoaches]
   )
+
+  const persistCustom = (next: string[]) => {
+    setCustomCoaches(next)
+    localStorage.setItem('attendance_custom_coaches', JSON.stringify(next))
+  }
+  const persistHidden = (next: string[]) => {
+    setHiddenCoaches(next)
+    localStorage.setItem('attendance_hidden_coaches', JSON.stringify(next))
+  }
 
   const saveNewCoach = () => {
     const name = newCoach.trim()
     if (!name) return
-    const next = Array.from(new Set([...customCoaches, name]))
-    setCustomCoaches(next)
-    localStorage.setItem('attendance_custom_coaches', JSON.stringify(next))
+    persistCustom(Array.from(new Set([...customCoaches, name])))
+    persistHidden(hiddenCoaches.filter(h => h !== name))
     setFCoach(name)
     setNewCoach('')
     setAddingCoach(false)
   }
+
+  const renameCoach = (oldName: string) => {
+    const name = editCoachName.trim()
+    if (!name || name === oldName) { setEditingCoach(null); return }
+    persistCustom(Array.from(new Set([...customCoaches.filter(c => c !== oldName), name])))
+    persistHidden(Array.from(new Set([...hiddenCoaches.filter(h => h !== name), oldName])))
+    if (fCoach === oldName) setFCoach(name)
+    setEditingCoach(null)
+    setEditCoachName('')
+  }
+
+  const removeCoach = (name: string) => {
+    persistCustom(customCoaches.filter(c => c !== name))
+    persistHidden(Array.from(new Set([...hiddenCoaches, name])))
+    if (fCoach === name) setFCoach('')
+  }
+
 
 
   const filtered = useMemo(() => {
