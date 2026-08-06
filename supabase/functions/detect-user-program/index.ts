@@ -90,8 +90,8 @@ const handler = async (req: Request): Promise<Response> => {
           const programValue = field.value.toLowerCase()
           if (programValue.includes("family vault")) {
             detectedProgram = "The Family Vault"
-          } else if (programValue.includes("family business accelerator")) {
-            detectedProgram = "The Family Business Accelerator"
+          } else if (programValue.includes("private estate accelerator") || programValue.includes("family business accelerator")) {
+            detectedProgram = "The Private Estate Accelerator"
           } else if (programValue.includes("family legacy")) {
             detectedProgram = "The Family Legacy: VIP Weekend"
           }
