@@ -102,11 +102,122 @@ serve(async (req) => {
             expires_at: invite.expires_at,
             max_uses: invite.max_uses,
             uses_count: invite.uses_count,
+            access_mode: (invite as any).access_mode || "signup",
           },
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
+    // action === direct_access : PIN-protected, no-signup entry
+    if (body.action === "direct_access") {
+      const inv = invite as any;
+      if (inv.access_mode !== "direct" || !inv.direct_email || !inv.access_pin_hash) {
+        return new Response(JSON.stringify({ error: "This invite requires signing up." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (inv.locked_until && new Date(inv.locked_until).getTime() > Date.now()) {
+        return new Response(JSON.stringify({ error: "Too many wrong codes. Try again in 15 minutes." }), {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const pin = (body.pin || "").trim();
+      const hash = await sha256Hex(`${invite.token}:${pin}`);
+      if (hash !== inv.access_pin_hash) {
+        const attempts = (inv.failed_attempts || 0) + 1;
+        await admin
+          .from("invite_links")
+          .update({
+            failed_attempts: attempts,
+            locked_until: attempts >= 5 ? new Date(Date.now() + 15 * 60 * 1000).toISOString() : null,
+          })
+          .eq("id", invite.id);
+        return new Response(JSON.stringify({ error: "That code is not correct." }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const directEmail = String(inv.direct_email).trim().toLowerCase();
+
+      // Find or create the account for this invite
+      const { data: existingProfile } = await admin
+        .from("profiles")
+        .select("user_id")
+        .eq("email", directEmail)
+        .maybeSingle();
+
+      let userId = (existingProfile as any)?.user_id as string | undefined;
+
+      if (!userId) {
+        const { data: created, error: createErr } = await admin.auth.admin.createUser({
+          email: directEmail,
+          password: generateSecurePassword(),
+          email_confirm: true,
+          user_metadata: {
+            full_name: inv.note || directEmail,
+            role: invite.role,
+            program_name: invite.program_name || null,
+            truheirs_access: invite.truheirs_access,
+            invited_via: "direct_invite_link",
+            invite_token: invite.token,
+          },
+        });
+        if (createErr || !created?.user) {
+          return new Response(JSON.stringify({ error: createErr?.message || "Could not create access." }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        userId = created.user.id;
+        await admin
+          .from("profiles")
+          .update({
+            email: directEmail,
+            program_name: invite.program_name || null,
+            truheirs_access: invite.truheirs_access,
+            skip_onboarding: true,
+            trust_design_booked: true,
+          } as any)
+          .eq("user_id", userId);
+      }
+
+      const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
+        type: "magiclink",
+        email: directEmail,
+      });
+      if (linkErr || !linkData?.properties?.hashed_token) {
+        return new Response(JSON.stringify({ error: linkErr?.message || "Could not start session." }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const newUses = (invite.uses_count || 0) + 1;
+      await admin
+        .from("invite_links")
+        .update({
+          uses_count: newUses,
+          failed_attempts: 0,
+          locked_until: null,
+          is_active:
+            invite.invite_type === "temporary" && invite.max_uses != null && newUses >= invite.max_uses
+              ? false
+              : invite.is_active,
+        })
+        .eq("id", invite.id);
+
+      return new Response(
+        JSON.stringify({ success: true, email: directEmail, hashedToken: linkData.properties.hashed_token }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
 
     // action === redeem
     const email = (body.email || "").trim().toLowerCase();
