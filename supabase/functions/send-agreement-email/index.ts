@@ -108,80 +108,30 @@ serve(async (req) => {
       </div>
     `
 
-    // Create/update contact in GoHighLevel
-    const contactResponse = await fetch(`https://services.leadconnectorhq.com/contacts/`, {
+    const sendRes = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${apiKey}`,
+        "Authorization": `Bearer ${resendKey}`,
         "Content-Type": "application/json",
-        "Version": "2021-07-28"
       },
       body: JSON.stringify({
-        firstName: fullName.split(' ')[0] || fullName,
-        lastName: fullName.split(' ').slice(1).join(' ') || '',
-        email: recipientEmail,
-        source: "Agreement Signing",
-        tags: [programName, "Agreement Signed"],
-        locationId
+        from: fromEmail,
+        to: [recipientEmail],
+        subject: `Your Signed ${programName} Agreement - The Fampreneurs`,
+        html: emailHtml,
       })
     })
 
-    const contactData = await contactResponse.json()
-    const contactId = contactData?.contact?.id
-
-    if (!contactId) {
-      // Try to find existing contact
-      const searchResponse = await fetch(
-        `https://services.leadconnectorhq.com/contacts/search/duplicate?locationId=${locationId}&email=${encodeURIComponent(recipientEmail)}`,
-        {
-          headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Version": "2021-07-28"
-          }
-        }
-      )
-      const searchData = await searchResponse.json()
-      const existingContactId = searchData?.contact?.id
-
-      if (!existingContactId) {
-        console.error("Could not create or find contact")
-        return new Response(JSON.stringify({ success: true, warning: 'Contact not found but agreement saved' }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        })
-      }
-
-      // Send email to existing contact
-      await fetch(`https://services.leadconnectorhq.com/contacts/${existingContactId}/campaigns/emails`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-          "Version": "2021-07-28"
-        },
-        body: JSON.stringify({
-          emailBody: emailHtml,
-          subject: `Your Signed ${programName} Agreement - The Fampreneurs`,
-          html: emailHtml,
-        })
-      })
-    } else {
-      // Send email to new contact
-      await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}/campaigns/emails`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-          "Version": "2021-07-28"
-        },
-        body: JSON.stringify({
-          emailBody: emailHtml,
-          subject: `Your Signed ${programName} Agreement - The Fampreneurs`,
-          html: emailHtml,
-        })
+    if (!sendRes.ok) {
+      const errText = await sendRes.text()
+      console.error("Resend error:", errText)
+      return new Response(JSON.stringify({ error: `Email failed: ${errText}` }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
     console.log(`Agreement email sent to ${recipientEmail} for ${programName}`)
+
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
