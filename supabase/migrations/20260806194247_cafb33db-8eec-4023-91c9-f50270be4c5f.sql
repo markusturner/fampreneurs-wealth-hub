@@ -1,0 +1,1 @@
+UPDATE public.profiles SET program_name = replace(replace(program_name, 'The Family Business Accelerator', 'The Private Estate Accelerator'), 'Family Business Accelerator', 'The Private Estate Accelerator') WHERE program_name ILIKE '%Family Business Accelerator%';
