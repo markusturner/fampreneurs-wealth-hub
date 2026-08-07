@@ -477,12 +477,30 @@ export const AGREEMENT_TEXT_MAP: Record<string, string> = {
   'The Family Business University': FBU_AGREEMENT,
 }
 
-export function getAgreementTextByProgram(programName: string | null | undefined): string | null {
+// PEA pricing was raised on this date. Agreements signed before it keep the old numbers.
+export const PEA_PRICE_CHANGE_DATE = new Date('2026-08-05T00:00:00Z')
+
+function toLegacyPeaPricing(text: string): string {
+  return text
+    .replace('Regularly $12,000, but today for ONLY $9,000.', 'Regularly $9,000, but today for ONLY $7,500.')
+    .replace(
+      'the total investment is Twelve Thousand Dollars ($12,000.00). An initial deposit of Four Thousand Dollars ($4,000.00) is required to secure your enrollment, followed by two (2) consecutive monthly payments of Four Thousand Dollars ($4,000.00) each.',
+      'the total investment is Nine Thousand Dollars ($9,000.00). An initial deposit of Three Thousand Dollars ($3,000.00) is required to secure your enrollment, followed by two (2) consecutive monthly payments of Three Thousand Dollars ($3,000.00) each.',
+    )
+}
+
+export function getAgreementTextByProgram(
+  programName: string | null | undefined,
+  signedAt?: string | Date | null,
+): string | null {
   if (!programName) return null
   const n = programName.trim().toLowerCase()
   if (n.includes('vip weekend') || n.includes('vip_weekend')) return VIP_WEEKEND_AGREEMENT
   if (n === 'tfv' || n.includes('vault')) return TFV_AGREEMENT
-  if (n === 'tfba' || n.includes('accelerator')) return TFBA_AGREEMENT
+  if (n === 'tfba' || n.includes('accelerator')) {
+    const signed = signedAt ? new Date(signedAt) : null
+    return signed && signed < PEA_PRICE_CHANGE_DATE ? toLegacyPeaPricing(TFBA_AGREEMENT) : TFBA_AGREEMENT
+  }
   if (n === 'tffm' || n.includes('mastermind') || n.includes('fortune')) return TFFM_AGREEMENT
   if (n === 'fbu' || n.includes('university')) return FBU_AGREEMENT
   // Try direct match

@@ -271,10 +271,19 @@ serve(async (req) => {
     });
 
     if (userErr || !userData?.user) {
-      return new Response(JSON.stringify({ error: userErr?.message || "Failed to create user" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const msg = userErr?.message || "Failed to create user";
+      const alreadyExists = /already been registered|already exists|duplicate/i.test(msg);
+      return new Response(
+        JSON.stringify({
+          error: alreadyExists
+            ? "An account with this email already exists. Please sign in instead."
+            : msg,
+        }),
+        {
+          status: alreadyExists ? 409 : 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
 
     const userId = userData.user.id;

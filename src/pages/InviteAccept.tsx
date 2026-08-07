@@ -5,6 +5,21 @@ import { supabase } from '@/integrations/supabase/client'
 import { Loader2, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
+// Edge functions return the real reason in the response body on non-2xx.
+async function readFnError(error: any, data: any, fallback: string) {
+  if (data?.error) return data.error as string
+  try {
+    const body = await error?.context?.json?.()
+    if (body?.error) return body.error as string
+  } catch {
+    // ignore parse failures
+  }
+  return error?.message === 'Edge Function returned a non-2xx status code'
+    ? fallback
+    : error?.message || fallback
+}
+
+
 export default function InviteAccept() {
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
@@ -32,7 +47,7 @@ export default function InviteAccept() {
       setSubmitting(false)
       toast({
         title: 'Could not get you in',
-        description: data?.error || error?.message || 'Please check your code.',
+        description: await readFnError(error, data, 'Please check your code.'),
         variant: 'destructive',
       })
       return
@@ -58,7 +73,7 @@ export default function InviteAccept() {
         body: { action: 'validate', token },
       })
       if (error || !data?.success) {
-        setError(data?.error || error?.message || 'Invalid invite.')
+        setError(await readFnError(error, data, 'Invalid invite.'))
       } else {
         setInvite(data.invite)
       }
@@ -76,7 +91,7 @@ export default function InviteAccept() {
     if (error || !data?.success) {
       toast({
         title: 'Could not accept invite',
-        description: data?.error || error?.message || 'Please try again.',
+        description: await readFnError(error, data, 'Please try again.'),
         variant: 'destructive',
       })
       return
