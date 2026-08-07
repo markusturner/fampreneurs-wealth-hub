@@ -73,7 +73,7 @@ export default function InviteAccept() {
         body: { action: 'validate', token },
       })
       if (error || !data?.success) {
-        setError(data?.error || error?.message || 'Invalid invite.')
+        setError(await readFnError(error, data, 'Invalid invite.'))
       } else {
         setInvite(data.invite)
       }
@@ -91,7 +91,7 @@ export default function InviteAccept() {
     if (error || !data?.success) {
       toast({
         title: 'Could not accept invite',
-        description: data?.error || error?.message || 'Please try again.',
+        description: await readFnError(error, data, 'Please try again.'),
         variant: 'destructive',
       })
       return
