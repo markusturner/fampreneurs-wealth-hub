@@ -212,14 +212,34 @@ export default function InviteAccept() {
               </p>
             </div>
 
+            <div className="grid grid-cols-2 gap-2 p-1 rounded-md bg-card border border-border mb-4">
+              {(['new', 'existing'] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setAccountMode(m)}
+                  className={`h-9 rounded text-xs font-medium transition ${
+                    accountMode === m ? 'text-[#290a52]' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  style={accountMode === m ? { backgroundColor: '#ffb500' } : undefined}
+                >
+                  {m === 'new' ? 'New account' : 'I already have one'}
+                </button>
+              ))}
+            </div>
 
             <form onSubmit={submit} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <input type="text" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={submitting} className={inputCls} />
-                <input type="text" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={submitting} className={inputCls} />
-              </div>
+              {accountMode === 'new' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <input type="text" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={submitting} className={inputCls} />
+                  <input type="text" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={submitting} className={inputCls} />
+                </div>
+              )}
               <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={submitting} className={inputCls} />
-              <input type="text" placeholder="Zip code" value={zipCode} onChange={(e) => setZipCode(e.target.value)} disabled={submitting} className={inputCls} />
+              {accountMode === 'new' && (
+                <input type="text" placeholder="Zip code" value={zipCode} onChange={(e) => setZipCode(e.target.value)} disabled={submitting} className={inputCls} />
+              )}
+
 
               <div className="flex justify-center pt-2">
                 <button type="submit" disabled={submitting} aria-label="Accept invite"
