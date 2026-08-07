@@ -296,7 +296,7 @@ serve(async (req) => {
       .eq("email", email)
       .maybeSingle();
     if (existing) {
-      return new Response(JSON.stringify({ error: "An account with this email already exists. Please sign in instead." }), {
+      return new Response(JSON.stringify({ error: "An account with this email already exists. Switch to "I already have an account"." }), {
         status: 409,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -326,7 +326,7 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: alreadyExists
-            ? "An account with this email already exists. Please sign in instead."
+            ? "An account with this email already exists. Switch to "I already have an account"."
             : msg,
         }),
         {
@@ -422,7 +422,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, userId, message: "Account created — check your email for login credentials." }),
+      JSON.stringify({ success: true, userId, tempPassword, message: "Account created — check your email for login credentials." }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e: any) {
