@@ -83,7 +83,7 @@ export function AddCourseDialog({ open, onOpenChange, onCreated }: Props) {
     let imageUrl: string | null = null
 
     if (imageFile) {
-      const filePath = `course-covers/${Date.now()}_${imageFile.name}`
+      const filePath = `${user?.id}/${Date.now()}_${imageFile.name}`
       const { error: uploadError } = await supabase.storage
         .from('cover-photos')
         .upload(filePath, imageFile)

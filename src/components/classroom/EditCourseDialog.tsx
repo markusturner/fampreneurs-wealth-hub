@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { Trash2, X, ImageIcon } from 'lucide-react'
 import {
@@ -34,6 +35,7 @@ interface CommunityGroup {
 }
 
 export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Props) {
+  const { user } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
@@ -93,7 +95,7 @@ export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Prop
     let finalImageUrl = imageUrl.trim() || null
 
     if (imageFile) {
-      const filePath = `course-covers/${Date.now()}_${imageFile.name}`
+      const filePath = `${user?.id}/${Date.now()}_${imageFile.name}`
       const { error: uploadError } = await supabase.storage
         .from('cover-photos')
         .upload(filePath, imageFile)

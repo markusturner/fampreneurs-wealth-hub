@@ -6170,6 +6170,7 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: number
       }
+      can_access_course: { Args: { _course_id: string }; Returns: boolean }
       can_access_family_data: {
         Args: { p_record_id: string; p_table_name: string }
         Returns: boolean
@@ -6296,6 +6297,10 @@ export type Database = {
       }
       is_user_admin: { Args: { user_id?: string }; Returns: boolean }
       is_user_admin_for_groups: { Args: never; Returns: boolean }
+      is_verified_family_member: {
+        Args: { _owner_id: string }
+        Returns: boolean
+      }
       log_family_office_action: {
         Args: {
           action_name: string
