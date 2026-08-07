@@ -34,7 +34,7 @@ async function sha256Hex(input: string): Promise<string> {
 }
 
 interface Body {
-  action: "validate" | "redeem" | "direct_access";
+  action: "validate" | "redeem" | "direct_access" | "attach_existing";
   token: string;
   email?: string;
   firstName?: string;
