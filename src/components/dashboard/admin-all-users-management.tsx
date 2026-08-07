@@ -1113,7 +1113,7 @@ export function AdminAllUsersManagement() {
     setResendingAgreementId(agreement.id)
     try {
       const programLabel = agreement.program_name || agreement.agreement_type || 'Program'
-      const agreementText = getAgreementTextByProgram(programLabel)
+      const agreementText = getAgreementTextByProgram(programLabel, agreement.signed_at || agreement.created_at)
       const { error } = await supabase.functions.invoke('send-agreement-email', {
         body: {
           agreementId: agreement.id,
