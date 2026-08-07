@@ -285,12 +285,6 @@ serve(async (req) => {
         },
       );
     }
-    if (false) {
-      return new Response(JSON.stringify({ error: "unreachable" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const userId = userData.user.id;
 
