@@ -704,12 +704,11 @@ export function AdminAllUsersManagement() {
   const handleResendCredentials = async (user: UserProfile) => {
     setResendingCredentialsId(user.user_id)
     try {
-      const { data, error } = await supabase.functions.invoke('create-user-with-credentials', {
+      const { data, error } = await supabase.functions.invoke('admin-reset-user-password', {
         body: {
           email: user.email,
           firstName: user.first_name || '',
-          lastName: user.last_name || '',
-          role: user.membership_type || 'trustee'
+          lastName: user.last_name || ''
         }
       })
 
@@ -717,8 +716,11 @@ export function AdminAllUsersManagement() {
       if (data?.error) throw new Error(data.error)
 
       toast({
-        title: "Success",
-        description: `Login credentials sent to ${user.email}`
+        title: "Login reset",
+        description: data?.tempPassword
+          ? `${user.email} — temporary password: ${data.tempPassword}${data?.emailed ? ' (also emailed)' : ' (email not sent)'}`
+          : `Login credentials sent to ${user.email}`,
+        duration: 20000
       })
     } catch (error: any) {
       console.error('Error resending credentials:', error)
