@@ -36,6 +36,9 @@ export default function InviteAccept() {
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [pin, setPin] = useState('')
+  const [accountMode, setAccountMode] = useState<'new' | 'existing'>('new')
+  const [tempPassword, setTempPassword] = useState<string | null>(null)
+
 
   const directSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
