@@ -757,7 +757,7 @@ export default function WorkspaceCommunity() {
 
     try {
       const fileExt = file.name.split('.').pop()
-      const fileName = `${program}/${Date.now()}.${fileExt}`
+      const fileName = `${user?.id}/${program}-${Date.now()}.${fileExt}`
 
       const { error: uploadError } = await supabase.storage
         .from('community-photos')
