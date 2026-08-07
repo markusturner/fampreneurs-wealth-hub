@@ -47,7 +47,7 @@ export default function InviteAccept() {
       setSubmitting(false)
       toast({
         title: 'Could not get you in',
-        description: data?.error || error?.message || 'Please check your code.',
+        description: await readFnError(error, data, 'Please check your code.'),
         variant: 'destructive',
       })
       return
