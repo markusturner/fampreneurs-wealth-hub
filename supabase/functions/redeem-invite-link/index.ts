@@ -226,11 +226,61 @@ serve(async (req) => {
     }
 
 
+    // action === attach_existing : apply invite to an account that already exists
+    if (body.action === "attach_existing") {
+      const exEmail = (body.email || "").trim().toLowerCase();
+      if (!exEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(exEmail)) {
+        return new Response(JSON.stringify({ error: "Please provide a valid email." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const { data: prof } = await admin
+        .from("profiles")
+        .select("user_id")
+        .eq("email", exEmail)
+        .maybeSingle();
+
+      if (!prof) {
+        return new Response(
+          JSON.stringify({ error: "We could not find an account with that email. Choose \"New account\" instead." }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      await admin
+        .from("profiles")
+        .update({
+          program_name: invite.program_name || null,
+          truheirs_access: invite.truheirs_access,
+        } as any)
+        .eq("user_id", (prof as any).user_id);
+
+      const exUses = (invite.uses_count || 0) + 1;
+      await admin
+        .from("invite_links")
+        .update({
+          uses_count: exUses,
+          is_active:
+            invite.invite_type === "temporary" && invite.max_uses != null && exUses >= invite.max_uses
+              ? false
+              : invite.is_active,
+        })
+        .eq("id", invite.id);
+
+      return new Response(
+        JSON.stringify({ success: true, existing: true, message: "Access added to your existing account. Sign in as usual." }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // action === redeem
     const email = (body.email || "").trim().toLowerCase();
     const firstName = (body.firstName || "").trim();
     const lastName = (body.lastName || "").trim();
     const zipCode = (body.zipCode || "").trim();
+
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !firstName || !lastName) {
       return new Response(JSON.stringify({ error: "Please provide first name, last name, and a valid email." }), {
