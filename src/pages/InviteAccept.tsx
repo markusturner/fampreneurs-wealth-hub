@@ -5,6 +5,21 @@ import { supabase } from '@/integrations/supabase/client'
 import { Loader2, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
+// Edge functions return the real reason in the response body on non-2xx.
+async function readFnError(error: any, data: any, fallback: string) {
+  if (data?.error) return data.error as string
+  try {
+    const body = await error?.context?.json?.()
+    if (body?.error) return body.error as string
+  } catch {
+    // ignore parse failures
+  }
+  return error?.message === 'Edge Function returned a non-2xx status code'
+    ? fallback
+    : error?.message || fallback
+}
+
+
 export default function InviteAccept() {
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
