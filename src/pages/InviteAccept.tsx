@@ -36,6 +36,9 @@ export default function InviteAccept() {
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
   const [pin, setPin] = useState('')
+  const [accountMode, setAccountMode] = useState<'new' | 'existing'>('new')
+  const [tempPassword, setTempPassword] = useState<string | null>(null)
+
 
   const directSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -84,9 +87,11 @@ export default function InviteAccept() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
-    const { data, error } = await supabase.functions.invoke('redeem-invite-link', {
-      body: { action: 'redeem', token, firstName, lastName, email, zipCode },
-    })
+    const body =
+      accountMode === 'existing'
+        ? { action: 'attach_existing', token, email }
+        : { action: 'redeem', token, firstName, lastName, email, zipCode }
+    const { data, error } = await supabase.functions.invoke('redeem-invite-link', { body })
     setSubmitting(false)
     if (error || !data?.success) {
       toast({
@@ -96,8 +101,10 @@ export default function InviteAccept() {
       })
       return
     }
+    setTempPassword(data.tempPassword ?? null)
     setDone(true)
   }
+
 
   const inputCls =
     'w-full h-11 px-4 rounded-md bg-card border border-border text-card-foreground placeholder:text-muted-foreground outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 transition'
@@ -142,13 +149,30 @@ export default function InviteAccept() {
           <div className="text-center space-y-4">
             <CheckCircle2 className="h-12 w-12 text-secondary mx-auto" />
             <h1 className="text-xl font-semibold">You're in!</h1>
-            <p className="text-sm text-muted-foreground">
-              Check your email for your temporary password, then sign in to get started.
-            </p>
+            {accountMode === 'existing' ? (
+              <p className="text-sm text-muted-foreground">
+                This invite was added to your existing account. Sign in with your usual password.
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  We emailed your temporary password. You can also use it here:
+                </p>
+                {tempPassword && (
+                  <div className="rounded-md border border-border bg-card p-4 text-left space-y-1">
+                    <p className="text-xs text-muted-foreground">Email</p>
+                    <p className="text-sm font-medium break-all">{email}</p>
+                    <p className="text-xs text-muted-foreground pt-2">Temporary password</p>
+                    <p className="text-sm font-mono font-semibold break-all">{tempPassword}</p>
+                  </div>
+                )}
+              </>
+            )}
             <button onClick={() => navigate('/auth')} className="text-secondary hover:underline text-sm inline-flex items-center gap-1">
               Sign in <ArrowRight className="h-4 w-4" />
             </button>
           </div>
+
         ) : invite?.access_mode === 'direct' ? (
           <>
             <div className="text-center mb-6">
@@ -188,14 +212,34 @@ export default function InviteAccept() {
               </p>
             </div>
 
+            <div className="grid grid-cols-2 gap-2 p-1 rounded-md bg-card border border-border mb-4">
+              {(['new', 'existing'] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setAccountMode(m)}
+                  className={`h-9 rounded text-xs font-medium transition ${
+                    accountMode === m ? 'text-[#290a52]' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  style={accountMode === m ? { backgroundColor: '#ffb500' } : undefined}
+                >
+                  {m === 'new' ? 'New account' : 'I already have one'}
+                </button>
+              ))}
+            </div>
 
             <form onSubmit={submit} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <input type="text" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={submitting} className={inputCls} />
-                <input type="text" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={submitting} className={inputCls} />
-              </div>
+              {accountMode === 'new' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <input type="text" placeholder="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} required disabled={submitting} className={inputCls} />
+                  <input type="text" placeholder="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} required disabled={submitting} className={inputCls} />
+                </div>
+              )}
               <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={submitting} className={inputCls} />
-              <input type="text" placeholder="Zip code" value={zipCode} onChange={(e) => setZipCode(e.target.value)} disabled={submitting} className={inputCls} />
+              {accountMode === 'new' && (
+                <input type="text" placeholder="Zip code" value={zipCode} onChange={(e) => setZipCode(e.target.value)} disabled={submitting} className={inputCls} />
+              )}
+
 
               <div className="flex justify-center pt-2">
                 <button type="submit" disabled={submitting} aria-label="Accept invite"
