@@ -34,6 +34,7 @@ interface CommunityGroup {
 }
 
 export function EditCourseDialog({ course, open, onOpenChange, onUpdated }: Props) {
+  const { user } = useAuth()
   const { toast } = useToast()
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
