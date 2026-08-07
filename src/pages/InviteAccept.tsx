@@ -149,13 +149,30 @@ export default function InviteAccept() {
           <div className="text-center space-y-4">
             <CheckCircle2 className="h-12 w-12 text-secondary mx-auto" />
             <h1 className="text-xl font-semibold">You're in!</h1>
-            <p className="text-sm text-muted-foreground">
-              Check your email for your temporary password, then sign in to get started.
-            </p>
+            {accountMode === 'existing' ? (
+              <p className="text-sm text-muted-foreground">
+                This invite was added to your existing account. Sign in with your usual password.
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  We emailed your temporary password. You can also use it here:
+                </p>
+                {tempPassword && (
+                  <div className="rounded-md border border-border bg-card p-4 text-left space-y-1">
+                    <p className="text-xs text-muted-foreground">Email</p>
+                    <p className="text-sm font-medium break-all">{email}</p>
+                    <p className="text-xs text-muted-foreground pt-2">Temporary password</p>
+                    <p className="text-sm font-mono font-semibold break-all">{tempPassword}</p>
+                  </div>
+                )}
+              </>
+            )}
             <button onClick={() => navigate('/auth')} className="text-secondary hover:underline text-sm inline-flex items-center gap-1">
               Sign in <ArrowRight className="h-4 w-4" />
             </button>
           </div>
+
         ) : invite?.access_mode === 'direct' ? (
           <>
             <div className="text-center mb-6">
