@@ -87,9 +87,11 @@ export default function InviteAccept() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
-    const { data, error } = await supabase.functions.invoke('redeem-invite-link', {
-      body: { action: 'redeem', token, firstName, lastName, email, zipCode },
-    })
+    const body =
+      accountMode === 'existing'
+        ? { action: 'attach_existing', token, email }
+        : { action: 'redeem', token, firstName, lastName, email, zipCode }
+    const { data, error } = await supabase.functions.invoke('redeem-invite-link', { body })
     setSubmitting(false)
     if (error || !data?.success) {
       toast({
@@ -99,8 +101,10 @@ export default function InviteAccept() {
       })
       return
     }
+    setTempPassword(data.tempPassword ?? null)
     setDone(true)
   }
+
 
   const inputCls =
     'w-full h-11 px-4 rounded-md bg-card border border-border text-card-foreground placeholder:text-muted-foreground outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 transition'
