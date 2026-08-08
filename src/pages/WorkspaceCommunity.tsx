@@ -216,21 +216,14 @@ export default function WorkspaceCommunity() {
   // Locked community popup - only opens when user clicks "Unlock Now"
   const [lockedPopupOpen, setLockedPopupOpen] = useState(false)
 
-  // Check if user has access to this specific program community.
-  // Admin-invited users only get access to the exact community matching their assigned program_name.
-  const PROGRAM_NAME_TO_KEY: Record<string, string> = {
-    'Family Business University': 'fbu',
-    'The Family Business University': 'fbu',
-    'The Family Vault': 'tfv',
-    'The Private Estate Accelerator': 'tfba',
-    'The Family Fortune Mastermind': 'tffm',
-  }
-  // Support multi-program assignments stored as comma-separated strings
-  const profileProgramKeys = profile?.program_name
-    ? profile.program_name.split(',').map(p => PROGRAM_NAME_TO_KEY[p.trim()]).filter(Boolean)
-    : []
+  // Check if user has access to this program community.
+  // Higher tiers include every program below them (FBU < TFV < PEA < TFFM).
+  const entitledPrograms = expandProgramCodes([
+    ...profileProgramCodes(profile?.program_name),
+    ...(subscriptionStatus.programs || []),
+  ])
   // No program selected yet = loading state, don't block
-  const hasProgramAccess = !program || isAdmin || isOwner || subscriptionStatus.programs.includes(program) || profileProgramKeys.includes(program)
+  const hasProgramAccess = !program || isAdmin || isOwner || entitledPrograms.includes(program as any)
 
   const fetchPosts = useCallback(async () => {
     try {
