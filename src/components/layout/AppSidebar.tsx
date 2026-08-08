@@ -206,9 +206,9 @@ export function AppSidebar({ className }: { className?: string }) {
               <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Community</p>
             </div>
             <div className="space-y-0.5">
-              {(isAdmin || isOwner) ? (
+              {(isAdmin || isOwner || entitledCommunities.length > 1) ? (
                 <NavItem label="Community" icon={MessageSquare} defaultOpen={currentPath.includes("/workspace-community")}>
-                  {COMMUNITY_OPTIONS.map((community) => (
+                  {((isAdmin || isOwner) ? COMMUNITY_OPTIONS : entitledCommunities).map((community) => (
                     <SubNavItem
                       key={community.code}
                       label={community.label}
