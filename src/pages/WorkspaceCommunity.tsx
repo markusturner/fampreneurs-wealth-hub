@@ -50,6 +50,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { profileProgramCodes, expandProgramCodes } from '@/lib/programs'
 
 interface Post {
   id: string
