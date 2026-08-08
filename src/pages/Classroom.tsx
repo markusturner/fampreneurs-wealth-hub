@@ -15,7 +15,7 @@ import TrustCreation from '@/pages/TrustCreation'
 import SuccessionPlanning from '@/pages/SuccessionPlanning'
 import { useIsAdminOrOwner } from '@/hooks/useIsAdminOrOwner'
 import { useSubscription } from '@/hooks/useSubscription'
-import { profileProgramCodes } from '@/lib/programs'
+import { profileProgramCodes, expandProgramCodes, programGroupNames } from '@/lib/programs'
 import {
   DndContext,
   closestCenter,
