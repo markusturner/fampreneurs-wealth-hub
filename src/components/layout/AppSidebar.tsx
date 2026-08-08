@@ -153,8 +153,12 @@ export function AppSidebar({ className }: { className?: string }) {
   const hasTruHeirsAccess = isAdmin || isOwner || profile?.truheirs_access === true || (subscriptionStatus.subscribed || subscriptionStatus.loading)
   // TruHeirs Lite users (FBU community only) — hide Trust, Succession, DFO, Admin
   const isLite = subscriptionStatus.isLite && !isAdmin && !isOwner && profile?.truheirs_access !== true
-  const profileCommunityCodes = profileProgramCodes(profile?.program_name)
-  const primaryCommunityCode = profileCommunityCodes[0] || 'fbu'
+  const profileCommunityCodes = expandProgramCodes([
+    ...profileProgramCodes(profile?.program_name),
+    ...(subscriptionStatus.programs || []),
+  ])
+  const primaryCommunityCode = profileCommunityCodes[profileCommunityCodes.length - 1] || 'fbu'
+  const entitledCommunities = COMMUNITY_OPTIONS.filter(c => profileCommunityCodes.includes(c.code as any))
 
   const filteredSuggestions = SEARCH_SUGGESTIONS.filter(s => {
     // Filter by access
