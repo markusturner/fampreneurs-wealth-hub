@@ -39,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { ProgramId } from "@/lib/stripe-programs"
-import { profileProgramCodes, type ProgramCode } from "@/lib/programs"
+import { profileProgramCodes, expandProgramCodes, type ProgramCode } from "@/lib/programs"
 
 const COMMUNITY_OPTIONS: { code: ProgramCode; label: string }[] = [
   { code: 'tfv', label: 'The Family Vault' },
