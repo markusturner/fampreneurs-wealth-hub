@@ -187,19 +187,10 @@ export default function Classroom() {
       }
 
       let userCommunityIds: string[] = []
-      if (!isAdminOrOwner && profile?.program_name) {
-        // Support multi-program assignments stored as comma-separated strings
-        const programToGroup: Record<string, string> = {
-          'The Family Business University': 'Family Business University',
-          'The Family Vault': 'The Family Vault',
-          'The Private Estate Accelerator': 'The Private Estate Accelerator',
-          'The Family Fortune Mastermind': 'The Succession Society',
-        }
-        const programNames = profile.program_name
-          .split(',')
-          .map((p: string) => p.trim())
-          .filter(Boolean)
-        const groupNames = programNames.map((p: string) => programToGroup[p] || p)
+      if (!isAdminOrOwner) {
+        // Higher tiers include every program below them (FBU < TFV < PEA < TFFM)
+        const entitled = expandProgramCodes(programCodes)
+        const groupNames = programGroupNames(entitled)
         if (groupNames.length > 0) {
           const { data: groupData } = await supabase
             .from('community_groups')
