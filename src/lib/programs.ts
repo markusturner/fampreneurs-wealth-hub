@@ -54,3 +54,29 @@ export function profileProgramCodes(programName?: string | null): ProgramCode[] 
     .filter(Boolean) as ProgramCode[]
 }
 
+
+// Program tiers: a higher tier includes access to everything below it
+const PROGRAM_TIERS: ProgramCode[] = ['fbu', 'tfv', 'tfba', 'tffm']
+
+// Expand assigned program codes to include all lower tiers
+export function expandProgramCodes(codes: (string | null | undefined)[]): ProgramCode[] {
+  const highest = codes
+    .filter(Boolean)
+    .map(c => PROGRAM_TIERS.indexOf(String(c).toLowerCase() as ProgramCode))
+    .filter(i => i >= 0)
+    .reduce((max, i) => Math.max(max, i), -1)
+  if (highest < 0) return []
+  return PROGRAM_TIERS.slice(0, highest + 1)
+}
+
+// Community group names (including legacy names) that belong to a program code
+export const PROGRAM_GROUP_NAMES: Record<ProgramCode, string[]> = {
+  fbu: ['Family Business University', 'The Family Business University'],
+  tfv: ['The Family Vault'],
+  tfba: ['The Private Estate Accelerator', 'The Family Business Accelerator'],
+  tffm: ['The Succession Society', 'The Family Fortune Mastermind'],
+}
+
+export function programGroupNames(codes: ProgramCode[]): string[] {
+  return codes.flatMap(c => PROGRAM_GROUP_NAMES[c] || [])
+}

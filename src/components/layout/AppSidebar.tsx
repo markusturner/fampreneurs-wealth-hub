@@ -39,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { ProgramId } from "@/lib/stripe-programs"
-import { profileProgramCodes, type ProgramCode } from "@/lib/programs"
+import { profileProgramCodes, expandProgramCodes, type ProgramCode } from "@/lib/programs"
 
 const COMMUNITY_OPTIONS: { code: ProgramCode; label: string }[] = [
   { code: 'tfv', label: 'The Family Vault' },
@@ -153,8 +153,12 @@ export function AppSidebar({ className }: { className?: string }) {
   const hasTruHeirsAccess = isAdmin || isOwner || profile?.truheirs_access === true || (subscriptionStatus.subscribed || subscriptionStatus.loading)
   // TruHeirs Lite users (FBU community only) — hide Trust, Succession, DFO, Admin
   const isLite = subscriptionStatus.isLite && !isAdmin && !isOwner && profile?.truheirs_access !== true
-  const profileCommunityCodes = profileProgramCodes(profile?.program_name)
-  const primaryCommunityCode = profileCommunityCodes[0] || 'fbu'
+  const profileCommunityCodes = expandProgramCodes([
+    ...profileProgramCodes(profile?.program_name),
+    ...(subscriptionStatus.programs || []),
+  ])
+  const primaryCommunityCode = profileCommunityCodes[profileCommunityCodes.length - 1] || 'fbu'
+  const entitledCommunities = COMMUNITY_OPTIONS.filter(c => profileCommunityCodes.includes(c.code as any))
 
   const filteredSuggestions = SEARCH_SUGGESTIONS.filter(s => {
     // Filter by access
@@ -202,9 +206,9 @@ export function AppSidebar({ className }: { className?: string }) {
               <p className="px-3 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Community</p>
             </div>
             <div className="space-y-0.5">
-              {(isAdmin || isOwner) ? (
+              {(isAdmin || isOwner || entitledCommunities.length > 1) ? (
                 <NavItem label="Community" icon={MessageSquare} defaultOpen={currentPath.includes("/workspace-community")}>
-                  {COMMUNITY_OPTIONS.map((community) => (
+                  {((isAdmin || isOwner) ? COMMUNITY_OPTIONS : entitledCommunities).map((community) => (
                     <SubNavItem
                       key={community.code}
                       label={community.label}
