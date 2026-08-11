@@ -49,7 +49,6 @@ const STEP_3: ItemDef[] = [
   { key: 'trust_stewardship', label: 'Trust Stewardship', description: 'Record keeping, holding trust meetings, and ongoing stewardship.', icon: ClipboardCheck },
   { key: 'file_trust_taxes', label: 'File Trust Taxes', description: 'Annual trust tax filing handled by our partners.', icon: Receipt, upsell: { label: 'Trust Tax Filing', detail: 'Have our tax team file your trust returns. Request pricing details.' } },
   { key: 'tax_strategy', label: 'Tax Strategist', description: 'Schedule a tax strategy call with our tax professional.', icon: Calculator, bookingComingSoon: true },
-  { key: 'trademark_ip', label: 'Intellectual Property (Trademark)', description: 'Protect your family brand with trademarking and copyrighting.', icon: Stamp, badge: '1 Free Included', upsell: { label: 'Additional Trademark Classes', detail: 'Your first trademark is complimentary. Each additional class is $1,297.' } },
 ]
 
 const ALL_ITEMS = [...STEP_1, ...STEP_2, ...STEP_3]
