@@ -17,7 +17,7 @@ type ItemKey =
   | 'constellation_session' | 'legacy_videos'
   | 'family_tree' | 'legacy_meeting' | 'identity_manual' | 'family_crest' | 'family_bible'
   | 'annual_retreat' | 'trust_stewardship'
-  | 'file_trust_taxes' | 'tax_strategy' | 'trademark_ip'
+  | 'file_trust_taxes' | 'tax_strategy'
 
 interface ItemDef {
   key: ItemKey
