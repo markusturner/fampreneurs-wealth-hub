@@ -171,7 +171,7 @@ export default function SuccessionPlanning() {
       <div className="space-y-6">
         {renderStep('Origin Story', 1, STEP_1, 'grid-cols-1 sm:grid-cols-2')}
         {renderStep('Structure', 2, STEP_2, 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5')}
-        {renderStep('Stewardship', 3, STEP_3, 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5')}
+        {renderStep('Stewardship', 3, STEP_3, 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-4')}
       </div>
     </div>
   )
