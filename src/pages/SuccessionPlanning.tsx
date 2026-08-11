@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   ArrowLeft, Users, Video, BookOpen, Heart, FileText, Shield, Award,
-  Calendar, ClipboardCheck, Receipt, Calculator, Stamp, Loader2, TreePine
+  Calendar, ClipboardCheck, Receipt, Calculator, Loader2, TreePine
 } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useAuth } from "@/contexts/AuthContext"
@@ -17,7 +17,7 @@ type ItemKey =
   | 'constellation_session' | 'legacy_videos'
   | 'family_tree' | 'legacy_meeting' | 'identity_manual' | 'family_crest' | 'family_bible'
   | 'annual_retreat' | 'trust_stewardship'
-  | 'file_trust_taxes' | 'tax_strategy' | 'trademark_ip'
+  | 'file_trust_taxes' | 'tax_strategy'
 
 interface ItemDef {
   key: ItemKey
@@ -49,7 +49,6 @@ const STEP_3: ItemDef[] = [
   { key: 'trust_stewardship', label: 'Trust Stewardship', description: 'Record keeping, holding trust meetings, and ongoing stewardship.', icon: ClipboardCheck },
   { key: 'file_trust_taxes', label: 'File Trust Taxes', description: 'Annual trust tax filing handled by our partners.', icon: Receipt, upsell: { label: 'Trust Tax Filing', detail: 'Have our tax team file your trust returns. Request pricing details.' } },
   { key: 'tax_strategy', label: 'Tax Strategist', description: 'Schedule a tax strategy call with our tax professional.', icon: Calculator, bookingComingSoon: true },
-  { key: 'trademark_ip', label: 'Intellectual Property (Trademark)', description: 'Protect your family brand with trademarking and copyrighting.', icon: Stamp, badge: '1 Free Included', upsell: { label: 'Additional Trademark Classes', detail: 'Your first trademark is complimentary. Each additional class is $1,297.' } },
 ]
 
 const ALL_ITEMS = [...STEP_1, ...STEP_2, ...STEP_3]
