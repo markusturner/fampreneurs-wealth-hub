@@ -78,14 +78,18 @@ serve(async (req) => {
 
     // Manual program assignment via profile (admin-invited users without Stripe)
     const programName = (profileData?.program_name || '').toLowerCase();
-    const hasManualTFBA = programName.includes('family business accelerator') || programName.includes('tfba');
+    const hasManualTFFM = programName.includes('family fortune mastermind') ||
+      programName.includes('succession society') || programName.includes('tffm');
+    const hasManualTFBA = programName.includes('family business accelerator') ||
+      programName.includes('private estate accelerator') || programName.includes('tfba') ||
+      programName.includes('pea');
     const hasManualTFV = programName.includes('family vault') || programName.includes('tfv');
 
-    if (hasManualTFBA || hasManualTFV) {
+    if (hasManualTFFM || hasManualTFBA || hasManualTFV) {
       return new Response(JSON.stringify({
         has_access: true,
         unlocked_trusts: [...TRUST_ORDER],
-        program: hasManualTFBA ? 'tfba' : 'tfv',
+        program: hasManualTFFM ? 'tffm' : hasManualTFBA ? 'tfba' : 'tfv',
         tfv_total_paid: 0,
         tfba_total_paid: 0,
         is_pif: true,
