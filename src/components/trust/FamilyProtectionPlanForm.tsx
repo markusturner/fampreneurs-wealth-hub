@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, ShieldCheck, ExternalLink, Sparkles, Download } from "lucide-react"
 import ReactMarkdown from "react-markdown"
+import { useAuth } from "@/contexts/AuthContext"
 
 
 interface Props {
@@ -30,6 +31,10 @@ const ASSET_OPTIONS = [
 
 export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
   const { toast } = useToast()
+  const { user } = useAuth()
+  const storageKey = `family_protection_plan_draft_${user?.id ?? "guest"}`
+  const [restored, setRestored] = useState(false)
+  const [savedAt, setSavedAt] = useState<Date | null>(null)
   const [loading, setLoading] = useState(false)
   const [planText, setPlanText] = useState<string | null>(null)
   const [documentUrl, setDocumentUrl] = useState<string | null>(null)
@@ -63,6 +68,38 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
     special_notes: "",
 
   })
+
+  // Restore saved draft
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (parsed?.form) setForm(prev => ({ ...prev, ...parsed.form }))
+        if (parsed?.planText) setPlanText(parsed.planText)
+        if (parsed?.documentUrl) setDocumentUrl(parsed.documentUrl)
+        if (parsed?.savedAt) setSavedAt(new Date(parsed.savedAt))
+      }
+    } catch (e) {
+      console.error("Failed to restore draft", e)
+    }
+    setRestored(true)
+  }, [storageKey])
+
+  // Autosave draft
+  useEffect(() => {
+    if (!restored) return
+    const timer = setTimeout(() => {
+      try {
+        const now = new Date()
+        localStorage.setItem(storageKey, JSON.stringify({ form, planText, documentUrl, savedAt: now.toISOString() }))
+        setSavedAt(now)
+      } catch (e) {
+        console.error("Failed to autosave draft", e)
+      }
+    }, 800)
+    return () => clearTimeout(timer)
+  }, [form, planText, documentUrl, restored, storageKey])
 
   const update = (k: string, v: any) => setForm(prev => ({ ...prev, [k]: v }))
 
@@ -243,6 +280,12 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
 
   return (
     <div className="space-y-5 max-w-3xl mx-auto">
+      {savedAt && (
+        <p className="text-xs text-muted-foreground text-right">
+          Draft saved automatically at {savedAt.toLocaleTimeString()}
+        </p>
+      )}
+
 
       <div className="grid gap-4 sm:grid-cols-2">
 
