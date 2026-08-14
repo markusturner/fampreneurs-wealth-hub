@@ -89,7 +89,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         has_access: true,
         unlocked_trusts: [...TRUST_ORDER],
-        program: hasManualTFBA ? 'tfba' : 'tfv',
+        program: hasManualTFFM ? 'tffm' : hasManualTFBA ? 'tfba' : 'tfv',
         tfv_total_paid: 0,
         tfba_total_paid: 0,
         is_pif: true,
