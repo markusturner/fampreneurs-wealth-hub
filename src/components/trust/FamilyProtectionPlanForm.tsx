@@ -280,6 +280,12 @@ export function FamilyProtectionPlanForm({ onSubmitted }: Props) {
 
   return (
     <div className="space-y-5 max-w-3xl mx-auto">
+      {savedAt && (
+        <p className="text-xs text-muted-foreground text-right">
+          Draft saved automatically at {savedAt.toLocaleTimeString()}
+        </p>
+      )}
+
 
       <div className="grid gap-4 sm:grid-cols-2">
 
