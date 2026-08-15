@@ -194,6 +194,26 @@ export default function TrustCreation() {
 
   const isSubmitted = (type: SectionType) => submittedTrusts.has(type)
 
+  // A section is "in progress" when a local draft exists but nothing is submitted yet
+  const draftKeyFor = (type: SectionType): string | null => {
+    if (!user?.id) return null
+    if (type === 'family_protection_plan') return `family_protection_plan_draft_${user.id}`
+    if (type === 'trust_name_translator') return `trust-name-translator:${user.id}`
+    return null
+  }
+
+  const isInProgress = (type: SectionType): boolean => {
+    if (submittedTrusts.has(type)) return false
+    const key = draftKeyFor(type)
+    if (!key) return false
+    try {
+      return !!localStorage.getItem(key)
+    } catch {
+      return false
+    }
+  }
+
+
   const handleFormSubmitted = () => {
     fetchSubmissions()
     setSelectedSection(null)
