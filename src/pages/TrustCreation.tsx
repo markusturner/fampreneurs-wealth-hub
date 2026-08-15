@@ -224,6 +224,7 @@ export default function TrustCreation() {
     const unlocked = isUnlocked(type)
     const locked = isSectionLocked(type)
     const submitted = isSubmitted(type)
+    const inProgress = isInProgress(type)
     const adminLockedExplicitly = isAdminLocked(type)
     const Icon = info.icon
 
@@ -237,6 +238,8 @@ export default function TrustCreation() {
             ? "border-destructive/30 opacity-60 cursor-not-allowed"
             : submitted
             ? "border-success/50 hover:border-success hover:shadow-md hover:shadow-success/10"
+            : inProgress
+            ? "border-[#ffb500]/60 hover:border-[#ffb500] hover:shadow-md hover:shadow-[#ffb500]/10"
             : unlocked
             ? "hover:border-accent hover:shadow-md hover:shadow-accent/10"
             : "opacity-50 cursor-not-allowed"
@@ -245,7 +248,7 @@ export default function TrustCreation() {
       >
         <CardHeader className="text-center p-4 pb-2">
           <div className="mx-auto mb-2 relative">
-            <Icon className={`h-10 w-10 ${locked ? "text-destructive" : submitted ? "text-success" : unlocked ? "text-accent" : "text-muted-foreground"}`} />
+            <Icon className={`h-10 w-10 ${locked ? "text-destructive" : submitted ? "text-success" : inProgress ? "text-[#ffb500]" : unlocked ? "text-accent" : "text-muted-foreground"}`} />
             {locked && <Lock className="h-4 w-4 absolute -top-1 -right-1 text-destructive" />}
             {!locked && !unlocked && !submitted && <Lock className="h-4 w-4 absolute -top-1 -right-1 text-destructive" />}
             {submitted && !locked && <CheckCircle2 className="h-4 w-4 absolute -top-1 -right-1 text-success" />}
@@ -261,6 +264,10 @@ export default function TrustCreation() {
             <Badge variant="outline" className="w-full justify-center border-success/50 text-success text-xs px-2 py-0.5">
               <CheckCircle2 className="h-3 w-3 mr-1" /> Completed
             </Badge>
+          ) : inProgress ? (
+            <Badge variant="outline" className="w-full justify-center border-[#ffb500]/60 text-[#ffb500] text-xs px-2 py-0.5">
+              <Loader2 className="h-3 w-3 mr-1" /> In Progress
+            </Badge>
           ) : unlocked ? (
             <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-xs px-2 py-0.5">
               <CheckCircle2 className="h-3 w-3 mr-1" /> Unlocked
@@ -273,6 +280,7 @@ export default function TrustCreation() {
         </CardContent>
       </Card>
     )
+
   }
 
   if (loadingAccess) {
