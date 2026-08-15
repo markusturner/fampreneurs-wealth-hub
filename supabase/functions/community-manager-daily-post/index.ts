@@ -23,7 +23,7 @@ type TemplateDef = {
   generate: (supabase: any, program: string) => Promise<Generated | null>;
 };
 
-const REQUIRED_TRUST_TYPES = ["family", "business"];
+const REQUIRED_TRUST_TYPES = ["family", "business", "ministry"];
 
 async function getOnboardedUserIds(supabase: any, userIds: string[]): Promise<Set<string>> {
   if (!userIds.length) return new Set();
@@ -80,22 +80,15 @@ const TEMPLATES: TemplateDef[] = [
       }
       const top = [...counts.entries()].sort((a, b) => b[1].score - a[1].score)[0];
       if (!top) return null;
-      let name = top[1].name;
-      if (!name) {
-        const { data: p } = await supabase
-          .from("profiles")
-          .select("display_name, first_name, last_name")
-          .eq("user_id", top[0])
-          .maybeSingle();
-        name = p ? nameOf(p) : "One of our standout members";
-      }
       return {
         title: "🌟 Student of the Month",
-        body: `Huge shout-out to **${name}** for being our Student of the Month! 🎉
+        body: `Huge shout-out to our Student of the Month! 🎉
 
-They've been showing up — completing trust submissions and pushing their succession plan forward over the last 30 days. That's exactly the kind of momentum legacy is built on.
+Someone in this community has been showing up — completing trust submissions and pushing their succession plan forward over the last 30 days. That's exactly the kind of momentum legacy is built on.
 
-Drop a 🔥 in the comments to celebrate them 👇`,
+Keep going, family.
+
+— Markus`,
       };
     },
   },
