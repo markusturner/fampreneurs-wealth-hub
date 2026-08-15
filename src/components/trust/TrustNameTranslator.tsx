@@ -129,7 +129,8 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
       return
     }
 
-    const isNewName = name.trim() !== (translatedNameRef.current ?? "")
+
+
 
     setLoading(true)
     setTranslations(null)
