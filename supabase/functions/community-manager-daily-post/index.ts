@@ -221,6 +221,20 @@ Congratulations, and keep that momentum going. Who's next? 👇
       };
     },
   },
+  makeSectionWin(
+    "family_protection_plan_wins",
+    ["family_protection_plan"],
+    "🛡️ Community Wins — Family Protection Plan Completed!",
+    "just completed their **Family Protection Plan**",
+    "That's their family's safety net documented and in place.",
+  ),
+  makeSectionWin(
+    "asset_transfer_wins",
+    ["trust_asset_uploads", "asset_inventory"],
+    "📦 Community Wins — Assets Transferred Into Trust!",
+    "just completed their **Schedule B and proof of transfer**",
+    "Their assets are officially moving into the trust — that's where protection becomes real.",
+  ),
   {
     key: "new_updates",
     category: "updates",
