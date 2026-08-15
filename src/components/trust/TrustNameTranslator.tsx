@@ -32,6 +32,13 @@ interface Props {
   onSubmitted?: () => void
 }
 
+interface SavedTrustName {
+  trustType: TrustStepValue
+  originalName: string
+  translations: Partial<Translations>
+  selectedDate: string | null
+}
+
 const LANGUAGE_LABELS: Record<LangKey, { label: string; flag: string }> = {
   english: { label: "English", flag: "🇺🇸" },
   latin: { label: "Latin", flag: "🏛️" },
@@ -68,6 +75,7 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [submitting, setSubmitting] = useState(false)
   const [completedTrusts, setCompletedTrusts] = useState<TrustStepValue[]>([])
+  const [savedTrustNames, setSavedTrustNames] = useState<SavedTrustName[]>([])
   const [restored, setRestored] = useState(false)
   const translatedNameRef = useRef<string | null>(null)
 
@@ -86,6 +94,7 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
         if (typeof s.stepIndex === "number") setStepIndex(s.stepIndex)
         if (Array.isArray(s.selectedLanguages)) setSelectedLanguages(s.selectedLanguages)
         if (Array.isArray(s.completedTrusts)) setCompletedTrusts(s.completedTrusts)
+        if (Array.isArray(s.savedTrustNames)) setSavedTrustNames(s.savedTrustNames)
         if (s.selectedDate) setSelectedDate(new Date(s.selectedDate))
       }
     } catch {
@@ -93,6 +102,50 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
     }
     setRestored(true)
   }, [storageKey])
+
+  useEffect(() => {
+    if (!user?.id) return
+
+    const loadSavedTrustNames = async () => {
+      const { data, error } = await supabase
+        .from("trust_submissions")
+        .select("form_data, submitted_at")
+        .eq("user_id", user.id)
+        .eq("trust_type", "trust_name_translator")
+        .order("submitted_at", { ascending: true })
+
+      if (error || !data) return
+
+      const byTrust = new Map<TrustStepValue, SavedTrustName>()
+      for (const row of data) {
+        const formData = row.form_data as Record<string, unknown> | null
+        const trustType = formData?.for_trust_type
+        const originalName = formData?.original_name
+        if (
+          (trustType === "business" || trustType === "ministry" || trustType === "family") &&
+          typeof originalName === "string"
+        ) {
+          byTrust.set(trustType, {
+            trustType,
+            originalName,
+            translations: (formData?.translations as Partial<Translations>) ?? {},
+            selectedDate: typeof formData?.name_selected_date === "string" ? formData.name_selected_date : row.submitted_at,
+          })
+        }
+      }
+
+      const saved = TRUST_STEPS.flatMap(({ value }) => {
+        const item = byTrust.get(value)
+        return item ? [item] : []
+      })
+      if (saved.length > 0) {
+        setSavedTrustNames(saved)
+        setCompletedTrusts(saved.map((item) => item.trustType))
+      }
+    }
+
+    void loadSavedTrustNames()
+  }, [user?.id])
 
   // Autosave progress
   useEffect(() => {
@@ -106,13 +159,14 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
           stepIndex,
           selectedLanguages,
           completedTrusts,
+          savedTrustNames,
           selectedDate: selectedDate ? selectedDate.toISOString() : null,
         })
       )
     } catch {
       /* ignore */
     }
-  }, [storageKey, restored, name, translations, stepIndex, selectedLanguages, completedTrusts, selectedDate])
+  }, [storageKey, restored, name, translations, stepIndex, selectedLanguages, completedTrusts, savedTrustNames, selectedDate])
 
   const currentTrust = TRUST_STEPS[stepIndex]
   const allDone = stepIndex >= TRUST_STEPS.length
@@ -194,6 +248,15 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
 
       const newCompleted = [...completedTrusts, currentTrust.value]
       setCompletedTrusts(newCompleted)
+      setSavedTrustNames((previous) => [
+        ...previous.filter((item) => item.trustType !== currentTrust.value),
+        {
+          trustType: currentTrust.value,
+          originalName: name.trim(),
+          translations: selectedTranslations,
+          selectedDate: format(selectedDate, "yyyy-MM-dd"),
+        },
+      ])
       const nextIndex = stepIndex + 1
       toast({
         title: `${currentTrust.label} saved`,
@@ -271,6 +334,29 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
               )
             })}
           </div>
+
+          {savedTrustNames.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-foreground">Previously saved trust names</h3>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {TRUST_STEPS.flatMap((trust) => {
+                  const saved = savedTrustNames.find((item) => item.trustType === trust.value)
+                  if (!saved) return []
+                  return [
+                    <Card key={trust.value} className="border-border/50">
+                      <CardContent className="p-4 space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">{trust.label}</p>
+                        <p className="text-sm font-semibold text-foreground break-words">{saved.originalName}</p>
+                        {saved.selectedDate && (
+                          <p className="text-xs text-muted-foreground">Selected {saved.selectedDate}</p>
+                        )}
+                      </CardContent>
+                    </Card>,
+                  ]
+                })}
+              </div>
+            </div>
+          )}
 
           {/* All translations preview */}
           <div className="space-y-3">
