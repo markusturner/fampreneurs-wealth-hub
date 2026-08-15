@@ -77,6 +77,8 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
   const [completedTrusts, setCompletedTrusts] = useState<TrustStepValue[]>([])
   const [savedTrustNames, setSavedTrustNames] = useState<SavedTrustName[]>([])
   const [restored, setRestored] = useState(false)
+  const [savedAt, setSavedAt] = useState<Date | null>(null)
+
   const translatedNameRef = useRef<string | null>(null)
 
   // Restore saved progress
@@ -96,6 +98,8 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
         if (Array.isArray(s.completedTrusts)) setCompletedTrusts(s.completedTrusts)
         if (Array.isArray(s.savedTrustNames)) setSavedTrustNames(s.savedTrustNames)
         if (s.selectedDate) setSelectedDate(new Date(s.selectedDate))
+        if (s.savedAt) setSavedAt(new Date(s.savedAt))
+
       }
     } catch {
       /* ignore */
@@ -150,23 +154,30 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
   // Autosave progress
   useEffect(() => {
     if (!storageKey || !restored) return
-    try {
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify({
-          name,
-          translations,
-          stepIndex,
-          selectedLanguages,
-          completedTrusts,
-          savedTrustNames,
-          selectedDate: selectedDate ? selectedDate.toISOString() : null,
-        })
-      )
-    } catch {
-      /* ignore */
-    }
+    const timer = setTimeout(() => {
+      try {
+        const now = new Date()
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({
+            name,
+            translations,
+            stepIndex,
+            selectedLanguages,
+            completedTrusts,
+            savedTrustNames,
+            selectedDate: selectedDate ? selectedDate.toISOString() : null,
+            savedAt: now.toISOString(),
+          })
+        )
+        setSavedAt(now)
+      } catch {
+        /* ignore */
+      }
+    }, 500)
+    return () => clearTimeout(timer)
   }, [storageKey, restored, name, translations, stepIndex, selectedLanguages, completedTrusts, savedTrustNames, selectedDate])
+
 
   const currentTrust = TRUST_STEPS[stepIndex]
   const allDone = stepIndex >= TRUST_STEPS.length
@@ -309,6 +320,14 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Languages className="h-4 w-4" />}
         {loading ? "Translating..." : "Translate Trust Name"}
       </Button>
+
+      {savedAt && (
+        <p className="text-xs text-muted-foreground">
+          Draft saved automatically at {savedAt.toLocaleTimeString()}
+        </p>
+      )}
+
+
 
       {/* Results */}
       {translations && (
