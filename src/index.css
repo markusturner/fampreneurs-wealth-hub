@@ -48,6 +48,9 @@ Brand: #290A52, #2EB2FF, #FFB500, #6215C8, #3031CB
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
+    --success: 142 71% 40%;
+    --success-foreground: 0 0% 100%;
+
     --border: 250 20% 88%;
     --input: 250 20% 88%;
     --ring: 262 86% 19%;
