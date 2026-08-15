@@ -141,13 +141,8 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
       if (data?.error) throw new Error(data.error)
       setTranslations(data.translations)
       translatedNameRef.current = name.trim()
-      // Only restart the steps when translating a different name
-      if (isNewName) {
-        setStepIndex(0)
-        setSelectedLanguages([])
-        setSelectedDate(new Date())
-        setCompletedTrusts([])
-      }
+      // Keep the user on the step they were on; only clear the language picks
+      setSelectedLanguages([])
     } catch (err: any) {
       console.error("Translation error:", err)
       toast({ title: "Translation failed", description: err.message || "Could not translate the name.", variant: "destructive" })
