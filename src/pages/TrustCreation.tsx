@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/client"
-import { Lock, FileText, Building2, Church, Home, Loader2, CheckCircle2, ArrowLeft, ShieldCheck, ClipboardList, Package, Users, AlertTriangle, ExternalLink, Shield } from "lucide-react"
+import { Lock, FileText, Building2, Church, Home, Loader2, CheckCircle2, ArrowLeft, ShieldCheck, ClipboardList, Package, Users, AlertTriangle, ExternalLink, Shield, TriangleAlert } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { TrustAssetUploads } from "@/components/trust/TrustAssetUploads"
 import { AssetInventoryForm } from "@/components/trust/AssetInventoryForm"
@@ -207,7 +207,16 @@ export default function TrustCreation() {
     const key = draftKeyFor(type)
     if (!key) return false
     try {
-      return !!localStorage.getItem(key)
+      const raw = localStorage.getItem(key)
+      if (!raw) return false
+      // Trust Name Translator is "in progress" only when some (but not all)
+      // trust types have been completed — a yield sign to finish.
+      if (type === 'trust_name_translator') {
+        const s = JSON.parse(raw)
+        const completed = Array.isArray(s.completedTrusts) ? s.completedTrusts : []
+        return completed.length > 0 && completed.length < 3
+      }
+      return true
     } catch {
       return false
     }
@@ -266,7 +275,7 @@ export default function TrustCreation() {
             </Badge>
           ) : inProgress ? (
             <Badge variant="outline" className="w-full justify-center border-[#ffb500]/60 text-[#ffb500] text-xs px-2 py-0.5">
-              <Loader2 className="h-3 w-3 mr-1" /> In Progress
+              <TriangleAlert className="h-3 w-3 mr-1" /> Finish Up
             </Badge>
           ) : unlocked ? (
             <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-xs px-2 py-0.5">
