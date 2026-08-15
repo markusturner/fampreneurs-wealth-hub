@@ -197,20 +197,15 @@ Do those two and you're already ahead of 90% of new members. Reply below once yo
         .in("user_id", candidateIds);
       const celebrated = new Set(((alreadyCelebrated || []) as any[]).map((c) => c.user_id));
 
-      const newCompleters: { id: string; name: string }[] = [];
+      const newCompleters: { id: string }[] = [];
       for (const [uid, v] of byUser.entries()) {
         if (celebrated.has(uid)) continue;
         if (!REQUIRED_TRUST_TYPES.every((t) => v.types.has(t))) continue;
-        let name = v.name;
-        if (!name) {
-          const prof = ((profs || []) as any[]).find((p) => p.user_id === uid);
-          name = prof ? nameOf(prof) : "A member";
-        }
-        newCompleters.push({ id: uid, name });
+        newCompleters.push({ id: uid });
       }
       if (newCompleters.length === 0) return null;
 
-      const list = newCompleters.slice(0, 25).map((n) => `- ${n.name} ✅`).join("\n");
+      const count = newCompleters.length;
 
       // Mark these as celebrated
       await supabase.from("community_manager_celebrated_users").insert(
@@ -219,11 +214,13 @@ Do those two and you're already ahead of 90% of new members. Reply below once yo
 
       return {
         title: "🏆 Community Wins — Trust Creation Completed!",
-        body: `Massive shout-out to the members who just completed **all of their trust creation submissions**! 🎉
+        body: `Big congrats — ${count === 1 ? "a member of this community" : `${count} members of this community`} just completed **all three trust names and trust creation submissions**! 🎉
 
-${list}
+That's family, ministry, and business — all locked in. Protection that will outlive them.
 
-These families just locked in protection that will outlive them. Drop a 🔥 in the comments to celebrate them and let us know — who's next? 👇`,
+Congratulations, and keep that momentum going. Who's next? 👇
+
+— Markus`,
       };
     },
   },
