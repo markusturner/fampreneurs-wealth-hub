@@ -207,7 +207,16 @@ export default function TrustCreation() {
     const key = draftKeyFor(type)
     if (!key) return false
     try {
-      return !!localStorage.getItem(key)
+      const raw = localStorage.getItem(key)
+      if (!raw) return false
+      // Trust Name Translator is "in progress" only when some (but not all)
+      // trust types have been completed — a yield sign to finish.
+      if (type === 'trust_name_translator') {
+        const s = JSON.parse(raw)
+        const completed = Array.isArray(s.completedTrusts) ? s.completedTrusts : []
+        return completed.length > 0 && completed.length < 3
+      }
+      return true
     } catch {
       return false
     }
