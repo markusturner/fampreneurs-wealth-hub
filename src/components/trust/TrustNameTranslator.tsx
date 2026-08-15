@@ -79,7 +79,10 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
       if (raw) {
         const s = JSON.parse(raw)
         if (s.name) setName(s.name)
-        if (s.translations) setTranslations(s.translations)
+        if (s.translations) {
+          setTranslations(s.translations)
+          translatedNameRef.current = s.name ?? null
+        }
         if (typeof s.stepIndex === "number") setStepIndex(s.stepIndex)
         if (Array.isArray(s.selectedLanguages)) setSelectedLanguages(s.selectedLanguages)
         if (Array.isArray(s.completedTrusts)) setCompletedTrusts(s.completedTrusts)
