@@ -69,6 +69,7 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
   const [submitting, setSubmitting] = useState(false)
   const [completedTrusts, setCompletedTrusts] = useState<TrustStepValue[]>([])
   const [restored, setRestored] = useState(false)
+  const translatedNameRef = useRef<string | null>(null)
 
   // Restore saved progress
   useEffect(() => {
