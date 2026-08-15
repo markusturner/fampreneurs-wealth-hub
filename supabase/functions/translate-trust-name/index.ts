@@ -24,7 +24,7 @@ IMPORTANT RULES:
 - For every other language, transliterate the name into that language's native script (e.g., Hebrew script for Hebrew, Greek script for Greek, Arabic script for Arabic, etc.)
 - Return ONLY the transliterated name — do NOT add any titles, trust terms, or extra words
 - Each result should be the person's name written naturally in that language's script
-- For Latin, use standard Latin transliteration
+- For Latin, do NOT copy the English spelling. Produce a genuine Latinized form of the name using classical Latin orthography and masculine/feminine nominative endings (e.g., "John Smith" -> "Ioannes Faber", "Mary Baker" -> "Maria Pistoria", "David" -> "David", "Michael" -> "Michael", "James" -> "Iacobus", "Verona" -> "Verona"). Use the classical Latin equivalent of the given name when one exists, and Latinize surnames with -us/-a/-ius endings. Latin must never be identical to the English answer unless the name is already Latin.
 
 Return ONLY a valid JSON object with this exact structure (no markdown, no code blocks):
 {
