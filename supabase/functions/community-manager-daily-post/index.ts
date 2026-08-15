@@ -99,18 +99,10 @@ Keep going, family.
     generate: async (supabase, program) => {
       const members = await getRecentOnboardedNewMembers(supabase, program);
       if (members.length === 0) return null;
-      const list = members
-        .slice(0, 10)
-        .map((m) => {
-          const loc = [m.city, m.state].filter(Boolean).join(", ");
-          return `- **${nameOf(m)}**${loc ? ` — ${loc}` : ""}`;
-        })
-        .join("\n");
+      const count = members.length;
       return {
         title: "👋 Welcome to our newest members!",
-        body: `Big welcome to the family members who joined this week! 💛
-
-${list}
+        body: `Big welcome to the ${count === 1 ? "new family member" : `${count} new family members`} who joined this week! 💛
 
 **Quick start:**
 - Drop a hello in the comments and tell us where you're from
