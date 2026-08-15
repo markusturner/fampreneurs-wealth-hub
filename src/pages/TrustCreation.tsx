@@ -93,6 +93,7 @@ export default function TrustCreation() {
   const [selectedSection, setSelectedSection] = useState<SectionType | null>(initialType)
   const [submittedTrusts, setSubmittedTrusts] = useState<Set<string>>(new Set())
   const [submissionCounts, setSubmissionCounts] = useState<Record<string, number>>({})
+  const [translatorCompleted, setTranslatorCompleted] = useState<Set<string>>(new Set())
   const [adminLocks, setAdminLocks] = useState<PageLock[]>([])
   const [submitting, setSubmitting] = useState(false)
 
@@ -126,10 +127,19 @@ export default function TrustCreation() {
     if (!user?.id) return
     const { data } = await supabase
       .from('trust_submissions')
-      .select('trust_type')
+      .select('trust_type, form_data')
       .eq('user_id', user.id)
     if (data) {
       const types = data.map(d => d.trust_type)
+      // Track which trust types the Trust Name Translator has completed
+      const translatorDone = new Set<string>()
+      data.forEach((d: any) => {
+        if (d.trust_type === 'trust_name_translator') {
+          const t = d.form_data?.for_trust_type
+          if (t) translatorDone.add(t)
+        }
+      })
+      setTranslatorCompleted(translatorDone)
       setSubmittedTrusts(new Set(types))
       // Count submissions per type
       const counts: Record<string, number> = {}
@@ -203,6 +213,9 @@ export default function TrustCreation() {
   }
 
   const isInProgress = (type: SectionType): boolean => {
+    if (type === 'trust_name_translator') {
+      return translatorCompleted.size > 0 && translatorCompleted.size < 3
+    }
     const key = draftKeyFor(type)
     if (!key) return false
     try {
@@ -210,11 +223,6 @@ export default function TrustCreation() {
       if (!raw) return false
       // Trust Name Translator is "in progress" only when some (but not all)
       // trust types have been completed — a yield sign to finish.
-      if (type === 'trust_name_translator') {
-        const s = JSON.parse(raw)
-        const completed = Array.isArray(s.completedTrusts) ? s.completedTrusts : []
-        return completed.length > 0 && completed.length < 3
-      }
       if (submittedTrusts.has(type)) return false
       return true
     } catch {
@@ -330,7 +338,7 @@ export default function TrustCreation() {
     if (locked) {
       return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-5xl mx-auto">
-          <Button variant="ghost" onClick={() => setSelectedSection(null)} className="gap-2">
+          <Button variant="ghost" onClick={() => { fetchSubmissions(); setSelectedSection(null) }} className="gap-2">
             <ArrowLeft className="h-4 w-4" /> Back to Trust Selection
           </Button>
           <Card className="border-destructive/30">
@@ -351,7 +359,7 @@ export default function TrustCreation() {
     if (selectedSection === 'asset_inventory' || selectedSection === 'trust_name_translator' || selectedSection === 'trust_asset_uploads' || selectedSection === 'family_protection_plan') {
       return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-5xl mx-auto">
-          <Button variant="ghost" onClick={() => setSelectedSection(null)} className="gap-2">
+          <Button variant="ghost" onClick={() => { fetchSubmissions(); setSelectedSection(null) }} className="gap-2">
             <ArrowLeft className="h-4 w-4" /> Back to Trust Selection
           </Button>
           <Card>
@@ -384,7 +392,7 @@ export default function TrustCreation() {
     return (
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-5xl mx-auto">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => setSelectedSection(null)} className="gap-2">
+          <Button variant="ghost" onClick={() => { fetchSubmissions(); setSelectedSection(null) }} className="gap-2">
             <ArrowLeft className="h-4 w-4" /> Back to Trust Selection
           </Button>
           <Button
