@@ -275,7 +275,7 @@ export default function TrustCreation() {
             </Badge>
           ) : inProgress ? (
             <Badge variant="outline" className="w-full justify-center border-[#ffb500]/60 text-[#ffb500] text-xs px-2 py-0.5">
-              <Loader2 className="h-3 w-3 mr-1" /> In Progress
+              <TriangleAlert className="h-3 w-3 mr-1" /> Finish Up
             </Badge>
           ) : unlocked ? (
             <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-xs px-2 py-0.5">
