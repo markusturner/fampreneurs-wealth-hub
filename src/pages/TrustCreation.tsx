@@ -178,20 +178,13 @@ export default function TrustCreation() {
     return lock?.is_locked === true
   }
 
-  const isAutoLocked = (type: SectionType): boolean => {
-    const count = submissionCounts[type] || 0
-    const limit = getSubmissionLimit(type)
-    return count >= limit
-  }
+  // Sections no longer auto-lock after submission — they show as completed instead
+  const isAutoLocked = (_type: SectionType): boolean => false
 
   const isSectionLocked = (type: SectionType): boolean => {
-    // Admin lock takes priority (admin can lock OR unlock)
+    // Only an explicit admin lock can lock a section
     const adminLock = adminLocks.find(l => l.page_name === type)
-    if (adminLock) {
-      return adminLock.is_locked
-    }
-    // Otherwise check auto-lock
-    return isAutoLocked(type)
+    return adminLock?.is_locked === true
   }
 
   const isUnlocked = (type: SectionType) => {
