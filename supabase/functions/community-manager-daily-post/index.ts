@@ -50,9 +50,6 @@ async function getRecentOnboardedNewMembers(supabase: any, program: string) {
   return list.filter((m) => onboarded.has(m.user_id)).slice(0, 15);
 }
 
-function nameOf(p: any) {
-  return p.display_name || [p.first_name, p.last_name].filter(Boolean).join(" ") || "A new member";
-}
 
 const TEMPLATES: TemplateDef[] = [
   {
