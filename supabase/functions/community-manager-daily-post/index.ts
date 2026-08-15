@@ -23,7 +23,7 @@ type TemplateDef = {
   generate: (supabase: any, program: string) => Promise<Generated | null>;
 };
 
-const REQUIRED_TRUST_TYPES = ["family", "business"];
+const REQUIRED_TRUST_TYPES = ["family", "business", "ministry"];
 
 async function getOnboardedUserIds(supabase: any, userIds: string[]): Promise<Set<string>> {
   if (!userIds.length) return new Set();
@@ -50,9 +50,6 @@ async function getRecentOnboardedNewMembers(supabase: any, program: string) {
   return list.filter((m) => onboarded.has(m.user_id)).slice(0, 15);
 }
 
-function nameOf(p: any) {
-  return p.display_name || [p.first_name, p.last_name].filter(Boolean).join(" ") || "A new member";
-}
 
 const TEMPLATES: TemplateDef[] = [
   {
@@ -80,22 +77,15 @@ const TEMPLATES: TemplateDef[] = [
       }
       const top = [...counts.entries()].sort((a, b) => b[1].score - a[1].score)[0];
       if (!top) return null;
-      let name = top[1].name;
-      if (!name) {
-        const { data: p } = await supabase
-          .from("profiles")
-          .select("display_name, first_name, last_name")
-          .eq("user_id", top[0])
-          .maybeSingle();
-        name = p ? nameOf(p) : "One of our standout members";
-      }
       return {
         title: "🌟 Student of the Month",
-        body: `Huge shout-out to **${name}** for being our Student of the Month! 🎉
+        body: `Huge shout-out to our Student of the Month! 🎉
 
-They've been showing up — completing trust submissions and pushing their succession plan forward over the last 30 days. That's exactly the kind of momentum legacy is built on.
+Someone in this community has been showing up — completing trust submissions and pushing their succession plan forward over the last 30 days. That's exactly the kind of momentum legacy is built on.
 
-Drop a 🔥 in the comments to celebrate them 👇`,
+Keep going, family.
+
+— Markus`,
       };
     },
   },
@@ -106,18 +96,10 @@ Drop a 🔥 in the comments to celebrate them 👇`,
     generate: async (supabase, program) => {
       const members = await getRecentOnboardedNewMembers(supabase, program);
       if (members.length === 0) return null;
-      const list = members
-        .slice(0, 10)
-        .map((m) => {
-          const loc = [m.city, m.state].filter(Boolean).join(", ");
-          return `- **${nameOf(m)}**${loc ? ` — ${loc}` : ""}`;
-        })
-        .join("\n");
+      const count = members.length;
       return {
         title: "👋 Welcome to our newest members!",
-        body: `Big welcome to the family members who joined this week! 💛
-
-${list}
+        body: `Big welcome to the ${count === 1 ? "new family member" : `${count} new family members`} who joined this week! 💛
 
 **Quick start:**
 - Drop a hello in the comments and tell us where you're from
@@ -212,20 +194,15 @@ Do those two and you're already ahead of 90% of new members. Reply below once yo
         .in("user_id", candidateIds);
       const celebrated = new Set(((alreadyCelebrated || []) as any[]).map((c) => c.user_id));
 
-      const newCompleters: { id: string; name: string }[] = [];
+      const newCompleters: { id: string }[] = [];
       for (const [uid, v] of byUser.entries()) {
         if (celebrated.has(uid)) continue;
         if (!REQUIRED_TRUST_TYPES.every((t) => v.types.has(t))) continue;
-        let name = v.name;
-        if (!name) {
-          const prof = ((profs || []) as any[]).find((p) => p.user_id === uid);
-          name = prof ? nameOf(prof) : "A member";
-        }
-        newCompleters.push({ id: uid, name });
+        newCompleters.push({ id: uid });
       }
       if (newCompleters.length === 0) return null;
 
-      const list = newCompleters.slice(0, 25).map((n) => `- ${n.name} ✅`).join("\n");
+      const count = newCompleters.length;
 
       // Mark these as celebrated
       await supabase.from("community_manager_celebrated_users").insert(
@@ -234,11 +211,13 @@ Do those two and you're already ahead of 90% of new members. Reply below once yo
 
       return {
         title: "🏆 Community Wins — Trust Creation Completed!",
-        body: `Massive shout-out to the members who just completed **all of their trust creation submissions**! 🎉
+        body: `Big congrats — ${count === 1 ? "a member of this community" : `${count} members of this community`} just completed **all three trust names and trust creation submissions**! 🎉
 
-${list}
+That's family, ministry, and business — all locked in. Protection that will outlive them.
 
-These families just locked in protection that will outlive them. Drop a 🔥 in the comments to celebrate them and let us know — who's next? 👇`,
+Congratulations, and keep that momentum going. Who's next? 👇
+
+— Markus`,
       };
     },
   },
