@@ -150,23 +150,30 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
   // Autosave progress
   useEffect(() => {
     if (!storageKey || !restored) return
-    try {
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify({
-          name,
-          translations,
-          stepIndex,
-          selectedLanguages,
-          completedTrusts,
-          savedTrustNames,
-          selectedDate: selectedDate ? selectedDate.toISOString() : null,
-        })
-      )
-    } catch {
-      /* ignore */
-    }
+    const timer = setTimeout(() => {
+      try {
+        const now = new Date()
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({
+            name,
+            translations,
+            stepIndex,
+            selectedLanguages,
+            completedTrusts,
+            savedTrustNames,
+            selectedDate: selectedDate ? selectedDate.toISOString() : null,
+            savedAt: now.toISOString(),
+          })
+        )
+        setSavedAt(now)
+      } catch {
+        /* ignore */
+      }
+    }, 500)
+    return () => clearTimeout(timer)
   }, [storageKey, restored, name, translations, stepIndex, selectedLanguages, completedTrusts, savedTrustNames, selectedDate])
+
 
   const currentTrust = TRUST_STEPS[stepIndex]
   const allDone = stepIndex >= TRUST_STEPS.length
