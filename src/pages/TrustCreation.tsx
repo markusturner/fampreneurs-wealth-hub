@@ -203,7 +203,6 @@ export default function TrustCreation() {
   }
 
   const isInProgress = (type: SectionType): boolean => {
-    if (submittedTrusts.has(type)) return false
     const key = draftKeyFor(type)
     if (!key) return false
     try {
@@ -216,11 +215,13 @@ export default function TrustCreation() {
         const completed = Array.isArray(s.completedTrusts) ? s.completedTrusts : []
         return completed.length > 0 && completed.length < 3
       }
+      if (submittedTrusts.has(type)) return false
       return true
     } catch {
       return false
     }
   }
+
 
 
   const handleFormSubmitted = () => {
