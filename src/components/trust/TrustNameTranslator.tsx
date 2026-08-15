@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -55,6 +55,8 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
   const { user } = useAuth()
   const { toast } = useToast()
 
+  const storageKey = user?.id ? `trust-name-translator:${user.id}` : null
+
   const [name, setName] = useState("")
   const [translations, setTranslations] = useState<Translations | null>(null)
   const [loading, setLoading] = useState(false)
@@ -66,6 +68,51 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [submitting, setSubmitting] = useState(false)
   const [completedTrusts, setCompletedTrusts] = useState<TrustStepValue[]>([])
+  const [restored, setRestored] = useState(false)
+  const translatedNameRef = useRef<string | null>(null)
+
+  // Restore saved progress
+  useEffect(() => {
+    if (!storageKey) return
+    try {
+      const raw = localStorage.getItem(storageKey)
+      if (raw) {
+        const s = JSON.parse(raw)
+        if (s.name) setName(s.name)
+        if (s.translations) {
+          setTranslations(s.translations)
+          translatedNameRef.current = s.name ?? null
+        }
+        if (typeof s.stepIndex === "number") setStepIndex(s.stepIndex)
+        if (Array.isArray(s.selectedLanguages)) setSelectedLanguages(s.selectedLanguages)
+        if (Array.isArray(s.completedTrusts)) setCompletedTrusts(s.completedTrusts)
+        if (s.selectedDate) setSelectedDate(new Date(s.selectedDate))
+      }
+    } catch {
+      /* ignore */
+    }
+    setRestored(true)
+  }, [storageKey])
+
+  // Autosave progress
+  useEffect(() => {
+    if (!storageKey || !restored) return
+    try {
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          name,
+          translations,
+          stepIndex,
+          selectedLanguages,
+          completedTrusts,
+          selectedDate: selectedDate ? selectedDate.toISOString() : null,
+        })
+      )
+    } catch {
+      /* ignore */
+    }
+  }, [storageKey, restored, name, translations, stepIndex, selectedLanguages, completedTrusts, selectedDate])
 
   const currentTrust = TRUST_STEPS[stepIndex]
   const allDone = stepIndex >= TRUST_STEPS.length
@@ -82,6 +129,8 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
       return
     }
 
+    const isNewName = name.trim() !== (translatedNameRef.current ?? "")
+
     setLoading(true)
     setTranslations(null)
     try {
@@ -91,11 +140,14 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
       if (error) throw error
       if (data?.error) throw new Error(data.error)
       setTranslations(data.translations)
-      // Reset step state for the new name
-      setStepIndex(0)
-      setSelectedLanguages([])
-      setSelectedDate(new Date())
-      setCompletedTrusts([])
+      translatedNameRef.current = name.trim()
+      // Only restart the steps when translating a different name
+      if (isNewName) {
+        setStepIndex(0)
+        setSelectedLanguages([])
+        setSelectedDate(new Date())
+        setCompletedTrusts([])
+      }
     } catch (err: any) {
       console.error("Translation error:", err)
       toast({ title: "Translation failed", description: err.message || "Could not translate the name.", variant: "destructive" })
@@ -103,6 +155,7 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
       setLoading(false)
     }
   }
+
 
   const handleContinue = async () => {
     if (!user?.id || !translations) return
