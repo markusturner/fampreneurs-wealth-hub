@@ -50,6 +50,83 @@ async function getRecentOnboardedNewMembers(supabase: any, program: string) {
   return list.filter((m) => onboarded.has(m.user_id)).slice(0, 15);
 }
 
+// Anonymous "someone completed this section" win post. Never names members.
+function makeSectionWin(
+  key: string,
+  requiredTypes: string[],
+  title: string,
+  didLine: string,
+  closingLine: string,
+): TemplateDef {
+  return {
+    key,
+    category: "wins",
+    cadence: "as_needed",
+    generate: async (supabase, program) => {
+      const since = new Date(Date.now() - 14 * 86400000).toISOString();
+      const { data: recent } = await supabase
+        .from("trust_submissions")
+        .select("user_id, trust_type, created_at")
+        .in("trust_type", requiredTypes)
+        .gte("created_at", since);
+      const recentUserIds = Array.from(new Set(((recent || []) as any[]).map((r) => r.user_id)));
+      if (!recentUserIds.length) return null;
+
+      const { data: allSubs } = await supabase
+        .from("trust_submissions")
+        .select("user_id, trust_type")
+        .in("user_id", recentUserIds)
+        .in("trust_type", requiredTypes);
+
+      const programName = PROGRAM_NAMES[program];
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, program_name")
+        .in("user_id", recentUserIds)
+        .ilike("program_name", `%${programName}%`);
+      const inProgram = new Set(((profs || []) as any[]).map((p) => p.user_id));
+
+      const byUser = new Map<string, Set<string>>();
+      for (const s of (allSubs || []) as any[]) {
+        if (!inProgram.has(s.user_id)) continue;
+        const set = byUser.get(s.user_id) || new Set<string>();
+        set.add(s.trust_type);
+        byUser.set(s.user_id, set);
+      }
+
+      const candidateIds = [...byUser.keys()];
+      if (!candidateIds.length) return null;
+      const { data: alreadyCelebrated } = await supabase
+        .from("community_manager_celebrated_users")
+        .select("user_id")
+        .eq("program", program)
+        .eq("template_key", key)
+        .in("user_id", candidateIds);
+      const celebrated = new Set(((alreadyCelebrated || []) as any[]).map((c) => c.user_id));
+
+      const completers = candidateIds.filter(
+        (uid) => !celebrated.has(uid) && requiredTypes.every((t) => byUser.get(uid)!.has(t)),
+      );
+      if (!completers.length) return null;
+
+      await supabase.from("community_manager_celebrated_users").insert(
+        completers.map((uid) => ({ user_id: uid, program, template_key: key })),
+      );
+
+      const count = completers.length;
+      return {
+        title,
+        body: `Big congrats — ${count === 1 ? "a member of this community" : `${count} members of this community`} ${didLine}! 🎉
+
+${closingLine}
+
+Congratulations, and keep that momentum going. Who's next? 👇
+
+— Markus`,
+      };
+    },
+  };
+}
 
 const TEMPLATES: TemplateDef[] = [
   {
