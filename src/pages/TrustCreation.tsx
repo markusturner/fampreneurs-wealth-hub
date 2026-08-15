@@ -75,9 +75,9 @@ const SECTION_INFO: Record<SectionType, { label: string; icon: typeof Building2;
 const TRUST_TYPES: SectionType[] = ['family', 'ministry', 'business']
 const TOOL_TYPES: SectionType[] = ['trust_name_translator', 'asset_inventory', 'trust_asset_uploads']
 
-// Submission limits: trust_name_translator = 3, everything else = 1
+// Submission limits: tools are unlimited, trust forms = 1
 const getSubmissionLimit = (type: SectionType): number => {
-  if (type === 'trust_name_translator') return 3
+  if (TOOL_TYPES.includes(type) || type === 'family_protection_plan') return Infinity
   return 1
 }
 
