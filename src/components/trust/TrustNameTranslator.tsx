@@ -321,6 +321,14 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
         {loading ? "Translating..." : "Translate Trust Name"}
       </Button>
 
+      {savedAt && (
+        <p className="text-xs text-muted-foreground">
+          Draft saved automatically at {savedAt.toLocaleTimeString()}
+        </p>
+      )}
+
+
+
       {/* Results */}
       {translations && (
         <div className="space-y-6">
