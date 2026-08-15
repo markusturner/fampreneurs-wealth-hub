@@ -98,6 +98,8 @@ export function TrustNameTranslator({ onSubmitted }: Props) {
         if (Array.isArray(s.completedTrusts)) setCompletedTrusts(s.completedTrusts)
         if (Array.isArray(s.savedTrustNames)) setSavedTrustNames(s.savedTrustNames)
         if (s.selectedDate) setSelectedDate(new Date(s.selectedDate))
+        if (s.savedAt) setSavedAt(new Date(s.savedAt))
+
       }
     } catch {
       /* ignore */
