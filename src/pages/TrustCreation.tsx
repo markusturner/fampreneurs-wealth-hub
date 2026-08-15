@@ -338,7 +338,7 @@ export default function TrustCreation() {
     if (locked) {
       return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-5xl mx-auto">
-          <Button variant="ghost" onClick={() => setSelectedSection(null)} className="gap-2">
+          <Button variant="ghost" onClick={() => { fetchSubmissions(); setSelectedSection(null) }} className="gap-2">
             <ArrowLeft className="h-4 w-4" /> Back to Trust Selection
           </Button>
           <Card className="border-destructive/30">
@@ -359,7 +359,7 @@ export default function TrustCreation() {
     if (selectedSection === 'asset_inventory' || selectedSection === 'trust_name_translator' || selectedSection === 'trust_asset_uploads' || selectedSection === 'family_protection_plan') {
       return (
         <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-5xl mx-auto">
-          <Button variant="ghost" onClick={() => setSelectedSection(null)} className="gap-2">
+          <Button variant="ghost" onClick={() => { fetchSubmissions(); setSelectedSection(null) }} className="gap-2">
             <ArrowLeft className="h-4 w-4" /> Back to Trust Selection
           </Button>
           <Card>
@@ -392,7 +392,7 @@ export default function TrustCreation() {
     return (
       <div className="p-4 sm:p-6 lg:p-8 space-y-4 max-w-5xl mx-auto">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => setSelectedSection(null)} className="gap-2">
+          <Button variant="ghost" onClick={() => { fetchSubmissions(); setSelectedSection(null) }} className="gap-2">
             <ArrowLeft className="h-4 w-4" /> Back to Trust Selection
           </Button>
           <Button
