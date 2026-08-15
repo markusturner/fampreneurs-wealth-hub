@@ -233,8 +233,8 @@ export default function TrustCreation() {
     const info = SECTION_INFO[type]
     const unlocked = isUnlocked(type)
     const locked = isSectionLocked(type)
-    const submitted = isSubmitted(type)
     const inProgress = isInProgress(type)
+    const submitted = isSubmitted(type) && !inProgress
     const adminLockedExplicitly = isAdminLocked(type)
     const Icon = info.icon
 
