@@ -178,20 +178,13 @@ export default function TrustCreation() {
     return lock?.is_locked === true
   }
 
-  const isAutoLocked = (type: SectionType): boolean => {
-    const count = submissionCounts[type] || 0
-    const limit = getSubmissionLimit(type)
-    return count >= limit
-  }
+  // Sections no longer auto-lock after submission — they show as completed instead
+  const isAutoLocked = (_type: SectionType): boolean => false
 
   const isSectionLocked = (type: SectionType): boolean => {
-    // Admin lock takes priority (admin can lock OR unlock)
+    // Only an explicit admin lock can lock a section
     const adminLock = adminLocks.find(l => l.page_name === type)
-    if (adminLock) {
-      return adminLock.is_locked
-    }
-    // Otherwise check auto-lock
-    return isAutoLocked(type)
+    return adminLock?.is_locked === true
   }
 
   const isUnlocked = (type: SectionType) => {
@@ -222,8 +215,8 @@ export default function TrustCreation() {
         className={`cursor-pointer transition-all duration-200 ${
           locked
             ? "border-destructive/30 opacity-60 cursor-not-allowed"
-            : submitted && !locked
-            ? "border-accent/50 opacity-75"
+            : submitted
+            ? "border-success/50 hover:border-success hover:shadow-md hover:shadow-success/10"
             : unlocked
             ? "hover:border-accent hover:shadow-md hover:shadow-accent/10"
             : "opacity-50 cursor-not-allowed"
@@ -232,10 +225,10 @@ export default function TrustCreation() {
       >
         <CardHeader className="text-center p-4 pb-2">
           <div className="mx-auto mb-2 relative">
-            <Icon className={`h-10 w-10 ${locked ? "text-destructive" : submitted ? "text-accent" : unlocked ? "text-accent" : "text-muted-foreground"}`} />
+            <Icon className={`h-10 w-10 ${locked ? "text-destructive" : submitted ? "text-success" : unlocked ? "text-accent" : "text-muted-foreground"}`} />
             {locked && <Lock className="h-4 w-4 absolute -top-1 -right-1 text-destructive" />}
             {!locked && !unlocked && !submitted && <Lock className="h-4 w-4 absolute -top-1 -right-1 text-destructive" />}
-            {submitted && !locked && <ShieldCheck className="h-4 w-4 absolute -top-1 -right-1 text-accent" />}
+            {submitted && !locked && <CheckCircle2 className="h-4 w-4 absolute -top-1 -right-1 text-success" />}
           </div>
           <CardTitle className="text-sm leading-tight">{info.label}</CardTitle>
         </CardHeader>
@@ -245,8 +238,8 @@ export default function TrustCreation() {
               <Lock className="h-3 w-3 mr-1" /> {adminLockedExplicitly ? 'Admin Locked' : 'Locked'}
             </Badge>
           ) : submitted ? (
-            <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-xs px-2 py-0.5">
-              <ShieldCheck className="h-3 w-3 mr-1" /> Submitted
+            <Badge variant="outline" className="w-full justify-center border-success/50 text-success text-xs px-2 py-0.5">
+              <CheckCircle2 className="h-3 w-3 mr-1" /> Completed
             </Badge>
           ) : unlocked ? (
             <Badge variant="outline" className="w-full justify-center border-accent/50 text-accent text-xs px-2 py-0.5">
