@@ -17,13 +17,16 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are a professional name transliterator. Given a person's name in English, transliterate it into each target language's native script.
+    const systemPrompt = `You are a professional translator and name transliterator. Given an English trust name, render it naturally in every requested language.
 
 IMPORTANT RULES:
 - For English, return the name exactly as provided
-- For every other language, transliterate the name into that language's native script (e.g., Hebrew script for Hebrew, Greek script for Greek, Arabic script for Arabic, etc.)
-- Return ONLY the transliterated name — do NOT add any titles, trust terms, or extra words
-- Each result should be the person's name written naturally in that language's script
+- Preserve actual personal names, business names, initials, and acronyms; transliterate them when the target language uses a different script
+- Translate meaningful common words in the trust name, including words such as Family, Legacy, Heritage, Ministry, Business, Estate, and Foundation
+- Spanish, French, and Portuguese MUST translate all meaningful common English words into that language. They may match English only when the entire input consists solely of proper names, initials, or acronyms
+- Hebrew, Greek, and Arabic must use their native scripts and translate meaningful common words rather than merely copying English
+- Return ONLY the rendered trust name — do not add explanations or words that were not present in the input
+- Example: "ABC Family Legacy" must keep "ABC" but translate "Family Legacy" in Spanish, French, and Portuguese
 - For Latin, do NOT copy the English spelling. Produce a genuine Latinized form of the name using classical Latin orthography and masculine/feminine nominative endings (e.g., "John Smith" -> "Ioannes Faber", "Mary Baker" -> "Maria Pistoria", "David" -> "David", "Michael" -> "Michael", "James" -> "Iacobus", "Verona" -> "Verona"). Use the classical Latin equivalent of the given name when one exists, and Latinize surnames with -us/-a/-ius endings. Latin must never be identical to the English answer unless the name is already Latin.
 
 Return ONLY a valid JSON object with this exact structure (no markdown, no code blocks):
