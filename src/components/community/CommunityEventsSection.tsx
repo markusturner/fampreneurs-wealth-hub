@@ -615,29 +615,20 @@ function MonthCalendar({ instances, onOpenEvent }: { instances: EventInstance[];
             ) : (
               <div className="space-y-1.5">
                 {selectedEvents.map(ev => (
-                  <div key={`${ev.id}-${ev.instance_at}`} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+                  <button
+                    type="button"
+                    key={`${ev.id}-${ev.instance_at}`}
+                    onClick={() => onOpenEvent(ev)}
+                    className="w-full text-left flex flex-wrap items-center gap-x-2 gap-y-1 text-xs rounded-md border border-transparent px-2 py-1.5 transition-all duration-200 hover:border-[#ffb500] hover:bg-[#ffb500]/5 hover:shadow-[0_0_14px_rgba(255,181,0,0.55)]"
+                  >
                     <span className="h-1.5 w-1.5 rounded-full bg-[#ffb500] flex-shrink-0" />
                     <span className="font-medium">{format(new Date(ev.instance_at), 'h:mm a')}</span>
                     <span className="min-w-0 break-words">{ev.title}</span>
-                    <span className="w-full sm:w-auto sm:ml-auto flex items-center gap-3">
-                      {ev.join_url && (
-                        <a href={ev.join_url} target="_blank" rel="noreferrer" className="text-[#2eb2ff] hover:underline inline-flex items-center gap-1">
-                          <Video className="h-3 w-3" /> Join
-                        </a>
-                      )}
-                      <a href={googleCalUrl(ev)} target="_blank" rel="noreferrer" className="text-[#290a52] hover:underline inline-flex items-center gap-1">
-                        <CalendarDays className="h-3 w-3" /> Google
-                      </a>
-                      <button type="button" onClick={() => downloadIcs(ev)} className="text-[#290a52] hover:underline inline-flex items-center gap-1">
-                        <CalendarDays className="h-3 w-3" /> .ics
-                      </button>
-                    </span>
-
-
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
+
           </div>
         )}
       </CardContent>
