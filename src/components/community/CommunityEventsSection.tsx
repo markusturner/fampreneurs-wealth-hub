@@ -243,13 +243,13 @@ export function CommunityEventsSection({ program }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
           <h3 className="text-lg font-semibold">Events</h3>
           <p className="text-xs text-muted-foreground">Community-specific calls, workshops, and meetings.</p>
         </div>
         {canManage && (
-          <Button onClick={openCreate} className="bg-[#290a52] hover:bg-[#290a52]/90 text-white">
+          <Button onClick={openCreate} size="sm" className="w-full sm:w-auto bg-[#290a52] hover:bg-[#290a52]/90 text-white">
             <Plus className="h-4 w-4 mr-1.5" /> New Event
           </Button>
         )}
@@ -282,7 +282,7 @@ export function CommunityEventsSection({ program }: Props) {
               <Label>Description</Label>
               <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={3} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label>Date</Label>
                 <Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} />
@@ -292,7 +292,7 @@ export function CommunityEventsSection({ program }: Props) {
                 <Input type="time" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label>Duration (min)</Label>
                 <Input type="number" value={form.duration} onChange={e => setForm({ ...form, duration: Number(e.target.value) })} />
@@ -390,14 +390,14 @@ function Section({
                 : null
             return (
               <Card key={`${ev.id}-${ev.instance_at}`} className={`border-border/60 ${muted ? 'opacity-70' : ''}`}>
-                <CardContent className="p-4 flex items-start gap-4">
-                  <div className="flex flex-col items-center justify-center rounded-lg bg-[#290a52] text-white w-14 py-2 flex-shrink-0">
+                <CardContent className="p-3 sm:p-4 flex items-start gap-3 sm:gap-4">
+                  <div className="flex flex-col items-center justify-center rounded-lg bg-[#290a52] text-white w-12 sm:w-14 py-2 flex-shrink-0">
                     <span className="text-[10px] uppercase tracking-wide">{format(when, 'MMM')}</span>
                     <span className="text-xl font-bold leading-none">{format(when, 'd')}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-sm truncate">{ev.title}</p>
+                      <p className="font-semibold text-sm break-words min-w-0">{ev.title}</p>
                       {recurringLabel && (
                         <span className="text-[10px] uppercase tracking-wide bg-[#290a52]/10 text-[#290a52] px-1.5 py-0.5 rounded">
                           {recurringLabel}
@@ -405,7 +405,7 @@ function Section({
                       )}
                     </div>
                     {ev.description && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{ev.description}</p>}
-                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    <div className="mt-2 flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 text-xs text-muted-foreground">
                       <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{format(when, 'h:mm a')} · {ev.duration_minutes}m</span>
                       {ev.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{ev.location}</span>}
                       {ev.join_url && (
@@ -465,7 +465,7 @@ function MonthCalendar({ instances }: { instances: EventInstance[] }) {
 
   return (
     <Card className="border-border/60">
-      <CardContent className="p-4">
+      <CardContent className="p-2.5 sm:p-4">
         <div className="flex items-center justify-between mb-3">
           <button
             className="h-8 w-8 rounded-md hover:bg-muted inline-flex items-center justify-center"
@@ -483,12 +483,15 @@ function MonthCalendar({ instances }: { instances: EventInstance[] }) {
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
-        <div className="grid grid-cols-7 text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1 text-[9px] sm:text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
           {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
-            <div key={d} className="text-center py-1">{d}</div>
+            <div key={d} className="text-center py-1">
+              <span className="sm:hidden">{d.charAt(0)}</span>
+              <span className="hidden sm:inline">{d}</span>
+            </div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
           {days.map(day => {
             const key = format(day, 'yyyy-MM-dd')
             const dayEvents = eventsByDay.get(key) || []
@@ -499,7 +502,7 @@ function MonthCalendar({ instances }: { instances: EventInstance[] }) {
               <button
                 key={key}
                 onClick={() => setSelected(day)}
-                className={`min-h-[68px] sm:min-h-[84px] rounded-md text-xs flex flex-col items-stretch p-1 transition-colors border text-left ${
+                className={`aspect-square sm:aspect-auto sm:min-h-[84px] w-full overflow-hidden rounded-md text-xs flex flex-col items-center sm:items-stretch justify-start p-0.5 sm:p-1 transition-colors border text-center sm:text-left ${
                   isSel
                     ? 'bg-[#290a52] text-white border-[#290a52]'
                     : today
@@ -507,28 +510,40 @@ function MonthCalendar({ instances }: { instances: EventInstance[] }) {
                       : 'border-transparent hover:bg-muted'
                 } ${inMonth ? '' : 'text-muted-foreground/50'}`}
               >
-                <span className="font-medium leading-none px-0.5 pt-0.5 text-center sm:text-left">{format(day, 'd')}</span>
+                <span className="font-medium leading-none px-0.5 pt-1 sm:pt-0.5">{format(day, 'd')}</span>
                 {dayEvents.length > 0 && (
-                  <span className="mt-1 flex flex-col gap-0.5 overflow-hidden">
-                    {dayEvents.slice(0, 2).map((ev, i) => (
-                      <span
-                        key={i}
-                        title={ev.title}
-                        className={`truncate rounded px-1 py-0.5 text-[10px] leading-tight ${
-                          isSel
-                            ? 'bg-white/20 text-white'
-                            : 'bg-[#ffb500]/20 text-[#290a52]'
-                        }`}
-                      >
-                        {ev.title}
-                      </span>
-                    ))}
-                    {dayEvents.length > 2 && (
-                      <span className={`text-[9px] px-1 ${isSel ? 'text-white/80' : 'text-muted-foreground'}`}>
-                        +{dayEvents.length - 2} more
-                      </span>
-                    )}
-                  </span>
+                  <>
+                    {/* Mobile: compact dots */}
+                    <span className="sm:hidden mt-1 flex items-center justify-center gap-0.5">
+                      {dayEvents.slice(0, 3).map((_, i) => (
+                        <span
+                          key={i}
+                          className={`h-1 w-1 rounded-full ${isSel ? 'bg-white' : 'bg-[#ffb500]'}`}
+                        />
+                      ))}
+                    </span>
+                    {/* Desktop: event titles */}
+                    <span className="hidden sm:flex mt-1 flex-col gap-0.5 overflow-hidden">
+                      {dayEvents.slice(0, 2).map((ev, i) => (
+                        <span
+                          key={i}
+                          title={ev.title}
+                          className={`truncate rounded px-1 py-0.5 text-[10px] leading-tight ${
+                            isSel
+                              ? 'bg-white/20 text-white'
+                              : 'bg-[#ffb500]/20 text-[#290a52]'
+                          }`}
+                        >
+                          {ev.title}
+                        </span>
+                      ))}
+                      {dayEvents.length > 2 && (
+                        <span className={`text-[9px] px-1 ${isSel ? 'text-white/80' : 'text-muted-foreground'}`}>
+                          +{dayEvents.length - 2} more
+                        </span>
+                      )}
+                    </span>
+                  </>
                 )}
               </button>
             )
@@ -544,21 +559,24 @@ function MonthCalendar({ instances }: { instances: EventInstance[] }) {
             ) : (
               <div className="space-y-1.5">
                 {selectedEvents.map(ev => (
-                  <div key={`${ev.id}-${ev.instance_at}`} className="flex items-center gap-2 text-xs">
+                  <div key={`${ev.id}-${ev.instance_at}`} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#ffb500] flex-shrink-0" />
                     <span className="font-medium">{format(new Date(ev.instance_at), 'h:mm a')}</span>
-                    <span className="truncate">{ev.title}</span>
-                    {ev.join_url && (
-                      <a href={ev.join_url} target="_blank" rel="noreferrer" className="ml-auto text-[#2eb2ff] hover:underline inline-flex items-center gap-1">
-                        <Video className="h-3 w-3" /> Join
+                    <span className="min-w-0 break-words">{ev.title}</span>
+                    <span className="w-full sm:w-auto sm:ml-auto flex items-center gap-3">
+                      {ev.join_url && (
+                        <a href={ev.join_url} target="_blank" rel="noreferrer" className="text-[#2eb2ff] hover:underline inline-flex items-center gap-1">
+                          <Video className="h-3 w-3" /> Join
+                        </a>
+                      )}
+                      <a href={googleCalUrl(ev)} target="_blank" rel="noreferrer" className="text-[#290a52] hover:underline inline-flex items-center gap-1">
+                        <CalendarDays className="h-3 w-3" /> Google
                       </a>
-                    )}
-                    <a href={googleCalUrl(ev)} target="_blank" rel="noreferrer" className={`${ev.join_url ? '' : 'ml-auto'} text-[#290a52] hover:underline inline-flex items-center gap-1`}>
-                      <CalendarDays className="h-3 w-3" /> Google
-                    </a>
-                    <button type="button" onClick={() => downloadIcs(ev)} className="text-[#290a52] hover:underline inline-flex items-center gap-1">
-                      <CalendarDays className="h-3 w-3" /> .ics
-                    </button>
+                      <button type="button" onClick={() => downloadIcs(ev)} className="text-[#290a52] hover:underline inline-flex items-center gap-1">
+                        <CalendarDays className="h-3 w-3" /> .ics
+                      </button>
+                    </span>
+
 
                   </div>
                 ))}
