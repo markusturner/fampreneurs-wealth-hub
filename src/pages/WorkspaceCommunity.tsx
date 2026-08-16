@@ -1436,19 +1436,12 @@ export default function WorkspaceCommunity() {
                     onChange={(e) => setNewPostTitle(e.target.value)}
                     className="border-0 px-0 text-base font-semibold placeholder:text-muted-foreground/40 focus-visible:ring-0 focus-visible:ring-offset-0 h-auto py-2 mb-1"
                   />
-                  <PostFormatToolbar
-                    getTextarea={() => modalComposerRef.current}
-                    value={newPost}
-                    onChange={setNewPost}
-                    className="border-b border-border/60 pb-1 mb-1"
-                  />
-                  <MentionTextarea
-                    ref={(el) => { modalComposerRef.current = el }}
+                  <PostRichEditor
                     placeholder="Share something with the community..."
                     value={newPost}
-                    onChange={(v) => setNewPost(v)}
+                    onChange={setNewPost}
                     program={program}
-                    className="border-0 px-0 resize-none min-h-[180px] focus-visible:ring-0 focus-visible:ring-offset-0 text-sm placeholder:text-muted-foreground/40"
+                    minHeight="180px"
                     autoFocus
                   />
 
