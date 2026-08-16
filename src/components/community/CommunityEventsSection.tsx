@@ -490,6 +490,19 @@ function EventDetailDialog({ event, onClose, canManage, onEdit, onDelete }: {
               </Button>
             )}
           </div>
+          {canManage && (
+            <div className="flex flex-wrap gap-2 border-t pt-3">
+              <Button size="sm" variant="outline" onClick={() => { onClose(); onEdit?.(event) }}>
+                <Pencil className="h-4 w-4 mr-1.5" /> Edit event
+              </Button>
+              <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => { onClose(); onDelete?.(event) }}>
+                <Trash2 className="h-4 w-4 mr-1.5" /> Delete event
+              </Button>
+              {event.is_recurring_instance && (
+                <p className="w-full text-xs text-muted-foreground">Changes apply to the whole recurring series.</p>
+              )}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
