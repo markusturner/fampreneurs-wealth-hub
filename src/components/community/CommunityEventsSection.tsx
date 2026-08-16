@@ -376,7 +376,7 @@ export function CommunityEventsSection({ program }: Props) {
         <>
           <MonthCalendar instances={instances} onOpenEvent={setDetail} />
           {past.length > 0 && (
-            <Section title="Past" events={past} canManage={canManage} onEdit={openEdit} onDelete={remove} muted />
+            <Section title="Past" events={past} canManage={canManage} onEdit={requestEdit} onDelete={requestDelete} muted />
           )}
         </>
       )}
@@ -385,10 +385,43 @@ export function CommunityEventsSection({ program }: Props) {
         event={detail}
         onClose={() => setDetail(null)}
         canManage={canManage}
-        onEdit={openEdit}
-        onDelete={remove}
+        onEdit={requestEdit}
+        onDelete={requestDelete}
       />
 
+      <Dialog open={!!scopePrompt} onOpenChange={(o) => { if (!o) setScopePrompt(null) }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{scopePrompt?.action === 'delete' ? 'Delete recurring event' : 'Edit recurring event'}</DialogTitle>
+            <DialogDescription className="sr-only">Choose which occurrences to change</DialogDescription>
+          </DialogHeader>
+          <RadioGroup value={scopeChoice} onValueChange={(v) => setScopeChoice(v as ScopeChoice)} className="space-y-3 py-2">
+            <div className="flex items-center gap-3">
+              <RadioGroupItem value="this" id="scope-this" />
+              <Label htmlFor="scope-this" className="font-normal cursor-pointer">This event</Label>
+            </div>
+            <div className="flex items-center gap-3">
+              <RadioGroupItem value="following" id="scope-following" />
+              <Label htmlFor="scope-following" className="font-normal cursor-pointer">This and following events</Label>
+            </div>
+            <div className="flex items-center gap-3">
+              <RadioGroupItem value="all" id="scope-all" />
+              <Label htmlFor="scope-all" className="font-normal cursor-pointer">All events</Label>
+            </div>
+          </RadioGroup>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setScopePrompt(null)}>Cancel</Button>
+            <Button
+              onClick={confirmScope}
+              className={scopePrompt?.action === 'delete'
+                ? 'bg-destructive hover:bg-destructive/90 text-destructive-foreground'
+                : 'bg-[#ffb500] hover:bg-[#ffb500]/90 text-[#290a52]'}
+            >
+              {scopePrompt?.action === 'delete' ? 'Delete' : 'Edit'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
