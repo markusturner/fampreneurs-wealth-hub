@@ -1002,7 +1002,18 @@ export default function WorkspaceCommunity() {
     let match
 
     const pushText = (text: string, key: string) => {
-      linkifyText(text, key).forEach(n => parts.push(n))
+      // Inline formatting: **bold**, __underline__, *italic*
+      const fmt = /(\*\*([^*\n]+)\*\*|__([^_\n]+)__|\*([^*\n]+)\*)/g
+      let idx = 0
+      let m: RegExpExecArray | null
+      while ((m = fmt.exec(text)) !== null) {
+        if (m.index > idx) linkifyText(text.slice(idx, m.index), `${key}-p${idx}`).forEach(n => parts.push(n))
+        if (m[2] !== undefined) parts.push(<strong key={`${key}-b${m.index}`} className="font-bold">{m[2]}</strong>)
+        else if (m[3] !== undefined) parts.push(<u key={`${key}-u${m.index}`}>{m[3]}</u>)
+        else parts.push(<em key={`${key}-i${m.index}`} className="italic">{m[4]}</em>)
+        idx = m.index + m[0].length
+      }
+      if (idx < text.length) linkifyText(text.slice(idx), `${key}-e${idx}`).forEach(n => parts.push(n))
     }
 
     while ((match = mentionRegex.exec(content)) !== null) {
